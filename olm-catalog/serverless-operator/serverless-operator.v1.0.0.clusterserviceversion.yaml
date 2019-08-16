@@ -49,9 +49,8 @@ spec:
 
     ### Istio
 
-    Knative requires Istio, and this operator will attempt to discover
-    it. If not found, it will install the Maistra Operator and a
-    minimal Maistra ControlPlane.
+    Knative requires Istio. A minimal Maistra ControlPlane can be
+    installed using the Maistra operator.
 
     ## Further Information
 
@@ -73,6 +72,64 @@ spec:
           verbs:
           - '*'
         serviceAccountName: knative-serving-operator
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - events
+          - configmaps
+          verbs:
+          - "*"
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - replicasets
+          verbs:
+          - "*"
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - get
+          - create
+        - apiGroups:
+          - networking.internal.knative.dev
+          resources:
+          - clusteringresses
+          - clusteringresses/status
+          - clusteringresses/finalizers
+          - ingresses
+          - ingresses/status
+          - ingresses/finalizers
+          verbs:
+          - "*"
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          - routes/custom-host
+          - routes/status
+          - routes/finalizers
+          verbs:
+          - "*"
+        - apiGroups:
+          - serving.knative.dev
+          resources:
+          - knativeservings
+          - knativeservings/finalizers
+          verbs:
+          - '*'
+        serviceAccountName: knative-openshift-ingress
       deployments:
       - name: knative-serving-operator
         spec:
@@ -100,13 +157,40 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: knative-serving-operator
-                image: quay.io/openshift-knative/knative-serving-operator:v0.7.1
+                image: quay.io/openshift-knative/knative-serving-operator:v0.7.1-TP1-02
                 args:
                   - --filename=https://raw.githubusercontent.com/openshift/knative-serving/release-v0.7.1/openshift/release/knative-serving-v0.7.1.yaml
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}
               serviceAccountName: knative-serving-operator
+      - name: knative-openshift-ingress
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: knative-openshift-ingress
+          template:
+            metadata:
+              labels:
+                name: knative-openshift-ingress
+            spec:
+              serviceAccountName: knative-openshift-ingress
+              containers:
+                - name: knative-openshift-ingress
+                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.6
+                  command:
+                  - knative-openshift-ingress
+                  imagePullPolicy: Always
+                  env:
+                    - name: WATCH_NAMESPACE
+                      value: "" # watch all namespaces for ClusterIngress
+                    - name: POD_NAME
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.name
+                    - name: OPERATOR_NAME
+                      value: "knative-openshift-ingress"
       permissions:
       - rules:
         - apiGroups:
