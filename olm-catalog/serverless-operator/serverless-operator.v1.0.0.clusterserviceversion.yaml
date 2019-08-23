@@ -155,11 +155,27 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.name
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
                 - name: OPERATOR_NAME
                   value: knative-serving-operator
-                image: quay.io/openshift-knative/knative-serving-operator:v0.7.1-TP1-02
-                args:
-                  - --filename=/resources/
+                - name: IMAGE_QUEUE
+                  value: quay.io/openshift-knative/knative-serving-queue:v0.7.1
+                - name: IMAGE_activator
+                  value: quay.io/openshift-knative/knative-serving-activator:v0.7.1
+                - name: IMAGE_autoscaler
+                  value: quay.io/openshift-knative/knative-serving-autoscaler:v0.7.1
+                - name: IMAGE_controller
+                  value: quay.io/openshift-knative/knative-serving-controller:v0.7.1
+                - name: IMAGE_networking-certmanager
+                  value: quay.io/openshift-knative/knative-serving-certmanager:v0.7.1
+                - name: IMAGE_networking-istio
+                  value: quay.io/openshift-knative/knative-serving-istio:v0.7.1
+                - name: IMAGE_webhook
+                  value: quay.io/openshift-knative/knative-serving-webhook:v0.7.1
+                image: quay.io/openshift-knative/knative-serving-operator:v0.7.1-TP1-03
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}
