@@ -11,7 +11,8 @@ DISPLAYNAME=${DISPLAYNAME:=${x[*]^}}
 
 indent() {
   INDENT="      "
-  sed "s/^/$INDENT/" | sed "s/^${INDENT}\($1\)/${INDENT:0:-2}- \1/"
+  ENDASH="    - "
+  sed "s/^/$INDENT/" | sed "s/^${INDENT}\($1\)/${ENDASH}\1/"
 }
 
 # initialize scratch dir
