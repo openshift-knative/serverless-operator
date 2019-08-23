@@ -96,6 +96,12 @@ spec:
           verbs:
           - "*"
         - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - "*"
+        - apiGroups:
           - monitoring.coreos.com
           resources:
           - servicemonitors
@@ -194,7 +200,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.6
+                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.7
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
