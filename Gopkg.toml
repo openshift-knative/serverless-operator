@@ -1,0 +1,50 @@
+# Force dep to vendor the code generators, which aren't imported just used at dev time.
+required = [
+  "github.com/knative/test-infra/scripts",
+  "github.com/knative/test-infra/tools/dep-collector",
+]
+
+[prune]
+  go-tests = true
+  non-go = true
+  unused-packages = true
+
+[[prune.project]]
+  name = "github.com/knative/test-infra"
+  non-go = false
+
+[[override]]
+  name = "k8s.io/api"
+  # revision for tag "kubernetes-1.13.1"
+  revision = "05914d821849570fba9eacfb29466f2d8d3cd229"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  # revision for tag "kubernetes-1.13.1"
+  revision = "0fe22c71c47604641d9aa352c785b7912c200562"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  # revision for tag "kubernetes-1.13.1"
+  revision = "2b1284ed4c93a43499e781493253e2ac5959c4fd"
+
+[[override]]
+  name = "k8s.io/client-go"
+  # revision for tag "kubernetes-1.13.1"
+  revision = "8d9ed539ba3134352c586810e749e58df4e94e4f"
+
+[[constraint]]
+  branch = "master"
+  name = "knative.dev/serving-operator"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/knative/test-infra"
+
+[[constraint]]
+  branch = "release-0.7"
+  name = "github.com/knative/serving"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/operator-framework/operator-lifecycle-manager"
