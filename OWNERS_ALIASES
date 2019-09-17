@@ -1,0 +1,15 @@
+aliases:
+  serverless-approvers:
+  - alanfx
+  - mgencur
+  - bbrowning
+  - jcrossley3
+  - markusthoemmes
+  - vdemeester
+  serverless-reviewers:
+  - alanfx
+  - mgencur
+  - bbrowning
+  - jcrossley3
+  - markusthoemmes
+  - vdemeester
