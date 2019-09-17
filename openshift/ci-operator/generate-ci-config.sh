@@ -18,7 +18,6 @@ base_images:
 build_root:
   project_image:
     dockerfile_path: openshift/ci-operator/build-image/Dockerfile
-canonical_go_repository: github.com/openshift-knative/serverless-operator
 binary_build_commands: make install
 tests:
 - as: e2e-aws
