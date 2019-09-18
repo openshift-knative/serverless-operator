@@ -4,9 +4,13 @@ source $(dirname $0)/../vendor/github.com/knative/test-infra/scripts/e2e-tests.s
 
 set -x
 
+readonly USER=$KUBE_SSH_USER #satisfy flags.go#initializeFlags()
+readonly OPENSHIFT_REGISTRY="${OPENSHIFT_REGISTRY:-"registry.svc.ci.openshift.org"}"
+readonly INTERNAL_REGISTRY="${INTERNAL_REGISTRY:-"image-registry.openshift-image-registry.svc:5000"}"
 readonly TEST_NAMESPACE=serverless-tests
 readonly SERVING_NAMESPACE=knative-serving
 readonly OPERATORS_NAMESPACE="openshift-operators"
+readonly SERVERLESS_OPERATOR="serverless-operator"
 
 env
 
@@ -220,10 +224,18 @@ EOF
 function install_catalogsource(){
   header "Installing CatalogSource"
 
-  ./hack/catalog.sh > catalogsource.yaml
-  oc apply -n $OPERATORS_NAMESPACE -f catalogsource.yaml || return 1
+  tag_serverless_operator_image
+
+  local serverless_image=$INTERNAL_REGISTRY/$OPERATORS_NAMESPACE/$SERVERLESS_OPERATOR
+  ./hack/catalog.sh | sed -e "s+\(.* containerImage:\)\(.*\)+\1 ${serverless_image}+g" > catalogsource-ci.yaml
+  oc apply -n $OPERATORS_NAMESPACE -f catalogsource-ci.yaml || return 1
 
   header "CatalogSource installed successfully"
+}
+
+function tag_serverless_operator_image(){
+  oc policy add-role-to-group system:image-puller system:serviceaccounts:${OPERATORS_NAMESPACE} --namespace=${OPENSHIFT_BUILD_NAMESPACE}
+  oc tag --insecure=false -n ${OPERATORS_NAMESPACE} ${OPENSHIFT_REGISTRY}/${OPENSHIFT_BUILD_NAMESPACE}/stable:${SERVERLESS_OPERATOR} ${SERVERLESS_OPERATOR}:latest
 }
 
 function create_namespaces(){
@@ -239,7 +251,7 @@ function run_e2e_tests(){
 
 function delete_catalog_source() {
   echo ">> Deleting CatalogSource"
-  oc delete --ignore-not-found=true -n $OPERATORS_NAMESPACE -f catalogsource.yaml
+  oc delete --ignore-not-found=true -n $OPERATORS_NAMESPACE -f catalogsource-ci.yaml
 }
 
 function delete_namespaces(){
