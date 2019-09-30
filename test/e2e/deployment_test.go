@@ -13,12 +13,13 @@ const (
 
 func TestDeployment(t *testing.T) {
 	ctx := test.Setup(t)
+	defer ctx.Cleanup()
 	test.CleanupOnInterrupt(t, func() { ctx.Cleanup() })
 
 	t.Log("Deploying Serverless Operator")
 	_, err := test.WithOperatorReady(ctx, "serverless-operator-subscription")
 	if err != nil {
-		t.Fatal("Failed")
+		t.Fatal("Failed", err)
 	}
 
 	t.Log("Deploying KnativeServing")
@@ -31,11 +32,8 @@ func TestDeployment(t *testing.T) {
 	image := "gcr.io/knative-samples/helloworld-go"
 	_, err = test.WithServiceReady(ctx, "helloworld-go", testNamespace, image)
 	if err != nil {
-		t.Fatal("Knative Service not ready")
+		t.Fatal("Knative Service not ready", err)
 	}
-
-	// delete manually so that we can verify removing dependent operators
-	ctx.Cleanup()
 
 	err = test.WaitForOperatorDepsDeleted(ctx)
 	if err != nil {
