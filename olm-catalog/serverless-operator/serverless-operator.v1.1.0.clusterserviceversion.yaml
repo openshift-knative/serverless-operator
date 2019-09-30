@@ -32,6 +32,8 @@ spec:
     The Red Hat Serverless Operator provides a collection of API's to
     install various "serverless" services.
 
+    This is a **[Tech Preview release](https://access.redhat.com/support/offerings/techpreview)!**
+
     # Knative Serving
 
     Knative Serving builds on Kubernetes to support deploying and
