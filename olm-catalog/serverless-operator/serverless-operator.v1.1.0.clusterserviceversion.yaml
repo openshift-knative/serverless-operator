@@ -12,7 +12,7 @@ metadata:
       Provides a collection of API's to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
-    support: Red Hat
+    support: Red Hat, Inc.
   name: serverless-operator.v1.1.0
   namespace: placeholder
 spec:
@@ -285,6 +285,6 @@ spec:
     name: Serverless Team
   maturity: alpha
   provider:
-    name: Red Hat
+    name: Red Hat, Inc.
   replaces: serverless-operator.v1.0.0
   version: 1.1.0
