@@ -114,10 +114,7 @@ func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.Serving
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
 func (ctx *Context) Cleanup() {
 	for _, f := range ctx.CleanupList {
-		err := f()
-		if err != nil {
-			ctx.T.Fatalf("Error cleaning up %v", f)
-		}
+		f()
 	}
 }
 

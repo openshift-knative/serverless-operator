@@ -35,6 +35,8 @@ func TestDeployment(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
+	ctx.Cleanup()
+
 	err = test.WaitForOperatorDepsDeleted(ctx)
 	if err != nil {
 		t.Fatalf("Operators still running: %v", err)

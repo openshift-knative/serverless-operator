@@ -237,8 +237,8 @@ function install_catalogsource(){
 
 function tag_serverless_operator_image(){
   if [[ -n "${OPENSHIFT_BUILD_NAMESPACE}" ]]; then
-    oc policy add-role-to-group system:image-puller system:serviceaccounts:${OPERATORS_NAMESPACE} --namespace=${OPENSHIFT_BUILD_NAMESPACE}
-    oc tag --insecure=false -n ${OPERATORS_NAMESPACE} ${OPENSHIFT_REGISTRY}/${OPENSHIFT_BUILD_NAMESPACE}/stable:${SERVERLESS_OPERATOR} ${SERVERLESS_OPERATOR}:latest
+    oc policy add-role-to-group system:image-puller system:serviceaccounts:${OPERATORS_NAMESPACE} --namespace=${OPENSHIFT_BUILD_NAMESPACE} >/dev/null
+    oc tag --insecure=false -n ${OPERATORS_NAMESPACE} ${OPENSHIFT_REGISTRY}/${OPENSHIFT_BUILD_NAMESPACE}/stable:${SERVERLESS_OPERATOR} ${SERVERLESS_OPERATOR}:latest >/dev/null
     echo $INTERNAL_REGISTRY/$OPERATORS_NAMESPACE/$SERVERLESS_OPERATOR
   fi
 }
