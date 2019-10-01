@@ -291,7 +291,7 @@ spec:
   - name: Source Repository
     url: https://github.com/openshift-knative/serverless-operator
   maintainers:
-  - email: knative@redhat.com
+  - email: serverless-support@redhat.com
     name: Serverless Team
   maturity: alpha
   provider:
