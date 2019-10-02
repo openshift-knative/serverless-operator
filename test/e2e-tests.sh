@@ -11,7 +11,7 @@ readonly TEST_NAMESPACE=serverless-tests
 readonly SERVING_NAMESPACE=knative-serving
 readonly OPERATORS_NAMESPACE="openshift-operators"
 readonly SERVERLESS_OPERATOR="serverless-operator"
-
+readonly CATALOG_SOURCE_FILENAME="catalogsource-ci.yaml"
 env
 
 function scale_up_workers(){
@@ -20,7 +20,7 @@ function scale_up_workers(){
   oc get machineset -n ${cluster_api_ns} --show-labels
 
   # Get the name of the first machineset that has at least 1 replica
-  local machineset=$(oc get machineset -n ${cluster_api_ns} -o custom-columns="name:{.metadata.name},replicas:{.spec.replicas}" | grep " 1" | head -n 1 | awk '{print $1}')
+  local machineset=$(oc get machineset -n ${cluster_api_ns} -o custom-columns="name:{.metadata.name},replicas:{.spec.replicas}" | grep -e " [1-9]" | head -n 1 | awk '{print $1}')
   # Bump the number of replicas to 6 (+ 1 + 1 == 8 workers)
   oc patch machineset -n ${cluster_api_ns} ${machineset} -p '{"spec":{"replicas":6}}' --type=merge
   wait_until_machineset_scales_up ${cluster_api_ns} ${machineset} 6
@@ -224,18 +224,23 @@ EOF
 function install_catalogsource(){
   header "Installing CatalogSource"
 
-  tag_serverless_operator_image
-
-  local serverless_image=$INTERNAL_REGISTRY/$OPERATORS_NAMESPACE/$SERVERLESS_OPERATOR
-  ./hack/catalog.sh | sed -e "s+\(.* containerImage:\)\(.*\)+\1 ${serverless_image}+g" > catalogsource-ci.yaml
-  oc apply -n $OPERATORS_NAMESPACE -f catalogsource-ci.yaml || return 1
+  local serverless_image=$(tag_serverless_operator_image)
+  if [[ -n "${serverless_image}" ]]; then
+    ./hack/catalog.sh | sed -e "s+\(.* containerImage:\)\(.*\)+\1 ${serverless_image}+g" > $CATALOG_SOURCE_FILENAME
+  else
+    ./hack/catalog.sh > $CATALOG_SOURCE_FILENAME
+  fi
+  oc apply -n $OPERATORS_NAMESPACE -f $CATALOG_SOURCE_FILENAME || return 1
 
   header "CatalogSource installed successfully"
 }
 
 function tag_serverless_operator_image(){
-  oc policy add-role-to-group system:image-puller system:serviceaccounts:${OPERATORS_NAMESPACE} --namespace=${OPENSHIFT_BUILD_NAMESPACE}
-  oc tag --insecure=false -n ${OPERATORS_NAMESPACE} ${OPENSHIFT_REGISTRY}/${OPENSHIFT_BUILD_NAMESPACE}/stable:${SERVERLESS_OPERATOR} ${SERVERLESS_OPERATOR}:latest
+  if [[ -n "${OPENSHIFT_BUILD_NAMESPACE}" ]]; then
+    oc policy add-role-to-group system:image-puller system:serviceaccounts:${OPERATORS_NAMESPACE} --namespace=${OPENSHIFT_BUILD_NAMESPACE} >/dev/null
+    oc tag --insecure=false -n ${OPERATORS_NAMESPACE} ${OPENSHIFT_REGISTRY}/${OPENSHIFT_BUILD_NAMESPACE}/stable:${SERVERLESS_OPERATOR} ${SERVERLESS_OPERATOR}:latest >/dev/null
+    echo $INTERNAL_REGISTRY/$OPERATORS_NAMESPACE/$SERVERLESS_OPERATOR
+  fi
 }
 
 function create_namespaces(){
@@ -251,7 +256,7 @@ function run_e2e_tests(){
 
 function delete_catalog_source() {
   echo ">> Deleting CatalogSource"
-  oc delete --ignore-not-found=true -n $OPERATORS_NAMESPACE -f catalogsource-ci.yaml
+  oc delete --ignore-not-found=true -n $OPERATORS_NAMESPACE -f $CATALOG_SOURCE_FILENAME
 }
 
 function delete_namespaces(){
@@ -305,4 +310,3 @@ teardown
 (( failed )) && exit 1
 
 success
-  
