@@ -251,7 +251,7 @@ function create_namespaces(){
 function run_e2e_tests(){
   header "Running tests"
   go test -v -tags=e2e -count=1 -timeout=10m -parallel=1 ./test/e2e \
-      --kubeconfig "$KUBECONFIG" || return 1
+      --kubeconfig "$KUBECONFIG,`pwd`/user1.kubeconfig,`pwd`/user2.kubeconfig" || return 1
 }
 
 function delete_catalog_source() {
@@ -287,9 +287,35 @@ function dump_openshift_ingress_state(){
   oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE"
 }
 
+function create_htpasswd_users(){
+  local num_users=2
+
+  # Add users to htpasswd
+  touch users.htpasswd
+  for i in `seq 1 $num_users`; do
+    htpasswd -b users.htpasswd user${i} password{i}
+  done
+
+  oc create secret generic htpass-secret --from-file=htpasswd=`pwd`/users.htpasswd -n openshift-config
+  oc apply -f openshift/identity/htpasswd.yaml
+
+  # Generate kubeconfig for each user
+  for i in `seq 1 $num_users`; do
+    cp $KUBECONFIG "user${i}.kubeconfig"
+    timeout 900 '[[ ! $(oc login --config=user${i}.kubeconfig --username=user${i} --password=password${i}) =~ .*"Login successful".* ]]' || return 1
+  done
+}
+
+function add_roles(){
+  oc adm policy add-role-to-user edit user1 -n $TEST_NAMESPACE
+  oc adm policy add-role-to-user view user2 -n $TEST_NAMESPACE
+}
+
 scale_up_workers || exit 1
 
 create_namespaces || exit 1
+
+create_htpasswd_users && add_roles || exit 1
 
 failed=0
 

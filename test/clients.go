@@ -3,6 +3,7 @@ package test
 import (
 	"os"
 	"os/signal"
+	"strings"
 	"testing"
 
 	servingversioned "github.com/knative/serving/pkg/client/clientset/versioned"
@@ -38,26 +39,30 @@ type Clients struct {
 // and register with the Context
 type CleanupFunc func() error
 
-// Setup creates the context object needed in the e2e tests
-func Setup(t *testing.T) *Context {
-	clients, err := NewClients()
-	if err != nil {
-		t.Fatalf("Couldn't initialize clients: %v", err)
+// Setup creates context objects for all kubeconfigs passed from the command line
+func Setup(t *testing.T) []*Context {
+	kubeconfigs := strings.Split(Flags.Kubeconfig, ",")
+	var contexts []*Context
+	for _, cfg := range kubeconfigs {
+		clients, err := NewClients(cfg)
+		if err != nil {
+			t.Fatalf("Couldn't initialize clients for config %s: %v", cfg, err)
+		}
+		ctx := &Context{
+			T:       t,
+			Clients: clients,
+		}
+		contexts = append(contexts, ctx)
 	}
-
-	ctx := &Context{
-		T:       t,
-		Clients: clients,
-	}
-	return ctx
+	return contexts
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
 // Knative cluster
-func NewClients() (*Clients, error) {
+func NewClients(kubeconfig string) (*Clients, error) {
 	clients := &Clients{}
 
-	cfg, err := clientcmd.BuildConfigFromFlags("", Flags.Kubeconfig)
+	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +91,7 @@ func NewClients() (*Clients, error) {
 		return nil, err
 	}
 
-	clients.OLM, err = newOLMClient(Flags.Kubeconfig)
+	clients.OLM, err = newOLMClient(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +114,13 @@ func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.Serving
 		return nil, err
 	}
 	return cs.ServingV1alpha1(), nil
+}
+
+// Cleanup for all contexts
+func CleanupAll(contexts []*Context) {
+	for _, ctx := range contexts {
+		ctx.Cleanup()
+	}
 }
 
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
