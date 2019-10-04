@@ -293,7 +293,7 @@ function create_htpasswd_users(){
   # Add users to htpasswd
   touch users.htpasswd
   for i in `seq 1 $num_users`; do
-    htpasswd -b users.htpasswd user${i} password{i}
+    htpasswd -b users.htpasswd user${i} password${i}
   done
 
   oc create secret generic htpass-secret --from-file=htpasswd=`pwd`/users.htpasswd -n openshift-config
