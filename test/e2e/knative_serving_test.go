@@ -59,101 +59,83 @@ func testUserPermissions(t *testing.T, contexts []*test.Context) {
 	editCtx := contexts[1]
 	viewCtx := contexts[2]
 	tests := []struct {
-		name          string
-		userRole      string
-		userContext   *test.Context
-		operationName string
-		operation     func(context *test.Context) error
-		wantErr       bool
-		wantErrStr    string
+		name        string
+		userRole    string
+		userContext *test.Context
+		operation   func(context *test.Context) error
+		wantErrStr  string
 	}{{
-		name:          "user with view role can get",
-		userRole:      "view",
-		operationName: "get",
+		name:     "user with view role can get",
+		userRole: "view",
 		operation: func(c *test.Context) error {
 			_, err := test.GetService(c, helloworldService, testNamespace)
 			return err
 		},
 		userContext: viewCtx,
-		wantErr:     false,
 	}, {
-		name:          "user with view role can list",
-		userRole:      "view",
-		operationName: "list",
+		name:     "user with view role can list",
+		userRole: "view",
 		operation: func(c *test.Context) error {
 			_, err := test.ListServices(c, testNamespace)
 			return err
 		},
 		userContext: viewCtx,
-		wantErr:     false,
 	}, {
-		name:          "user with view role cannot create",
-		userRole:      "view",
-		operationName: "create",
+		name:     "user with view role cannot create",
+		userRole: "view",
 		operation: func(c *test.Context) error {
 			_, err := test.CreateService(c, "userview-service", testNamespace, image)
 			return err
 		},
 		userContext: viewCtx,
-		wantErr:     true,
 		wantErrStr:  "is forbidden",
 	}, {
-		name:          "user with view role cannot delete",
-		userRole:      "view",
-		operationName: "delete",
+		name:     "user with view role cannot delete",
+		userRole: "view",
 		operation: func(c *test.Context) error {
 			return test.DeleteService(c, helloworldService, testNamespace)
 		},
 		userContext: viewCtx,
-		wantErr:     true,
 		wantErrStr:  "is forbidden",
 	}, {
-		name:          "user with edit role can get",
-		userRole:      "edit",
-		operationName: "get",
+		name:     "user with edit role can get",
+		userRole: "edit",
 		operation: func(c *test.Context) error {
 			_, err := test.GetService(c, helloworldService, testNamespace)
 			return err
 		},
 		userContext: editCtx,
-		wantErr:     false,
 	}, {
-		name:          "user with edit role can list",
-		userRole:      "edit",
-		operationName: "list",
+		name:     "user with edit role can list",
+		userRole: "edit",
 		operation: func(c *test.Context) error {
 			_, err := test.ListServices(c, testNamespace)
 			return err
 		},
 		userContext: editCtx,
-		wantErr:     false,
 	}, {
-		name:          "user with edit role can create",
-		userRole:      "edit",
-		operationName: "create",
+		name:     "user with edit role can create",
+		userRole: "edit",
 		operation: func(c *test.Context) error {
 			_, err := test.CreateService(c, "useredit-service", testNamespace, image)
 			return err
 		},
 		userContext: editCtx,
-		wantErr:     false,
 	}, {
-		name:          "user with edit role can delete",
-		userRole:      "edit",
-		operationName: "delete",
+		name:     "user with edit role can delete",
+		userRole: "edit",
 		operation: func(c *test.Context) error {
 			return test.DeleteService(c, "useredit-service", testNamespace)
 		},
-		userContext: contexts[1],
-		wantErr:     false,
+		userContext: editCtx,
 	},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := test.operation(test.userContext)
-			if (err != nil) != test.wantErr {
-				t.Errorf("User with role %s has unexpected behavior for %s operation on knative services. Error thrown: %v, error expected: %t", test.userRole, test.operationName, err, test.wantErr)
+			if (err != nil) != (test.wantErrStr != "") {
+				t.Errorf("User with role %s has unexpected behavior on knative services. Error thrown: %v, error expected: %t", test.userRole, err, (test.wantErrStr != ""))
 			}
 			if err != nil && !strings.Contains(err.Error(), test.wantErrStr) {
 				t.Errorf("Unexpected error for user with role %s: %v", test.userRole, err)
