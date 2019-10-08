@@ -57,16 +57,28 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(service.Name, &metav1.DeleteOptions{})
+		return DeleteService(ctx, service.Name, namespace)
 	})
 	return service, nil
+}
+
+func GetService(ctx *Context, name, namespace string) (*servingv1beta1.Service, error) {
+	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
+}
+
+func ListServices(ctx *Context, namespace string) (*servingv1beta1.ServiceList, error) {
+	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).List(metav1.ListOptions{})
+}
+
+func DeleteService(ctx *Context, name, namespace string) error {
+	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1beta1.Service, err error) (bool, error)) (*servingv1beta1.Service, error) {
 	var lastState *servingv1beta1.Service
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = GetService(ctx, name, namespace)
 		return inState(lastState, err)
 	})
 

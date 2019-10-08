@@ -3,6 +3,7 @@ package test
 import (
 	"os"
 	"os/signal"
+	"strings"
 	"testing"
 
 	servingversioned "github.com/knative/serving/pkg/client/clientset/versioned"
@@ -18,6 +19,7 @@ import (
 
 // Context holds objects related to test execution
 type Context struct {
+	Name        string
 	T           *testing.T
 	Clients     *Clients
 	CleanupList []CleanupFunc
@@ -38,26 +40,62 @@ type Clients struct {
 // and register with the Context
 type CleanupFunc func() error
 
-// Setup creates the context object needed in the e2e tests
-func Setup(t *testing.T) *Context {
-	clients, err := NewClients()
-	if err != nil {
-		t.Fatalf("Couldn't initialize clients: %v", err)
-	}
+var contexts []*Context
 
-	ctx := &Context{
-		T:       t,
-		Clients: clients,
+// setupContextsOnce creates context objects for all kubeconfigs passed from the command line
+func setupContextsOnce(t *testing.T) {
+	if len(contexts) == 0 {
+		kubeconfigs := strings.Split(Flags.Kubeconfig, ",")
+		for _, cfg := range kubeconfigs {
+			clients, err := NewClients(cfg)
+			if err != nil {
+				t.Fatalf("Couldn't initialize clients for config %s: %v", cfg, err)
+			}
+			ctx := &Context{
+				T:       t,
+				Clients: clients,
+			}
+			contexts = append(contexts, ctx)
+		}
 	}
+}
+
+// SetupAdmin returns context for Cluster Admin user
+func SetupAdmin(t *testing.T) *Context {
+	setupContextsOnce(t)
+	ctx := contexts[0]
+	ctx.Name = "Admin"
 	return ctx
+}
+
+// SetupEdit returns context for user with Edit role
+func SetupEdit(t *testing.T) *Context {
+	setupContextsOnce(t)
+	role := "Edit"
+	if len(contexts) < 2 {
+		t.Fatalf("kubeconfig for user with %s role not present", role)
+	}
+	contexts[1].Name = role
+	return contexts[1]
+}
+
+// SetupView returns context for user with View role
+func SetupView(t *testing.T) *Context {
+	setupContextsOnce(t)
+	role := "View"
+	if len(contexts) < 3 {
+		t.Fatalf("kubeconfig for user with %s role not present", role)
+	}
+	contexts[2].Name = role
+	return contexts[2]
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
 // Knative cluster
-func NewClients() (*Clients, error) {
+func NewClients(kubeconfig string) (*Clients, error) {
 	clients := &Clients{}
 
-	cfg, err := clientcmd.BuildConfigFromFlags("", Flags.Kubeconfig)
+	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +124,7 @@ func NewClients() (*Clients, error) {
 		return nil, err
 	}
 
-	clients.OLM, err = newOLMClient(Flags.Kubeconfig)
+	clients.OLM, err = newOLMClient(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +147,13 @@ func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.Serving
 		return nil, err
 	}
 	return cs.ServingV1alpha1(), nil
+}
+
+// Cleanup for all contexts
+func CleanupAll(contexts ...*Context) {
+	for _, ctx := range contexts {
+		ctx.Cleanup()
+	}
 }
 
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
