@@ -15,11 +15,12 @@ const (
 )
 
 func TestKnativeServing(t *testing.T) {
-	contexts := test.Setup(t)
-	adminCtx := contexts[0]
+	adminCtx := test.SetupAdmin(t)
+	editCtx := test.SetupEdit(t)
+	viewCtx := test.SetupView(t)
 
-	defer test.CleanupAll(contexts)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(contexts) })
+	defer test.CleanupAll(adminCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(adminCtx, editCtx, viewCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
 		_, err := test.WithOperatorReady(adminCtx, "serverless-operator-subscription")
@@ -43,7 +44,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("user permissions", func(t *testing.T) {
-		testUserPermissions(t, contexts)
+		testUserPermissions(t, editCtx, viewCtx)
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
@@ -55,34 +56,28 @@ func TestKnativeServing(t *testing.T) {
 	})
 }
 
-func testUserPermissions(t *testing.T, contexts []*test.Context) {
-	editCtx := contexts[1]
-	viewCtx := contexts[2]
+func testUserPermissions(t *testing.T, editCtx *test.Context, viewCtx *test.Context) {
 	tests := []struct {
 		name        string
-		userRole    string
 		userContext *test.Context
 		operation   func(context *test.Context) error
 		wantErrStr  string
 	}{{
-		name:     "user with view role can get",
-		userRole: "view",
+		name: "user with view role can get",
 		operation: func(c *test.Context) error {
 			_, err := test.GetService(c, helloworldService, testNamespace)
 			return err
 		},
 		userContext: viewCtx,
 	}, {
-		name:     "user with view role can list",
-		userRole: "view",
+		name: "user with view role can list",
 		operation: func(c *test.Context) error {
 			_, err := test.ListServices(c, testNamespace)
 			return err
 		},
 		userContext: viewCtx,
 	}, {
-		name:     "user with view role cannot create",
-		userRole: "view",
+		name: "user with view role cannot create",
 		operation: func(c *test.Context) error {
 			_, err := test.CreateService(c, "userview-service", testNamespace, image)
 			return err
@@ -90,40 +85,35 @@ func testUserPermissions(t *testing.T, contexts []*test.Context) {
 		userContext: viewCtx,
 		wantErrStr:  "is forbidden",
 	}, {
-		name:     "user with view role cannot delete",
-		userRole: "view",
+		name: "user with view role cannot delete",
 		operation: func(c *test.Context) error {
 			return test.DeleteService(c, helloworldService, testNamespace)
 		},
 		userContext: viewCtx,
 		wantErrStr:  "is forbidden",
 	}, {
-		name:     "user with edit role can get",
-		userRole: "edit",
+		name: "user with edit role can get",
 		operation: func(c *test.Context) error {
 			_, err := test.GetService(c, helloworldService, testNamespace)
 			return err
 		},
 		userContext: editCtx,
 	}, {
-		name:     "user with edit role can list",
-		userRole: "edit",
+		name: "user with edit role can list",
 		operation: func(c *test.Context) error {
 			_, err := test.ListServices(c, testNamespace)
 			return err
 		},
 		userContext: editCtx,
 	}, {
-		name:     "user with edit role can create",
-		userRole: "edit",
+		name: "user with edit role can create",
 		operation: func(c *test.Context) error {
 			_, err := test.CreateService(c, "useredit-service", testNamespace, image)
 			return err
 		},
 		userContext: editCtx,
 	}, {
-		name:     "user with edit role can delete",
-		userRole: "edit",
+		name: "user with edit role can delete",
 		operation: func(c *test.Context) error {
 			return test.DeleteService(c, "useredit-service", testNamespace)
 		},
@@ -135,10 +125,10 @@ func testUserPermissions(t *testing.T, contexts []*test.Context) {
 		t.Run(test.name, func(t *testing.T) {
 			err := test.operation(test.userContext)
 			if (err != nil) != (test.wantErrStr != "") {
-				t.Errorf("User with role %s has unexpected behavior on knative services. Error thrown: %v, error expected: %t", test.userRole, err, (test.wantErrStr != ""))
+				t.Errorf("User with role %s has unexpected behavior on knative services. Error thrown: %v, error expected: %t", test.userContext.Name, err, (test.wantErrStr != ""))
 			}
 			if err != nil && !strings.Contains(err.Error(), test.wantErrStr) {
-				t.Errorf("Unexpected error for user with role %s: %v", test.userRole, err)
+				t.Errorf("Unexpected error for user with role %s: %v", test.userContext.Name, err)
 			}
 		})
 	}

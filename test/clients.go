@@ -19,6 +19,7 @@ import (
 
 // Context holds objects related to test execution
 type Context struct {
+	Name        string
 	T           *testing.T
 	Clients     *Clients
 	CleanupList []CleanupFunc
@@ -39,22 +40,54 @@ type Clients struct {
 // and register with the Context
 type CleanupFunc func() error
 
-// Setup creates context objects for all kubeconfigs passed from the command line
-func Setup(t *testing.T) []*Context {
-	kubeconfigs := strings.Split(Flags.Kubeconfig, ",")
-	var contexts []*Context
-	for _, cfg := range kubeconfigs {
-		clients, err := NewClients(cfg)
-		if err != nil {
-			t.Fatalf("Couldn't initialize clients for config %s: %v", cfg, err)
+var contexts []*Context
+
+// setupContextsOnce creates context objects for all kubeconfigs passed from the command line
+func setupContextsOnce(t *testing.T) {
+	if len(contexts) == 0 {
+		kubeconfigs := strings.Split(Flags.Kubeconfig, ",")
+		for _, cfg := range kubeconfigs {
+			clients, err := NewClients(cfg)
+			if err != nil {
+				t.Fatalf("Couldn't initialize clients for config %s: %v", cfg, err)
+			}
+			ctx := &Context{
+				T:       t,
+				Clients: clients,
+			}
+			contexts = append(contexts, ctx)
 		}
-		ctx := &Context{
-			T:       t,
-			Clients: clients,
-		}
-		contexts = append(contexts, ctx)
 	}
-	return contexts
+}
+
+// SetupAdmin returns context for Cluster Admin user
+func SetupAdmin(t *testing.T) *Context {
+	setupContextsOnce(t)
+	ctx := contexts[0]
+	ctx.Name = "Admin"
+	return ctx
+}
+
+// SetupEdit returns context for user with Edit role
+func SetupEdit(t *testing.T) *Context {
+	setupContextsOnce(t)
+	role := "Edit"
+	if len(contexts) < 2 {
+		t.Fatalf("kubeconfig for user with %s role not present", role)
+	}
+	contexts[1].Name = role
+	return contexts[1]
+}
+
+// SetupView returns context for user with View role
+func SetupView(t *testing.T) *Context {
+	setupContextsOnce(t)
+	role := "View"
+	if len(contexts) < 3 {
+		t.Fatalf("kubeconfig for user with %s role not present", role)
+	}
+	contexts[2].Name = role
+	return contexts[2]
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
@@ -117,7 +150,7 @@ func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.Serving
 }
 
 // Cleanup for all contexts
-func CleanupAll(contexts []*Context) {
+func CleanupAll(contexts ...*Context) {
 	for _, ctx := range contexts {
 		ctx.Cleanup()
 	}
