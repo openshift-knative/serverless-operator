@@ -60,18 +60,18 @@ func setupContextsOnce(t *testing.T) {
 	}
 }
 
-// SetupAdmin returns context for Cluster Admin user
-func SetupAdmin(t *testing.T) *Context {
+// SetupClusterAdmin returns context for Cluster Admin user
+func SetupClusterAdmin(t *testing.T) *Context {
 	setupContextsOnce(t)
-	ctx := contexts[0]
-	ctx.Name = "Admin"
-	return ctx
+	role := "ClusterAdmin"
+	contexts[0].Name = role
+	return contexts[0]
 }
 
-// SetupEdit returns context for user with Edit role
-func SetupEdit(t *testing.T) *Context {
+// SetupProjectAdmin returns context for Project Admin user
+func SetupProjectAdmin(t *testing.T) *Context {
 	setupContextsOnce(t)
-	role := "Edit"
+	role := "ProjectAdmin"
 	if len(contexts) < 2 {
 		t.Fatalf("kubeconfig for user with %s role not present", role)
 	}
@@ -79,15 +79,26 @@ func SetupEdit(t *testing.T) *Context {
 	return contexts[1]
 }
 
-// SetupView returns context for user with View role
-func SetupView(t *testing.T) *Context {
+// SetupEdit returns context for user with Edit role
+func SetupEdit(t *testing.T) *Context {
 	setupContextsOnce(t)
-	role := "View"
+	role := "Edit"
 	if len(contexts) < 3 {
 		t.Fatalf("kubeconfig for user with %s role not present", role)
 	}
 	contexts[2].Name = role
 	return contexts[2]
+}
+
+// SetupView returns context for user with View role
+func SetupView(t *testing.T) *Context {
+	setupContextsOnce(t)
+	role := "View"
+	if len(contexts) < 4 {
+		t.Fatalf("kubeconfig for user with %s role not present", role)
+	}
+	contexts[3].Name = role
+	return contexts[3]
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
