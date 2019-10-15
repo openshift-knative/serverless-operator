@@ -204,7 +204,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.7
+                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.9
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
