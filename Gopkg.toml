@@ -48,3 +48,8 @@ required = [
 [[constraint]]
   branch = "master"
   name = "github.com/operator-framework/operator-lifecycle-manager"
+
+[[constraint]]
+  branch = "feature/basic-lifecycle-tests"
+  name = "github.com/openshift-knative/knative-eventing-operator"
+  source = "github.com/cardil/knative-eventing-operator"

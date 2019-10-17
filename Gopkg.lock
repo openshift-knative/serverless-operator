@@ -314,6 +314,18 @@
   version = "1.0.1"
 
 [[projects]]
+  branch = "feature/basic-lifecycle-tests"
+  digest = "1:24bdee7823c2ef3c27782be6701587fabb79f99dcb9263ee020759da23176b6c"
+  name = "github.com/openshift-knative/knative-eventing-operator"
+  packages = [
+    "test",
+    "test/e2e",
+  ]
+  pruneopts = "NUT"
+  revision = "9d0eb88cb3f8bb1685d528f137b1dac48363c969"
+  source = "github.com/cardil/knative-eventing-operator"
+
+[[projects]]
   branch = "master"
   digest = "1:f194da1bedb995820cf0be9ee9bd3a20f4cf073b452fd7caba9e46a73e2684cb"
   name = "github.com/operator-framework/operator-lifecycle-manager"
@@ -790,6 +802,7 @@
     "github.com/knative/serving/pkg/client/clientset/versioned",
     "github.com/knative/test-infra/scripts",
     "github.com/knative/test-infra/tools/dep-collector",
+    "github.com/openshift-knative/knative-eventing-operator/test/e2e",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators/v1alpha1",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned",
