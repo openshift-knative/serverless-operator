@@ -250,17 +250,8 @@ spec:
       enabled: false
     sidecarInjectorWebhook:
       enabled: false
----
-apiVersion: maistra.io/v1
-kind: ServiceMeshMemberRoll
-metadata:
-  name: default
-  namespace: istio-system
-spec:
-  members:
-  - ${SERVING_NAMESPACE}
-  - ${TEST_NAMESPACE}
 EOF
+  setup_service_mesh_member_roll
 
   logger.info 'Wait for the ServiceMeshControlPlane to be ready'
   timeout 900 '[[ $(oc get smcp -n istio-system -o=jsonpath="{.items[0].status.conditions[?(@.type==\"Ready\")].status}") != "True" ]]' || return 1
@@ -276,6 +267,53 @@ EOF
   logger.success "ServiceMesh installed successfully"
 }
 
+function setup_service_mesh_member_roll {
+  logger.debug "Check if Service Mesh Member Roll default is added"
+  if oc get smmr default -n istio-system | grep ${SERVING_NAMESPACE} | grep -q ${TEST_NAMESPACE}; then
+    logger.debug "Service Mesh Member Roll is configured properly"
+    return 0
+  fi
+  logger.info "Adding Service Mesh Member Roll for ${SERVING_NAMESPACE} and ${TEST_NAMESPACE} namespaces"
+  cat <<EOF | oc apply -f -
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+  - ${SERVING_NAMESPACE}
+  - ${TEST_NAMESPACE}
+EOF
+  logger.info "MAISTRA-862 Wait 1 min, after namespaces has been added to the members"
+  sleep 60
+}
+
+function teardown_service_mesh_member_roll {
+  logger.info "Teardown of Service Mesh Member Roll (MAISTRA-862)"
+  local checkcmd
+  if ! oc get smmr default -n istio-system > /dev/null 2>&1; then
+    logger.debug 'Service Mesh Member Roll is not present, skipping teardown.'
+    return 0
+  fi
+  if [[ "$(oc get smmr default -n istio-system -o jsonpath='{.spec.members}')" == '[]' ]]; then
+    logger.debug 'Service Mesh Member Roll has empty members, skipping teardown.'
+    return 0
+  fi
+  cat <<EOF | oc apply -f -
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members: []
+EOF
+  # TODO: maybe a better chek here: https://issues.jboss.org/browse/MAISTRA-862?focusedCommentId=13801658&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-13801658
+  checkcmd="[[ \"\$(oc get smmr default -n istio-system -o jsonpath='{.spec.members}')\" != '[]' ]]"
+  timeout 600 "${checkcmd}"
+}
+
 function ensure_service_mesh_installed {
   local istio_hostname istio_ip
 
@@ -284,6 +322,7 @@ function ensure_service_mesh_installed {
     istio_ip=$(resolve_hostname "${istio_hostname}")
     if [[ "${istio_ip}" != "" ]]; then
       logger.info 'Service Mesh seems operational. Skipping installation.'
+      setup_service_mesh_member_roll
       return 0
     fi
   fi
@@ -335,8 +374,11 @@ function delete_catalog_source {
 }
 
 function delete_namespaces {
+  teardown_service_mesh_member_roll
   logger.info "Deleting namespaces"
+  timeout 600 "[[ \$(oc get pods -n $TEST_NAMESPACE -o jsonpath='{.items}') != '[]' ]]"
   oc delete namespace $TEST_NAMESPACE
+  timeout 600 "[[ \$(oc get pods -n $SERVING_NAMESPACE -o jsonpath='{.items}') != '[]' ]]"
   oc delete namespace $SERVING_NAMESPACE
 }
 
