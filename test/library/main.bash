@@ -434,13 +434,18 @@ function create_htpasswd_users {
   num_users=2
   logger.info "Creating htpasswd for ${num_users} users"
 
+  if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
+    logger.info 'Secret htpass-secret already existsed, updating it.'
+  else
+    touch users.htpasswd
+  fi
+
   logger.info 'Add users to htpasswd'
-  touch users.htpasswd
   for i in $(seq 1 $num_users); do
-    htpasswd -b users.htpasswd user${i} password${i}
+    htpasswd -b users.htpasswd "user${i}" "password${i}"
   done
 
-  oc create secret generic e2e-htpass-secret \
+  kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
     --dry-run -o yaml | kubectl apply -f -
