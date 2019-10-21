@@ -1,0 +1,11 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-serving-openshift
+subjects:
+- kind: ServiceAccount
+  name: knative-serving-openshift
+roleRef:
+  kind: Role
+  name: knative-serving-openshift
+  apiGroup: rbac.authorization.k8s.io
