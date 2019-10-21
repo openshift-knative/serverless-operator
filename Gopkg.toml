@@ -44,6 +44,14 @@ required = [
   version = "=v0.1.12"
 
 [[constraint]]
+  name = "knative.dev/serving-operator"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/openshift/api"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/operator-framework/operator-sdk"
   # The version rule is used for a specific release and the master branch for in between releases.
   # branch = "v0.10.x" #osdk_branch_annotation
