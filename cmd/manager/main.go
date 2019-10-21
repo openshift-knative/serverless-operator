@@ -13,6 +13,7 @@ import (
 
 	"github.com/jcrossley3/knative-serving-openshift/pkg/apis"
 	"github.com/jcrossley3/knative-serving-openshift/pkg/controller"
+	"github.com/jcrossley3/knative-serving-openshift/pkg/webhook"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -113,9 +114,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = serveCRMetrics(cfg); err != nil {
-		log.Info("Could not generate and serve custom resource metrics", "error", err.Error())
+	// Setup all webhooks
+	if err := webhook.AddToManager(mgr); err != nil {
+		log.Error(err, "")
+		os.Exit(1)
 	}
+
+	// Commented below to avoid a stream of these errors at startup:
+	// E1021 22:50:03.372487       1 reflector.go:134] github.com/operator-framework/operator-sdk/pkg/kube-metrics/collector.go:67: Failed to list *unstructured.Unstructured: the server could not find the requested resource
+	// if err = serveCRMetrics(cfg); err != nil {
+	// 	log.Info("Could not generate and serve custom resource metrics", "error", err.Error())
+	// }
 
 	// Add to the below struct any other metrics ports you want to expose.
 	servicePorts := []v1.ServicePort{

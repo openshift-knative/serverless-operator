@@ -11,12 +11,12 @@ spec:
     metadata:
       labels:
         name: knative-serving-openshift
+        app: knativeserving-admission-server
     spec:
       serviceAccountName: knative-serving-openshift
       containers:
         - name: knative-serving-openshift
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: docker.io/jcrossley3/knative-serving-openshift:dev
           command:
           - knative-serving-openshift
           imagePullPolicy: Always

@@ -52,3 +52,12 @@ rules:
   - replicasets
   verbs:
   - get
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-serving-openshift
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
