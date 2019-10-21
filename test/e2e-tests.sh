@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-REPO_DIR=$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
-
 # shellcheck source=test/library/main.bash
-source "${REPO_DIR}/test/library/main.bash"
+source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/library/main.bash"
 
 set -Eeuo pipefail
 
