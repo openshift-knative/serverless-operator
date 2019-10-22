@@ -15,48 +15,49 @@ const (
 )
 
 func TestKnativeServing(t *testing.T) {
-	adminCtx := test.SetupAdmin(t)
+	caCtx := test.SetupClusterAdmin(t)
+	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
 
-	defer test.CleanupAll(adminCtx, editCtx, viewCtx)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(adminCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(caCtx, paCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx, paCtx, editCtx, viewCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		_, err := test.WithOperatorReady(adminCtx, "serverless-operator-subscription")
+		_, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription")
 		if err != nil {
 			t.Fatal("Failed", err)
 		}
 	})
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		_, err := test.WithKnativeServingReady(adminCtx, knativeServing, knativeServing)
+		_, err := test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
 		if err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
 	})
 
 	t.Run("deploy knative service using kubeadmin", func(t *testing.T) {
-		_, err := test.WithServiceReady(adminCtx, helloworldService, testNamespace, image)
+		_, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image)
 		if err != nil {
 			t.Fatal("Knative Service not ready", err)
 		}
 	})
 
 	t.Run("user permissions", func(t *testing.T) {
-		testUserPermissions(t, editCtx, viewCtx)
+		testUserPermissions(t, paCtx, editCtx, viewCtx)
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-		adminCtx.Cleanup()
-		err := test.WaitForOperatorDepsDeleted(adminCtx)
+		caCtx.Cleanup()
+		err := test.WaitForOperatorDepsDeleted(caCtx)
 		if err != nil {
 			t.Fatalf("Operators still running: %v", err)
 		}
 	})
 }
 
-func testUserPermissions(t *testing.T, editCtx *test.Context, viewCtx *test.Context) {
+func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Context, viewCtx *test.Context) {
 	tests := []struct {
 		name        string
 		userContext *test.Context
@@ -91,6 +92,33 @@ func testUserPermissions(t *testing.T, editCtx *test.Context, viewCtx *test.Cont
 		},
 		userContext: viewCtx,
 		wantErrStr:  "is forbidden",
+	}, {
+		name: "user with project admin role can get",
+		operation: func(c *test.Context) error {
+			_, err := test.GetService(c, helloworldService, testNamespace)
+			return err
+		},
+		userContext: paCtx,
+	}, {
+		name: "user with project admin role can list",
+		operation: func(c *test.Context) error {
+			_, err := test.ListServices(c, testNamespace)
+			return err
+		},
+		userContext: paCtx,
+	}, {
+		name: "user with project admin role can create",
+		operation: func(c *test.Context) error {
+			_, err := test.CreateService(c, "projectadmin-service", testNamespace, image)
+			return err
+		},
+		userContext: paCtx,
+	}, {
+		name: "user with project admin role can delete",
+		operation: func(c *test.Context) error {
+			return test.DeleteService(c, "projectadmin-service", testNamespace)
+		},
+		userContext: paCtx,
 	}, {
 		name: "user with edit role can get",
 		operation: func(c *test.Context) error {

@@ -251,7 +251,7 @@ function create_namespaces(){
 function run_e2e_tests(){
   header "Running tests"
   go test -v -tags=e2e -count=1 -timeout=10m -parallel=1 ./test/e2e \
-      --kubeconfig "$KUBECONFIG,`pwd`/user1.kubeconfig,`pwd`/user2.kubeconfig" || return 1
+      --kubeconfig "$KUBECONFIG,`pwd`/user1.kubeconfig,`pwd`/user2.kubeconfig,`pwd`/user3.kubeconfig" || return 1
 }
 
 function delete_catalog_source() {
@@ -288,7 +288,7 @@ function dump_openshift_ingress_state(){
 }
 
 function create_htpasswd_users(){
-  local num_users=2
+  local num_users=3
 
   # Add users to htpasswd
   touch users.htpasswd
@@ -307,8 +307,9 @@ function create_htpasswd_users(){
 }
 
 function add_roles(){
-  oc adm policy add-role-to-user edit user1 -n $TEST_NAMESPACE
-  oc adm policy add-role-to-user view user2 -n $TEST_NAMESPACE
+  oc adm policy add-role-to-user admin user1 -n $TEST_NAMESPACE
+  oc adm policy add-role-to-user edit user2 -n $TEST_NAMESPACE
+  oc adm policy add-role-to-user view user3 -n $TEST_NAMESPACE
 }
 
 scale_up_workers || exit 1
