@@ -3,11 +3,8 @@ package knativeserving
 import (
 	"context"
 	"net/http"
-	"strings"
 
-	configv1 "github.com/openshift/api/config/v1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -73,52 +70,6 @@ func (a *KnativeServingConfigurator) mutate(ctx context.Context, ks *servingv1al
 		}
 	}
 	log.Info("Webhook default stages complete")
-	return nil
-}
-
-// configure egress
-func (a *KnativeServingConfigurator) egress(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
-	networkConfig := &configv1.Network{}
-	if err := a.client.Get(ctx, client.ObjectKey{Name: "cluster"}, networkConfig); err != nil {
-		if !meta.IsNoMatchError(err) {
-			return err
-		}
-		log.Info("No OpenShift cluster network config available")
-		return nil
-	}
-	network := strings.Join(networkConfig.Spec.ServiceNetwork, ",")
-	return configure(ks, "network", "istio.sidecar.includeOutboundIPRanges", network)
-}
-
-// configure ingress
-func (a *KnativeServingConfigurator) ingress(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
-	ingressConfig := &configv1.Ingress{}
-	if err := a.client.Get(ctx, client.ObjectKey{Name: "cluster"}, ingressConfig); err != nil {
-		if !meta.IsNoMatchError(err) {
-			return err
-		}
-		log.Info("No OpenShift ingress config available")
-		return nil
-	}
-	domain := ingressConfig.Spec.Domain
-	if len(domain) > 0 {
-		return configure(ks, "domain", domain, "")
-	}
-	return nil
-}
-
-// config helper to set value for key if not already set
-func configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) error {
-	if ks.Spec.Config == nil {
-		ks.Spec.Config = map[string]map[string]string{}
-	}
-	if len(ks.Spec.Config[cm][key]) == 0 {
-		if ks.Spec.Config[cm] == nil {
-			ks.Spec.Config[cm] = map[string]string{}
-		}
-		ks.Spec.Config[cm][key] = value
-		log.Info("Configured", "map", cm, "key", key, "value", value)
-	}
 	return nil
 }
 
