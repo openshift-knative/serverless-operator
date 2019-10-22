@@ -1,18 +1,18 @@
-package console
+package webconsole
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	consolev1 "github.com/openshift/api/console/v1"
+	webconsolev1 "github.com/openshift/api/webconsole/v1"
 )
 
 const (
-	GroupName = "console.openshift.io"
+	GroupName = "webconsole.openshift.io"
 )
 
 var (
-	schemeBuilder = runtime.NewSchemeBuilder(consolev1.Install)
+	schemeBuilder = runtime.NewSchemeBuilder(webconsolev1.Install)
 	// Install is a function which adds every version of this group to a scheme
 	Install = schemeBuilder.AddToScheme
 )

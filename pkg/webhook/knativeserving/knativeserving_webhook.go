@@ -63,6 +63,7 @@ func (a *KnativeServingConfigurator) mutate(ctx context.Context, ks *servingv1al
 	stages := []func(context.Context, *servingv1alpha1.KnativeServing) error{
 		a.egress,
 		a.ingress,
+		a.configureLogURLTemplate,
 	}
 	for _, stage := range stages {
 		if err := stage(ctx, ks); err != nil {

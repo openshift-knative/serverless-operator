@@ -13,9 +13,8 @@ type OpenShiftControllerManager struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 
-	// +kubebuilder:validation:Required
 	// +required
-	Spec OpenShiftControllerManagerSpec `json:"spec"`
+	Spec   OpenShiftControllerManagerSpec   `json:"spec"`
 	// +optional
 	Status OpenShiftControllerManagerStatus `json:"status"`
 }
@@ -33,8 +32,8 @@ type OpenShiftControllerManagerStatus struct {
 // OpenShiftControllerManagerList is a collection of items
 type OpenShiftControllerManagerList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
-
 	// Items contains the items
 	Items []OpenShiftControllerManager `json:"items"`
 }

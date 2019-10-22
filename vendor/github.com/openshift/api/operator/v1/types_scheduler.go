@@ -13,15 +13,19 @@ type KubeScheduler struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 
-	// +kubebuilder:validation:Required
 	// +required
-	Spec KubeSchedulerSpec `json:"spec"`
+	Spec   KubeSchedulerSpec   `json:"spec"`
 	// +optional
 	Status KubeSchedulerStatus `json:"status"`
 }
 
 type KubeSchedulerSpec struct {
 	StaticPodOperatorSpec `json:",inline"`
+
+	// forceRedeploymentReason can be used to force the redeployment of the kube-scheduler by providing a unique string.
+	// This provides a mechanism to kick a previously failed deployment and provide a reason why you think it will work
+	// this time instead of failing again on the same config.
+	ForceRedeploymentReason string `json:"forceRedeploymentReason"`
 }
 
 type KubeSchedulerStatus struct {
@@ -33,8 +37,8 @@ type KubeSchedulerStatus struct {
 // KubeSchedulerList is a collection of items
 type KubeSchedulerList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
-
 	// Items contains the items
 	Items []KubeScheduler `json:"items"`
 }

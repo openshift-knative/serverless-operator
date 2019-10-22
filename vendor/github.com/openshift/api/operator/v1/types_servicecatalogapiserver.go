@@ -13,9 +13,8 @@ type ServiceCatalogAPIServer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// +kubebuilder:validation:Required
 	// +required
-	Spec ServiceCatalogAPIServerSpec `json:"spec"`
+	Spec   ServiceCatalogAPIServerSpec   `json:"spec"`
 	// +optional
 	Status ServiceCatalogAPIServerStatus `json:"status"`
 }
@@ -33,8 +32,8 @@ type ServiceCatalogAPIServerStatus struct {
 // ServiceCatalogAPIServerList is a collection of items
 type ServiceCatalogAPIServerList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
-
 	// Items contains the items
 	Items []ServiceCatalogAPIServer `json:"items"`
 }

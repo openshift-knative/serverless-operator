@@ -33,8 +33,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 
 	scheme.AddKnownTypes(GroupVersion,
 		&GenericOperatorConfig{},
-		&ImageContentSourcePolicy{},
-		&ImageContentSourcePolicyList{},
 	)
 
 	return nil

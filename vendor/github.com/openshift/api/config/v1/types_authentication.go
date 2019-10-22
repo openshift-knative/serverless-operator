@@ -6,14 +6,13 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Authentication specifies cluster-wide settings for authentication (like OAuth and
-// webhook token authenticators). The canonical name of an instance is `cluster`.
+// Authentication holds cluster-wide information about Authentication.  The canonical name is `cluster`
 type Authentication struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// spec holds user settable values for configuration
-	// +kubebuilder:validation:Required
 	// +required
 	Spec AuthenticationSpec `json:"spec"`
 	// status holds observed values from the cluster. They may not be overridden.
@@ -25,7 +24,6 @@ type AuthenticationSpec struct {
 	// type identifies the cluster managed, user facing authentication mode in use.
 	// Specifically, it manages the component that responds to login attempts.
 	// The default is IntegratedOAuth.
-	// +optional
 	Type AuthenticationType `json:"type"`
 
 	// oauthMetadata contains the discovery endpoint data for OAuth 2.0
@@ -76,6 +74,7 @@ type AuthenticationStatus struct {
 
 type AuthenticationList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
 
 	Items []Authentication `json:"items"`

@@ -43,8 +43,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&GitLabIdentityProvider{},
 		&GoogleIdentityProvider{},
 		&OpenIDIdentityProvider{},
-
-		&SessionSecrets{},
 	)
 	return nil
 }

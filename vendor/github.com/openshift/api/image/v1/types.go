@@ -6,11 +6,33 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+const (
+	// ResourceImageStreams represents a number of image streams in a project.
+	ResourceImageStreams corev1.ResourceName = "openshift.io/imagestreams"
+
+	// ResourceImageStreamImages represents a number of unique references to images in all image stream
+	// statuses of a project.
+	ResourceImageStreamImages corev1.ResourceName = "openshift.io/images"
+
+	// ResourceImageStreamTags represents a number of unique references to images in all image stream specs
+	// of a project.
+	ResourceImageStreamTags corev1.ResourceName = "openshift.io/image-tags"
+
+	// Limit that applies to images. Used with a max["storage"] LimitRangeItem to set
+	// the maximum size of an image.
+	LimitTypeImage corev1.LimitType = "openshift.io/Image"
+
+	// Limit that applies to image streams. Used with a max[resource] LimitRangeItem to set the maximum number
+	// of resource. Where the resource is one of "openshift.io/images" and "openshift.io/image-tags".
+	LimitTypeImageStream corev1.LimitType = "openshift.io/ImageStream"
+)
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ImageList is a list of Image objects.
 type ImageList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Items is a list of images
@@ -23,14 +45,14 @@ type ImageList struct {
 
 // Image is an immutable representation of a container image and metadata at a point in time.
 type Image struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// DockerImageReference is the string that can be used to pull this image.
 	DockerImageReference string `json:"dockerImageReference,omitempty" protobuf:"bytes,2,opt,name=dockerImageReference"`
 	// DockerImageMetadata contains metadata about this image
 	// +patchStrategy=replace
-	// +kubebuilder:validation:PreserveUnknownFields
 	DockerImageMetadata runtime.RawExtension `json:"dockerImageMetadata,omitempty" patchStrategy:"replace" protobuf:"bytes,3,opt,name=dockerImageMetadata"`
 	// DockerImageMetadataVersion conveys the version of the object, which if empty defaults to "1.0"
 	DockerImageMetadataVersion string `json:"dockerImageMetadataVersion,omitempty" protobuf:"bytes,4,opt,name=dockerImageMetadataVersion"`
@@ -71,7 +93,8 @@ type ImageLayer struct {
 // Mandatory fields should be parsed by clients doing image verification. The others are parsed from
 // signature's content by the server. They serve just an informative purpose.
 type ImageSignature struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Required: Describes a type of stored blob.
@@ -148,6 +171,7 @@ type SignatureSubject struct {
 // ImageStreamList is a list of ImageStream objects.
 type ImageStreamList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Items is a list of imageStreams
@@ -163,7 +187,8 @@ type ImageStreamList struct {
 // when images are tagged in a stream, and an optional reference to a container image
 // repository on a registry.
 type ImageStream struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Spec describes the desired state of this stream
@@ -333,7 +358,8 @@ type TagEventCondition struct {
 // ImageStreamMapping represents a mapping from a single tag to a container image as
 // well as the reference to the container image stream the image came from.
 type ImageStreamMapping struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Image is a container image.
@@ -348,7 +374,8 @@ type ImageStreamMapping struct {
 
 // ImageStreamTag represents an Image that is retrieved by tag name from an ImageStream.
 type ImageStreamTag struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// tag is the spec tag associated with this image stream tag, and it may be null
@@ -377,6 +404,7 @@ type ImageStreamTag struct {
 // ImageStreamTagList is a list of ImageStreamTag objects.
 type ImageStreamTagList struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Items is the list of image stream tags
@@ -389,7 +417,8 @@ type ImageStreamTagList struct {
 
 // ImageStreamImage represents an Image that is retrieved by image name from an ImageStream.
 type ImageStreamImage struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Image associated with the ImageStream and image name.
@@ -415,9 +444,9 @@ type DockerImageReference struct {
 // ImageStreamLayers describes information about the layers referenced by images in this
 // image stream.
 type ImageStreamLayers struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
 	// blobs is a map of blob name to metadata about the blob.
 	Blobs map[string]ImageLayerData `json:"blobs" protobuf:"bytes,2,rep,name=blobs"`
 	// images is a map between an image name and the names of the blobs and config that
@@ -466,7 +495,8 @@ type ImageLayerData struct {
 // (for instance, to generate an application from it). Clients that know the desired image can continue
 // to create spec.tags directly into their image streams.
 type ImageStreamImport struct {
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Spec is a description of the images that the user wishes to import

@@ -2,6 +2,7 @@ package api
 
 import (
 	kadmissionv1beta1 "k8s.io/api/admission/v1beta1"
+	kadmissionregistrationv1alpha1 "k8s.io/api/admissionregistration/v1alpha1"
 	kadmissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	kappsv1 "k8s.io/api/apps/v1"
 	kappsv1beta1 "k8s.io/api/apps/v1beta1"
@@ -51,6 +52,7 @@ import (
 	"github.com/openshift/api/servicecertsigner"
 	"github.com/openshift/api/template"
 	"github.com/openshift/api/user"
+	"github.com/openshift/api/webconsole"
 
 	// just make sure this compiles.  Don't add it to a scheme
 	_ "github.com/openshift/api/legacyconfig/v1"
@@ -76,12 +78,14 @@ var (
 		servicecertsigner.Install,
 		template.Install,
 		user.Install,
+		webconsole.Install,
 	)
 	// Install is a function which adds every version of every openshift group to a scheme
 	Install = schemeBuilder.AddToScheme
 
 	kubeSchemeBuilder = runtime.NewSchemeBuilder(
 		kadmissionv1beta1.AddToScheme,
+		kadmissionregistrationv1alpha1.AddToScheme,
 		kadmissionregistrationv1beta1.AddToScheme,
 		kappsv1.AddToScheme,
 		kappsv1beta1.AddToScheme,

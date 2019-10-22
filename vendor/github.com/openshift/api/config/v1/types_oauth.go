@@ -15,7 +15,6 @@ type OAuth struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 
-	// +kubebuilder:validation:Required
 	// +required
 	Spec OAuthSpec `json:"spec"`
 	// +optional

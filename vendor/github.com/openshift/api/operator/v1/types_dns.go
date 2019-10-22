@@ -7,9 +7,6 @@ import (
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:path=dnses,scope=Cluster
-// +kubebuilder:subresource:status
 
 // DNS manages the CoreDNS component to provide a name resolution service
 // for pods and services in the cluster.
@@ -49,9 +46,6 @@ type DNSStatus struct {
 	// Example: dig foo.com @<service IP>
 	//
 	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
-	//
-	// +kubebuilder:validation:Required
-	// +required
 	ClusterIP string `json:"clusterIP"`
 
 	// clusterDomain is the local cluster DNS domain suffix for DNS services.
@@ -60,9 +54,6 @@ type DNSStatus struct {
 	// Example: "cluster.local"
 	//
 	// More info: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service
-	//
-	// +kubebuilder:validation:Required
-	// +required
 	ClusterDomain string `json:"clusterDomain"`
 
 	// conditions provide information about the state of the DNS on the cluster.
@@ -81,7 +72,6 @@ type DNSStatus struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:object:root=true
 
 // DNSList contains a list of DNS
 type DNSList struct {

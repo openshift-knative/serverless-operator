@@ -349,12 +349,14 @@
   version = "1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6fa8967ceefa2000f40ef424cf286ff81826d789dce8d06b7ae474c27200135c"
+  digest = "1:90a590e4c2b93010d18ca8dfcfc24cfc261d46a7cc55c9c054b502d6f55e34dd"
   name = "github.com/openshift/api"
-  packages = ["config/v1"]
+  packages = [
+    "config/v1",
+    "route/v1",
+  ]
   pruneopts = "NT"
-  revision = "8c074bd7371659c93bef66afbf01bd4e7f7d41ed"
+  revision = "275768afc8f66b79aeb12debf94ffc85255104ad"
 
 [[projects]]
   digest = "1:2f871701d245034b68d5f2d852191e9b96ef2d13c1d79296581e0a42a5bccc6b"
@@ -958,6 +960,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/openshift/api/config/v1",
+    "github.com/openshift/api/route/v1",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
     "github.com/operator-framework/operator-sdk/pkg/kube-metrics",
     "github.com/operator-framework/operator-sdk/pkg/leader",

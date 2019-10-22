@@ -13,9 +13,8 @@ type Authentication struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// +kubebuilder:validation:Required
 	// +required
-	Spec AuthenticationSpec `json:"spec,omitempty"`
+	Spec   AuthenticationSpec   `json:"spec,omitempty"`
 	// +optional
 	Status AuthenticationStatus `json:"status,omitempty"`
 }
