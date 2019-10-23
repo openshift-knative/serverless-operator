@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-include ui/logger.bash
-include infra/network.bash
+function resolve_hostname {
+  local ip
+  ip="$(LANG=C host -t a "${1}" | grep 'has address' | head -n 1 | awk '{print $4}')"
+  if [ "${ip}" != "" ]; then
+    echo "${ip}"
+  fi
+}
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {

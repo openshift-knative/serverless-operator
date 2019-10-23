@@ -1,9 +1,36 @@
 #!/usr/bin/env bash
 
-include ui/colors.bash
-include lang/array.bash
+if [ -t 1 ]; then 
+  IS_TTY=true
+else
+  IS_TTY=false
+fi
+readonly IS_TTY
 
-LOG_LEVEL=${LOG_LEVEL:-INFO}
+readonly FORCE_COLOR="${FORCE_COLOR:-false}"
+
+SHOULD_COLOR="$(if [[ "${FORCE_COLOR}" == "true" ]] || [[ "${IS_TTY}" == "true" ]]; then echo true; else echo false; fi)"
+readonly SHOULD_COLOR
+
+readonly COLOR_NC='\e[0m' # No Color
+readonly COLOR_WHITE='\e[1;37m'
+readonly COLOR_BLACK='\e[0;30m'
+readonly COLOR_BLUE='\e[0;34m'
+readonly COLOR_LIGHT_BLUE='\e[1;34m'
+readonly COLOR_GREEN='\e[0;32m'
+readonly COLOR_LIGHT_GREEN='\e[1;32m'
+readonly COLOR_CYAN='\e[0;36m'
+readonly COLOR_LIGHT_CYAN='\e[1;36m'
+readonly COLOR_RED='\e[0;31m'
+readonly COLOR_LIGHT_RED='\e[1;31m'
+readonly COLOR_PURPLE='\e[0;35m'
+readonly COLOR_LIGHT_PURPLE='\e[1;35m'
+readonly COLOR_BROWN='\e[0;33m'
+readonly COLOR_YELLOW='\e[1;33m'
+readonly COLOR_GRAY='\e[0;30m'
+readonly COLOR_LIGHT_GRAY='\e[0;37m'
+
+readonly LOG_LEVEL=${LOG_LEVEL:-INFO}
 
 function logger.debug {
   local message

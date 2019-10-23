@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-include ui/logger.bash
-include logic/facts.bash
-include infra/await.bash
-
-function install_service_mesh(){
+function install_service_mesh {
   logger.info "Installing ServiceMesh"
 
   logger.info 'Install the ServiceMesh Operator'
