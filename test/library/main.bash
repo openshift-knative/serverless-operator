@@ -59,7 +59,7 @@ function run_e2e_tests {
     kubeconfigs+=("$(pwd)/${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-  logger.debug "Kubeconfigs: ${kubeconfigs_str}"
+
   go test -v -tags=e2e -count=1 -timeout=10m -parallel=1 ./test/e2e \
     --kubeconfig "${kubeconfigs_str}" \
     && logger.success 'Tests has passed' && return 0 \
