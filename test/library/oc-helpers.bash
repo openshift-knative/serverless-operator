@@ -147,8 +147,9 @@ function create_htpasswd_users {
 
 function add_roles {
   logger.info "Adding roles to users"
-  oc adm policy add-role-to-user edit user1 -n "$TEST_NAMESPACE"
-  oc adm policy add-role-to-user view user2 -n "$TEST_NAMESPACE"
+  oc adm policy add-role-to-user admin user1 -n "$TEST_NAMESPACE"
+  oc adm policy add-role-to-user edit user2 -n "$TEST_NAMESPACE"
+  oc adm policy add-role-to-user view user3 -n "$TEST_NAMESPACE"
 }
 
 function delete_users {
