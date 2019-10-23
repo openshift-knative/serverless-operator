@@ -11,9 +11,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 
-	"github.com/jcrossley3/knative-serving-openshift/pkg/apis"
-	"github.com/jcrossley3/knative-serving-openshift/pkg/controller"
-	"github.com/jcrossley3/knative-serving-openshift/pkg/webhook"
+	"github.com/openshift-knative/knative-serving-openshift/pkg/apis"
+	"github.com/openshift-knative/knative-serving-openshift/pkg/controller"
+	"github.com/openshift-knative/knative-serving-openshift/pkg/webhook"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"

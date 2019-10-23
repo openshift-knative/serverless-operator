@@ -1,7 +1,7 @@
 package webhook
 
 import (
-	"github.com/jcrossley3/knative-serving-openshift/pkg/webhook/knativeserving"
+	"github.com/openshift-knative/knative-serving-openshift/pkg/webhook/knativeserving"
 )
 
 func init() {
