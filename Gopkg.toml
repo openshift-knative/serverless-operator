@@ -49,7 +49,7 @@ required = [
 
 [[constraint]]
   name = "github.com/openshift/api"
-  revision = "275768afc8f66b79aeb12debf94ffc85255104ad"
+  branch = "release-4.2"
 
 [[constraint]]
   name = "github.com/operator-framework/operator-sdk"
