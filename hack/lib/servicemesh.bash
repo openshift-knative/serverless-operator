@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 
+function ensure_service_mesh_installed {
+  local istio_hostname istio_ip
+  logger.info 'Checking if Service Mesh is installed...'
+
+  if oc get namespaces istio-system > /dev/null 2>&1; then
+    istio_hostname=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+    istio_ip=$(resolve_hostname "${istio_hostname}")
+    if [[ "${istio_ip}" != "" ]]; then
+      logger.success 'Service Mesh seems operational. Skipping installation.'
+      setup_service_mesh_member_roll
+      return 0
+    fi
+  fi
+  install_service_mesh
+}
+
 function install_service_mesh {
-  logger.info "Installing ServiceMesh"
+  logger.info 'Installing ServiceMesh'
 
   logger.info 'Install the ServiceMesh Operator'
   cat <<EOF | oc apply -f -
@@ -61,7 +77,7 @@ spec:
 EOF
 
   logger.info 'Wait for the istio-operator pod to appear'
-  timeout 900 '[[ $(oc get pods -n openshift-operators | grep -c istio-operator) -eq 0 ]]' || return 1
+  timeout 900 "[[ \$(oc get pods -n openshift-operators 2>/dev/null | grep -c istio-operator) -eq 0 ]]" || return 1
 
   logger.info 'Wait until the Operator pod is up and running'
   wait_until_pods_running openshift-operators || return 1
@@ -129,12 +145,12 @@ EOF
   setup_service_mesh_member_roll
 
   logger.info 'Wait for the ServiceMeshControlPlane to be ready'
-  timeout 900 '[[ $(oc get smcp -n istio-system -o=jsonpath="{.items[0].status.conditions[?(@.type==\"Ready\")].status}") != "True" ]]' || return 1
+  timeout 900 "[[ \$(oc get smcp -n istio-system -o=jsonpath='{.items[0].status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]" || return 1
 
   logger.info 'Wait for Istio Ingressgateway to have external IP'
   wait_until_service_has_external_ip istio-system istio-ingressgateway || fail_test "Ingress has no external IP"
   logger.info 'Wait for Istio Ingressgateway to have DNS resolvable hostname (FQDN)'
-  wait_until_hostname_resolves $(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+  wait_until_hostname_resolves "$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")"
 
   logger.info 'Wait for all pods are running for Istio'
   wait_until_pods_running istio-system
@@ -143,14 +159,18 @@ EOF
 }
 
 function setup_service_mesh_member_roll {
-  local checkcmd
-  logger.debug "Check if Service Mesh Member Roll default is added"
-  if oc get smmr default -n istio-system | grep "${SERVING_NAMESPACE}" | grep -q "${TEST_NAMESPACE}"; then
-    logger.debug "Service Mesh Member Roll is configured properly"
+  local checkcmd namespaces_s namespaces_joined
+  
+  namespaces_s="${SERVICE_MESH_MEMBERS[*]}"
+  logger.info "Check if Service Mesh Member Roll is configured..."
+  if [[ "$(oc get smmr default -n istio-system -o jsonpath='{.status.configuredMembers}')" == "[${namespaces_s}]" ]]; then
+    logger.success "Service Mesh Member Roll is configured properly."
     return 0
   fi
-  logger.info "Adding Service Mesh Member Roll for ${SERVING_NAMESPACE} and ${TEST_NAMESPACE} namespaces"
-  cat <<EOF | oc apply -f -
+  printf -v namespaces_joined "   - %s\n" "${SERVICE_MESH_MEMBERS[@]}"
+  namespaces_joined=${namespaces_joined%?}
+  logger.info "Adding Service Mesh Member Roll for namespaces: ${namespaces_s}"
+  cat <<EOF | oc apply -f - || return $?
 apiVersion: maistra.io/v1
 kind: ServiceMeshMemberRoll
 metadata:
@@ -158,12 +178,12 @@ metadata:
   namespace: istio-system
 spec:
   members:
-  - ${SERVING_NAMESPACE}
-  - ${TEST_NAMESPACE}
+${namespaces_joined}
 EOF
   logger.info "MAISTRA-862 Wait, after namespaces has been added to the members"
-  checkcmd="[[ \"\$(oc get smmr default -n istio-system -o jsonpath='{.status.configuredMembers}')\" == '[${SERVING_NAMESPACE} ${TEST_NAMESPACE}]' ]]"
-  timeout 600 "${checkcmd}"
+  checkcmd="[[ \"\$(oc get smmr default -n istio-system -o jsonpath='{.status.configuredMembers}')\" == '[${namespaces_s}]' ]]"
+  timeout 600 "${checkcmd}" || return $?
+  logger.success "Service Mesh Member Roll has been configured."
 }
 
 function teardown_service_mesh_member_roll {
@@ -177,7 +197,7 @@ function teardown_service_mesh_member_roll {
     logger.debug 'Service Mesh Member Roll has empty members, skipping teardown.'
     return 0
   fi
-  cat <<EOF | oc apply -f -
+  cat <<EOF | oc apply -f - || return $?
 apiVersion: maistra.io/v1
 kind: ServiceMeshMemberRoll
 metadata:
@@ -187,22 +207,8 @@ spec:
   members: []
 EOF
   checkcmd="[[ \"\$(oc get smmr default -n istio-system -o jsonpath='{.status.configuredMembers}')\" != '' ]]"
-  timeout 600 "${checkcmd}"
+  timeout 600 "${checkcmd}" || return $?
   checkcmd="[[ \"\$(oc get smmr default -n istio-system -o jsonpath='{.spec.members}')\" != '[]' ]]"
-  timeout 600 "${checkcmd}"
-}
-
-function ensure_service_mesh_installed {
-  local istio_hostname istio_ip
-
-  if oc get namespaces istio-system 2> /dev/null; then
-    istio_hostname=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
-    istio_ip=$(resolve_hostname "${istio_hostname}")
-    if [[ "${istio_ip}" != "" ]]; then
-      logger.info 'Service Mesh seems operational. Skipping installation.'
-      setup_service_mesh_member_roll
-      return 0
-    fi
-  fi
-  install_service_mesh
+  timeout 600 "${checkcmd}" || return $?
+  logger.success "Service Mesh Member Roll has been teardowned."
 }

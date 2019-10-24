@@ -13,24 +13,17 @@ SHOULD_COLOR="$(if [[ "${FORCE_COLOR}" == "true" ]] || [[ "${IS_TTY}" == "true" 
 readonly SHOULD_COLOR
 
 readonly COLOR_NC='\e[0m' # No Color
-readonly COLOR_WHITE='\e[1;37m'
-readonly COLOR_BLACK='\e[0;30m'
 readonly COLOR_BLUE='\e[0;34m'
-readonly COLOR_LIGHT_BLUE='\e[1;34m'
 readonly COLOR_GREEN='\e[0;32m'
 readonly COLOR_LIGHT_GREEN='\e[1;32m'
 readonly COLOR_CYAN='\e[0;36m'
-readonly COLOR_LIGHT_CYAN='\e[1;36m'
-readonly COLOR_RED='\e[0;31m'
 readonly COLOR_LIGHT_RED='\e[1;31m'
-readonly COLOR_PURPLE='\e[0;35m'
-readonly COLOR_LIGHT_PURPLE='\e[1;35m'
-readonly COLOR_BROWN='\e[0;33m'
-readonly COLOR_YELLOW='\e[1;33m'
-readonly COLOR_GRAY='\e[0;30m'
-readonly COLOR_LIGHT_GRAY='\e[0;37m'
+readonly COLOR_LIGHT_YELLOW='\e[1;33m'
+readonly COLOR_GRAY='\e[0;39m'
 
 readonly LOG_LEVEL=${LOG_LEVEL:-INFO}
+declare -ar LOG_LEVELS=('DEBUG' 'INFO' 'SUCCESS' 'WARNING' 'ERROR')
+declare -Ar LOG_LEVEL_VALUES=( ['DEBUG']=1 ['INFO']=2 ['SUCCESS']=3 ['WARNING']=4 ['ERROR']=5 )
 
 function logger.debug {
   local message
@@ -51,16 +44,16 @@ function logger.info {
 function logger.success {
   local message
   message="$*"
-  if logger.__should-print 'INFO'; then
-    logger.__log 'INFO' "${COLOR_LIGHT_GREEN}" "${message}"
+  if logger.__should-print 'SUCCESS'; then
+    logger.__log 'SUCCESS' "${COLOR_LIGHT_GREEN}" "${message}"
   fi
 }
 
 function logger.warn {
   local message
   message="$*"
-  if logger.__should-print 'WARN'; then
-    logger.__log 'WARN' "${COLOR_YELLOW}" "${message}"
+  if logger.__should-print 'WARNING'; then
+    logger.__log 'WARNING' "${COLOR_LIGHT_YELLOW}" "${message}"
   fi
 }
 
@@ -79,27 +72,34 @@ function logger.__log {
   message="$3"
   if [[ "${SHOULD_COLOR}" == "true" ]]; then
     now="$(date '+%H:%M:%S.%3N')"
-    printf "${color}%5s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}\n" "${level}" "${now}" "${message}" 1>&2
+    printf "${color}%7s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}\n" "${level}" "${now}" "${message}" 1>&2
   else
     now="$(date --rfc-3339=ns)"
-    printf "%5s %s %s\n" "${level}" "${now}" "${message}" 1>&2
+    printf "%7s %s %s\n" "${level}" "${now}" "${message}" 1>&2
   fi
+}
+
+function logger.__check-level {
+  local level check_level level_int check_level_int
+  level="$1"
+  check_level="$2"
+
+  if ! array.contains "$LOG_LEVEL" "${LOG_LEVELS[@]}"; then
+    echo "Given invalid log level: ${LOG_LEVEL}, possible values are: ${LOG_LEVELS[*]}" 1>&2
+    exit 1
+  fi
+  
+  level_int=${LOG_LEVEL_VALUES[$level]}
+  check_level_int=${LOG_LEVEL_VALUES[$check_level]}
+
+  (( level_int >= check_level_int ))
 }
 
 function logger.__should-print {
   local level
   level="$1"
-  local log_levels
-  log_levels=('DEBUG' 'INFO' 'WARN' 'ERROR')
-  declare -A log_level_values=( ['DEBUG']=1 ['INFO']=2 ['WARN']=3 ['ERROR']=4 )
 
-  if ! array.contains "$LOG_LEVEL" "${log_levels[@]}"; then
-    echo "Given invalid log level: ${LOG_LEVEL}, possible values are: ${log_levels[*]}" 1>&2
-    exit 1
-  fi
-  local int_level
-  int_level=${log_level_values[$level]}
-  local int_displaying
-  int_displaying=${log_level_values[$LOG_LEVEL]}
-  (( int_level >= int_displaying ))
+  logger.__check-level "$level" "$LOG_LEVEL"
 }
+
+logger.info "Actual log level is: ${LOG_LEVEL}. Configure logging by setting LOG_LEVEL env variable."

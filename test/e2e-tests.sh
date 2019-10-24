@@ -1,28 +1,21 @@
 #!/usr/bin/env bash
 
-# shellcheck source=test/library/main.bash
-source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/library/main.bash"
+# shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
 set -Eeuo pipefail
 
 initialize || exit $?
-
-scale_up_workers || exit 1
-
-create_namespaces || exit 1
-
-create_htpasswd_users && add_roles || exit 1
+scale_up_workers || exit $?
+create_namespaces || exit $?
+create_htpasswd_users && add_roles || exit $?
 
 failed=0
 
-(( !failed )) && ensure_service_mesh_installed || failed=1
-
-(( !failed )) && install_catalogsource || failed=1
-
-(( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=1
-
+(( !failed )) && ensure_service_mesh_installed || failed=2
+(( !failed )) && install_catalogsource || failed=3
+(( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=4
 (( failed )) && dump_state
-
-(( failed )) && exit 1
+(( failed )) && exit $failed
 
 success

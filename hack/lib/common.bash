@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+function array.contains {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
+}
+
+function array.join {
+  local IFS="$1"
+  shift
+  echo "$*"
+}
+
 function resolve_hostname {
   local ip
   ip="$(LANG=C host -t a "${1}" | grep 'has address' | head -n 1 | awk '{print $4}')"
@@ -10,16 +23,23 @@ function resolve_hostname {
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
-  local seconds timeout
+  local seconds timeout interval
+  interval=5
   seconds=0
   timeout=$1
   shift
   while eval $*; do
-    seconds=$(( seconds + 5 ))
-    logger.debug "Execution failed: ${*}. Waiting 5 seconds ($seconds/${timeout})..."
-    sleep 5
+    seconds=$(( seconds + interval ))
+    logger.debug "Execution failed: ${*}. Waiting ${interval} sec ($seconds/${timeout})..."
+    if [[ "${LOG_LEVEL}" != 'DEBUG' ]]; then
+      echo -n '.'
+    fi
+    sleep $interval
     [[ $seconds -gt $timeout ]] && logger.error "Timed out of ${timeout} exceeded" && return 1
   done
+  if [[ "${LOG_LEVEL}" != 'DEBUG' ]] && [[ "$seconds" != '0' ]]; then
+    echo ''
+  fi
   return 0
 }
 
