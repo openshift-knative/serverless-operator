@@ -15,11 +15,12 @@ The [catalog.sh](hack/catalog.sh) script should yield a valid
 `ConfigMap` and `CatalogSource` comprised of the
 `ClusterServiceVersions`, `CustomResourceDefinitions`, and package
 manifest in the bundle beneath [olm-catalog/](olm-catalog/). You
-should apply its output in the OLM namespace:
+should apply its output in the namespace where the other
+`CatalogSources` live on your cluster,
+e.g. `openshift-marketplace`:
 
 ```
-OLM_NS=$(kubectl get deploy --all-namespaces | grep olm-operator | awk '{print $1}')
-./hack/catalog.sh | kubectl apply -n $OLM_NS -f -
+./hack/catalog.sh | kubectl apply -n openshift-marketplace -f -
 ```
 
 ### Create a Subscription
@@ -27,7 +28,6 @@ OLM_NS=$(kubectl get deploy --all-namespaces | grep olm-operator | awk '{print $
 To install the operator, create a subscription:
 
 ```
-OLM_NS=$(kubectl get og --all-namespaces | grep olm-operators | awk '{print $1}')
 OPERATOR_NS=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
 
 cat <<-EOF | kubectl apply -f -
@@ -39,7 +39,7 @@ metadata:
   namespace: $OPERATOR_NS
 spec:
   source: serverless-operator
-  sourceNamespace: $OLM_NS
+  sourceNamespace: openshift-marketplace
   name: serverless-operator
   channel: techpreview
 EOF
