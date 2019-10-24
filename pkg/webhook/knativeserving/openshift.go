@@ -3,8 +3,10 @@ package knativeserving
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/coreos/go-semver/semver"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -43,6 +45,7 @@ func (a *KnativeServingConfigurator) ingress(ctx context.Context, ks *servingv1a
 	return nil
 }
 
+// configure observability if ClusterLogging is installed
 func (a *KnativeServingConfigurator) configureLogURLTemplate(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
 	const (
 		configmap = "observability"
@@ -65,4 +68,32 @@ func (a *KnativeServingConfigurator) configureLogURLTemplate(ctx context.Context
 		}
 	}
 	return nil
+}
+
+// validate minimum openshift version
+func (v *KnativeServingValidator) validateVersion(ctx context.Context) (bool, string, error) {
+	minVersion, err := semver.NewVersion(os.Getenv("MIN_OPENSHIFT_VERSION"))
+	if err != nil {
+		return false, "Unable to validate version; check MIN_OPENSHIFT_VERSION env var", nil
+	}
+
+	clusterVersion := &configv1.ClusterVersion{}
+	if err := v.client.Get(ctx, client.ObjectKey{Name: "version"}, clusterVersion); err != nil {
+		return false, "Unable to get ClusterVersion", err
+	}
+
+	current, err := semver.NewVersion(clusterVersion.Status.Desired.Version)
+	if err != nil {
+		return false, "Could not parse version string", err
+	}
+
+	if current.Major == 0 && current.Minor == 0 {
+		return true, "CI build detected, bypassing version check", nil
+	}
+
+	if current.LessThan(*minVersion) {
+		msg := fmt.Sprintf("Version constraint not fulfilled: minimum version: %s, current version: %s", minVersion.String(), current.String())
+		return false, msg, nil
+	}
+	return true, "", nil
 }

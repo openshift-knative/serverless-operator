@@ -2,7 +2,10 @@ package knativeserving
 
 import (
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("webhook_knativeserving")
 
 // config helper to set value for key if not already set
 func configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) error {

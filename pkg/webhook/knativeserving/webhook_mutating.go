@@ -9,20 +9,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
-var log = logf.Log.WithName("webhook_knativeserving")
-
 // Add creates a new KnativeServing Webhook
-func Add(mgr manager.Manager) (webhook.Webhook, error) {
+func MutatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 	log.Info("Setting up mutating webhook for KnativeServing")
 	return builder.NewWebhookBuilder().
-		Name("mutating.k8s.io").
+		Name("mutating.knativeserving.openshift.io").
 		Mutating().
 		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
 		WithManager(mgr).

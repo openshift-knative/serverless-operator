@@ -45,6 +45,8 @@ func AddToManager(m manager.Manager) error {
 		Port:    9876,
 		CertDir: "/tmp/cert",
 		BootstrapOptions: &webhook.BootstrapOptions{
+			MutatingWebhookConfigName:   "mutating-knative-serving-openshift",
+			ValidatingWebhookConfigName: "validating-knative-serving-openshift",
 			Service: &webhook.Service{
 				Namespace: "default",
 				Name:      "admission-server-service",

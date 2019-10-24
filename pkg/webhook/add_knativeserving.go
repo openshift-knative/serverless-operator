@@ -1,9 +1,9 @@
 package webhook
 
 import (
-	"github.com/openshift-knative/knative-serving-openshift/pkg/webhook/knativeserving"
+	ks "github.com/openshift-knative/knative-serving-openshift/pkg/webhook/knativeserving"
 )
 
 func init() {
-	AddToManagerFuncs = append(AddToManagerFuncs, knativeserving.Add)
+	AddToManagerFuncs = append(AddToManagerFuncs, ks.MutatingWebhook, ks.ValidatingWebhook)
 }

@@ -29,3 +29,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "knative-serving-openshift"
+            - name: MIN_OPENSHIFT_VERSION
+              value: "4.1.13"
