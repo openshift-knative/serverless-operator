@@ -89,7 +89,12 @@ spec:
         displayName: Istio Service Mesh Member Roll
         kind: ServiceMeshMemberRoll
         name: servicemeshmemberrolls.maistra.io
-        version: v1      
+        version: v1     
+      - description: An Istio control plane installation
+        displayName: Istio Service Mesh Control Plane
+        kind: ServiceMeshControlPlane
+        name: servicemeshcontrolplanes.maistra.io
+        version: v1         
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
     install various "serverless" services.
