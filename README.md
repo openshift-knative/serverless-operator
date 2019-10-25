@@ -15,11 +15,13 @@ The [catalog.sh](hack/catalog.sh) script should yield a valid
 `ConfigMap` and `CatalogSource` comprised of the
 `ClusterServiceVersions`, `CustomResourceDefinitions`, and package
 manifest in the bundle beneath [olm-catalog/](olm-catalog/). You
-should apply its output in the OLM namespace:
+should apply its output in the namespace where the other
+`CatalogSources` live on your cluster,
+e.g. `openshift-marketplace`:
 
 ```
-OLM_NS=$(kubectl get deploy --all-namespaces | grep olm-operator | awk '{print $1}')
-./hack/catalog.sh | kubectl apply -n $OLM_NS -f -
+CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
+./hack/catalog.sh | kubectl apply -n $CS_NS -f -
 ```
 
 ### Create a Subscription
@@ -27,7 +29,7 @@ OLM_NS=$(kubectl get deploy --all-namespaces | grep olm-operator | awk '{print $
 To install the operator, create a subscription:
 
 ```
-OLM_NS=$(kubectl get og --all-namespaces | grep olm-operators | awk '{print $1}')
+CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
 OPERATOR_NS=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
 
 cat <<-EOF | kubectl apply -f -
@@ -39,7 +41,7 @@ metadata:
   namespace: $OPERATOR_NS
 spec:
   source: serverless-operator
-  sourceNamespace: $OLM_NS
+  sourceNamespace: $CS_NS
   name: serverless-operator
   channel: techpreview
 EOF
@@ -53,8 +55,8 @@ installing OLM on it:
 
 ```
 minikube start
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.11.0/crds.yaml
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.11.0/olm.yaml
+kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/crds.yaml
+kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/olm.yaml
 ```
 
 Once all the pods in the `olm` namespace are running, install the
