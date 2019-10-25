@@ -20,7 +20,8 @@ should apply its output in the namespace where the other
 e.g. `openshift-marketplace`:
 
 ```
-./hack/catalog.sh | kubectl apply -n openshift-marketplace -f -
+CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
+./hack/catalog.sh | kubectl apply -n $CS_NS -f -
 ```
 
 ### Create a Subscription
@@ -28,6 +29,7 @@ e.g. `openshift-marketplace`:
 To install the operator, create a subscription:
 
 ```
+CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
 OPERATOR_NS=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
 
 cat <<-EOF | kubectl apply -f -
@@ -39,7 +41,7 @@ metadata:
   namespace: $OPERATOR_NS
 spec:
   source: serverless-operator
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: $CS_NS
   name: serverless-operator
   channel: techpreview
 EOF
@@ -53,8 +55,8 @@ installing OLM on it:
 
 ```
 minikube start
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.11.0/crds.yaml
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.11.0/olm.yaml
+kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/crds.yaml
+kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/olm.yaml
 ```
 
 Once all the pods in the `olm` namespace are running, install the
