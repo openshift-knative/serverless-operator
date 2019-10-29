@@ -65,7 +65,7 @@ metadata:
     containerImage: quay.io/openshift-knative/serverless-operator:v1.2.0
     createdAt: "2019-07-27T17:00:00Z"
     description: |-
-      Provides a collection of API's to support deploying and serving
+      Provides a collection of API's based on Knative to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat, Inc.
