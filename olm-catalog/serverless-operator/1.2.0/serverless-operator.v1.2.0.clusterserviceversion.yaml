@@ -87,7 +87,7 @@ spec:
         displayName: Conditions
         path: conditions
         x-descriptors:
-        - 'urn:alm:descriptor:io.kubernetes.conditions'	        
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
       version: v1alpha1
     required:
     - description: A list of namespaces in Service Mesh
