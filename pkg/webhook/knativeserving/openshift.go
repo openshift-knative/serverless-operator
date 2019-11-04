@@ -71,7 +71,7 @@ func (a *KnativeServingConfigurator) configureLogURLTemplate(ctx context.Context
 }
 
 // validate minimum openshift version
-func (v *KnativeServingValidator) validateVersion(ctx context.Context) (bool, string, error) {
+func (v *KnativeServingValidator) validateVersion(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	minVersion, err := semver.NewVersion(os.Getenv("MIN_OPENSHIFT_VERSION"))
 	if err != nil {
 		return false, "Unable to validate version; check MIN_OPENSHIFT_VERSION env var", nil
@@ -94,6 +94,15 @@ func (v *KnativeServingValidator) validateVersion(ctx context.Context) (bool, st
 	if current.LessThan(*minVersion) {
 		msg := fmt.Sprintf("Version constraint not fulfilled: minimum version: %s, current version: %s", minVersion.String(), current.String())
 		return false, msg, nil
+	}
+	return true, "", nil
+}
+
+// validate required namespace, if any
+func (v *KnativeServingValidator) validateNamespace(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
+	ns, required := os.LookupEnv("REQUIRED_NAMESPACE")
+	if required && ns != ks.Namespace {
+		return false, fmt.Sprintf("KnativeServing may only be created in %s namespace", ns), nil
 	}
 	return true, "", nil
 }

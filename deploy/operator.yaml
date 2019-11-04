@@ -31,3 +31,5 @@ spec:
               value: "knative-serving-openshift"
             - name: MIN_OPENSHIFT_VERSION
               value: "4.1.13"
+            - name: REQUIRED_NAMESPACE
+              value: "knative-serving"

@@ -54,16 +54,25 @@ func (v *KnativeServingValidator) Handle(ctx context.Context, req types.Request)
 }
 
 // KnativeServingValidator checks for a minimum OpenShift version
-func (v *KnativeServingValidator) validate(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
-	allowed, reason, err := v.validateVersion(ctx)
-	if len(reason) > 0 {
-		if err != nil {
-			log.Error(err, reason)
-		} else {
-			log.Info(reason)
+func (v *KnativeServingValidator) validate(ctx context.Context, ks *servingv1alpha1.KnativeServing) (allowed bool, reason string, err error) {
+	stages := []func(context.Context, *servingv1alpha1.KnativeServing) (bool, string, error){
+		v.validateNamespace,
+		v.validateVersion,
+	}
+	for _, stage := range stages {
+		allowed, reason, err = stage(ctx, ks)
+		if len(reason) > 0 {
+			if err != nil {
+				log.Error(err, reason)
+			} else {
+				log.Info(reason)
+			}
+		}
+		if !allowed {
+			return
 		}
 	}
-	return allowed, reason, err
+	return
 }
 
 // KnativeServingValidator implements inject.Client.
