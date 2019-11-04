@@ -30,7 +30,7 @@ import (
 type Clients struct {
 	KubeClient *test.KubeClient
 	Dynamic    dynamic.Interface
-	Serving    servingv1alpha1.ServingV1alpha1Interface
+	Serving    servingv1alpha1.OperatorV1alpha1Interface
 	Config     *rest.Config
 }
 
@@ -77,12 +77,12 @@ func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config,
 		&overrides).ClientConfig()
 }
 
-func newKnativeServingAlphaClients(cfg *rest.Config) (servingv1alpha1.ServingV1alpha1Interface, error) {
+func newKnativeServingAlphaClients(cfg *rest.Config) (servingv1alpha1.OperatorV1alpha1Interface, error) {
 	cs, err := versioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	return cs.ServingV1alpha1(), nil
+	return cs.OperatorV1alpha1(), nil
 }
 
 func (c *Clients) KnativeServing() servingv1alpha1.KnativeServingInterface {

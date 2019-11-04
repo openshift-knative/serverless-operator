@@ -25,8 +25,8 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
 	clientset "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
-	fakeservingv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1/fake"
+	operatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	fakeoperatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -76,7 +76,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// ServingV1alpha1 retrieves the ServingV1alpha1Client
-func (c *Clientset) ServingV1alpha1() servingv1alpha1.ServingV1alpha1Interface {
-	return &fakeservingv1alpha1.FakeServingV1alpha1{Fake: &c.Fake}
+// OperatorV1alpha1 retrieves the OperatorV1alpha1Client
+func (c *Clientset) OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface {
+	return &fakeoperatorv1alpha1.FakeOperatorV1alpha1{Fake: &c.Fake}
 }

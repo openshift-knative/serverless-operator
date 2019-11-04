@@ -24,17 +24,17 @@ import (
 	v1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
 )
 
-type FakeServingV1alpha1 struct {
+type FakeOperatorV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeServingV1alpha1) KnativeServings(namespace string) v1alpha1.KnativeServingInterface {
+func (c *FakeOperatorV1alpha1) KnativeServings(namespace string) v1alpha1.KnativeServingInterface {
 	return &FakeKnativeServings{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeServingV1alpha1) RESTClient() rest.Interface {
+func (c *FakeOperatorV1alpha1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

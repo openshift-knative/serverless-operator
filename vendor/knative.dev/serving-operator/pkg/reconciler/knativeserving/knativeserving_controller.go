@@ -144,7 +144,7 @@ func (r *Reconciler) transform(instance *servingv1alpha1.KnativeServing) (*mf.Ma
 
 // Update the status subresource
 func (r *Reconciler) updateStatus(instance *servingv1alpha1.KnativeServing) error {
-	afterUpdate, err := r.KnativeServingClientSet.ServingV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
+	afterUpdate, err := r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
 
 	if err != nil {
 		return err
