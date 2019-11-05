@@ -52,7 +52,7 @@ func AddToManager(m manager.Manager) error {
 				Name:      "admission-server-service",
 				// Selectors should select the pods that runs this webhook server.
 				Selectors: map[string]string{
-					"app": "knativeserving-admission-server",
+					"app": "openshift-admission-server",
 				},
 			},
 		},

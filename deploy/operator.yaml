@@ -11,7 +11,7 @@ spec:
     metadata:
       labels:
         name: knative-serving-openshift
-        app: knativeserving-admission-server
+        app: openshift-admission-server
     spec:
       serviceAccountName: knative-serving-openshift
       containers:
