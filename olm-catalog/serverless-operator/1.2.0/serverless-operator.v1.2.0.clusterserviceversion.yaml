@@ -211,6 +211,12 @@ spec:
           - knativeservings/finalizers
           verbs:
           - '*'
+        - apiGroups:
+          - maistra.io
+          resources:
+          - servicemeshmemberrolls
+          verbs:
+          - '*'
         serviceAccountName: knative-openshift-ingress
       deployments:
       - name: knative-serving-operator
@@ -257,7 +263,7 @@ spec:
                   value: quay.io/openshift-knative/knative-serving-istio:v0.9.0
                 - name: IMAGE_webhook
                   value: quay.io/openshift-knative/knative-serving-webhook:v0.9.0
-                image: quay.io/openshift-knative/knative-serving-operator:v0.9.0-1.2.0-01
+                image: quay.io/openshift-knative/knative-serving-operator:v0.9.0-1.2.0-02
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}
@@ -276,7 +282,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.9
+                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.10
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
