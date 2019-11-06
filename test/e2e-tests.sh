@@ -12,7 +12,7 @@ create_htpasswd_users && add_roles || exit $?
 
 failed=0
 
-(( !failed )) && ensure_service_mesh_installed || failed=2
+(( !failed )) && install_service_mesh_operator || failed=2
 (( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=4
 (( failed )) && dump_state

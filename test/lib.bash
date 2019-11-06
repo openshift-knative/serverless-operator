@@ -7,7 +7,7 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 
 readonly TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
-SERVICE_MESH_MEMBERS+=("${TEST_NAMESPACE}")
+NAMESPACES+=("${TEST_NAMESPACE}")
 
 # == Lifefycle
 

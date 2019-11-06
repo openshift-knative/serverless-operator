@@ -19,6 +19,6 @@ create_namespaces || exit $?
 
 exitcode=0
 
-(( !exitcode )) && ensure_service_mesh_installed || exitcode=2
+(( !exitcode )) && install_service_mesh_operator || exitcode=2
 
 exit $exitcode

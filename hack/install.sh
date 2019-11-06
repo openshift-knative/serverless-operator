@@ -18,7 +18,7 @@ create_namespaces || exit $?
 
 exitcode=0
 
-(( !exitcode )) && ensure_service_mesh_installed || exitcode=2
+(( !exitcode )) && install_service_mesh_operator || exitcode=2
 (( !exitcode )) && ensure_catalogsource_installed || exitcode=3
 (( !exitcode )) && ensure_serverless_installed || exitcode=4
 
