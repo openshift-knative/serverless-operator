@@ -961,11 +961,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:634e2026a1165f9ab2ae5b91bf8e55c5e05603baf269023bbcb09bfa6093b9c6"
+  digest = "1:1a90c36811474ce616367c5dcced04863cae648f6deaad402a57966a293d1e59"
   name = "knative.dev/serving-operator"
   packages = ["pkg/apis/serving/v1alpha1"]
   pruneopts = "NT"
-  revision = "06f532b4dc80c7e7f1d299a7203f953d9e8c9954"
+  revision = "b910d7f5526bb7cc359fee186e06ad179694773f"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1042,6 +1042,7 @@
     "github.com/spf13/pflag",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
