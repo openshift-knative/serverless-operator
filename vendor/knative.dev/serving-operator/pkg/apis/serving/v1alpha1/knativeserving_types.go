@@ -57,6 +57,16 @@ type IstioGatewayOverride struct {
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
+// CustomCerts refers to either a ConfigMap or Secret containing valid
+// CA certificates
+type CustomCerts struct {
+	// One of ConfigMap or Secret
+	Type string `json:"type"`
+
+	// The name of the ConfigMap or Secret
+	Name string `json:"name"`
+}
+
 // KnativeServingSpec defines the desired state of KnativeServing
 // +k8s:openapi-gen=true
 type KnativeServingSpec struct {
@@ -78,6 +88,9 @@ type KnativeServingSpec struct {
 
 	// A means to override the cluster-local-gateway
 	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+
+	// Enables controller to trust registries with self-signed certificates
+	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing

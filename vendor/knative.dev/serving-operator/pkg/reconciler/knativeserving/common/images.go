@@ -20,14 +20,17 @@ import (
 
 	mf "github.com/jcrossley3/manifestival"
 	"go.uber.org/zap"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 )
+
+func init() {
+	caching.AddToScheme(scheme.Scheme)
+}
 
 var (
 	// The string to be replaced by the container name
@@ -56,7 +59,7 @@ func ImageTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLo
 
 func updateDeployment(instance *servingv1alpha1.KnativeServing, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var deployment = &appsv1.Deployment{}
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, deployment)
+	err := scheme.Scheme.Convert(u, deployment, nil)
 	if err != nil {
 		log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "deployment", deployment)
 		return err
@@ -67,22 +70,12 @@ func updateDeployment(instance *servingv1alpha1.KnativeServing, u *unstructured.
 
 	updateDeploymentImage(deployment, &registry, log)
 	updatePodImagePullSecrets(deployment, &registry, log)
-	err = updateUnstructured(u, deployment, log)
+	err = scheme.Scheme.Convert(deployment, u, nil)
 	if err != nil {
 		return err
 	}
 
 	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
-	return nil
-}
-
-func updateUnstructured(u *unstructured.Unstructured, obj interface{}, log *zap.SugaredLogger) error {
-	unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&obj)
-	if err != nil {
-		log.Error(err, "Error converting obj to Unstructured", "unstructured", u, "obj", obj)
-		return err
-	}
-	u.SetUnstructuredContent(unstructuredObj)
 	return nil
 }
 
@@ -101,7 +94,7 @@ func updateDeploymentImage(deployment *appsv1.Deployment, registry *servingv1alp
 
 func updateCachingImage(instance *servingv1alpha1.KnativeServing, u *unstructured.Unstructured) error {
 	var image = &caching.Image{}
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, image)
+	err := scheme.Scheme.Convert(u, image, nil)
 	if err != nil {
 		log.Error(err, "Error converting Unstructured to Image", "unstructured", u, "image", image)
 		return err
@@ -111,7 +104,7 @@ func updateCachingImage(instance *servingv1alpha1.KnativeServing, u *unstructure
 	log.Debugw("Updating Image", "name", u.GetName(), "registry", registry)
 
 	updateImageSpec(image, &registry, log)
-	err = updateUnstructured(u, image, log)
+	err = scheme.Scheme.Convert(image, u, nil)
 	if err != nil {
 		return err
 	}

@@ -120,6 +120,7 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 
 	manifest, err := r.transform(ks)
 	if err != nil {
+		ks.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
@@ -181,7 +182,6 @@ func (r *Reconciler) install(manifest *mf.Manifest, instance *servingv1alpha1.Kn
 // Check for all deployments available
 func (r *Reconciler) checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	r.Logger.Debug("Checking deployments")
-	defer r.updateStatus(instance)
 	available := func(d *appsv1.Deployment) bool {
 		for _, c := range d.Status.Conditions {
 			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
