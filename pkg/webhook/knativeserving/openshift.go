@@ -70,6 +70,19 @@ func (a *KnativeServingConfigurator) configureLogURLTemplate(ctx context.Context
 	return nil
 }
 
+// configure controller with custom certs for openshift registry if
+// not already set
+func (a *KnativeServingConfigurator) ensureCustomCerts(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
+	if instance.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
+		instance.Spec.ControllerCustomCerts = servingv1alpha1.CustomCerts{
+			Name: "config-service-ca",
+			Type: "ConfigMap",
+		}
+	}
+	log.Info("ControllerCustomCerts", "certs", instance.Spec.ControllerCustomCerts)
+	return nil
+}
+
 // validate minimum openshift version
 func (v *KnativeServingValidator) validateVersion(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	minVersion, err := semver.NewVersion(os.Getenv("MIN_OPENSHIFT_VERSION"))
