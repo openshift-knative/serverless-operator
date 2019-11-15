@@ -39,6 +39,10 @@ func CreateKnativeServing(ctx *Context, name, namespace string) (*servingoperato
 	return serving, nil
 }
 
+func DeleteKnativeServing(ctx *Context, name, namespace string) error {
+	return ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{})
+}
+
 func WaitForKnativeServingState(ctx *Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
 	var lastState *servingoperatorv1alpha1.KnativeServing
 	var err error
