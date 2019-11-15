@@ -47,7 +47,7 @@ func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1be
 	if err != nil {
 		return nil, err
 	}
-	_, err = WaitForServiceState(ctx, service.Name, service.Namespace, IsServiceReady)
+	service, err = WaitForServiceState(ctx, service.Name, service.Namespace, IsServiceReady)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func WaitForOperatorDepsDeleted(ctx *Context) error {
 }
 
 func IsServiceReady(s *servingv1beta1.Service, err error) (bool, error) {
-	return s.Generation == s.Status.ObservedGeneration && s.Status.IsReady(), err
+	return s.Generation == s.Status.ObservedGeneration && s.Status.IsReady() && s.Status.URL != nil && s.Status.URL.Host != "", err
 }
 
 func CreateDeployment(ctx *Context, name, namespace, image string) error {
