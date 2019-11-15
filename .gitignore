@@ -2,3 +2,4 @@
 catalogsource-ci.yaml
 user*.kubeconfig
 users.htpasswd
+.idea
