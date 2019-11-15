@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 )
@@ -43,6 +44,11 @@ type Registry struct {
 	// A map of a container name or image name to the full image location of the individual knative image.
 	// +optional
 	Override map[string]string `json:"override,omitempty"`
+
+	// A list of secrets to be used when pulling the knative images. The secret must be created in the
+	// same namespace as the knative-serving deployments, and not the namespace of this resource.
+	// +optional
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
 // IstioGatewayOverride override the knative-ingress-gateway and cluster-local-gateway

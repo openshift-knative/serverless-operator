@@ -32,7 +32,11 @@ function timeout {
     seconds=$(( seconds + interval ))
     logger.debug "Execution failed: ${*}. Waiting ${interval} sec ($seconds/${timeout})..."
     if [[ "${LOG_LEVEL}" != 'DEBUG' ]]; then
-      echo -n '.'
+      if (( INTERACTIVE )); then
+        echo -n '.'
+      else
+        echo '.'
+      fi
     fi
     sleep $interval
     [[ $seconds -gt $timeout ]] && logger.error "Timed out of ${timeout} exceeded" && return 1

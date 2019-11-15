@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:a24d4f0bfca235899423e806a033447bb840d48970ecd8e1bc409537d0289c23"
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata"]
+  pruneopts = "NUT"
+  revision = "5d03b9fdabc3f75630183d940a54b0047106bf8a"
+  version = "v0.48.0"
+
+[[projects]]
   digest = "1:5d72bbcc9c8667b11c3dc3cbe681c5a6f71e5096744c0bf7726ab5c6425d5dc4"
   name = "github.com/BurntSushi/toml"
   packages = ["."]
@@ -59,6 +67,22 @@
   pruneopts = "NUT"
   revision = "026c730a0dcc5d11f93f1cf1cc65b01247ea7b6f"
   version = "v4.5.0"
+
+[[projects]]
+  digest = "1:53becd66889185091b58ea3fc49294996f2179fb05a89702f4de7d15e581b509"
+  name = "github.com/go-logr/logr"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "9fb12b3b21c5415d16ac18dc5cd42c1cfdd40c4e"
+  version = "v0.1.0"
+
+[[projects]]
+  digest = "1:340497a512995aa69c0add901d79a2096b3449d35a44a6f1f1115091a9f8c687"
+  name = "github.com/go-logr/zapr"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "03f06a783fbb7dfaf3f629c7825480e43a7105e6"
+  version = "v0.1.1"
 
 [[projects]]
   digest = "1:3758c86e787dfe5792a23430f34636106a16da914446724399c9c12f121a225d"
@@ -227,6 +251,14 @@
   version = "v0.3.7"
 
 [[projects]]
+  branch = "immutable-transform"
+  digest = "1:0c097d7b8850cf0e75aa9a44e491efe1d42098f8b5e099921d68f219c92581f5"
+  name = "github.com/jcrossley3/manifestival"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "d0c6823509db87c4d4f4314fb25e539e980f4a69"
+
+[[projects]]
   digest = "1:92f6419f388bd31a433b1388910f15a882c9980e383e89ebf8fb2524583707ac"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -379,6 +411,14 @@
   revision = "2760276f78584ab485d448fa53abda8025fe5cb0"
 
 [[projects]]
+  digest = "1:4af5ef5028af0c996043a4ed5731c51a649fc3d27d700a2d88a47d51591ab993"
+  name = "github.com/operator-framework/operator-sdk"
+  packages = ["pkg/restmapper"]
+  pruneopts = "NUT"
+  revision = "78c472461e75e6c64589cfadf577a2004b8a26b3"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
   digest = "1:89da0f0574bc94cfd0ac8b59af67bf76cdd110d503df2721006b9f0492394333"
   name = "github.com/petar/GoLLRB"
@@ -526,14 +566,25 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f3a2e6d7423b8c19cdb2203cda9672900cc43012ea69f30ff6874dd453f44aec"
+  digest = "1:1519760444b90c560eb01373869bc66fd539e6fe1bf77af22047c43edc40ab35"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "google",
     "internal",
+    "jws",
+    "jwt",
   ]
   pruneopts = "NUT"
   revision = "0f29369cfe4552d0e4bcddc57cc75f4d7e672a33"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b521f10a2d8fa85c04a8ef4e62f2d1e14d303599a55d64dabf9f5a02f84d35eb"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "NUT"
+  revision = "cd5d95a43a6e21273425c7ae415d3df9ea832eeb"
 
 [[projects]]
   branch = "master"
@@ -605,13 +656,16 @@
   revision = "4191b8cbba092238a318a71cdff48b20b4e1e5d8"
 
 [[projects]]
-  digest = "1:372cd8eba449f9b6db06677d0e73fa193ec5b19aaee148f355503ab6127045ca"
+  digest = "1:a4824d8df1fd1f63c6b3690bf4801d6ff1722adcb3e13c0489196a7e248d868a"
   name = "google.golang.org/appengine"
   packages = [
+    ".",
     "internal",
+    "internal/app_identity",
     "internal/base",
     "internal/datastore",
     "internal/log",
+    "internal/modules",
     "internal/remote_api",
     "internal/urlfetch",
     "urlfetch",
@@ -764,7 +818,7 @@
   revision = "2b1284ed4c93a43499e781493253e2ac5959c4fd"
 
 [[projects]]
-  digest = "1:f8617ac4a059b5a8dda5d375fb0f960d6dfa5d6cae584c9dffe909e6af80ac96"
+  digest = "1:99ecbfc7af962d5797becb68ab104d79769d88923695f5b6e452bc460c2a2d95"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -882,9 +936,12 @@
     "pkg/apis/clientauthentication/v1beta1",
     "pkg/version",
     "plugin/pkg/client/auth/exec",
+    "plugin/pkg/client/auth/gcp",
     "plugin/pkg/client/auth/oidc",
     "rest",
     "rest/watch",
+    "restmapper",
+    "third_party/forked/golang/template",
     "tools/auth",
     "tools/cache",
     "tools/clientcmd",
@@ -902,6 +959,7 @@
     "util/flowcontrol",
     "util/homedir",
     "util/integer",
+    "util/jsonpath",
     "util/retry",
   ]
   pruneopts = "NUT"
@@ -928,7 +986,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bd7eb46917507cd3a1d14f0775d92a5a4ec504e451cad8742102c2a8fa5cdfd5"
+  digest = "1:538f0b0b9d09a9b6f5f40f2d2919acc3e8b30c5b6abf3e8fbc4fadf672ec5663"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -936,9 +994,13 @@
     "kmp",
     "logging",
     "logging/logkey",
+    "ptr",
+    "system",
     "test",
+    "test/helpers",
     "test/ingress",
     "test/logging",
+    "test/logstream",
     "test/monitoring",
     "test/spoof",
     "test/zipkin",
@@ -947,17 +1009,22 @@
   revision = "34157973944a3419f1e38fce8dfb11a2fb5aadbb"
 
 [[projects]]
-  branch = "master"
-  digest = "1:16f93a2efd52b733373d1f4885a8d631e2f4176e464836a1d40a9e1a401ed81a"
+  branch = "feature/v0.9-reuse-tests-on-productized"
+  digest = "1:262cdcc4d0b093e50ece8f786f4fe734822ccadc2ba2add91037100b059dace9"
   name = "knative.dev/serving-operator"
   packages = [
+    "cmd/manager/kodata/knative-serving",
     "pkg/apis/serving/v1alpha1",
     "pkg/client/clientset/versioned",
     "pkg/client/clientset/versioned/scheme",
     "pkg/client/clientset/versioned/typed/serving/v1alpha1",
+    "test",
+    "test/e2e",
+    "test/resources",
   ]
-  pruneopts = "NUT"
-  revision = "90a7c7e0ee409a61e6cb3195a814a7f711cf9be3"
+  pruneopts = "UT"
+  revision = "332475025f1151b2874b27b68ce00b5a6bd234a3"
+  source = "github.com/cardil/serving-operator"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
@@ -983,6 +1050,7 @@
     "github.com/pkg/errors",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/util/intstr",
@@ -992,9 +1060,12 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "knative.dev/pkg/test",
+    "knative.dev/serving-operator/cmd/manager/kodata/knative-serving",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "knative.dev/serving-operator/pkg/client/clientset/versioned",
     "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1",
+    "knative.dev/serving-operator/test",
+    "knative.dev/serving-operator/test/e2e",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -83,7 +83,7 @@ function run_knative_serving_tests {
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" \
     || failed=1
-  
+
   rm -rf "$tmp_gopath"
   return $failed
   )
@@ -113,23 +113,33 @@ function dump_state {
   dump_cluster_state
   dump_openshift_olm_state
   dump_openshift_ingress_state
+  dump_knative_state
 }
 
 function dump_openshift_olm_state {
   logger.info "Dump of subscriptions.operators.coreos.com"
   # This is for status checking.
-  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces
+  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
   logger.info "Dump of catalog operator log"
-  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator
+  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator || true
 }
 
 function dump_openshift_ingress_state {
   logger.info "Dump of routes.route.openshift.io"
-  oc get routes.route.openshift.io -o yaml --all-namespaces
+  oc get routes.route.openshift.io -o yaml --all-namespaces || true
   logger.info "Dump of routes.serving.knative.dev"
-  oc get routes.serving.knative.dev -o yaml --all-namespaces
+  oc get routes.serving.knative.dev -o yaml --all-namespaces || true
   logger.info "Dump of openshift-ingress log"
-  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE"
+  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE" || true
+}
+
+function dump_knative_state {
+  logger.info 'Dump of knative state'
+  oc describe knativeserving knative-serving -n "$SERVING_NAMESPACE" || true
+  oc get smcp --all-namespaces || true
+  oc get smmr --all-namespaces || true
+  oc get pods -n "$SERVING_NAMESPACE" || true
+  oc get ksvc --all-namespaces || true
 }
 
 # == Test users

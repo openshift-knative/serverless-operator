@@ -2,6 +2,7 @@
 required = [
   "github.com/knative/test-infra/scripts",
   "github.com/knative/test-infra/tools/dep-collector",
+  "knative.dev/serving-operator/cmd/manager/kodata/knative-serving",
 ]
 
 [prune]
@@ -11,6 +12,10 @@ required = [
 
 [[prune.project]]
   name = "github.com/knative/test-infra"
+  non-go = false
+
+[[prune.project]]
+  name = "knative.dev/serving-operator"
   non-go = false
 
 [[override]]
@@ -34,8 +39,9 @@ required = [
   revision = "8d9ed539ba3134352c586810e749e58df4e94e4f"
 
 [[constraint]]
-  branch = "master"
   name = "knative.dev/serving-operator"
+  branch = "feature/v0.9-reuse-tests-on-productized"
+  source = "github.com/cardil/serving-operator"
 
 [[constraint]]
   branch = "master"

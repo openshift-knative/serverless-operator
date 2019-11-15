@@ -1,3 +1,5 @@
+// +build e2e
+
 package e2e
 
 import (
@@ -30,12 +32,7 @@ func TestKnativeServing(t *testing.T) {
 	defer test.CleanupAll(caCtx, paCtx, editCtx, viewCtx)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx, paCtx, editCtx, viewCtx) })
 
-	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		_, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription")
-		if err != nil {
-			t.Fatal("Failed", err)
-		}
-	})
+	createSubscriptionAndWaitForCSVtoSucceed(t, caCtx)
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
 		_, err := test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
@@ -78,13 +75,7 @@ func TestKnativeServing(t *testing.T) {
 		}
 	})
 
-	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-		caCtx.Cleanup()
-		err := test.WaitForOperatorDepsDeleted(caCtx)
-		if err != nil {
-			t.Fatalf("Operators still running: %v", err)
-		}
-	})
+	undeployServerlessOperatorAndCheckDependentOperatorsRemoved(t, caCtx)
 }
 
 func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Context) {
