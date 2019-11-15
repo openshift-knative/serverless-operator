@@ -8,6 +8,7 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 readonly TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 NAMESPACES+=("${TEST_NAMESPACE}")
+NAMESPACES+=("serverless-tests2")
 
 # == Lifefycle
 
@@ -37,7 +38,8 @@ function run_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go test -v -tags=e2e -count=1 -timeout=10m -parallel=1 ./test/e2e \
-    --kubeconfig "${kubeconfigs_str}" \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1

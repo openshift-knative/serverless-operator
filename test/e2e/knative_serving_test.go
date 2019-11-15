@@ -8,13 +8,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	pkgTest "knative.dev/pkg/test"
 )
 
 const (
-	knativeServing    = "knative-serving"
-	testNamespace     = "serverless-tests"
-	image             = "gcr.io/knative-samples/helloworld-go"
-	helloworldService = "helloworld-go"
+	knativeServing        = "knative-serving"
+	testNamespace         = "serverless-tests"
+	testNamespace2        = "serverless-tests2"
+	image                 = "gcr.io/knative-samples/helloworld-go"
+	helloworldService     = "helloworld-go"
+	kubeHelloworldService = "kube-helloworld-go"
+	helloworldText        = "Hello World!"
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -70,6 +74,10 @@ func TestKnativeServing(t *testing.T) {
 		}
 	})
 
+	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
+		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
+	})
+
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
 		caCtx.Cleanup()
 		err := test.WaitForOperatorDepsDeleted(caCtx)
@@ -77,6 +85,75 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Operators still running: %v", err)
 		}
 	})
+}
+
+func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Context) {
+	// Deploy plain Kube service
+	svc, err := test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Kubernetes service not created", err)
+	}
+	route, err := test.WithRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	if err != nil {
+		t.Fatal("Failed to create route for service", svc.Name, err)
+	}
+	kubeServiceURL := "http://" + route.Status.Ingress[0].Host
+
+	// Check Kube service responds
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+
+	// Deploy Knative service in the same namespace
+	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
+
+	// Check that both services respond
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+
+	// Delete Knative service
+	test.DeleteService(caCtx, ksvc.Name, testNamespace2)
+
+	// Check that Kube service still responds
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+
+	// Remove the Kube service
+	test.DeleteRoute(caCtx, svc.Name, testNamespace2)
+	test.DeleteKubeService(caCtx, svc.Name, testNamespace2)
+	test.DeleteDeployment(caCtx, svc.Name, testNamespace2)
+
+	// Deploy Knative service in the namespace first
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
+
+	// Check that Knative service responds
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+
+	// Deploy plain Kube service
+	svc, err = test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Kubernetes service not created", err)
+	}
+	route, err = test.WithRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	if err != nil {
+		t.Fatal("Failed to create route for service", svc.Name, err)
+	}
+	kubeServiceURL = "http://" + route.Status.Ingress[0].Host
+
+	// Check that both services respond
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+
+	// Remove the Kube service
+	test.DeleteRoute(caCtx, svc.Name, testNamespace2)
+	test.DeleteKubeService(caCtx, svc.Name, testNamespace2)
+	test.DeleteDeployment(caCtx, svc.Name, testNamespace2)
+
+	// Check that Knative service still responds
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
 }
 
 func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Context, viewCtx *test.Context) {
@@ -181,5 +258,19 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 				t.Errorf("Unexpected error for user with role %s: %v", test.userContext.Name, err)
 			}
 		})
+	}
+}
+
+func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, expectedText string) {
+	t.Helper()
+	_, err := pkgTest.WaitForEndpointState(
+		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
+		t.Logf,
+		routeDomain,
+		pkgTest.EventuallyMatchesBody(expectedText),
+		"WaitForRouteToServeText",
+		true)
+	if err != nil {
+		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeDomain, expectedText, err)
 	}
 }

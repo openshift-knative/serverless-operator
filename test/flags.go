@@ -13,7 +13,7 @@ var Flags = initializeFlags()
 
 // FlagsStruct is struct that defines testing options
 type FlagsStruct struct {
-	Kubeconfig string // Path to .kube/config
+	Kubeconfigs string // Path to .kube/config
 }
 
 func initializeFlags() *FlagsStruct {
@@ -23,7 +23,7 @@ func initializeFlags() *FlagsStruct {
 	if usr, err := user.Current(); err == nil {
 		defaultKubeconfig = path.Join(usr.HomeDir, ".kube/config")
 	}
-	flag.StringVar(&f.Kubeconfig, "kubeconfig", defaultKubeconfig,
+	flag.StringVar(&f.Kubeconfigs, "kubeconfigs", defaultKubeconfig,
 		"Provide the path to the `kubeconfig` file you'd like to use for these tests. The `current-context` will be used.")
 
 	return &f

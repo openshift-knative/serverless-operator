@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	servingversioned "github.com/knative/serving/pkg/client/clientset/versioned"
+	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client"
-	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
+	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -30,9 +31,10 @@ type Clients struct {
 	Kube            *kubernetes.Clientset
 	ServingOperator servingoperatorv1alpha1.ServingV1alpha1Interface
 	Serving         *servingversioned.Clientset
-	OLM             versioned.Interface
+	OLM             olmversioned.Interface
 	Dynamic         dynamic.Interface
 	Config          *rest.Config
+	Route           routev1.RouteV1Interface
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -45,7 +47,7 @@ var contexts []*Context
 // setupContextsOnce creates context objects for all kubeconfigs passed from the command line
 func setupContextsOnce(t *testing.T) {
 	if len(contexts) == 0 {
-		kubeconfigs := strings.Split(Flags.Kubeconfig, ",")
+		kubeconfigs := strings.Split(Flags.Kubeconfigs, ",")
 		for _, cfg := range kubeconfigs {
 			clients, err := NewClients(cfg)
 			if err != nil {
@@ -131,11 +133,16 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
+	clients.Route, err = newOpenShiftRoutes(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	clients.Config = cfg
 	return clients, nil
 }
 
-func newOLMClient(configPath string) (versioned.Interface, error) {
+func newOLMClient(configPath string) (olmversioned.Interface, error) {
 	olmclient, err := client.NewClient(configPath)
 	if err != nil {
 		return nil, err
@@ -149,6 +156,14 @@ func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.Serving
 		return nil, err
 	}
 	return cs.ServingV1alpha1(), nil
+}
+
+func newOpenShiftRoutes(cfg *rest.Config) (routev1.RouteV1Interface, error) {
+	routeClient, err := routev1.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return routeClient, nil
 }
 
 // Cleanup for all contexts
