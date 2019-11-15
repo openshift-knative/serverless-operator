@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
 
@@ -23,6 +24,11 @@ var conditions = apis.NewLivingConditionSet(
 	DeploymentsAvailable,
 	InstallSucceeded,
 )
+
+// GroupVersionKind returns SchemeGroupVersion of a KnativeServing
+func (ks *KnativeServing) GroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind(Kind)
+}
 
 // GetConditions implements apis.ConditionsAccessor
 func (is *KnativeServingStatus) GetConditions() apis.Conditions {

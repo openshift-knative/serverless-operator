@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 )
@@ -43,12 +44,27 @@ type Registry struct {
 	// A map of a container name or image name to the full image location of the individual knative image.
 	// +optional
 	Override map[string]string `json:"override,omitempty"`
+
+	// A list of secrets to be used when pulling the knative images. The secret must be created in the
+	// same namespace as the knative-serving deployments, and not the namespace of this resource.
+	// +optional
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
 // IstioGatewayOverride override the knative-ingress-gateway and cluster-local-gateway
 type IstioGatewayOverride struct {
 	// A map of values to replace the "selector" values in the knative-ingress-gateway and cluster-local-gateway
 	Selector map[string]string `json:"selector,omitempty"`
+}
+
+// CustomCerts refers to either a ConfigMap or Secret containing valid
+// CA certificates
+type CustomCerts struct {
+	// One of ConfigMap or Secret
+	Type string `json:"type"`
+
+	// The name of the ConfigMap or Secret
+	Name string `json:"name"`
 }
 
 // KnativeServingSpec defines the desired state of KnativeServing
@@ -72,6 +88,9 @@ type KnativeServingSpec struct {
 
 	// A means to override the cluster-local-gateway
 	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+
+	// Enables controller to trust registries with self-signed certificates
+	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
