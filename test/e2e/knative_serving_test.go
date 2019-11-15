@@ -88,8 +88,13 @@ func TestKnativeServing(t *testing.T) {
 }
 
 func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Context) {
+	//Create deployment
+	err := test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Deployment not created", err)
+	}
 	// Deploy plain Kube service
-	svc, err := test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2, image)
+	svc, err := test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2)
 	if err != nil {
 		t.Fatal("Kubernetes service not created", err)
 	}
@@ -113,15 +118,15 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
-	test.DeleteService(caCtx, ksvc.Name, testNamespace2)
+	caCtx.Clients.Serving.ServingV1beta1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 
 	// Check that Kube service still responds
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	test.DeleteRoute(caCtx, svc.Name, testNamespace2)
-	test.DeleteKubeService(caCtx, svc.Name, testNamespace2)
-	test.DeleteDeployment(caCtx, svc.Name, testNamespace2)
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
 	// Deploy Knative service in the namespace first
 	ksvc, err = test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
@@ -132,8 +137,13 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	// Check that Knative service responds
 	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
 
+	//Create deployment
+	err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Deployment not created", err)
+	}
 	// Deploy plain Kube service
-	svc, err = test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2, image)
+	svc, err = test.CreateKubeService(caCtx, kubeHelloworldService, testNamespace2)
 	if err != nil {
 		t.Fatal("Kubernetes service not created", err)
 	}
@@ -148,9 +158,9 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	test.DeleteRoute(caCtx, svc.Name, testNamespace2)
-	test.DeleteKubeService(caCtx, svc.Name, testNamespace2)
-	test.DeleteDeployment(caCtx, svc.Name, testNamespace2)
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
 	// Check that Knative service still responds
 	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
@@ -165,14 +175,14 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 	}{{
 		name: "user with view role can get",
 		operation: func(c *test.Context) error {
-			_, err := test.GetService(c, helloworldService, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: viewCtx,
 	}, {
 		name: "user with view role can list",
 		operation: func(c *test.Context) error {
-			_, err := test.ListServices(c, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: viewCtx,
@@ -187,21 +197,21 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 	}, {
 		name: "user with view role cannot delete",
 		operation: func(c *test.Context) error {
-			return test.DeleteService(c, helloworldService, testNamespace)
+			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete(helloworldService, &metav1.DeleteOptions{})
 		},
 		userContext: viewCtx,
 		wantErrStr:  "is forbidden",
 	}, {
 		name: "user with project admin role can get",
 		operation: func(c *test.Context) error {
-			_, err := test.GetService(c, helloworldService, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: paCtx,
 	}, {
 		name: "user with project admin role can list",
 		operation: func(c *test.Context) error {
-			_, err := test.ListServices(c, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: paCtx,
@@ -215,20 +225,20 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 	}, {
 		name: "user with project admin role can delete",
 		operation: func(c *test.Context) error {
-			return test.DeleteService(c, "projectadmin-service", testNamespace)
+			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete("projectadmin-service", &metav1.DeleteOptions{})
 		},
 		userContext: paCtx,
 	}, {
 		name: "user with edit role can get",
 		operation: func(c *test.Context) error {
-			_, err := test.GetService(c, helloworldService, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: editCtx,
 	}, {
 		name: "user with edit role can list",
 		operation: func(c *test.Context) error {
-			_, err := test.ListServices(c, testNamespace)
+			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: editCtx,
@@ -242,7 +252,8 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 	}, {
 		name: "user with edit role can delete",
 		operation: func(c *test.Context) error {
-			return test.DeleteService(c, "useredit-service", testNamespace)
+			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete("useredit-service", &metav1.DeleteOptions{})
+
 		},
 		userContext: editCtx,
 	},

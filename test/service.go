@@ -60,28 +60,16 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		return DeleteService(ctx, service.Name, namespace)
+		return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(service.Name, &metav1.DeleteOptions{})
 	})
 	return service, nil
-}
-
-func GetService(ctx *Context, name, namespace string) (*servingv1beta1.Service, error) {
-	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
-}
-
-func ListServices(ctx *Context, namespace string) (*servingv1beta1.ServiceList, error) {
-	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).List(metav1.ListOptions{})
-}
-
-func DeleteService(ctx *Context, name, namespace string) error {
-	return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1beta1.Service, err error) (bool, error)) (*servingv1beta1.Service, error) {
 	var lastState *servingv1beta1.Service
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = GetService(ctx, name, namespace)
+		lastState, err = ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -117,7 +105,7 @@ func IsServiceReady(s *servingv1beta1.Service, err error) (bool, error) {
 	return s.Generation == s.Status.ObservedGeneration && s.Status.IsReady(), err
 }
 
-func CreateKubeService(ctx *Context, name, namespace, image string) (*corev1.Service, error) {
+func CreateDeployment(ctx *Context, name, namespace, image string) error {
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -154,13 +142,17 @@ func CreateKubeService(ctx *Context, name, namespace, image string) (*corev1.Ser
 
 	_, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	ctx.AddToCleanup(func() error {
-		return DeleteDeployment(ctx, deployment.Name, namespace)
+		return ctx.Clients.Kube.AppsV1().Deployments(namespace).Delete(deployment.Name, &metav1.DeleteOptions{})
 	})
 
+	return nil
+}
+
+func CreateKubeService(ctx *Context, name, namespace string) (*corev1.Service, error) {
 	kubeService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -188,7 +180,7 @@ func CreateKubeService(ctx *Context, name, namespace, image string) (*corev1.Ser
 	}
 
 	ctx.AddToCleanup(func() error {
-		return DeleteService(ctx, svc.Name, namespace)
+		return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(svc.Name, &metav1.DeleteOptions{})
 	})
 
 	return svc, nil
@@ -214,22 +206,17 @@ func WithRouteForServiceReady(ctx *Context, serviceName, namespace string) (*rou
 	}
 
 	ctx.AddToCleanup(func() error {
-		return DeleteRoute(ctx, route.Name, namespace)
+		return ctx.Clients.Route.Routes(namespace).Delete(route.Name, &metav1.DeleteOptions{})
 	})
 
-	route, err = WaitForRouteState(ctx, route.Name, route.Namespace, RouteHasHost)
-	if err != nil {
-		return nil, err
-	}
-
-	return route, nil
+	return WaitForRouteState(ctx, route.Name, route.Namespace, RouteHasHost)
 }
 
 func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *routev1.Route, err error) (bool, error)) (*routev1.Route, error) {
 	var lastState *routev1.Route
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = GetRoute(ctx, name, namespace)
+		lastState, err = ctx.Clients.Route.Routes(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -239,33 +226,10 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 	return lastState, nil
 }
 
-func GetRoute(ctx *Context, name, namespace string) (*routev1.Route, error) {
-	return ctx.Clients.Route.Routes(namespace).Get(name, metav1.GetOptions{})
-}
-
 func RouteHasHost(r *routev1.Route, err error) (bool, error) {
-	return len(r.Status.Ingress) != 0 && r.Status.Ingress[0].Host != "", nil
-}
-
-func DeleteKubeService(ctx *Context, name, namespace string) error {
-	if err := ctx.Clients.Kube.CoreV1().Services(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteDeployment(ctx *Context, name, namespace string) error {
-	if err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-	return nil
-}
-
-func DeleteRoute(ctx *Context, name, namespace string) error {
-	if err := ctx.Clients.Route.Routes(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-	return nil
+	return len(r.Status.Ingress) != 0 && len(r.Status.Ingress[0].Conditions) != 0 &&
+		r.Status.Ingress[0].Conditions[0].Type == routev1.RouteAdmitted &&
+		r.Status.Ingress[0].Conditions[0].Status == corev1.ConditionTrue, nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }
