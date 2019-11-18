@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/pkg/errors"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -34,9 +35,25 @@ func CreateKnativeServing(ctx *Context, name, namespace string) (*servingoperato
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		return ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(serving.Name, &metav1.DeleteOptions{})
+		return DeleteKnativeServing(ctx, name, namespace)
 	})
 	return serving, nil
+}
+
+func DeleteKnativeServing(ctx *Context, name, namespace string) error {
+	if err := ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+
+	// Wait until the KnativeServing got removed.
+	_, err := WaitForKnativeServingState(ctx, name, namespace,
+		func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
+			if apierrs.IsNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		})
+	return err
 }
 
 func WaitForKnativeServingState(ctx *Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
