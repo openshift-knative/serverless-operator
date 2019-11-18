@@ -34,19 +34,13 @@ func CreateKnativeServing(ctx *Context, name, namespace string) (*servingoperato
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		policy := metav1.DeletePropagationForeground
-		return ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(serving.Name, &metav1.DeleteOptions{
-			PropagationPolicy: &policy,
-		})
+		return DeleteKnativeServing(ctx, name, namespace)
 	})
 	return serving, nil
 }
 
 func DeleteKnativeServing(ctx *Context, name, namespace string) error {
-	policy := metav1.DeletePropagationForeground
-	return ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{
-		PropagationPolicy: &policy,
-	})
+	return ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
 func WaitForKnativeServingState(ctx *Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
