@@ -56,6 +56,10 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
+		if _, err := test.WaitForKnativeServingState(caCtx, knativeServing, knativeServing, test.HasKnativeServingNoFinalizers); err != nil {
+			t.Fatal("Finalizers got never removed", err)
+		}
+
 		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(knativeServing+"-ingress", metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			// Namespace is already gone, all good!

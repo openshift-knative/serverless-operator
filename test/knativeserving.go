@@ -66,3 +66,7 @@ func WaitForKnativeServingState(ctx *Context, name, namespace string, inState fu
 func IsKnativeServingReady(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }
+
+func HasKnativeServingNoFinalizers(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
+	return len(s.ObjectMeta.Finalizers) == 0, err
+}
