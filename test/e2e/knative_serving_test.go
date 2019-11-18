@@ -8,8 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 )
 
 const (
@@ -56,17 +54,6 @@ func TestKnativeServing(t *testing.T) {
 	t.Run("remove knativeserving cr", func(t *testing.T) {
 		if err := test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
-		}
-
-		// Wait until the KnativeServing has no more finalizers and/or got removed entirely.
-		if _, err := test.WaitForKnativeServingState(caCtx, knativeServing, knativeServing,
-			func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
-				if apierrs.IsNotFound(err) {
-					return true, nil
-				}
-				return len(s.ObjectMeta.Finalizers) == 0, err
-			}); err != nil {
-			t.Fatal("Finalizers got never removed", err)
 		}
 
 		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(knativeServing+"-ingress", metav1.GetOptions{})
