@@ -55,6 +55,10 @@ func TestKnativeServing(t *testing.T) {
 		testUserPermissions(t, paCtx, editCtx, viewCtx)
 	})
 
+	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
+		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
+	})
+
 	t.Run("remove knativeserving cr", func(t *testing.T) {
 		if err := test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
@@ -72,10 +76,6 @@ func TestKnativeServing(t *testing.T) {
 		if ns.Status.Phase != corev1.NamespaceTerminating {
 			t.Fatalf("Ingress namespace phase = %v, want %v", ns.Status.Phase, corev1.NamespaceTerminating)
 		}
-	})
-
-	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
-		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
