@@ -3,6 +3,7 @@ package webhook
 import (
 	"context"
 
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -40,6 +41,10 @@ func AddToManager(m manager.Manager) error {
 	}
 
 	log.Info("Setting up webhook server")
+	operatorNs, err := k8sutil.GetOperatorNamespace()
+	if err != nil {
+		return err
+	}
 	// This will be started when the Manager is started
 	as, err := webhook.NewServer("admission-webhook-server", m, webhook.ServerOptions{
 		Port:    9876,
@@ -48,7 +53,7 @@ func AddToManager(m manager.Manager) error {
 			MutatingWebhookConfigName:   "mutating-knative-serving-openshift",
 			ValidatingWebhookConfigName: "validating-knative-serving-openshift",
 			Service: &webhook.Service{
-				Namespace: "default",
+				Namespace: operatorNs,
 				Name:      "admission-server-service",
 				// Selectors should select the pods that runs this webhook server.
 				Selectors: map[string]string{
