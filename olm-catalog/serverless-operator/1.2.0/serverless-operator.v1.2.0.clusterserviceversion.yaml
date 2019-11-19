@@ -241,7 +241,7 @@ spec:
             spec:
               containers:
               - command:
-                - knative-serving-operator
+                - "/ko-app/manager"
                 env:
                 - name: SYSTEM_NAMESPACE
                   valueFrom:
