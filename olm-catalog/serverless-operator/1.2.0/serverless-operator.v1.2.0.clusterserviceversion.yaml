@@ -124,14 +124,14 @@ spec:
     The Serverless Operator's provided APIs such as Knative Serving
     have certain requirements with regards to the size of the underlying
     cluster and a working installation of Service Mesh. See the [installation
-    section](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.1/html-single/serverless/index#installing-openshift-serverless)
+    section](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html-single/serverless/index#installing-openshift-serverless)
     of the Serverless documentation for more info.
 
     ## Further Information
 
     For documentation on using Knative Serving, see the
-    [serving section](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.1/html-single/serverless/index#knative-serving_serverless-architecture) of the
-    [Serverless documentation site](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.1/html-single/serverless/index).
+    [serving section](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html-single/serverless/index#knative-serving_serverless-architecture) of the
+    [Serverless documentation site](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html-single/serverless/index).
 
   displayName: OpenShift Serverless Operator
   icon:
@@ -371,7 +371,7 @@ spec:
   - serving
   links:
   - name: Documentation
-    url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.1/html-single/serverless/index
+    url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html-single/serverless/index
   - name: Source Repository
     url: https://github.com/openshift-knative/serverless-operator
   maintainers:
