@@ -180,8 +180,11 @@
   digest = "1:c3050a9f4b141fcc3ef805c8b3e8e8242676557755ffb9d2707c26530cd71c9d"
   name = "github.com/gogo/protobuf"
   packages = [
+    "gogoproto",
     "proto",
+    "protoc-gen-gogo/descriptor",
     "sortkeys",
+    "types",
   ]
   pruneopts = "NT"
   revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
@@ -313,6 +316,14 @@
   version = "v1.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:d79936f1c599955f84f1881f25e76effd9b7a9cb0c07d28c10fe7bcd09ee0435"
+  name = "github.com/jcrossley3/manifestival"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "a8594b4c50eac8853744bf450b9b9ce19daca6f5"
+
+[[projects]]
   digest = "1:f5b9328966ccea0970b1d15075698eff0ddb3e75889560aad2e9f76b289b536a"
   name = "github.com/joho/godotenv"
   packages = ["."]
@@ -347,6 +358,14 @@
   pruneopts = "NT"
   revision = "1b2b06f5f209fea48ff5922d8bfb2b9ed5d8f00b"
   version = "v0.7.0"
+
+[[projects]]
+  branch = "maistra-1.0"
+  digest = "1:9b2800ba3774d0abebc4c705def63fd9194b49594891cb856f2c3bbdf89b5b95"
+  name = "github.com/maistra/istio-operator"
+  packages = ["pkg/apis/maistra/v1"]
+  pruneopts = "NT"
+  revision = "3a685c97183434bba135ac9b25900bfc20282b71"
 
 [[projects]]
   digest = "1:56dbf15e091bf7926cb33a57cb6bdfc658fc6d3498d2f76f10a97ce7856f1fde"
@@ -718,6 +737,17 @@
   version = "v2.2.4"
 
 [[projects]]
+  branch = "release-1.1"
+  digest = "1:cfa241a87e0bc416528fdcb64b9562f76858766bb555717db4a83be741ee0e00"
+  name = "istio.io/api"
+  packages = [
+    "mesh/v1alpha1",
+    "networking/v1alpha3",
+  ]
+  pruneopts = "NT"
+  revision = "162827b552e84a48f0d9d45a8f10ea1623706663"
+
+[[projects]]
   digest = "1:18b9b70bdf29da610c0df032cf60ee7526a48756fa44012cc639dcb557335cbc"
   name = "k8s.io/api"
   packages = [
@@ -954,6 +984,9 @@
   name = "knative.dev/pkg"
   packages = [
     "apis",
+    "apis/istio",
+    "apis/istio/common/v1alpha1",
+    "apis/istio/v1alpha3",
     "kmp",
   ]
   pruneopts = "NT"
@@ -993,6 +1026,7 @@
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
+    "pkg/runtime/scheme",
     "pkg/runtime/signals",
     "pkg/source",
     "pkg/source/internal",
@@ -1039,6 +1073,8 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
+    "github.com/jcrossley3/manifestival",
+    "github.com/maistra/istio-operator/pkg/apis/maistra/v1",
     "github.com/openshift/api/config/v1",
     "github.com/openshift/api/route/v1",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
@@ -1060,9 +1096,11 @@
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
+    "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",

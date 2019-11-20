@@ -52,6 +52,14 @@ required = [
   branch = "release-4.2"
 
 [[constraint]]
+  name = "github.com/maistra/istio-operator"
+  branch = "maistra-1.0"
+
+[[constraint]]
+  name = "github.com/jcrossley3/manifestival"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/operator-framework/operator-sdk"
   # The version rule is used for a specific release and the master branch for in between releases.
   # branch = "v0.10.x" #osdk_branch_annotation
