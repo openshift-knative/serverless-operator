@@ -7,12 +7,15 @@ import (
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
+	"github.com/openshift-knative/knative-serving-openshift/pkg"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+var log = pkg.Log.WithName("webhook")
 
 // configure egress
 func (a *KnativeServingConfigurator) egress(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
@@ -25,7 +28,8 @@ func (a *KnativeServingConfigurator) egress(ctx context.Context, ks *servingv1al
 		return nil
 	}
 	network := strings.Join(networkConfig.Spec.ServiceNetwork, ",")
-	return configure(ks, "network", "istio.sidecar.includeOutboundIPRanges", network)
+	pkg.Configure(ks, "network", "istio.sidecar.includeOutboundIPRanges", network)
+	return nil
 }
 
 // configure ingress
@@ -40,7 +44,7 @@ func (a *KnativeServingConfigurator) ingress(ctx context.Context, ks *servingv1a
 	}
 	domain := ingressConfig.Spec.Domain
 	if len(domain) > 0 {
-		return configure(ks, "domain", domain, "")
+		pkg.Configure(ks, "domain", domain, "")
 	}
 	return nil
 }
@@ -64,7 +68,7 @@ func (a *KnativeServingConfigurator) configureLogURLTemplate(ctx context.Context
 		host := route.Status.Ingress[0].Host
 		if host != "" {
 			url := "https://" + host + "/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%5C%2FrevisionUID:${REVISION_UID}')"
-			return configure(ks, configmap, key, url)
+			pkg.Configure(ks, configmap, key, url)
 		}
 	}
 	return nil

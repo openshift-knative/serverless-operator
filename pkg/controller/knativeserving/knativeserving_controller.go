@@ -3,6 +3,8 @@ package knativeserving
 import (
 	"context"
 
+	"github.com/openshift-knative/knative-serving-openshift/pkg"
+	"github.com/openshift-knative/knative-serving-openshift/pkg/controller/knativeserving/servicemesh"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,11 +15,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller_knativeserving")
+var log = pkg.Log.WithName("controller")
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -40,6 +41,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing
 	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// Watch servicemesh resources
+	err = servicemesh.WatchResources(c)
 	if err != nil {
 		return err
 	}

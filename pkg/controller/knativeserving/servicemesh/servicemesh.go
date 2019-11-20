@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
+	"github.com/openshift-knative/knative-serving-openshift/pkg"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 
 	mf "github.com/jcrossley3/manifestival"
@@ -18,12 +19,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"knative.dev/pkg/apis/istio/v1alpha3"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 const (
@@ -36,7 +35,7 @@ const (
 )
 
 var (
-	log = logf.Log.WithName("servicemesh")
+	log = pkg.Log.WithName("servicemesh")
 )
 
 func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Client) error {
@@ -90,17 +89,11 @@ func RemoveServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clie
 	return api.Delete(context.TODO(), ns)
 }
 
-func UpdateIstioConfig(u *unstructured.Unstructured, scheme *runtime.Scheme) error {
-	if u.GetKind() == "ConfigMap" && u.GetName() == "config-istio" {
-		istioConfig := &v1.ConfigMap{}
-		if err := scheme.Convert(u, istioConfig, nil); err != nil {
-			return err
-		}
-		istioConfig.Data["gateway.knative-ingress-gateway"] = "istio-ingressgateway." + ingressNamespace(u.GetNamespace()) + ".svc.cluster.local"
-		istioConfig.Data["local-gateway.cluster-local-gateway"] = "cluster-local-gateway." + ingressNamespace(u.GetNamespace()) + ".svc.cluster.local"
-		return scheme.Convert(istioConfig, u, nil)
-	}
-	return nil
+func Configure(instance *servingv1alpha1.KnativeServing) bool {
+	ns := ingressNamespace(instance.GetNamespace())
+	c1 := pkg.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
+	c2 := pkg.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
+	return c1 || c2
 }
 
 func UpdateGateway(u *unstructured.Unstructured, scheme *runtime.Scheme) error {
@@ -115,16 +108,14 @@ func UpdateGateway(u *unstructured.Unstructured, scheme *runtime.Scheme) error {
 	return nil
 }
 
-func WatchServiceMeshControlPlane(c controller.Controller, mgr manager.Manager) error {
-	return watchServiceMeshType(c, mgr, &maistrav1.ServiceMeshControlPlane{})
-}
-
-func WatchServiceMeshMemberRoll(c controller.Controller, mgr manager.Manager) error {
-	return watchServiceMeshType(c, mgr, &maistrav1.ServiceMeshMemberRoll{})
-}
-
-func breakReconcilation(err error) error {
-	return err
+func WatchResources(c controller.Controller) error {
+	if err := watchServiceMeshType(c, &maistrav1.ServiceMeshControlPlane{}); err != nil {
+		return err
+	}
+	if err := watchServiceMeshType(c, &maistrav1.ServiceMeshMemberRoll{}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // isServiceMeshControlPlaneReady checks whether serviceMeshControlPlane installs all required component
@@ -141,41 +132,37 @@ func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) 
 		}
 	}
 	if !ready {
-		return breakReconcilation(errors.New("SMCP not yet ready"))
+		return errors.New("SMCP not yet ready")
 	}
 	return nil
-}
-
-func injectLabels(labels map[string]string) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetLabels(labels)
-		return nil
-	}
 }
 
 // installServiceMeshControlPlane installs serviceMeshControlPlane
 func installServiceMeshControlPlane(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	const (
-		path = "deploy/resources/serviceMesh/smcp.yaml"
+		path = "deploy/resources/servicemesh/smcp.yaml"
 	)
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
-		log.Error(err, "Unable to create serviceMeshControlPlane install manifest")
+		log.Error(err, "Unable to create ServiceMeshControlPlane manifest")
 		return err
 	}
 	transforms := []mf.Transformer{
 		mf.InjectNamespace(ingressNamespace(instance.GetNamespace())),
-		injectLabels(map[string]string{
-			ownerName:      instance.Name,
-			ownerNamespace: instance.Namespace,
-		}),
+		func(u *unstructured.Unstructured) error {
+			u.SetLabels(map[string]string{
+				ownerName:      instance.Name,
+				ownerNamespace: instance.Namespace,
+			})
+			return nil
+		},
 	}
 	if err := manifest.Transform(transforms...); err != nil {
-		log.Error(err, "Unable to transform serviceMeshControlPlane manifest")
+		log.Error(err, "Unable to transform ServiceMeshControlPlane manifest")
 		return err
 	}
 	if err := manifest.ApplyAll(); err != nil {
-		log.Error(err, "Unable to install serviceMeshControlPlane")
+		log.Error(err, "Unable to install ServiceMeshControlPlane")
 		return err
 	}
 	return nil
@@ -227,10 +214,10 @@ func isServiceMeshMemberRollReady(servingNamespace string, api client.Client) er
 			return nil
 		}
 	}
-	return breakReconcilation(errors.New("SMMR not yet ready"))
+	return errors.New("SMMR not yet ready")
 }
 
-func watchServiceMeshType(c controller.Controller, mgr manager.Manager, obj runtime.Object) error {
+func watchServiceMeshType(c controller.Controller, obj runtime.Object) error {
 	return c.Watch(&source.Kind{Type: obj},
 		&handler.EnqueueRequestsFromMapFunc{
 			ToRequests: handler.ToRequestsFunc(func(a handler.MapObject) []reconcile.Request {
