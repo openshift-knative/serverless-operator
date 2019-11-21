@@ -5,9 +5,11 @@ import (
 
 	"github.com/openshift-knative/knative-serving-openshift/pkg"
 	"github.com/openshift-knative/knative-serving-openshift/pkg/controller/knativeserving/servicemesh"
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -75,16 +77,21 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
 
+	if instance.GetDeletionTimestamp() != nil {
+		return reconcile.Result{}, r.delete(instance)
+	}
+	if err := r.ensureFinalizers(instance); err != nil {
+		return reconcile.Result{}, err
+	}
 	if err := r.ensureCustomCertsConfigMap(context.TODO(), instance); err != nil {
+		return reconcile.Result{}, err
+	}
+	if err := servicemesh.ApplyServiceMesh(instance, r.client); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -114,4 +121,38 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(ctx context.Context
 		return err
 	}
 	return nil
+}
+
+func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.KnativeServing) error {
+	for _, finalizer := range instance.GetFinalizers() {
+		if finalizer == finalizerName() {
+			return nil
+		}
+	}
+	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName()))
+	return r.client.Update(context.TODO(), instance)
+}
+
+func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
+	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
+		return nil
+	}
+	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
+		return err
+	}
+	// The deletionTimestamp might've changed. Fetch the resource again.
+	refetched := &servingv1alpha1.KnativeServing{}
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
+		return err
+	}
+	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
+	return r.client.Update(context.TODO(), refetched)
+}
+
+func finalizerName() string {
+	name, err := k8sutil.GetOperatorName()
+	if err != nil {
+		panic(err)
+	}
+	return name
 }

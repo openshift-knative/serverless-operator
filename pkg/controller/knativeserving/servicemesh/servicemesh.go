@@ -2,7 +2,6 @@ package servicemesh
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -39,23 +38,23 @@ var (
 )
 
 func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	log.Info("Creating namespace for service mesh")
+	if err := configure(instance, api); err != nil {
+		return err
+	}
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
 		return err
 	}
-	log.Info(fmt.Sprintf("Successfully created namespace %s", ingressNamespace(instance.GetNamespace())))
-	log.Info("Installing serviceMeshControlPlane")
 	if err := installServiceMeshControlPlane(instance, api); err != nil {
 		return err
 	}
-	log.Info("Successfully installed serviceMeshControlPlane")
-	log.Info("Wait ServiceMeshControlPlane condition to be ready")
-	// wait for serviceMeshControlPlane condition to be ready before reconciling knative serving component
-	if err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api); err != nil {
+	ready, err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api)
+	if err != nil {
 		return err
 	}
+	if !ready {
+		return nil
+	}
 	log.Info("ServiceMeshControlPlane is ready")
-	log.Info("Installing ServiceMeshMemberRoll")
 	if err := installServiceMeshMemberRoll(instance, api); err != nil {
 		// ref for substring https://github.com/Maistra/istio-operator/blob/maistra-1.0/pkg/controller/servicemesh/validation/memberroll.go#L95
 		if strings.Contains(err.Error(), "one or more members are already defined in another ServiceMeshMemberRoll") {
@@ -67,13 +66,14 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 		}
 		return err
 	}
-	log.Info(fmt.Sprintf("Successfully installed ServiceMeshMemberRoll and configured %s namespace", instance.GetNamespace()))
-	log.Info(fmt.Sprintf("Wait ServiceMeshMemberRoll to update %s namespace into configured members", instance.GetNamespace()))
-	if err := isServiceMeshMemberRollReady(instance.GetNamespace(), api); err != nil {
+	ready, err = isServiceMeshMemberRollReady(instance.GetNamespace(), api)
+	if err != nil {
 		return err
 	}
-	log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
-	// TODO: instance.Status.MarkDependenciesInstalled()
+	if ready {
+		log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
+		// TODO: instance.Status.MarkDependenciesInstalled()
+	}
 	return nil
 }
 
@@ -89,25 +89,6 @@ func RemoveServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clie
 	return api.Delete(context.TODO(), ns)
 }
 
-func Configure(instance *servingv1alpha1.KnativeServing) bool {
-	ns := ingressNamespace(instance.GetNamespace())
-	c1 := pkg.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
-	c2 := pkg.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
-	return c1 || c2
-}
-
-func UpdateGateway(u *unstructured.Unstructured, scheme *runtime.Scheme) error {
-	if u.GetKind() == "Gateway" {
-		gatewayConfig := &v1alpha3.Gateway{}
-		if err := scheme.Convert(u, gatewayConfig, nil); err != nil {
-			return err
-		}
-		gatewayConfig.Spec.Selector["maistra-control-plane"] = ingressNamespace(u.GetNamespace())
-		return scheme.Convert(gatewayConfig, u, nil)
-	}
-	return nil
-}
-
 func WatchResources(c controller.Controller) error {
 	if err := watchServiceMeshType(c, &maistrav1.ServiceMeshControlPlane{}); err != nil {
 		return err
@@ -118,27 +99,48 @@ func WatchResources(c controller.Controller) error {
 	return nil
 }
 
-// isServiceMeshControlPlaneReady checks whether serviceMeshControlPlane installs all required component
-func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) error {
-	smcp := &maistrav1.ServiceMeshControlPlane{}
-	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: ingressNamespace(servingNamespace), Name: smcpName}, smcp); err != nil {
-		return err
-	}
-	var ready = false
-	for _, cond := range smcp.Status.Conditions {
-		if cond.Type == maistrav1.ConditionTypeReady && cond.Status == maistrav1.ConditionStatusTrue {
-			ready = true
-			break
+func configure(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	ns := ingressNamespace(instance.GetNamespace())
+	c1 := pkg.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
+	c2 := pkg.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
+	if c1 || c2 {
+		if err := api.Update(context.TODO(), instance); err != nil {
+			return err
 		}
 	}
-	if !ready {
-		return errors.New("SMCP not yet ready")
+	gateways := &v1alpha3.GatewayList{}
+	if err := api.List(context.TODO(), &client.ListOptions{Namespace: instance.GetNamespace()}, gateways); err != nil {
+		return err
+	}
+	for _, gateway := range gateways.Items {
+		if gateway.Spec.Selector["maistra-control-plane"] != ns {
+			gateway.Spec.Selector["maistra-control-plane"] = ns
+			log.Info("Setting", "gateway", gateway.GetName(), "selector", gateway.Spec.Selector)
+			if err := api.Update(context.TODO(), &gateway); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
+// isServiceMeshControlPlaneReady checks whether serviceMeshControlPlane installs all required component
+func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) (bool, error) {
+	smcp := &maistrav1.ServiceMeshControlPlane{}
+	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: ingressNamespace(servingNamespace), Name: smcpName}, smcp); err != nil {
+		return false, err
+	}
+	for _, cond := range smcp.Status.Conditions {
+		if cond.Type == maistrav1.ConditionTypeReady && cond.Status == maistrav1.ConditionStatusTrue {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // installServiceMeshControlPlane installs serviceMeshControlPlane
 func installServiceMeshControlPlane(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	log.Info("Installing serviceMeshControlPlane")
 	const (
 		path = "deploy/resources/servicemesh/smcp.yaml"
 	)
@@ -173,6 +175,7 @@ func installServiceMeshMemberRoll(instance *servingv1alpha1.KnativeServing, api 
 	smmr := &maistrav1.ServiceMeshMemberRoll{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: ingressNamespace(instance.Namespace), Name: smmrName}, smmr); err != nil {
 		if apierrors.IsNotFound(err) {
+			log.Info("Installing ServiceMeshMemberRoll")
 			smmr.Name = smmrName
 			smmr.Namespace = ingressNamespace(instance.Namespace)
 			smmr.Spec.Members = []string{instance.Namespace}
@@ -204,17 +207,17 @@ func appendIfAbsent(members []string, routeNamespace string) ([]string, bool) {
 }
 
 // isServiceMeshMemberRoleReady Checks knative-serving namespace is a configured member or not
-func isServiceMeshMemberRollReady(servingNamespace string, api client.Client) error {
+func isServiceMeshMemberRollReady(servingNamespace string, api client.Client) (bool, error) {
 	smmr := &maistrav1.ServiceMeshMemberRoll{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: ingressNamespace(servingNamespace), Name: smmrName}, smmr); err != nil {
-		return err
+		return false, err
 	}
 	for _, member := range smmr.Status.ConfiguredMembers {
 		if member == servingNamespace {
-			return nil
+			return true, nil
 		}
 	}
-	return errors.New("SMMR not yet ready")
+	return false, nil
 }
 
 func watchServiceMeshType(c controller.Controller, obj runtime.Object) error {
@@ -239,13 +242,16 @@ func ingressNamespace(servingNamespace string) string {
 }
 
 func createIngressNamespace(servingNamespace string, api client.Client) error {
+	name := ingressNamespace(servingNamespace)
 	ns := &v1.Namespace{}
-	if err := api.Get(context.TODO(), client.ObjectKey{Name: ingressNamespace(servingNamespace)}, ns); err != nil {
+	if err := api.Get(context.TODO(), client.ObjectKey{Name: name}, ns); err != nil {
 		if apierrors.IsNotFound(err) {
-			ns.Name = ingressNamespace(servingNamespace)
+			ns.Name = name
+			log.Info("Creating namespace for service mesh")
 			if err = api.Create(context.TODO(), ns); err != nil {
 				return err
 			}
+			log.Info(fmt.Sprintf("Successfully created namespace %s", name))
 			return nil
 		}
 		return err

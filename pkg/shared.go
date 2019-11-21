@@ -12,7 +12,7 @@ func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
 	if ks.Spec.Config == nil {
 		ks.Spec.Config = map[string]map[string]string{}
 	}
-	if len(ks.Spec.Config[cm][key]) == 0 {
+	if _, found := ks.Spec.Config[cm][key]; !found {
 		if ks.Spec.Config[cm] == nil {
 			ks.Spec.Config[cm] = map[string]string{}
 		}
