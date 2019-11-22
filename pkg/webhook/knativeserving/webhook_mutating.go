@@ -70,6 +70,7 @@ func (a *KnativeServingConfigurator) mutate(ctx context.Context, ks *servingv1al
 		a.ingress,
 		a.configureLogURLTemplate,
 		a.ensureCustomCerts,
+		a.imagesFromEnviron,
 	}
 	for _, stage := range stages {
 		if err := stage(ctx, ks); err != nil {

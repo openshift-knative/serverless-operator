@@ -87,6 +87,30 @@ func (a *KnativeServingConfigurator) ensureCustomCerts(ctx context.Context, inst
 	return nil
 }
 
+// imagesFromEnviron overrides registry images
+func (a *KnativeServingConfigurator) imagesFromEnviron(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
+	if instance.Spec.Registry.Override == nil {
+		instance.Spec.Registry.Override = map[string]string{}
+	} // else return since overriding user from env might surprise me?
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		if strings.HasPrefix(pair[0], "IMAGE_") {
+			name := strings.SplitN(pair[0], "_", 2)[1]
+			switch name {
+			case "default":
+				instance.Spec.Registry.Default = pair[1]
+			case "queue-proxy":
+				pkg.Configure(instance, "deployment", "queueSidecarImage", pair[1])
+				fallthrough
+			default:
+				instance.Spec.Registry.Override[name] = pair[1]
+			}
+		}
+	}
+	log.Info("Setting", "registry", instance.Spec.Registry)
+	return nil
+}
+
 // validate minimum openshift version
 func (v *KnativeServingValidator) validateVersion(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	minVersion, err := semver.NewVersion(os.Getenv("MIN_OPENSHIFT_VERSION"))
