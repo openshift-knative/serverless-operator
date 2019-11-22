@@ -3,6 +3,7 @@ package knativeserving
 import (
 	"context"
 
+	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/knative-serving-openshift/pkg"
 	"github.com/openshift-knative/knative-serving-openshift/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
@@ -91,6 +92,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	if err := r.ensureCustomCertsConfigMap(context.TODO(), instance); err != nil {
 		return reconcile.Result{}, err
 	}
+	if err := r.installNetworkPolicies(context.TODO(), instance); err != nil {
+		return reconcile.Result{}, err
+	}
 	if err := servicemesh.ApplyServiceMesh(instance, r.client); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -118,6 +122,29 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(ctx context.Context
 			}
 			return nil
 		}
+		return err
+	}
+	return nil
+}
+
+// create wide-open networkpolicies for the knative components
+func (a *ReconcileKnativeServing) installNetworkPolicies(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
+	namespace := instance.GetNamespace()
+	log.Info("Installing Network Policies")
+	const path = "deploy/resources/networkpolicies.yaml"
+
+	manifest, err := mf.NewManifest(path, false, a.client)
+	if err != nil {
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+	if len(namespace) > 0 {
+		transforms = append(transforms, mf.InjectNamespace(namespace))
+	}
+	if err := manifest.Transform(transforms...); err != nil {
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
 		return err
 	}
 	return nil
