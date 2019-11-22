@@ -290,6 +290,12 @@ spec:
                       value: "4.1.13"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
+                    - name: IMAGE_default
+                      value: quay.io/openshift-knative/knative-serving-${NAME}:v0.9.0
+                    - name: IMAGE_queue-proxy
+                      value: quay.io/openshift-knative/knative-serving-queue:v0.9.0
+                    - name: IMAGE_networking-istio
+                      value: quay.io/openshift-knative/knative-serving-istio:v0.9.0
       - name: knative-openshift-ingress
         spec:
           replicas: 1
