@@ -38,7 +38,7 @@ var (
 )
 
 func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	if err := configure(instance, api); err != nil {
+	if err := configureIstio(instance, api); err != nil {
 		return err
 	}
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
@@ -55,6 +55,9 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 		return nil
 	}
 	log.Info("ServiceMeshControlPlane is ready")
+	if err := selectGateways(instance, api); err != nil {
+		return err
+	}
 	if err := installServiceMeshMemberRoll(instance, api); err != nil {
 		// ref for substring https://github.com/Maistra/istio-operator/blob/maistra-1.0/pkg/controller/servicemesh/validation/memberroll.go#L95
 		if strings.Contains(err.Error(), "one or more members are already defined in another ServiceMeshMemberRoll") {
@@ -99,7 +102,7 @@ func WatchResources(c controller.Controller) error {
 	return nil
 }
 
-func configure(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func configureIstio(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	ns := ingressNamespace(instance.GetNamespace())
 	c1 := pkg.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
 	c2 := pkg.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
@@ -108,6 +111,11 @@ func configure(instance *servingv1alpha1.KnativeServing, api client.Client) erro
 			return err
 		}
 	}
+	return nil
+}
+
+func selectGateways(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	ns := ingressNamespace(instance.GetNamespace())
 	gateways := &v1alpha3.GatewayList{}
 	if err := api.List(context.TODO(), &client.ListOptions{Namespace: instance.GetNamespace()}, gateways); err != nil {
 		return err
