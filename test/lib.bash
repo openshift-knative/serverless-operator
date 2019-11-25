@@ -55,13 +55,13 @@ function run_conformance_tests {
 
   # Setup test namespaces
   oc create namespace serving-tests
-  oc new-project serving-tests-alt
+  oc create namespace serving-tests-alt
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
   oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
   # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
