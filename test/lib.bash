@@ -45,6 +45,29 @@ function run_e2e_tests {
     && return 1
 }
 
+function run_conformance_tests {
+  (
+  # Checkout the relevant code to run
+  mkdir -p "$GOPATH/src/knative.dev"
+  cd "$GOPATH/src/knative.dev" || exit
+  git clone -b release-v0.9.0 --single-branch https://github.com/openshift/knative-serving.git serving
+  cd serving || exit
+
+  # Setup test namespaces
+  oc create namespace serving-tests
+  oc new-project serving-tests-alt
+  oc adm policy add-scc-to-user privileged -z default -n serving-tests
+  oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
+  # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
+  oc adm policy add-scc-to-user anyuid -z default -n serving-tests
+
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    && logger.success 'Tests has passed' && return 0 \
+    || logger.error 'Tests have failures!' \
+    && return 1
+  )
+}
+
 function teardown {
   logger.warn "Teardown 💀"
   delete_namespaces

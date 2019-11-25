@@ -14,7 +14,9 @@ failed=0
 
 (( !failed )) && install_service_mesh_operator || failed=2
 (( !failed )) && install_catalogsource || failed=3
-(( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=4
+(( !failed )) && ensure_serverless_installed || failed=4
+(( !failed )) && run_conformance_tests || failed=5
+#(( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=4
 (( failed )) && dump_state
 (( failed )) && exit $failed
 
