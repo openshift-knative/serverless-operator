@@ -62,24 +62,21 @@ function run_upstream_tests {
   # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
+  failed=0
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
-    && logger.success 'Tests has passed' && return 0 \
-    || logger.error 'Tests have failures!' \
-    && return 1
+    || failed=1
 
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
-    && logger.success 'Tests has passed' && return 0 \
-    || logger.error 'Tests have failures!' \
-    && return 1
+    || failed=1
 
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
-    && logger.success 'Tests has passed' && return 0 \
-    || logger.error 'Tests have failures!' \
-    && return 1
+    || failed=1
+  
+  return $failed
   )
 }
 
