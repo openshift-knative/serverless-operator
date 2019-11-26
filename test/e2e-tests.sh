@@ -5,7 +5,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
 set -Eeuo pipefail
 
-initialize || exit $?
 scale_up_workers || exit $?
 create_namespaces || exit $?
 create_htpasswd_users && add_roles || exit $?
