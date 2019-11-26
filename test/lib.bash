@@ -50,7 +50,8 @@ function run_upstream_tests {
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || exit
-  git clone -b "$1" --single-branch https://github.com/openshift/knative-serving.git serving
+  #git clone -b "release-v$1" --single-branch https://github.com/openshift/knative-serving.git serving
+  git clone -b "ocp-flag-0.9.0" --single-branch https://github.com/markusthoemmes/knative-serving.git serving
   cd serving || exit
 
   # Setup test namespaces
@@ -62,17 +63,20 @@ function run_upstream_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
 
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
 
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
