@@ -54,6 +54,12 @@ function run_upstream_tests {
   git clone -b "ocp-flag-0.9.0" --single-branch https://github.com/markusthoemmes/knative-serving.git serving
   cd serving || exit
 
+  # Remove unneeded manifest
+  rm test/config/100-istio-default-domain.yaml
+
+  # Create test resources (namespaces, configMaps, secrets)
+  oc apply -f test/config
+
   # Setup test namespaces
   oc create namespace serving-tests
   oc create namespace serving-tests-alt
@@ -63,17 +69,18 @@ function run_upstream_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   failed=0
+  image_template="registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
+    --imagetemplate "$image_template" \
     || failed=1
 
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
+    --imagetemplate "$image_template" \
     || failed=1
 
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
+    --imagetemplate "$image_template" \
     || failed=1
   
   return $failed
