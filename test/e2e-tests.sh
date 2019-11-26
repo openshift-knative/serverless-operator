@@ -14,9 +14,16 @@ failed=0
 
 (( !failed )) && install_service_mesh_operator || failed=2
 (( !failed )) && install_catalogsource || failed=3
-(( !failed )) && ensure_serverless_installed || failed=4
-(( !failed )) && run_conformance_tests || failed=5
-#(( !failed )) && logger.success 'Cluster prepared for testing.' && run_e2e_tests || failed=4
+(( !failed )) && logger.success 'Cluster prepared for testing.'
+
+# Run serverless-operator specific tests.
+(( !failed )) && run_e2e_tests || failed=4
+
+# Setup serverless and run upstream e2e and conformance tests.
+(( !failed )) && ensure_serverless_installed || failed=5
+(( !failed )) && run_upstream_tests "release-v0.9.0" || failed=6
+(( !failed )) && teardown_serverless || failed=7
+
 (( failed )) && dump_state
 (( failed )) && exit $failed
 

@@ -45,12 +45,12 @@ function run_e2e_tests {
     && return 1
 }
 
-function run_conformance_tests {
+function run_upstream_tests {
   (
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || exit
-  git clone -b release-v0.9.0 --single-branch https://github.com/openshift/knative-serving.git serving
+  git clone -b "$1" --single-branch https://github.com/openshift/knative-serving.git serving
   cd serving || exit
 
   # Setup test namespaces
@@ -61,7 +61,18 @@ function run_conformance_tests {
   # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
+  export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
+    && logger.success 'Tests has passed' && return 0 \
+    || logger.error 'Tests have failures!' \
+    && return 1
+
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
+    && logger.success 'Tests has passed' && return 0 \
+    || logger.error 'Tests have failures!' \
+    && return 1
+
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" --dockerrepo docker.io/markusthoemmes \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
