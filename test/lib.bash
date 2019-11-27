@@ -12,7 +12,7 @@ NAMESPACES+=("serverless-tests2")
 
 # == Lifefycle
 
-function initialize {
+function register_teardown {
   if [[ "${TEARDOWN}" == "on_exit" ]]; then
     logger.debug 'Registering trap for teardown as EXIT'
     trap teardown EXIT
@@ -59,10 +59,6 @@ function run_upstream_tests {
 
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
-
-  # Setup test namespaces
-  oc create namespace serving-tests
-  oc create namespace serving-tests-alt
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
   oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
   # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
@@ -88,6 +84,10 @@ function run_upstream_tests {
 }
 
 function teardown {
+  if [[ "${OPENSHIFT_BUILD_NAMESPACE}" != "" ]]; then
+    logger.warn 'Skipping teardown as we are running on Openshift CI'
+    return 1
+  fi
   logger.warn "Teardown 💀"
   delete_namespaces
   delete_catalog_source
