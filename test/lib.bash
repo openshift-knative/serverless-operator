@@ -86,7 +86,7 @@ function run_upstream_tests {
 function teardown {
   if [[ "${OPENSHIFT_BUILD_NAMESPACE}" != "" ]]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
-    return 1
+    return 0
   fi
   logger.warn "Teardown 💀"
   delete_namespaces
