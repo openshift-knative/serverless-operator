@@ -48,10 +48,10 @@ function run_e2e_tests {
 function run_knative_serving_tests {
   (
   # Setup a temporary GOPATH to safely check out the repository without breaking other things.
-  local tmp_gopath=/tmp/gotmp
-  mkdir -p $tmp_gopath
-  cp -r "$GOPATH/bin" $tmp_gopath
-  export GOPATH=$tmp_gopath
+  local tmp_gopath
+  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
+  cp -r "$GOPATH/bin" "$tmp_gopath"
+  export GOPATH="$tmp_gopath"
 
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
@@ -85,7 +85,7 @@ function run_knative_serving_tests {
     --imagetemplate "$image_template" \
     || failed=1
   
-  rm -rf $tmp_gopath
+  rm -rf "$tmp_gopath"
   return $failed
   )
 }
