@@ -56,8 +56,7 @@ function run_knative_serving_tests {
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || exit
-  #git clone -b "release-v$1" --single-branch https://github.com/openshift/knative-serving.git serving
-  git clone -b "ocp-flag-0.9.0" --single-branch https://github.com/markusthoemmes/knative-serving.git serving
+  git clone -b "release-v$1" --single-branch https://github.com/openshift/knative-serving.git serving
   cd serving || exit
 
   # Remove unneeded manifest
