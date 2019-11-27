@@ -45,7 +45,7 @@ function run_e2e_tests {
     && return 1
 }
 
-function run_upstream_tests {
+function run_knative_serving_tests {
   (
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
