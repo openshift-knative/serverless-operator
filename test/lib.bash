@@ -55,9 +55,9 @@ function run_knative_serving_tests {
 
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
-  cd "$GOPATH/src/knative.dev" || exit
+  cd "$GOPATH/src/knative.dev" || return $?
   git clone -b "release-$1" --single-branch https://github.com/openshift/knative-serving.git serving
-  cd serving || exit
+  cd serving || return $?
 
   # Remove unneeded manifest
   rm test/config/100-istio-default-domain.yaml
@@ -69,7 +69,7 @@ function run_knative_serving_tests {
   # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
-  failed=0
+  local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
