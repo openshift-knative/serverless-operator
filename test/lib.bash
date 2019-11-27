@@ -47,6 +47,12 @@ function run_e2e_tests {
 
 function run_knative_serving_tests {
   (
+  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
+  local tmp_gopath=/tmp/gotmp
+  mkdir -p $tmp_gopath
+  cp -r "$GOPATH/bin" $tmp_gopath
+  export GOPATH=$tmp_gopath
+
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || exit
@@ -79,12 +85,13 @@ function run_knative_serving_tests {
     --imagetemplate "$image_template" \
     || failed=1
   
+  rm -rf $tmp_gopath
   return $failed
   )
 }
 
 function teardown {
-  if [[ "${OPENSHIFT_BUILD_NAMESPACE}" != "" ]]; then
+  if [[ -v OPENSHIFT_BUILD_NAMESPACE ]]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
     return 0
   fi
