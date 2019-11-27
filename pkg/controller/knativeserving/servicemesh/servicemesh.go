@@ -38,6 +38,13 @@ var (
 )
 
 func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	if instance.Status.IsFullySupported() {
+		return nil
+	}
+	instance.Status.MarkDependencyInstalling("ServiceMesh control plane and member roll")
+	if err := api.Status().Update(context.TODO(), instance); err != nil {
+		return err
+	}
 	if err := configureIstio(instance, api); err != nil {
 		return err
 	}
@@ -76,6 +83,10 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	if ready {
 		log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
 		// TODO: instance.Status.MarkDependenciesInstalled()
+	}
+	instance.Status.MarkDependenciesInstalled()
+	if err := api.Status().Update(context.TODO(), instance); err != nil {
+		return err
 	}
 	return nil
 }

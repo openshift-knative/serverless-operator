@@ -993,12 +993,13 @@
   revision = "90c64dc2c9339c1945d13e0faf9c0e70a3c6a292"
 
 [[projects]]
-  branch = "master"
-  digest = "1:1a90c36811474ce616367c5dcced04863cae648f6deaad402a57966a293d1e59"
+  branch = "deps-installed"
+  digest = "1:795d020ab120133322ee0d29d007157e276b74de0867feac23b27eba521d0f8d"
   name = "knative.dev/serving-operator"
   packages = ["pkg/apis/serving/v1alpha1"]
   pruneopts = "NT"
-  revision = "b910d7f5526bb7cc359fee186e06ad179694773f"
+  revision = "ab00e3dcb91d578f7e3e8ae5ba2ae7701824a0bf"
+  source = "https://github.com/jcrossley3/serving-operator"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"

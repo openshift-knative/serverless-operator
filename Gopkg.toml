@@ -45,7 +45,8 @@ required = [
 
 [[constraint]]
   name = "knative.dev/serving-operator"
-  branch = "master"
+  branch = "deps-installed"
+  source = "https://github.com/jcrossley3/serving-operator"
 
 [[constraint]]
   name = "github.com/openshift/api"

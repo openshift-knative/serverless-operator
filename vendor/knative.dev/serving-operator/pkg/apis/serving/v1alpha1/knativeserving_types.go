@@ -25,8 +25,9 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 const (
-	InstallSucceeded     apis.ConditionType = "InstallSucceeded"
-	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
+	DependenciesInstalled apis.ConditionType = "DependenciesInstalled"
+	InstallSucceeded      apis.ConditionType = "InstallSucceeded"
+	DeploymentsAvailable  apis.ConditionType = "DeploymentsAvailable"
 )
 
 // Registry defines image overrides of knative images.

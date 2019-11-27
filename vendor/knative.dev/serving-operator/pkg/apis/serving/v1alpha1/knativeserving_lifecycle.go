@@ -21,6 +21,7 @@ import (
 )
 
 var conditions = apis.NewLivingConditionSet(
+	DependenciesInstalled,
 	DeploymentsAvailable,
 	InstallSucceeded,
 )
@@ -56,6 +57,10 @@ func (is *KnativeServingStatus) IsDeploying() bool {
 	return is.IsInstalled() && !is.IsAvailable()
 }
 
+func (is *KnativeServingStatus) IsFullySupported() bool {
+	return is.GetCondition(DependenciesInstalled).IsTrue()
+}
+
 func (is *KnativeServingStatus) GetCondition(t apis.ConditionType) *apis.Condition {
 	return conditions.Manage(is).GetCondition(t)
 }
@@ -73,6 +78,10 @@ func (is *KnativeServingStatus) MarkInstallFailed(msg string) {
 
 func (is *KnativeServingStatus) MarkInstallSucceeded() {
 	conditions.Manage(is).MarkTrue(InstallSucceeded)
+	if is.GetCondition(DependenciesInstalled).IsUnknown() {
+		// Assume deps are installed if we're not sure
+		is.MarkDependenciesInstalled()
+	}
 }
 
 func (is *KnativeServingStatus) MarkDeploymentsAvailable() {
@@ -84,4 +93,22 @@ func (is *KnativeServingStatus) MarkDeploymentsNotReady() {
 		DeploymentsAvailable,
 		"NotReady",
 		"Waiting on deployments")
+}
+
+func (is *KnativeServingStatus) MarkDependenciesInstalled() {
+	conditions.Manage(is).MarkTrue(DependenciesInstalled)
+}
+
+func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
+	conditions.Manage(is).MarkFalse(
+		DependenciesInstalled,
+		"Installing",
+		"Dependency installing: %s", msg)
+}
+
+func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
+	conditions.Manage(is).MarkFalse(
+		DependenciesInstalled,
+		"Error",
+		"Dependency missing: %s", msg)
 }
