@@ -269,7 +269,7 @@ spec:
                   value: quay.io/openshift-knative/knative-serving-istio:v0.9.0
                 - name: IMAGE_webhook
                   value: quay.io/openshift-knative/knative-serving-webhook:v0.9.0
-                image: quay.io/openshift-knative/knative-serving-operator:v0.9.0-1.2.0-05
+                image: registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-serving-operator
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}

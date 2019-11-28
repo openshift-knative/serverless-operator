@@ -12,15 +12,8 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  local operator_image rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  operator_image=$(tag_operator_image)
-  if [[ -n "${operator_image}" ]]; then
-    "${rootdir}/hack/catalog.sh" | sed -e "s+\(.* containerImage:\)\(.*\)+\1 ${operator_image}+g" > "$CATALOG_SOURCE_FILENAME"
-  else
-    "${rootdir}/hack/catalog.sh" > "$CATALOG_SOURCE_FILENAME"
-  fi
-  oc apply -n "$OPERATORS_NAMESPACE" -f "$CATALOG_SOURCE_FILENAME" || return 1
+  local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  ${rootdir}/hack/catalog.sh | envsubst | oc apply -n "$OPERATORS_NAMESPACE" -f - || return 1
 
   logger.success "CatalogSource installed successfully"
 }
