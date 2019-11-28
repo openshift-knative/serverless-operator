@@ -1,12 +1,11 @@
 FROM openshift/origin-release:golang-1.12 AS builder
 
 ENV SRC=${GOPATH}/src/github.com/openshift-knative/serverless-operator/serving/operator
-WORKDIR ${SRC}
 
+WORKDIR ${SRC}
 COPY . .
 
-RUN go build ./cmd/manager
-RUN mv manager /usr/bin/manager
+RUN go build -o /usr/bin/manager ./cmd/manager
 
 FROM openshift/origin-base
 
@@ -17,7 +16,7 @@ ENV OPERATOR=/usr/local/bin/knative-serving-operator \
 COPY --from=builder /usr/bin/manager ${OPERATOR}
 
 COPY build/bin /usr/local/bin
-RUN  /usr/local/bin/user_setup
+RUN /usr/local/bin/user_setup
 
 # install manifest[s]
 COPY deploy /deploy
