@@ -288,7 +288,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.13
+                  image: registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
