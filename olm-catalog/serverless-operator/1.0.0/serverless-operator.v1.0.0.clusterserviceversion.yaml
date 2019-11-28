@@ -162,19 +162,19 @@ spec:
                 - name: OPERATOR_NAME
                   value: knative-serving-operator
                 - name: IMAGE_QUEUE
-                  value: quay.io/openshift-knative/knative-serving-queue:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-queue
                 - name: IMAGE_activator
-                  value: quay.io/openshift-knative/knative-serving-activator:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-activator
                 - name: IMAGE_autoscaler
-                  value: quay.io/openshift-knative/knative-serving-autoscaler:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-autoscaler
                 - name: IMAGE_controller
-                  value: quay.io/openshift-knative/knative-serving-controller:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-controller
                 - name: IMAGE_networking-certmanager
-                  value: quay.io/openshift-knative/knative-serving-certmanager:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-certmanager
                 - name: IMAGE_networking-istio
-                  value: quay.io/openshift-knative/knative-serving-istio:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-istio
                 - name: IMAGE_webhook
-                  value: quay.io/openshift-knative/knative-serving-webhook:v0.7.1
+                  value: registry.svc.ci.openshift.org/openshift/knative-v0.7.1:knative-serving-webhook
                 image: quay.io/openshift-knative/knative-serving-operator:v0.7.1-TP1-04
                 imagePullPolicy: Always
                 name: knative-serving-operator
