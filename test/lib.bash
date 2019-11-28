@@ -45,50 +45,6 @@ function run_e2e_tests {
     && return 1
 }
 
-function run_knative_serving_tests {
-  (
-  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
-  local tmp_gopath
-  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
-  cp -r "$GOPATH/bin" "$tmp_gopath"
-  export GOPATH="$tmp_gopath"
-
-  # Checkout the relevant code to run
-  mkdir -p "$GOPATH/src/knative.dev"
-  cd "$GOPATH/src/knative.dev" || return $?
-  git clone -b "release-$1" --single-branch https://github.com/openshift/knative-serving.git serving
-  cd serving || return $?
-
-  # Remove unneeded manifest
-  rm test/config/100-istio-default-domain.yaml
-
-  # Create test resources (namespaces, configMaps, secrets)
-  oc apply -f test/config
-  oc adm policy add-scc-to-user privileged -z default -n serving-tests
-  oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
-  # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
-  oc adm policy add-scc-to-user anyuid -z default -n serving-tests
-
-  local failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}"
-  export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || failed=1
-
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || failed=1
-
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || failed=1
-  
-  rm -rf "$tmp_gopath"
-  return $failed
-  )
-}
-
 function teardown {
   if [[ -v OPENSHIFT_BUILD_NAMESPACE ]]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
@@ -113,23 +69,33 @@ function dump_state {
   dump_cluster_state
   dump_openshift_olm_state
   dump_openshift_ingress_state
+  dump_knative_state
 }
 
 function dump_openshift_olm_state {
   logger.info "Dump of subscriptions.operators.coreos.com"
   # This is for status checking.
-  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces
+  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
   logger.info "Dump of catalog operator log"
-  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator
+  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator || true
 }
 
 function dump_openshift_ingress_state {
   logger.info "Dump of routes.route.openshift.io"
-  oc get routes.route.openshift.io -o yaml --all-namespaces
+  oc get routes.route.openshift.io -o yaml --all-namespaces || true
   logger.info "Dump of routes.serving.knative.dev"
-  oc get routes.serving.knative.dev -o yaml --all-namespaces
+  oc get routes.serving.knative.dev -o yaml --all-namespaces || true
   logger.info "Dump of openshift-ingress log"
-  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE"
+  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE" || true
+}
+
+function dump_knative_state {
+  logger.info 'Dump of knative state'
+  oc describe knativeserving knative-serving -n "$SERVING_NAMESPACE" || true
+  oc get smcp --all-namespaces || true
+  oc get smmr --all-namespaces || true
+  oc get pods -n "$SERVING_NAMESPACE" || true
+  oc get ksvc --all-namespaces || true
 }
 
 # == Test users

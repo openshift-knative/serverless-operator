@@ -173,7 +173,7 @@ func CleanupAll(contexts ...*Context) {
 	}
 }
 
-// Cleanup iterates through the list of registered CleanupFunc functions and calls them
+// Cleanup iterates through the list of registered CleanupFunc functions in reverse order and calls them
 func (ctx *Context) Cleanup() {
 	for _, f := range ctx.CleanupList {
 		f()
