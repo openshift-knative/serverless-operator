@@ -1,0 +1,131 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-openshift-ingress
+  namespace: knative-serving
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-openshift-ingress
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - events
+  - configmaps
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  verbs:
+  - "*"
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - "*"
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - networking.internal.knative.dev
+  resources:
+  - clusteringresses
+  - clusteringresses/status
+  - clusteringresses/finalizers
+  - ingresses
+  - ingresses/status
+  - ingresses/finalizers
+  verbs:
+  - "*"
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  - routes/custom-host
+  - routes/status
+  - routes/finalizers
+  verbs:
+  - "*"
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - knativeservings
+  - knativeservings/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - maistra.io
+  resources:
+  - servicemeshmemberrolls
+  verbs:
+  - '*'
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-openshift-ingress
+subjects:
+- kind: ServiceAccount
+  name: knative-openshift-ingress
+  namespace: knative-serving
+roleRef:
+  kind: ClusterRole
+  name: knative-openshift-ingress
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-openshift-ingress
+  namespace: knative-serving
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: knative-openshift-ingress
+  template:
+    metadata:
+      labels:
+        name: knative-openshift-ingress
+    spec:
+      serviceAccountName: knative-openshift-ingress
+      containers:
+        - name: knative-openshift-ingress
+          image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.13
+          command:
+          - knative-openshift-ingress
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: "" # watch all namespaces for ClusterIngress
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "knative-openshift-ingress"
