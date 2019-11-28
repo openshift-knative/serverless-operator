@@ -12,7 +12,7 @@ NAMESPACES+=("serverless-tests2")
 
 # == Lifefycle
 
-function initialize {
+function register_teardown {
   if [[ "${TEARDOWN}" == "on_exit" ]]; then
     logger.debug 'Registering trap for teardown as EXIT'
     trap teardown EXIT
@@ -45,7 +45,55 @@ function run_e2e_tests {
     && return 1
 }
 
+function run_knative_serving_tests {
+  (
+  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
+  local tmp_gopath
+  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
+  cp -r "$GOPATH/bin" "$tmp_gopath"
+  export GOPATH="$tmp_gopath"
+
+  # Checkout the relevant code to run
+  mkdir -p "$GOPATH/src/knative.dev"
+  cd "$GOPATH/src/knative.dev" || return $?
+  git clone -b "release-$1" --single-branch https://github.com/openshift/knative-serving.git serving
+  cd serving || return $?
+
+  # Remove unneeded manifest
+  rm test/config/100-istio-default-domain.yaml
+
+  # Create test resources (namespaces, configMaps, secrets)
+  oc apply -f test/config
+  oc adm policy add-scc-to-user privileged -z default -n serving-tests
+  oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
+  # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
+  oc adm policy add-scc-to-user anyuid -z default -n serving-tests
+
+  local failed=0
+  image_template="registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}"
+  export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" \
+    || failed=1
+
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" \
+    || failed=1
+
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" \
+    || failed=1
+  
+  rm -rf "$tmp_gopath"
+  return $failed
+  )
+}
+
 function teardown {
+  if [[ -v OPENSHIFT_BUILD_NAMESPACE ]]; then
+    logger.warn 'Skipping teardown as we are running on Openshift CI'
+    return 0
+  fi
   logger.warn "Teardown 💀"
   delete_namespaces
   delete_catalog_source
