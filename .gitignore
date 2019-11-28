@@ -1,4 +1,5 @@
 .crds/
+_output
 catalogsource-ci.yaml
 user*.kubeconfig
 users.htpasswd
