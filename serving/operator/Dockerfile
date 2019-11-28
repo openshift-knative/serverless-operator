@@ -1,9 +1,9 @@
 FROM openshift/origin-release:golang-1.12 AS builder
 
-ENV SRC=/go/src/github.com/openshift-knative/serverless-operator/serving/operator
-
-COPY . ${SRC}
+ENV SRC=${GOPATH}/src/github.com/openshift-knative/serverless-operator/serving/operator
 WORKDIR ${SRC}
+
+COPY . .
 
 RUN go build ./cmd/manager
 RUN mv manager /usr/bin/manager
