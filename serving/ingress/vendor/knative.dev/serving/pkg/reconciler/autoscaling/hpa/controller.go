@@ -19,9 +19,9 @@ package hpa
 import (
 	"context"
 
-	"knative.dev/pkg/apis/duck"
-	hpainformer "knative.dev/pkg/injection/informers/kubeinformers/autoscalingv2beta1/hpa"
-	serviceinformer "knative.dev/pkg/injection/informers/kubeinformers/corev1/service"
+	hpainformer "knative.dev/pkg/client/injection/kube/informers/autoscaling/v2beta1/horizontalpodautoscaler"
+	serviceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/service"
+	metricinformer "knative.dev/serving/pkg/client/injection/informers/autoscaling/v1alpha1/metric"
 	painformer "knative.dev/serving/pkg/client/injection/informers/autoscaling/v1alpha1/podautoscaler"
 	sksinformer "knative.dev/serving/pkg/client/injection/informers/networking/v1alpha1/serverlessservice"
 
@@ -33,7 +33,7 @@ import (
 	"knative.dev/serving/pkg/reconciler"
 	areconciler "knative.dev/serving/pkg/reconciler/autoscaling"
 	"knative.dev/serving/pkg/reconciler/autoscaling/config"
-	aresources "knative.dev/serving/pkg/reconciler/autoscaling/resources"
+	presources "knative.dev/serving/pkg/resources"
 )
 
 const (
@@ -44,14 +44,13 @@ const (
 func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
-	metrics aresources.Metrics,
-	psInformerFactory duck.InformerFactory,
 ) *controller.Impl {
 
 	paInformer := painformer.Get(ctx)
 	sksInformer := sksinformer.Get(ctx)
 	hpaInformer := hpainformer.Get(ctx)
 	serviceInformer := serviceinformer.Get(ctx)
+	metricInformer := metricinformer.Get(ctx)
 
 	c := &Reconciler{
 		Base: &areconciler.Base{
@@ -59,8 +58,8 @@ func NewController(
 			PALister:          paInformer.Lister(),
 			SKSLister:         sksInformer.Lister(),
 			ServiceLister:     serviceInformer.Lister(),
-			Metrics:           metrics,
-			PSInformerFactory: psInformerFactory,
+			MetricLister:      metricInformer.Lister(),
+			PSInformerFactory: presources.NewPodScalableInformerFactory(ctx),
 		},
 		hpaLister: hpaInformer.Lister(),
 	}
@@ -84,12 +83,17 @@ func NewController(
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 
+	metricInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: onlyHpaClass,
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
 	c.Logger.Info("Setting up ConfigMap receivers")
 	configsToResync := []interface{}{
 		&autoscaler.Config{},
 	}
 	resync := configmap.TypeFilter(configsToResync...)(func(string, interface{}) {
-		controller.SendGlobalUpdates(paInformer.Informer(), paHandler)
+		impl.FilteredGlobalResync(onlyHpaClass, paInformer.Informer())
 	})
 	configStore := config.NewStore(c.Logger.Named("config-store"), resync)
 	configStore.WatchConfigs(cmw)

@@ -211,11 +211,11 @@
   revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
 
 [[projects]]
-  digest = "1:6d4648c27b158de00ffd10aa783113d9b9503cec32239d1711383781ee4162c7"
+  digest = "1:12ef8791a428ab63be9adf5e690ec5f16efd4ec1c80a8b5e07bd425696257bad"
   name = "github.com/google/go-containerregistry"
   packages = ["pkg/name"]
   pruneopts = "NT"
-  revision = "abf9ef06abd9f532944e28e8942644ea4b710a40"
+  revision = "b02d448a3705facf11018efff34f1d2830be5724"
 
 [[projects]]
   branch = "master"
@@ -547,6 +547,7 @@
     "context/ctxhttp",
     "http/httpguts",
     "http2",
+    "http2/h2c",
     "http2/hpack",
     "idna",
   ]
@@ -1012,24 +1013,28 @@
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
-  digest = "1:8bc5799b2b981da8e5474b54e913c078ee422e4597120b14e4747f9c1590dca0"
+  branch = "release-0.9"
+  digest = "1:74beefdc27f70c8d8eeec2bb0f1100c520f97799346e0a900f90cacb91b4205c"
   name = "knative.dev/pkg"
   packages = [
     "apis",
     "apis/duck",
-    "apis/duck/v1beta1",
+    "apis/duck/v1",
+    "apis/v1alpha1",
     "changeset",
     "configmap",
     "kmeta",
     "kmp",
     "logging",
     "logging/logkey",
+    "network",
   ]
   pruneopts = "NT"
-  revision = "86f49e59e0c092a7db93de15a219322c46cd854c"
+  revision = "74659889c421b26b9a416fd203f5a8d3e602bfb2"
 
 [[projects]]
-  digest = "1:6c614f74383265043f962e8123a8e495bd8077b6c4a4989d01d58e263d8c90ac"
+  branch = "release-0.9"
+  digest = "1:d28e7f13fa50eb8dd76b2a8342ceff9795b892a14828b1a9fb4fb1d369c567a2"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -1037,9 +1042,12 @@
     "pkg/apis/networking",
     "pkg/apis/networking/v1alpha1",
     "pkg/apis/serving",
+    "pkg/gc",
+    "pkg/network",
+    "pkg/reconciler/route/config",
   ]
   pruneopts = "NT"
-  revision = "293a57187ac5783b74b46fbf808f0d44720cc7b4"
+  revision = "b066e90ccd6f091e0faf65a759f3ce789d373457"
 
 [[projects]]
   digest = "1:06035489efbd51ccface65fc878ceeb849aba05b2f9443c8993f363fc96e80ac"

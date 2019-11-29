@@ -155,13 +155,6 @@ func TestRouteMigration(t *testing.T) {
 			Spec: routev1.RouteSpec{Host: domainName},
 		}, {
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      routeName0,
-				Namespace: "istio-system",
-				Labels:    map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-			},
-			Spec: routev1.RouteSpec{Host: domainName},
-		}, {
-			ObjectMeta: metav1.ObjectMeta{
 				Name:   "no-remove-missing-label",
 				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
 			},
@@ -189,6 +182,10 @@ func TestRouteMigration(t *testing.T) {
 				},
 				Port: &routev1.RoutePort{
 					TargetPort: intstr.FromString("http2"),
+				},
+				TLS: &routev1.TLSConfig{
+					Termination:                   routev1.TLSTerminationEdge,
+					InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 				},
 			},
 		}, {
@@ -307,24 +304,6 @@ func TestIngressController(t *testing.T) {
 		{
 			name:              "do not reconcile with disable route annotation",
 			annotations:       map[string]string{resources.DisableRouteAnnotation: ""},
-			want:              nil,
-			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
-			deleted:           false,
-		},
-		{
-			name:              "reconcile route with passthrough annotation",
-			annotations:       map[string]string{resources.TLSTerminationAnnotation: "passthrough"},
-			want:              map[string]string{resources.TLSTerminationAnnotation: "passthrough", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
-			deleted:           false,
-		},
-		{
-			name:              "reconcile route with invalid TLS termination annotation",
-			annotations:       map[string]string{resources.TLSTerminationAnnotation: "edge"},
 			want:              nil,
 			wantRouteErr:      errors.IsNotFound,
 			wantSmmr:          true,

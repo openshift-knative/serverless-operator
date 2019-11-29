@@ -19,13 +19,15 @@ package autoscaler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/pkg/errors"
 	av1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
 	"knative.dev/serving/pkg/apis/networking"
 	"knative.dev/serving/pkg/apis/serving"
@@ -46,6 +48,16 @@ const (
 	// to retry if a Scrape returns an error or if the Scrape goes to a pod we already
 	// scraped.
 	scraperMaxRetries = 10
+)
+
+var (
+	// ErrFailedGetEndpoints specifies the error returned by scraper when it fails to
+	// get endpoints.
+	ErrFailedGetEndpoints = errors.New("failed to get endpoints")
+
+	// ErrDidNotReceiveStat specifies the error returned by scraper when it does not receive
+	// stat from an unscraped pod
+	ErrDidNotReceiveStat = errors.New("did not receive stat from an unscraped pod")
 )
 
 // StatsScraper defines the interface for collecting Revision metrics
@@ -81,22 +93,24 @@ type ServiceScraper struct {
 	namespace string
 	metricKey types.NamespacedName
 	url       string
+	logger    *zap.SugaredLogger
 }
 
 // NewServiceScraper creates a new StatsScraper for the Revision which
 // the given Metric is responsible for.
-func NewServiceScraper(metric *av1alpha1.Metric, counter resources.ReadyPodCounter) (*ServiceScraper, error) {
+func NewServiceScraper(metric *av1alpha1.Metric, counter resources.ReadyPodCounter, logger *zap.SugaredLogger) (*ServiceScraper, error) {
 	sClient, err := newHTTPScrapeClient(cacheDisabledClient)
 	if err != nil {
 		return nil, err
 	}
-	return newServiceScraperWithClient(metric, counter, sClient)
+	return newServiceScraperWithClient(metric, counter, sClient, logger)
 }
 
 func newServiceScraperWithClient(
 	metric *av1alpha1.Metric,
 	counter resources.ReadyPodCounter,
-	sClient scrapeClient) (*ServiceScraper, error) {
+	sClient scrapeClient,
+	logger *zap.SugaredLogger) (*ServiceScraper, error) {
 	if metric == nil {
 		return nil, errors.New("metric must not be nil")
 	}
@@ -117,6 +131,7 @@ func newServiceScraperWithClient(
 		url:       urlFromTarget(metric.Spec.ScrapeTarget, metric.ObjectMeta.Namespace),
 		metricKey: types.NamespacedName{Namespace: metric.Namespace, Name: metric.Name},
 		namespace: metric.Namespace,
+		logger:    logger,
 	}, nil
 }
 
@@ -131,7 +146,8 @@ func urlFromTarget(t, ns string) string {
 func (s *ServiceScraper) Scrape() (*StatMessage, error) {
 	readyPodsCount, err := s.counter.ReadyCount()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get endpoints")
+		s.logger.Errorw(ErrFailedGetEndpoints.Error(), zap.Error(err))
+		return nil, ErrFailedGetEndpoints
 	}
 
 	if readyPodsCount == 0 {
@@ -162,7 +178,8 @@ func (s *ServiceScraper) Scrape() (*StatMessage, error) {
 
 	// Return the inner error, if any.
 	if err := grp.Wait(); err != nil {
-		return nil, errors.Wrapf(err, "unsuccessful scrape, sampleSize=%d", sampleSize)
+		s.logger.Errorw("unsuccessful scrape, sampleSize="+strconv.Itoa(sampleSize), zap.Error(err))
+		return nil, err
 	}
 	close(statCh)
 
@@ -220,7 +237,7 @@ func (s *ServiceScraper) tryScrape(scrapedPods *sync.Map) (*Stat, error) {
 	}
 
 	if _, exists := scrapedPods.LoadOrStore(stat.PodName, struct{}{}); exists {
-		return nil, errors.New("did not receive stat from an unscraped pod")
+		return nil, ErrDidNotReceiveStat
 	}
 
 	return stat, nil

@@ -19,7 +19,7 @@ package rules
 import (
 	"strings"
 
-	"github.com/knative/test-infra/tools/webhook-apicoverage/view"
+	"knative.dev/pkg/test/webhook-apicoverage/view"
 )
 
 // display_rules.go contains all the display rules specified by knative serving to display json type like result display.

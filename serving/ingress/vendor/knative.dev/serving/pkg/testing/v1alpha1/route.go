@@ -23,12 +23,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
 	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	netv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving/v1beta1"
 	routenames "knative.dev/serving/pkg/reconciler/route/resources/names"
 )
 
@@ -68,9 +70,9 @@ func WithAnotherRouteFinalizer(r *v1alpha1.Route) {
 // WithConfigTarget sets the Route's traffic block to point at a particular Configuration.
 func WithConfigTarget(config string) RouteOption {
 	return WithSpecTraffic(v1alpha1.TrafficTarget{
-		TrafficTarget: v1beta1.TrafficTarget{
+		TrafficTarget: v1.TrafficTarget{
 			ConfigurationName: config,
-			Percent:           100,
+			Percent:           ptr.Int64(100),
 		},
 	})
 }
@@ -78,9 +80,9 @@ func WithConfigTarget(config string) RouteOption {
 // WithRevTarget sets the Route's traffic block to point at a particular Revision.
 func WithRevTarget(revision string) RouteOption {
 	return WithSpecTraffic(v1alpha1.TrafficTarget{
-		TrafficTarget: v1beta1.TrafficTarget{
+		TrafficTarget: v1.TrafficTarget{
 			RevisionName: revision,
-			Percent:      100,
+			Percent:      ptr.Int64(100),
 		},
 	})
 }
@@ -160,16 +162,28 @@ func MarkCertificateNotReady(r *v1alpha1.Route) {
 	r.Status.MarkCertificateNotReady(routenames.Certificate(r))
 }
 
+// MarkCertificateNotOwned calls the method of the same name on .Status
+func MarkCertificateNotOwned(r *v1alpha1.Route) {
+	r.Status.MarkCertificateNotOwned(routenames.Certificate(r))
+}
+
 // MarkCertificateReady calls the method of the same name on .Status
 func MarkCertificateReady(r *v1alpha1.Route) {
 	r.Status.MarkCertificateReady(routenames.Certificate(r))
 }
 
+// WithReadyCertificateName marks the certificate specified by name as ready.
+func WithReadyCertificateName(name string) func(*v1alpha1.Route) {
+	return func(r *v1alpha1.Route) {
+		r.Status.MarkCertificateReady(name)
+	}
+}
+
 // MarkIngressReady propagates a Ready=True ClusterIngress status to the Route.
 func MarkIngressReady(r *v1alpha1.Route) {
 	r.Status.PropagateIngressStatus(netv1alpha1.IngressStatus{
-		Status: duckv1beta1.Status{
-			Conditions: duckv1beta1.Conditions{{
+		Status: duckv1.Status{
+			Conditions: duckv1.Conditions{{
 				Type:   "Ready",
 				Status: "True",
 			}},

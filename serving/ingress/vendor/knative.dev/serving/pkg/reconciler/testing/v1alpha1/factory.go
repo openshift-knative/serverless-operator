@@ -23,8 +23,8 @@ import (
 
 	fakecachingclient "knative.dev/caching/pkg/client/injection/client/fake"
 	fakesharedclient "knative.dev/pkg/client/injection/client/fake"
+	fakekubeclient "knative.dev/pkg/client/injection/kube/client/fake"
 	fakedynamicclient "knative.dev/pkg/injection/clients/dynamicclient/fake"
-	fakekubeclient "knative.dev/pkg/injection/clients/kubeclient/fake"
 	fakecertmanagerclient "knative.dev/serving/pkg/client/certmanager/injection/client/fake"
 	fakeservingclient "knative.dev/serving/pkg/client/injection/client/fake"
 
@@ -94,12 +94,17 @@ func MakeFactory(ctor Ctor) Factory {
 				return false, nil, nil
 			},
 		)
+		// This is needed by the Configuration controller tests, which
+		// use GenerateName to produce Revisions.
 		PrependGenerateNameReactor(&client.Fake)
+		// This is needed by the ServerlessService controller tests, which
+		// use GenerateName to produce K8s Services.
 		PrependGenerateNameReactor(&kubeClient.Fake)
-		PrependGenerateNameReactor(&dynamicClient.Fake)
 
 		// Set up our Controller from the fakes.
 		c := ctor(ctx, &ls, configmap.NewStaticWatcher())
+		// Update the context with the stuff we decorated it with.
+		r.Ctx = ctx
 
 		for _, reactor := range r.WithReactors {
 			kubeClient.PrependReactor("*", "*", reactor)

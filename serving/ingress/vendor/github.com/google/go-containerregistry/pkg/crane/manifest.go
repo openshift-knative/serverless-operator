@@ -14,30 +14,11 @@
 
 package crane
 
-import (
-	"fmt"
-	"log"
-
-	"github.com/spf13/cobra"
-)
-
-func init() { Root.AddCommand(NewCmdManifest()) }
-
-// NewCmdManifest creates a new cobra.Command for the manifest subcommand.
-func NewCmdManifest() *cobra.Command {
-	return &cobra.Command{
-		Use:   "manifest",
-		Short: "Get the manifest of an image",
-		Args:  cobra.ExactArgs(1),
-		Run:   manifest,
-	}
-}
-
-func manifest(_ *cobra.Command, args []string) {
-	ref := args[0]
+// Manifest returns the manifest for the remote image or index ref.
+func Manifest(ref string) ([]byte, error) {
 	desc, err := getManifest(ref)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	fmt.Print(string(desc.Manifest))
+	return desc.Manifest, nil
 }

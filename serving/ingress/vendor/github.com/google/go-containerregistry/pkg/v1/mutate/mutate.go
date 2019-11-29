@@ -40,8 +40,10 @@ const whiteoutPrefix = ".wh."
 // Addendum contains layers and history to be appended
 // to a base image
 type Addendum struct {
-	Layer   v1.Layer
-	History v1.History
+	Layer       v1.Layer
+	History     v1.History
+	URLs        []string
+	Annotations map[string]string
 }
 
 // AppendLayers applies layers to a base image
@@ -77,6 +79,8 @@ func Config(base v1.Image, cfg v1.Config) (v1.Image, error) {
 	}
 
 	cf.Config = cfg
+	// Downstream tooling expects these to match.
+	cf.ContainerConfig = cfg
 
 	return ConfigFile(base, cf)
 }
@@ -163,11 +167,9 @@ func (i *image) compute() error {
 	manifest := m.DeepCopy()
 	manifestLayers := manifest.Layers
 	for _, add := range i.adds {
-		d := v1.Descriptor{
-			MediaType: types.DockerLayer,
-		}
-
+		d := v1.Descriptor{}
 		var err error
+
 		if d.Size, err = add.Layer.Size(); err != nil {
 			return err
 		}
@@ -175,6 +177,13 @@ func (i *image) compute() error {
 		if d.Digest, err = add.Layer.Digest(); err != nil {
 			return err
 		}
+
+		if d.MediaType, err = add.Layer.MediaType(); err != nil {
+			return err
+		}
+
+		d.Annotations = add.Annotations
+		d.URLs = add.URLs
 
 		manifestLayers = append(manifestLayers, d)
 		digestMap[d.Digest] = add.Layer
@@ -435,7 +444,6 @@ func Time(img v1.Image, t time.Time) (v1.Image, error) {
 
 	layers, err := img.Layers()
 	if err != nil {
-
 		return nil, fmt.Errorf("Error getting image layers: %v", err)
 	}
 
@@ -468,7 +476,7 @@ func Time(img v1.Image, t time.Time) (v1.Image, error) {
 
 	// Copy basic config over
 	cfg.Config = ocf.Config
-	cfg.ContainerConfig = ocf.ContainerConfig
+	cfg.ContainerConfig = ocf.Config // Downstream tooling expects these to match.
 
 	// Strip away timestamps from the config file
 	cfg.Created = v1.Time{Time: t}
@@ -518,12 +526,7 @@ func layerTime(layer v1.Layer, t time.Time) (v1.Layer, error) {
 	b := w.Bytes()
 	// gzip the contents, then create the layer
 	opener := func() (io.ReadCloser, error) {
-		g, err := v1util.GzipReadCloser(ioutil.NopCloser(bytes.NewReader(b)))
-		if err != nil {
-			return nil, fmt.Errorf("Error compressing layer: %v", err)
-		}
-
-		return g, nil
+		return v1util.GzipReadCloser(ioutil.NopCloser(bytes.NewReader(b))), nil
 	}
 	layer, err = tarball.LayerFromOpener(opener)
 	if err != nil {

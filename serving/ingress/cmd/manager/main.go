@@ -108,7 +108,7 @@ func main() {
 
 	// Listen for the CRDs we depend on the be available.
 	log.Info("Waiting for necessary CRDs to be applied.")
-	if err := util.WaitForCRDs(mgr, stopCh, &networkingv1alpha1.ClusterIngress{}, &networkingv1alpha1.Ingress{}); err != nil {
+	if err := util.WaitForCRDs(mgr, stopCh, &networkingv1alpha1.Ingress{}); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}

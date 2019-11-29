@@ -40,7 +40,7 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 		return r.reconcileDeletion(ctx, ci)
 	}
 
-	logger.Infof("Reconciling clusterIngress :%v", ci)
+	logger.Infof("Reconciling ingress :%v", ci)
 
 	// Only add Istio ingress to SMMR
 	if ci.GetAnnotations()[networking.IngressClassAnnotationKey] == network.IstioIngressClassName {
@@ -76,7 +76,7 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 			if err := r.reconcileRoute(ctx, ci, route); err != nil {
 				return fmt.Errorf("failed to create route for host %s: %v", route.Spec.Host, err)
 			}
-			delete(existingMap, route.Namespace+"/"+route.Name)
+			delete(existingMap, route.Name)
 		}
 		// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
 		for _, rt := range existingMap {
@@ -91,7 +91,7 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 		}
 	}
 
-	logger.Info("ClusterIngress successfully synced")
+	logger.Info("Ingress successfully synced")
 	return nil
 }
 
@@ -222,7 +222,7 @@ func routeMap(routes routev1.RouteList, selector map[string]string) map[string]r
 		// and we can't bump the osdk version quickly. ref:
 		// https://github.com/openshift-knative/serverless-operator/serving/ingress/pull/24#discussion_r341804021
 		if routeLabelFilter(route, selector) {
-			mp[route.Namespace+"/"+route.Name] = route
+			mp[route.Name] = route
 		}
 	}
 	return mp

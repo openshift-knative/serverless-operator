@@ -42,6 +42,10 @@ const (
 	// uses to mark requests going through it.
 	ProxyHeaderName = "K-Proxy-Request"
 
+	// HashHeaderName is the name of an internal header that Ingress controller
+	// uses to find out which version of the networking config is deployed.
+	HashHeaderName = "K-Network-Hash"
+
 	// OriginalHostHeader is used to avoid Istio host based routing rules
 	// in Activator.
 	// The header contains the original Host value that can be rewritten
@@ -334,10 +338,26 @@ func checkTagTemplate(t *template.Template) error {
 	return t.Execute(ioutil.Discard, data)
 }
 
-// IsKubeletProbe returns true if the request is a kubernetes probe.
+// IsKubeletProbe returns true if the request is a Kubernetes probe.
 func IsKubeletProbe(r *http.Request) bool {
 	return strings.HasPrefix(r.Header.Get("User-Agent"), KubeProbeUAPrefix) ||
 		r.Header.Get(KubeletProbeHeaderName) != ""
+}
+
+// KnativeProbeHeader returns the value for key ProbeHeaderName in request headers.
+func KnativeProbeHeader(r *http.Request) string {
+	return r.Header.Get(ProbeHeaderName)
+}
+
+// KnativeProxyHeader returns the value for key ProxyHeaderName in request headers.
+func KnativeProxyHeader(r *http.Request) string {
+	return r.Header.Get(ProxyHeaderName)
+}
+
+// IsProbe returns true if the request is a Kubernetes probe or a Knative probe,
+// i.e. non-empty ProbeHeaderName header.
+func IsProbe(r *http.Request) bool {
+	return IsKubeletProbe(r) || KnativeProbeHeader(r) != ""
 }
 
 // RewriteHostIn removes the `Host` header from the inbound (server) request

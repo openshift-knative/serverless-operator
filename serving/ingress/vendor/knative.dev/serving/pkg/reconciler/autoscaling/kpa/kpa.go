@@ -19,14 +19,13 @@ package kpa
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	perrors "github.com/pkg/errors"
 	"go.uber.org/zap"
 
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
-	"knative.dev/serving/pkg/apis/autoscaling"
+	"knative.dev/pkg/ptr"
 	pav1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
 	nv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -73,9 +72,6 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 	if errors.IsNotFound(err) {
 		logger.Debug("PA no longer exists")
 		if err := c.deciders.Delete(ctx, namespace, name); err != nil {
-			return err
-		}
-		if err := c.Metrics.Delete(ctx, namespace, name); err != nil {
 			return err
 		}
 		return nil
@@ -155,11 +151,16 @@ func (c *Reconciler) reconcile(ctx context.Context, pa *pav1alpha1.PodAutoscaler
 	}
 
 	mode := nv1alpha1.SKSOperationModeServe
-	// We put activator in the serving path in two cases:
-	// 1. The revision is scaled to 0.
+	// We put activator in the serving path in the following cases:
+	// 1. The revision is scaled to 0:
+	//   a. want == 0
+	//   b. want == -1 && PA is inactive (Autoscaler has no previous knowledge of
+	//			this revision, e.g. after a restart) but PA status is inactive (it was
+	//			already scaled to 0).
 	// 2. The excess burst capacity is negative.
-	if want == 0 || decider.Status.ExcessBurstCapacity < 0 {
-		logger.Debugf("SKS %s is in proxy mode: want = %d, ebc = %d", pa.Name, want, decider.Status.ExcessBurstCapacity)
+	if want == 0 || decider.Status.ExcessBurstCapacity < 0 || want == -1 && pa.Status.IsInactive() {
+		logger.Infof("SKS should be in proxy mode: want = %d, ebc = %d, PA Inactive? = %v",
+			want, decider.Status.ExcessBurstCapacity, pa.Status.IsInactive())
 		mode = nv1alpha1.SKSOperationModeProxy
 	}
 
@@ -175,6 +176,7 @@ func (c *Reconciler) reconcile(ctx context.Context, pa *pav1alpha1.PodAutoscaler
 
 	// Propagate service name.
 	pa.Status.ServiceName = sks.Status.ServiceName
+	// Currently, SKS.IsReady==True when revision has >0 ready pods.
 	if sks.Status.IsReady() {
 		podCounter := resourceutil.NewScopedEndpointsCounter(c.endpointsLister, pa.Namespace, sks.Status.PrivateServiceName)
 		got, err = podCounter.ReadyCount()
@@ -182,10 +184,10 @@ func (c *Reconciler) reconcile(ctx context.Context, pa *pav1alpha1.PodAutoscaler
 			return perrors.Wrapf(err, "error checking endpoints %s", sks.Status.PrivateServiceName)
 		}
 	}
-	logger.Infof("PA scale got=%v, want=%v", got, want)
+	logger.Infof("PA scale got=%d, want=%d, ebc=%d", got, want, decider.Status.ExcessBurstCapacity)
+	pa.Status.DesiredScale, pa.Status.ActualScale = &want, ptr.Int32(int32(got))
 
-	err = reportMetrics(pa, want, got)
-	if err != nil {
+	if err = reportMetrics(pa, want, got); err != nil {
 		return perrors.Wrap(err, "error reporting metrics")
 	}
 
@@ -239,7 +241,19 @@ func reportMetrics(pa *pav1alpha1.PodAutoscaler, want int32, got int) error {
 	return nil
 }
 
-// computeActiveCondition updates the status of PA, depending on scales desired and present.
+// computeActiveCondition updates the status of a PA given the current scale (got), desired scale (want)
+// and the current status, as per the following table:
+//
+//    | Want | Got    | Status     | New status |
+//    | 0    | <any>  | <any>      | inactive   |
+//    | >0   | < min  | <any>      | activating |
+//    | >0   | >= min | <any>      | active     |
+//    | -1   | < min  | inactive   | inactive   |
+//    | -1   | < min  | activating | activating |
+//    | -1   | < min  | active     | activating |
+//    | -1   | >= min | inactive   | inactive   |
+//    | -1   | >= min | activating | active     |
+//    | -1   | >= min | active     | active     |
 func computeActiveCondition(pa *pav1alpha1.PodAutoscaler, want int32, got int) {
 	minReady := activeThreshold(pa)
 
@@ -252,28 +266,26 @@ func computeActiveCondition(pa *pav1alpha1.PodAutoscaler, want int32, got int) {
 			pa.Status.MarkInactive("NoTraffic", "The target is not receiving traffic.")
 		}
 
-	case got < minReady && want > 0:
-		pa.Status.MarkActivating(
-			"Queued", "Requests to the target are being buffered as resources are provisioned.")
+	case got < minReady:
+		if want > 0 || !pa.Status.IsInactive() {
+			pa.Status.MarkActivating(
+				"Queued", "Requests to the target are being buffered as resources are provisioned.")
+		}
 
 	case got >= minReady:
-		// SKS should already be active.
-		pa.Status.MarkActive()
-
-	case want == scaleUnknown:
-		// We don't know what scale we want, so don't touch PA at all.
+		if want > 0 || !pa.Status.IsInactive() {
+			// SKS should already be active.
+			pa.Status.MarkActive()
+		}
 	}
 }
 
 // activeThreshold returns the scale required for the pa to be marked Active
 func activeThreshold(pa *pav1alpha1.PodAutoscaler) int {
-	if min, ok := pa.Annotations[autoscaling.MinScaleAnnotationKey]; ok {
-		if ms, err := strconv.Atoi(min); err == nil {
-			if ms > 1 {
-				return ms
-			}
-		}
+	min, _ := pa.ScaleBounds()
+	if min < 1 {
+		min = 1
 	}
 
-	return 1
+	return int(min)
 }

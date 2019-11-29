@@ -77,6 +77,10 @@ func TestMakeRoute(t *testing.T) {
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("http2"),
 					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+					},
 				},
 			}},
 		},
@@ -122,6 +126,10 @@ func TestMakeRoute(t *testing.T) {
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("http2"),
 					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+					},
 				},
 			}},
 		},
@@ -154,6 +162,10 @@ func TestMakeRoute(t *testing.T) {
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("http2"),
 					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+					},
 				},
 			}, {
 				ObjectMeta: metav1.ObjectMeta{
@@ -177,6 +189,11 @@ func TestMakeRoute(t *testing.T) {
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("http2"),
+					},
+
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
 				},
 			}},
@@ -210,6 +227,11 @@ func TestMakeRoute(t *testing.T) {
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("http2"),
 					},
+
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+					},
 				},
 			}},
 		},
@@ -219,48 +241,6 @@ func TestMakeRoute(t *testing.T) {
 				rule(withHosts([]string{localDomain, externalDomain}))),
 			),
 			wantErr: ErrNoValidLoadbalancerDomain,
-		},
-		{
-			name: "tls: passthrough termination",
-			ingress: ingress(withTLSTerminationAnnotation("passthrough"), withRules(
-				rule(withHosts([]string{localDomain, externalDomain}))),
-			),
-			want: []*routev1.Route{{
-				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
-					Labels: map[string]string{
-						networking.IngressLabelKey:     "ingress",
-						serving.RouteLabelKey:          "route1",
-						serving.RouteNamespaceLabelKey: "default",
-					},
-					Annotations: map[string]string{
-						TimeoutAnnotation:        "600s",
-						TLSTerminationAnnotation: "passthrough",
-					},
-					Namespace: lbNamespace,
-					Name:      routeName0,
-				},
-				Spec: routev1.RouteSpec{
-					Host: externalDomain,
-					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
-					},
-					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("https"),
-					},
-					TLS: &routev1.TLSConfig{
-						Termination: routev1.TLSTerminationPassthrough,
-					},
-				},
-			}},
-		},
-		{
-			name: "tls: unsupported termination",
-			ingress: ingress(withTLSTerminationAnnotation("edge"), withRules(
-				rule(withHosts([]string{localDomain, externalDomain}))),
-			),
-			wantErr: ErrNotSupportedTLSTermination,
 		},
 	}
 
@@ -337,17 +317,6 @@ func withDisabledAnnotation(ing networkingv1alpha1.IngressAccessor) {
 	}
 	annos[DisableRouteAnnotation] = ""
 	ing.SetAnnotations(annos)
-}
-
-func withTLSTerminationAnnotation(value string) ingressOption {
-	return func(ing networkingv1alpha1.IngressAccessor) {
-		annos := ing.GetAnnotations()
-		if annos == nil {
-			annos = map[string]string{}
-		}
-		annos[TLSTerminationAnnotation] = value
-		ing.SetAnnotations(annos)
-	}
 }
 
 func withLocalVisibility(ing networkingv1alpha1.IngressAccessor) {

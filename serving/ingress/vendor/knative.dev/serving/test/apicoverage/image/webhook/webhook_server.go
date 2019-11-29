@@ -21,9 +21,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/knative/test-infra/tools/webhook-apicoverage/resourcetree"
-	"github.com/knative/test-infra/tools/webhook-apicoverage/webhook"
 	"knative.dev/pkg/signals"
+	"knative.dev/pkg/test/webhook-apicoverage/resourcetree"
+	"knative.dev/pkg/test/webhook-apicoverage/webhook"
 	"knative.dev/serving/test/apicoverage/image/common"
 	"knative.dev/serving/test/apicoverage/image/rules"
 )
@@ -54,6 +54,7 @@ func SetupWebhookServer() {
 	m.HandleFunc("/", ac.RecordResourceCoverage)
 	m.HandleFunc(webhook.ResourceCoverageEndPoint, ac.GetResourceCoverage)
 	m.HandleFunc(webhook.TotalCoverageEndPoint, ac.GetTotalCoverage)
+	m.HandleFunc(webhook.ResourcePercentageCoverageEndPoint, ac.GetResourceCoveragePercentages)
 
 	err := webhookConf.SetupWebhook(m, ac.ResourceMap, namespace, signals.SetupSignalHandler())
 	if err != nil {

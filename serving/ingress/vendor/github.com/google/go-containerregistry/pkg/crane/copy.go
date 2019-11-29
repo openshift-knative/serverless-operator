@@ -15,59 +15,54 @@
 package crane
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/internal/legacy"
+	"github.com/google/go-containerregistry/pkg/logs"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/types"
-	"github.com/spf13/cobra"
 )
 
-func init() { Root.AddCommand(NewCmdCopy()) }
-
-// NewCmdCopy creates a new cobra.Command for the copy subcommand.
-func NewCmdCopy() *cobra.Command {
-	return &cobra.Command{
-		Use:     "copy",
-		Aliases: []string{"cp"},
-		Short:   "Efficiently copy a remote image from src to dst",
-		Args:    cobra.ExactArgs(2),
-		Run:     doCopy,
-	}
-}
-
-func doCopy(_ *cobra.Command, args []string) {
-	src, dst := args[0], args[1]
+// Copy copies a remote image or index from src to dst.
+func Copy(src, dst string) error {
 	srcRef, err := name.ParseReference(src)
 	if err != nil {
-		log.Fatalf("parsing reference %q: %v", src, err)
-	}
-	log.Printf("Pulling %v", srcRef)
-
-	desc, err := remote.Get(srcRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
-	if err != nil {
-		log.Fatalf("fetching image %q: %v", srcRef, err)
+		return fmt.Errorf("parsing reference %q: %v", src, err)
 	}
 
 	dstRef, err := name.ParseReference(dst)
 	if err != nil {
-		log.Fatalf("parsing reference %q: %v", dst, err)
+		return fmt.Errorf("parsing reference for %q: %v", dst, err)
 	}
-	log.Printf("Pushing %v", dstRef)
 
+	logs.Progress.Printf("Pulling %v", srcRef)
+	desc, err := remote.Get(srcRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		return fmt.Errorf("fetching %q: %v", src, err)
+	}
+
+	logs.Progress.Printf("Pushing %v", dstRef)
 	switch desc.MediaType {
 	case types.OCIImageIndex, types.DockerManifestList:
 		// Handle indexes separately.
 		if err := copyIndex(desc, dstRef); err != nil {
-			log.Fatalf("failed to copy index: %v", err)
+			return fmt.Errorf("failed to copy index: %v", err)
+		}
+	case types.DockerManifestSchema1, types.DockerManifestSchema1Signed:
+		// Handle schema 1 images separately.
+		if err := copySchema1(desc, srcRef, dstRef); err != nil {
+			return fmt.Errorf("failed to copy schema 1 image: %v", err)
 		}
 	default:
 		// Assume anything else is an image, since some registries don't set mediaTypes properly.
 		if err := copyImage(desc, dstRef); err != nil {
-			log.Fatalf("failed to copy image: %v", err)
+			return fmt.Errorf("failed to copy image: %v", err)
 		}
 	}
+
+	return nil
 }
 
 func copyImage(desc *remote.Descriptor, dstRef name.Reference) error {
@@ -84,4 +79,17 @@ func copyIndex(desc *remote.Descriptor, dstRef name.Reference) error {
 		return err
 	}
 	return remote.WriteIndex(dstRef, idx, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+}
+
+func copySchema1(desc *remote.Descriptor, srcRef, dstRef name.Reference) error {
+	srcAuth, err := authn.DefaultKeychain.Resolve(srcRef.Context().Registry)
+	if err != nil {
+		return err
+	}
+	dstAuth, err := authn.DefaultKeychain.Resolve(dstRef.Context().Registry)
+	if err != nil {
+		return err
+	}
+
+	return legacy.CopySchema1(desc, srcRef, dstRef, srcAuth, dstAuth)
 }

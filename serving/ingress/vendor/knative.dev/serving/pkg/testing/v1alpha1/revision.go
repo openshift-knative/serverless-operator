@@ -21,7 +21,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
 // RevisionOption enables further configuration of a Revision.
@@ -60,9 +59,9 @@ func MarkResourceNotOwned(kind, name string) RevisionOption {
 }
 
 // WithRevContainerConcurrency sets the given Revision's concurrency.
-func WithRevContainerConcurrency(cc v1beta1.RevisionContainerConcurrencyType) RevisionOption {
+func WithRevContainerConcurrency(cc int64) RevisionOption {
 	return func(rev *v1alpha1.Revision) {
-		rev.Spec.ContainerConcurrency = cc
+		rev.Spec.ContainerConcurrency = &cc
 	}
 }
 
@@ -123,8 +122,10 @@ func MarkDeploying(reason string) RevisionOption {
 
 // MarkProgressDeadlineExceeded calls the method of the same name on the Revision
 // with the message we expect the Revision Reconciler to pass.
-func MarkProgressDeadlineExceeded(r *v1alpha1.Revision) {
-	r.Status.MarkProgressDeadlineExceeded("Unable to create pods for more than 120 seconds.")
+func MarkProgressDeadlineExceeded(message string) RevisionOption {
+	return func(r *v1alpha1.Revision) {
+		r.Status.MarkProgressDeadlineExceeded(message)
+	}
 }
 
 // MarkContainerMissing calls .Status.MarkContainerMissing on the Revision.
@@ -152,4 +153,14 @@ func MarkRevisionReady(r *v1alpha1.Revision) {
 	MarkActive(r)
 	r.Status.MarkResourcesAvailable()
 	r.Status.MarkContainerHealthy()
+}
+
+// WithRevisionLabel attaches a particular label to the revision.
+func WithRevisionLabel(key, value string) RevisionOption {
+	return func(config *v1alpha1.Revision) {
+		if config.Labels == nil {
+			config.Labels = make(map[string]string)
+		}
+		config.Labels[key] = value
+	}
 }

@@ -17,9 +17,11 @@ limitations under the License.
 package resources
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +30,7 @@ import (
 	pkgmetrics "knative.dev/pkg/metrics"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/system"
+	tracingconfig "knative.dev/pkg/tracing/config"
 	"knative.dev/serving/pkg/apis/networking"
 	"knative.dev/serving/pkg/apis/serving"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
@@ -178,8 +181,8 @@ func makeQueueProbe(in *corev1.Probe) *corev1.Probe {
 }
 
 // makeQueueContainer creates the container spec for the queue sidecar.
-func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, observabilityConfig *metrics.ObservabilityConfig,
-	autoscalerConfig *autoscaler.Config, deploymentConfig *deployment.Config) *corev1.Container {
+func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, tracingConfig *tracingconfig.Config, observabilityConfig *metrics.ObservabilityConfig,
+	autoscalerConfig *autoscaler.Config, deploymentConfig *deployment.Config) (*corev1.Container, error) {
 	configName := ""
 	if owner := metav1.GetControllerOf(rev); owner != nil && owner.Kind == "Configuration" {
 		configName = owner.Name
@@ -216,8 +219,10 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, o
 
 	applyReadinessProbeDefaults(rp, userPort)
 
-	// TODO(joshrider) bubble up error instead of squashing it here
-	probeJSON, _ := readiness.EncodeProbe(rp)
+	probeJSON, err := readiness.EncodeProbe(rp)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to serialize readiness probe")
+	}
 
 	return &corev1.Container{
 		Name:            QueueContainerName,
@@ -244,7 +249,7 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, o
 			Value: strconv.Itoa(int(ports[len(ports)-1].ContainerPort)),
 		}, {
 			Name:  "CONTAINER_CONCURRENCY",
-			Value: strconv.Itoa(int(rev.Spec.ContainerConcurrency)),
+			Value: strconv.Itoa(int(rev.Spec.GetContainerConcurrency())),
 		}, {
 			Name:  "REVISION_TIMEOUT_SECONDS",
 			Value: strconv.Itoa(int(ts)),
@@ -275,6 +280,21 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, o
 			Name:  "SERVING_REQUEST_METRICS_BACKEND",
 			Value: observabilityConfig.RequestMetricsBackend,
 		}, {
+			Name:  "TRACING_CONFIG_BACKEND",
+			Value: string(tracingConfig.Backend),
+		}, {
+			Name:  "TRACING_CONFIG_ZIPKIN_ENDPOINT",
+			Value: tracingConfig.ZipkinEndpoint,
+		}, {
+			Name:  "TRACING_CONFIG_STACKDRIVER_PROJECT_ID",
+			Value: tracingConfig.StackdriverProjectID,
+		}, {
+			Name:  "TRACING_CONFIG_DEBUG",
+			Value: strconv.FormatBool(tracingConfig.Debug),
+		}, {
+			Name:  "TRACING_CONFIG_SAMPLE_RATE",
+			Value: fmt.Sprintf("%f", tracingConfig.SampleRate),
+		}, {
 			Name:  "USER_PORT",
 			Value: strconv.Itoa(int(userPort)),
 		}, {
@@ -299,9 +319,8 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, o
 			Name:  "SERVING_READINESS_PROBE",
 			Value: probeJSON,
 		}},
-	}
+	}, nil
 }
-
 func applyReadinessProbeDefaults(p *corev1.Probe, port int32) {
 	switch {
 	case p == nil:

@@ -19,6 +19,7 @@ package revision
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
@@ -34,14 +35,19 @@ import (
 func (c *Reconciler) createDeployment(ctx context.Context, rev *v1alpha1.Revision) (*appsv1.Deployment, error) {
 	cfgs := config.FromContext(ctx)
 
-	deployment := resources.MakeDeployment(
+	deployment, err := resources.MakeDeployment(
 		rev,
 		cfgs.Logging,
+		cfgs.Tracing,
 		cfgs.Network,
 		cfgs.Observability,
 		cfgs.Autoscaler,
 		cfgs.Deployment,
 	)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to make deployment")
+	}
 
 	return c.KubeClientSet.AppsV1().Deployments(deployment.Namespace).Create(deployment)
 }
@@ -50,14 +56,19 @@ func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1alpha1
 	logger := logging.FromContext(ctx)
 	cfgs := config.FromContext(ctx)
 
-	deployment := resources.MakeDeployment(
+	deployment, err := resources.MakeDeployment(
 		rev,
 		cfgs.Logging,
+		cfgs.Tracing,
 		cfgs.Network,
 		cfgs.Observability,
 		cfgs.Autoscaler,
 		cfgs.Deployment,
 	)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update deployment")
+	}
 
 	// Preserve the current scale of the Deployment.
 	deployment.Spec.Replicas = have.Spec.Replicas

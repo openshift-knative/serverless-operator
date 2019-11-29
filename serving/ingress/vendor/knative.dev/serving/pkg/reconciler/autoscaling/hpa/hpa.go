@@ -62,9 +62,6 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 	original, err := c.PALister.PodAutoscalers(namespace).Get(name)
 	if errors.IsNotFound(err) {
 		logger.Debug("PA no longer exists")
-		if err := c.Metrics.Delete(ctx, namespace, name); err != nil {
-			return err
-		}
 		return nil
 	} else if err != nil {
 		return err
@@ -138,7 +135,7 @@ func (c *Reconciler) reconcile(ctx context.Context, key string, pa *pav1alpha1.P
 	}
 
 	// Only create metrics service and metric entity if we actually need to gather metrics.
-	if pa.Metric() == autoscaling.Concurrency {
+	if pa.Metric() == autoscaling.Concurrency || pa.Metric() == autoscaling.RPS {
 		metricSvc, err := c.ReconcileMetricsService(ctx, pa)
 		if err != nil {
 			return perrors.Wrap(err, "error reconciling metrics service")

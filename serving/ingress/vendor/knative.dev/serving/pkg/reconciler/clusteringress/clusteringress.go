@@ -22,7 +22,10 @@ import (
 	"knative.dev/serving/pkg/network"
 	"knative.dev/serving/pkg/reconciler"
 
+	"knative.dev/pkg/apis/istio/v1alpha3"
+	gatewayinformer "knative.dev/pkg/client/injection/informers/istio/v1alpha3/gateway"
 	virtualserviceinformer "knative.dev/pkg/client/injection/informers/istio/v1alpha3/virtualservice"
+	endpointsinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/endpoints"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/tracker"
@@ -76,10 +79,12 @@ func (c *Reconciler) SetTracker(tracker tracker.Interface) {
 // Init method performs initializations to ingress reconciler
 func (c *Reconciler) Init(ctx context.Context, cmw configmap.Watcher, impl *controller.Impl) {
 
-	ing.SetupSecretTracker(ctx, cmw, c, impl)
+	ing.SetupSecretTracker(ctx, c, impl)
 
 	c.Logger.Info("Setting up Ingress event handlers")
 	clusterIngressInformer := clusteringressinformer.Get(ctx)
+	gatewayInformer := gatewayinformer.Get(ctx)
+	endpointsInformer := endpointsinformer.Get(ctx)
 
 	myFilterFunc := reconciler.AnnotationFilterFunc(networking.IngressClassAnnotationKey, network.IstioIngressClassName, true)
 	clusterIngressHandler := cache.FilteringResourceEventHandler{
@@ -100,12 +105,31 @@ func (c *Reconciler) Init(ctx context.Context, cmw configmap.Watcher, impl *cont
 		&network.Config{},
 	}
 	resyncIngressesOnConfigChange := configmap.TypeFilter(configsToResync...)(func(string, interface{}) {
-		controller.SendGlobalUpdates(clusterIngressInformer.Informer(), clusterIngressHandler)
+		impl.FilteredGlobalResync(myFilterFunc, clusterIngressInformer.Informer())
 	})
 	configStore := config.NewStore(c.Logger.Named("config-store"), resyncIngressesOnConfigChange)
 	configStore.WatchConfigs(cmw)
 	c.BaseIngressReconciler.ConfigStore = configStore
 
+	c.Logger.Info("Setting up StatusManager")
+	resyncIngressOnVirtualServiceReady := func(vs *v1alpha3.VirtualService) {
+		// Reconcile when a VirtualService becomes ready
+		impl.EnqueueLabelOfClusterScopedResource(networking.ClusterIngressLabelKey)(vs)
+	}
+	statusProber := ing.NewStatusProber(c.Logger.Named("status-manager"), gatewayInformer.Lister(),
+		endpointsInformer.Lister(), network.NewAutoTransport, resyncIngressOnVirtualServiceReady)
+	c.BaseIngressReconciler.StatusManager = statusProber
+	statusProber.Start(ctx.Done())
+
+	virtualServiceInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		// Cancel probing when a VirtualService is deleted
+		DeleteFunc: func(obj interface{}) {
+			vs, ok := obj.(*v1alpha3.VirtualService)
+			if ok {
+				statusProber.Cancel(vs)
+			}
+		},
+	})
 }
 
 // Reconcile compares the actual state with the desired, and attempts to

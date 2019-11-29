@@ -1,3 +1,17 @@
+// Copyright 2018 Google LLC All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package registry
 
 import (
@@ -104,12 +118,16 @@ func (m *manifests) handle(resp http.ResponseWriter, req *http.Request) *regErro
 		b := &bytes.Buffer{}
 		io.Copy(b, req.Body)
 		rd := sha256.Sum256(b.Bytes())
-		d := "sha256:" + hex.EncodeToString(rd[:])
-		m.manifests[repo][target] = manifest{
+		digest := "sha256:" + hex.EncodeToString(rd[:])
+		mf := manifest{
 			blob:        b.Bytes(),
 			contentType: req.Header.Get("Content-Type"),
 		}
-		resp.Header().Set("Docker-Content-Digest", d)
+		// Allow future references by target (tag) and immutable digest.
+		// See https://docs.docker.com/engine/reference/commandline/pull/#pull-an-image-by-digest-immutable-identifier.
+		m.manifests[repo][target] = mf
+		m.manifests[repo][digest] = mf
+		resp.Header().Set("Docker-Content-Digest", digest)
 		resp.WriteHeader(http.StatusCreated)
 		return nil
 	}

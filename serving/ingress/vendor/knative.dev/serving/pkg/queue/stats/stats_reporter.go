@@ -33,13 +33,14 @@ import (
 // https://github.com/census-ecosystem/opencensus-go-exporter-stackdriver/issues/98
 var defaultLatencyDistribution = view.Distribution(5, 10, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
 
-// StatsReporter defines the interface for sending queue-proxy metrics
+// StatsReporter defines the interface for sending queue proxy metrics.
 type StatsReporter interface {
-	ReportRequestCount(responseCode int, v int64) error
+	ReportRequestCount(responseCode int) error
 	ReportResponseTime(responseCode int, d time.Duration) error
+	ReportQueueDepth(depth int) error
 }
 
-// Reporter holds cached metric objects to report autoscaler metrics
+// Reporter holds cached metric objects to report queue proxy metrics.
 type Reporter struct {
 	initialized          bool
 	ctx                  context.Context
@@ -51,10 +52,12 @@ type Reporter struct {
 	responseCodeClassKey tag.Key
 	countMetric          *stats.Int64Measure
 	latencyMetric        *stats.Float64Measure
+	queueSizeMetric      *stats.Int64Measure // NB: this can be nil, depending on the reporter.
 }
 
-// NewStatsReporter creates a reporter that collects and reports queue proxy metrics
-func NewStatsReporter(ns, service, config, rev string, countMetric *stats.Int64Measure, latencyMetric *stats.Float64Measure) (*Reporter, error) {
+// NewStatsReporter creates a reporter that collects and reports queue proxy metrics.
+func NewStatsReporter(ns, service, config, rev string, countMetric *stats.Int64Measure,
+	latencyMetric *stats.Float64Measure, queueSizeMetric *stats.Int64Measure) (*Reporter, error) {
 	if ns == "" {
 		return nil, errors.New("namespace must not be empty")
 	}
@@ -66,37 +69,23 @@ func NewStatsReporter(ns, service, config, rev string, countMetric *stats.Int64M
 	}
 
 	// Create the tag keys that will be used to add tags to our measurements.
-	nsTag, err := tag.NewKey(metricskey.LabelNamespaceName)
-	if err != nil {
-		return nil, err
-	}
-	svcTag, err := tag.NewKey(metricskey.LabelServiceName)
-	if err != nil {
-		return nil, err
-	}
-	configTag, err := tag.NewKey(metricskey.LabelConfigurationName)
-	if err != nil {
-		return nil, err
-	}
-	revTag, err := tag.NewKey(metricskey.LabelRevisionName)
-	if err != nil {
-		return nil, err
-	}
-	responseCodeTag, err := tag.NewKey("response_code")
-	if err != nil {
-		return nil, err
-	}
-	responseCodeClassTag, err := tag.NewKey("response_code_class")
-	if err != nil {
-		return nil, err
-	}
+	// Tag keys must conform to the restrictions described in
+	// go.opencensus.io/tag/validate.go. Currently those restrictions are:
+	// - length between 1 and 255 inclusive
+	// - characters are printable US-ASCII
+	nsTag := tag.MustNewKey(metricskey.LabelNamespaceName)
+	svcTag := tag.MustNewKey(metricskey.LabelServiceName)
+	configTag := tag.MustNewKey(metricskey.LabelConfigurationName)
+	revTag := tag.MustNewKey(metricskey.LabelRevisionName)
+	responseCodeTag := tag.MustNewKey("response_code")
+	responseCodeClassTag := tag.MustNewKey("response_code_class")
 
 	// Create view to see our measurements.
-	err = view.Register(
+	if err := view.Register(
 		&view.View{
 			Description: "The number of requests that are routed to queue-proxy",
 			Measure:     countMetric,
-			Aggregation: view.Sum(),
+			Aggregation: view.Count(),
 			TagKeys:     []tag.Key{nsTag, svcTag, configTag, revTag, responseCodeTag, responseCodeClassTag},
 		},
 		&view.View{
@@ -105,9 +94,20 @@ func NewStatsReporter(ns, service, config, rev string, countMetric *stats.Int64M
 			Aggregation: defaultLatencyDistribution,
 			TagKeys:     []tag.Key{nsTag, svcTag, configTag, revTag, responseCodeTag, responseCodeClassTag},
 		},
-	)
-	if err != nil {
+	); err != nil {
 		return nil, err
+	}
+	// If queue size reporter is provided register the view for it too.
+	if queueSizeMetric != nil {
+		if err := view.Register(
+			&view.View{
+				Description: "The number of items queued at this queue proxy.",
+				Measure:     queueSizeMetric,
+				Aggregation: view.LastValue(),
+				TagKeys:     []tag.Key{nsTag, svcTag, configTag, revTag, responseCodeTag, responseCodeClassTag},
+			}); err != nil {
+			return nil, err
+		}
 	}
 
 	// Note that service name can be an empty string, so it needs a special treatment.
@@ -133,6 +133,7 @@ func NewStatsReporter(ns, service, config, rev string, countMetric *stats.Int64M
 		responseCodeClassKey: responseCodeClassTag,
 		countMetric:          countMetric,
 		latencyMetric:        latencyMetric,
+		queueSizeMetric:      queueSizeMetric,
 	}, nil
 }
 
@@ -143,8 +144,8 @@ func valueOrUnknown(v string) string {
 	return metricskey.ValueUnknown
 }
 
-// ReportRequestCount captures request count metric with value v.
-func (r *Reporter) ReportRequestCount(responseCode int, v int64) error {
+// ReportRequestCount captures request count metric.
+func (r *Reporter) ReportRequestCount(responseCode int) error {
 	if !r.initialized {
 		return errors.New("StatsReporter is not initialized yet")
 	}
@@ -158,7 +159,17 @@ func (r *Reporter) ReportRequestCount(responseCode int, v int64) error {
 		return err
 	}
 
-	metrics.Record(ctx, r.countMetric.M(v))
+	metrics.Record(ctx, r.countMetric.M(1))
+	return nil
+}
+
+// ReportQueueDepth captures response time requests
+func (r *Reporter) ReportQueueDepth(d int) error {
+	if !r.initialized {
+		return errors.New("StatsReporter is not initialized yet")
+	}
+
+	metrics.Record(r.ctx, r.queueSizeMetric.M(int64(d)))
 	return nil
 }
 

@@ -42,10 +42,37 @@ func WithHeader(name, value string) Preparer {
 	}
 }
 
+// WithHost sets the host in the probe request.
+func WithHost(host string) Preparer {
+	return func(r *http.Request) *http.Request {
+		r.Host = host
+		return r
+	}
+}
+
 // ExpectsBody validates that the body of the probe response matches the provided string.
 func ExpectsBody(body string) Verifier {
 	return func(r *http.Response, b []byte) (bool, error) {
 		return string(b) == body, nil
+	}
+}
+
+// ExpectsHeader validates that the given header of the probe response matches the provided string.
+func ExpectsHeader(name, value string) Verifier {
+	return func(r *http.Response, _ []byte) (bool, error) {
+		return r.Header.Get(name) == value, nil
+	}
+}
+
+// ExpectsStatusCodes validates that the given status code of the probe response matches the provided int.
+func ExpectsStatusCodes(statusCodes []int) Verifier {
+	return func(r *http.Response, _ []byte) (bool, error) {
+		for _, v := range statusCodes {
+			if r.StatusCode == v {
+				return true, nil
+			}
+		}
+		return false, nil
 	}
 }
 
@@ -81,7 +108,7 @@ func Do(ctx context.Context, transport http.RoundTripper, target string, ops ...
 			}
 		}
 	}
-	return resp.StatusCode == http.StatusOK, nil
+	return true, nil
 }
 
 // Done is a callback that is executed when the async probe has finished.

@@ -19,15 +19,16 @@ package v1beta1
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/test/logging"
 	"knative.dev/pkg/test/spoof"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/apis/serving/v1beta1"
 
 	rtesting "knative.dev/serving/pkg/testing/v1beta1"
@@ -41,11 +42,11 @@ func Route(names test.ResourceNames, fopt ...rtesting.RouteOption) *v1beta1.Rout
 		ObjectMeta: metav1.ObjectMeta{
 			Name: names.Route,
 		},
-		Spec: v1beta1.RouteSpec{
-			Traffic: []v1beta1.TrafficTarget{{
+		Spec: v1.RouteSpec{
+			Traffic: []v1.TrafficTarget{{
 				Tag:               names.TrafficTarget,
 				ConfigurationName: names.Config,
-				Percent:           100,
+				Percent:           ptr.Int64(100),
 			}},
 		},
 	}
@@ -65,15 +66,15 @@ func CreateRoute(t *testing.T, clients *test.Clients, names test.ResourceNames, 
 }
 
 // WaitForRouteState polls the status of the Route called name from client every
-// interval until inState returns `true` indicating it is done, returns an
-// error or timeout. desc will be used to name the metric that is emitted to
+// PollInterval until inState returns `true` indicating it is done, returns an
+// error or PollTimeout. desc will be used to name the metric that is emitted to
 // track how long it took for name to get into the state checked by inState.
 func WaitForRouteState(client *test.ServingBetaClients, name string, inState func(r *v1beta1.Route) (bool, error), desc string) error {
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForRouteState/%s/%s", name, desc))
 	defer span.End()
 
 	var lastState *v1beta1.Route
-	waitErr := wait.PollImmediate(interval, timeout, func() (bool, error) {
+	waitErr := wait.PollImmediate(test.PollInterval, test.PollTimeout, func() (bool, error) {
 		var err error
 		lastState, err = client.Routes.Get(name, metav1.GetOptions{})
 		if err != nil {
@@ -117,13 +118,8 @@ func IsRouteNotReady(r *v1beta1.Route) (bool, error) {
 }
 
 // RetryingRouteInconsistency retries common requests seen when creating a new route
-// - 404 until the route is propagated to the proxy
 func RetryingRouteInconsistency(innerCheck spoof.ResponseChecker) spoof.ResponseChecker {
 	return func(resp *spoof.Response) (bool, error) {
-		if resp.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
-
 		// If we didn't match any retryable codes, invoke the ResponseChecker that we wrapped.
 		return innerCheck(resp)
 	}
@@ -134,7 +130,7 @@ func RetryingRouteInconsistency(innerCheck spoof.ResponseChecker) spoof.Response
 func AllRouteTrafficAtRevision(names test.ResourceNames) func(r *v1beta1.Route) (bool, error) {
 	return func(r *v1beta1.Route) (bool, error) {
 		for _, tt := range r.Status.Traffic {
-			if tt.Percent == 100 {
+			if tt.Percent != nil && *tt.Percent == 100 {
 				if tt.RevisionName != names.Revision {
 					return true, fmt.Errorf("expected traffic revision name to be %s but actually is %s: %s", names.Revision, tt.RevisionName, spew.Sprint(r))
 				}

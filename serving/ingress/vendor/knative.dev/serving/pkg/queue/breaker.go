@@ -28,6 +28,8 @@ var (
 	ErrUpdateCapacity = errors.New("failed to add all capacity to the breaker")
 	// ErrRelease indicates that release was called more often than acquire.
 	ErrRelease = errors.New("semaphore release error: returned tokens must be <= acquired tokens")
+	// ErrRequestQueueFull indicates the breaker queue depth was exceeded.
+	ErrRequestQueueFull = errors.New("pending request queue full")
 )
 
 // BreakerParams defines the parameters of the breaker.
@@ -69,11 +71,11 @@ func NewBreaker(params BreakerParams) *Breaker {
 // and queue parameters. If the concurrency limit and queue capacity are
 // already consumed, Maybe returns immediately without calling thunk. If
 // the thunk was executed, Maybe returns true, else false.
-func (b *Breaker) Maybe(ctx context.Context, thunk func()) bool {
+func (b *Breaker) Maybe(ctx context.Context, thunk func()) error {
 	select {
 	default:
 		// Pending request queue is full.  Report failure.
-		return false
+		return ErrRequestQueueFull
 	case b.pendingRequests <- struct{}{}:
 		// Pending request has capacity.
 		// Defer releasing pending request queue.
@@ -82,8 +84,8 @@ func (b *Breaker) Maybe(ctx context.Context, thunk func()) bool {
 		}()
 
 		// Wait for capacity in the active queue.
-		if !b.sem.acquire(ctx) {
-			return false
+		if err := b.sem.acquire(ctx); err != nil {
+			return err
 		}
 		// Defer releasing capacity in the active.
 		// It's safe to ignore the error returned by release since we
@@ -94,8 +96,13 @@ func (b *Breaker) Maybe(ctx context.Context, thunk func()) bool {
 		// Do the thing.
 		thunk()
 		// Report success
-		return true
+		return nil
 	}
+}
+
+// InFlight returns the number of requests currently in flight in this breaker.
+func (b *Breaker) InFlight() int {
+	return len(b.pendingRequests)
 }
 
 // UpdateConcurrency updates the maximum number of in-flight requests.
@@ -129,16 +136,16 @@ type semaphore struct {
 	queue    chan struct{}
 	reducers int
 	capacity int
-	mux      sync.Mutex
+	mux      sync.RWMutex
 }
 
 // acquire receives the token from the semaphore, potentially blocking.
-func (s *semaphore) acquire(ctx context.Context) bool {
+func (s *semaphore) acquire(ctx context.Context) error {
 	select {
 	case <-s.queue:
-		return true
+		return nil
 	case <-ctx.Done():
-		return false
+		return ctx.Err()
 	}
 }
 
@@ -218,11 +225,10 @@ func (s *semaphore) effectiveCapacity() int {
 	return s.capacity - s.reducers
 }
 
-// Capacity is the effective capacity after taking reducers into
-// account.
+// Capacity is the effective capacity after taking reducers into account.
 func (s *semaphore) Capacity() int {
-	s.mux.Lock()
-	defer s.mux.Unlock()
+	s.mux.RLock()
+	defer s.mux.RUnlock()
 
 	return s.effectiveCapacity()
 }

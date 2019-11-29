@@ -54,9 +54,6 @@ rules:
 - apiGroups:
   - networking.internal.knative.dev
   resources:
-  - clusteringresses
-  - clusteringresses/status
-  - clusteringresses/finalizers
   - ingresses
   - ingresses/status
   - ingresses/finalizers
@@ -116,13 +113,13 @@ spec:
       serviceAccountName: knative-openshift-ingress
       containers:
         - name: knative-openshift-ingress
-          image: quay.io/openshift-knative/knative-openshift-ingress:v0.0.13
+          image: quay.io/openshift-knative/knative-openshift-ingress:v0.1.2
           command:
           - knative-openshift-ingress
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
-              value: "" # watch all namespaces for ClusterIngress
+              value: "" # watch all namespaces for Ingress
             - name: POD_NAME
               valueFrom:
                 fieldRef:

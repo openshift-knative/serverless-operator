@@ -18,20 +18,11 @@ import (
 const (
 	TimeoutAnnotation      = "haproxy.router.openshift.io/timeout"
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
-	TerminationAnnotation  = "serving.knative.openshift.io/tlsMode"
-
-	// TLSTerminationAnnotation is an annotation to configure routes.spec.tls.termination
-	TLSTerminationAnnotation = "serving.knative.openshift.io/tlsTermination"
 )
 
-var (
-	// ErrNotSupportedTLSTermination is an error when unsupported TLS termination is configured via annotation.
-	ErrNotSupportedTLSTermination = errors.New("not supported tls termination is specified, only 'passthrough' is valid")
-
-	// ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
-	// said field does not contain a value we can work with.
-	ErrNoValidLoadbalancerDomain = errors.New("unable to find ClusterIngress LoadBalancer with DomainInternal set")
-)
+// ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
+// said field does not contain a value we can work with.
+var ErrNoValidLoadbalancerDomain = errors.New("unable to find Ingress LoadBalancer with DomainInternal set")
 
 // MakeRoutes creates OpenShift Routes from a Knative Ingress
 func MakeRoutes(ci networkingv1alpha1.IngressAccessor) ([]*routev1.Route, error) {
@@ -145,16 +136,11 @@ func makeRoute(ci networkingv1alpha1.IngressAccessor, host string, rule networki
 				Kind: "Service",
 				Name: serviceName,
 			},
+			TLS: &routev1.TLSConfig{
+				Termination:                   routev1.TLSTerminationEdge,
+				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+			},
 		},
-	}
-	if terminationType, ok := annotations[TLSTerminationAnnotation]; ok {
-		switch strings.ToLower(terminationType) {
-		case "passthrough":
-			route.Spec.TLS = &routev1.TLSConfig{Termination: routev1.TLSTerminationPassthrough}
-			route.Spec.Port = &routev1.RoutePort{TargetPort: intstr.FromString("https")}
-		default:
-			return nil, ErrNotSupportedTLSTermination
-		}
 	}
 	return route, nil
 }

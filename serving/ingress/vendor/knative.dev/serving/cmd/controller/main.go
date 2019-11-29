@@ -19,6 +19,7 @@ package main
 import (
 	// The set of controllers this controller process runs.
 	"knative.dev/serving/pkg/reconciler/configuration"
+	"knative.dev/serving/pkg/reconciler/gc"
 	"knative.dev/serving/pkg/reconciler/labeler"
 	"knative.dev/serving/pkg/reconciler/revision"
 	"knative.dev/serving/pkg/reconciler/route"
@@ -32,10 +33,11 @@ import (
 func main() {
 	sharedmain.Main("controller",
 		configuration.NewController,
-		labeler.NewRouteToConfigurationController,
+		labeler.NewController,
 		revision.NewController,
 		route.NewController,
 		serverlessservice.NewController,
 		service.NewController,
+		gc.NewController,
 	)
 }

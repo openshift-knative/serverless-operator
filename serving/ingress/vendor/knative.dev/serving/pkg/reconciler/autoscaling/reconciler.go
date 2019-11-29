@@ -51,7 +51,7 @@ type Base struct {
 	PALister          listers.PodAutoscalerLister
 	ServiceLister     corev1listers.ServiceLister
 	SKSLister         nlisters.ServerlessServiceLister
-	Metrics           resources.Metrics
+	MetricLister      listers.MetricLister
 	ConfigStore       reconciler.ConfigStore
 	PSInformerFactory duck.InformerFactory
 }
@@ -63,13 +63,13 @@ func (c *Base) ReconcileSKS(ctx context.Context, pa *pav1alpha1.PodAutoscaler, m
 	sksName := anames.SKS(pa.Name)
 	sks, err := c.SKSLister.ServerlessServices(pa.Namespace).Get(sksName)
 	if errors.IsNotFound(err) {
-		logger.Infof("SKS %s/%s does not exist; creating.", pa.Namespace, sksName)
+		logger.Info("SKS does not exist; creating.")
 		sks = resources.MakeSKS(pa, mode)
 		_, err = c.ServingClientSet.NetworkingV1alpha1().ServerlessServices(sks.Namespace).Create(sks)
 		if err != nil {
 			return nil, perrors.Wrapf(err, "error creating SKS %s", sksName)
 		}
-		logger.Info("Created SKS:", sksName)
+		logger.Info("Created SKS: ", sksName)
 	} else if err != nil {
 		return nil, perrors.Wrapf(err, "error getting SKS %s", sksName)
 	} else if !metav1.IsControlledBy(sks, pa) {
@@ -127,11 +127,11 @@ func (c *Base) ReconcileMetricsService(ctx context.Context, pa *pav1alpha1.PodAu
 		return "", perrors.Wrap(err, "error retrieving scale")
 	}
 	selector := scale.Spec.Selector.MatchLabels
-	logger.Debugf("PA's %s selector: %v", pa.Name, selector)
+	logger.Debugf("PA's selector: %v", selector)
 
 	svc, err := c.metricService(pa)
 	if errors.IsNotFound(err) {
-		logger.Infof("Metrics K8s service for PA %s/%s does not exist; creating.", pa.Namespace, pa.Name)
+		logger.Info("Metrics K8s service for PA does not exist; creating.")
 		svc = resources.MakeMetricsService(pa, selector)
 		svc, err = c.KubeClientSet.CoreV1().Services(pa.Namespace).Create(svc)
 		if err != nil {
@@ -164,21 +164,19 @@ func (c *Base) ReconcileMetricsService(ctx context.Context, pa *pav1alpha1.PodAu
 // ReconcileMetric reconciles a metric instance out of the given PodAutoscaler to control metric collection.
 func (c *Base) ReconcileMetric(ctx context.Context, pa *pav1alpha1.PodAutoscaler, metricSN string) error {
 	desiredMetric := resources.MakeMetric(ctx, pa, metricSN, config.FromContext(ctx).Autoscaler)
-	metric, err := c.Metrics.Get(ctx, desiredMetric.Namespace, desiredMetric.Name)
+	metric, err := c.MetricLister.Metrics(desiredMetric.Namespace).Get(desiredMetric.Name)
 	if errors.IsNotFound(err) {
-		_, err = c.Metrics.Create(ctx, desiredMetric)
+		_, err = c.ServingClientSet.AutoscalingV1alpha1().Metrics(desiredMetric.Namespace).Create(desiredMetric)
 		if err != nil {
 			return perrors.Wrap(err, "error creating metric")
 		}
 	} else if err != nil {
 		return perrors.Wrap(err, "error fetching metric")
 	} else {
-		// Ignore status when reconciling
-		desiredMetric.Status = metric.Status
-		if !equality.Semantic.DeepEqual(desiredMetric, metric) {
+		if !equality.Semantic.DeepEqual(desiredMetric.Spec, metric.Spec) {
 			want := metric.DeepCopy()
 			want.Spec = desiredMetric.Spec
-			if _, err = c.Metrics.Update(ctx, desiredMetric); err != nil {
+			if _, err = c.ServingClientSet.AutoscalingV1alpha1().Metrics(desiredMetric.Namespace).Update(want); err != nil {
 				return perrors.Wrap(err, "error updating metric")
 			}
 		}

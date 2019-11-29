@@ -20,13 +20,17 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net/http"
 
-	"k8s.io/client-go/tools/clientcmd"
+	// Injection related imports.
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/injection"
+	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/profiling"
 
 	"go.uber.org/zap"
-
+	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/kubernetes"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/logging/logkey"
@@ -38,6 +42,7 @@ import (
 	autoscalingv1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
 	apiconfig "knative.dev/serving/pkg/apis/config"
 	net "knative.dev/serving/pkg/apis/networking/v1alpha1"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving/v1beta1"
 )
@@ -53,61 +58,63 @@ var (
 
 func main() {
 	flag.Parse()
-	cm, err := configmap.Load("/etc/config-logging")
+
+	// Set up signals so we handle the first shutdown signal gracefully.
+	ctx := signals.NewContext()
+
+	cfg, err := sharedmain.GetConfig(*masterURL, *kubeconfig)
 	if err != nil {
-		log.Fatal("Error loading logging configuration:", err)
+		log.Fatal("Failed to get cluster config:", err)
 	}
-	config, err := logging.NewConfigFromMap(cm)
+
+	log.Printf("Registering %d clients", len(injection.Default.GetClients()))
+	log.Printf("Registering %d informer factories", len(injection.Default.GetInformerFactories()))
+	log.Printf("Registering %d informers", len(injection.Default.GetInformers()))
+
+	ctx, _ = injection.Default.SetupInformers(ctx, cfg)
+	kubeClient := kubeclient.Get(ctx)
+
+	config, err := sharedmain.GetLoggingConfig(ctx)
 	if err != nil {
-		log.Fatal("Error parsing logging configuration:", err)
+		log.Fatal("Error loading/parsing logging configuration:", err)
 	}
 	logger, atomicLevel := logging.NewLoggerFromConfig(config, component)
 	defer logger.Sync()
 	logger = logger.With(zap.String(logkey.ControllerType, component))
 
-	logger.Info("Starting the Configuration Webhook")
-
-	// Set up signals so we handle the first shutdown signal gracefully.
-	stopCh := signals.SetupSignalHandler()
-
-	clusterConfig, err := clientcmd.BuildConfigFromFlags(*masterURL, *kubeconfig)
-	if err != nil {
-		logger.Fatalw("Failed to get cluster config", zap.Error(err))
-	}
-
-	kubeClient, err := kubernetes.NewForConfig(clusterConfig)
-	if err != nil {
-		logger.Fatalw("Failed to get the client set", zap.Error(err))
-	}
-
 	if err := version.CheckMinimumVersion(kubeClient.Discovery()); err != nil {
 		logger.Fatalw("Version check failed", err)
 	}
 
+	profilingHandler := profiling.NewHandler(logger, false)
+
 	// Watch the logging config map and dynamically update logging levels.
 	configMapWatcher := configmap.NewInformedWatcher(kubeClient, system.Namespace())
-	// Watch the observability config map and dynamically update metrics exporter.
-	configMapWatcher.Watch(metrics.ConfigMapName(), metrics.UpdateExporterFromConfigMap(component, logger))
 	// Watch the observability config map and dynamically update request logs.
 	configMapWatcher.Watch(logging.ConfigMapName(), logging.UpdateLevelFromConfigMap(logger, atomicLevel, component))
+	// Watch the observability config map
+	configMapWatcher.Watch(metrics.ConfigMapName(),
+		metrics.UpdateExporterFromConfigMap(component, logger),
+		profilingHandler.UpdateFromConfigMap)
 
 	store := apiconfig.NewStore(logger.Named("config-store"))
 	store.WatchConfigs(configMapWatcher)
 
-	if err = configMapWatcher.Start(stopCh); err != nil {
+	if err = configMapWatcher.Start(ctx.Done()); err != nil {
 		logger.Fatalw("Failed to start the ConfigMap watcher", zap.Error(err))
 	}
 
 	options := webhook.ControllerOptions{
-		ServiceName:    "webhook",
-		DeploymentName: "webhook",
-		Namespace:      system.Namespace(),
-		Port:           8443,
-		SecretName:     "webhook-certs",
-		WebhookName:    "webhook.serving.knative.dev",
+		ServiceName:                     "webhook",
+		DeploymentName:                  "webhook",
+		Namespace:                       system.Namespace(),
+		Port:                            8443,
+		SecretName:                      "webhook-certs",
+		ResourceMutatingWebhookName:     "webhook.serving.knative.dev",
+		ResourceAdmissionControllerPath: "/",
 	}
 
-	handlers := map[schema.GroupVersionKind]webhook.GenericCRD{
+	resourceHandlers := map[schema.GroupVersionKind]webhook.GenericCRD{
 		v1alpha1.SchemeGroupVersion.WithKind("Revision"):                 &v1alpha1.Revision{},
 		v1alpha1.SchemeGroupVersion.WithKind("Configuration"):            &v1alpha1.Configuration{},
 		v1alpha1.SchemeGroupVersion.WithKind("Route"):                    &v1alpha1.Route{},
@@ -116,6 +123,10 @@ func main() {
 		v1beta1.SchemeGroupVersion.WithKind("Configuration"):             &v1beta1.Configuration{},
 		v1beta1.SchemeGroupVersion.WithKind("Route"):                     &v1beta1.Route{},
 		v1beta1.SchemeGroupVersion.WithKind("Service"):                   &v1beta1.Service{},
+		v1.SchemeGroupVersion.WithKind("Revision"):                       &v1.Revision{},
+		v1.SchemeGroupVersion.WithKind("Configuration"):                  &v1.Configuration{},
+		v1.SchemeGroupVersion.WithKind("Route"):                          &v1.Route{},
+		v1.SchemeGroupVersion.WithKind("Service"):                        &v1.Service{},
 		autoscalingv1alpha1.SchemeGroupVersion.WithKind("PodAutoscaler"): &autoscalingv1alpha1.PodAutoscaler{},
 		autoscalingv1alpha1.SchemeGroupVersion.WithKind("Metric"):        &autoscalingv1alpha1.Metric{},
 		net.SchemeGroupVersion.WithKind("Certificate"):                   &net.Certificate{},
@@ -124,18 +135,37 @@ func main() {
 		net.SchemeGroupVersion.WithKind("ServerlessService"):             &net.ServerlessService{},
 	}
 
-	// Decorate contexts with the current state of the config.
-	ctxFunc := func(ctx context.Context) context.Context {
-		return v1beta1.WithUpgradeViaDefaulting(store.ToContext(ctx))
+	resourceAdmissionController := webhook.NewResourceAdmissionController(resourceHandlers, options, true)
+	admissionControllers := map[string]webhook.AdmissionController{
+		options.ResourceAdmissionControllerPath: resourceAdmissionController,
 	}
 
-	controller, err := webhook.NewAdmissionController(kubeClient, options, handlers, logger, ctxFunc, true)
+	// Decorate contexts with the current state of the config.
+	ctxFunc := func(ctx context.Context) context.Context {
+		return v1.WithUpgradeViaDefaulting(store.ToContext(ctx))
+	}
+
+	controller, err := webhook.New(kubeClient, options, admissionControllers, logger, ctxFunc)
 
 	if err != nil {
 		logger.Fatalw("Failed to create admission controller", zap.Error(err))
 	}
 
-	if err = controller.Run(stopCh); err != nil {
-		logger.Fatalw("Failed to start the admission controller", zap.Error(err))
+	profilingServer := profiling.NewServer(profilingHandler)
+
+	eg, egCtx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		return controller.Run(ctx.Done())
+	})
+	eg.Go(profilingServer.ListenAndServe)
+
+	// This will block until either a signal arrives or one of the grouped functions
+	// returns an error.
+	<-egCtx.Done()
+
+	profilingServer.Shutdown(context.Background())
+	// Don't forward ErrServerClosed as that indicates we're already shutting down.
+	if err := eg.Wait(); err != nil && err != http.ErrServerClosed {
+		logger.Errorw("Error while running server", zap.Error(err))
 	}
 }

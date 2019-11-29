@@ -72,13 +72,17 @@ func GetHTTPServer(gateway *v1alpha3.Gateway) *v1alpha3.Server {
 }
 
 func belongsToClusterIngress(server *v1alpha3.Server, ia v1alpha1.IngressAccessor) bool {
-	// The format of the portName should be "<clusteringress-name>:<number>".
-	// For example, route-test:0.
+	// The format of the portName should be "<namespace>/<ingress_name>:<number>".
+	// For example, default/routetest:0.
 	portNameSplits := strings.Split(server.Port.Name, ":")
 	if len(portNameSplits) != 2 {
 		return false
 	}
-	return portNameSplits[0] == ia.GetName()
+	// TODO: This should be removed after ClusterIngress codes are cleaned up.
+	if len(ia.GetNamespace()) == 0 {
+		return portNameSplits[0] == ia.GetName()
+	}
+	return portNameSplits[0] == ia.GetNamespace()+"/"+ia.GetName()
 }
 
 // SortServers sorts `Server` according to its port name.
@@ -177,10 +181,17 @@ func MakeTLSServers(ia v1alpha1.IngressAccessor, gatewayServiceNamespace string,
 			}
 			credentialName = targetSecret(originSecret, ia)
 		}
+
+		port := ia.GetName()
+		// TODO: This namespace check should be removed after ClusterIngress codes are cleaned up.
+		if len(ia.GetNamespace()) > 0 {
+			port = ia.GetNamespace() + "/" + ia.GetName()
+		}
+
 		servers[i] = v1alpha3.Server{
 			Hosts: tls.Hosts,
 			Port: v1alpha3.Port{
-				Name:     fmt.Sprintf("%s:%d", ia.GetName(), i),
+				Name:     fmt.Sprintf("%s:%d", port, i),
 				Number:   443,
 				Protocol: v1alpha3.ProtocolHTTPS,
 			},
@@ -217,24 +228,17 @@ func MakeHTTPServer(httpProtocol network.HTTPProtocol, hosts []string) *v1alpha3
 	return server
 }
 
-// GatewayServiceNamespace returns the namespace of the gateway service that the `Gateway` object
-// with name `gatewayName` is associated with.
-func GatewayServiceNamespace(ingressGateways []config.Gateway, gatewayName string) (string, error) {
-	for _, gw := range ingressGateways {
-		if gw.GatewayName != gatewayName {
-			continue
-		}
-		// serviceURL should be of the form serviceName.namespace.<domain>, for example
-		// serviceName.namespace.svc.cluster.local.
-		parts := strings.SplitN(gw.ServiceURL, ".", 3)
-		if len(parts) != 3 {
-			return "", fmt.Errorf("unexpected service URL form: %s", gw.ServiceURL)
-		}
-		return parts[1], nil
+// ServiceNamespaceFromURL extracts the namespace part from the service URL.
+// TODO(nghia):  Remove this by parsing at config parsing time.
+func ServiceNamespaceFromURL(svc string) (string, error) {
+	parts := strings.SplitN(svc, ".", 3)
+	if len(parts) != 3 {
+		return "", fmt.Errorf("unexpected service URL form: %s", svc)
 	}
-	return "", fmt.Errorf("no Gateway configuration is found for gateway %s", gatewayName)
+	return parts[1], nil
 }
 
+// TODO(nghia):  Remove this by parsing at config parsing time.
 func getIngressGatewaySvcNameNamespaces(ctx context.Context) ([]metav1.ObjectMeta, error) {
 	cfg := config.FromContext(ctx).Istio
 	nameNamespaces := make([]metav1.ObjectMeta, len(cfg.IngressGateways))
@@ -288,4 +292,16 @@ func isDefaultServer(server *v1alpha3.Server) bool {
 
 func isPlaceHolderServer(server *v1alpha3.Server) bool {
 	return equality.Semantic.DeepEqual(server, &placeholderServer)
+}
+
+// CanProbeGateway return whether the specified Gateway can be probed using HTTP on port 80.
+func CanProbeGateway(gateway *v1alpha3.Gateway) bool {
+	for _, server := range gateway.Spec.Servers {
+		if len(server.Hosts) == 1 &&
+			server.Hosts[0] == "*" &&
+			server.Port.Protocol == v1alpha3.ProtocolHTTP {
+			return true
+		}
+	}
+	return false
 }

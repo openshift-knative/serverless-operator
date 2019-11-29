@@ -16,39 +16,18 @@ package crane
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/spf13/cobra"
 )
 
-func init() { Root.AddCommand(NewCmdList()) }
-
-// NewCmdList creates a new cobra.Command for the ls subcommand.
-func NewCmdList() *cobra.Command {
-	return &cobra.Command{
-		Use:   "ls",
-		Short: "List the tags in a repo",
-		Args:  cobra.ExactArgs(1),
-		Run:   ls,
-	}
-}
-
-func ls(_ *cobra.Command, args []string) {
-	r := args[0]
-	repo, err := name.NewRepository(r)
+// ListTags returns the tags in repository src.
+func ListTags(src string) ([]string, error) {
+	repo, err := name.NewRepository(src)
 	if err != nil {
-		log.Fatalf("parsing repo %q: %v", r, err)
+		return nil, fmt.Errorf("parsing repo %q: %v", src, err)
 	}
 
-	tags, err := remote.List(repo, remote.WithAuthFromKeychain(authn.DefaultKeychain))
-	if err != nil {
-		log.Fatalf("reading tags for %q: %v", repo, err)
-	}
-
-	for _, tag := range tags {
-		fmt.Println(tag)
-	}
+	return remote.List(repo, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 }

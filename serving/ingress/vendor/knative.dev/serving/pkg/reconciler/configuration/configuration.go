@@ -20,8 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sort"
-	"time"
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -33,11 +31,11 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	"knative.dev/serving/pkg/apis/serving"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving/v1beta1"
 	listers "knative.dev/serving/pkg/client/listers/serving/v1alpha1"
 	"knative.dev/serving/pkg/reconciler"
-	configns "knative.dev/serving/pkg/reconciler/configuration/config"
 	"knative.dev/serving/pkg/reconciler/configuration/resources"
 )
 
@@ -48,8 +46,6 @@ type Reconciler struct {
 	// listers index properties about resources
 	configurationLister listers.ConfigurationLister
 	revisionLister      listers.RevisionLister
-
-	configStore reconciler.ConfigStore
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -62,18 +58,16 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 	// Convert the namespace/name string into a distinct namespace and name.
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		c.Logger.Errorf("invalid resource key: %s", key)
+		c.Logger.Errorw("invalid resource key", zap.Error(err))
 		return nil
 	}
 	logger := logging.FromContext(ctx)
-
-	ctx = c.configStore.ToContext(ctx)
 
 	// Get the Configuration resource with this namespace/name.
 	original, err := c.configurationLister.Configurations(namespace).Get(name)
 	if errors.IsNotFound(err) {
 		// The resource no longer exists, in which case we stop processing.
-		logger.Errorf("configuration %q in work queue no longer exists", key)
+		logger.Error("Configuration in work queue no longer exists")
 		return nil
 	} else if err != nil {
 		return err
@@ -123,7 +117,7 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	config.SetDefaults(v1beta1.WithUpgradeViaDefaulting(ctx))
+	config.SetDefaults(v1.WithUpgradeViaDefaulting(ctx))
 	config.Status.InitializeConditions()
 
 	if err := config.ConvertUp(ctx, &v1beta1.Configuration{}); err != nil {
@@ -132,6 +126,10 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 		}
 		return err
 	}
+
+	// Bump observed generation to denote that we have processed this
+	// generation regardless of success or failure.
+	config.Status.ObservedGeneration = config.Generation
 
 	// First, fetch the revision that should exist for the current generation.
 	lcr, err := c.latestCreatedRevision(config)
@@ -156,7 +154,7 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 		config.Status.MarkRevisionCreationFailed(err.Error())
 		return nil
 	} else if err != nil {
-		logger.Errorf("Failed to reconcile Configuration %q - failed to get Revision: %v", config.Name, err)
+		logger.Errorw("Failed to reconcile Configuration: failed to get Revision", zap.Error(err))
 		return err
 	}
 
@@ -164,17 +162,16 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 
 	// Second, set this to be the latest revision that we have created.
 	config.Status.SetLatestCreatedRevisionName(revName)
-	config.Status.ObservedGeneration = config.Generation
 
 	// Last, determine whether we should set LatestReadyRevisionName to our
 	// LatestCreatedRevision based on its readiness.
 	rc := lcr.Status.GetCondition(v1alpha1.RevisionConditionReady)
 	switch {
 	case rc == nil || rc.Status == corev1.ConditionUnknown:
-		logger.Infof("Revision %q of configuration %q is not ready", revName, config.Name)
+		logger.Infof("Revision %q of configuration is not ready", revName)
 
 	case rc.Status == corev1.ConditionTrue:
-		logger.Infof("Revision %q of configuration %q is ready", revName, config.Name)
+		logger.Infof("Revision %q of configuration is ready", revName)
 
 		created, ready := config.Status.LatestCreatedRevisionName, config.Status.LatestReadyRevisionName
 		if ready == "" {
@@ -190,7 +187,7 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 		}
 
 	case rc.Status == corev1.ConditionFalse:
-		logger.Infof("Revision %q of configuration %q has failed", revName, config.Name)
+		logger.Infof("Revision %q of configuration has failed", revName)
 
 		// TODO(mattmoor): Only emit the event the first time we see this.
 		config.Status.MarkLatestCreatedFailed(lcr.Name, rc.Message)
@@ -199,11 +196,11 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 
 	default:
 		err := fmt.Errorf("unrecognized condition status: %v on revision %q", rc.Status, revName)
-		logger.Errorf("Error reconciling Configuration %q: %v", config.Name, err)
+		logger.Errorw("Error reconciling Configuration", zap.Error(err))
 		return err
 	}
 
-	return c.gcRevisions(ctx, config)
+	return nil
 }
 
 // CheckNameAvailability checks that if the named Revision specified by the Configuration
@@ -273,7 +270,7 @@ func (c *Reconciler) createRevision(ctx context.Context, config *v1alpha1.Config
 		return nil, err
 	}
 	c.Recorder.Eventf(config, corev1.EventTypeNormal, "Created", "Created Revision %q", created.Name)
-	logger.Infof("Created Revision: %+v", created)
+	logger.Infof("Created Revision: %#v", created)
 
 	return created, nil
 }
@@ -291,73 +288,4 @@ func (c *Reconciler) updateStatus(desired *v1alpha1.Configuration) (*v1alpha1.Co
 	existing := config.DeepCopy()
 	existing.Status = desired.Status
 	return c.ServingClientSet.ServingV1alpha1().Configurations(desired.Namespace).UpdateStatus(existing)
-}
-
-func (c *Reconciler) gcRevisions(ctx context.Context, config *v1alpha1.Configuration) error {
-	cfg := configns.FromContext(ctx).RevisionGC
-	logger := logging.FromContext(ctx)
-
-	selector := labels.Set{serving.ConfigurationLabelKey: config.Name}.AsSelector()
-	revs, err := c.revisionLister.Revisions(config.Namespace).List(selector)
-	if err != nil {
-		return err
-	}
-
-	gcSkipOffset := cfg.StaleRevisionMinimumGenerations
-
-	if gcSkipOffset >= int64(len(revs)) {
-		return nil
-	}
-
-	// Sort by creation timestamp descending
-	sort.Slice(revs, func(i, j int) bool {
-		return revs[j].CreationTimestamp.Before(&revs[i].CreationTimestamp)
-	})
-
-	for _, rev := range revs[gcSkipOffset:] {
-		if isRevisionStale(ctx, rev, config) {
-			err := c.ServingClientSet.ServingV1alpha1().Revisions(rev.Namespace).Delete(rev.Name, &metav1.DeleteOptions{})
-			if err != nil {
-				logger.Errorf("Failed to delete stale revision: %v", err)
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func isRevisionStale(ctx context.Context, rev *v1alpha1.Revision, config *v1alpha1.Configuration) bool {
-	cfg := configns.FromContext(ctx).RevisionGC
-	logger := logging.FromContext(ctx)
-
-	if config.Status.LatestReadyRevisionName == rev.Name {
-		return false
-	}
-
-	curTime := time.Now()
-	if rev.ObjectMeta.CreationTimestamp.Add(cfg.StaleRevisionCreateDelay).After(curTime) {
-		// Revision was created sooner than staleRevisionCreateDelay. Ignore it.
-		return false
-	}
-
-	lastPin, err := rev.GetLastPinned()
-	if err != nil {
-		if err.(v1alpha1.LastPinnedParseError).Type != v1alpha1.AnnotationParseErrorTypeMissing {
-			logger.Errorf("Failed to determine revision last pinned: %v", err)
-		} else {
-			// Revision was never pinned and its RevisionConditionReady is not true after staleRevisionCreateDelay.
-			// It usually happens when ksvc was deployed with wrong configuration.
-			rc := rev.Status.GetCondition(v1beta1.RevisionConditionReady)
-			if rc == nil || rc.Status != corev1.ConditionTrue {
-				return true
-			}
-		}
-		return false
-	}
-
-	ret := lastPin.Add(cfg.StaleRevisionTimeout).Before(curTime)
-	if ret {
-		logger.Infof("Detected stale revision %v with creation time %v and lastPinned time %v.", rev.ObjectMeta.Name, rev.ObjectMeta.CreationTimestamp, lastPin)
-	}
-	return ret
 }

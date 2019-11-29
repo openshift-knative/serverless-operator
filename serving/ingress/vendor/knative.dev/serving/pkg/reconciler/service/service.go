@@ -32,6 +32,7 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/kmp"
 	"knative.dev/pkg/logging"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving/v1beta1"
 	listers "knative.dev/serving/pkg/client/listers/serving/v1alpha1"
@@ -67,7 +68,7 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		c.Logger.Errorf("invalid resource key: %s", key)
+		c.Logger.Errorw("invalid resource key", zap.Error(err))
 		return nil
 	}
 	logger := logging.FromContext(ctx)
@@ -76,7 +77,7 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 	original, err := c.serviceLister.Services(namespace).Get(name)
 	if apierrs.IsNotFound(err) {
 		// The resource may no longer exist, in which case we stop processing.
-		logger.Errorf("service %q in work queue no longer exists", key)
+		logger.Error("Service in work queue no longer exists")
 		return nil
 	} else if err != nil {
 		return err
@@ -131,7 +132,7 @@ func (c *Reconciler) reconcile(ctx context.Context, service *v1alpha1.Service) e
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	service.SetDefaults(v1beta1.WithUpgradeViaDefaulting(ctx))
+	service.SetDefaults(v1.WithUpgradeViaDefaulting(ctx))
 	service.Status.InitializeConditions()
 
 	if err := service.ConvertUp(ctx, &v1beta1.Service{}); err != nil {
@@ -151,6 +152,12 @@ func (c *Reconciler) reconcile(ctx context.Context, service *v1alpha1.Service) e
 		// The Configuration hasn't yet reconciled our latest changes to
 		// its desired state, so its conditions are outdated.
 		service.Status.MarkConfigurationNotReconciled()
+
+		// If BYO-Revision name is used we must serialize reconciling the Configuration
+		// and Route. Wait for observed generation to match before continuing.
+		if config.Spec.GetTemplate().Name != "" {
+			return nil
+		}
 	} else {
 		// Update our Status based on the state of our underlying Configuration.
 		service.Status.PropagateConfigurationStatus(&config.Status)
@@ -210,8 +217,7 @@ func (c *Reconciler) config(ctx context.Context, logger *zap.SugaredLogger, serv
 		return nil, fmt.Errorf("service: %q does not own configuration: %q", service.Name, configName)
 	} else if config, err = c.reconcileConfiguration(ctx, service, config); err != nil {
 		logger.Errorw(
-			fmt.Sprintf("Failed to reconcile Service: %q failed to reconcile Configuration: %q",
-				service.Name, configName), zap.Error(err))
+			"Failed to reconcile Service: failed to reconcile Configuration: "+configName, zap.Error(err))
 		return nil, err
 	}
 	return config, nil
@@ -223,20 +229,20 @@ func (c *Reconciler) route(ctx context.Context, logger *zap.SugaredLogger, servi
 	if apierrs.IsNotFound(err) {
 		route, err = c.createRoute(service)
 		if err != nil {
-			logger.Errorf("Failed to create Route %q: %v", routeName, err)
+			logger.Errorw("Failed to create Route: "+routeName, zap.Error(err))
 			c.Recorder.Eventf(service, corev1.EventTypeWarning, "CreationFailed", "Failed to create Route %q: %v", routeName, err)
 			return nil, err
 		}
 		c.Recorder.Eventf(service, corev1.EventTypeNormal, "Created", "Created Route %q", routeName)
 	} else if err != nil {
-		logger.Errorf("Failed to reconcile Service: %q failed to Get Route: %q", service.Name, routeName)
+		logger.Errorw("Failed to reconcile Service: failed to Get Route: "+routeName, zap.Error(err))
 		return nil, err
 	} else if !metav1.IsControlledBy(route, service) {
 		// Surface an error in the service's status, and return an error.
 		service.Status.MarkRouteNotOwned(routeName)
 		return nil, fmt.Errorf("service: %q does not own route: %q", service.Name, routeName)
 	} else if route, err = c.reconcileRoute(ctx, service, route); err != nil {
-		logger.Errorf("Failed to reconcile Service: %q failed to reconcile Route: %q", service.Name, routeName)
+		logger.Errorw("Failed to reconcile Service: failed to reconcile Route: "+routeName, zap.Error(err))
 		return nil, err
 	}
 	return route, nil
@@ -269,7 +275,7 @@ func (c *Reconciler) checkRoutesNotReady(config *v1alpha1.Configuration, logger 
 		// comparing them.
 		"DeprecatedName")
 	if diff, err := kmp.SafeDiff(got, want, ignoreFields); err != nil || diff != "" {
-		logger.Errorf("Route %q is not yet what we want: %s", service.Name, diff)
+		logger.Errorf("Route %s is not yet what we want: %s", route.Name, diff)
 		service.Status.MarkRouteNotYetReady()
 	}
 }
@@ -291,7 +297,7 @@ func (c *Reconciler) updateStatus(desired *v1alpha1.Service) (*v1alpha1.Service,
 	svc, err := c.ServingClientSet.ServingV1alpha1().Services(desired.Namespace).UpdateStatus(existing)
 	if err == nil && becomesReady {
 		duration := time.Since(svc.ObjectMeta.CreationTimestamp.Time)
-		c.Logger.Infof("Service %q became ready after %v", service.Name, duration)
+		c.Logger.Infof("Service became ready after %v", duration)
 		c.StatsReporter.ReportServiceReady(service.Namespace, service.Name, duration)
 	}
 

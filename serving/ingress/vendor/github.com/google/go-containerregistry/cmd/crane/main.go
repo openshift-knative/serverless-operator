@@ -18,11 +18,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/cmd/crane/cmd"
+	"github.com/google/go-containerregistry/pkg/logs"
 )
 
+func init() {
+	logs.Warn.SetOutput(os.Stderr)
+	logs.Progress.SetOutput(os.Stderr)
+}
+
 func main() {
-	if err := crane.Root.Execute(); err != nil {
+	if err := cmd.Root.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

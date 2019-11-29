@@ -31,7 +31,6 @@ import (
 	netv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
 	"knative.dev/serving/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving/pkg/reconciler/route/config"
 	"knative.dev/serving/pkg/reconciler/route/domains"
 )
 
@@ -109,10 +108,6 @@ func makeK8sService(ctx context.Context, route *v1alpha1.Route, targetName strin
 		serving.RouteLabelKey: route.Name,
 	}
 
-	if visibility, ok := route.Labels[config.VisibilityLabelKey]; ok {
-		svcLabels[config.VisibilityLabelKey] = visibility
-	}
-
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      hostname,
@@ -131,7 +126,10 @@ func makeServiceSpec(ingress netv1alpha1.IngressAccessor, isPrivate bool) (*core
 
 	var lbStatus *netv1alpha1.LoadBalancerStatus
 
-	if isPrivate {
+	if isPrivate || ingressStatus.PrivateLoadBalancer != nil {
+		// Always use private load balancer if it exists,
+		// because k8s service is only useful for inter-cluster communication.
+		// External communication will be handle via ingress gateway, which won't be affected by what is configured here.
 		lbStatus = ingressStatus.PrivateLoadBalancer
 	} else {
 		lbStatus = ingressStatus.PublicLoadBalancer
