@@ -9,7 +9,6 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"knative.dev/pkg/kmeta"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -130,11 +129,10 @@ func makeRoute(ci networkingv1alpha1.IngressAccessor, host string, rule networki
 
 	route := &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            name,
-			Namespace:       namespace,
-			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(ci)},
-			Labels:          labels,
-			Annotations:     annotations,
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: routev1.RouteSpec{
 			Host: host,

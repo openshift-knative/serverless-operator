@@ -17,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/pkg/kmeta"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -175,11 +174,10 @@ func TestRouteMigration(t *testing.T) {
 		}},
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:            routeName0,
-				Namespace:       serviceMeshNamespace,
-				Labels:          map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-				Annotations:     map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-				OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(defaultIngress)},
+				Name:        routeName0,
+				Namespace:   serviceMeshNamespace,
+				Labels:      map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+				Annotations: map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			},
 			Spec: routev1.RouteSpec{
 				Host: domainName,
@@ -267,7 +265,19 @@ func TestRouteMigration(t *testing.T) {
 			t.Fatalf("failed to get ServiceMeshMemberRole: (%v)", err)
 		}
 		// Check if namespace has been removed from smmr.
-		assert.Equal(t, len([]string{}), len(smmrDelete.Spec.Members))
+		assert.Empty(t, len(smmrDelete.Spec.Members))
+
+		// check openshift routes has been removed.
+		routeListdelete := &routev1.RouteList{}
+		err = cl.List(context.TODO(), &client.ListOptions{}, routeListdelete)
+		assert.Nil(t, err)
+		assert.Empty(t, routeListdelete.Items)
+
+		// check finalizers has been removed from ingress.
+		ingressListdelete := &networkingv1alpha1.IngressList{}
+		err = cl.List(context.TODO(), &client.ListOptions{}, ingressListdelete)
+		assert.Nil(t, err)
+		assert.Empty(t, len(ingressListdelete.Items[0].Finalizers))
 	})
 }
 
