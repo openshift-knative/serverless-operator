@@ -50,17 +50,9 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 	}
 	exposed := ci.GetSpec().Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
-		ingressLabels := ci.GetLabels()
-		selector := map[string]string{
-			networking.IngressLabelKey:     ci.GetName(),
-			serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
-			serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
-		}
-		listOpts := &client.ListOptions{
-			LabelSelector: labels.SelectorFromSet(selector),
-		}
-		var existing routev1.RouteList
-		if err := r.Client.List(ctx, listOpts, &existing); err != nil {
+		selector, existing, err := r.routeList(ctx, ci)
+		if err != nil {
+			logger.Errorf("Failed to list openshift routes %v", err)
 			return err
 		}
 		existingMap := routeMap(existing, selector)
@@ -335,7 +327,20 @@ func (r *BaseIngressReconciler) reconcileDeletion(ctx context.Context, ci networ
 			}
 		}
 	}
-	logger.Info("Removing Finalizer")
+
+	_, list, err := r.routeList(ctx, ci)
+	if err != nil {
+		logger.Errorf("Failed to list openshift routes %v", err)
+		return err
+	}
+	for i := range list.Items {
+		if err := r.deleteRoute(ctx, &list.Items[i]); err != nil {
+			logger.Errorf("Failed to delete openshift route %q with error %v", list.Items[i].Name, err)
+			return err
+		}
+	}
+
+	logger.Info("Removing finalizer for ingress %q", ci.GetName())
 	ci.SetFinalizers(ci.GetFinalizers()[1:])
 	return r.Client.Update(ctx, ci)
 }
@@ -348,4 +353,18 @@ func AppendIfAbsent(members []string, routeNamespace string) ([]string, bool) {
 		}
 	}
 	return append(members, routeNamespace), true
+}
+
+func (r *BaseIngressReconciler) routeList(ctx context.Context, ci networkingv1alpha1.IngressAccessor) (map[string]string, routev1.RouteList, error) {
+	ingressLabels := ci.GetLabels()
+	selector := map[string]string{
+		networking.IngressLabelKey:     ci.GetName(),
+		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
+		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
+	}
+	listOpts := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(selector),
+	}
+	var routeList routev1.RouteList
+	return selector, routeList, r.Client.List(ctx, listOpts, &routeList)
 }
