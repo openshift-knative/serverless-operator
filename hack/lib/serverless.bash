@@ -34,7 +34,7 @@ EOF
 
   logger.info 'Deploy Knative Serving'
   cat <<EOF | oc apply -f - || return $?
-apiVersion: serving.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: knative-serving
