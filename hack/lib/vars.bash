@@ -3,7 +3,7 @@
 readonly BUILD_NUMBER=${BUILD_NUMBER:-$(uuidgen)}
 
 # shellcheck disable=SC1091,SC1090
-source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/github.com/knative/test-infra/scripts/e2e-tests.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/github.com/knative/test-infra/scripts/e2e-tests.sh"
 
 readonly KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
 readonly OPENSHIFT_REGISTRY="${OPENSHIFT_REGISTRY:-"registry.svc.ci.openshift.org"}"
