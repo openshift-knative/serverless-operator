@@ -70,18 +70,10 @@ function run_knative_serving_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   local failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || failed=1
-
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/runtime/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || failed=1
-
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/conformance/api/... --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
+    ./test/e2e ./test/conformance/... \
     || failed=1
   
   rm -rf "$tmp_gopath"
