@@ -71,9 +71,9 @@ function run_knative_serving_tests {
 
   local failed=0
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 --resolvabledomain --kubeconfig "$KUBECONFIG" \
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
+    --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
-    ./test/e2e ./test/conformance/... \
     || failed=1
   
   rm -rf "$tmp_gopath"
