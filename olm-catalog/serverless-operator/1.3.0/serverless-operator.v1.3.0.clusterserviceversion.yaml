@@ -269,7 +269,7 @@ spec:
                   value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-istio
                 - name: IMAGE_webhook
                   value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-webhook
-                image: registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-serving-operator
+                image: $IMAGE_KNATIVE_SERVING_OPERATOR
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}
@@ -288,7 +288,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress
+                  image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always

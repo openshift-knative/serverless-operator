@@ -1,5 +1,9 @@
-#This makefile is used by ci-operator
+# Useful for local development
+publish-images:
+	./hack/publish.sh $(DOCKER_REPO_OVERRIDE)
+.PHONY: publish-images
 
+# Test targets for CI operator
 test-unit:
 	go test ./serving/ingress/...
 .PHONY: test-e2e
@@ -7,10 +11,6 @@ test-unit:
 test-e2e:
 	./test/e2e-tests.sh
 .PHONY: test-e2e
-
-install:
-	# Do nothing right now. Required by ci-operator.
-.PHONY: install
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:
