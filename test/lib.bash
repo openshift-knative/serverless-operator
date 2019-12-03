@@ -53,6 +53,9 @@ function run_knative_serving_tests {
   cp -r "$GOPATH/bin" "$tmp_gopath"
   export GOPATH="$tmp_gopath"
 
+  # save the rootdir before changing dir
+  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || return $?
@@ -71,14 +74,103 @@ function run_knative_serving_tests {
 
   local failed=0
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
-    --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "registry.svc.ci.openshift.org/openshift/knative-$1:knative-serving-test-{{.Name}}" \
-    || failed=1
-  
+
+  # rolling upgrade tests must run first because they upgrade Serverless to the latest version
+  run_knative_serving_rolling_upgrade_tests || failed=1
+
+  run_knative_serving_e2e_and_conformance_tests || failed=1
+
   rm -rf "$tmp_gopath"
   return $failed
   )
+}
+
+function run_knative_serving_e2e_and_conformance_tests {
+  local failed=0
+  logger.info "Running E2E and conformance tests"
+  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
+    --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" || failed=1
+  
+  return $failed
+}
+
+function run_knative_serving_rolling_upgrade_tests {
+  logger.info "Running rolling upgrade tests"
+  local failed=0
+
+  go test -tags=preupgrade -timeout=20m ./test/upgrade \
+    --imagetemplate "$image_template" \
+    --kubeconfig "$KUBECONFIG" \
+    --resolvabledomain || failed=1
+
+  logger.info "Starting prober test"
+
+  rm -f /tmp/prober-signal
+  go test -tags=probe -timeout=20m ./test/upgrade \
+    --imagetemplate "$image_template" \
+    --kubeconfig "$KUBECONFIG" \
+    --resolvabledomain &
+
+  # Wait for the upgrade-probe kservice to be ready before proceeding
+  timeout 900 '[[ $(oc get ksvc upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
+
+  # Give routes time to be propagated
+  sleep 30
+
+  PROBER_PID=$!
+
+  if [[ $UPGRADE_SERVERLESS == true ]]; then
+    serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+
+    # Get the current/latest CSV
+    upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
+    approve_csv $upgrade_to || return 1
+
+    # The knativeserving CR should be updated now
+    timeout 900 '[[ ! ( $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+
+    end_prober_test ${PROBER_PID}
+  fi
+
+  # Might not work in OpenShift CI but we want it here so that we can consume this script later and re-use
+  if [[ $UPGRADE_CLUSTER == true ]]; then
+    # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
+    end_prober_test ${PROBER_PID}
+
+    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}')
+    [[ $latest_cluster_version == "" ]] && return 1
+
+    oc adm upgrade --to-latest=true
+
+    timeout 7200 '[[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.version==\"${latest_cluster_version}\")].state}") != Completed ]]' || return 1
+
+    logger.info "New cluster version\n: $(oc get clusterversion)"
+  fi
+
+  for kservice in `oc get ksvc -n serving-tests --no-headers -o name`; do
+    timeout 900 '[[ $(oc get $kservice -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
+  done
+
+  # Give routes time to be propagated
+  sleep 30
+
+  logger.info "Running postupgrade tests"
+  go test -tags=postupgrade -timeout=20m ./test/upgrade \
+    --imagetemplate "$image_template" \
+    --kubeconfig "$KUBECONFIG" \
+    --resolvabledomain || failed=1
+
+  oc delete ksvc pizzaplanet-upgrade-service scale-to-zero-upgrade-service upgrade-probe -n serving-tests
+
+  return $failed
+}
+
+function end_prober_test {
+  local PROBER_PID=$1
+  echo "done" > /tmp/prober-signal
+  logger.info "Waiting for prober test to finish"
+  wait ${PROBER_PID}
 }
 
 function teardown {

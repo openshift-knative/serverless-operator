@@ -19,8 +19,10 @@ failed=0
 # Run serverless-operator specific tests.
 (( !failed )) && run_e2e_tests || failed=4
 
-# Setup serverless and run upstream e2e and conformance tests.
-(( !failed )) && ensure_serverless_installed || failed=5
+# Install previous version of Serverless for rolling upgrade tests
+(( !failed )) && install_serverless_previous || failed=5
+
+# Run upstream rolling upgrade, e2e and conformance tests.
 (( !failed )) && run_knative_serving_tests "v0.10.0" || failed=6
 (( !failed )) && teardown_serverless || failed=7
 
