@@ -3,6 +3,20 @@
 Provides a collection of API's to support deploying and serving of
 serverless applications and functions.
 
+## Local/Private cluster testing
+
+To test the Serverless Operator against your private Openshift cluster
+you first need to push the necessary images to a publicly available location.
+To do that, make sure the `DOCKER_REPO_OVERRIDE` environment variable is set
+to a docker repository you can push to, for example `docker.io/markusthoemmes`.
+You might need to run `docker login` to be able to push images. Now run
+`make publish-images` and all images in this repository will now be built and
+pushed to your docker repository.
+
+After that is done, all the scripts in the `hack` directory are at your disposal
+to install and test the system. `make test-e2e` in particular runs the entirety
+of the end-to-end tests against the system.
+
 ## Operator Framework
 
 This repository contains the metadata required by the [Operator
