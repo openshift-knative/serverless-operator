@@ -13,7 +13,7 @@ function install_catalogsource {
   logger.info "Installing CatalogSource"
 
   # Determine if we're running locally or in CI.
-  if [[ -v OPENSHIFT_BUILD_NAMESPACE ]]; then
+  if [ -z "$OPENSHIFT_BUILD_NAMESPACE" ]; then
     export IMAGE_KNATIVE_SERVING_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-serving-operator"
     export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
   else

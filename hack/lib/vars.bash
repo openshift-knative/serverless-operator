@@ -9,6 +9,7 @@ readonly CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.ya
 readonly DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
 readonly INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
 readonly KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
+readonly OPENSHIFT_BUILD_NAMESPACE="${OPENSHIFT_BUILD_NAMESPACE:-}"
 readonly OPERATOR="${OPERATOR:-serverless-operator}"
 readonly SCALE_UP="${SCALE_UP:-6}"
 

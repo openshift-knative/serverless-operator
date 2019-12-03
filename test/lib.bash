@@ -90,7 +90,7 @@ function run_knative_serving_tests {
 }
 
 function teardown {
-  if [[ -v OPENSHIFT_BUILD_NAMESPACE ]]; then
+  if [ -z "$OPENSHIFT_BUILD_NAMESPACE" ]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
     return 0
   fi
