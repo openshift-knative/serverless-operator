@@ -99,7 +99,7 @@ function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
   local failed=0
 
-  go test -tags=preupgrade -timeout=20m ./test/upgrade \
+  go test -v -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || failed=1
@@ -107,13 +107,13 @@ function run_knative_serving_rolling_upgrade_tests {
   logger.info "Starting prober test"
 
   rm -f /tmp/prober-signal
-  go test -tags=probe -timeout=20m ./test/upgrade \
+  go test -v -tags=probe -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain &
 
   # Wait for the upgrade-probe kservice to be ready before proceeding
-  timeout 900 '[[ $(oc get ksvc upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
+  timeout 900 '[[ $(oc get services.serving.knative.dev upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
 
   PROBER_PID=$!
 
@@ -150,7 +150,7 @@ function run_knative_serving_rolling_upgrade_tests {
   done
 
   logger.info "Running postupgrade tests"
-  go test -tags=postupgrade -timeout=20m ./test/upgrade \
+  go test -v -tags=postupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || failed=1
