@@ -47,6 +47,7 @@ function run_e2e_tests {
 
 function run_knative_serving_tests {
   (
+  local knative_version=$1
   # Setup a temporary GOPATH to safely check out the repository without breaking other things.
   local tmp_gopath
   tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
@@ -73,6 +74,7 @@ function run_knative_serving_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   local failed=0
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 
   # rolling upgrade tests must run first because they upgrade Serverless to the latest version
