@@ -60,7 +60,7 @@ function run_knative_serving_tests {
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
   cd "$GOPATH/src/knative.dev" || return $?
-  git clone -b "release-$1" --single-branch https://github.com/openshift/knative-serving.git serving
+  git clone -b "release-${knative_version}" --single-branch https://github.com/openshift/knative-serving.git serving
   cd serving || return $?
 
   # Remove unneeded manifest
@@ -74,7 +74,7 @@ function run_knative_serving_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   local failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}"
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 
   # rolling upgrade tests must run first because they upgrade Serverless to the latest version
@@ -88,13 +88,10 @@ function run_knative_serving_tests {
 }
 
 function run_knative_serving_e2e_and_conformance_tests {
-  local failed=0
   logger.info "Running E2E and conformance tests"
   go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" || failed=1
-  
-  return $failed
+    --imagetemplate "$image_template" || return 1
 }
 
 function run_knative_serving_rolling_upgrade_tests {
