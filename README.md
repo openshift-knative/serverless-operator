@@ -8,10 +8,11 @@ applications and functions.
 ### Requirements
 
 - `podman` aliased to `docker` or `docker` (17.05 or newer)
-- `podman` or `docker` are logged into a repository you can push to
+- `podman` or `docker` is logged into a repository you can push to
 - `DOCKER_REPO_OVERRIDE` points to that repository
 - `envsubst`
 - `bash` (4.0.0 or newer)
+- `make`
 
 ### Creating the images
 
@@ -20,14 +21,20 @@ need to push the necessary images to a publicly available location. To do that,
 make sure the `DOCKER_REPO_OVERRIDE` environment variable is set to a docker
 repository you can push to, for example `docker.io/markusthoemmes`. You might
 need to run `docker login` to be able to push images. Now run
-`make publish-images` and all images in this repository will now be built and
+`make images` and all images in this repository will now be built and
 pushed to your docker repository.
 
 ### Installing the system/running tests
 
-Use the appropriate make targets or scripts in `hack`. The system can be
-installed via [`hack/install.sh`](hack/install.sh) and the entire test-suite can
-be run using `make test-e2e`.
+Use the appropriate make targets or scripts in `hack`:
+
+- `make dev`: Deploys the servleress-operator without deploying Knative Serving.
+- `make install`: Scales the cluster appropriately, deploys serverless-operator
+  and Knative Serving.
+- `make test-e2e`: Scales, installs and runs all tests.
+
+**Note:** Don't forget you can chain `make` targets. `make images dev` is handy
+for example.
 
 ## Operator Framework
 
