@@ -9,7 +9,6 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"knative.dev/pkg/kmeta"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -27,8 +26,6 @@ const (
 	routeName0 = "route-" + uid + "-323531366235"
 	routeName1 = "route-" + uid + "-663738313063"
 )
-
-var ownerRef = *kmeta.NewControllerRef(ingress())
 
 func TestMakeRoute(t *testing.T) {
 	tests := []struct {
@@ -56,7 +53,6 @@ func TestMakeRoute(t *testing.T) {
 			),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
 					Labels: map[string]string{
 						networking.IngressLabelKey:     "ingress",
 						serving.RouteLabelKey:          "route1",
@@ -105,7 +101,6 @@ func TestMakeRoute(t *testing.T) {
 			),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
 					Labels: map[string]string{
 						networking.IngressLabelKey:     "ingress",
 						serving.RouteLabelKey:          "route1",
@@ -141,7 +136,6 @@ func TestMakeRoute(t *testing.T) {
 			)),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
 					Labels: map[string]string{
 						networking.IngressLabelKey:     "ingress",
 						serving.RouteLabelKey:          "route1",
@@ -169,7 +163,6 @@ func TestMakeRoute(t *testing.T) {
 				},
 			}, {
 				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
 					Labels: map[string]string{
 						networking.IngressLabelKey:     "ingress",
 						serving.RouteLabelKey:          "route1",
@@ -206,7 +199,6 @@ func TestMakeRoute(t *testing.T) {
 			)),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{ownerRef},
 					Labels: map[string]string{
 						networking.IngressLabelKey:     "ingress",
 						serving.RouteLabelKey:          "route1",
