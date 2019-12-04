@@ -54,7 +54,7 @@ function run_knative_serving_tests {
   cp -r "$GOPATH/bin" "$tmp_gopath"
   export GOPATH="$tmp_gopath"
 
-  # save the rootdir before changing dir
+  # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
   # Checkout the relevant code to run
@@ -70,17 +70,21 @@ function run_knative_serving_tests {
   oc apply -f test/config
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
   oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
-  # adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
+  # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 
-  # rolling upgrade tests must run first because they upgrade Serverless to the latest version
-  run_knative_serving_rolling_upgrade_tests || failed=1
+  # Rolling upgrade tests must run first because they upgrade Serverless to the latest version
+  if [[ $RUN_KNATIVE_SERVING_UPGRADE_TESTS == true ]]; then
+     run_knative_serving_rolling_upgrade_tests || failed=1
+  fi
 
-  run_knative_serving_e2e_and_conformance_tests || failed=1
+  if [[ $RUN_KNATIVE_SERVING_E2E == true ]]; then
+    run_knative_serving_e2e_and_conformance_tests || failed=1
+  fi
 
   rm -rf "$tmp_gopath"
   return $failed
