@@ -11,11 +11,20 @@ function ensure_serverless_installed {
 
 function install_serverless_previous {
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  # Get the previous CSV
-  local csv=$(${rootdir}/hack/catalog.sh | grep replaces: | tail -n1 | awk '{ print $2 }')
 
-  deploy_serverless_operator $csv  || return $?
+  # Remove installplan from previous installations, leaving this would make the operator
+  # upgrade to the latest version immediately
+  local current_csv=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
+  remove_installplan $current_csv
+
+  local previous_csv=$(${rootdir}/hack/catalog.sh | grep replaces: | tail -n1 | awk '{ print $2 }')
+  deploy_serverless_operator $previous_csv  || return $?
   deploy_knativeserving_cr || return $?
+}
+
+function remove_installplan {
+  local install_plan=$(find_install_plan $1)
+  [[ ! -z $install_plan ]] && oc delete $install_plan -n ${OPERATORS_NAMESPACE}
 }
 
 function install_serverless_latest {
@@ -75,7 +84,7 @@ function find_install_plan {
   local csv=$1
   for plan in `oc get installplan -n ${OPERATORS_NAMESPACE} --no-headers -o name`; do 
     [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) -eq 1 && \
-       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.metadata.ownerReferences[?(@.name==\"${OPERATOR}\")]}") != "" ]] && echo $plan && return 0
+       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.catalogSources}" | grep -c $OPERATOR) -eq 1 ]] && echo $plan && return 0
   done
   echo ""
 }

@@ -115,16 +115,13 @@ function run_knative_serving_rolling_upgrade_tests {
   # Wait for the upgrade-probe kservice to be ready before proceeding
   timeout 900 '[[ $(oc get ksvc upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
 
-  # Give routes time to be propagated
-  sleep 30
-
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    local serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
     # Get the current/latest CSV
-    upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
+    local upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
     approve_csv $upgrade_to || return 1
 
     # The knativeserving CR should be updated now
@@ -138,7 +135,7 @@ function run_knative_serving_rolling_upgrade_tests {
     # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
     end_prober_test ${PROBER_PID}
 
-    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}')
+    local latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}')
     [[ $latest_cluster_version == "" ]] && return 1
 
     oc adm upgrade --to-latest=true
@@ -151,9 +148,6 @@ function run_knative_serving_rolling_upgrade_tests {
   for kservice in `oc get ksvc -n serving-tests --no-headers -o name`; do
     timeout 900 '[[ $(oc get $kservice -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
   done
-
-  # Give routes time to be propagated
-  sleep 30
 
   logger.info "Running postupgrade tests"
   go test -tags=postupgrade -timeout=20m ./test/upgrade \
