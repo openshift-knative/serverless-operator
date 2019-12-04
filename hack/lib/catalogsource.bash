@@ -12,13 +12,18 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  # Determine if we're running locally or in CI.
-  if [ -z "$OPENSHIFT_BUILD_NAMESPACE" ]; then
-    export IMAGE_KNATIVE_SERVING_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-serving-operator"
-    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
-  else
+  # Use current build images in CI.
+  if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
     export IMAGE_KNATIVE_SERVING_OPERATOR="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-serving-operator"
     export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress"
+  # Use DOCKER_REPO_OVERRIDE for developing locally
+  elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+    export IMAGE_KNATIVE_SERVING_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-serving-operator"
+    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
+  # Use CI_PROMOTION_NAME to use current promoted images from CI
+  elif [ -n "$CI_PROMOTION_NAME" ]; then
+    export IMAGE_KNATIVE_SERVING_OPERATOR="registry.svc.ci.openshift.org/openshift/${CI_PROMOTION_NAME}:knative-serving-operator"
+    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/openshift/${CI_PROMOTION_NAME}:knative-openshift-ingress"
   fi
 
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
