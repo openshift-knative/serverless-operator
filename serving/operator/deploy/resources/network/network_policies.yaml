@@ -24,7 +24,10 @@ spec:
     matchLabels:
       app: autoscaler
   ingress:
-  - {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: monitoring
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -38,7 +41,10 @@ spec:
     matchLabels:
       app: activator
   ingress:
-  - {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: monitoring
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -52,7 +58,10 @@ spec:
     matchLabels:
       app: controller
   ingress:
-  - {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: monitoring
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -65,8 +74,6 @@ spec:
   podSelector:
     matchLabels:
       app: networking-certmanager
-  ingress:
-  - {}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -79,5 +86,3 @@ spec:
   podSelector:
     matchLabels:
       app: networking-istio
-  ingress:
-  - {}
