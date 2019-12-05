@@ -1,7 +1,20 @@
 # Useful for local development
-publish-images:
-	./hack/publish.sh $(DOCKER_REPO_OVERRIDE)
-.PHONY: publish-images
+dev:
+	./hack/dev.sh
+.PHONY: dev
+
+# General purpose targets
+images:
+	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
+.PHONY: images
+
+install:
+	./hack/install.sh
+.PHONY: install
+
+teardown:
+	./hack/teardown.sh
+.PHONY: teardown
 
 # Test targets for CI operator
 test-unit:
