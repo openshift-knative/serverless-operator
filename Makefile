@@ -1,7 +1,20 @@
 # Useful for local development
-publish-images:
-	./hack/publish.sh $(DOCKER_REPO_OVERRIDE)
-.PHONY: publish-images
+dev:
+	./hack/dev.sh
+.PHONY: dev
+
+# General purpose targets
+images:
+	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
+.PHONY: images
+
+install:
+	./hack/install.sh
+.PHONY: install
+
+teardown:
+	./hack/teardown.sh
+.PHONY: teardown
 
 # Test targets for CI operator
 test-unit:
@@ -11,6 +24,10 @@ test-unit:
 test-e2e:
 	./test/e2e-tests.sh
 .PHONY: test-e2e
+
+test-upgrade:
+	./test/upgrade-tests.sh
+.PHONY: test-upgrade
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:

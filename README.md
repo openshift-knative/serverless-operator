@@ -1,41 +1,58 @@
 # Red Hat Serverless Operator
 
-Provides a collection of API's to support deploying and serving of
-serverless applications and functions.
+Provides a collection of API's to support deploying and serving of serverless
+applications and functions.
 
-## Local/Private cluster testing
+## Development and private cluster testing
 
-To test the Serverless Operator against your private Openshift cluster
-you first need to push the necessary images to a publicly available location.
-To do that, make sure the `DOCKER_REPO_OVERRIDE` environment variable is set
-to a docker repository you can push to, for example `docker.io/markusthoemmes`.
-You might need to run `docker login` to be able to push images. Now run
-`make publish-images` and all images in this repository will now be built and
+### Requirements
+
+- `podman` aliased to `docker` or `docker` (17.05 or newer)
+- `podman` or `docker` is logged into a repository you can push to
+- `DOCKER_REPO_OVERRIDE` points to that repository
+- `envsubst`
+- `bash` (4.0.0 or newer)
+- `make`
+
+### Creating the images
+
+To test the Serverless Operator against your private Openshift cluster you first
+need to push the necessary images to a publicly available location. To do that,
+make sure the `DOCKER_REPO_OVERRIDE` environment variable is set to a docker
+repository you can push to, for example `docker.io/markusthoemmes`. You might
+need to run `docker login` to be able to push images. Now run
+`make images` and all images in this repository will now be built and
 pushed to your docker repository.
 
-After that is done, all the scripts in the `hack` directory are at your disposal
-to install and test the system. `make test-e2e` in particular runs the entirety
-of the end-to-end tests against the system.
+### Installing the system/running tests
+
+Use the appropriate make targets or scripts in `hack`:
+
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving.
+- `make install`: Scales the cluster appropriately, deploys serverless-operator
+  and Knative Serving.
+- `make test-e2e`: Scales, installs and runs all tests.
+
+**Note:** Don't forget you can chain `make` targets. `make images dev` is handy
+for example.
 
 ## Operator Framework
 
-This repository contains the metadata required by the [Operator
-Lifecycle
-Manager](https://github.com/operator-framework/operator-lifecycle-manager)
+This repository contains the metadata required by the
+[Operator Lifecycle Manager](https://github.com/operator-framework/operator-lifecycle-manager)
 
 ### Create a CatalogSource
 
-The [catalog.sh](hack/catalog.sh) script should yield a valid
-`ConfigMap` and `CatalogSource` comprised of the
-`ClusterServiceVersions`, `CustomResourceDefinitions`, and package
-manifest in the bundle beneath [olm-catalog/](olm-catalog/). You
-should apply its output in the namespace where the other
-`CatalogSources` live on your cluster,
-e.g. `openshift-marketplace`:
+The [catalog.sh](hack/catalog.sh) script should yield a valid `ConfigMap` and
+`CatalogSource` (given you have a setup as described in the development section
+above) comprised of the `ClusterServiceVersions`, `CustomResourceDefinitions`,
+and package manifest in the bundle beneath [olm-catalog/](olm-catalog/). You
+should apply its output in the namespace where the other `CatalogSources` live
+on your cluster, e.g. `openshift-marketplace`:
 
 ```
-CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
-./hack/catalog.sh | kubectl apply -n $CS_NS -f -
+CS_NS=$(oc get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
+./hack/catalog.sh | oc apply -n $CS_NS -f -
 ```
 
 ### Create a Subscription
@@ -43,10 +60,10 @@ CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}'
 To install the operator, create a subscription:
 
 ```
-CS_NS=$(kubectl get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
-OPERATOR_NS=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
+CS_NS=$(oc get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
+OPERATOR_NS=$(oc get og --all-namespaces | grep global-operators | awk '{print $1}')
 
-cat <<-EOF | kubectl apply -f -
+cat <<-EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -60,24 +77,3 @@ spec:
   channel: techpreview
 EOF
 ```
-
-## Using OLM on Minikube
-
-You can test the operator using
-[minikube](https://kubernetes.io/docs/setup/minikube/) after
-installing OLM on it:
-
-```
-minikube start
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/crds.yaml
-kubectl apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.12.0/olm.yaml
-```
-
-Once all the pods in the `olm` namespace are running, install the
-catalog source and operator as described above.
-
-Interacting with OLM is possible using `kubectl` but the OKD console
-is "friendlier". If you have docker installed, use [this
-script](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/scripts/run_console_local.sh)
-to fire it up on <http://localhost:9000>.
-

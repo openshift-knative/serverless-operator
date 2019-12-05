@@ -16,15 +16,13 @@ failed=0
 (( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success 'Cluster prepared for testing.'
 
-# Run serverless-operator specific tests.
-(( !failed )) && run_e2e_tests || failed=4
+# Run upstream knative serving rolling upgrade tests
+RUN_KNATIVE_SERVING_UPGRADE_TESTS=true
+RUN_KNATIVE_SERVING_E2E=false
 
-# Run upstream knative serving tests
-RUN_KNATIVE_SERVING_UPGRADE_TESTS=false
-RUN_KNATIVE_SERVING_E2E=true
-
-(( !failed )) && ensure_serverless_installed || failed=5
+(( !failed )) && install_serverless_previous || failed=5
 (( !failed )) && run_knative_serving_tests "v0.10.0" || failed=6
+
 (( !failed )) && teardown_serverless || failed=7
 
 (( failed )) && dump_state
