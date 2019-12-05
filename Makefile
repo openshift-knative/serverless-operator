@@ -12,6 +12,10 @@ test-e2e:
 	./test/e2e-tests.sh
 .PHONY: test-e2e
 
+test-upgrade:
+	./test/upgrade-tests.sh
+.PHONY: test-upgrade
+
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
