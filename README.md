@@ -28,7 +28,7 @@ pushed to your docker repository.
 
 Use the appropriate make targets or scripts in `hack`:
 
-- `make dev`: Deploys the servleress-operator without deploying Knative Serving.
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator
   and Knative Serving.
 - `make test-e2e`: Scales, installs and runs all tests.
