@@ -23,12 +23,15 @@ mkdir $CRD_DIR
 find $OLM_DIR -name '*_crd.yaml' | sort -n | xargs -I{} cp {} $CRD_DIR/
 
 # Determine if we're running locally or in CI.
-if [ -z "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+  export IMAGE_KNATIVE_SERVING_OPERATOR="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-serving-operator"
+  export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress"
+elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
   export IMAGE_KNATIVE_SERVING_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-serving-operator"
   export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
 else
-  export IMAGE_KNATIVE_SERVING_OPERATOR="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-serving-operator"
-  export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress"
+  export IMAGE_KNATIVE_SERVING_OPERATOR="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.3.0:knative-serving-operator"
+  export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.3.0:knative-openshift-ingress"
 fi
 
 CRD=$(cat $(ls $CRD_DIR/*) | grep -v -- "---" | indent apiVersion)
