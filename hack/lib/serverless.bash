@@ -58,16 +58,7 @@ spec:
 EOF
 
   # Approve the initial installplan automatically
-  approve_csv $csv
-
-  logger.info "Wait for the ${OPERATOR} pod to appear"
-  timeout 900 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -eq 0 ]]" || return 5
-
-  logger.info 'Wait until the Operator pod is up and running'
-  wait_until_pods_running "${OPERATORS_NAMESPACE}" || return 6
-
-  logger.info 'Wait until Operator finishes installation'
-  timeout 300 "[[ \$(oc get csv -n ${OPERATORS_NAMESPACE} | grep ${OPERATOR} | grep -c Succeeded) -eq 0 ]]" || return 7
+  approve_csv $csv || return 5
 }
 
 function approve_csv {
@@ -94,6 +85,9 @@ function find_install_plan {
 function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
 
+  # Wait for the CRD to appear
+  timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 6
+
   # Install Knative Serving
   cat <<EOF | oc apply -f - || return $?
 apiVersion: serving.knative.dev/v1alpha1
@@ -103,7 +97,7 @@ metadata:
   namespace: ${SERVING_NAMESPACE}
 EOF
 
-  timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 8
+  timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Serverless has been installed sucessfully.'
 }
