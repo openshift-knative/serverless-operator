@@ -13,6 +13,7 @@ readonly OPENSHIFT_BUILD_NAMESPACE="${OPENSHIFT_BUILD_NAMESPACE:-}"
 readonly OPERATOR="${OPERATOR:-serverless-operator}"
 readonly SCALE_UP="${SCALE_UP:-6}"
 
+readonly OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 readonly OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-operators}"
 readonly SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
 readonly SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"

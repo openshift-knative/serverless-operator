@@ -24,7 +24,9 @@ function install_serverless_previous {
 
 function remove_installplan {
   local install_plan=$(find_install_plan $1)
-  [[ ! -z $install_plan ]] && oc delete $install_plan -n ${OPERATORS_NAMESPACE}
+  if [[ -n $install_plan ]]; then
+    oc delete $install_plan -n ${OPERATORS_NAMESPACE}
+  fi
 }
 
 function install_serverless_latest {
@@ -50,7 +52,7 @@ spec:
   channel: techpreview
   name: ${OPERATOR}
   source: ${OPERATOR}
-  sourceNamespace: ${OPERATORS_NAMESPACE}
+  sourceNamespace: ${OLM_NAMESPACE}
   installPlanApproval: Manual
   startingCSV: ${csv}
 EOF
