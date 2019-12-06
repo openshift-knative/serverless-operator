@@ -15,6 +15,7 @@ const (
 	// Timeout specifies the timeout for the function PollImmediate to reach a certain status.
 	Timeout                   = 5 * time.Minute
 	OperatorsNamespace        = "openshift-operators"
+	OLMNamespace              = "openshift-marketplace"
 	ServerlessOperatorPackage = "serverless-operator"
 )
 
@@ -31,7 +32,7 @@ func Subscription(subscriptionName string) *v1alpha1.Subscription {
 		},
 		Spec: &v1alpha1.SubscriptionSpec{
 			CatalogSource:          ServerlessOperatorPackage,
-			CatalogSourceNamespace: OperatorsNamespace,
+			CatalogSourceNamespace: OLMNamespace,
 			Package:                ServerlessOperatorPackage,
 			Channel:                "techpreview",
 			InstallPlanApproval:    v1alpha1.ApprovalAutomatic,
