@@ -45,23 +45,30 @@ function run_e2e_tests {
     && return 1
 }
 
+# Setup a temporary GOPATH to safely check out the repository without breaking other things.
+# CAUTION: function overrides GOPATH so use it in subshell or restore original value!
+function make_temporary_gopath {
+  local tmp_gopath
+  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
+  cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
+  logger.info "Temporary GOPATH is: ${tmp_gopath}"
+  export GOPATH="$tmp_gopath"
+}
+
 function run_knative_serving_tests {
   (
   local knative_version=$1
-  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
-  local tmp_gopath
-  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
-  cp -r "$GOPATH/bin" "$tmp_gopath"
-  export GOPATH="$tmp_gopath"
+  make_temporary_gopath
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
   # Checkout the relevant code to run
   mkdir -p "$GOPATH/src/knative.dev"
-  cd "$GOPATH/src/knative.dev" || return $?
-  git clone -b "release-${knative_version}" --single-branch https://github.com/openshift/knative-serving.git serving
-  cd serving || return $?
+  git clone --branch "release-${knative_version}" \
+    --depth=1 https://github.com/openshift/knative-serving.git \
+    "${GOPATH}/src/knative.dev/serving"
+  pushd "${GOPATH}/src/knative.dev/serving" || return $?
 
   # Remove unneeded manifest
   rm test/config/100-istio-default-domain.yaml
@@ -77,6 +84,8 @@ function run_knative_serving_tests {
   image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 
+  git describe --always --tags --dirty
+
   # Rolling upgrade tests must run first because they upgrade Serverless to the latest version
   if [[ $RUN_KNATIVE_SERVING_UPGRADE_TESTS == true ]]; then
      run_knative_serving_rolling_upgrade_tests || failed=1
@@ -86,7 +95,8 @@ function run_knative_serving_tests {
     run_knative_serving_e2e_and_conformance_tests || failed=1
   fi
 
-  rm -rf "$tmp_gopath"
+  rm -rf "${GOPATH}"
+  popd || return $?
   return $failed
   )
 }
@@ -170,6 +180,51 @@ function end_prober_test {
   wait ${PROBER_PID}
 }
 
+function run_knative_serving_operator_tests {
+  (
+  local version target serverless_rootdir exitstatus patchfile fork gitdesc
+  version="$1"
+  fork="${2:-knative}"
+  serverless_rootdir="$(pwd)"
+  make_temporary_gopath
+
+  logger.info "Checkout the code ${fork}/serving-operator @ ${version}"
+  mkdir -p "${GOPATH}/src/knative.dev"
+  target="${GOPATH}/src/knative.dev/serving-operator"
+  git clone --branch "${version}" --depth 1 \
+    "https://github.com/${fork}/serving-operator.git" \
+    "${target}"
+  pushd "${target}" || return $?
+
+  patchfile="${serverless_rootdir}/test/patches/SRVKS-241-knative-serving-operator-skip-configure.patch"
+  logger.info "Apply walkaround for SRVKS-241"
+  logger.debug "Patchfile is: ${patchfile}"
+  [ -f "${patchfile}" ] || return $?
+  patch --strip=0 < "${patchfile}" || return $?
+
+  gitdesc=$(git describe --always --tags --dirty)
+
+  exitstatus=0
+
+  logger.info "Run tests of knative/serving-operator @ ${gitdesc}"
+  env TEST_NAMESPACE='knative-serving' \
+    go test -v -tags=e2e -count=1 -timeout=30m -parallel=1 ./test/e2e \
+      --kubeconfig "$KUBECONFIG" \
+    || exitstatus=5$? && true
+
+  if (( !exitstatus )); then
+    logger.success 'Tests have passed'
+  else
+    logger.error 'Tests have failures!'
+  fi
+
+  logger.info "Removing GOPATH: ${GOPATH}"
+  rm -rf "${GOPATH}"
+  popd || return $?
+  return $exitstatus
+  )
+}
+
 function teardown {
   if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
@@ -194,23 +249,33 @@ function dump_state {
   dump_cluster_state
   dump_openshift_olm_state
   dump_openshift_ingress_state
+  dump_knative_state
 }
 
 function dump_openshift_olm_state {
   logger.info "Dump of subscriptions.operators.coreos.com"
   # This is for status checking.
-  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces
+  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
   logger.info "Dump of catalog operator log"
-  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator
+  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator || true
 }
 
 function dump_openshift_ingress_state {
   logger.info "Dump of routes.route.openshift.io"
-  oc get routes.route.openshift.io -o yaml --all-namespaces
+  oc get routes.route.openshift.io -o yaml --all-namespaces || true
   logger.info "Dump of routes.serving.knative.dev"
-  oc get routes.serving.knative.dev -o yaml --all-namespaces
+  oc get routes.serving.knative.dev -o yaml --all-namespaces || true
   logger.info "Dump of openshift-ingress log"
-  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE"
+  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE" || true
+}
+
+function dump_knative_state {
+  logger.info 'Dump of knative state'
+  oc describe knativeserving knative-serving -n "$SERVING_NAMESPACE" || true
+  oc get smcp --all-namespaces || true
+  oc get smmr --all-namespaces || true
+  oc get pods -n "$SERVING_NAMESPACE" || true
+  oc get ksvc --all-namespaces || true
 }
 
 # == Test users
