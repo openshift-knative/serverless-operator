@@ -125,11 +125,18 @@ function run_knative_serving_rolling_upgrade_tests {
 
     # Get the current/latest CSV
     local upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
-    approve_csv $upgrade_to || return 1
 
-    # The knativeserving CR should be updated now
-    timeout 900 '[[ ! ( $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
-
+    if [[ ${HOSTNAME} = e2e-aws-ocp-41* ]]; then
+      approve_csv $upgrade_to && return 1 # Upgrade should fail on OCP 4.1
+      # Check we got RequirementsNotMet error
+      [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
+      # Check KnativeServing still has the old version
+      [[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
+    else
+      approve_csv $upgrade_to || return 1
+      # The knativeserving CR should be updated now
+      timeout 900 '[[ ! ( $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+    fi
     end_prober_test ${PROBER_PID}
   fi
 
