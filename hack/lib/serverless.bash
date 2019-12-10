@@ -20,7 +20,7 @@ function install_serverless_previous {
 
   previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
   deploy_serverless_operator "$previous_csv"  || return $?
-  deploy_knativeserving_cr || return $?
+  deploy_knativeserving_cr "serving" || return $?
 }
 
 function remove_installplan {
@@ -93,20 +93,21 @@ function find_install_plan {
 
 function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
+  local group=${1:-operator}
 
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
   # Install Knative Serving
   cat <<EOF | oc apply -f - || return $?
-apiVersion: serving.knative.dev/v1alpha1
+apiVersion: ${group}.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: ${SERVING_NAMESPACE}
 EOF
 
-  timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  timeout 900 '[[ $(oc get knativeserving.${group}.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Serverless has been installed sucessfully.'
 }
