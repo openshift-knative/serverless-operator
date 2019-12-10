@@ -5,7 +5,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "serving.knative.dev/v1alpha1",
+          "apiVersion": "operator.knative.dev/v1alpha1",
           "kind": "KnativeServing",
           "metadata": {
             "name": "knative-serving"
@@ -78,7 +78,7 @@ spec:
     - description: Represents an installation of a particular version of Knative Serving
       displayName: Knative Serving
       kind: KnativeServing
-      name: knativeservings.serving.knative.dev
+      name: knativeservings.operator.knative.dev
       statusDescriptors:
       - description: The version of Knative Serving installed
         displayName: Version
@@ -212,7 +212,7 @@ spec:
           verbs:
           - "*"
         - apiGroups:
-          - serving.knative.dev
+          - operator.knative.dev
           resources:
           - knativeservings
           - knativeservings/finalizers
@@ -235,18 +235,16 @@ spec:
           strategy: {}
           template:
             metadata:
+              annotations:
+                sidecar.istio.io/inject: "false"
               labels:
                 name: knative-serving-operator
             spec:
               containers:
               - command:
-                - knative-serving-operator
+                - "/ko-app/manager"
                 env:
-                - name: WATCH_NAMESPACE
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.annotations['olm.targetNamespaces']
-                - name: NAMESPACE
+                - name: SYSTEM_NAMESPACE
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.namespace
@@ -256,25 +254,59 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: knative-serving-operator
-                - name: IMAGE_QUEUE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-queue
-                - name: IMAGE_activator
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-activator
-                - name: IMAGE_autoscaler
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-autoscaler
-                - name: IMAGE_autoscaler-hpa
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-autoscaler-hpa
-                - name: IMAGE_controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-controller
-                - name: IMAGE_networking-istio
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-istio
-                - name: IMAGE_webhook
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-webhook
-                image: $IMAGE_KNATIVE_SERVING_OPERATOR
+                image: docker.io/jcrossley3/manager-ab023dee4774c1e46196cc9a70bb0cdb
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}
               serviceAccountName: knative-serving-operator
+      - name: knative-serving-openshift
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: knative-serving-openshift
+          template:
+            metadata:
+              labels:
+                name: knative-serving-openshift
+                app: openshift-admission-server
+            spec:
+              serviceAccountName: knative-serving-operator
+              containers:
+                - name: knative-serving-openshift
+                  image: docker.io/jcrossley3/knative-serving-openshift:dev
+                  command:
+                  - knative-serving-openshift
+                  imagePullPolicy: Always
+                  env:
+                    - name: WATCH_NAMESPACE
+                      value: ""
+                    - name: POD_NAME
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.name
+                    - name: OPERATOR_NAME
+                      value: "knative-serving-openshift"
+                    - name: MIN_OPENSHIFT_VERSION
+                      value: "4.1.13"
+                    - name: REQUIRED_NAMESPACE
+                      value: "knative-serving"
+                    - name: IMAGE_default
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-${NAME}
+                    - name: IMAGE_queue-proxy
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-queue
+                    - name: IMAGE_networking-istio
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-istio
+                    - name: IMAGE_activator
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-activator
+                    - name: IMAGE_autoscaler
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-autoscaler
+                    - name: IMAGE_autoscaler-hpa
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-autoscaler-hpa
+                    - name: IMAGE_controller
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-controller
+                    - name: IMAGE_webhook
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.10.0:knative-serving-webhook
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -347,7 +379,7 @@ spec:
           verbs:
           - update
         - apiGroups:
-          - serving.knative.dev
+          - operator.knative.dev
           resources:
           - '*'
           verbs:
