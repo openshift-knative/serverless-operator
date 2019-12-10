@@ -127,7 +127,7 @@ function run_knative_serving_rolling_upgrade_tests {
     local upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
 
     if [[ ${HOSTNAME} = e2e-aws-ocp-41* ]]; then
-      approve_csv $upgrade_to && return 1 # Upgrade should fail on OCP 4.1
+      approve_csv $upgrade_to && return 1 || true # Upgrade should fail on OCP 4.1
       # Check we got RequirementsNotMet error
       [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
       # Check KnativeServing still has the old version
@@ -146,7 +146,7 @@ function run_knative_serving_rolling_upgrade_tests {
     end_prober_test ${PROBER_PID}
 
     local latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}')
-    [[ $latest_cluster_version == "" ]] && return 1
+    [[ $latest_cluster_version != "" ]] || return 1
 
     oc adm upgrade --to-latest=true
 
