@@ -5,8 +5,8 @@
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
 
-readonly TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
+export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 
@@ -50,7 +50,9 @@ function run_e2e_tests {
 function make_temporary_gopath {
   local tmp_gopath
   tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
-  cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
+  if [[ -d $(go env GOPATH)/bin ]]; then
+    cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
+  fi
   logger.info "Temporary GOPATH is: ${tmp_gopath}"
   export GOPATH="$tmp_gopath"
   export PATH="$GOPATH/bin":$PATH
@@ -72,7 +74,7 @@ function checkout_knative_serving {
   export KNATIVE_SERVING_HOME="$GOPATH/src/knative.dev/serving"
   mkdir -p "$KNATIVE_SERVING_HOME"
   git clone -b "release-${knative_version}" --depth 1 https://github.com/openshift/knative-serving.git "$KNATIVE_SERVING_HOME"
-  git describe --always --tags --dirty
+  git describe --always --tags
 }
 
 function prepare_knative_serving_tests {
@@ -241,9 +243,10 @@ function run_knative_serving_operator_tests {
   exitstatus=0
 
   logger.info "Run tests of knative/serving-operator @ ${gitdesc}"
-  env TEST_NAMESPACE='knative-serving' \
-    go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
-      --kubeconfig "$KUBECONFIG" \
+
+  export TEST_NAMESPACE="knative-serving"
+  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+    --kubeconfig "$KUBECONFIG" \
     || exitstatus=5$? && true
 
   if (( !exitstatus )); then
