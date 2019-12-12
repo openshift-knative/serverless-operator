@@ -35,7 +35,7 @@ function timeout {
       echo -n '.'
     fi
     sleep $interval
-    [[ $seconds -gt $timeout ]] && logger.error "Timed out of ${timeout} exceeded" && return 1
+    [[ $seconds -gt $timeout ]] && logger.error "Time out of ${timeout} exceeded" && return 1
   done
   if [[ "${LOG_LEVEL}" != 'DEBUG' ]] && [[ "$seconds" != '0' ]]; then
     echo ''

@@ -100,6 +100,7 @@ spec:
       kind: ServiceMeshControlPlane
       name: servicemeshcontrolplanes.maistra.io
       version: v1
+  minKubeVersion: 1.14.0
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
     install various "serverless" services.

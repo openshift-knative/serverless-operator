@@ -5,3 +5,4 @@
   for more information.
 - HTTPS based routes are now available for all Knative Services.
 - Fixed a bug where Routes have non-correct cross-namespaced OwnerReferences.
+- Dropped support for OpenShift 4.1
