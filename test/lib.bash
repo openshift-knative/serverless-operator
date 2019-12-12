@@ -79,7 +79,7 @@ function run_knative_serving_tests {
 
   # Rolling upgrade tests must run first because they upgrade Serverless to the latest version
   if [[ $RUN_KNATIVE_SERVING_UPGRADE_TESTS == true ]]; then
-     run_knative_serving_rolling_upgrade_tests || failed=1
+    run_knative_serving_rolling_upgrade_tests || failed=1
   fi
 
   if [[ $RUN_KNATIVE_SERVING_E2E == true ]]; then
@@ -100,12 +100,11 @@ function run_knative_serving_e2e_and_conformance_tests {
 
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
-  local failed=0
 
   go test -v -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain || failed=1
+    --resolvabledomain || return 1
 
   logger.info "Starting prober test"
 
@@ -126,7 +125,7 @@ function run_knative_serving_rolling_upgrade_tests {
     # Get the current/latest CSV
     local upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
 
-    if [[ ${HOSTNAME} = e2e-aws-ocp-41* ]]; then
+    if [[ ${HOSTNAME} = *ocp-41* ]]; then
       if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
         return 1
       fi
@@ -135,7 +134,7 @@ function run_knative_serving_rolling_upgrade_tests {
       # Check KnativeServing still has the old version
       [[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
     else
-      approve_csv $upgrade_to || return 1
+      approve_csv "$upgrade_to" || return 1
       # The knativeserving CR should be updated now
       timeout 900 '[[ ! ( $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
     fi
@@ -165,11 +164,11 @@ function run_knative_serving_rolling_upgrade_tests {
   go test -v -tags=postupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain || failed=1
+    --resolvabledomain || return 1
 
   oc delete ksvc pizzaplanet-upgrade-service scale-to-zero-upgrade-service upgrade-probe -n serving-tests
 
-  return $failed
+  return 0
 }
 
 function end_prober_test {
