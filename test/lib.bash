@@ -162,8 +162,7 @@ function run_knative_serving_rolling_upgrade_tests {
 
     local cluster_version
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
-    echo "Cluster version: $cluster_version"
-    if [[ "$cluster_version" = 4.1.* ]]; then
+    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* ]]; then
       if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
         return 1
       fi
@@ -197,6 +196,9 @@ function run_knative_serving_rolling_upgrade_tests {
   for kservice in `oc get ksvc -n serving-tests --no-headers -o name`; do
     timeout 900 '[[ $(oc get $kservice -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
   done
+
+  # Give time to settle things down
+  sleep 30
 
   logger.info "Running postupgrade tests"
   go_test_e2e -tags=postupgrade -timeout=20m ./test/upgrade \
