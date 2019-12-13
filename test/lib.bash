@@ -160,7 +160,7 @@ function run_knative_serving_rolling_upgrade_tests {
     local upgrade_to
     upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
 
-    if [[ ${HOSTNAME} = *ocp-41* ]]; then
+    if [[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}") = 4.1.* ]]; then
       if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
         return 1
       fi
