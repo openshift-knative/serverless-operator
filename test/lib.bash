@@ -237,12 +237,6 @@ function run_knative_serving_operator_tests {
     "${target}"
   pushd "${target}" || return $?
 
-  patchfile="${serverless_rootdir}/test/patches/SRVKS-241-knative-serving-operator-skip-configure.patch"
-  logger.info "Apply walkaround for SRVKS-241"
-  logger.debug "Patchfile is: ${patchfile}"
-  [ -f "${patchfile}" ] || return $?
-  patch --strip=0 < "${patchfile}" || return $?
-
   gitdesc=$(git describe --always --tags --dirty)
 
   exitstatus=0

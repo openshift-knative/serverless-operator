@@ -254,7 +254,7 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: knative-serving-operator
-                image: docker.io/jcrossley3/manager-ab023dee4774c1e46196cc9a70bb0cdb
+                image: docker.io/jcrossley3/manager-ab023dee4774c1e46196cc9a70bb0cdb:cdd9d70 # gcr.io/knative-nightly/knative.dev/serving-operator/cmd/manager:latest
                 imagePullPolicy: Always
                 name: knative-serving-operator
                 resources: {}

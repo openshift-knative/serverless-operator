@@ -21,7 +21,7 @@ failed=0
 
 # Run upstream knative serving operator tests
 (( !failed )) && deploy_serverless_operator_latest || failed=11
-(( !failed )) && run_knative_serving_operator_tests 'support/v0.10.0' 'cardil' || failed=12
+(( !failed )) && run_knative_serving_operator_tests 'master' || failed=12
 
 # Run upstream knative serving tests
 (( !failed )) && ensure_serverless_installed || failed=6
