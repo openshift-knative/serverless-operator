@@ -51,8 +51,7 @@ should apply its output in the namespace where the other `CatalogSources` live
 on your cluster, e.g. `openshift-marketplace`:
 
 ```
-CS_NS=$(oc get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
-./hack/catalog.sh | oc apply -n $CS_NS -f -
+./hack/catalog.sh | oc apply -n openshift-marketplace -f -
 ```
 
 ### Create a Subscription
@@ -60,19 +59,16 @@ CS_NS=$(oc get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
 To install the operator, create a subscription:
 
 ```
-CS_NS=$(oc get catalogsources --all-namespaces | tail -1 | awk '{print $1}')
-OPERATOR_NS=$(oc get og --all-namespaces | grep global-operators | awk '{print $1}')
-
 cat <<-EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: serverless-operator-sub
   generateName: serverless-operator-
-  namespace: $OPERATOR_NS
+  namespace: openshift-operators
 spec:
   source: serverless-operator
-  sourceNamespace: $CS_NS
+  sourceNamespace: openshift-marketplace
   name: serverless-operator
   channel: techpreview
 EOF
