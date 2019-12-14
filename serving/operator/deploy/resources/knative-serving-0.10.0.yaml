@@ -188,6 +188,34 @@ rules:
   - delete
   - patch
   - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  - routes/custom-host
+  - routes/status
+  - routes/finalizers
+  verbs:
+  - "*"
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - knativeservings
+  - knativeservings/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - maistra.io
+  resources:
+  - servicemeshmemberrolls
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - "*"
 
 ---
 apiVersion: v1

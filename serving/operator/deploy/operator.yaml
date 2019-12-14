@@ -43,6 +43,6 @@ spec:
             - name: IMAGE_controller
               value: quay.io/openshift-knative/knative-serving-controller:v0.10.0
             - name: IMAGE_networking-istio
-              value: quay.io/openshift-knative/knative-serving-istio:v0.10.0
+              value: quay.io/nak3/knative-networking-openshift
             - name: IMAGE_webhook
               value: quay.io/openshift-knative/knative-serving-webhook:v0.10.0
