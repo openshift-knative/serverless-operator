@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -8,6 +9,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes/scheme"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/remotecommand"
 	pkgTest "knative.dev/pkg/test"
 )
 
@@ -20,6 +26,131 @@ const (
 	kubeHelloworldService = "kube-helloworld-go"
 	helloworldText        = "Hello World!"
 )
+
+func TestCurlKnativeMetricsUrl(t *testing.T) {
+
+	// This test case deploys a public image (curlimages/curl) in a pod belongs
+	// a namespace which is not a member of service mesh.   The expectation is
+	// this this pod does not have permission to access (curl) knative controller/
+	// activator/etc metrics.   This test will do just that (to curl knative metrics URL)
+	// on the test pod.   The curl attempt will timeout and we assert for connection
+	// timeout error.
+
+	// Load kubeconfig
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+
+	// Get a rest.Config from the kubeconfig file.  This will be passed into all
+	// the client objects we create.
+	restconfig, err := kubeconfig.ClientConfig()
+	if err != nil {
+		t.Fatal("Failed", err)
+	}
+
+	// "default" namespace must not be a member of SMMR!
+	const namespace = "default"
+
+	// Create a Kubernetes core/v1 client.
+	coreclient, err := corev1client.NewForConfig(restconfig)
+	if err != nil {
+		t.Fatal("Failed", err)
+	}
+
+	// Create a busybox Pod.  By running `cat`, the Pod will sit and do nothing.
+	var zero int64
+	pod, err := coreclient.Pods(namespace).Create(&corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "curlbox",
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "curl-container",
+					Image:   "curlimages/curl",
+					Command: []string{"cat"},
+					Stdin:   true,
+				},
+			},
+			TerminationGracePeriodSeconds: &zero,
+		},
+	})
+	if err != nil {
+		t.Fatal("Failed", err)
+	}
+
+	// Delete the Pod before we exit.
+	defer coreclient.Pods(pod.Namespace).Delete(pod.Name, &metav1.DeleteOptions{})
+
+	// Wait for the Pod to indicate Ready == True.
+	watcher, err := coreclient.Pods(namespace).Watch(
+		metav1.SingleObject(pod.ObjectMeta),
+	)
+	if err != nil {
+		t.Fatal("Failed", err)
+	}
+
+	for event := range watcher.ResultChan() {
+		switch event.Type {
+		case watch.Modified:
+			pod = event.Object.(*corev1.Pod)
+
+			// If the Pod contains a status condition Ready == True, stop
+			// watching.
+			for _, cond := range pod.Status.Conditions {
+				if cond.Type == corev1.PodReady &&
+					cond.Status == corev1.ConditionTrue {
+					watcher.Stop()
+				}
+			}
+
+		default:
+			t.Fatal("unexpected event type " + event.Type)
+		}
+	}
+
+	// turn off stdin and termial i/o
+	const tty = false
+
+	req := coreclient.RESTClient().Post().
+		Resource("pods").
+		Name(pod.GetName()).
+		Namespace(pod.GetNamespace()).
+		SubResource("exec").
+		VersionedParams(&corev1.PodExecOptions{
+			Container: pod.Spec.Containers[0].Name,
+			Command:   []string{"curl", "controller.knative-serving.svc:9090/metrics"},
+			Stdin:     false,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       tty,
+		}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(restconfig, "POST", req.URL())
+	if err != nil {
+		t.Fatal("Failed", err)
+	}
+
+	outBuf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: outBuf,
+		Stderr: errBuf,
+		Tty:    tty,
+	})
+
+	if err == nil {
+		t.Fatal("Curl command is expected to fail but it did not.")
+	}
+
+	errMessage := errBuf.String()
+	if !strings.Contains(errMessage, "Failed to connect to controller.knative-serving.svc port 9090: Operation timed out") {
+		t.Fatalf("Unexpected error: %s", errMessage)
+	}
+
+}
 
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
