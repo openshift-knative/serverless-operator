@@ -5,8 +5,8 @@
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
 
-readonly TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
+export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 
@@ -29,7 +29,7 @@ function register_teardown {
 function run_e2e_tests {
   declare -al kubeconfigs
   local kubeconfigs_str
-  
+
   logger.info "Running tests"
   kubeconfigs+=("${KUBECONFIG}")
   for cfg in user*.kubeconfig; do
@@ -37,7 +37,7 @@ function run_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=1 ./test/e2e \
+  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     && logger.success 'Tests has passed' && return 0 \
@@ -50,26 +50,34 @@ function run_e2e_tests {
 function make_temporary_gopath {
   local tmp_gopath
   tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
-  cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
+  if [[ -d $(go env GOPATH)/bin ]]; then
+    cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
+  fi
   logger.info "Temporary GOPATH is: ${tmp_gopath}"
   export GOPATH="$tmp_gopath"
+  export PATH="$GOPATH/bin":$PATH
 }
 
-function run_knative_serving_tests {
-  (
+function remove_temporary_gopath {
+  if [[ "$GOPATH" =~ .*gopath-[0-9a-zA-Z]{10} ]]; then
+    logger.info "Removing GOPATH: ${GOPATH}"
+    rm -rf "${GOPATH}"
+  fi
+}
+
+function checkout_knative_serving {
   local knative_version=$1
+  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
   make_temporary_gopath
 
-  # Save the rootdir before changing dir
-  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-
   # Checkout the relevant code to run
-  mkdir -p "$GOPATH/src/knative.dev"
-  git clone --branch "release-${knative_version}" \
-    --depth=1 https://github.com/openshift/knative-serving.git \
-    "${GOPATH}/src/knative.dev/serving"
-  pushd "${GOPATH}/src/knative.dev/serving" || return $?
+  export KNATIVE_SERVING_HOME="$GOPATH/src/knative.dev/serving"
+  mkdir -p "$KNATIVE_SERVING_HOME"
+  git clone -b "release-${knative_version}" --depth 1 https://github.com/openshift/knative-serving.git "$KNATIVE_SERVING_HOME"
+  git describe --always --tags
+}
 
+function prepare_knative_serving_tests {
   # Remove unneeded manifest
   rm test/config/100-istio-default-domain.yaml
 
@@ -80,38 +88,53 @@ function run_knative_serving_tests {
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
-  local failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
-
-  git describe --always --tags --dirty
-
-  # Rolling upgrade tests must run first because they upgrade Serverless to the latest version
-  if [[ $RUN_KNATIVE_SERVING_UPGRADE_TESTS == true ]]; then
-    run_knative_serving_rolling_upgrade_tests || failed=1
-  fi
-
-  if [[ $RUN_KNATIVE_SERVING_E2E == true ]]; then
-    run_knative_serving_e2e_and_conformance_tests || failed=1
-  fi
-
-  rm -rf "${GOPATH}"
-  popd || return $?
-  return $failed
-  )
 }
 
 function run_knative_serving_e2e_and_conformance_tests {
   logger.info "Running E2E and conformance tests"
-  go test -v -tags=e2e -count=1 -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
+  (
+  local knative_version=$1
+
+  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
+    checkout_knative_serving "$knative_version"
+  fi
+  cd "$KNATIVE_SERVING_HOME" || return $?
+
+  prepare_knative_serving_tests || return $?
+
+  local failed=0
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
+
+  go_test_e2e -tags=e2e -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" || return 1
+    --imagetemplate "$image_template" || failed=1
+
+  remove_temporary_gopath
+
+  return $failed
+  )
 }
 
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
+  (
+  local knative_version=$1
 
-  go test -v -tags=preupgrade -timeout=20m ./test/upgrade \
+  # Save the rootdir before changing dir
+  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+
+  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
+    checkout_knative_serving "$knative_version"
+  fi
+  cd "$KNATIVE_SERVING_HOME" || return $?
+
+  prepare_knative_serving_tests || return $?
+
+  local failed=0
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
+
+  go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || return 1
@@ -119,7 +142,7 @@ function run_knative_serving_rolling_upgrade_tests {
   logger.info "Starting prober test"
 
   rm -f /tmp/prober-signal
-  go test -v -tags=probe -timeout=20m ./test/upgrade \
+  go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain &
@@ -130,12 +153,16 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    local serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    local serving_version
+    serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
     # Get the current/latest CSV
-    local upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
+    local upgrade_to
+    upgrade_to=$(${rootdir}/hack/catalog.sh | grep currentCSV | awk '{ print $2 }')
 
-    if [[ ${HOSTNAME} = *ocp-41* ]]; then
+    local cluster_version
+    cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
+    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* ]]; then
       if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
         return 1
       fi
@@ -170,22 +197,28 @@ function run_knative_serving_rolling_upgrade_tests {
     timeout 900 '[[ $(oc get $kservice -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
   done
 
+  # Give time to settle things down
+  sleep 30
+
   logger.info "Running postupgrade tests"
-  go test -v -tags=postupgrade -timeout=20m ./test/upgrade \
+  go_test_e2e -tags=postupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || return 1
 
   oc delete ksvc pizzaplanet-upgrade-service scale-to-zero-upgrade-service upgrade-probe -n serving-tests
 
+  remove_temporary_gopath
+
   return 0
+  )
 }
 
 function end_prober_test {
   local PROBER_PID=$1
   echo "done" > /tmp/prober-signal
   logger.info "Waiting for prober test to finish"
-  wait ${PROBER_PID}
+  wait "${PROBER_PID}"
 }
 
 function run_knative_serving_operator_tests {
@@ -197,8 +230,8 @@ function run_knative_serving_operator_tests {
   make_temporary_gopath
 
   logger.info "Checkout the code ${fork}/serving-operator @ ${version}"
-  mkdir -p "${GOPATH}/src/knative.dev"
   target="${GOPATH}/src/knative.dev/serving-operator"
+  mkdir -p "$target"
   git clone --branch "${version}" --depth 1 \
     "https://github.com/${fork}/serving-operator.git" \
     "${target}"
@@ -215,9 +248,10 @@ function run_knative_serving_operator_tests {
   exitstatus=0
 
   logger.info "Run tests of knative/serving-operator @ ${gitdesc}"
-  env TEST_NAMESPACE='knative-serving' \
-    go test -v -tags=e2e -count=1 -timeout=30m -parallel=1 ./test/e2e \
-      --kubeconfig "$KUBECONFIG" \
+
+  export TEST_NAMESPACE="knative-serving"
+  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+    --kubeconfig "$KUBECONFIG" \
     || exitstatus=5$? && true
 
   if (( !exitstatus )); then
@@ -226,9 +260,8 @@ function run_knative_serving_operator_tests {
     logger.error 'Tests have failures!'
   fi
 
-  logger.info "Removing GOPATH: ${GOPATH}"
-  rm -rf "${GOPATH}"
-  popd || return $?
+  remove_temporary_gopath
+
   return $exitstatus
   )
 }
@@ -253,7 +286,7 @@ function dump_state {
   fi
   logger.info 'Environment'
   env
-  
+
   dump_cluster_state
   dump_openshift_olm_state
   dump_openshift_ingress_state
