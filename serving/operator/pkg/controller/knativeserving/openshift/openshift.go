@@ -65,7 +65,7 @@ var (
 	extension = common.Extension{
 		Transformers: []mf.Transformer{ingress, egress, updateIstioConfig, updateGateway, deploymentController, annotateAutoscalerService, augmentAutoscalerDeployment, addCaBundleToApiservice, configureLogURLTemplate},
 		PreInstalls:  []common.Extender{checkVersion, applyServiceMesh, installNetworkPolicies, caBundleConfigMap},
-		PostInstalls: []common.Extender{installServiceMonitor},
+		PostInstalls: []common.Extender{installKourier,installServiceMonitor},
 		Watchers:     []common.Watcher{watchServiceMeshControlPlane, watchServiceMeshMemberRoll, clusterLoggingWatcher},
 		Finalizers:   []common.Extender{removeServiceMesh},
 	}
@@ -636,6 +636,31 @@ func configureLogURLTemplate(u *unstructured.Unstructured) error {
 				common.UpdateConfigMap(u, data, log)
 			}
 		}
+	}
+	return nil
+}
+
+func installKourier(instance *servingv1alpha1.KnativeServing) error {
+	namespace := instance.GetNamespace()
+	log.Info("Installing Kourier Ingress")
+	const path = "deploy/resources/kourier/kourier.yaml"
+
+	manifest, err := mf.NewManifest(path, false, api)
+	if err != nil {
+		log.Error(err, "Unable to create Kourier Ingress install manifest")
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+	if len(namespace) > 0 {
+		transforms = append(transforms, mf.InjectNamespace(namespace))
+	}
+	if err := manifest.Transform(transforms...); err != nil {
+		log.Error(err, "Unable to transform Kourier Ingress manifest")
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
+		log.Error(err, "Unable to install Kourier Ingress")
+		return err
 	}
 	return nil
 }
