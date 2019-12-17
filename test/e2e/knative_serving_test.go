@@ -27,7 +27,7 @@ const (
 	helloworldText        = "Hello World!"
 )
 
-func TestCurlKnativeMetricsUrl(t *testing.T) {
+func testCurlKnativeMetricsURL(t *testing.T) {
 
 	// This test case deploys a public image (curlimages/curl) in a pod belongs
 	// a namespace which is not a member of service mesh.   The expectation is
@@ -188,6 +188,10 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
 		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
+	})
+
+	t.Run("test curl knative serving metrics urls from non smmr member namespace pod", func(t *testing.T) {
+		testCurlKnativeMetricsURL(t)
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
