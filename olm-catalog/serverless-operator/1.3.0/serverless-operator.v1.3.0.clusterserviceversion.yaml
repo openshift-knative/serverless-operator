@@ -274,7 +274,7 @@ spec:
               serviceAccountName: knative-serving-operator
               containers:
                 - name: knative-serving-openshift
-                  image: docker.io/jcrossley3/knative-serving-openshift:dev
+                  image: docker.io/jcrossley3/knative-serving-openshift:f6e3e69
                   command:
                   - knative-serving-openshift
                   imagePullPolicy: Always
