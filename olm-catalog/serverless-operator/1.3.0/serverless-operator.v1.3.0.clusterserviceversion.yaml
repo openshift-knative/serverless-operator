@@ -89,6 +89,20 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:io.kubernetes.conditions'
       version: v1alpha1
+    - description: Represents an obsolete installation of Knative Serving
+      displayName: Knative Serving
+      kind: KnativeServing
+      name: knativeservings.serving.knative.dev
+      statusDescriptors:
+      - description: The version of Knative Serving installed
+        displayName: Version
+        path: version
+      - description: Conditions of Knative Serving installed
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+      version: v1alpha1
     required:
     - description: A list of namespaces in Service Mesh
       displayName: Istio Service Mesh Member Roll
