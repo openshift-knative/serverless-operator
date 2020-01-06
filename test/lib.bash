@@ -141,6 +141,9 @@ function run_knative_serving_rolling_upgrade_tests {
 
   logger.info "Starting prober test"
 
+  # Make prober send 50 requests/second
+  sed -e 's/\(.*requestInterval =\).*/\1 20 * time.Millisecond/' -i vendor/knative.dev/pkg/test/spoof/spoof.go
+
   rm -f /tmp/prober-signal
   go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
