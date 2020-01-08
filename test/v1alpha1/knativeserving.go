@@ -1,6 +1,7 @@
-package test
+package v1alpha1
 
 import (
+	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/pkg/errors"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,7 +18,7 @@ func KnativeServing(name, namespace string) *servingoperatorv1alpha1.KnativeServ
 	}
 }
 
-func WithKnativeServingReady(ctx *Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
+func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
 	serving, err := CreateKnativeServing(ctx, name, namespace)
 	if err != nil {
 		return nil, err
@@ -29,7 +30,7 @@ func WithKnativeServingReady(ctx *Context, name, namespace string) (*servingoper
 	return serving, nil
 }
 
-func CreateKnativeServing(ctx *Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
+func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
 	serving, err := ctx.Clients.ServingOperator.KnativeServings(namespace).Create(KnativeServing(name, namespace))
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func CreateKnativeServing(ctx *Context, name, namespace string) (*servingoperato
 	return serving, nil
 }
 
-func DeleteKnativeServing(ctx *Context, name, namespace string) error {
+func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 	if err := ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
 		return err
 	}
@@ -56,10 +57,10 @@ func DeleteKnativeServing(ctx *Context, name, namespace string) error {
 	return err
 }
 
-func WaitForKnativeServingState(ctx *Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
+func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
 	var lastState *servingoperatorv1alpha1.KnativeServing
 	var err error
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.ServingOperator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})

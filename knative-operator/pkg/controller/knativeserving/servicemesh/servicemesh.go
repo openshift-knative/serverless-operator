@@ -45,9 +45,6 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err
 	}
-	if err := configureIstio(instance, api); err != nil {
-		return err
-	}
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
 		return err
 	}
@@ -112,18 +109,6 @@ func WatchResources(c controller.Controller) error {
 	}
 	if err := watchServiceMeshType(c, &maistrav1.ServiceMeshMemberRoll{}); err != nil {
 		return err
-	}
-	return nil
-}
-
-func configureIstio(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	ns := ingressNamespace(instance.GetNamespace())
-	c1 := common.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
-	c2 := common.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
-	if c1 || c2 {
-		if err := api.Update(context.TODO(), instance); err != nil {
-			return err
-		}
 	}
 	return nil
 }
