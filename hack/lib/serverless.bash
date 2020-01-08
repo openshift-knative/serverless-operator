@@ -20,7 +20,7 @@ function install_serverless_previous {
 
   previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
   deploy_serverless_operator "$previous_csv"  || return $?
-  deploy_knativeserving_cr || return $?
+  deploy_knativeserving_v1alpha1 || return $?
 }
 
 function remove_installplan {
@@ -33,7 +33,7 @@ function remove_installplan {
 
 function install_serverless_latest {
   deploy_serverless_operator_latest || return $?
-  deploy_knativeserving_cr || return $?
+  deploy_knativeserving_v1alpha1 || return $?
 }
 
 function deploy_serverless_operator_latest {
@@ -91,7 +91,7 @@ function find_install_plan {
   echo ""
 }
 
-function deploy_knativeserving_cr {
+function deploy_knativeserving_v1alpha1 {
   logger.info 'Deploy Knative Serving'
 
   # Wait for the CRD to appear
