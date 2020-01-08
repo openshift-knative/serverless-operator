@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,7 +39,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		_, err := test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
+		_, err := v1a1test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
 		if err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
@@ -60,7 +61,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
-		if err := test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
+		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
