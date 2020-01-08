@@ -97,14 +97,11 @@ function deploy_knativeserving_v1alpha1 {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
   # Install Knative Serving
-  cat <<EOF | oc apply -f - || return $?
-apiVersion: serving.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${SERVING_NAMESPACE}
-EOF
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/serving/operator/deploy/crds/serving_v1alpha1_knativeserving_cr.yaml" || return $?
 
   timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
