@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-serving-openshift
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: knative-serving-openshift
+  template:
+    metadata:
+      labels:
+        name: knative-serving-openshift
+        app: openshift-admission-server
+    spec:
+      serviceAccountName: knative-serving-openshift
+      containers:
+        - name: knative-serving-openshift
+          image: docker.io/jcrossley3/knative-serving-openshift:dev
+          command:
+          - knative-serving-openshift
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "knative-serving-openshift"
+            - name: MIN_OPENSHIFT_VERSION
+              value: "4.1.13"
+            - name: REQUIRED_NAMESPACE
+              value: "knative-serving"
