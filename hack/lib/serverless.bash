@@ -20,7 +20,7 @@ function install_serverless_previous {
 
   previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
   deploy_serverless_operator "$previous_csv"  || return $?
-  deploy_knativeserving_v1alpha1 || return $?
+  deploy_knativeserving_v1alpha1_1.3.0 || return $?
 }
 
 function remove_installplan {
@@ -33,7 +33,7 @@ function remove_installplan {
 
 function install_serverless_latest {
   deploy_serverless_operator_latest || return $?
-  deploy_knativeserving_v1alpha1 || return $?
+  deploy_knativeserving_v1alpha1_1.3.0 || return $?
 }
 
 function deploy_serverless_operator_latest {
@@ -91,7 +91,7 @@ function find_install_plan {
   echo ""
 }
 
-function deploy_knativeserving_v1alpha1 {
+function deploy_knativeserving_v1alpha1_1.3.0 {
   logger.info 'Deploy Knative Serving'
 
   # Wait for the CRD to appear
@@ -101,7 +101,7 @@ function deploy_knativeserving_v1alpha1 {
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Install Knative Serving
-  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/serving/operator/deploy/crds/serving_v1alpha1_knativeserving_cr.yaml" || return $?
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/serving/operator/deploy/crds/serving_v1alpha1_1.3.0_knativeserving_cr.yaml" || return $?
 
   timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 

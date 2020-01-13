@@ -1,0 +1,42 @@
+# Warning: This file is used for backward compatibility tests and
+# should work with future versions of Serverless (after 1.3.0).
+# Do not update this file after Serverles 1.3.0 is released.
+
+apiVersion: serving.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+spec:
+  config:
+    defaults:
+      revision-timeout-seconds: "300"  # 5 minutes
+    autoscaler:
+      container-concurrency-target-percentage: "1.0"
+      container-concurrency-target-default: "100"
+      stable-window: "60s"
+      panic-window-percentage: "10.0"
+      panic-window: "6s"
+      panic-threshold-percentage: "200.0"
+      max-scale-up-rate: "10"
+      enable-scale-to-zero: "true"
+      tick-interval: "2s"
+      scale-to-zero-grace-period: "30s"
+    deployment:
+      registriesSkippingTagResolving: "ko.local,dev.local"
+    gc:
+      stale-revision-create-delay: "24h"
+      stale-revision-timeout: "15h"
+      stale-revision-minimum-generations: "1"
+      stale-revision-lastpinned-debounce: "5h"
+    logging:
+      loglevel.controller: "info"
+      loglevel.autoscaler: "info"
+      loglevel.queueproxy: "info"
+      loglevel.webhook: "info"
+      loglevel.activator: "info"
+    observability:
+      logging.enable-var-log-collection: "false"
+      metrics.backend-destination: "prometheus"
+    tracing:
+      backend: "none"
+      sample-rate: "0.1"
