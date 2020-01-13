@@ -10,3 +10,6 @@ docker push "$repo/knative-serving-operator"
 
 docker build -t "$repo/knative-openshift-ingress" serving/ingress
 docker push "$repo/knative-openshift-ingress"
+
+docker build -t "$repo/knative-serving-openshift" knative-operator
+docker push "$repo/knative-serving-openshift"
