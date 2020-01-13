@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/appscode/jsonpatch"
-	"github.com/openshift-knative/knative-serving-openshift/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"

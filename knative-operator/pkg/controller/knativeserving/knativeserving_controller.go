@@ -4,8 +4,8 @@ import (
 	"context"
 
 	mf "github.com/jcrossley3/manifestival"
-	"github.com/openshift-knative/knative-serving-openshift/pkg/common"
-	"github.com/openshift-knative/knative-serving-openshift/pkg/controller/knativeserving/servicemesh"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

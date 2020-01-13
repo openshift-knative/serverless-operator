@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/openshift-knative/knative-serving-openshift/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"

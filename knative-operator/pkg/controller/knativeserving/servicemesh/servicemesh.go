@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
-	"github.com/openshift-knative/knative-serving-openshift/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 
 	mf "github.com/jcrossley3/manifestival"

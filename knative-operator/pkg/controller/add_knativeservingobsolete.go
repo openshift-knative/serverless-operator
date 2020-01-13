@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/openshift-knative/knative-serving-openshift/pkg/controller/knativeservingobsolete"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeservingobsolete"
 )
 
 func init() {

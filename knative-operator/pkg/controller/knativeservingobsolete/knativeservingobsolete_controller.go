@@ -3,7 +3,7 @@ package knativeservingobsolete
 import (
 	"context"
 
-	"github.com/openshift-knative/knative-serving-openshift/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
