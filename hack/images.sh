@@ -5,11 +5,9 @@
 
 repo=$1
 
-docker build -t "$repo/knative-serving-operator" serving/operator
-docker push "$repo/knative-serving-operator"
+docker build -t "$repo/knative-operator" knative-operator
+docker push "$repo/knative-operator"
 
 docker build -t "$repo/knative-openshift-ingress" serving/ingress
 docker push "$repo/knative-openshift-ingress"
 
-docker build -t "$repo/knative-serving-openshift" knative-operator
-docker push "$repo/knative-serving-openshift"
