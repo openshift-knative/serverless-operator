@@ -2,7 +2,7 @@
 
 function ensure_catalogsource_installed {
   logger.info 'Check if CatalogSource is installed'
-  if oc get catalogsource serverless-operator -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
+  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.success 'CatalogSource is already installed.'
     return 0
   fi
@@ -19,16 +19,10 @@ function install_catalogsource {
 }
 
 function delete_catalog_source {
-  logger.info "Deleting CatalogSource"
-  if [ ! -f "$CATALOG_SOURCE_FILENAME" ]; then
-    logger.success 'CatalogSource already deleted'
-    return 0
-  fi
-  oc delete --ignore-not-found=true -n "$OLM_NAMESPACE" -f "$CATALOG_SOURCE_FILENAME" || return 10
-  rm -v "$CATALOG_SOURCE_FILENAME"
-
+  logger.info "Deleting CatalogSource $OPERATOR"
+  oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR" || return 10
+  [ -f "$CATALOG_SOURCE_FILENAME" ] && rm -v "$CATALOG_SOURCE_FILENAME"
   logger.info "Wait for the ${OPERATOR} pod to disappear"
   timeout 900 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]" || return 11
-
   logger.success 'CatalogSource deleted'
 }

@@ -2,7 +2,8 @@
 
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
-  if oc get knativeserving knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  local group=${1:-operator}
+  if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     logger.success 'Serverless is already installed.'
     return 0
   fi
@@ -20,7 +21,7 @@ function install_serverless_previous {
 
   previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
   deploy_serverless_operator "$previous_csv"  || return $?
-  deploy_knativeserving_cr || return $?
+  deploy_knativeserving_cr "serving" || return $?
 }
 
 function remove_installplan {
@@ -93,20 +94,21 @@ function find_install_plan {
 
 function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
+  local group=${1:-operator}
 
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
   # Install Knative Serving
   cat <<EOF | oc apply -f - || return $?
-apiVersion: serving.knative.dev/v1alpha1
+apiVersion: ${group}.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: ${SERVING_NAMESPACE}
 EOF
 
-  timeout 900 '[[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  timeout 900 '[[ $(oc get knativeserving.${group}.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Serverless has been installed sucessfully.'
 }
@@ -114,13 +116,23 @@ EOF
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
-  if oc get knativeserving knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get knativeserving.serving.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeServing CR'
-    oc delete knativeserving knative-serving -n "${SERVING_NAMESPACE}" || return $?
-
-    logger.info 'Wait until there are no knative serving pods running'
-    timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
+    oc delete knativeserving.serving.knative.dev knative-serving -n "${SERVING_NAMESPACE}" || return $?
   fi
+  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeServing CR'
+    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" || return $?
+  fi
+  logger.info 'Ensure no knative serving pods running'
+  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
 
+  oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
+  for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
+    oc delete installplan -n "${OPERATORS_NAMESPACE}" $ip
+  done
+  for csv in $(oc get csv -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
+    oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
+  done
   logger.success 'Serverless has been uninstalled.'
 }
