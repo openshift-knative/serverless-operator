@@ -26,6 +26,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+const (
+	// The group name. This is used for CRDs.
+	GroupName = "operator.knative.dev"
+
+	// The Version of the schema. This is used for CRDs.
+	SchemaVersion = "v1alpha1"
+
+	// The Kind of the custom resource. This is used for CRDs.
+	Kind = "KnativeServing"
+)
+
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
@@ -43,7 +54,7 @@ func addKnownTypes(s *runtime.Scheme) error {
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "serving.knative.dev", Version: "v1alpha1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: SchemaVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
