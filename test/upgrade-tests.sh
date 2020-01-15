@@ -3,7 +3,7 @@
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
-set -Eeuo pipefail
+set -Eeuox pipefail
 
 register_teardown || exit $?
 scale_up_workers || exit $?
