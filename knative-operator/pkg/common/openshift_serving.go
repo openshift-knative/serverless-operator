@@ -14,9 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var log = Log
-
-func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func MutateServing(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
 		egress,
 		ingress,
@@ -40,7 +38,7 @@ func egress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		if !meta.IsNoMatchError(err) {
 			return err
 		}
-		log.Info("No OpenShift cluster network config available")
+		Log.Info("No OpenShift cluster network config available")
 		return nil
 	}
 	network := strings.Join(networkConfig.Spec.ServiceNetwork, ",")
@@ -55,7 +53,7 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		if !meta.IsNoMatchError(err) {
 			return err
 		}
-		log.Info("No OpenShift ingress config available")
+		Log.Info("No OpenShift ingress config available")
 		return nil
 	}
 	domain := ingressConfig.Spec.Domain
@@ -76,7 +74,7 @@ func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client
 	// attempt to locate kibana route which is available if openshift-logging has been configured
 	route := &routev1.Route{}
 	if err := c.Get(context.TODO(), client.ObjectKey{Name: name, Namespace: namespace}, route); err != nil {
-		log.Info(fmt.Sprintf("No revision-url-template; no route for %s/%s found", namespace, name))
+		Log.Info(fmt.Sprintf("No revision-url-template; no route for %s/%s found", namespace, name))
 		return nil
 	}
 	// retrieve host from kibana route, construct a concrete logUrl template with actual host name, update observability
@@ -99,7 +97,7 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 			Type: "ConfigMap",
 		}
 	}
-	log.Info("ControllerCustomCerts", "certs", ks.Spec.ControllerCustomCerts)
+	Log.Info("ControllerCustomCerts", "certs", ks.Spec.ControllerCustomCerts)
 	return nil
 }
 
@@ -123,12 +121,11 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 			}
 		}
 	}
-	log.Info("Setting", "registry", ks.Spec.Registry)
+	Log.Info("Setting", "registry", ks.Spec.Registry)
 	return nil
 }
 
-// configure controller with custom certs for openshift registry if
-// not already set
+// TODO: what does this do?
 func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
 	annotations := ks.GetAnnotations()
 	if annotations == nil {
