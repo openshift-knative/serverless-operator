@@ -108,7 +108,7 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 		return nil
 	}
 	log.Info("Configuring KnativeServing for OpenShift")
-	if err := common.Mutate(instance, r.client); err != nil {
+	if err := common.MutateServing(instance, r.client); err != nil {
 		return err
 	}
 	return r.client.Update(context.TODO(), instance)

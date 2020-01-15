@@ -52,7 +52,7 @@ func (a *KnativeServingConfigurator) Handle(ctx context.Context, req types.Reque
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	err = common.Mutate(ks, a.client)
+	err = common.MutateServing(ks, a.client)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}

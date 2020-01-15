@@ -91,7 +91,7 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 		},
 	}
 	latest.Spec.Config = current.Spec.Config
-	if err := common.Mutate(latest, r.client); err != nil {
+	if err := common.MutateServing(latest, r.client); err != nil {
 		return reconcile.Result{}, err
 	}
 	if err := r.client.Delete(context.TODO(), current); err != nil {
