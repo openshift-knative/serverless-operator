@@ -3,7 +3,7 @@
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
-set -Eeuo pipefail
+set -Eeuox pipefail
 
 register_teardown || exit $?
 scale_up_workers || exit $?
@@ -17,7 +17,7 @@ failed=0
 (( !failed )) && logger.success 'Cluster prepared for testing.'
 
 (( !failed )) && install_serverless_previous || failed=5
-(( !failed )) && run_knative_serving_rolling_upgrade_tests "v0.10.0" || failed=6
+(( !failed )) && run_knative_serving_rolling_upgrade_tests "v0.11.1" || failed=6
 
 (( !failed )) && teardown_serverless || failed=7
 
