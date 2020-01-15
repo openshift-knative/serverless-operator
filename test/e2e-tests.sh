@@ -25,7 +25,7 @@ failed=0
 
 # Run upstream knative serving tests
 (( !failed )) && ensure_serverless_installed || failed=6
-(( !failed )) && run_knative_serving_e2e_and_conformance_tests "v0.10.0" || failed=7
+(( !failed )) && run_knative_serving_e2e_and_conformance_tests "v0.11.1" || failed=7
 (( !failed )) && teardown_serverless || failed=8
 
 (( failed )) && dump_state
