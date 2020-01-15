@@ -48,6 +48,10 @@ required = [
   branch = "master"
 
 [[constraint]]
+  name = "knative.dev/eventing-operator"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/openshift/api"
   branch = "release-4.2"
 
