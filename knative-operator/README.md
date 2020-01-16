@@ -10,6 +10,7 @@ maistra/istio installed, and then run:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/knative/serving-operator/master/config/300-serving-v1alpha1-knativeserving-crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/knative/eventing-operator/master/config/300-eventing-v1alpha1-knativeeventing-crd.yaml
 operator-sdk test local ./test/e2e/ --namespace default 
 ```
 
@@ -22,3 +23,5 @@ Eventing TODO:
   - Delete stuff in SMMR when CR is deleted
 - Network policy for eventing
 - SCC related changes  
+
+
