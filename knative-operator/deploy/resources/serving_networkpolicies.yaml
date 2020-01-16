@@ -16,7 +16,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: autoscaler
-  namespace: knative-serving
+  namespace: knative-servingknative-serving-ingress
   labels:
     app: autoscaler
 spec:
