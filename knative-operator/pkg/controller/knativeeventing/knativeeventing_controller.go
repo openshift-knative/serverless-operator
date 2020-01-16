@@ -94,7 +94,7 @@ func (r *ReconcileKnativeEventing) configure(instance *eventingv1alpha1.KnativeE
 		return nil
 	}
 	log.Info("Configuring KnativeEventing for OpenShift")
-	if err := common.MutateServing(instance, r.client); err != nil {
+	if err := common.MutateEventing(instance, r.client); err != nil {
 		return err
 	}
 	return r.client.Update(context.TODO(), instance)
