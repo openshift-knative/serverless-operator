@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: cluster-local-gateway
+  namespace: knative-serving-ingress
+spec:
+  ingress:
+  - from:
+    - namespaceSelector: {}
+  podSelector:
+    matchLabels:
+      istio: cluster-local-gateway

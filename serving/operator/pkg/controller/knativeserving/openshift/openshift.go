@@ -207,7 +207,7 @@ func applyServiceMesh(instance *servingv1alpha1.KnativeServing) error {
 	log.Info("Successfully installed serviceMeshControlPlane")
 	log.Info("Wait ServiceMeshControlPlane condition to be ready")
 	// wait for serviceMeshControlPlane condition to be ready before reconciling knative serving component
-	if err := isServiceMeshControlPlaneReady(instance.GetNamespace()); err != nil {
+	if _, err := isServiceMeshControlPlaneReady(instance.GetNamespace()); err != nil {
 		return err
 	}
 	log.Info("ServiceMeshControlPlane is ready")
@@ -252,10 +252,10 @@ func breakReconcilation(err error) error {
 }
 
 // isServiceMeshControlPlaneReady checks whether serviceMeshControlPlane installs all required component
-func isServiceMeshControlPlaneReady(servingNamespace string) error {
+func isServiceMeshControlPlaneReady(servingNamespace string) (*maistrav1.ServiceMeshControlPlane, error) {
 	smcp := &maistrav1.ServiceMeshControlPlane{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: ingressNamespace(servingNamespace), Name: smcpName}, smcp); err != nil {
-		return err
+		return nil, err
 	}
 	var ready = false
 	for _, cond := range smcp.Status.Conditions {
@@ -265,9 +265,9 @@ func isServiceMeshControlPlaneReady(servingNamespace string) error {
 		}
 	}
 	if !ready {
-		return breakReconcilation(errors.New("SMCP not yet ready"))
+		return nil, breakReconcilation(errors.New("SMCP not yet ready"))
 	}
-	return nil
+	return smcp, nil
 }
 
 func injectLabels(labels map[string]string) mf.Transformer {
@@ -641,25 +641,57 @@ func configureLogURLTemplate(u *unstructured.Unstructured) error {
 }
 
 func installNetworkPolicies(instance *servingv1alpha1.KnativeServing) error {
-	namespace := instance.GetNamespace()
 	log.Info("Installing Network Policies")
+
+	if err := installServingPolicy(instance); err != nil {
+		return err
+	}
+	return installMeshPolicy(instance)
+}
+
+func installServingPolicy(instance *servingv1alpha1.KnativeServing) error {
+	log.Info("Installing Serving Network Policies")
+	namespace := instance.GetNamespace()
 	const path = "deploy/resources/network/network_policies.yaml"
 
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
-		log.Error(err, "Unable to create Network Policy install manifest")
+		log.Error(err, "Unable to create Serving Network Policy install manifest")
 		return err
 	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if len(namespace) > 0 {
-		transforms = append(transforms, mf.InjectNamespace(namespace))
-	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
 	if err := manifest.Transform(transforms...); err != nil {
-		log.Error(err, "Unable to transform network policy manifest")
+		log.Error(err, "Unable to transform serving network policy manifest")
 		return err
 	}
 	if err := manifest.ApplyAll(); err != nil {
-		log.Error(err, "Unable to install Network Policies")
+		log.Error(err, "Unable to install Serving Network Policies")
+		return err
+	}
+	return nil
+}
+
+func installMeshPolicy(instance *servingv1alpha1.KnativeServing) error {
+	log.Info("Installing Mesh Network Policies")
+	namespace := ingressNamespace(instance.GetNamespace())
+	const path = "deploy/resources/serviceMesh/network_policies.yaml"
+
+	manifest, err := mf.NewManifest(path, false, api)
+	if err != nil {
+		log.Error(err, "Unable to create Mesh Network Policy install manifest")
+		return err
+	}
+	smcp, err := isServiceMeshControlPlaneReady(instance.GetNamespace())
+	if err != nil {
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(smcp), mf.InjectNamespace(namespace)}
+	if err := manifest.Transform(transforms...); err != nil {
+		log.Error(err, "Unable to transform mesh network policy manifest")
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
+		log.Error(err, "Unable to install Mesh Network Policies")
 		return err
 	}
 	return nil
