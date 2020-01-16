@@ -161,7 +161,7 @@ func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) 
 func installServiceMeshControlPlane(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing serviceMeshControlPlane")
 	const (
-		path = "deploy/resources/servicemesh.yaml"
+		path = "deploy/resources/serving_servicemesh.yaml"
 	)
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {

@@ -3,6 +3,7 @@ package knativeeventing
 import (
 	"context"
 
+	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -78,7 +79,7 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	stages := []func(*eventingv1alpha1.KnativeEventing) error{
 		r.configure,
-		// r.installNetworkPolicies, // TODO: do we need this?
+		r.installNetworkPolicies,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -98,4 +99,27 @@ func (r *ReconcileKnativeEventing) configure(instance *eventingv1alpha1.KnativeE
 		return err
 	}
 	return r.client.Update(context.TODO(), instance)
+}
+
+// create wide-open networkpolicies for the knative eventing components
+func (a *ReconcileKnativeEventing) installNetworkPolicies(instance *eventingv1alpha1.KnativeEventing) error {
+	namespace := instance.GetNamespace()
+	log.Info("Installing Network Policies")
+	const path = "deploy/resources/eventing_networkpolicies.yaml"
+
+	manifest, err := mf.NewManifest(path, false, a.client)
+	if err != nil {
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+	if len(namespace) > 0 {
+		transforms = append(transforms, mf.InjectNamespace(namespace))
+	}
+	if err := manifest.Transform(transforms...); err != nil {
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
+		return err
+	}
+	return nil
 }
