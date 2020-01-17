@@ -68,14 +68,17 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 	err := r.client.Get(context.TODO(), request.NamespacedName, current)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	// Fetch the proper instance
+	latest := &servingv1alpha1.KnativeServing{}
+	if err := r.client.Get(context.TODO(), request.NamespacedName, latest); err == nil {
+		// We already have a converted CR, so abort
+		return reconcile.Result{}, nil
+	}
+	// Remove finalizers to prevent deadlock
 	if len(current.GetFinalizers()) > 0 {
 		reqLogger.Info("Removing finalizers for old KnativeServing")
 		current.SetFinalizers(nil)
@@ -84,7 +87,7 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 		}
 	}
 	// Create the latest CR from the current (previous) CR
-	latest := &servingv1alpha1.KnativeServing{
+	latest = &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      current.Name,
 			Namespace: current.Namespace,
@@ -94,7 +97,8 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 	if err := common.Mutate(latest, r.client); err != nil {
 		return reconcile.Result{}, err
 	}
-	if err := r.client.Delete(context.TODO(), current); err != nil {
+	// Orphan the kids to avoid webhook race condition
+	if err := r.client.Delete(context.TODO(), current, client.PropagationPolicy(metav1.DeletePropagationOrphan)); err != nil {
 		return reconcile.Result{}, err
 	}
 	if err := r.client.Create(context.TODO(), latest); err != nil {
