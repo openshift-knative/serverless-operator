@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	configv1 "github.com/openshift/api/config/v1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -22,7 +22,7 @@ import (
 
 // Creates a new validating KnativeServing Webhook
 func ValidatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
-	common.Log.Info("Setting up validating webhook for KnativeServing")
+	commonserving.Log.Info("Setting up validating webhook for KnativeServing")
 	return builder.NewWebhookBuilder().
 		Name("validating.knativeserving.openshift.io").
 		Validating().
@@ -60,7 +60,7 @@ func (v *KnativeServingValidator) Handle(ctx context.Context, req types.Request)
 
 // KnativeServingValidator checks for a minimum OpenShift version
 func (v *KnativeServingValidator) validate(ctx context.Context, ks *servingv1alpha1.KnativeServing) (allowed bool, reason string, err error) {
-	log := common.Log.WithName("validate")
+	log := commonserving.Log.WithName("validate")
 	stages := []func(context.Context, *servingv1alpha1.KnativeServing) (bool, string, error){
 		v.validateNamespace,
 		v.validateVersion,

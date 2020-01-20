@@ -4,7 +4,7 @@ import (
 	"context"
 
 	mf "github.com/jcrossley3/manifestival"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = common.Log.WithName("controller")
+var log = commonserving.Log.WithName("controller")
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -104,11 +104,11 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
-	if _, ok := instance.GetAnnotations()[common.MutationTimestampKey]; ok {
+	if _, ok := instance.GetAnnotations()[commonserving.MutationTimestampKey]; ok {
 		return nil
 	}
 	log.Info("Configuring KnativeServing for OpenShift")
-	if err := common.Mutate(instance, r.client); err != nil {
+	if err := commonserving.Mutate(instance, r.client); err != nil {
 		return err
 	}
 	return r.client.Update(context.TODO(), instance)

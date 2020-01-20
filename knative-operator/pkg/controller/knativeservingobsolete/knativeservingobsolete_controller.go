@@ -3,7 +3,7 @@ package knativeservingobsolete
 import (
 	"context"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -95,7 +95,7 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 		},
 	}
 	latest.Spec.Config = current.Spec.Config
-	if err := common.Mutate(latest, r.client); err != nil {
+	if err := commonserving.Mutate(latest, r.client); err != nil {
 		return reconcile.Result{}, err
 	}
 	// Avoid a certs config conflict in the k-s controller

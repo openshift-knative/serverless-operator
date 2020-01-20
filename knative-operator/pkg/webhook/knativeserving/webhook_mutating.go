@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/appscode/jsonpatch"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
@@ -22,7 +22,7 @@ import (
 
 // Add creates a new KnativeServing Webhook
 func MutatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
-	common.Log.Info("Setting up mutating webhook for KnativeServing")
+	commonserving.Log.Info("Setting up mutating webhook for KnativeServing")
 	return builder.NewWebhookBuilder().
 		Name("mutating.knativeserving.openshift.io").
 		Mutating().
@@ -52,7 +52,7 @@ func (a *KnativeServingConfigurator) Handle(ctx context.Context, req types.Reque
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	err = common.Mutate(ks, a.client)
+	err = commonserving.Mutate(ks, a.client)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}

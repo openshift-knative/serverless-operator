@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 
 	mf "github.com/jcrossley3/manifestival"
@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	log = common.Log.WithName("servicemesh")
+	log = commonserving.Log.WithName("servicemesh")
 )
 
 func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Client) error {
@@ -115,8 +115,8 @@ func WatchResources(c controller.Controller) error {
 
 func configureIstio(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	ns := ingressNamespace(instance.GetNamespace())
-	c1 := common.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
-	c2 := common.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
+	c1 := commonserving.Configure(instance, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway."+ns+".svc.cluster.local")
+	c2 := commonserving.Configure(instance, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway."+ns+".svc.cluster.local")
 	if c1 || c2 {
 		if err := api.Update(context.TODO(), instance); err != nil {
 			return err
