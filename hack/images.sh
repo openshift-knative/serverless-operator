@@ -3,6 +3,8 @@
 # This script can be used to publish all images built by
 # this repository to the specified docker repository.
 
+set -e
+
 repo=$1
 
 docker build -t "$repo/knative-operator" knative-operator
