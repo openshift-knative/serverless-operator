@@ -330,7 +330,11 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/eventing-operator
-                image: gcr.io/knative-releases/knative.dev/eventing-operator/cmd/manager:v0.11.0
+                # TODO: uses the old CRD name, won't work. so,
+                # TODO: eventings.operator.knative.dev INSTEAD OF knativeeventings.operator.knative.dev
+                # TODO: image: gcr.io/knative-releases/knative.dev/eventing-operator/cmd/manager:v0.11.0
+                # TODO: following image is built from upstream eventing operator master (commit hash 9eb7cf239)
+                image: docker.io/aliok/manager-f1ecf4e236a455a91a2eb955def6b11b:9eb7cf239
                 imagePullPolicy: IfNotPresent
                 name: knative-eventing-operator
                 ports:

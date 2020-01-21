@@ -3,6 +3,7 @@ package serving
 import (
 	"context"
 	"fmt"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"os"
 	"strings"
 	"time"
@@ -134,7 +135,7 @@ func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	if annotations == nil {
 		annotations = map[string]string{}
 	}
-	annotations[MutationTimestampKey] = time.Now().Format(time.RFC3339)
+	annotations[common.MutationTimestampKey] = time.Now().Format(time.RFC3339)
 	ks.SetAnnotations(annotations)
 	return nil
 }

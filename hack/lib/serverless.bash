@@ -3,8 +3,9 @@
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local group=${1:-operator}
-  # TODO: check eventing as well
-  if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
+     oc get knativeeventing.${group}.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
+  then
     logger.success 'Serverless is already installed.'
     return 0
   fi
@@ -161,6 +162,8 @@ function teardown_serverless {
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
   fi
+  logger.info 'Ensure no knative eventing pods running'
+  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
 
   oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
   for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
