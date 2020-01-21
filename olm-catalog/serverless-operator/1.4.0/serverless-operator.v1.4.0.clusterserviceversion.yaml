@@ -370,7 +370,7 @@ spec:
                     - name: OPERATOR_NAME
                       value: "knative-serving-openshift"
                     - name: MIN_OPENSHIFT_VERSION
-                      value: "4.1.13"
+                      value: "4.3.0-0.nightly"
                     - name: REQUIRED_SERVING_NAMESPACE
                       value: "knative-serving"
                     - name: REQUIRED_EVENTING_NAMESPACE
