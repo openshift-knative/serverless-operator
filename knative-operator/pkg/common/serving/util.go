@@ -1,11 +1,9 @@
 package serving
 
 import (
-	common "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 )
-
-const MutationTimestampKey = "knative-serving-openshift/mutation"
 
 var Log = common.Log.WithName("serving")
 

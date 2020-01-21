@@ -4,6 +4,7 @@ import (
 	"context"
 
 	mf "github.com/jcrossley3/manifestival"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	commonserving "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/serving"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
@@ -104,7 +105,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
-	if _, ok := instance.GetAnnotations()[commonserving.MutationTimestampKey]; ok {
+	if _, ok := instance.GetAnnotations()[common.MutationTimestampKey]; ok {
 		return nil
 	}
 	log.Info("Configuring KnativeServing for OpenShift")
