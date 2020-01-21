@@ -17,12 +17,10 @@ teardown:
 .PHONY: teardown
 
 # Test targets for CI operator
-# TODO: eventing as well
 test-unit:
 	go test ./serving/ingress/...
 .PHONY: test-e2e
 
-# TODO: eventing as well
 test-e2e:
 	./test/e2e-tests.sh
 .PHONY: test-e2e
