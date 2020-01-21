@@ -17,18 +17,22 @@ teardown:
 .PHONY: teardown
 
 # Test targets for CI operator
+# TODO: eventing as well
 test-unit:
 	go test ./serving/ingress/...
 .PHONY: test-e2e
 
+# TODO: eventing as well
 test-e2e:
 	./test/e2e-tests.sh
 .PHONY: test-e2e
 
+# TODO: do we need eventing as well?
 test-upgrade:
 	./test/upgrade-tests.sh
 .PHONY: test-upgrade
 
+# TODO: does this target needs modification for eventing?
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
