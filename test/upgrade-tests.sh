@@ -17,7 +17,7 @@ failed=0
 (( !failed )) && logger.success 'Cluster prepared for testing.'
 
 (( !failed )) && install_serverless_previous || failed=5
-(( !failed )) && run_knative_serving_rolling_upgrade_tests "v0.11.1" || failed=6
+(( !failed )) && run_knative_serving_rolling_upgrade_tests $KNATIVE_VERSION || failed=6
 
 (( !failed )) && teardown_serverless || failed=7
 

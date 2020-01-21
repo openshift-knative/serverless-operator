@@ -224,7 +224,7 @@ function end_prober_test {
 function run_knative_serving_operator_tests {
   (
   local version target serverless_rootdir exitstatus patchfile fork gitdesc
-  version="$1"
+  version=$1
   fork="${2:-knative}"
   serverless_rootdir="$(pwd)"
   make_temporary_gopath
