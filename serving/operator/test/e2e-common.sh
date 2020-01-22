@@ -115,7 +115,8 @@ function knative_teardown() {
   echo ">> Uninstalling Knative serving"
   echo "Istio YAML: ${INSTALL_ISTIO_YAML}"
   echo ">> Bringing down Serving"
-  kubectl delete -n knative-serving knativeserving --all
+  kubectl delete -n knative-serving knativeserving.serving.knative.dev --all
+  kubectl delete -n knative-serving knativeserving.operator.knative.dev --all
   echo ">> Bringing down Istio"
   kubectl delete --ignore-not-found=true -f "${INSTALL_ISTIO_YAML}" || return 1
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding

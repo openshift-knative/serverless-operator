@@ -29,7 +29,7 @@ type Context struct {
 // Clients holds instances of interfaces for making requests to various APIs
 type Clients struct {
 	Kube            *kubernetes.Clientset
-	ServingOperator servingoperatorv1alpha1.ServingV1alpha1Interface
+	ServingOperator servingoperatorv1alpha1.OperatorV1alpha1Interface
 	Serving         *servingversioned.Clientset
 	OLM             olmversioned.Interface
 	Dynamic         dynamic.Interface
@@ -150,12 +150,12 @@ func newOLMClient(configPath string) (olmversioned.Interface, error) {
 	return olmclient, nil
 }
 
-func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.ServingV1alpha1Interface, error) {
+func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.OperatorV1alpha1Interface, error) {
 	cs, err := servingoperatorversioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	return cs.ServingV1alpha1(), nil
+	return cs.OperatorV1alpha1(), nil
 }
 
 func newOpenShiftRoutes(cfg *rest.Config) (routev1.RouteV1Interface, error) {
