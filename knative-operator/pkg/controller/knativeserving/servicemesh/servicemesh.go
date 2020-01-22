@@ -164,7 +164,7 @@ func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) 
 func installServiceMeshControlPlane(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing serviceMeshControlPlane")
 	const (
-		path = "deploy/resources/serviceMesh/servicemesh.yaml"
+		path = "deploy/resources/servicemesh/servicemesh.yaml"
 	)
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
@@ -246,7 +246,7 @@ func isServiceMeshMemberRollReady(servingNamespace string, api client.Client) (b
 func installNetworkPolicies(instanceNamespace string, api client.Client) error {
 	log.Info("Installing Mesh Network Policies")
 	namespace := ingressNamespace(instanceNamespace)
-	const path = "deploy/resources/serviceMesh/networkpolicies.yaml"
+	const path = "deploy/resources/servicemesh/networkpolicies.yaml"
 
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
@@ -254,14 +254,8 @@ func installNetworkPolicies(instanceNamespace string, api client.Client) error {
 		return err
 	}
 	smcp := &maistrav1.ServiceMeshControlPlane{}
-	ready, err := isServiceMeshControlPlaneReady(instanceNamespace, api)
-	if err != nil {
+	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: smcpName}, smcp); err != nil {
 		return err
-	}
-	if ready {
-		if err := api.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: smcpName}, smcp); err != nil {
-			return err
-		}
 	}
 	transforms := []mf.Transformer{mf.InjectOwner(smcp), mf.InjectNamespace(namespace)}
 	if err := manifest.Transform(transforms...); err != nil {
