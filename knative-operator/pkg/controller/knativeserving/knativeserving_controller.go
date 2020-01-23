@@ -97,6 +97,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.installNetworkPolicies,
 		r.installServiceMesh,
 		r.createConsoleCLIDownload,
+		r.installKourier,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -151,6 +152,29 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 			}
 			return nil
 		}
+		return err
+	}
+	return nil
+}
+
+// Install Kourier Ingress Gateway
+func (a *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
+	log.Info("Installing Kourier Ingress")
+	const path = "deploy/resources/kourier/kourier.yaml"
+
+	manifest, err := mf.NewManifest(path, false, a.client)
+	if err != nil {
+		log.Error(err, "Unable to create Kourier Ingress install manifest")
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+
+	if err := manifest.Transform(transforms...); err != nil {
+		log.Error(err, "Unable to transform Kourier Ingress manifest")
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
+		log.Error(err, "Unable to install Kourier Ingress")
 		return err
 	}
 	return nil
