@@ -5,6 +5,7 @@ import (
 
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	corev1 "k8s.io/api/core/v1"
@@ -93,12 +94,14 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureCustomCertsConfigMap,
 		r.installNetworkPolicies,
 		r.installServiceMesh,
+		r.createConsoleCLIDownload,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
 			return reconcile.Result{}, err
 		}
 	}
+
 	return reconcile.Result{}, nil
 }
 
@@ -179,6 +182,11 @@ func (r *ReconcileKnativeServing) installServiceMesh(instance *servingv1alpha1.K
 	return servicemesh.ApplyServiceMesh(instance, r.client)
 }
 
+// createConsoleCLIDownload creates CR for kn CLI download link
+func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
+	return consoleclidownload.Create(instance, r.client)
+}
+
 // general clean-up, mostly service mesh resources
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
@@ -187,6 +195,12 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
 		return err
 	}
+
+	if err := consoleclidownload.Delete(instance, r.client); err != nil {
+		log.Info("Failed to delete ConsoleCLIDownload CR for kn..")
+		return err
+	}
+
 	// The deletionTimestamp might've changed. Fetch the resource again.
 	refetched := &servingv1alpha1.KnativeServing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
