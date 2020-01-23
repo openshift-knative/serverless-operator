@@ -84,6 +84,9 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 		log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
 		// TODO: instance.Status.MarkDependenciesInstalled()
 	}
+	if err := installNetworkPolicies(instance.GetNamespace(), api); err != nil {
+		return err
+	}
 	instance.Status.MarkDependenciesInstalled()
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err
@@ -161,7 +164,7 @@ func isServiceMeshControlPlaneReady(servingNamespace string, api client.Client) 
 func installServiceMeshControlPlane(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing serviceMeshControlPlane")
 	const (
-		path = "deploy/resources/servicemesh.yaml"
+		path = "deploy/resources/servicemesh/servicemesh.yaml"
 	)
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
@@ -237,6 +240,33 @@ func isServiceMeshMemberRollReady(servingNamespace string, api client.Client) (b
 		}
 	}
 	return false, nil
+}
+
+// create wide-open networkpolicies for the service mesh components
+func installNetworkPolicies(instanceNamespace string, api client.Client) error {
+	log.Info("Installing Mesh Network Policies")
+	namespace := ingressNamespace(instanceNamespace)
+	const path = "deploy/resources/servicemesh/networkpolicies.yaml"
+
+	manifest, err := mf.NewManifest(path, false, api)
+	if err != nil {
+		log.Error(err, "Unable to create Mesh Network Policy install manifest")
+		return err
+	}
+	smcp := &maistrav1.ServiceMeshControlPlane{}
+	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: smcpName}, smcp); err != nil {
+		return err
+	}
+	transforms := []mf.Transformer{mf.InjectOwner(smcp), mf.InjectNamespace(namespace)}
+	if err := manifest.Transform(transforms...); err != nil {
+		log.Error(err, "Unable to transform mesh network policy manifest")
+		return err
+	}
+	if err := manifest.ApplyAll(); err != nil {
+		log.Error(err, "Unable to install Mesh Network Policies")
+		return err
+	}
+	return nil
 }
 
 func watchServiceMeshType(c controller.Controller, obj runtime.Object) error {
