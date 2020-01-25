@@ -103,7 +103,11 @@ func (v *KnativeServingValidator) InjectDecoder(d types.Decoder) error {
 
 // validate minimum openshift version
 func (v *KnativeServingValidator) validateVersion(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
-	minVersion, err := semver.NewVersion(os.Getenv("MIN_OPENSHIFT_VERSION"))
+	version, present := os.LookupEnv("MIN_OPENSHIFT_VERSION")
+	if !present {
+		return true, "", nil
+	}
+	minVersion, err := semver.NewVersion(version)
 	if err != nil {
 		return false, "Unable to validate version; check MIN_OPENSHIFT_VERSION env var", nil
 	}
