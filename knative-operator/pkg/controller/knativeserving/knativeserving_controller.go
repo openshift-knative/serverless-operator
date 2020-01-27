@@ -97,6 +97,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.createConsoleCLIDownload,
 		r.installKourier,
 	}
+
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
 			return reconcile.Result{}, err
@@ -166,6 +167,8 @@ func (a *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+	// let's hardcode this for now.
+	transforms = append(transforms, mf.InjectNamespace("knative-serving-ingress"))
 
 	if err := manifest.Transform(transforms...); err != nil {
 		log.Error(err, "Unable to transform Kourier Ingress manifest")

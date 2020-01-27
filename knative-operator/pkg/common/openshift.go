@@ -18,6 +18,7 @@ var log = Log
 
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
+		ingressClass,
 		egress,
 		ingress,
 		configureLogURLTemplate,
@@ -30,6 +31,11 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 	return nil
 }
 
