@@ -18,6 +18,7 @@ const (
 	TimeoutAnnotation      = "haproxy.router.openshift.io/timeout"
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
 	KourierHttpPort        = "http2"
+	KourierHttpsPort       = "https"
 )
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
@@ -129,15 +130,16 @@ func makeRoute(ci networkingv1alpha1.IngressAccessor, host string, rule networki
 		Spec: routev1.RouteSpec{
 			Host: host,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(KourierHttpPort),
+				TargetPort: intstr.FromString(KourierHttpsPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
 				Name: serviceName,
 			},
 			TLS: &routev1.TLSConfig{
-				Termination:                   routev1.TLSTerminationEdge,
-				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+				Termination: routev1.TLSTerminationPassthrough,
+				// InsecureEdgeTerminationPolicyAllow is not available for Passtrhough
+				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 			},
 		},
 	}
