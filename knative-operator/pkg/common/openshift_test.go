@@ -17,27 +17,13 @@ func init() {
 	configv1.AddToScheme(scheme.Scheme)
 }
 
-const QUEUE_IMAGE = "docker.io/queue:tag"
-
-var networkConfig = &configv1.Network{
-	ObjectMeta: metav1.ObjectMeta{
-		Name: "cluster",
-	},
-	Spec: configv1.NetworkSpec{
-		ServiceNetwork: []string{"foo", "bar", "baz"},
-	},
-}
-var ingressConfig = &configv1.Ingress{
-	ObjectMeta: metav1.ObjectMeta{
-		Name: "cluster",
-	},
-	Spec: configv1.IngressSpec{
-		Domain: "fubar",
-	},
-}
-
 func TestMutate(t *testing.T) {
-	client := fake.NewFakeClient(networkConfig, ingressConfig)
+	const (
+		networks = "foo,bar,baz"
+		domain   = "fubar"
+		image    = "docker.io/queue:tag"
+	)
+	client := fake.NewFakeClient(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain))
 	ks := &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-serving",
@@ -45,40 +31,60 @@ func TestMutate(t *testing.T) {
 		},
 	}
 	// Setup image override
-	os.Setenv("IMAGE_queue-proxy", QUEUE_IMAGE)
+	os.Setenv("IMAGE_queue-proxy", image)
 	// Mutate for OpenShift
 	if err := common.Mutate(ks, client); err != nil {
 		t.Error(err)
 	}
-	verifyEgress(t, ks)
-	verifyIngress(t, ks)
-	verifyImageOverride(t, ks)
+	verifyEgress(t, ks, networks)
+	verifyIngress(t, ks, domain)
+	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
 	verifyTimestamp(t, ks)
 }
 
-func verifyEgress(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	expected := strings.Join(networkConfig.Spec.ServiceNetwork, ",")
+func mockNetworkConfig(networks []string) *configv1.Network {
+	return &configv1.Network{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cluster",
+		},
+		Spec: configv1.NetworkSpec{
+			ServiceNetwork: networks,
+		},
+	}
+}
+
+func mockIngressConfig(domain string) *configv1.Ingress {
+	return &configv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cluster",
+		},
+		Spec: configv1.IngressSpec{
+			Domain: domain,
+		},
+	}
+}
+
+func verifyEgress(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
 	actual := ks.Spec.Config["network"]["istio.sidecar.includeOutboundIPRanges"]
 	if actual != expected {
 		t.Errorf("Expected '%v', got '%v'", expected, actual)
 	}
 }
 
-func verifyIngress(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyIngress(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
 	domain := ks.Spec.Config["domain"]
-	expected := ingressConfig.Spec.Domain
 	if actual, ok := domain[expected]; !ok || actual != "" {
 		t.Errorf("Missing %v, domain=%v", expected, domain)
 	}
 }
 
-func verifyImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
 	// Because we overrode the queue image...
-	if ks.Spec.Config["deployment"]["queueSidecarImage"] != QUEUE_IMAGE {
+	if ks.Spec.Config["deployment"]["queueSidecarImage"] != expected {
 		t.Errorf("Missing queue image, config=%v", ks.Spec.Config["deployment"])
 	}
-	if ks.Spec.Registry.Override["queue-proxy"] != QUEUE_IMAGE {
+	if ks.Spec.Registry.Override["queue-proxy"] != expected {
 		t.Errorf("Missing queue image, override=%v", ks.Spec.Registry.Override)
 	}
 }
