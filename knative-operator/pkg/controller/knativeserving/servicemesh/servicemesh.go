@@ -3,16 +3,15 @@ package servicemesh
 import (
 	"context"
 	"fmt"
+	mf "github.com/jcrossley3/manifestival"
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-
-	mf "github.com/jcrossley3/manifestival"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -49,17 +48,17 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
 		return err
 	}
-	if err := installServiceMeshControlPlane(instance, api); err != nil {
-		return err
-	}
-	ready, err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api)
-	if err != nil {
-		return err
-	}
-	if !ready {
-		return nil
-	}
-	log.Info("ServiceMeshControlPlane is ready")
+	//if err := installServiceMeshControlPlane(instance, api); err != nil {
+	//	return err
+	//}
+	//ready, err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api)
+	//if err != nil {
+	//	return err
+	//}
+	//if !ready {
+	//	return nil
+	//}
+	//log.Info("ServiceMeshControlPlane is ready")
 	//if err := selectGateways(instance, api); err != nil {
 	//	return err
 	//}
@@ -74,17 +73,17 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	//	}
 	//	return err
 	//}
-	ready, err = isServiceMeshMemberRollReady(instance.GetNamespace(), api)
-	if err != nil {
-		return err
-	}
-	if ready {
-		log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
-		// TODO: instance.Status.MarkDependenciesInstalled()
-	}
-	if err := installNetworkPolicies(instance.GetNamespace(), api); err != nil {
-		return err
-	}
+	//ready, err = isServiceMeshMemberRollReady(instance.GetNamespace(), api)
+	//if err != nil {
+	//	return err
+	//}
+	//if ready {
+	//	log.Info(fmt.Sprintf("Successfully configured %s namespace into configured members", instance.GetNamespace()))
+	//	// TODO: instance.Status.MarkDependenciesInstalled()
+	//}
+	//if err := installNetworkPolicies(instance.GetNamespace(), api); err != nil {
+	//	return err
+	//}
 	instance.Status.MarkDependenciesInstalled()
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err

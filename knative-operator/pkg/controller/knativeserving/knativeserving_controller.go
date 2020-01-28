@@ -93,8 +93,8 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
 		r.installNetworkPolicies,
-		r.installKourier,
 		r.installServiceMesh,
+		r.installKourier,
 		r.createConsoleCLIDownload,
 	}
 
