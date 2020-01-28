@@ -51,7 +51,7 @@ func TestKnativeServing(t *testing.T) {
 		}
 
 		if api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
-			t.Fatalf("Found an custom-metrics API registered at the autoscaler")
+			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 	})
 
