@@ -40,6 +40,7 @@ function run_e2e_tests {
   go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
+    "$@" \
     && logger.success 'Tests has passed' && return 0 \
     || logger.error 'Tests have failures!' \
     && return 1
