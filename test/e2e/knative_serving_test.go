@@ -44,6 +44,17 @@ func TestKnativeServing(t *testing.T) {
 		}
 	})
 
+	t.Run("verify correct deployment shape", func(t *testing.T) {
+		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
+		if err != nil && !apierrs.IsNotFound(err) {
+			t.Fatalf("Failed to fetch APIService: %v", err)
+		}
+
+		if api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
+			t.Fatalf("Found an custom-metrics API registered at the autoscaler")
+		}
+	})
+
 	t.Run("deploy knative service using kubeadmin", func(t *testing.T) {
 		_, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image)
 		if err != nil {
@@ -256,8 +267,7 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 
 		},
 		userContext: editCtx,
-	},
-	}
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
