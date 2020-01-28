@@ -76,9 +76,23 @@ spec:
   customresourcedefinitions:
     owned:
     - description: Represents an installation of a particular version of Knative Serving
-      displayName: Knative Serving
+      displayName: Knative Serving 0.11.1
       kind: KnativeServing
       name: knativeservings.operator.knative.dev
+      statusDescriptors:
+      - description: The version of Knative Serving installed
+        displayName: Version
+        path: version
+      - description: Conditions of Knative Serving installed
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+      version: v1alpha1
+    - description: Represents an installation of a particular version of Knative Serving
+      displayName: Knative Serving 0.10.0 (obsolete)
+      kind: KnativeServing
+      name: knativeservings.serving.knative.dev
       statusDescriptors:
       - description: The version of Knative Serving installed
         displayName: Version
