@@ -253,7 +253,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager:v0.11.1
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
