@@ -94,7 +94,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureCustomCertsConfigMap,
 		r.installNetworkPolicies,
 		r.installKourier,
-		//r.installServiceMesh,
+		r.installServiceMesh,
 		r.createConsoleCLIDownload,
 	}
 
@@ -155,6 +155,7 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 	}
 	return nil
 }
+
 
 // Install Kourier Ingress Gateway
 func (a *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {

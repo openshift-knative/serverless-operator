@@ -3,8 +3,6 @@ package servicemesh
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -45,9 +43,9 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err
 	}
-	if err := configureIstio(instance, api); err != nil {
-		return err
-	}
+	//if err := configureIstio(instance, api); err != nil {
+	//	return err
+	//}
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
 		return err
 	}
@@ -62,20 +60,20 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 		return nil
 	}
 	log.Info("ServiceMeshControlPlane is ready")
-	if err := selectGateways(instance, api); err != nil {
-		return err
-	}
-	if err := installServiceMeshMemberRoll(instance, api); err != nil {
-		// ref for substring https://github.com/Maistra/istio-operator/blob/maistra-1.0/pkg/controller/servicemesh/validation/memberroll.go#L95
-		if strings.Contains(err.Error(), "one or more members are already defined in another ServiceMeshMemberRoll") {
-			log.Info(fmt.Sprintf("failed to update ServiceMeshMemberRole because namespace %s is already a member of another ServiceMeshMemberRoll", instance.GetNamespace()))
-			msg := "Could not add '%s' to ServiceMeshMemberRoll (SMMR) because it's already part of another SMMR, " +
-				"likely one in 'istio-system' (check with 'oc get smmr --all-namespaces'). " +
-				"Remove '%s' and all namespaces that contain Knative Services from that other SMMR"
-			return fmt.Errorf(msg, instance.GetNamespace(), instance.GetNamespace())
-		}
-		return err
-	}
+	//if err := selectGateways(instance, api); err != nil {
+	//	return err
+	//}
+	//if err := installServiceMeshMemberRoll(instance, api); err != nil {
+	//	// ref for substring https://github.com/Maistra/istio-operator/blob/maistra-1.0/pkg/controller/servicemesh/validation/memberroll.go#L95
+	//	if strings.Contains(err.Error(), "one or more members are already defined in another ServiceMeshMemberRoll") {
+	//		log.Info(fmt.Sprintf("failed to update ServiceMeshMemberRole because namespace %s is already a member of another ServiceMeshMemberRoll", instance.GetNamespace()))
+	//		msg := "Could not add '%s' to ServiceMeshMemberRoll (SMMR) because it's already part of another SMMR, " +
+	//			"likely one in 'istio-system' (check with 'oc get smmr --all-namespaces'). " +
+	//			"Remove '%s' and all namespaces that contain Knative Services from that other SMMR"
+	//		return fmt.Errorf(msg, instance.GetNamespace(), instance.GetNamespace())
+	//	}
+	//	return err
+	//}
 	ready, err = isServiceMeshMemberRollReady(instance.GetNamespace(), api)
 	if err != nil {
 		return err
