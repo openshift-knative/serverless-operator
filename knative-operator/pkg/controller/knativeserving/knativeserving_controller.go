@@ -93,9 +93,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
 		r.installNetworkPolicies,
-		r.installServiceMesh,
-		r.createConsoleCLIDownload,
 		r.installKourier,
+		//r.installServiceMesh,
+		r.createConsoleCLIDownload,
 	}
 
 	for _, stage := range stages {
@@ -160,6 +160,8 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 func (a *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	log.Info("Installing Kourier Ingress")
 	const path = "deploy/resources/kourier/kourier.yaml"
+	// Having a race condition. We need this before the knative controller is running...
+	common.Configure(instance, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 
 	manifest, err := mf.NewManifest(path, false, a.client)
 	if err != nil {
