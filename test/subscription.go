@@ -31,10 +31,10 @@ func Subscription(subscriptionName string) *v1alpha1.Subscription {
 			Name:      subscriptionName,
 		},
 		Spec: &v1alpha1.SubscriptionSpec{
-			CatalogSource:          ServerlessOperatorPackage,
+			CatalogSource:          Flags.CatalogSource,
 			CatalogSourceNamespace: OLMNamespace,
 			Package:                ServerlessOperatorPackage,
-			Channel:                "techpreview",
+			Channel:                Flags.Channel,
 			InstallPlanApproval:    v1alpha1.ApprovalAutomatic,
 		},
 	}
