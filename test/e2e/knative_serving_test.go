@@ -50,7 +50,7 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Failed to fetch APIService: %v", err)
 		}
 
-		if api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
+		if api != nil && api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 	})
