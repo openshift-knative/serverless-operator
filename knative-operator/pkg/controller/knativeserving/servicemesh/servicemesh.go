@@ -45,9 +45,9 @@ func ApplyServiceMesh(instance *servingv1alpha1.KnativeServing, api client.Clien
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err
 	}
-	if err := configureIstio(instance, api); err != nil {
-		return err
-	}
+	//if err := configureIstio(instance, api); err != nil {
+	//	return err
+	//}
 	if err := createIngressNamespace(instance.GetNamespace(), api); err != nil {
 		return err
 	}
