@@ -127,8 +127,7 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	return nil
 }
 
-// configure controller with custom certs for openshift registry if
-// not already set
+// Mark the time when instance configured for OpenShift
 func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
 	annotations := ks.GetAnnotations()
 	if annotations == nil {
