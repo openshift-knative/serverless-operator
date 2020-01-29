@@ -5,6 +5,11 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
 set -Eeuo pipefail
 
+# Enable extra verbosity if running in CI.
+if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+  set -x
+fi
+
 register_teardown || exit $?
 scale_up_workers || exit $?
 create_namespaces || exit $?
@@ -17,7 +22,7 @@ failed=0
 (( !failed )) && logger.success 'Cluster prepared for testing.'
 
 (( !failed )) && install_serverless_previous || failed=5
-(( !failed )) && run_knative_serving_rolling_upgrade_tests $KNATIVE_VERSION || failed=6
+(( !failed )) && run_knative_serving_rolling_upgrade_tests "$KNATIVE_VERSION" || failed=6
 
 (( !failed )) && teardown_serverless || failed=7
 
