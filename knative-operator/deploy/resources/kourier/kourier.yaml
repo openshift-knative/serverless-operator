@@ -55,6 +55,7 @@ spec:
     metadata:
       labels:
         app: 3scale-kourier-gateway
+        istio: ingressgateway # This is for compatibility.
     spec:
       containers:
         - command: ["/usr/local/bin/envoy"]

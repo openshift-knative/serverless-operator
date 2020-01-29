@@ -9,4 +9,4 @@ spec:
         - namespaceSelector: {}
   podSelector:
     matchLabels:
-      istio: cluster-local-gateway
+      app: 3scale-kourier-gateway
