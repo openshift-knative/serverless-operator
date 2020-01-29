@@ -7,7 +7,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
@@ -52,12 +51,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch servicemesh resources
-	err = servicemesh.WatchResources(c)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -95,8 +88,6 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
-		r.installNetworkPolicies,
-		r.installServiceMesh,
 		r.createConsoleCLIDownload,
 		r.installKourier,
 	}
@@ -186,11 +177,6 @@ func (a *ReconcileKnativeServing) installNetworkPolicies(instance *servingv1alph
 	return nil
 }
 
-// install service mesh control plane and member roll
-func (r *ReconcileKnativeServing) installServiceMesh(instance *servingv1alpha1.KnativeServing) error {
-	return servicemesh.ApplyServiceMesh(instance, r.client)
-}
-
 // createConsoleCLIDownload creates CR for kn CLI download link
 func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
 	return consoleclidownload.Create(instance, r.client)
@@ -207,10 +193,6 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, old); err == nil {
 		// Oh, it actually still exists. Remove it, but ignore all errors!
 		r.client.Delete(context.TODO(), old)
-	}
-
-	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
-		return err
 	}
 
 	if err := kourier.Delete(instance, r.client); err != nil {
