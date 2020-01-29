@@ -9,4 +9,4 @@ spec:
         - namespaceSelector: {}
   podSelector:
     matchLabels:
-      app: 3scale-kourier-gateway
+      istio: ingressgateway
