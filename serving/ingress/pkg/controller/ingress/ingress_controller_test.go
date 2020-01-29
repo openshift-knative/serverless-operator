@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/common"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/resources"
 	routev1 "github.com/openshift/api/route/v1"
@@ -30,7 +29,6 @@ import (
 const (
 	name                 = "ingress-operator"
 	serviceMeshNamespace = "knative-serving-ingress"
-	smmrName             = "default"
 	namespace            = "ingress-namespace"
 	uid                  = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
 	domainName           = name + "." + namespace + ".default.domainName"
@@ -94,47 +92,6 @@ var (
 		},
 	}
 )
-
-func TestClusterLocalSvc(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-	ingress := defaultIngressForClusterLocal.DeepCopy()
-
-	// A ServiceMeshMemberRole resource with metadata.
-	smmr := &maistrav1.ServiceMeshMemberRoll{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      smmrName,
-			Namespace: serviceMeshNamespace,
-		},
-	}
-	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	s.AddKnownTypes(maistrav1.SchemeGroupVersion, smmr)
-	s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
-	s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
-	s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
-
-	// Create a fake client to mock API calls.
-	cl := fake.NewFakeClient(smmr, ingress)
-
-	// Create a Reconcile Ingress object with the scheme and fake client.
-	r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
-	// Mock request to simulate Reconcile() being called on an event for a
-	// watched resource .
-	req := reconcile.Request{
-		NamespacedName: types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-	if _, err := r.Reconcile(req); err != nil {
-		t.Fatalf("reconcile: (%v)", err)
-	}
-	// Check if namespace has been added to smmr.
-	if err := cl.Get(context.TODO(), types.NamespacedName{Name: smmrName, Namespace: serviceMeshNamespace}, smmr); err != nil {
-		t.Fatalf("failed to get ServiceMeshMemberRole: (%v)", err)
-	}
-	assert.Equal(t, []string{namespace}, smmr.Spec.Members)
-}
 
 func TestRouteMigration(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
@@ -204,22 +161,14 @@ func TestRouteMigration(t *testing.T) {
 	t.Run(test.name, func(t *testing.T) {
 		ingress := defaultIngress.DeepCopy()
 
-		// A ServiceMeshMemberRole resource with metadata
-		smmr := &maistrav1.ServiceMeshMemberRoll{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      smmrName,
-				Namespace: serviceMeshNamespace,
-			},
-		}
 		// Register operator types with the runtime scheme.
 		s := scheme.Scheme
-		s.AddKnownTypes(maistrav1.SchemeGroupVersion, smmr)
 		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
 
 		// Create a fake client to mock API calls.
-		cl := fake.NewFakeClient(smmr, ingress, &routev1.RouteList{Items: test.state})
+		cl := fake.NewFakeClient(ingress, &routev1.RouteList{Items: test.state})
 
 		// Create a Reconcile Ingress object with the scheme and fake client.
 		r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
@@ -234,11 +183,6 @@ func TestRouteMigration(t *testing.T) {
 		if _, err := r.Reconcile(req); err != nil {
 			t.Fatalf("reconcile: (%v)", err)
 		}
-		// Check if namespace has been added to smmr.
-		if err := cl.Get(context.TODO(), types.NamespacedName{Name: smmrName, Namespace: serviceMeshNamespace}, smmr); err != nil {
-			t.Fatalf("failed to get ServiceMeshMemberRole: (%v)", err)
-		}
-		assert.Equal(t, []string{namespace}, smmr.Spec.Members)
 
 		routeList := &routev1.RouteList{}
 		err := cl.List(context.TODO(), &client.ListOptions{}, routeList)
@@ -247,7 +191,6 @@ func TestRouteMigration(t *testing.T) {
 		routes := routeList.Items
 		assert.ElementsMatch(t, routes, test.want)
 
-		// Deleting ingress should remove ns from smmr.
 		// Updating ingress with DeletionTimestamp instead of cl.Delete because delete operation doesn't handle finalizers properly.
 		ingress.DeletionTimestamp = &metav1.Time{Time: time.Now()}
 		if err := cl.Update(context.TODO(), ingress); err != nil {
@@ -257,12 +200,6 @@ func TestRouteMigration(t *testing.T) {
 		if _, err := r.Reconcile(req); err != nil {
 			t.Fatalf("reconcile: (%v)", err)
 		}
-		smmrDelete := &maistrav1.ServiceMeshMemberRoll{}
-		if err := cl.Get(context.TODO(), types.NamespacedName{Name: smmrName, Namespace: serviceMeshNamespace}, smmrDelete); err != nil {
-			t.Fatalf("failed to get ServiceMeshMemberRole: (%v)", err)
-		}
-		// Check if namespace has been removed from smmr.
-		assert.Empty(t, len(smmrDelete.Spec.Members))
 
 		// check openshift routes has been removed.
 		routeListdelete := &routev1.RouteList{}
@@ -288,7 +225,6 @@ func TestIngressController(t *testing.T) {
 		annotations       map[string]string
 		want              map[string]string
 		wantRouteErr      func(err error) bool
-		wantSmmr          bool
 		wantNetworkPolicy bool
 		deleted           bool
 		extraObjs         []runtime.Object
@@ -298,8 +234,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 		},
 		{
@@ -307,8 +242,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB"},
 			want:              map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 		},
 		{
@@ -316,8 +250,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{resources.DisableRouteAnnotation: ""},
 			want:              nil,
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 		},
 		{
@@ -325,7 +258,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{networking.IngressClassAnnotationKey: "kourier"},
 			want:              map[string]string{networking.IngressClassAnnotationKey: "kourier", resources.TimeoutAnnotation: "5s"},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          false,
 			wantNetworkPolicy: false,
 			deleted:           false,
 		},
@@ -334,7 +266,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
 			wantNetworkPolicy: true,
 			deleted:           false,
 			extraObjs: []runtime.Object{
@@ -352,8 +283,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
@@ -371,7 +301,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
 			wantNetworkPolicy: true,
 			deleted:           false,
 			extraObjs: []runtime.Object{
@@ -397,7 +326,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
 			wantNetworkPolicy: false,
 			deleted:           false,
 			extraObjs: []runtime.Object{
@@ -415,7 +343,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantSmmr:          true,
 			wantNetworkPolicy: true,
 			deleted:           false,
 			extraObjs: []runtime.Object{
@@ -440,7 +367,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          false,
 			wantNetworkPolicy: false,
 			deleted:           true,
 			extraObjs: []runtime.Object{
@@ -458,7 +384,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          false,
 			wantNetworkPolicy: false,
 			deleted:           true,
 			extraObjs: []runtime.Object{
@@ -477,7 +402,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          false,
 			wantNetworkPolicy: false,
 			deleted:           true,
 			extraObjs: []runtime.Object{
@@ -503,7 +427,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          false,
 			wantNetworkPolicy: false,
 			deleted:           true,
 			extraObjs: []runtime.Object{
@@ -521,7 +444,6 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantSmmr:          false,
 			wantNetworkPolicy: true,
 			deleted:           true,
 			extraObjs: []runtime.Object{
@@ -562,20 +484,11 @@ func TestIngressController(t *testing.T) {
 			// route object
 			route := &routev1.Route{}
 
-			// A ServiceMeshMemberRole resource with metadata.
-			smmr := &maistrav1.ServiceMeshMemberRoll{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      smmrName,
-					Namespace: serviceMeshNamespace,
-				},
-			}
-
-			initObjs := []runtime.Object{smmr, ingress, route}
+			initObjs := []runtime.Object{ingress, route}
 			initObjs = append(initObjs, test.extraObjs...)
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
-			s.AddKnownTypes(maistrav1.SchemeGroupVersion, smmr)
 			s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
 			s.AddKnownTypes(routev1.SchemeGroupVersion, route)
 			s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
@@ -594,16 +507,6 @@ func TestIngressController(t *testing.T) {
 			}
 			if _, err := r.Reconcile(req); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
-			}
-
-			// Check if namespace has been added to smmr.
-			if err := cl.Get(context.TODO(), types.NamespacedName{Name: smmrName, Namespace: serviceMeshNamespace}, smmr); err != nil {
-				t.Fatalf("failed to get ServiceMeshMemberRole: (%v)", err)
-			}
-			if test.wantSmmr {
-				assert.Equal(t, []string{namespace}, smmr.Spec.Members)
-			} else {
-				assert.Equal(t, 0, len(smmr.Spec.Members))
 			}
 
 			// Check if NetworkPolicy has been created

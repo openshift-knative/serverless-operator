@@ -17,6 +17,7 @@ create_htpasswd_users && add_roles || exit $?
 
 failed=0
 
+# install_service_mesh_operator should be removed in the future version.
 (( !failed )) && install_service_mesh_operator || failed=2
 (( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success 'Cluster prepared for testing.'

@@ -99,9 +99,6 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Operators still running: %v", err)
 		}
 	})
-
-	// Do not clean up by defer as we want to collect logs when failed.
-	test.CleanupAll(caCtx, paCtx, editCtx, viewCtx)
 }
 
 func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Context) {

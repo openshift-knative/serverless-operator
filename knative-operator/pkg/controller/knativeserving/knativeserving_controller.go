@@ -3,7 +3,6 @@ package knativeserving
 import (
 	"context"
 
-	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
@@ -53,12 +52,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch servicemesh resources
-	err = servicemesh.WatchResources(c)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -96,10 +89,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
-		r.installNetworkPolicies,
-		r.installServiceMesh,
 		r.createConsoleCLIDownload,
 		r.installKourier,
+		r.uninstallServiceMesh,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -163,35 +155,26 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
+
+	// Set kourier to ingress.class
+	refetched := &servingv1alpha1.KnativeServing{}
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
+		return err
+	}
+
+	if common.Configure(refetched, "network", "ingress.class", "kourier.ingress.networking.knative.dev") {
+		if err := r.client.Update(context.TODO(), refetched); err != nil {
+			return err
+		}
+	}
+
+	// install Kourier
 	return kourier.Apply(instance, r.client)
 }
 
-// create wide-open networkpolicies for the knative components
-func (a *ReconcileKnativeServing) installNetworkPolicies(instance *servingv1alpha1.KnativeServing) error {
-	namespace := instance.GetNamespace()
-	log.Info("Installing Network Policies")
-	const path = "deploy/resources/networkpolicies.yaml"
-
-	manifest, err := mf.NewManifest(path, false, a.client)
-	if err != nil {
-		return err
-	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if len(namespace) > 0 {
-		transforms = append(transforms, mf.InjectNamespace(namespace))
-	}
-	if err := manifest.Transform(transforms...); err != nil {
-		return err
-	}
-	if err := manifest.ApplyAll(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// install service mesh control plane and member roll
-func (r *ReconcileKnativeServing) installServiceMesh(instance *servingv1alpha1.KnativeServing) error {
-	return servicemesh.ApplyServiceMesh(instance, r.client)
+// Uninstall obsolete SMCP deployed by previous version
+func (r *ReconcileKnativeServing) uninstallServiceMesh(instance *servingv1alpha1.KnativeServing) error {
+	return servicemesh.Delete(instance, r.client)
 }
 
 // createConsoleCLIDownload creates CR for kn CLI download link
@@ -210,10 +193,6 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, old); err == nil {
 		// Oh, it actually still exists. Remove it, but ignore all errors!
 		r.client.Delete(context.TODO(), old)
-	}
-
-	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
-		return err
 	}
 
 	if err := kourier.Delete(instance, r.client); err != nil {

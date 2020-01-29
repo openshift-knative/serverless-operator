@@ -18,7 +18,6 @@ create_namespaces || exit $?
 
 exitcode=0
 
-(( !exitcode )) && install_service_mesh_operator || exitcode=2
 (( !exitcode )) && ensure_catalogsource_installed || exitcode=3
 (( !exitcode )) && ensure_serverless_installed "operator" ${INSTALL_PREVIOUS_VERSION} || exitcode=4
 
