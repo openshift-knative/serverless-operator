@@ -89,6 +89,7 @@ function prepare_knative_serving_tests {
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
+  export GATEWAY_OVERRIDE="kourier"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 }
 
