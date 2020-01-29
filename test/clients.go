@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	aggregator "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	servingoperatorversioned "knative.dev/serving-operator/pkg/client/clientset/versioned"
 	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
 )
@@ -29,6 +30,7 @@ type Context struct {
 // Clients holds instances of interfaces for making requests to various APIs
 type Clients struct {
 	Kube            *kubernetes.Clientset
+	KubeAggregator  *aggregator.Clientset
 	ServingOperator servingoperatorv1alpha1.OperatorV1alpha1Interface
 	Serving         *servingversioned.Clientset
 	OLM             olmversioned.Interface
@@ -109,6 +111,11 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	cfg.Burst = 200
 
 	clients.Kube, err = kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	clients.KubeAggregator, err = aggregator.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
