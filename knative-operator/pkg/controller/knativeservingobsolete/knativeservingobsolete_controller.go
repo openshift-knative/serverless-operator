@@ -3,10 +3,11 @@ package knativeservingobsolete
 import (
 	"context"
 
+	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
+	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,14 +47,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeServing
-	if err := c.Watch(&source.Kind{Type: &obsolete.KnativeServing{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	if err := c.Watch(&source.Kind{Type: &obsolete.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{}); err != nil {
 		log.Info("Obsolete KnativeServing CRD not found, and I'm totally cool with that")
 		return nil // aborts further setup, we don't need to watch for the new types then either
 	}
 
-	// Watch for changes in our "child".
+	// Watch for changes in our "peer".
 	if err := c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}); err != nil {
-		panic("New KnativeServing CRD not found")
+		return err
 	}
 
 	return nil
@@ -91,24 +92,28 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 			return reconcile.Result{}, err
 		}
 	}
+	// Orphan all the children by removing their OwnerRefs
+	if err := r.orphanObsoleteResources(current); err != nil {
+		return reconcile.Result{}, err
+	}
 	// Avoid a certs config conflict in the k-s controller
 	if err := r.removeOldCertsConfig(current.Namespace); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	new, err := r.reconcileNewResource(current)
+	_, err := r.reconcileNewResource(current)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	if !equality.Semantic.DeepEqual(current.Status, new.Status) {
-		current.Status.Version = new.Status.Version
-		current.Status.Conditions = deepCopyConditions(new.Status.Conditions)
-		if err := r.client.Status().Update(context.TODO(), current); err != nil {
-			return reconcile.Result{}, err
-		}
-		return reconcile.Result{}, nil
-	}
+	// if !equality.Semantic.DeepEqual(current.Status, new.Status) {
+	// 	current.Status.Version = new.Status.Version
+	// 	current.Status.Conditions = deepCopyConditions(new.Status.Conditions)
+	// 	if err := r.client.Status().Update(context.TODO(), current); err != nil {
+	// 		return reconcile.Result{}, err
+	// 	}
+	// 	return reconcile.Result{}, nil
+	// }
 
 	return reconcile.Result{}, nil
 }
@@ -135,20 +140,56 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 		return new, nil
 	} else if err != nil {
 		return nil, err
-	} else {
-		if !equality.Semantic.DeepEqual(old.Spec.Config, new.Spec.Config) {
-			want := new.DeepCopy()
-			want.Spec.Config = old.Spec.Config
-			if err := common.Mutate(want, r.client); err != nil {
-				return nil, err
-			}
-			if err := r.client.Update(context.TODO(), want); err != nil {
-				return nil, err
-			}
-			return want, nil
-		}
+		// } else {
+		// 	if !equality.Semantic.DeepEqual(old.Spec.Config, new.Spec.Config) {
+		// 		want := new.DeepCopy()
+		// 		want.Spec.Config = old.Spec.Config
+		// 		if err := common.Mutate(want, r.client); err != nil {
+		// 			return nil, err
+		// 		}
+		// 		if err := r.client.Update(context.TODO(), want); err != nil {
+		// 			return nil, err
+		// 		}
+		// 		return want, nil
+		// 	}
 	}
 	return new, err
+}
+
+func (r *ReconcileKnativeServingObsolete) orphanObsoleteResources(ks *obsolete.KnativeServing) error {
+	const path = "deploy/resources/knative-serving-0.10.0.yaml"
+
+	manifest, err := mf.NewManifest(path, false, r.client)
+	if err != nil {
+		return err
+	}
+	if err := manifest.Transform(mf.InjectNamespace(ks.Namespace)); err != nil {
+		return err
+	}
+	for _, u := range manifest.Resources {
+		if u.GetNamespace() != ks.Namespace {
+			continue
+		}
+		resource, err := manifest.Get(&u)
+		if err != nil {
+			return err
+		}
+		if resource == nil {
+			continue
+		}
+		for _, owner := range resource.GetOwnerReferences() {
+			if owner.UID == ks.UID {
+				resource.SetOwnerReferences(nil)
+				if err := r.client.Update(context.TODO(), resource); err != nil {
+					return err
+				}
+				log.Info("Orphaned", "name", resource.GetName(), "type", resource.GroupVersionKind())
+				break
+			}
+		}
+	}
+	return nil
+
 }
 
 // The upstream operator will apply a 3-way strategic merge, leaving
