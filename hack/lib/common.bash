@@ -31,15 +31,9 @@ function timeout {
   while eval $*; do
     seconds=$(( seconds + interval ))
     logger.debug "Execution failed: ${*}. Waiting ${interval} sec ($seconds/${timeout})..."
-    if [[ "${LOG_LEVEL}" != 'DEBUG' ]]; then
-      echo -n '.'
-    fi
     sleep $interval
     [[ $seconds -gt $timeout ]] && logger.error "Time out of ${timeout} exceeded" && return 1
   done
-  if [[ "${LOG_LEVEL}" != 'DEBUG' ]] && [[ "$seconds" != '0' ]]; then
-    echo ''
-  fi
   return 0
 }
 
