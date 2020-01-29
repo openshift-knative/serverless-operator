@@ -46,11 +46,14 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
-		if err != nil && !apierrs.IsNotFound(err) {
+		if apierrs.IsNotFound(err) {
+			// We're good if no APIService exists at all
+			return
+		} else if err != nil {
 			t.Fatalf("Failed to fetch APIService: %v", err)
 		}
 
-		if api != nil && api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
+		if api.Spec.Service != nil && api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 	})
