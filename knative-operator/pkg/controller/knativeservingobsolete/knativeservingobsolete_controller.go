@@ -19,6 +19,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	oldapi "github.com/knative/pkg/apis"
+	newapi "knative.dev/pkg/apis"
 )
 
 var log = logf.Log.WithName("controller_knativeservingobsolete")
@@ -44,7 +47,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing
 	if err := c.Watch(&source.Kind{Type: &obsolete.KnativeServing{}}, &handler.EnqueueRequestForObject{}); err != nil {
-		panic("Obsolete KnativeServing CRD not found")
+		log.Info("Obsolete KnativeServing CRD not found, and I'm totally cool with that")
+		return nil // aborts further setup, we don't need to watch for the new types then either
 	}
 
 	// Watch for changes in our "child".
@@ -99,7 +103,7 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 
 	if !equality.Semantic.DeepEqual(current.Status, new.Status) {
 		current.Status.Version = new.Status.Version
-		//TODO: copy over conditions as well
+		current.Status.Conditions = deepCopyConditions(new.Status.Conditions)
 		if err := r.client.Status().Update(context.TODO(), current); err != nil {
 			return reconcile.Result{}, err
 		}
@@ -184,4 +188,20 @@ func (r *ReconcileKnativeServingObsolete) removeOldCertsConfig(ns string) error 
 		return err
 	}
 	return nil
+}
+
+func deepCopyConditions(new []newapi.Condition) []oldapi.Condition {
+	old := make([]oldapi.Condition, 0, len(new))
+	for _, newCond := range new {
+		oldCond := oldapi.Condition{
+			Reason:             newCond.Reason,
+			Message:            newCond.Message,
+			LastTransitionTime: oldapi.VolatileTime{Inner: newCond.LastTransitionTime.Inner},
+			Status:             newCond.Status,
+			Severity:           oldapi.ConditionSeverity(string(newCond.Severity)),
+		}
+
+		old = append(old, oldCond)
+	}
+	return old
 }
