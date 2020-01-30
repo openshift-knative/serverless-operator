@@ -144,12 +144,12 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 	} else if err != nil {
 		return nil, err
 	} else {
-		if !equality.Semantic.DeepEqual(old.Spec.Config, new.Spec.Config) {
-			want := new.DeepCopy()
-			want.Spec.Config = old.Spec.Config
-			if err := common.Mutate(want, r.client); err != nil {
-				return nil, err
-			}
+		want := new.DeepCopy()
+		want.Spec.Config = old.Spec.Config
+		if err := common.Mutate(want, r.client); err != nil {
+			return nil, err
+		}
+		if !equality.Semantic.DeepEqual(want.Spec.Config, new.Spec.Config) {
 			if err := r.client.Update(context.TODO(), want); err != nil {
 				return nil, err
 			}
