@@ -3,6 +3,20 @@
 #metadata:
 #  name: kourier-system
 #---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: 3scale-kourier-gateway
+  namespace: knative-serving-ingress
+  labels:
+    app: 3scale-kourier-gateway
+spec:
+  podSelector:
+    matchLabels:
+      app: 3scale-kourier-gateway
+  ingress:
+  - {}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -55,7 +69,6 @@ spec:
     metadata:
       labels:
         app: 3scale-kourier-gateway
-        istio: ingressgateway # This is for compatibility.
     spec:
       containers:
         - command: ["/usr/local/bin/envoy"]

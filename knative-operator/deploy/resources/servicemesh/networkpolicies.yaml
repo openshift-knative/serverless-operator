@@ -9,4 +9,4 @@ spec:
         - namespaceSelector: {}
   podSelector:
     matchLabels:
-      istio: ingressgateway
+      istio: cluster-local-gateway
