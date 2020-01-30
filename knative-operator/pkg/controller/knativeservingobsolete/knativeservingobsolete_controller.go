@@ -101,13 +101,15 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 		return reconcile.Result{}, err
 	}
 
-	if !equality.Semantic.DeepEqual(current.Status, new.Status) {
-		current.Status.Version = new.Status.Version
-		current.Status.Conditions = deepCopyConditions(new.Status.Conditions)
+	wantStatus := obsolete.KnativeServingStatus{
+		Version:    new.Status.Version,
+		Conditions: deepCopyConditions(new.Status.Conditions),
+	}
+	if !equality.Semantic.DeepEqual(current.Status, wantStatus) {
+		current.Status = wantStatus
 		if err := r.client.Status().Update(context.TODO(), current); err != nil {
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{}, nil
 	}
 
 	return reconcile.Result{}, nil
@@ -159,9 +161,14 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 func (r *ReconcileKnativeServingObsolete) removeOldCertsConfig(ns string) error {
 	const name = "controller"
 	deployment := &appsv1.Deployment{}
-	if err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: ns, Name: name}, deployment); err != nil {
+	err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: ns, Name: name}, deployment)
+	if errors.IsNotFound(err) {
+		// Ignore a not found error, we're not in a migration then.
+		return nil
+	} else if err != nil {
 		return err
 	}
+
 	volumes := deployment.Spec.Template.Spec.Volumes
 	for i, v := range volumes {
 		if v.Name == "service-ca" {
@@ -194,6 +201,7 @@ func deepCopyConditions(new []newapi.Condition) []oldapi.Condition {
 	old := make([]oldapi.Condition, 0, len(new))
 	for _, newCond := range new {
 		oldCond := oldapi.Condition{
+			Type:               oldapi.ConditionType(string(newCond.Type)),
 			Reason:             newCond.Reason,
 			Message:            newCond.Message,
 			LastTransitionTime: oldapi.VolatileTime{Inner: newCond.LastTransitionTime.Inner},
