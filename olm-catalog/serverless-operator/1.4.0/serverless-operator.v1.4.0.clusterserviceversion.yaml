@@ -292,8 +292,6 @@ spec:
                       value: "4.1.13"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
-                    - name: IMAGE_default
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-${NAME}
                     - name: IMAGE_queue-proxy
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-queue
                     - name: IMAGE_networking-istio
