@@ -100,7 +100,6 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.createConsoleCLIDownload,
 		r.installKourier,
 	}
-
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
 			return reconcile.Result{}, err

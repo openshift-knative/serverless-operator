@@ -4,7 +4,7 @@ KOURIER_VERSION=v0.3.8
 DOWNLOAD_URL=https://raw.githubusercontent.com/3scale/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
-  echo "Faile kourier-${KOURIER_VERSION}.yaml already exist"
+  echo "kourier-${KOURIER_VERSION}.yaml already exists"
   exit 1
 fi
 
