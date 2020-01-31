@@ -6,6 +6,7 @@ import (
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
@@ -159,28 +160,8 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 }
 
 // Install Kourier Ingress Gateway
-func (a *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-	log.Info("Installing Kourier Ingress")
-	const path = "deploy/resources/kourier/kourier.yaml"
-
-	manifest, err := mf.NewManifest(path, false, a.client)
-	if err != nil {
-		log.Error(err, "Unable to create Kourier Ingress install manifest")
-		return err
-	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	// let's hardcode this for now.
-	transforms = append(transforms, mf.InjectNamespace("knative-serving-ingress"))
-
-	if err := manifest.Transform(transforms...); err != nil {
-		log.Error(err, "Unable to transform Kourier Ingress manifest")
-		return err
-	}
-	if err := manifest.ApplyAll(); err != nil {
-		log.Error(err, "Unable to install Kourier Ingress")
-		return err
-	}
-	return nil
+func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
+	return kourier.ApplyServiceKourier(instance, r.client)
 }
 
 // create wide-open networkpolicies for the knative components
