@@ -17,7 +17,7 @@ import (
 const (
 	TimeoutAnnotation      = "haproxy.router.openshift.io/timeout"
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
-	KourierHttpPort        = "http"
+	KourierHttpPort        = "http2"
 )
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or

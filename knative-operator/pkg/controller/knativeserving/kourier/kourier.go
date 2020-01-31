@@ -30,7 +30,7 @@ func apply(instance *servingv1alpha1.KnativeServing, api client.Client, path str
 		return err
 	}
 	// TODO: Use ingressNamespace(instance.Namespace)
-	transforms = append(transforms, mf.InjectNamespace("knative-serving-ingress"))
+	transforms := []mf.Transformer{mf.InjectNamespace("knative-serving-ingress")}
 
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
