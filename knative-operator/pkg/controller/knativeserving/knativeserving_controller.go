@@ -160,7 +160,7 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-	return kourier.ApplyKourier(instance, r.client)
+	return kourier.Apply(instance, r.client)
 }
 
 // create wide-open networkpolicies for the knative components
@@ -196,7 +196,7 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 	return consoleclidownload.Create(instance, r.client)
 }
 
-// general clean-up, mostly service mesh resources
+// general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
 		return nil
@@ -210,6 +210,10 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
+		return err
+	}
+
+	if err := kourier.Delete(instance, r.client); err != nil {
 		return err
 	}
 
