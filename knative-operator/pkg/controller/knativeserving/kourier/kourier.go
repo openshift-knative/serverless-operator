@@ -11,7 +11,7 @@ var log = common.Log.WithName("kourier")
 
 func ApplyKourier(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing Kourier Ingress")
-	resources := []string{"deploy/resources/kourier/kourier.yaml", "deploy/resources/kourier/kourier_openshift.yaml"}
+	resources := []string{"deploy/resources/kourier/kourier-latest.yaml", "deploy/resources/kourier/kourier-openshift.yaml"}
 	for _, path := range resources {
 		if err := apply(instance, api, path); err != nil {
 			log.Error(err, "Failed to apply %s: %v", path, err)
