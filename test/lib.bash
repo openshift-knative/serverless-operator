@@ -184,7 +184,7 @@ function run_knative_serving_rolling_upgrade_tests {
     # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
     end_prober_test ${PROBER_PID}
 
-    local latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}')
+    local latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
     [[ $latest_cluster_version != "" ]] || return 1
 
     oc adm upgrade --to-latest=true
