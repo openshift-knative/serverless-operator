@@ -179,7 +179,7 @@ func TestRouteMigration(t *testing.T) {
 					Name: "istio-ingressgateway",
 				},
 				Port: &routev1.RoutePort{
-					TargetPort: intstr.FromString("http2"),
+					TargetPort: intstr.FromString(resources.KourierHttpPort),
 				},
 				TLS: &routev1.TLSConfig{
 					Termination:                   routev1.TLSTerminationEdge,
