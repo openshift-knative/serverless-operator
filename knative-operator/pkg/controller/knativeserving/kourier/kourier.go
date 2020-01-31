@@ -11,24 +11,27 @@ var log = common.Log.WithName("kourier")
 
 func ApplyKourier(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing Kourier Ingress")
-	const path = "deploy/resources/kourier/kourier.yaml"
+	resources := []string{"deploy/resources/kourier/kourier.yaml", "deploy/resources/kourier/kourier_openshift.yaml"}
+	for _, path := range resources {
+		if err := apply(instance, api, path); err != nil {
+			log.Error(err, "Failed to apply %s: %v", path, err)
+			return err
+		}
+	}
+	return nil
+}
 
+func apply(instance *servingv1alpha1.KnativeServing, api client.Client, path string) error {
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
-		log.Error(err, "Unable to create Kourier Ingress install manifest")
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	// let's hardcode this for now.
+	// TODO: Use ingressNamespace(instance.Namespace)
 	transforms = append(transforms, mf.InjectNamespace("knative-serving-ingress"))
 
 	if err := manifest.Transform(transforms...); err != nil {
-		log.Error(err, "Unable to transform Kourier Ingress manifest")
 		return err
 	}
-	if err := manifest.ApplyAll(); err != nil {
-		log.Error(err, "Unable to install Kourier Ingress")
-		return err
-	}
-	return nil
+	return manifest.ApplyAll()
 }

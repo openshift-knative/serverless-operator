@@ -161,7 +161,7 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-	return kourier.ApplyServiceKourier(instance, r.client)
+	return kourier.ApplyKourier(instance, r.client)
 }
 
 // create wide-open networkpolicies for the knative components
