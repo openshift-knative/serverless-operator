@@ -7,7 +7,9 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
+	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -44,7 +46,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeServing
-	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{})
 	if err != nil {
 		return err
 	}
@@ -192,6 +194,14 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
 		return nil
 	}
+
+	// Try to delete the "old" CR, if it's still there. Ignore any errors.
+	old := &obsolete.KnativeServing{}
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, old); err == nil {
+		// Oh, it actually still exists. Remove it, but ignore all errors!
+		r.client.Delete(context.TODO(), old)
+	}
+
 	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
 		return err
 	}

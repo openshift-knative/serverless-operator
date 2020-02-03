@@ -20,6 +20,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
 		egress,
 		ingress,
+		configureIstio,
 		configureLogURLTemplate,
 		ensureCustomCerts,
 		imagesFromEnviron,
@@ -62,6 +63,13 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	if len(domain) > 0 {
 		Configure(ks, "domain", domain, "")
 	}
+	return nil
+}
+
+func configureIstio(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	// Hardcoded for now, the ingressNamespace helper needs some refactoring.
+	Configure(ks, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway.knative-serving-ingress.svc.cluster.local")
+	Configure(ks, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway.knative-serving-ingress.svc.cluster.local")
 	return nil
 }
 
@@ -127,8 +135,7 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	return nil
 }
 
-// configure controller with custom certs for openshift registry if
-// not already set
+// Mark the time when instance configured for OpenShift
 func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
 	annotations := ks.GetAnnotations()
 	if annotations == nil {

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,9 +39,23 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		_, err := test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
+		_, err := v1a1test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
 		if err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
+		}
+	})
+
+	t.Run("verify correct deployment shape", func(t *testing.T) {
+		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
+		if apierrs.IsNotFound(err) {
+			// We're good if no APIService exists at all
+			return
+		} else if err != nil {
+			t.Fatalf("Failed to fetch APIService: %v", err)
+		}
+
+		if api.Spec.Service != nil && api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
+			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 	})
 
@@ -60,7 +75,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
-		if err := test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
+		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
@@ -256,8 +271,7 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 
 		},
 		userContext: editCtx,
-	},
-	}
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

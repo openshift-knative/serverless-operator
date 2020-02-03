@@ -89,6 +89,20 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:io.kubernetes.conditions'
       version: v1alpha1
+    - description: Represents an installation of a particular version of Knative Serving
+      displayName: Knative Serving (obsolete)
+      kind: KnativeServing
+      name: knativeservings.serving.knative.dev
+      statusDescriptors:
+      - description: The version of Knative Serving installed
+        displayName: Version
+        path: version
+      - description: Conditions of Knative Serving installed
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+      version: v1alpha1
     required:
     - description: A list of namespaces in Service Mesh
       displayName: Istio Service Mesh Member Roll
@@ -253,7 +267,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager:v0.11.1
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
@@ -292,8 +306,6 @@ spec:
                       value: "4.1.13"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
-                    - name: IMAGE_default
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-${NAME}
                     - name: IMAGE_queue-proxy
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-queue
                     - name: IMAGE_networking-istio

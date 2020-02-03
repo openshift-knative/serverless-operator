@@ -901,6 +901,22 @@
   version = "v0.4.0"
 
 [[projects]]
+  digest = "1:385fa3a6d5d7d960a35c25eb254ab2037ab2c0b89ff396c6e2c9c576a17a5f72"
+  name = "k8s.io/kube-aggregator"
+  packages = [
+    "pkg/apis/apiregistration",
+    "pkg/apis/apiregistration/v1",
+    "pkg/apis/apiregistration/v1beta1",
+    "pkg/client/clientset_generated/clientset",
+    "pkg/client/clientset_generated/clientset/scheme",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1",
+  ]
+  pruneopts = "NUT"
+  revision = "13daafd3604f05ada8be6c28f4f91fbc3d64dfbe"
+  version = "kubernetes-1.15.3"
+
+[[projects]]
   branch = "master"
   digest = "1:5808bb1694e8727155e7c023499195cd0f9931b56545fe37795985f87f024696"
   name = "k8s.io/kube-openapi"
@@ -913,11 +929,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2d3f59daa4b479ff4e100a2e1d8fea6780040fdadc177869531fe4cc29407f55"
+  digest = "1:99dbf7ef753ca02399778c93a4ed4b689b28668317134ecd1fabeb07be70f354"
   name = "k8s.io/utils"
   packages = [
     "buffer",
     "integer",
+    "pointer",
     "trace",
   ]
   pruneopts = "NUT"
@@ -989,6 +1006,7 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
     "knative.dev/pkg/test",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "knative.dev/serving-operator/pkg/client/clientset/versioned",

@@ -29,6 +29,10 @@ required = [
   name = "k8s.io/client-go"
   version = "kubernetes-1.15.3"
 
+[[override]]
+  name = "k8s.io/kube-aggregator"
+  version = "kubernetes-1.15.3"
+
 [[constraint]]
   version = "v0.11.1"
   name = "knative.dev/serving-operator"
