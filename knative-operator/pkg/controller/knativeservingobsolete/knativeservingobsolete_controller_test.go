@@ -161,9 +161,6 @@ func TestKnativeServingMigrationMirrorsConfigDown(t *testing.T) {
 	}
 
 	// Update the config of the old resource and verify it's updated downstream.
-	old.Spec.Config["foo2"] = map[string]string{
-		"bar2": "baz2",
-	}
 	old.Spec.Config["foo"]["bar"] = "baz3"
 	if err := cl.Update(ctx, old); err != nil {
 		t.Fatalf("Failed to update status initially: %v", err)
@@ -177,7 +174,31 @@ func TestKnativeServingMigrationMirrorsConfigDown(t *testing.T) {
 	if err := cl.Get(ctx, key, created); err != nil {
 		t.Fatalf("Failed to get new object: %v", err)
 	}
-	if created.Spec.Config["foo2"]["bar2"] != "baz2" || created.Spec.Config["foo"]["bar"] != "baz3" {
+	if created.Spec.Config["foo"]["bar"] != "baz3" {
+		t.Fatalf("Spec.Config was not as expected: %v", created.Spec.Config)
+	}
+	// Verify the status didn't get thrown away.
+	if created.Status.Version != "v0.11.1" {
+		t.Fatalf("Spec.Status got thrown away unexpectedly")
+	}
+
+	// Add a new field upstream.
+	old.Spec.Config["foo2"] = map[string]string{
+		"bar2": "baz2",
+	}
+	if err := cl.Update(ctx, old); err != nil {
+		t.Fatalf("Failed to update status initially: %v", err)
+	}
+
+	if _, err := r.Reconcile(reconcile.Request{NamespacedName: key}); err != nil {
+		t.Fatalf("Reconcile failed: %v", err)
+	}
+
+	// The new resource should be updated.
+	if err := cl.Get(ctx, key, created); err != nil {
+		t.Fatalf("Failed to get new object: %v", err)
+	}
+	if created.Spec.Config["foo"]["bar"] != "baz3" || created.Spec.Config["foo2"]["bar2"] != "baz2" {
 		t.Fatalf("Spec.Config was not as expected: %v", created.Spec.Config)
 	}
 	// Verify the status didn't get thrown away.

@@ -147,11 +147,16 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 		return nil, err
 	} else {
 		changed := false
+		if len(old.Spec.Config) > 0 && new.Spec.Config == nil {
+			new.Spec.Config = map[string]map[string]string{}
+		}
 		for cm, m := range old.Spec.Config {
+			if new.Spec.Config[cm] == nil {
+				new.Spec.Config[cm] = map[string]string{}
+			}
 			for k, v := range m {
-				x := common.Configure(new, cm, k, v)
-				if !changed {
-					changed = x
+				if oldV := new.Spec.Config[cm][k]; oldV != v {
+					changed = true
 				}
 				new.Spec.Config[cm][k] = v
 			}
