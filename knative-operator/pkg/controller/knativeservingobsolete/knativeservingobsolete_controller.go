@@ -128,8 +128,9 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 	if errors.IsNotFound(err) {
 		new := &servingv1alpha1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      old.Name,
-				Namespace: old.Namespace,
+				Name:            old.Name,
+				Namespace:       old.Namespace,
+				OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(old.GetObjectMeta(), obsolete.SchemeGroupVersion.WithKind("KnativeServing"))},
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Config: old.Spec.Config,
