@@ -3,12 +3,17 @@ package knativeservingobsolete
 import (
 	"context"
 
+	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
+	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -17,6 +22,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	oldapi "github.com/knative/pkg/apis"
+	newapi "knative.dev/pkg/apis"
 )
 
 var log = logf.Log.WithName("controller_knativeservingobsolete")
@@ -41,10 +49,16 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeServing
-	err = c.Watch(&source.Kind{Type: &obsolete.KnativeServing{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
+	if err := c.Watch(&source.Kind{Type: &obsolete.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{}); err != nil {
 		log.Info("Obsolete KnativeServing CRD not found, and I'm totally cool with that")
+		return nil // aborts further setup, we don't need to watch for the new types then either
 	}
+
+	// Watch for changes in our "peer".
+	if err := c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -66,18 +80,11 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 
 	// Fetch the KnativeServingObsolete instance
 	current := &obsolete.KnativeServing{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, current)
-	if err != nil {
+	if err := r.client.Get(context.TODO(), request.NamespacedName, current); err != nil {
 		if errors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
-	}
-	// Fetch the proper instance
-	latest := &servingv1alpha1.KnativeServing{}
-	if err := r.client.Get(context.TODO(), request.NamespacedName, latest); err == nil {
-		// We already have a converted CR, so abort
-		return reconcile.Result{}, nil
 	}
 	// Remove finalizers to prevent deadlock
 	if len(current.GetFinalizers()) > 0 {
@@ -87,29 +94,115 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 			return reconcile.Result{}, err
 		}
 	}
-	// Create the latest CR from the current (previous) CR
-	latest = &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      current.Name,
-			Namespace: current.Namespace,
-		},
-	}
-	latest.Spec.Config = current.Spec.Config
-	if err := common.Mutate(latest, r.client); err != nil {
+	// Orphan all the children by removing their OwnerRefs
+	if err := r.orphanObsoleteResources(current); err != nil {
 		return reconcile.Result{}, err
 	}
 	// Avoid a certs config conflict in the k-s controller
 	if err := r.removeOldCertsConfig(current.Namespace); err != nil {
 		return reconcile.Result{}, err
 	}
-	// Orphan the kids to avoid webhook race condition
-	if err := r.client.Delete(context.TODO(), current, client.PropagationPolicy(metav1.DeletePropagationOrphan)); err != nil {
+
+	new, err := r.reconcileNewResource(current)
+	if err != nil {
 		return reconcile.Result{}, err
 	}
-	if err := r.client.Create(context.TODO(), latest); err != nil {
-		return reconcile.Result{}, err
+
+	wantStatus := obsolete.KnativeServingStatus{
+		Version:    new.Status.Version,
+		Conditions: deepCopyConditions(new.Status.Conditions),
 	}
+	if !equality.Semantic.DeepEqual(current.Status, wantStatus) {
+		current.Status = wantStatus
+		if err := r.client.Status().Update(context.TODO(), current); err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.KnativeServing) (*servingv1alpha1.KnativeServing, error) {
+	new := &servingv1alpha1.KnativeServing{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: old.Namespace, Name: old.Name}, new)
+	if errors.IsNotFound(err) {
+		new := &servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      old.Name,
+				Namespace: old.Namespace,
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Config: old.Spec.Config,
+			},
+		}
+		if err := common.Mutate(new, r.client); err != nil {
+			return nil, err
+		}
+		if err := r.client.Create(context.TODO(), new); err != nil {
+			return nil, err
+		}
+		return new, nil
+	} else if err != nil {
+		return nil, err
+	} else {
+		changed := false
+		for cm, m := range old.Spec.Config {
+			for k, v := range m {
+				x := common.Configure(new, cm, k, v)
+				if !changed {
+					changed = x
+				}
+				new.Spec.Config[cm][k] = v
+			}
+		}
+		if changed {
+			if err := r.client.Update(context.TODO(), new); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return new, err
+}
+
+func (r *ReconcileKnativeServingObsolete) orphanObsoleteResources(ks *obsolete.KnativeServing) error {
+	const path = "deploy/resources/knative-serving-0.10.0.yaml"
+
+	manifest, err := mf.NewManifest(path, false, r.client)
+	if err != nil {
+		return err
+	}
+	if err := manifest.Transform(mf.InjectNamespace(ks.Namespace)); err != nil {
+		return err
+	}
+	for _, u := range manifest.Resources {
+		if u.GetNamespace() != ks.Namespace {
+			continue
+		}
+		resource, err := manifest.Get(&u)
+		if meta.IsNoMatchError(err) {
+			// Ignore this error as it happens if a user installs a fresh system via the old CRD
+			// and some types will not exist yet in that case.
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if resource == nil {
+			continue
+		}
+		for _, owner := range resource.GetOwnerReferences() {
+			if owner.UID == ks.UID {
+				resource.SetOwnerReferences(nil)
+				if err := r.client.Update(context.TODO(), resource); err != nil {
+					return err
+				}
+				log.Info("Orphaned", "name", resource.GetName(), "type", resource.GroupVersionKind())
+				break
+			}
+		}
+	}
+	return nil
+
 }
 
 // The upstream operator will apply a 3-way strategic merge, leaving
@@ -120,9 +213,14 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 func (r *ReconcileKnativeServingObsolete) removeOldCertsConfig(ns string) error {
 	const name = "controller"
 	deployment := &appsv1.Deployment{}
-	if err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: ns, Name: name}, deployment); err != nil {
+	err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: ns, Name: name}, deployment)
+	if errors.IsNotFound(err) {
+		// Ignore a not found error, we're not in a migration then.
+		return nil
+	} else if err != nil {
 		return err
 	}
+
 	volumes := deployment.Spec.Template.Spec.Volumes
 	for i, v := range volumes {
 		if v.Name == "service-ca" {
@@ -149,4 +247,21 @@ func (r *ReconcileKnativeServingObsolete) removeOldCertsConfig(ns string) error 
 		return err
 	}
 	return nil
+}
+
+func deepCopyConditions(new []newapi.Condition) []oldapi.Condition {
+	old := make([]oldapi.Condition, 0, len(new))
+	for _, newCond := range new {
+		oldCond := oldapi.Condition{
+			Type:               oldapi.ConditionType(string(newCond.Type)),
+			Reason:             newCond.Reason,
+			Message:            newCond.Message,
+			LastTransitionTime: oldapi.VolatileTime{Inner: newCond.LastTransitionTime.Inner},
+			Status:             newCond.Status,
+			Severity:           oldapi.ConditionSeverity(string(newCond.Severity)),
+		}
+
+		old = append(old, oldCond)
+	}
+	return old
 }

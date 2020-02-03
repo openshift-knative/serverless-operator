@@ -225,6 +225,7 @@
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
+    "cmp/cmpopts",
     "cmp/internal/diff",
     "cmp/internal/flags",
     "cmp/internal/function",
@@ -419,6 +420,7 @@
     "pkg/leader",
     "pkg/log/zap",
     "pkg/metrics",
+    "pkg/predicate",
     "pkg/restmapper",
     "version",
   ]
@@ -1040,7 +1042,10 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
+    "github.com/google/go-cmp/cmp",
+    "github.com/google/go-cmp/cmp/cmpopts",
     "github.com/jcrossley3/manifestival",
+    "github.com/knative/pkg/apis",
     "github.com/maistra/istio-operator/pkg/apis/maistra/v1",
     "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1",
     "github.com/openshift/api/config/v1",
@@ -1050,6 +1055,7 @@
     "github.com/operator-framework/operator-sdk/pkg/leader",
     "github.com/operator-framework/operator-sdk/pkg/log/zap",
     "github.com/operator-framework/operator-sdk/pkg/metrics",
+    "github.com/operator-framework/operator-sdk/pkg/predicate",
     "github.com/operator-framework/operator-sdk/pkg/restmapper",
     "github.com/operator-framework/operator-sdk/version",
     "github.com/spf13/pflag",
@@ -1057,6 +1063,7 @@
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
@@ -1068,6 +1075,7 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
+    "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",

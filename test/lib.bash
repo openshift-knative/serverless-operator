@@ -173,7 +173,8 @@ function run_knative_serving_rolling_upgrade_tests {
       [[ $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" || return 1
-      # The knativeserving CR should be updated now
+      # Both knativeserving CRs should be updated now
+      timeout 900 '[[ ! ( $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
       timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
     fi
     end_prober_test ${PROBER_PID}
