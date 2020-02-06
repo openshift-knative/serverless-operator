@@ -107,7 +107,15 @@ function run_knative_serving_e2e_and_conformance_tests {
   local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
 
-  go_test_e2e -tags=e2e -timeout=30m -parallel=3 ./test/e2e ./test/conformance/... \
+  local parallel=3
+
+  if [[ $(oc get node -ojsonpath='{.items[0].spec.providerID}') = vsphere* ]]; then
+    # Since we don't have LoadBalancers working, gRPC tests will always fail.
+    rm ./test/e2e/grpc_test.go
+    parallel=1
+  fi
+
+  go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel ./test/e2e ./test/conformance/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" || failed=1
 
