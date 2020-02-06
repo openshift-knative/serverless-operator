@@ -27,7 +27,7 @@ function register_teardown {
 }
 
 function run_e2e_tests {
-  declare -al kubeconfigs
+  declare -a kubeconfigs
   local kubeconfigs_str
 
   logger.info "Running tests"
