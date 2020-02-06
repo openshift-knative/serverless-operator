@@ -10,7 +10,6 @@ if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
   set -x
 fi
 
-register_teardown || exit $?
 scale_up_workers || exit $?
 create_namespaces || exit $?
 create_htpasswd_users && add_roles || exit $?
@@ -24,7 +23,29 @@ failed=0
 (( !failed )) && install_serverless_previous || failed=5
 (( !failed )) && run_knative_serving_rolling_upgrade_tests "$KNATIVE_VERSION" || failed=6
 
-(( !failed )) && teardown_serverless || failed=7
+echo ">>> Knative Servings"
+oc get knativeserving.serving.knative.dev --all-namespaces -o yaml
+oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
+
+echo ">>> Knative Services"
+oc get ksvc --all-namespaces
+
+echo ">>> Triggering GC"
+for pod in $(oc get pod -n openshift-kube-controller-manager -l kube-controller-manager=true -o custom-columns=name:metadata.name --no-headers); do
+  echo "killing pod $pod"
+  oc rsh -n openshift-kube-controller-manager $pod /bin/sh -c "kill 1"
+  sleep 30
+done
+
+echo "Sleeping so GC can run"
+sleep 120
+
+echo ">>> Knative Servings"
+oc get knativeserving.serving.knative.dev --all-namespaces -o yaml
+oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
+
+echo ">>> Knative Services"
+oc get ksvc --all-namespaces
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
