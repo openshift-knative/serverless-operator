@@ -109,7 +109,7 @@ function run_knative_serving_e2e_and_conformance_tests {
 
   local parallel=3
 
-  if [[ $(oc get node -ojsonpath='{.items[0].spec.providerID}') = vsphere* ]]; then
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
     rm ./test/e2e/grpc_test.go
     parallel=2
