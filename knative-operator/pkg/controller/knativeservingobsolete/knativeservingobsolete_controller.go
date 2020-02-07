@@ -183,7 +183,7 @@ func (r *ReconcileKnativeServingObsolete) deleteObsoleteMonitoringResources() er
 	}
 
 	if err := manifest.DeleteAll(); err != nil {
-		log.Info("Ignoring failed deletion of obsolete monitoring resources")
+		return err
 	}
 
 	return nil
