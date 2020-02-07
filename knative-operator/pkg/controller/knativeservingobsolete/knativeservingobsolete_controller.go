@@ -94,6 +94,9 @@ func (r *ReconcileKnativeServingObsolete) Reconcile(request reconcile.Request) (
 			return reconcile.Result{}, err
 		}
 	}
+	if err := r.deleteObsoleteMonitoringResources(); err != nil {
+		return reconcile.Result{}, err
+	}
 	// Orphan all the children by removing their OwnerRefs
 	if err := r.orphanObsoleteResources(current); err != nil {
 		return reconcile.Result{}, err
@@ -170,8 +173,24 @@ func (r *ReconcileKnativeServingObsolete) reconcileNewResource(old *obsolete.Kna
 	return new, err
 }
 
+// Delete obsolete monitoring resources from previous version to avoid fatal ownerRef issues.
+func (r *ReconcileKnativeServingObsolete) deleteObsoleteMonitoringResources() error {
+	const path = "deploy/resources/obsolete/monitoring-1.3.0.yaml"
+
+	manifest, err := mf.NewManifest(path, false, r.client)
+	if err != nil {
+		return err
+	}
+
+	if err := manifest.DeleteAll(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ReconcileKnativeServingObsolete) orphanObsoleteResources(ks *obsolete.KnativeServing) error {
-	const path = "deploy/resources/knative-serving-0.10.0.yaml"
+	const path = "deploy/resources/obsolete/knative-serving-0.10.0.yaml"
 
 	manifest, err := mf.NewManifest(path, false, r.client)
 	if err != nil {
