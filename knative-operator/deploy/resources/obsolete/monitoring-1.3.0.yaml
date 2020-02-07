@@ -1,0 +1,108 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    name: knative-serving-operator
+  annotations:
+    networkoperator.openshift.io/ignore-errors: ""
+  name: knative-serving-operator
+  namespace: openshift-operators
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+  namespaceSelector: {}
+  selector:
+    matchLabels:
+      name: knative-serving-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: knative-serving-prometheus-k8s
+  namespace: openshift-operators
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: knative-serving-prometheus-k8s
+  namespace: openshift-operators
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: knative-serving-prometheus-k8s
+subjects:
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: openshift-monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: controller
+  annotations:
+    networkoperator.openshift.io/ignore-errors: ""
+  name: controller
+  namespace: knative-serving
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - knative-serving
+  selector:
+    matchLabels:
+      app: controller
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: autoscaler
+  annotations:
+    networkoperator.openshift.io/ignore-errors: ""
+  name: autoscaler
+  namespace: knative-serving
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - knative-serving
+  selector:
+    matchLabels:
+      app: autoscaler
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: activator
+  annotations:
+    networkoperator.openshift.io/ignore-errors: ""
+  name: activator
+  namespace: knative-serving
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - knative-serving
+  selector:
+    matchLabels:
+      app: activator
