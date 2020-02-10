@@ -19,3 +19,5 @@ if [ -L "kourier-latest.yaml" ]; then
 fi
 
 ln -s kourier-${KOURIER_VERSION}.yaml kourier-latest.yaml
+
+patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch
