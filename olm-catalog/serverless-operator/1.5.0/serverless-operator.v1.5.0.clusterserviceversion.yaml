@@ -62,14 +62,14 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Networking,Integration & Delivery,Cloud Provider,Developer Tools
     certified: "false"
-    containerImage: quay.io/openshift-knative/serverless-operator:v1.4.0
+    containerImage: quay.io/openshift-knative/serverless-operator:v1.5.0
     createdAt: "2019-07-27T17:00:00Z"
     description: |-
       Provides a collection of API's based on Knative to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat, Inc.
-  name: serverless-operator.v1.4.0
+  name: serverless-operator.v1.5.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -267,7 +267,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-operator
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
@@ -289,7 +289,7 @@ spec:
               serviceAccountName: knative-serving-operator
               containers:
                 - name: knative-serving-openshift
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-operator
+                  image: $IMAGE_KNATIVE_OPERATOR
                   command:
                   - knative-serving-openshift
                   imagePullPolicy: Always
@@ -307,19 +307,19 @@ spec:
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
                     - name: IMAGE_queue-proxy
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-queue
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-queue
                     - name: IMAGE_networking-istio
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-istio
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-istio
                     - name: IMAGE_activator
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-activator
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-activator
                     - name: IMAGE_autoscaler
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-autoscaler
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler
                     - name: IMAGE_autoscaler-hpa
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-autoscaler-hpa
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler-hpa
                     - name: IMAGE_controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-controller
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-controller
                     - name: IMAGE_webhook
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-webhook
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -334,7 +334,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-openshift-ingress
+                  image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -428,22 +428,22 @@ spec:
     name: Red Hat, Inc.
   relatedImages:
     - name: IMAGE_QUEUE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-queue
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-queue
     - name: IMAGE_activator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-activator
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-activator
     - name: IMAGE_autoscaler
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-autoscaler
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler
     - name: IMAGE_autoscaler-hpa
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-autoscaler-hpa
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler-hpa
     - name: IMAGE_controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-controller
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-controller
     - name: IMAGE_networking-istio
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-istio
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-istio
     - name: IMAGE_webhook
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-webhook
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
     - name: knative-operator
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-operator
+      image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-openshift-ingress
-  replaces: serverless-operator.v1.3.0
-  version: 1.4.0
+      image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+  replaces: serverless-operator.v1.4.1
+  version: 1.5.0
