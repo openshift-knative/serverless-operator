@@ -2,10 +2,4 @@
 
 FROM openshift/origin-release:golang-1.13
 
-# Add kubernetes repository
-ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
-
-RUN yum install -y kubectl ansible httpd-tools
-
-# Allow runtime users to add entries to /etc/passwd
-RUN chmod g+rw /etc/passwd
+RUN alias kubectl=oc
