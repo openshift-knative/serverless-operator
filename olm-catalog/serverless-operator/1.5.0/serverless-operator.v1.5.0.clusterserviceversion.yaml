@@ -114,7 +114,7 @@ spec:
       kind: ServiceMeshControlPlane
       name: servicemeshcontrolplanes.maistra.io
       version: v1
-  minKubeVersion: 1.14.0
+  minKubeVersion: 1.15.0
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
     install various "serverless" services.
@@ -303,7 +303,7 @@ spec:
                     - name: OPERATOR_NAME
                       value: "knative-serving-openshift"
                     - name: MIN_OPENSHIFT_VERSION
-                      value: "4.1.13"
+                      value: "4.3.0"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
                     - name: IMAGE_queue-proxy
