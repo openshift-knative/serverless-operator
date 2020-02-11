@@ -445,7 +445,5 @@ spec:
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
       image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
-  replaces: serverless-operator.v1.3.0
-  skips:
-    - serverless-operator.v1.4.0
+  replaces: serverless-operator.v1.4.0
   version: 1.4.1
