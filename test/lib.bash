@@ -37,13 +37,23 @@ function run_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
+  local failed=0
+
   go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" \
-    && logger.success 'Tests has passed' && return 0 \
-    || logger.error 'Tests have failures!' \
-    && return 1
+    "$@" || failed=1
+
+  if (( !failed )); then
+    logger.success 'Tests have passed'
+  else
+    logger.error 'Tests have failures!'
+  fi
+
+  # On some platforms (e.g. Azure) it takes longer to clean namespaces from previous tests
+  timeout 900 '[[ $(oc get project knative-serving-ingress -ojsonpath="{.status.phase}") == Terminating ]]' || return 1
+
+  return $failed
 }
 
 # Setup a temporary GOPATH to safely check out the repository without breaking other things.
@@ -263,6 +273,9 @@ function run_knative_serving_operator_tests {
   else
     logger.error 'Tests have failures!'
   fi
+
+  # On some platforms (e.g. Azure) it takes longer to clean namespaces from previous tests
+  timeout 900 '[[ $(oc get project knative-serving-ingress -ojsonpath="{.status.phase}") == Terminating ]]' || return 1
 
   remove_temporary_gopath
 
