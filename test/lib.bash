@@ -115,7 +115,7 @@ function run_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel ./test/e2e ./test/conformance/... \
+  go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" || failed=1
 

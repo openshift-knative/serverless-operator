@@ -1,3 +1,9 @@
+# Openshift Serverless v1.5.0
+
+- Update Knative Serving to v0.12.1. See
+  [upstream release notes](https://github.com/knative/serving/releases/tag/v0.12.1)
+  for more information.
+
 # Openshift Serverless v1.4.0
 
 - Update Knative Serving to v0.11.1. See

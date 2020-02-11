@@ -289,7 +289,7 @@ spec:
               serviceAccountName: knative-serving-operator
               containers:
                 - name: knative-serving-openshift
-                  image: $IMAGE_KNATIVE_OPERATOR
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-operator
                   command:
                   - knative-serving-openshift
                   imagePullPolicy: Always
@@ -334,7 +334,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-openshift-ingress
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -442,9 +442,9 @@ spec:
     - name: IMAGE_webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.11.1:knative-serving-webhook
     - name: knative-operator
-      image: $IMAGE_KNATIVE_OPERATOR
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-operator
     - name: knative-openshift-ingress
-      image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-openshift-ingress
   replaces: serverless-operator.v1.3.0
   skips:
     - serverless-operator.v1.4.0
