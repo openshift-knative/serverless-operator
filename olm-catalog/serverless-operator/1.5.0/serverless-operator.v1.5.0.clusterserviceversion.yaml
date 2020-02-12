@@ -308,8 +308,6 @@ spec:
                       value: "knative-serving"
                     - name: IMAGE_queue-proxy
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-queue
-                    - name: IMAGE_networking-istio
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-istio
                     - name: IMAGE_activator
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-activator
                     - name: IMAGE_autoscaler
@@ -437,8 +435,6 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler-hpa
     - name: IMAGE_controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-controller
-    - name: IMAGE_networking-istio
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-istio
     - name: IMAGE_webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
     - name: knative-operator
