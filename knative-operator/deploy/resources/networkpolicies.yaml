@@ -67,17 +67,3 @@ spec:
       app: networking-certmanager
   ingress:
   - {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: networking-istio
-  namespace: knative-serving
-  labels:
-    app: networking-istio
-spec:
-  podSelector:
-    matchLabels:
-      app: networking-istio
-  ingress:
-  - {}
