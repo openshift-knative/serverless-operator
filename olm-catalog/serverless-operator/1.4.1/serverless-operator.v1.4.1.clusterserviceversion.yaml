@@ -445,7 +445,5 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-operator
     - name: knative-openshift-ingress
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.4.0:knative-openshift-ingress
-  replaces: serverless-operator.v1.3.0
-  skips:
-    - serverless-operator.v1.4.0
+  replaces: serverless-operator.v1.4.0
   version: 1.4.1
