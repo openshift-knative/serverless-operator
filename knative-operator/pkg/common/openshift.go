@@ -18,9 +18,9 @@ var log = Log
 
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
+		ingressClass,
 		egress,
 		ingress,
-		configureIstio,
 		configureLogURLTemplate,
 		ensureCustomCerts,
 		imagesFromEnviron,
@@ -31,6 +31,11 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 	return nil
 }
 
@@ -63,13 +68,6 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	if len(domain) > 0 {
 		Configure(ks, "domain", domain, "")
 	}
-	return nil
-}
-
-func configureIstio(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	// Hardcoded for now, the ingressNamespace helper needs some refactoring.
-	Configure(ks, "istio", "gateway.knative-ingress-gateway", "istio-ingressgateway.knative-serving-ingress.svc.cluster.local")
-	Configure(ks, "istio", "local-gateway.cluster-local-gateway", "cluster-local-gateway.knative-serving-ingress.svc.cluster.local")
 	return nil
 }
 

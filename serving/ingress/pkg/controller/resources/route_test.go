@@ -71,7 +71,7 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("http2"),
+						TargetPort: intstr.FromString(KourierHttpPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -119,7 +119,7 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("http2"),
+						TargetPort: intstr.FromString(KourierHttpPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -154,7 +154,7 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("http2"),
+						TargetPort: intstr.FromString(KourierHttpPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -181,7 +181,7 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("http2"),
+						TargetPort: intstr.FromString(KourierHttpPort),
 					},
 
 					TLS: &routev1.TLSConfig{
@@ -217,7 +217,7 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString("http2"),
+						TargetPort: intstr.FromString(KourierHttpPort),
 					},
 
 					TLS: &routev1.TLSConfig{

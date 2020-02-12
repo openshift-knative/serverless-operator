@@ -6,6 +6,7 @@ import (
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
@@ -97,6 +98,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.installNetworkPolicies,
 		r.installServiceMesh,
 		r.createConsoleCLIDownload,
+		r.installKourier,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -156,6 +158,11 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 	return nil
 }
 
+// Install Kourier Ingress Gateway
+func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
+	return kourier.Apply(instance, r.client)
+}
+
 // create wide-open networkpolicies for the knative components
 func (a *ReconcileKnativeServing) installNetworkPolicies(instance *servingv1alpha1.KnativeServing) error {
 	namespace := instance.GetNamespace()
@@ -189,7 +196,7 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 	return consoleclidownload.Create(instance, r.client)
 }
 
-// general clean-up, mostly service mesh resources
+// general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
 		return nil
@@ -203,6 +210,10 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	if err := servicemesh.RemoveServiceMesh(instance, r.client); err != nil {
+		return err
+	}
+
+	if err := kourier.Delete(instance, r.client); err != nil {
 		return err
 	}
 
