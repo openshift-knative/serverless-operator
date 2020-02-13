@@ -267,7 +267,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-operator
+                image: quay.io/nak3/knative-v0.12.1:remove-servicemesh
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
