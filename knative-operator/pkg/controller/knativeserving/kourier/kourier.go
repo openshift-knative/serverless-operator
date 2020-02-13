@@ -8,29 +8,18 @@ import (
 )
 
 var (
-	log       = common.Log.WithName("kourier")
-	manifests = []string{"deploy/resources/kourier/kourier-latest.yaml"}
+	log  = common.Log.WithName("kourier")
+	path = "deploy/resources/kourier/kourier-latest.yaml"
 )
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Installing Kourier Ingress")
-	for _, path := range manifests {
-		if err := apply(instance, api, path); err != nil {
-			log.Error(err, "Failed to apply %s: %v", path, err)
-			return err
-		}
-	}
-	return nil
-}
-
-func apply(instance *servingv1alpha1.KnativeServing, api client.Client, path string) error {
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
 		return err
 	}
-	// TODO: Use ingressNamespace(instance.Namespace)
-	transforms := []mf.Transformer{mf.InjectNamespace("knative-serving-ingress")}
+	transforms := []mf.Transformer{mf.InjectNamespace(ingressNamespace(instance.GetNamespace()))}
 
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
@@ -40,14 +29,19 @@ func apply(instance *servingv1alpha1.KnativeServing, api client.Client, path str
 
 // Delete deletes Kourier resources.
 func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	for _, path := range manifests {
-		manifest, err := mf.NewManifest(path, false, api)
-		if err != nil {
-			return err
-		}
-		if err := manifest.DeleteAll(); err != nil {
-			return err
-		}
+	log.Info("Deleting Kourier Ingress")
+	manifest, err := mf.NewManifest(path, false, api)
+	if err != nil {
+		return err
 	}
-	return nil
+	transforms := []mf.Transformer{mf.InjectNamespace(ingressNamespace(instance.GetNamespace()))}
+
+	if err := manifest.Transform(transforms...); err != nil {
+		return err
+	}
+	return manifest.DeleteAll()
+}
+
+func ingressNamespace(servingNamespace string) string {
+	return servingNamespace + "-ingress"
 }
