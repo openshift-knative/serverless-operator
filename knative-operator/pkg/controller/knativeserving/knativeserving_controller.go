@@ -3,7 +3,6 @@ package knativeserving
 import (
 	"context"
 
-	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
@@ -152,29 +151,6 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	return kourier.Apply(instance, r.client)
-}
-
-// create wide-open networkpolicies for the knative components
-func (a *ReconcileKnativeServing) installNetworkPolicies(instance *servingv1alpha1.KnativeServing) error {
-	namespace := instance.GetNamespace()
-	log.Info("Installing Network Policies")
-	const path = "deploy/resources/networkpolicies.yaml"
-
-	manifest, err := mf.NewManifest(path, false, a.client)
-	if err != nil {
-		return err
-	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if len(namespace) > 0 {
-		transforms = append(transforms, mf.InjectNamespace(namespace))
-	}
-	if err := manifest.Transform(transforms...); err != nil {
-		return err
-	}
-	if err := manifest.ApplyAll(); err != nil {
-		return err
-	}
-	return nil
 }
 
 // createConsoleCLIDownload creates CR for kn CLI download link

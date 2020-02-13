@@ -9,7 +9,7 @@ import (
 
 var (
 	log       = common.Log.WithName("kourier")
-	manifests = []string{"deploy/resources/kourier/kourier-latest.yaml", "deploy/resources/kourier/kourier-openshift.yaml"}
+	manifests = []string{"deploy/resources/kourier/kourier-latest.yaml"}
 )
 
 // Apply applies Kourier resources.
