@@ -1,8 +1,12 @@
 package kourier
 
 import (
+	"context"
+
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,7 +43,20 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
-	return manifest.DeleteAll()
+	if err := manifest.DeleteAll(); err != nil {
+		return err
+	}
+
+	log.Info("Deleting ingress namespace")
+	ns := &v1.Namespace{}
+	err = api.Get(context.TODO(), client.ObjectKey{Name: ingressNamespace(instance.GetNamespace())}, ns)
+	if apierrors.IsNotFound(err) {
+		// We can safely ignore this. There is nothing to do for us.
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return api.Delete(context.TODO(), ns)
 }
 
 func ingressNamespace(servingNamespace string) string {
