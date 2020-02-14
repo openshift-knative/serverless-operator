@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 KOURIER_VERSION=v0.3.10
-DOWNLOAD_URL=https://raw.githubusercontent.com/3scale/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
+DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
   echo "kourier-${KOURIER_VERSION}.yaml already exists"
