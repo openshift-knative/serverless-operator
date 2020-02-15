@@ -39,7 +39,20 @@ function run_e2e_tests {
 
   local failed=0
 
-  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e/knative_serving_test.go \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  if (( !failed )); then
+    logger.success 'Tests have passed'
+  else
+    logger.error 'Tests have failures!'
+    # Do not run clean up test to dump status.
+    return $failed
+  fi
+
+  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e/knative_serving_cleanup_test.go \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
