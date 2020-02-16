@@ -92,6 +92,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.createConsoleCLIDownload,
 		r.installKourier,
 		r.uninstallServiceMesh,
+		r.updateDeployment,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -114,6 +115,11 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 	}
 	// Only apply the update if something changed.
 	return r.client.Update(context.TODO(), instance)
+}
+
+// updateDeployment updates Knative controller deployment
+func (r *ReconcileKnativeServing) updateDeployment(instance *servingv1alpha1.KnativeServing) error {
+	return common.Update(instance, r.client)
 }
 
 // set a finalizer to clean up service mesh when instance is deleted
