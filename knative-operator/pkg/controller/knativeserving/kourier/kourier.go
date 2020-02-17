@@ -2,6 +2,7 @@ package kourier
 
 import (
 	"context"
+	"fmt"
 
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -49,26 +50,17 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 // This function is copied from knativeserving_controller.go in serving-operator
 func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Checking deployments")
-	available := func(d *appsv1.Deployment) bool {
-		for _, c := range d.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status == v1.ConditionTrue {
-				return true
-			}
-		}
-		return false
-	}
 	for _, u := range manifest.Resources {
 		if u.GetKind() == "Deployment" {
 			deployment := &appsv1.Deployment{}
 			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
 			if err != nil {
-				if apierrors.IsNotFound(err) {
-					return nil
-				}
 				return err
 			}
-			if !available(deployment) {
-				return nil
+			for _, c := range deployment.Status.Conditions {
+				if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
+					return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
+				}
 			}
 		}
 	}
