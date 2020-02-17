@@ -5,6 +5,7 @@ import (
 
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -33,25 +34,49 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(ingressNamespace(instance.GetNamespace()))}
-
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
 	if err := manifest.ApplyAll(); err != nil {
 		return err
 	}
+	if err := checkDeployments(&manifest, instance, api); err != nil {
+		return err
+	}
+	log.Info("Kourier is ready")
+
 	instance.Status.MarkDependenciesInstalled()
-	/*
-			ready, err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api)
+	return api.Status().Update(context.TODO(), instance)
+}
+
+// Check for deployments in knative-serving-ingress
+// This function is copied from knativeserving_controller.go in serving-operator
+func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	log.Info("Checking deployments")
+	available := func(d *appsv1.Deployment) bool {
+		for _, c := range d.Status.Conditions {
+			if c.Type == appsv1.DeploymentAvailable && c.Status == v1.ConditionTrue {
+				return true
+			}
+		}
+		return false
+	}
+	for _, u := range manifest.Resources {
+		if u.GetKind() == "Deployment" {
+			deployment := &appsv1.Deployment{}
+			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
 			if err != nil {
+				if apierrors.IsNotFound(err) {
+					return nil
+				}
 				return err
 			}
-		if !ready {
-			return nil
+			if !available(deployment) {
+				return nil
+			}
 		}
-		log.Info("Kourier is ready")
-	*/
-	return api.Status().Update(context.TODO(), instance)
+	}
+	return nil
 }
 
 // Delete deletes Kourier resources.
