@@ -19,10 +19,6 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	if instance.Status.IsFullySupported() {
-		return nil
-	}
-
 	instance.Status.MarkDependencyInstalling("Kourier")
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
 		return err
