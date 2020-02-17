@@ -18,6 +18,15 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	if instance.Status.IsFullySupported() {
+		return nil
+	}
+
+	instance.Status.MarkDependencyInstalling("Kourier")
+	if err := api.Status().Update(context.TODO(), instance); err != nil {
+		return err
+	}
+
 	log.Info("Installing Kourier Ingress")
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
@@ -28,7 +37,21 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
-	return manifest.ApplyAll()
+	if err := manifest.ApplyAll(); err != nil {
+		return err
+	}
+	instance.Status.MarkDependenciesInstalled()
+	/*
+			ready, err := isServiceMeshControlPlaneReady(instance.GetNamespace(), api)
+			if err != nil {
+				return err
+			}
+		if !ready {
+			return nil
+		}
+		log.Info("Kourier is ready")
+	*/
+	return api.Status().Update(context.TODO(), instance)
 }
 
 // Delete deletes Kourier resources.
