@@ -20,4 +20,4 @@ fi
 
 ln -s kourier-${KOURIER_VERSION}.yaml kourier-latest.yaml
 
-patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch
+# patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch

@@ -57,11 +57,10 @@ spec:
         app: 3scale-kourier-gateway
     spec:
       containers:
-        - command: ["/usr/local/bin/envoy"]
-          args:
+        - args:
             - -c
             - /tmp/config/envoy-bootstrap.yaml
-          image: docker.io/maistra/proxyv2-ubi8:1.0.4
+          image: quay.io/3scale/kourier-gateway:v0.1.3
           imagePullPolicy: Always
           name: kourier-gateway
           ports:
@@ -248,7 +247,9 @@ data:
                             - "*"
                           routes:
                             - match:
-                                regex: '/(certs|stats(/prometheus)?|server_info|clusters|listeners|ready)?'
+                                safe_regex:
+                                  google_re2: {}
+                                  regex: '/(certs|stats(/prometheus)?|server_info|clusters|listeners|ready)?'
                                 headers:
                                   - name: ':method'
                                     exact_match: GET
