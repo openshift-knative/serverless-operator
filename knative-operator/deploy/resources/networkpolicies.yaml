@@ -1,0 +1,83 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: webhook
+  namespace: knative-serving
+  labels:
+    app: webhook
+spec:
+  podSelector:
+    matchLabels:
+      app: webhook
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: autoscaler
+  namespace: knative-serving
+  labels:
+    app: autoscaler
+spec:
+  podSelector:
+    matchLabels:
+      app: autoscaler
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: activator
+  namespace: knative-serving
+  labels:
+    app: activator
+spec:
+  podSelector:
+    matchLabels:
+      app: activator
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: controller
+  namespace: knative-serving
+  labels:
+    app: controller
+spec:
+  podSelector:
+    matchLabels:
+      app: controller
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: networking-certmanager
+  namespace: knative-serving
+  labels:
+    app: networking-certmanager
+spec:
+  podSelector:
+    matchLabels:
+      app: networking-certmanager
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: networking-istio
+  namespace: knative-serving
+  labels:
+    app: networking-istio
+spec:
+  podSelector:
+    matchLabels:
+      app: networking-istio
+  ingress:
+  - {}
