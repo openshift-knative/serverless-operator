@@ -3,11 +3,16 @@
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local group=${1:-operator}
+  local prev=${2}
   if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     logger.success 'Serverless is already installed.'
     return 0
   fi
-  install_serverless_latest
+  if [[ -n $prev ]]; then
+    install_serverless_previous
+  else
+    install_serverless_latest
+  fi
 }
 
 function install_serverless_previous {
