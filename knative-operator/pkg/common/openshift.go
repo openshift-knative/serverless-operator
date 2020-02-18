@@ -143,8 +143,3 @@ func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	ks.SetAnnotations(annotations)
 	return nil
 }
-
-// IngressNamespace returns namespace where ingress is deployed.
-func IngressNamespace(servingNamespace string) string {
-	return servingNamespace + "-ingress"
-}

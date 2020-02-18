@@ -24,3 +24,8 @@ func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
 	}
 	return false
 }
+
+// IngressNamespace returns namespace where ingress is deployed.
+func IngressNamespace(servingNamespace string) string {
+	return servingNamespace + "-ingress"
+}
