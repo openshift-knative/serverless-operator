@@ -30,7 +30,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err != nil {
 		return err
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(ingressNamespace(instance.GetNamespace()))}
+	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err != nil {
 		return err
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(ingressNamespace(instance.GetNamespace()))}
+	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
 
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
@@ -85,7 +85,7 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 
 	log.Info("Deleting ingress namespace")
 	ns := &v1.Namespace{}
-	err = api.Get(context.TODO(), client.ObjectKey{Name: ingressNamespace(instance.GetNamespace())}, ns)
+	err = api.Get(context.TODO(), client.ObjectKey{Name: common.IngressNamespace(instance.GetNamespace())}, ns)
 	if apierrors.IsNotFound(err) {
 		// We can safely ignore this. There is nothing to do for us.
 		return nil
@@ -93,8 +93,4 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		return err
 	}
 	return api.Delete(context.TODO(), ns)
-}
-
-func ingressNamespace(servingNamespace string) string {
-	return servingNamespace + "-ingress"
 }

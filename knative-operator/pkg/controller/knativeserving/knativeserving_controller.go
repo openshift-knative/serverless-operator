@@ -6,6 +6,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
@@ -89,6 +90,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureCustomCertsConfigMap,
 		r.createConsoleCLIDownload,
 		r.installKourier,
+		r.uninstallServiceMesh,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -151,6 +153,11 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	return kourier.Apply(instance, r.client)
+}
+
+// Uninstall obsolete SMCP deployed by previous version
+func (r *ReconcileKnativeServing) uninstallServiceMesh(instance *servingv1alpha1.KnativeServing) error {
+	return servicemesh.Delete(instance, r.client)
 }
 
 // createConsoleCLIDownload creates CR for kn CLI download link
