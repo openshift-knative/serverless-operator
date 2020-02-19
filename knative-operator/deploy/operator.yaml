@@ -33,3 +33,5 @@ spec:
               value: "4.1.13"
             - name: REQUIRED_SERVING_NAMESPACE
               value: "knative-serving"
+            - name: REQUIRED_EVENTING_NAMESPACE
+              value: "knative-eventing"
