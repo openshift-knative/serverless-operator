@@ -9,6 +9,9 @@ images:
 install:
 	./hack/install.sh
 
+install-previous:
+	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
+
 teardown:
 	./hack/teardown.sh
 
