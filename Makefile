@@ -7,7 +7,10 @@ images:
 	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
 
 install:
-	./hack/install.sh $(PREVIOUS_SERVERLESS_VERSION)
+	./hack/install.sh
+
+install-previous:
+	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
 teardown:
 	./hack/teardown.sh
