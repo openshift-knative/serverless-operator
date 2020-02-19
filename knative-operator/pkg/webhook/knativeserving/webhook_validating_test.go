@@ -21,7 +21,7 @@ func init() {
 
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("REQUIRED_NAMESPACE", "knative-serving")
+	os.Setenv("REQUIRED_SERVING_NAMESPACE", "knative-serving")
 	validator := KnativeServingValidator{}
 	// The mock will return a KS in the 'default' namespace
 	validator.InjectDecoder(&mockDecoder{})
