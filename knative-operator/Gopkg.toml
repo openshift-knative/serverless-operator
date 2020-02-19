@@ -47,6 +47,10 @@ required = [
   name = "knative.dev/serving-operator"
   branch = "master"
 
+[[constraint]]
+  name = "knative.dev/eventing-operator"
+  branch = "master"
+
 [[override]]
   name = "github.com/openshift-knative/serverless-operator"
   # This vendors the old api for compatibility reasons.

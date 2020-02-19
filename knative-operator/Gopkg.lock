@@ -369,6 +369,14 @@
   version = "v1.0.4"
 
 [[projects]]
+  branch = "master"
+  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
+  name = "github.com/mattbaird/jsonpatch"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
+
+[[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
@@ -947,14 +955,26 @@
   version = "v1.6.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:c65d2ae27b1c5e099e4fde4cef3c84fda713e03d33c858dae70d3803766a0c65"
+  name = "knative.dev/eventing-operator"
+  packages = ["pkg/apis/eventing/v1alpha1"]
+  pruneopts = "NT"
+  revision = "89b14133b5a34d5ad1178e296a868b2f0a0052f5"
+
+[[projects]]
   branch = "release-0.10"
   digest = "1:56e2d5d36e35d62ecc6662e4f5b6b3e6caf83c79fd808055e028fe72bfad016c"
   name = "knative.dev/pkg"
   packages = [
     "apis",
+    "apis/duck",
+    "apis/duck/v1",
+    "apis/duck/v1beta1",
     "apis/istio",
     "apis/istio/common/v1alpha1",
     "apis/istio/v1alpha3",
+    "apis/v1alpha1",
     "kmp",
   ]
   pruneopts = "NT"
@@ -1075,6 +1095,7 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
+    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
