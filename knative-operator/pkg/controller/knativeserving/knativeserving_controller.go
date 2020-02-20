@@ -158,8 +158,10 @@ func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
 		return err
 	}
-	if common.Configure(refetched, "network", "ingress.class", "kourier.ingress.networking.knative.dev") {
-		if err := r.client.Update(context.TODO(), refetched); err != nil {
+
+	ks := refetched.DeepCopy()
+	if common.Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev") {
+		if err := r.client.Update(context.TODO(), ks); err != nil {
 			return err
 		}
 	}
