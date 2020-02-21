@@ -20,10 +20,12 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	instance.Status.MarkDependencyInstalling("Kourier")
-	if err := api.Status().Update(context.TODO(), instance); err != nil {
-		return err
-	}
+	/*
+		instance.Status.MarkDependencyInstalling("Kourier")
+		if err := api.Status().Update(context.TODO(), instance); err != nil {
+			return err
+		}
+	*/
 
 	log.Info("Installing Kourier Ingress")
 	manifest, err := mf.NewManifest(path, false, api)
