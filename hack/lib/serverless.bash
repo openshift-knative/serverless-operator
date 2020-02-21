@@ -4,7 +4,9 @@ function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local group=${1:-operator}
   local prev=${2:-false}
-  if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get knativeserving.${group}.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
+     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
+  then
     logger.success 'Serverless is already installed.'
     return 0
   fi
@@ -40,6 +42,7 @@ function remove_installplan {
 function install_serverless_latest {
   deploy_serverless_operator_latest || return $?
   deploy_knativeserving_v1alpha1_1.3.0 || return $?
+  deploy_knativeeventing_v1alpha1_1.5.0 || return $?
 }
 
 function deploy_serverless_operator_latest {
@@ -106,6 +109,7 @@ function deploy_knativeserving_v1alpha1_1.3.0 {
   logger.info 'Deploy Knative Serving'
 
   # Wait for the CRD to appear
+  # TODO: use full path name to ensure we're checking the right thing. aka knativeservings.operator.knative.dev VS knativeservings.serving.knative.dev
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
   local rootdir
@@ -116,7 +120,26 @@ function deploy_knativeserving_v1alpha1_1.3.0 {
 
   timeout 900 '[[ $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Serverless has been installed sucessfully.'
+  logger.success 'Knative serving has been installed sucessfully.'
+}
+
+# Deploys the version of KnativeEventing from 1.5.0 release. The future releases should ensure compatibility with
+# this custom resource and accept it.
+function deploy_knativeeventing_v1alpha1_1.5.0 {
+  logger.info 'Deploy Knative Eventing'
+
+  # Wait for the CRD to appear
+  timeout 900 "[[ \$(oc get crd | grep -c knativeeventings.operator.knative.dev) -eq 0 ]]" || return 6
+
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
+  # Install Knative Eventing
+  oc apply -n "${EVENTING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeeventing_cr_1.5.0.yaml" || return $?
+
+  timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative eventing has been installed sucessfully.'
 }
 
 function teardown_serverless {
@@ -132,6 +155,13 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative serving pods running'
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
+
+  if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeEventing CR'
+    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
+  fi
+  logger.info 'Ensure no knative eventing pods running'
+  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
 
   oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
   for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
