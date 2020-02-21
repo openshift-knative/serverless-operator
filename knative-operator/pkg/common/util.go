@@ -5,6 +5,7 @@ import (
 	"os"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strings"
+	"time"
 )
 
 const MutationTimestampKey = "knative-serving-openshift/mutation"
@@ -54,4 +55,9 @@ func updateImagesFromEnviron(registry *servingv1alpha1.Registry) {
 		}
 	}
 	log.Info("Setting", "registry", registry)
+}
+
+// Mark the time when instance configured for OpenShift
+func annotateTimestamp(annotations map[string]string) {
+	annotations[MutationTimestampKey] = time.Now().Format(time.RFC3339)
 }

@@ -50,7 +50,7 @@ func TestMutate(t *testing.T) {
 	}
 	verifyEgress(t, ks, networks)
 	verifyIngress(t, ks, domain)
-	verifyImageOverride(t, ks, image)
+	verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 	verifyCerts(t, ks)
 
 	// Force a change and rerun
