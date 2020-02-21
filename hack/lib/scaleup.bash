@@ -1,50 +1,54 @@
 #!/usr/bin/env bash
 
 function scale_up_workers {
-  local spec machineset machineset_stat replicas
-  logger.info 'Scaling cluster'
+  local current_total az_total replicas idx
+  logger.info "Scaling cluster to ${SCALE_UP}"
   if [[ "${SCALE_UP}" -lt "0" ]]; then
     logger.info 'Skipping scaling up, because SCALE_UP is negative.'
     return 0
   fi
 
   logger.debug 'Get the machineset with most replicas'
-  local machineset
-  machineset_stat="$(oc get machineset -n openshift-machine-api -o custom-columns="replicas:{.spec.replicas},name:{.metadata.name}" | tail -n +2 | sort -n | tail -n 1)"
-  machineset=$(echo "${machineset_stat}" | awk '{print $2}')
-  replicas=$(echo "${machineset_stat}" | awk '{print $1}')
-  logger.debug "Name found: ${machineset}, replicas: ${replicas}"
+  current_total="$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')"
+  az_total="$(oc get machineset -n openshift-machine-api --no-headers|wc -l)"
 
-  if [[ "${SCALE_UP}" == "${replicas}" ]]; then
-    logger.success "Cluster is already scaled up to ${SCALE_UP} replicas (machine set: ${machineset})."
+  logger.debug "ready machine count: ${current_total}, number of available zones: ${az_total}"
+
+  if [[ "${SCALE_UP}" == "${current_total}" ]]; then
+    logger.success "Cluster is already scaled up to ${SCALE_UP} replicas"
     return 0
   fi
 
-  logger.info "Bump the number of replicas to ${SCALE_UP}"
-  spec="{\"spec\":{\"replicas\": ${SCALE_UP}}}"
-  oc patch machineset -n openshift-machine-api "${machineset}" -p "${spec}" --type=merge
-  wait_until_machineset_scales_up openshift-machine-api "${machineset}" "${SCALE_UP}"
+  idx=0
+  for mset in $(oc get machineset -n openshift-machine-api -o name);
+  do
+    replicas=$(( ${SCALE_UP} / ${az_total} ))
+    if [ ${idx} -lt $(( ${SCALE_UP} % ${az_total} )) ];then
+          let replicas++
+    fi
+    let idx++
+    logger.debug "Bump ${mset} to ${replicas}"
+    oc scale ${mset} -n openshift-machine-api --replicas=${replicas}
+  done
+  wait_until_machineset_scales_up "${SCALE_UP}"
 }
 
-# Waits until the machineset in the given namespaces scales up to the
-# desired number of replicas
-# Parameters: $1 - namespace
-#             $2 - machineset name
-#             $3 - desired number of replicas
+# Waits until worker nodes scale up to the desired number of replicas
+# Parameters: $1 - desired number of replicas
 function wait_until_machineset_scales_up {
-  logger.info "Waiting until machineset $2 in namespace $1 scales up to $3 replicas"
+  logger.info "Waiting until worker nodes scale up to $1 replicas"
   local available
   for _ in {1..150}; do  # timeout after 15 minutes
-    available=$(oc get machineset -n "$1" "$2" -o jsonpath="{.status.availableReplicas}")
-    if [[ ${available} -eq $3 ]]; then
+    available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
+    if [[ ${available} -eq $1 ]]; then
       echo ''
-      logger.success "Machineset $2 successfully scaled up to $3 replicas"
+      logger.success "successfully scaled up to $1 replicas"
       return 0
     fi
     echo -n "."
     sleep 6
   done
   echo -e "\n\n"
-  logger.error "Timeout waiting for machineset $2 in namespace $1 to scale up to $3 replicas"
+  logger.error "Timeout waiting for scale up to $1 replicas"
   return 1
 }
