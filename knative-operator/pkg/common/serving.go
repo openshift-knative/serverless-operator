@@ -109,24 +109,12 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 
 // imagesFromEnviron overrides registry images
 func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
-	if ks.Spec.Registry.Override == nil {
-		ks.Spec.Registry.Override = map[string]string{}
-	} // else return since overriding user from env might surprise me?
-	for _, e := range os.Environ() {
-		pair := strings.SplitN(e, "=", 2)
-		if strings.HasPrefix(pair[0], "IMAGE_") {
-			name := strings.SplitN(pair[0], "_", 2)[1]
-			switch name {
-			case "default":
-				ks.Spec.Registry.Default = pair[1]
-			case "queue-proxy":
-				Configure(ks, "deployment", "queueSidecarImage", pair[1])
-				fallthrough
-			default:
-				ks.Spec.Registry.Override[name] = pair[1]
-			}
-		}
+	updateImagesFromEnviron(&ks.Spec.Registry)
+
+	// special case for queue-proxy
+	if qp := os.Getenv("IMAGE_queue-proxy"); qp != "" {
+		Configure(ks, "deployment", "queueSidecarImage", qp)
 	}
-	log.Info("Setting", "registry", ks.Spec.Registry)
+
 	return nil
 }
