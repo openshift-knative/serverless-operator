@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package knativeserving
+package main
 
 import (
-	"knative.dev/serving-operator/pkg/reconciler/knativeserving/minikube"
+	"flag"
+	"log"
+
+	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/signals"
+	"knative.dev/serving-operator/pkg/reconciler/knativeserving"
 )
 
-func init() {
-	platform = append(platform, minikube.Configure)
+func main() {
+	flag.Parse()
+
+	cfg, err := sharedmain.GetConfig(*knativeserving.MasterURL, *knativeserving.Kubeconfig)
+	if err != nil {
+		log.Fatal("Error building kubeconfig", err)
+	}
+	ctx := signals.NewContext()
+	sharedmain.MainWithConfig(ctx, "serving_operator", cfg, knativeserving.NewController)
 }

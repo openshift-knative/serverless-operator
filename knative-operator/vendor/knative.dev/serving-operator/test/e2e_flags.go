@@ -23,7 +23,7 @@ import "os"
 
 var (
 	// ServingOperatorNamespace is the default namespace for serving operator e2e tests
-	ServingOperatorNamespace = getenv("TEST_NAMESPACE", "operator-tests")
+	ServingOperatorNamespace = getenv("TEST_NAMESPACE", "knative-serving")
 	// ServingOperatorName is the default operator name for serving operator e2e tests
 	ServingOperatorName = getenv("TEST_RESOURCE", "knative-serving")
 )

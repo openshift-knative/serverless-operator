@@ -3,8 +3,9 @@ package servicemesh
 import (
 	"context"
 
-	mf "github.com/jcrossley3/manifestival"
 	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
+	mfc "github.com/manifestival/controller-runtime-client"
+	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -47,15 +48,16 @@ func deleteNetworkPolicies(instance *servingv1alpha1.KnativeServing, api client.
 	log.Info("Deleting Network Policies")
 	const path = "deploy/resources/networkpolicies.yaml"
 
-	manifest, err := mf.NewManifest(path, false, api)
+	manifest, err := mfc.NewManifest(path, api)
 	if err != nil {
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(instance.GetNamespace())}
-	if err := manifest.Transform(transforms...); err != nil {
+	manifest, err = manifest.Transform(transforms...)
+	if err != nil {
 		return err
 	}
-	return manifest.DeleteAll()
+	return manifest.Delete()
 }
 
 func deleteNetworkingIstio(instance *servingv1alpha1.KnativeServing, api client.Client) error {

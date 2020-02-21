@@ -123,7 +123,10 @@
 [[projects]]
   digest = "1:d421af4c4fe51d399667d573982d663fe1fa67020a88d3ae43466ebfe8e2b5c9"
   name = "github.com/go-logr/logr"
-  packages = ["."]
+  packages = [
+    ".",
+    "testing",
+  ]
   pruneopts = "NT"
   revision = "9fb12b3b21c5415d16ac18dc5cd42c1cfdd40c4e"
   version = "v0.1.0"
@@ -308,14 +311,6 @@
   version = "v0.3.8"
 
 [[projects]]
-  branch = "master"
-  digest = "1:d79936f1c599955f84f1881f25e76effd9b7a9cb0c07d28c10fe7bcd09ee0435"
-  name = "github.com/jcrossley3/manifestival"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "a8594b4c50eac8853744bf450b9b9ce19daca6f5"
-
-[[projects]]
   digest = "1:f5b9328966ccea0970b1d15075698eff0ddb3e75889560aad2e9f76b289b536a"
   name = "github.com/joho/godotenv"
   packages = ["."]
@@ -350,6 +345,26 @@
   packages = ["pkg/apis/maistra/v1"]
   pruneopts = "NT"
   revision = "3a685c97183434bba135ac9b25900bfc20282b71"
+
+[[projects]]
+  digest = "1:29b68c13e0f0af4e9ae4070e4dce03283e664619f71866aba739f8650bdc8c69"
+  name = "github.com/manifestival/controller-runtime-client"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "95f03fbbde120e1cfe0862177db3528b32ffcc0b"
+  version = "v0.2.0-0.1.12"
+
+[[projects]]
+  digest = "1:71c7c3415c79e0af2ac63a38dd3d96962ccde4b864e12b386dec03e705b74a83"
+  name = "github.com/manifestival/manifestival"
+  packages = [
+    ".",
+    "patch",
+    "sources",
+  ]
+  pruneopts = "NT"
+  revision = "639a3e4b688096085fb8c4d0ead63d0bd532468f"
+  version = "v0.3.1"
 
 [[projects]]
   digest = "1:56dbf15e091bf7926cb33a57cb6bdfc658fc6d3498d2f76f10a97ce7856f1fde"
@@ -785,6 +800,7 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/jsonmergepatch",
     "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
@@ -939,17 +955,18 @@
     "apis/istio/common/v1alpha1",
     "apis/istio/v1alpha3",
     "kmp",
+    "ptr",
   ]
   pruneopts = "NT"
   revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
 
 [[projects]]
   branch = "master"
-  digest = "1:48fbfacf754aa97c649c50f931bda267560424f936f3648e5bcdbacb159ece6e"
+  digest = "1:093630dffc99d90e08b044d5b41c3f29a3117ba3b7c12f1b03c89edd01ea09c5"
   name = "knative.dev/serving-operator"
   packages = ["pkg/apis/serving/v1alpha1"]
   pruneopts = "NT"
-  revision = "7a6abca0cfe8dde6828421e1188196a2cbde9907"
+  revision = "b26eeff11c2b2aefc0111b80742db4f118737b85"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1025,8 +1042,9 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
-    "github.com/jcrossley3/manifestival",
     "github.com/maistra/istio-operator/pkg/apis/maistra/v1",
+    "github.com/manifestival/controller-runtime-client",
+    "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
     "github.com/openshift/api/route/v1",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
@@ -1055,6 +1073,7 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/pkg/apis/istio/v1alpha3",
+    "knative.dev/pkg/ptr",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",

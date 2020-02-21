@@ -19,7 +19,7 @@ package common
 import (
 	"fmt"
 
-	mf "github.com/jcrossley3/manifestival"
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
