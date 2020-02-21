@@ -459,6 +459,7 @@ spec:
           - apps
           resourceNames:
           - knative-serving-operator
+          - knative-eventing-operator
           resources:
           - deployments/finalizers
           verbs:
