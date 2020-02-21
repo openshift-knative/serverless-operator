@@ -121,6 +121,15 @@ spec:
         displayName: Version
         path: version
       version: v1alpha1
+    - description: Represents an installation of a particular version of Knative Eventing
+      displayName: Knative Eventing (obsolete)
+      kind: Eventing
+      name: eventings.operator.knative.dev
+      statusDescriptors:
+      - description: The version of Knative Eventing installed
+        displayName: Version
+        path: version
+      version: v1alpha1
   minKubeVersion: 1.15.0
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
