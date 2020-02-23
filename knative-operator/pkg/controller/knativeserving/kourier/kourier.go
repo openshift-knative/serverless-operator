@@ -34,10 +34,12 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 			return nil
 		}
 	} else if instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled).IsUnknown() {
-		instance.Status.MarkDependencyInstalling("Kourier")
-		if err := api.Status().Update(context.TODO(), instance); err != nil {
-			return err
-		}
+		/*
+			instance.Status.MarkDependencyInstalling("Kourier")
+			if err := api.Status().Update(context.TODO(), instance); err != nil {
+				return err
+			}
+		*/
 	} else if !instance.Status.IsFullySupported() {
 		// Do not update status filed.
 	}
@@ -59,8 +61,11 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	}
 	log.Info("Kourier is ready")
 
-	instance.Status.MarkDependenciesInstalled()
-	return api.Status().Update(context.TODO(), instance)
+	/*
+		instance.Status.MarkDependenciesInstalled()
+		return api.Status().Update(context.TODO(), instance)
+	*/
+	return nil
 }
 
 // Check for deployments in knative-serving-ingress
