@@ -20,12 +20,27 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	/*
+	if instance.Status.IsFullySupported() {
+		manifest, err := mf.NewManifest(path, false, api)
+		if err != nil {
+			return err
+		}
+		transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
+		if err := manifest.Transform(transforms...); err != nil {
+			return err
+		}
+		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
+		if err := checkDeployments(&manifest, instance, api); err == nil {
+			return nil
+		}
+	} else if instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled).IsUnknown() {
 		instance.Status.MarkDependencyInstalling("Kourier")
 		if err := api.Status().Update(context.TODO(), instance); err != nil {
 			return err
 		}
-	*/
+	} else if !instance.Status.IsFullySupported() {
+		// Do not update status filed.
+	}
 
 	log.Info("Installing Kourier Ingress")
 	manifest, err := mf.NewManifest(path, false, api)
