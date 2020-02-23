@@ -28,7 +28,6 @@ func TestKnativeServing(t *testing.T) {
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
 
-	defer test.CleanupAll(caCtx, paCtx, editCtx, viewCtx)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx, paCtx, editCtx, viewCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
@@ -100,6 +99,9 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Operators still running: %v", err)
 		}
 	})
+
+	// Do not clean up by defer as we want to collect logs when failed.
+	test.CleanupAll(caCtx, paCtx, editCtx, viewCtx)
 }
 
 func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Context) {
