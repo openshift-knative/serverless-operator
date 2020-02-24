@@ -277,7 +277,7 @@ function run_knative_serving_operator_tests {
   logger.info "Run tests of knative/serving-operator @ ${gitdesc}"
 
   export TEST_NAMESPACE="knative-serving"
-  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
     || exitstatus=5$? && true
 
