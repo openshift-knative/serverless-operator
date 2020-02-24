@@ -20,31 +20,6 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	if instance.Status.IsFullySupported() {
-		manifest, err := mf.NewManifest(path, false, api)
-		if err != nil {
-			return err
-		}
-		transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
-		if err := manifest.Transform(transforms...); err != nil {
-			return err
-		}
-		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
-		if err := checkDeployments(&manifest, instance, api); err == nil {
-			return nil
-		}
-	} else if instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled).IsUnknown() {
-		/*
-			instance.Status.MarkDependencyInstalling("Kourier")
-			if err := api.Status().Update(context.TODO(), instance); err != nil {
-				return err
-			}
-		*/
-	} else if !instance.Status.IsFullySupported() {
-		// Do not update status filed.
-	}
-
-	log.Info("Installing Kourier Ingress")
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
 		return err
@@ -53,6 +28,21 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
+
+	if instance.Status.IsFullySupported() {
+		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
+		if err := checkDeployments(&manifest, instance, api); err == nil {
+			return nil
+		}
+	}
+
+	// Us reaching here means we need to do something and/or wait longer.
+	instance.Status.MarkDependencyInstalling("Kourier")
+	if err := api.Status().Update(context.TODO(), instance); err != nil {
+		return err
+	}
+
+	log.Info("Installing Kourier Ingress")
 	if err := manifest.ApplyAll(); err != nil {
 		return err
 	}
@@ -61,11 +51,8 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	}
 	log.Info("Kourier is ready")
 
-	/*
-		instance.Status.MarkDependenciesInstalled()
-		return api.Status().Update(context.TODO(), instance)
-	*/
-	return nil
+	instance.Status.MarkDependenciesInstalled()
+	return api.Status().Update(context.TODO(), instance)
 }
 
 // Check for deployments in knative-serving-ingress
