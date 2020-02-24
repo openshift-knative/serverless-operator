@@ -109,7 +109,6 @@ function deploy_knativeserving_v1alpha1_1.3.0 {
   logger.info 'Deploy Knative Serving'
 
   # Wait for the CRD to appear
-  # TODO: use full path name to ensure we're checking the right thing. aka knativeservings.operator.knative.dev VS knativeservings.serving.knative.dev
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
   local rootdir
