@@ -96,7 +96,7 @@ function checkout_knative_serving {
   # Checkout the relevant code to run
   export KNATIVE_SERVING_HOME="$GOPATH/src/knative.dev/serving"
   mkdir -p "$KNATIVE_SERVING_HOME"
-  git clone -b "release-${knative_version}" --depth 1 https://github.com/openshift/knative-serving.git "$KNATIVE_SERVING_HOME"
+  git clone -b "release-${knative_version}" --depth 1 https://github.com/mgencur/serving-1.git "$KNATIVE_SERVING_HOME"
   git describe --always --tags
 }
 
@@ -121,7 +121,7 @@ function run_knative_serving_e2e_and_conformance_tests {
   local knative_version=$1
 
   if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
-    checkout_knative_serving "$knative_version"
+    checkout_knative_serving "fix_random_fails_v0.12.1"
   fi
   cd "$KNATIVE_SERVING_HOME" || return $?
 
