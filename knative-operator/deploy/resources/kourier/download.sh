@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=v0.3.8
+KOURIER_VERSION=v0.3.9
 DOWNLOAD_URL=https://raw.githubusercontent.com/3scale/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
@@ -20,4 +20,4 @@ fi
 
 ln -s kourier-${KOURIER_VERSION}.yaml kourier-latest.yaml
 
-# patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch
+patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch
