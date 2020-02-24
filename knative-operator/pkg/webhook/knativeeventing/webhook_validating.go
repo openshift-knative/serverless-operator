@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	configv1 "github.com/openshift/api/config/v1"
+	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -102,35 +101,8 @@ func (v *KnativeEventingValidator) InjectDecoder(d types.Decoder) error {
 }
 
 // validate minimum openshift version
-func (v *KnativeEventingValidator) validateVersion(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
-	version, present := os.LookupEnv("MIN_OPENSHIFT_VERSION")
-	if !present {
-		return true, "", nil
-	}
-	minVersion, err := semver.NewVersion(version)
-	if err != nil {
-		return false, "Unable to validate version; check MIN_OPENSHIFT_VERSION env var", nil
-	}
-
-	clusterVersion := &configv1.ClusterVersion{}
-	if err := v.client.Get(ctx, client.ObjectKey{Name: "version"}, clusterVersion); err != nil {
-		return false, "Unable to get ClusterVersion", err
-	}
-
-	current, err := semver.NewVersion(clusterVersion.Status.Desired.Version)
-	if err != nil {
-		return false, "Could not parse version string", err
-	}
-
-	if current.Major == 0 && current.Minor == 0 {
-		return true, "CI build detected, bypassing version check", nil
-	}
-
-	if current.LessThan(*minVersion) {
-		msg := fmt.Sprintf("Version constraint not fulfilled: minimum version: %s, current version: %s", minVersion.String(), current.String())
-		return false, msg, nil
-	}
-	return true, "", nil
+func (v *KnativeEventingValidator) validateVersion(ctx context.Context, _ *eventingv1alpha1.KnativeEventing) (bool, string, error) {
+	return webhookutil.ValidateOpenShiftVersion(ctx, v.client)
 }
 
 // validate required namespace, if any
