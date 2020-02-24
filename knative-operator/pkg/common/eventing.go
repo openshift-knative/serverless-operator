@@ -2,7 +2,6 @@ package common
 
 import (
 	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,7 +20,13 @@ func MutateEventing(ke *eventingv1alpha1.KnativeEventing, c client.Client) error
 
 // eventingImagesFromEnviron overrides registry images
 func eventingImagesFromEnviron(ke *eventingv1alpha1.KnativeEventing, _ client.Client) error {
-	updateImagesFromEnviron((*servingv1alpha1.Registry)(&ke.Spec.Registry))
+	ke.Spec.Registry.Override = buildImageOverrideMapFromEnviron()
+
+	if defaultVal, ok := ke.Spec.Registry.Override["default"]; ok {
+		ke.Spec.Registry.Default = defaultVal
+	}
+
+	log.Info("Setting", "registry", ke.Spec.Registry)
 	return nil
 }
 

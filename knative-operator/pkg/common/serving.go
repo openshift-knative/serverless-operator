@@ -109,12 +109,17 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 
 // imagesFromEnviron overrides registry images
 func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
-	updateImagesFromEnviron(&ks.Spec.Registry)
+	ks.Spec.Registry.Override = buildImageOverrideMapFromEnviron()
 
-	// special case for queue-proxy
-	if qp := os.Getenv("IMAGE_queue-proxy"); qp != "" {
-		Configure(ks, "deployment", "queueSidecarImage", qp)
+	if defaultVal, ok := ks.Spec.Registry.Override["default"]; ok {
+		ks.Spec.Registry.Default = defaultVal
 	}
 
+	// special case for queue-proxy
+	if qpVal, ok := ks.Spec.Registry.Override["queue-proxy"]; ok {
+		Configure(ks, "deployment", "queueSidecarImage", qpVal)
+	}
+
+	log.Info("Setting", "registry", ks.Spec.Registry)
 	return nil
 }

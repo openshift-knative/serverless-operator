@@ -37,24 +37,20 @@ func IngressNamespace(servingNamespace string) string {
 	return servingNamespace + "-ingress"
 }
 
-// updateImagesFromEnviron overrides registry images
-func updateImagesFromEnviron(registry *servingv1alpha1.Registry) {
-	if registry.Override == nil {
-		registry.Override = map[string]string{}
-	} // else return since overriding user from env might surprise me?
+// buildImageOverrideMapFromEnviron creates a map to overrides registry images
+func buildImageOverrideMapFromEnviron() map[string]string {
+	overrideMap := map[string]string{}
+
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], "IMAGE_") {
 			name := strings.SplitN(pair[0], "_", 2)[1]
-			switch name {
-			case "default":
-				registry.Default = pair[1]
-			default:
-				registry.Override[name] = pair[1]
+			if pair[1] != "" {
+				overrideMap[name] = pair[1]
 			}
 		}
 	}
-	log.Info("Setting", "registry", registry)
+	return overrideMap
 }
 
 // Mark the time when instance configured for OpenShift
