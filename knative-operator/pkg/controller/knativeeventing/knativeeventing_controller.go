@@ -72,11 +72,6 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 		return reconcile.Result{}, err
 	}
 
-	// TODO: I assumed we don't need this
-	//if instance.GetDeletionTimestamp() != nil {
-	//	return reconcile.Result{}, r.delete(instance)
-	//}
-
 	stages := []func(*eventingv1alpha1.KnativeEventing) error{
 		r.configure,
 		r.installNetworkPolicies,
