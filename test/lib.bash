@@ -194,8 +194,9 @@ function run_knative_serving_rolling_upgrade_tests {
 
     local cluster_version
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
-    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* ]]; then
-      if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
+    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* || \
+          "$cluster_version" = 4.2.* || "${HOSTNAME}" = *ocp-42* ]]; then
+      if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1, 4.2
         return 1
       fi
       # Check we got RequirementsNotMet error
@@ -209,6 +210,9 @@ function run_knative_serving_rolling_upgrade_tests {
         timeout 900 '[[ ! ( $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
       fi
       timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+
+      # Assert that the old image references eventually fade away
+      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep $serving_version" || return 1
     fi
     end_prober_test ${PROBER_PID}
   fi
