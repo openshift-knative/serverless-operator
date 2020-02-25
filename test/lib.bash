@@ -39,7 +39,7 @@ function run_e2e_tests {
 
   local failed=0
 
-  go_test_e2e -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
