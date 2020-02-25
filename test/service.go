@@ -65,9 +65,41 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 	return service, nil
 }
 
+func GetPod(ctx *Context, ns string) {
+	// run infinite for loop because once after the Global proxy update operator pod will be recreated
+	// and which intern updates knative serving controller pod so we don't no exact time duration for this to happen
+	for {
+		pods, _ := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
+			LabelSelector: "app=controller",
+		})
+
+		for i := range pods.Items {
+			for _, container := range pods.Items[i].Spec.Containers {
+				for _, e := range container.Env {
+					if e.Name == "HTTP_PROXY" && e.Value != "" {
+						if pods.Items[i].Status.Phase == corev1.PodRunning {
+							return
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func GetConfiguration(ctx *Context, name, namespace string) (*servingv1beta1.Configuration, error) {
+	cfg, err := ctx.Clients.Serving.ServingV1beta1().Configurations(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1beta1.Service, err error) (bool, error)) (*servingv1beta1.Service, error) {
-	var lastState *servingv1beta1.Service
-	var err error
+	var (
+		lastState *servingv1beta1.Service
+		err       error
+	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
@@ -140,8 +172,7 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 		},
 	}
 
-	_, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment)
-	if err != nil {
+	if _, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment); err != nil {
 		return err
 	}
 
@@ -213,8 +244,10 @@ func WithRouteForServiceReady(ctx *Context, serviceName, namespace string) (*rou
 }
 
 func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *routev1.Route, err error) (bool, error)) (*routev1.Route, error) {
-	var lastState *routev1.Route
-	var err error
+	var (
+		lastState *routev1.Route
+		err       error
+	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.Route.Routes(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
@@ -233,3 +266,15 @@ func RouteHasHost(r *routev1.Route, err error) (bool, error) {
 }
 
 func int32Ptr(i int32) *int32 { return &i }
+
+func UpdateGlobalProxy(ctx *Context, value string) error {
+	proxy, err := ctx.Clients.ProxyConfig.Proxies().Get("cluster", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	proxy.Spec.HTTPProxy = value
+	if _, err := ctx.Clients.ProxyConfig.Proxies().Update(proxy); err != nil {
+		return err
+	}
+	return nil
+}

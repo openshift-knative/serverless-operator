@@ -21,6 +21,15 @@ const (
 	helloworldService2    = "helloworld-go2"
 	kubeHelloworldService = "kube-helloworld-go"
 	helloworldText        = "Hello World!"
+	knativeServing         = "knative-serving"
+	testNamespace          = "serverless-tests"
+	testNamespace2         = "serverless-tests2"
+	image                  = "gcr.io/knative-samples/helloworld-go"
+	proxyImage             = "gcr.io/knative-samples/autoscale-go:0.1"
+	helloworldService      = "helloworld-go"
+	proxyHelloworldService = "proxy-helloworld-go"
+	kubeHelloworldService  = "kube-helloworld-go"
+	helloworldText         = "Hello World!"
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -32,15 +41,13 @@ func TestKnativeServing(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx, paCtx, editCtx, viewCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		_, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription")
-		if err != nil {
+		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
 			t.Fatal("Failed", err)
 		}
 	})
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		_, err := v1a1test.WithKnativeServingReady(caCtx, knativeServing, knativeServing)
-		if err != nil {
+		if _, err := v1a1test.WithKnativeServingReady(caCtx, knativeServing, knativeServing); err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
 	})
@@ -54,14 +61,13 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Failed to fetch APIService: %v", err)
 		}
 
-		if api.Spec.Service != nil && api.Spec.Service.Namespace == "knative-serving" && api.Spec.Service.Name == "autoscaler" {
+		if api.Spec.Service != nil && api.Spec.Service.Namespace == knativeServing && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 	})
 
 	t.Run("deploy knative service using kubeadmin", func(t *testing.T) {
-		_, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image)
-		if err != nil {
+		if _, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image); err != nil {
 			t.Fatal("Knative Service not ready", err)
 		}
 	})
@@ -72,6 +78,10 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
 		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
+	})
+
+	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
+		testKnativeServingForGlobalProxy(t, caCtx)
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
@@ -95,8 +105,7 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
 		caCtx.Cleanup()
-		err := test.WaitForOperatorDepsDeleted(caCtx)
-		if err != nil {
+		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
 			t.Fatalf("Operators still running: %v", err)
 		}
 	})
@@ -301,4 +310,46 @@ func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, exp
 	if err != nil {
 		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeDomain, expectedText, err)
 	}
+}
+
+func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
+	if err := test.UpdateGlobalProxy(caCtx, "http://1.2.4.5:8999"); err != nil {
+		t.Fatal("Failed to update proxy", err)
+	}
+
+	t.Run("wait for it to be ready after update", func(t *testing.T) {
+		test.GetPod(caCtx, knativeServing)
+	})
+
+	t.Run("deploy knative service after proxy update", func(t *testing.T) {
+		if _, err := test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage); err == nil {
+			t.Fatal("Knative Service not ready", err)
+		}
+	})
+
+	cfg, err := test.GetConfiguration(caCtx, proxyHelloworldService, testNamespace)
+	for _, cond := range cfg.Status.Conditions {
+		// After global proxy update every call goes through proxy server
+		// Here it give unable to pull image because it tries to connect to not running http server
+		if !strings.Contains(cond.Message, "dial tcp 1.2.4.5:8999: i/o timeout") {
+			t.Fatal("Configuration not ready", err)
+		}
+	}
+
+	err = test.UpdateGlobalProxy(caCtx, "")
+	if err != nil {
+		t.Fatal("Failed to update proxy", err)
+	}
+
+	// Ref: https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11
+	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller
+	// once issue is fixed we can add
+	/*
+		t.Run("deploy knative service after proxy update", func(t *testing.T) {
+			if _, err := test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage); err == nil {
+				t.Fatal("Knative Service not ready", err)
+			}
+		})
+	*/
+	// in order to verify proxy update success and knative service deployed successfully
 }

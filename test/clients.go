@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	servingversioned "github.com/knative/serving/pkg/client/clientset/versioned"
+	configV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client"
 	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
@@ -37,6 +38,7 @@ type Clients struct {
 	Dynamic         dynamic.Interface
 	Config          *rest.Config
 	Route           routev1.RouteV1Interface
+	ProxyConfig     configV1.ConfigV1Interface
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -145,6 +147,11 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
+	clients.ProxyConfig, err = newOpenShiftProxy(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	clients.Config = cfg
 	return clients, nil
 }
@@ -171,6 +178,14 @@ func newOpenShiftRoutes(cfg *rest.Config) (routev1.RouteV1Interface, error) {
 		return nil, err
 	}
 	return routeClient, nil
+}
+
+func newOpenShiftProxy(cfg *rest.Config) (configV1.ConfigV1Interface, error) {
+	proxyClient, err := configV1.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return proxyClient, nil
 }
 
 // Cleanup for all contexts
