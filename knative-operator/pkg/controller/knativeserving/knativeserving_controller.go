@@ -12,6 +12,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -111,13 +112,15 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
-	if _, ok := instance.GetAnnotations()[common.MutationTimestampKey]; ok {
-		return nil
-	}
+	before := instance.DeepCopy()
 	log.Info("Configuring KnativeServing for OpenShift")
 	if err := common.Mutate(instance, r.client); err != nil {
 		return err
 	}
+	if equality.Semantic.DeepEqual(before, instance) {
+		return nil
+	}
+	// Only apply the update if something changed.
 	return r.client.Update(context.TODO(), instance)
 }
 

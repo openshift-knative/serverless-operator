@@ -26,7 +26,7 @@ func MutatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 	return builder.NewWebhookBuilder().
 		Name("mutating.knativeserving.openshift.io").
 		Mutating().
-		Operations(admissionregistrationv1beta1.Create).
+		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
 		WithManager(mgr).
 		ForType(&servingv1alpha1.KnativeServing{}).
 		Handlers(&KnativeServingConfigurator{}).
