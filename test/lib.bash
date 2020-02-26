@@ -194,8 +194,8 @@ function run_knative_serving_rolling_upgrade_tests {
 
     local cluster_version
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
-    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* ]]; then
-      if approve_csv "$upgrade_to" ; then # Upgrade should fail on OCP 4.1
+    if [[ "$cluster_version" = 4.2.* || "${HOSTNAME}" = *ocp-42* ]]; then
+      if approve_csv "$upgrade_to" ; then # Upgrade should fail on older OCP
         return 1
       fi
       # Check we got RequirementsNotMet error
