@@ -45,7 +45,7 @@ required = [
 
 [[constraint]]
   name = "knative.dev/serving-operator"
-  branch = "master"
+  version = "v0.12.2"
 
 [[override]]
   name = "github.com/openshift-knative/serverless-operator"

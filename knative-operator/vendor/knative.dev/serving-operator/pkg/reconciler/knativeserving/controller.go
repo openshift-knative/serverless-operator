@@ -16,14 +16,14 @@ package knativeserving
 import (
 	"context"
 	"flag"
+	"knative.dev/pkg/injection/sharedmain"
 	"os"
 	"path/filepath"
 
 	"github.com/go-logr/zapr"
-	mf "github.com/jcrossley3/manifestival"
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
@@ -60,7 +60,7 @@ func NewController(
 
 	koDataDir := os.Getenv("KO_DATA_PATH")
 
-	cfg, err := clientcmd.BuildConfigFromFlags(*MasterURL, *Kubeconfig)
+	cfg, err := sharedmain.GetConfig(*MasterURL, *Kubeconfig)
 	if err != nil {
 		c.Logger.Error(err, "Error building kubeconfig")
 	}
