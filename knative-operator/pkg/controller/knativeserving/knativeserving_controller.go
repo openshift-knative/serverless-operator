@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
+	"github.com/openshift-knative/serverless-operator/knative-operator/version"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
@@ -111,7 +112,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
-	if _, ok := instance.GetAnnotations()[common.MutationTimestampKey]; ok {
+	if instance.GetAnnotations()[common.MutationKey] == version.Version {
 		return nil
 	}
 	log.Info("Configuring KnativeServing for OpenShift")

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/version"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -17,6 +17,9 @@ import (
 var log = Log
 
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	if ks.GetAnnotations()[MutationKey] == version.Version {
+		return nil
+	}
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
 		ingressClass,
 		egress,
@@ -24,7 +27,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		configureLogURLTemplate,
 		ensureCustomCerts,
 		imagesFromEnviron,
-		annotateTimestamp,
+		annotateMutation,
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
@@ -133,13 +136,13 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	return nil
 }
 
-// Mark the time when instance configured for OpenShift
-func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
+// Mark the version of the operator doing the mutation
+func annotateMutation(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
 	annotations := ks.GetAnnotations()
 	if annotations == nil {
 		annotations = map[string]string{}
 	}
-	annotations[MutationTimestampKey] = time.Now().Format(time.RFC3339)
+	annotations[MutationKey] = version.Version
 	ks.SetAnnotations(annotations)
 	return nil
 }

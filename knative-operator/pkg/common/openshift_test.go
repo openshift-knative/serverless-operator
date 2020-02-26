@@ -96,7 +96,7 @@ func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 }
 
 func verifyTimestamp(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	if _, ok := ks.GetAnnotations()[common.MutationTimestampKey]; !ok {
-		t.Error("Missing mutation timestamp annotation")
+	if _, ok := ks.GetAnnotations()[common.MutationKey]; !ok {
+		t.Error("Missing mutation annotation")
 	}
 }
