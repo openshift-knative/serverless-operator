@@ -155,6 +155,10 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
+	// install Kourier
+	if err := kourier.Apply(instance, r.client); err != nil {
+		return err
+	}
 
 	// Set kourier to ingress.class
 	refetched := &servingv1alpha1.KnativeServing{}
@@ -167,9 +171,7 @@ func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 			return err
 		}
 	}
-
-	// install Kourier
-	return kourier.Apply(instance, r.client)
+	return nil
 }
 
 // Uninstall obsolete SMCP deployed by previous version

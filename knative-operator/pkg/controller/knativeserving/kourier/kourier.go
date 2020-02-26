@@ -2,36 +2,25 @@ package kourier
 
 import (
 	"context"
-	"fmt"
 
-	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var (
-	log  = common.Log.WithName("kourier")
-	path = "deploy/resources/kourier/kourier-latest.yaml"
-)
+var log = common.Log.WithName("kourier")
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	manifest, err := mf.NewManifest(path, false, api)
+	manifest, err := common.KourierManifest(instance, api)
 	if err != nil {
 		return err
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
-	if err := manifest.Transform(transforms...); err != nil {
-		return err
-	}
-
 	if instance.Status.IsFullySupported() {
 		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
-		if err := checkDeployments(&manifest, instance, api); err == nil {
+		if err := common.CheckDeployments(&manifest, instance, api); err == nil {
 			return nil
 		}
 	}
@@ -46,7 +35,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err := manifest.ApplyAll(); err != nil {
 		return err
 	}
-	if err := checkDeployments(&manifest, instance, api); err != nil {
+	if err := common.CheckDeployments(&manifest, instance, api); err != nil {
 		return err
 	}
 	log.Info("Kourier is ready")
@@ -55,37 +44,11 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	return api.Status().Update(context.TODO(), instance)
 }
 
-// Check for deployments in knative-serving-ingress
-// This function is copied from knativeserving_controller.go in serving-operator
-func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
-	log.Info("Checking deployments")
-	for _, u := range manifest.Resources {
-		if u.GetKind() == "Deployment" {
-			deployment := &appsv1.Deployment{}
-			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
-			if err != nil {
-				return err
-			}
-			for _, c := range deployment.Status.Conditions {
-				if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
-					return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
-				}
-			}
-		}
-	}
-	return nil
-}
-
 // Delete deletes Kourier resources.
 func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Deleting Kourier Ingress")
-	manifest, err := mf.NewManifest(path, false, api)
+	manifest, err := common.KourierManifest(instance, api)
 	if err != nil {
-		return err
-	}
-	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
-
-	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
 	if err := manifest.DeleteAll(); err != nil {

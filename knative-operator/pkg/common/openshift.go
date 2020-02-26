@@ -33,6 +33,16 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 }
 
 func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	manifest, err := KourierManifest(ks, c)
+	if err != nil {
+		log.Info("failed to get Kourier manifest to verify", "error", err.Error())
+		return nil
+	}
+
+	if err := CheckDeployments(&manifest, ks, c); err != nil {
+		log.Info("Kourier is not ready. Skip to set ingress.class", "error", err.Error())
+		return nil
+	}
 	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 	return nil
 }
