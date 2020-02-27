@@ -8,6 +8,28 @@ kind: ConfigMap
 metadata:
   name: config-logging
   namespace: kourier-system
+data:
+      zap-logger-config: |
+        {
+          "level": "debug",
+          "development": false,
+          "outputPaths": ["stdout"],
+          "errorOutputPaths": ["stderr"],
+          "encoding": "json",
+          "encoderConfig": {
+            "timeKey": "ts",
+            "levelKey": "level",
+            "nameKey": "logger",
+            "callerKey": "caller",
+            "messageKey": "msg",
+            "stacktraceKey": "stacktrace",
+            "lineEnding": "",
+            "levelEncoder": "",
+            "timeEncoder": "iso8601",
+            "durationEncoder": "",
+            "callerEncoder": ""
+          }
+        }
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -59,6 +81,8 @@ spec:
       containers:
         - command: ["/usr/local/bin/envoy"]
           args:
+            - -l
+            - debug
             - -c
             - /tmp/config/envoy-bootstrap.yaml
           image: docker.io/maistra/proxyv2-ubi8:1.0.4
