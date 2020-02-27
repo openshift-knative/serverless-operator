@@ -7,22 +7,10 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/pkg/ptr"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-)
-
-const (
-	deploymentName = "controller"
-	httpProxy      = "http://192.168.130.11:30001"
-	noProxy        = "index.docker.io"
-	namespace      = "default"
-	servingName    = "knative-serving"
 )
 
 func init() {
@@ -134,4 +122,3 @@ func verifyTimestamp(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 		t.Error("Missing mutation timestamp annotation")
 	}
 }
-

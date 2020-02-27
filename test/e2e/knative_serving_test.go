@@ -30,6 +30,16 @@ const (
 	proxyHelloworldService = "proxy-helloworld-go"
 	kubeHelloworldService  = "kube-helloworld-go"
 	helloworldText         = "Hello World!"
+	knativeServing                = "knative-serving"
+	testNamespace                 = "serverless-tests"
+	testNamespace2                = "serverless-tests2"
+	image                         = "gcr.io/knative-samples/helloworld-go"
+	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
+	helloworldService             = "helloworld-go"
+	proxyHelloworldService        = "proxy-helloworld-go"
+	proxyHelloworldServiceSuccess = "proxy-helloworld-go-success"
+	kubeHelloworldService         = "kube-helloworld-go"
+	helloworldText                = "Hello World!"
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -313,43 +323,56 @@ func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, exp
 }
 
 func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
+	t.Log("update global proxy with empty value")
+	if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {
+		t.Fatal("Failed to update proxy", err)
+	}
+
+	t.Log("deploy successfully knative service after proxy update")
+	if _, err := test.WithServiceReady(caCtx, proxyHelloworldServiceSuccess, testNamespace, image); err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
+
+	t.Log("update global proxy with proxy server")
 	if err := test.UpdateGlobalProxy(caCtx, "http://1.2.4.5:8999"); err != nil {
 		t.Fatal("Failed to update proxy", err)
 	}
 
-	t.Run("wait for it to be ready after update", func(t *testing.T) {
-		test.GetPod(caCtx, knativeServing)
-	})
-
-	t.Run("deploy knative service after proxy update", func(t *testing.T) {
-		if _, err := test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage); err == nil {
-			t.Fatal("Knative Service not ready", err)
-		}
-	})
-
-	cfg, err := test.GetConfiguration(caCtx, proxyHelloworldService, testNamespace)
-	for _, cond := range cfg.Status.Conditions {
-		// After global proxy update every call goes through proxy server
-		// Here it give unable to pull image because it tries to connect to not running http server
-		if !strings.Contains(cond.Message, "dial tcp 1.2.4.5:8999: i/o timeout") {
-			t.Fatal("Configuration not ready", err)
-		}
+	t.Log("wait for controller to be ready after update")
+	if err := test.WaitForControllerEnvironment(caCtx, knativeServing); err != nil {
+		t.Fatal(err)
 	}
 
-	err = test.UpdateGlobalProxy(caCtx, "")
+	t.Log("deploy knative service after proxy update")
+	test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage)
+
+	svc, err := test.GetService(caCtx, proxyHelloworldService, testNamespace)
 	if err != nil {
+		t.Fatal(err)
+	}
+	var proxyExist bool
+	for _, cond := range svc.Status.Conditions {
+		// After global proxy update every call goes through proxy server
+		// Here it give unable to pull image because it tries to connect to not running http server
+		if strings.Contains(cond.Message, "dial tcp 1.2.4.5:8999: i/o timeout") {
+			// use bool variable here because service status have more than one conditions and if none of the condition matches
+			// then assume knative service failed because of some other reason
+			proxyExist = true
+			break
+		}
+	}
+	if !proxyExist {
+		t.Fatal("Service not ready", err)
+	}
+
+	t.Log("update global proxy with empty value")
+	if err = test.UpdateGlobalProxy(caCtx, ""); err != nil {
 		t.Fatal("Failed to update proxy", err)
 	}
 
 	// Ref: https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11
 	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller
-	// once issue is fixed we can add
-	/*
-		t.Run("deploy knative service after proxy update", func(t *testing.T) {
-			if _, err := test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage); err == nil {
-				t.Fatal("Knative Service not ready", err)
-			}
-		})
-	*/
+	// once bugzilla issue https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11 fixes need to run below test case
 	// in order to verify proxy update success and knative service deployed successfully
+	t.Skip("deploy knative service after proxy update and service should deploy successfully")
 }

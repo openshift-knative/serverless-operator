@@ -147,7 +147,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
-	clients.ProxyConfig, err = newOpenShiftProxy(cfg)
+	clients.ProxyConfig, err = newOpenShiftProxyClient(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func newOpenShiftRoutes(cfg *rest.Config) (routev1.RouteV1Interface, error) {
 	return routeClient, nil
 }
 
-func newOpenShiftProxy(cfg *rest.Config) (configV1.ConfigV1Interface, error) {
+func newOpenShiftProxyClient(cfg *rest.Config) (configV1.ConfigV1Interface, error) {
 	proxyClient, err := configV1.NewForConfig(cfg)
 	if err != nil {
 		return nil, err

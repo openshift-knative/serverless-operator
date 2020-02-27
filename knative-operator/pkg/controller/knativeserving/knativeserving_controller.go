@@ -119,7 +119,7 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 
 // updateDeployment updates Knative controller deployment
 func (r *ReconcileKnativeServing) updateDeployment(instance *servingv1alpha1.KnativeServing) error {
-	return common.Update(instance, r.client)
+	return common.ApplyProxySettings(instance, r.client)
 }
 
 // set a finalizer to clean up service mesh when instance is deleted
