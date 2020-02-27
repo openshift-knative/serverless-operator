@@ -8,11 +8,11 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
-	"github.com/openshift-knative/serverless-operator/knative-operator/version"
 	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -112,12 +112,12 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
-	if instance.GetAnnotations()[common.MutationKey] == version.Version {
-		return nil
-	}
-	log.Info("Configuring KnativeServing for OpenShift")
+	save := instance.DeepCopy()
 	if err := common.Mutate(instance, r.client); err != nil {
 		return err
+	}
+	if equality.Semantic.DeepEqual(save, instance) {
+		return nil
 	}
 	return r.client.Update(context.TODO(), instance)
 }

@@ -5,8 +5,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-const MutationKey = "knative-serving-openshift/version"
-
 var Log = logf.Log.WithName("knative").WithName("openshift")
 
 // Configure entry in ks.Spec.Config

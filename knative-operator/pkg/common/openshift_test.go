@@ -40,7 +40,6 @@ func TestMutate(t *testing.T) {
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
-	verifyTimestamp(t, ks)
 }
 
 func mockNetworkConfig(networks []string) *configv1.Network {
@@ -92,11 +91,5 @@ func verifyImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expec
 func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
-	}
-}
-
-func verifyTimestamp(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	if _, ok := ks.GetAnnotations()[common.MutationKey]; !ok {
-		t.Error("Missing mutation annotation")
 	}
 }
