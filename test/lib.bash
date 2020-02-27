@@ -116,7 +116,7 @@ function prepare_knative_serving_tests {
 }
 
 function run_knative_serving_e2e_and_conformance_tests {
-  logger.info "Running E2E and conformance tests"
+  logger.info "Running Serving E2E and conformance tests"
   (
   local knative_version=$1
 
@@ -149,7 +149,7 @@ function run_knative_serving_e2e_and_conformance_tests {
 }
 
 function run_knative_serving_rolling_upgrade_tests {
-  logger.info "Running rolling upgrade tests"
+  logger.info "Running serving rolling upgrade tests"
   (
   local knative_version=$1
 

@@ -941,11 +941,28 @@
   revision = "94aeca20bf0991bf33922a5938174b9147ab8ca7"
 
 [[projects]]
+  digest = "1:82c677270ec4ce4fac8dda55873c6445068cee1387adbe406661f02c76478cd2"
+  name = "knative.dev/eventing-operator"
+  packages = [
+    "pkg/apis/eventing/v1alpha1",
+    "pkg/client/clientset/versioned",
+    "pkg/client/clientset/versioned/scheme",
+    "pkg/client/clientset/versioned/typed/eventing/v1alpha1",
+  ]
+  pruneopts = "NUT"
+  revision = "f301633f1d5741f682136a3ca0dfeffce65c4bb6"
+  version = "v0.12.1"
+
+[[projects]]
   branch = "master"
-  digest = "1:bd7eb46917507cd3a1d14f0775d92a5a4ec504e451cad8742102c2a8fa5cdfd5"
+  digest = "1:37eae3b9b2f8409b752e130def6814ac0ddcbc948a1a9275d98b2b35bcfeefbf"
   name = "knative.dev/pkg"
   packages = [
     "apis",
+    "apis/duck",
+    "apis/duck/v1",
+    "apis/duck/v1beta1",
+    "apis/v1alpha1",
     "changeset",
     "kmp",
     "logging",
@@ -1007,6 +1024,9 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
+    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
+    "knative.dev/eventing-operator/pkg/client/clientset/versioned",
+    "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1",
     "knative.dev/pkg/test",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "knative.dev/serving-operator/pkg/client/clientset/versioned",
