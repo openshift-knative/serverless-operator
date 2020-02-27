@@ -328,8 +328,6 @@ function dump_openshift_olm_state {
   logger.info "Dump of subscriptions.operators.coreos.com"
   # This is for status checking.
   oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
-  logger.info "Dump of clusterserviceversion.operators.coreos.com"
-  oc get clusterserviceversion.operators.coreos.com -o yaml --all-namespaces || true
   logger.info "Dump of catalog operator log"
   oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator || true
 }
