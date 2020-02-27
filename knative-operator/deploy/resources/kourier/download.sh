@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=v0.3.9
+KOURIER_VERSION=v0.3.10
 DOWNLOAD_URL=https://raw.githubusercontent.com/3scale/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
