@@ -1,5 +1,9 @@
 package version
 
+import (
+	upstream "knative.dev/serving-operator/version"
+)
+
 var (
-	Version = "0.0.1"
+	Version = upstream.Version
 )
