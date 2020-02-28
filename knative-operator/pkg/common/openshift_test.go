@@ -33,14 +33,36 @@ func TestMutate(t *testing.T) {
 	// Setup image override
 	os.Setenv("IMAGE_queue-proxy", image)
 	// Mutate for OpenShift
-	if err := common.Mutate(ks, client); err != nil {
+	err := common.Mutate(ks, client)
+	if err != nil {
+		t.Error(err)
+	}
+
+	verifyEgress(t, ks, networks)
+	verifyIngress(t, ks, domain)
+	verifyImageOverride(t, ks, image)
+	verifyCerts(t, ks)
+
+	// Rerun, should be a noop
+	err = common.Mutate(ks, client)
+	if err != nil {
 		t.Error(err)
 	}
 	verifyEgress(t, ks, networks)
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
-	verifyTimestamp(t, ks)
+
+	// Force a change and rerun
+	ks.Spec.Config["network"]["istio.sidecar.includeOutboundIPRanges"] = "foo"
+	err = common.Mutate(ks, client)
+	if err != nil {
+		t.Error(err)
+	}
+	verifyEgress(t, ks, networks)
+	verifyIngress(t, ks, domain)
+	verifyImageOverride(t, ks, image)
+	verifyCerts(t, ks)
 }
 
 func mockNetworkConfig(networks []string) *configv1.Network {
@@ -92,11 +114,5 @@ func verifyImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expec
 func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
-	}
-}
-
-func verifyTimestamp(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	if _, ok := ks.GetAnnotations()[common.MutationTimestampKey]; !ok {
-		t.Error("Missing mutation timestamp annotation")
 	}
 }

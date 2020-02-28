@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -24,7 +23,6 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		configureLogURLTemplate,
 		ensureCustomCerts,
 		imagesFromEnviron,
-		annotateTimestamp,
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
@@ -130,16 +128,5 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 		}
 	}
 	log.Info("Setting", "registry", ks.Spec.Registry)
-	return nil
-}
-
-// Mark the time when instance configured for OpenShift
-func annotateTimestamp(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
-	annotations := ks.GetAnnotations()
-	if annotations == nil {
-		annotations = map[string]string{}
-	}
-	annotations[MutationTimestampKey] = time.Now().Format(time.RFC3339)
-	ks.SetAnnotations(annotations)
 	return nil
 }
