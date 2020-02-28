@@ -961,12 +961,15 @@
   revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
 
 [[projects]]
-  branch = "master"
-  digest = "1:48fbfacf754aa97c649c50f931bda267560424f936f3648e5bcdbacb159ece6e"
+  digest = "1:74bf5b0f6f4679c35a02bbcc56efce2e20e9f465530c75d87707d2196e8522f0"
   name = "knative.dev/serving-operator"
-  packages = ["pkg/apis/serving/v1alpha1"]
+  packages = [
+    "pkg/apis/serving/v1alpha1",
+    "version",
+  ]
   pruneopts = "NT"
-  revision = "7a6abca0cfe8dde6828421e1188196a2cbde9907"
+  revision = "d3e3d2ed793b9a4c6eebceed5c1e69d7052b24d8"
+  version = "v0.12.2"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1078,6 +1081,7 @@
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
+    "knative.dev/serving-operator/version",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/client/fake",

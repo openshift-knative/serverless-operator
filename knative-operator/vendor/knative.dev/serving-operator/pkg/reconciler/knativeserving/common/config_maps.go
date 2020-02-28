@@ -16,7 +16,7 @@ limitations under the License.
 package common
 
 import (
-	mf "github.com/jcrossley3/manifestival"
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
