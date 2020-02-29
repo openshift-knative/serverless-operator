@@ -155,19 +155,6 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-
-	// Set kourier to ingress.class
-	refetched := &servingv1alpha1.KnativeServing{}
-	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
-		return err
-	}
-
-	if common.Configure(refetched, "network", "ingress.class", "kourier.ingress.networking.knative.dev") {
-		if err := r.client.Update(context.TODO(), refetched); err != nil {
-			return err
-		}
-	}
-
 	// install Kourier
 	return kourier.Apply(instance, r.client)
 }
