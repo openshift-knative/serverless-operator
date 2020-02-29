@@ -130,8 +130,3 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 	log.Info("Setting", "registry", ks.Spec.Registry)
 	return nil
 }
-
-// IngressNamespace returns namespace where ingress is deployed.
-func IngressNamespace(servingNamespace string) string {
-	return servingNamespace + "-ingress"
-}
