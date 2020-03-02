@@ -28,3 +28,8 @@ func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
 	Log.Info("Configured", "map", cm, key, value, "old value", old)
 	return true
 }
+
+// IngressNamespace returns namespace where ingress is deployed.
+func IngressNamespace(servingNamespace string) string {
+	return servingNamespace + "-ingress"
+}

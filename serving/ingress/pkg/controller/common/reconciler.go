@@ -3,9 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	maistrav1 "github.com/maistra/istio-operator/pkg/apis/maistra/v1"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/resources"
 	routev1 "github.com/openshift/api/route/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -17,21 +15,12 @@ import (
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
-	"knative.dev/serving/pkg/network"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type BaseIngressReconciler struct {
 	Client client.Client
 }
-
-const (
-	// Namespace knative-serving-ingress hardcoded for now.
-	// The whole component knative-openshift-ingress is going to be moved into
-	// knative-serving-networking-openshift anyway, where it will be possible to statically determine the namespace to use.
-	smmrName      = "default"
-	smmrNamespace = "knative-serving-ingress"
-)
 
 func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
 	logger := logging.FromContext(ctx)
@@ -42,12 +31,6 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 
 	logger.Infof("Reconciling ingress :%v", ci)
 
-	// Only add Istio ingress to SMMR
-	if ci.GetAnnotations()[networking.IngressClassAnnotationKey] == network.IstioIngressClassName {
-		if err := r.reconcileSmmr(ctx, ci); err != nil {
-			return err
-		}
-	}
 	exposed := ci.GetSpec().Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
 		selector, existing, err := r.routeList(ctx, ci)
@@ -179,34 +162,6 @@ func (r *BaseIngressReconciler) deleteNetworkPolicy(ctx context.Context, ci netw
 	return nil
 }
 
-func (r *BaseIngressReconciler) reconcileSmmr(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
-	logger := logging.FromContext(ctx)
-
-	if err := r.reconcileNetworkPolicy(ctx, ci, false); err != nil {
-		return err
-	}
-
-	// update ServiceMeshMemberRole with the namespace info where knative routes created
-	smmr := &maistrav1.ServiceMeshMemberRoll{}
-	if err := r.Client.Get(ctx, types.NamespacedName{Name: smmrName, Namespace: smmrNamespace}, smmr); err != nil {
-		return err
-	}
-	newMembers, changed := AppendIfAbsent(smmr.Spec.Members, ci.GetNamespace())
-	smmr.Spec.Members = newMembers
-
-	if changed {
-		if err := r.Client.Update(ctx, smmr); err != nil {
-			// ref for substring https://github.com/Maistra/istio-operator/blob/maistra-1.0/pkg/controller/servicemesh/validation/memberroll.go#L95
-			if strings.Contains(err.Error(), "one or more members are already defined in another ServiceMeshMemberRoll") {
-				logger.Errorf("failed to update ServiceMeshMemberRole because namespace %s is already a member of another ServiceMeshMemberRoll", ci.GetNamespace())
-				return nil
-			}
-			return err
-		}
-	}
-	return nil
-}
-
 func routeMap(routes routev1.RouteList, selector map[string]string) map[string]routev1.Route {
 	mp := make(map[string]routev1.Route, len(routes.Items))
 	for _, route := range routes.Items {
@@ -308,20 +263,6 @@ func (r *BaseIngressReconciler) reconcileDeletion(ctx context.Context, ci networ
 	if len(ingressList.Items) == 1 {
 		// In order to double check that we are reconciling proper ingress check with name and namespace
 		if ci.GetNamespace() == ingressList.Items[0].Namespace && ci.GetName() == ingressList.Items[0].Name {
-			smmr := &maistrav1.ServiceMeshMemberRoll{}
-			if err := r.Client.Get(ctx, types.NamespacedName{Name: smmrName, Namespace: smmrNamespace}, smmr); err != nil {
-				return err
-			}
-			for i, val := range smmr.Spec.Members {
-				if val == ci.GetNamespace() {
-					smmr.Spec.Members = append(smmr.Spec.Members[:i], smmr.Spec.Members[i+1:]...)
-					break
-				}
-			}
-			if err := r.Client.Update(ctx, smmr); err != nil {
-				return err
-			}
-
 			if err := r.reconcileNetworkPolicy(ctx, ci, true); err != nil {
 				return err
 			}
