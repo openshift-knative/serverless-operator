@@ -339,9 +339,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	}
 
 	t.Log("wait for controller to be ready after update")
-	if err := test.WaitForControllerEnvironment(caCtx, knativeServing); err != nil {
-		t.Fatal(err)
-	}
+	test.WaitForControllerEnvironment(caCtx, knativeServing)
 
 	t.Log("deploy knative service after proxy update")
 	test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage)

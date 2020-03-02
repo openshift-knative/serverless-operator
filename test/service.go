@@ -2,7 +2,6 @@ package test
 
 import (
 	"strings"
-	"time"
 
 	servingv1beta1 "github.com/knative/serving/pkg/apis/serving/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -66,24 +65,25 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 	return service, nil
 }
 
-func WaitForControllerEnvironment(ctx *Context, ns string) error {
-	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
-		pods, _ := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
-			LabelSelector: "app=controller",
-		})
+func WaitForControllerEnvironment(ctx *Context, ns string) {
+	// run infinite for loop because once after the Global proxy update operator pod will be recreated
+	// and which intern updates knative serving controller pod so we don't no exact time duration for this to happen
+	pods, _ := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
+		LabelSelector: "app=controller",
+	})
+	for {
 		for i := range pods.Items {
 			for _, container := range pods.Items[i].Spec.Containers {
 				for _, e := range container.Env {
 					if e.Name == "HTTP_PROXY" && e.Value != "" {
 						if isPodReady(&pods.Items[i]) {
-							return true, nil
+							return
 						}
 					}
 				}
 			}
 		}
-		return false, errors.New("condition timed out")
-	})
+	}
 }
 
 func isPodReady(pod *corev1.Pod) bool {
