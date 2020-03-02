@@ -90,9 +90,12 @@ func TestKnativeServing(t *testing.T) {
 		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
 	})
 
-	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
-		testKnativeServingForGlobalProxy(t, caCtx)
-	})
+	// t.Run for proxy testing
+	t.Skip("update global proxy and verify calls goes through proxy server")/*
+		func(t *testing.T) {
+				testKnativeServingForGlobalProxy(t, caCtx)
+			}
+	*/
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
 		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
@@ -323,6 +326,12 @@ func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, exp
 }
 
 func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
+	defer test.CleanupOnInterrupt(t, func() {
+		if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {
+			t.Fatal("Failed to update proxy", err)
+		}
+	})
+
 	t.Log("update global proxy with empty value")
 	if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {
 		t.Fatal("Failed to update proxy", err)
@@ -339,7 +348,9 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	}
 
 	t.Log("wait for controller to be ready after update")
-	test.WaitForControllerEnvironment(caCtx, knativeServing)
+	if err := test.WaitForControllerEnvironment(caCtx, knativeServing); err != nil {
+		t.Fatal(err)
+	}
 
 	t.Log("deploy knative service after proxy update")
 	test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage)
@@ -372,5 +383,4 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller
 	// once bugzilla issue https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11 fixes need to run below test case
 	// in order to verify proxy update success and knative service deployed successfully
-	t.Skip("deploy knative service after proxy update and service should deploy successfully")
 }
