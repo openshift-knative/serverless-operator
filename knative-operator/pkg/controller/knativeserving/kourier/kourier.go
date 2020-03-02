@@ -3,12 +3,15 @@ package kourier
 import (
 	"context"
 	"fmt"
+	"os"
 
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,12 +22,12 @@ var (
 )
 
 // Apply applies Kourier resources.
-func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
 	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
 		return err
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
+	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace())), replaceImageFromEnvironment("IMAGE_", scheme)}
 	if err := manifest.Transform(transforms...); err != nil {
 		return err
 	}
@@ -102,4 +105,32 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		return err
 	}
 	return api.Delete(context.TODO(), ns)
+}
+
+// replaceImageFromEnvironment replaces Koureir images with the images specified by env value.
+// This func is copied from serving/operator/pkg/controller/knativeserving/common/transform.go and modified.
+func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" {
+			image := os.Getenv(prefix + u.GetName())
+			if len(image) > 0 {
+				deploy := &appsv1.Deployment{}
+				if err := scheme.Convert(u, deploy, nil); err != nil {
+					return err
+				}
+				containers := deploy.Spec.Template.Spec.Containers
+				for i, container := range containers {
+					if "3scale-"+container.Name == u.GetName() && container.Image != image {
+						log.Info("Replacing", "deployment", container.Name, "image", image, "previous", container.Image)
+						containers[i].Image = image
+						break
+					}
+				}
+				if err := scheme.Convert(deploy, u, nil); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
 }
