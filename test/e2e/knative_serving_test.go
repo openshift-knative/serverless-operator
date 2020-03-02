@@ -40,6 +40,8 @@ const (
 	proxyHelloworldServiceSuccess = "proxy-helloworld-go-success"
 	kubeHelloworldService         = "kube-helloworld-go"
 	helloworldText                = "Hello World!"
+	proxyVerificationEnvName      = "METRICS_DOMAIN"
+	httpProxy                     = "HTTP_PROXY"
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -90,16 +92,19 @@ func TestKnativeServing(t *testing.T) {
 		testKnativeVersusKubeServicesInOneNamespace(t, caCtx)
 	})
 
-	// t.Run for proxy testing
-	t.Skip("update global proxy and verify calls goes through proxy server")/*
-		func(t *testing.T) {
-				testKnativeServingForGlobalProxy(t, caCtx)
-			}
-	*/
+	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
+		testKnativeServingForGlobalProxy(t, caCtx)
+	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
-		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
-			t.Fatal("Failed to remove Knative Serving", err)
+		err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing)
+		if err != nil {
+			// Sometimes because of proxy unset takes time to login so need to wait until pods are up again
+			if strings.Contains(err.Error(), "Unauthorized") {
+				test.WaitForControllerEnvironment(caCtx, knativeServing, proxyVerificationEnvName)
+			} else {
+				t.Fatal("Failed to remove Knative Serving", err)
+			}
 		}
 
 		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(knativeServing+"-ingress", metav1.GetOptions{})
@@ -325,17 +330,20 @@ func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, exp
 	}
 }
 
-func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
-	defer test.CleanupOnInterrupt(t, func() {
-		if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {
-			t.Fatal("Failed to update proxy", err)
-		}
-	})
-
-	t.Log("update global proxy with empty value")
-	if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {
+func resetProxy(t *testing.T, caCtx *test.Context, proxyValue, envName string) {
+	if err := test.UpdateGlobalProxy(caCtx, proxyValue); err != nil {
 		t.Fatal("Failed to update proxy", err)
 	}
+	t.Log("wait for controller to be ready after update")
+	test.WaitForControllerEnvironment(caCtx, knativeServing, envName)
+}
+
+func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
+	test.CleanupOnInterrupt(t, func() { resetProxy(t, caCtx, "", proxyVerificationEnvName) })
+	defer resetProxy(t, caCtx, "", proxyVerificationEnvName)
+
+	t.Log("update global proxy with empty proxy value")
+	resetProxy(t, caCtx, "", proxyVerificationEnvName)
 
 	t.Log("deploy successfully knative service after proxy update")
 	if _, err := test.WithServiceReady(caCtx, proxyHelloworldServiceSuccess, testNamespace, image); err != nil {
@@ -343,14 +351,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	}
 
 	t.Log("update global proxy with proxy server")
-	if err := test.UpdateGlobalProxy(caCtx, "http://1.2.4.5:8999"); err != nil {
-		t.Fatal("Failed to update proxy", err)
-	}
-
-	t.Log("wait for controller to be ready after update")
-	if err := test.WaitForControllerEnvironment(caCtx, knativeServing); err != nil {
-		t.Fatal(err)
-	}
+	resetProxy(t, caCtx, "http://1.2.4.5:8999", httpProxy)
 
 	t.Log("deploy knative service after proxy update")
 	test.WithServiceReady(caCtx, proxyHelloworldService, testNamespace, proxyImage)
@@ -360,6 +361,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 		t.Fatal(err)
 	}
 	var proxyExist bool
+
 	for _, cond := range svc.Status.Conditions {
 		// After global proxy update every call goes through proxy server
 		// Here it give unable to pull image because it tries to connect to not running http server
@@ -370,14 +372,13 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 			break
 		}
 	}
+
 	if !proxyExist {
 		t.Fatal("Service not ready", err)
 	}
 
 	t.Log("update global proxy with empty value")
-	if err = test.UpdateGlobalProxy(caCtx, ""); err != nil {
-		t.Fatal("Failed to update proxy", err)
-	}
+	resetProxy(t, caCtx, "", proxyVerificationEnvName)
 
 	// Ref: https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11
 	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller

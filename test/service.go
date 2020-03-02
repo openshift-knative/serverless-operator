@@ -66,7 +66,7 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 	return service, nil
 }
 
-func WaitForControllerEnvironment(ctx *Context, ns string) error {
+func WaitForControllerEnvironment(ctx *Context, ns, envName string) error {
 	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
 		pods, _ := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
 			LabelSelector: "app=controller",
@@ -74,7 +74,7 @@ func WaitForControllerEnvironment(ctx *Context, ns string) error {
 		for i := range pods.Items {
 			for _, container := range pods.Items[i].Spec.Containers {
 				for _, e := range container.Env {
-					if e.Name == "HTTP_PROXY" && e.Value != "" {
+					if e.Name == envName && e.Value != "" {
 						if isPodReady(&pods.Items[i]) {
 							return true, nil
 						}
@@ -83,7 +83,7 @@ func WaitForControllerEnvironment(ctx *Context, ns string) error {
 
 			}
 		}
-		return false, errors.New("condition timed out")
+		return false, nil
 	})
 }
 
