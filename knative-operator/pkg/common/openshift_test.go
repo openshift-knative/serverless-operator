@@ -116,9 +116,3 @@ func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 		t.Error("Missing custom certs config")
 	}
 }
-
-func verifyTimestamp(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	if _, ok := ks.GetAnnotations()[common.MutationTimestampKey]; !ok {
-		t.Error("Missing mutation timestamp annotation")
-	}
-}
