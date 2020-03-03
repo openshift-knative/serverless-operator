@@ -225,7 +225,7 @@ func TestIngressController(t *testing.T) {
 		annotations       map[string]string
 		want              map[string]string
 		wantRouteErr      func(err error) bool
-		wantNetworkPolicy bool
+		wantNetworkPolicy bool // ServiceMesh required NetworkPolicy but it is no longer necessary. Now we confirm that NetworkPolicy knative-serving-allow-all is always deleted.
 		deleted           bool
 		extraObjs         []runtime.Object
 	}{
@@ -266,12 +266,12 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -301,12 +301,12 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -343,7 +343,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           false,
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
@@ -355,7 +355,7 @@ func TestIngressController(t *testing.T) {
 				},
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -372,7 +372,7 @@ func TestIngressController(t *testing.T) {
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -407,7 +407,7 @@ func TestIngressController(t *testing.T) {
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -444,7 +444,7 @@ func TestIngressController(t *testing.T) {
 			annotations:       map[string]string{},
 			want:              map[string]string(nil),
 			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: true,
+			wantNetworkPolicy: false,
 			deleted:           true,
 			extraObjs: []runtime.Object{
 				&networkingv1.NetworkPolicy{
@@ -456,7 +456,7 @@ func TestIngressController(t *testing.T) {
 				},
 				&networkingv1.NetworkPolicy{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      resources.NetworkPolicyAllowAllName,
+						Name:      common.NetworkPolicyAllowAllName,
 						Namespace: namespace,
 					},
 					Spec: networkingv1.NetworkPolicySpec{},
@@ -511,7 +511,7 @@ func TestIngressController(t *testing.T) {
 
 			// Check if NetworkPolicy has been created
 			networkPolicy := &networkingv1.NetworkPolicy{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: resources.NetworkPolicyAllowAllName, Namespace: namespace}, networkPolicy)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: common.NetworkPolicyAllowAllName, Namespace: namespace}, networkPolicy)
 			if test.wantNetworkPolicy {
 				assert.Nil(t, err)
 			} else {

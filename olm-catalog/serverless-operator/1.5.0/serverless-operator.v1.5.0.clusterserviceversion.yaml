@@ -103,17 +103,6 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:io.kubernetes.conditions'
       version: v1alpha1
-    required:
-    - description: A list of namespaces in Service Mesh
-      displayName: Istio Service Mesh Member Roll
-      kind: ServiceMeshMemberRoll
-      name: servicemeshmemberrolls.maistra.io
-      version: v1
-    - description: An Istio control plane installation
-      displayName: Istio Service Mesh Control Plane
-      kind: ServiceMeshControlPlane
-      name: servicemeshcontrolplanes.maistra.io
-      version: v1
   minKubeVersion: 1.15.0
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
@@ -230,12 +219,6 @@ spec:
           resources:
           - knativeservings
           - knativeservings/finalizers
-          verbs:
-          - '*'
-        - apiGroups:
-          - maistra.io
-          resources:
-          - servicemeshmemberrolls
           verbs:
           - '*'
         serviceAccountName: knative-openshift-ingress
