@@ -6,9 +6,9 @@ spec:
   description: The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.
   displayName: kn - OpenShift Serverless CLI
   links:
-  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.11.0/kn-linux-amd64-0.11.0.tar.gz
+  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.12.0/kn-linux-amd64-0.12.0.tar.gz
     text: Download kn for Linux
-  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.11.0/kn-macos-amd64-0.11.0.tar.gz
+  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.12.0/kn-macos-amd64-0.12.0.tar.gz
     text: Download kn for macOS
-  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.11.0/kn-windows-amd64-0.11.0.zip
+  - href: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/0.12.0/kn-windows-amd64-0.12.0.zip
     text: Download kn for Windows
