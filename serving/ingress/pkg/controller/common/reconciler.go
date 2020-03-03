@@ -18,12 +18,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const NetworkPolicyAllowAllName = "knative-serving-allow-all"
+
 type BaseIngressReconciler struct {
 	Client client.Client
 }
 
 func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
 	logger := logging.FromContext(ctx)
+
+	// Delete obsoleted NeworkPolicy which required for ServiceMesh.
+	// TODO: This should be removed in the future version.
+	if err := r.deleteNetworkPolicy(ctx, ci); err != nil {
+		return err
+	}
 
 	if ci.GetDeletionTimestamp() != nil {
 		return r.reconcileDeletion(ctx, ci)
@@ -70,81 +78,11 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 	return nil
 }
 
-func (r *BaseIngressReconciler) reconcileNetworkPolicy(ctx context.Context, ci networkingv1alpha1.IngressAccessor, isDeletion bool) error {
-	desired := resources.MakeNetworkPolicyAllowAll(ci.GetNamespace())
-
-	var networkPolicyList networkingv1.NetworkPolicyList
-	if err := r.Client.List(ctx, &client.ListOptions{Namespace: ci.GetNamespace()}, &networkPolicyList); err != nil {
-		return err
-	}
-
-	// Detect if the user has any NetworkPolicy objects in this namespace
-	for _, networkPolicy := range networkPolicyList.Items {
-		// Don't treat the NetworkPolicy we create as user-created
-		if networkPolicy.Name == desired.Name {
-			continue
-		}
-
-		// Don't treat the NetworkPolicy owned by Service Mesh as user-created
-		if networkPolicy.Labels["maistra.io/owner"] != "" {
-			continue
-		}
-
-		// If the user has created NetworkPolicy objects in this
-		// namespace then assume they are managing NetworkPolicy and
-		// do not create or delete our own. If we previously created
-		// one and a user starts managing NetworkPolicy explicitly
-		// then this will allow them to delete ours without us
-		// automatically recreating it again.
-		return nil
-	}
-
-	if isDeletion {
-		if err := r.deleteNetworkPolicy(ctx, ci, desired); err != nil {
-			return err
-		}
-	} else {
-		if err := r.ensureNetworkPolicy(ctx, ci, desired); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r *BaseIngressReconciler) ensureNetworkPolicy(ctx context.Context, ci networkingv1alpha1.IngressAccessor, desired *networkingv1.NetworkPolicy) error {
+func (r *BaseIngressReconciler) deleteNetworkPolicy(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
 	logger := logging.FromContext(ctx)
 
 	networkPolicy := &networkingv1.NetworkPolicy{}
-	err := r.Client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, networkPolicy)
-
-	if errors.IsNotFound(err) {
-		err = r.Client.Create(ctx, desired)
-		if err != nil {
-			logger.Errorf("Failed to create NetworkPolicy %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
-		}
-		logger.Infof("Created NetworkPolicy %q in namespace %q", desired.Name, desired.Namespace)
-	} else if err != nil {
-		return err
-	} else if !equality.Semantic.DeepEqual(networkPolicy.Spec, desired.Spec) {
-		// Don't modify the informers copy
-		existing := networkPolicy.DeepCopy()
-		existing.Spec = desired.Spec
-		err = r.Client.Update(ctx, existing)
-		if err != nil {
-			logger.Errorf("Failed to update NetworkPolicy %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
-		}
-	}
-	return nil
-}
-
-func (r *BaseIngressReconciler) deleteNetworkPolicy(ctx context.Context, ci networkingv1alpha1.IngressAccessor, desired *networkingv1.NetworkPolicy) error {
-	logger := logging.FromContext(ctx)
-
-	networkPolicy := &networkingv1.NetworkPolicy{}
-	err := r.Client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, networkPolicy)
+	err := r.Client.Get(ctx, types.NamespacedName{Name: NetworkPolicyAllowAllName, Namespace: ci.GetNamespace()}, networkPolicy)
 
 	if errors.IsNotFound(err) {
 		// Doesn't exist, so no need to try to delete it
@@ -152,12 +90,12 @@ func (r *BaseIngressReconciler) deleteNetworkPolicy(ctx context.Context, ci netw
 	} else if err != nil {
 		return err
 	} else {
-		logger.Infof("Deleting NetworkPolicy %q in namespace %q", desired.Name, desired.Namespace)
-		if err := r.Client.Delete(ctx, desired); err != nil {
-			logger.Errorf("Failed to delete NetworkPolicy %q in namespace %q: %v", desired.Name, desired.Namespace, err)
+		logger.Infof("Deleting NetworkPolicy %q in namespace %q", NetworkPolicyAllowAllName, ci.GetNamespace())
+		if err := r.Client.Delete(ctx, networkPolicy); err != nil {
+			logger.Errorf("Failed to delete NetworkPolicy %q in namespace %q: %v", NetworkPolicyAllowAllName, ci.GetNamespace(), err)
 			return err
 		}
-		logger.Infof("Deleted NetworkPolicy %q in namespace %q", desired.Name, desired.Namespace)
+		logger.Infof("Deleted NetworkPolicy %q in namespace %q", NetworkPolicyAllowAllName, ci.GetNamespace())
 	}
 	return nil
 }
@@ -257,16 +195,6 @@ func (r *BaseIngressReconciler) reconcileDeletion(ctx context.Context, ci networ
 		Namespace: ci.GetNamespace(),
 	}, &ingressList); err != nil {
 		return err
-	}
-	// If particular namespace has only one ingress object then after deletion namespace will have empty ingress object
-	// So remove namespace from SMMR
-	if len(ingressList.Items) == 1 {
-		// In order to double check that we are reconciling proper ingress check with name and namespace
-		if ci.GetNamespace() == ingressList.Items[0].Namespace && ci.GetName() == ingressList.Items[0].Name {
-			if err := r.reconcileNetworkPolicy(ctx, ci, true); err != nil {
-				return err
-			}
-		}
 	}
 
 	_, list, err := r.routeList(ctx, ci)
