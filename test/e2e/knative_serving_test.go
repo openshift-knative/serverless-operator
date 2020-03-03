@@ -97,14 +97,8 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
-		err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing)
-		if err != nil {
-			// Sometimes because of proxy unset takes time to login so need to wait until pods are up again
-			if strings.Contains(err.Error(), "Unauthorized") {
-				test.WaitForControllerEnvironment(caCtx, knativeServing, proxyVerificationEnvName)
-			} else {
-				t.Fatal("Failed to remove Knative Serving", err)
-			}
+		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
+			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
 		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(knativeServing+"-ingress", metav1.GetOptions{})
@@ -318,14 +312,13 @@ func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Contex
 
 func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, expectedText string) {
 	t.Helper()
-	_, err := pkgTest.WaitForEndpointState(
+	if _, err := pkgTest.WaitForEndpointState(
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 		t.Logf,
 		routeDomain,
 		pkgTest.EventuallyMatchesBody(expectedText),
 		"WaitForRouteToServeText",
-		true)
-	if err != nil {
+		true); err != nil {
 		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeDomain, expectedText, err)
 	}
 }
@@ -382,6 +375,16 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 
 	// Ref: https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11
 	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller
-	// once bugzilla issue https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11 fixes need to run below test case
+	// once bugzilla issue https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11 fixes need to add test cases
 	// in order to verify proxy update success and knative service deployed successfully
+
+	// In order to make sure state of the knative serving same like before
+	if _, err = v1a1test.WaitForKnativeServingState(caCtx, knativeServing, knativeServing, v1a1test.IsKnativeServingReady); err != nil {
+		// Sometimes because of proxy unset cluster takes time to login so need to wait until pods are up again
+		if strings.Contains(err.Error(), "Unauthorized") {
+			test.WaitForControllerEnvironment(caCtx, knativeServing, proxyVerificationEnvName)
+		} else {
+			t.Fatal(err)
+		}
+	}
 }
