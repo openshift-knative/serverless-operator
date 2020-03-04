@@ -250,7 +250,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-operator
+                image: gcr.io/gcp-compute-engine-223401/manager-ab023dee4774c1e46196cc9a70bb0cdb:v0.13-test
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
@@ -290,17 +290,17 @@ spec:
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
                     - name: IMAGE_queue-proxy
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-queue
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/queue:v0.13.0
                     - name: IMAGE_activator
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-activator
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/activator:v0.13.0
                     - name: IMAGE_autoscaler
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler:v0.13.0
                     - name: IMAGE_autoscaler-hpa
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-autoscaler-hpa
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa:v0.13.0
                     - name: IMAGE_controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-controller
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/controller:v0.13.0
                     - name: IMAGE_webhook
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
+                      value: gcr.io/knative-releases/knative.dev/serving/cmd/webhook:v0.13.0
                     - name: IMAGE_3scale-kourier-gateway
                       value: docker.io/maistra/proxyv2-ubi8:1.0.4
                     - name: IMAGE_3scale-kourier-control

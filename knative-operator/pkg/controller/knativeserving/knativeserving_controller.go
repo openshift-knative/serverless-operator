@@ -92,6 +92,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureCustomCertsConfigMap,
 		r.createConsoleCLIDownload,
 		r.installKourier,
+		r.installCertManager,
 		r.uninstallServiceMesh,
 	}
 	for _, stage := range stages {
