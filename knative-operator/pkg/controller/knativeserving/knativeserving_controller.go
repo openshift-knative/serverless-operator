@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/certmanager"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
@@ -159,6 +160,11 @@ func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 	return kourier.Apply(instance, r.client, r.scheme)
 }
 
+// Install cert manager
+func (r *ReconcileKnativeServing) installCertManager(instance *servingv1alpha1.KnativeServing) error {
+	return certmanager.Apply(instance, r.client)
+}
+
 // Uninstall obsolete SMCP deployed by previous version
 func (r *ReconcileKnativeServing) uninstallServiceMesh(instance *servingv1alpha1.KnativeServing) error {
 	return servicemesh.Delete(instance, r.client)
@@ -183,6 +189,10 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	if err := kourier.Delete(instance, r.client); err != nil {
+		return err
+	}
+
+	if err := certmanager.Delete(instance, r.client); err != nil {
 		return err
 	}
 

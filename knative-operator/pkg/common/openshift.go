@@ -34,6 +34,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 
 func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
+	Configure(ks, "network", "autoTLS", "Enabled")
 	return nil
 }
 
