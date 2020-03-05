@@ -19,8 +19,6 @@ spec:
     listKind: KnativeServingList
     plural: knativeservings
     singular: knativeserving
-    shortNames:
-    - ks
   scope: Namespaced
   subresources:
     status: {}
