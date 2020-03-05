@@ -2,9 +2,11 @@ package certmanager
 
 import (
 	"context"
+	"fmt"
 
 	mf "github.com/jcrossley3/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -25,17 +27,34 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err != nil {
 		return err
 	}
+
+	if instance.Status.IsFullySupported() {
+		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
+		if err := checkDeployments(&manifest, instance, api); err == nil {
+			return nil
+		}
+	}
+
 	log.Info("Installing cert manager")
 	if err := manifest.ApplyAll(); err != nil {
 		return err
 	}
 
+	instance.Status.MarkDependencyInstalling("CertManager")
+	if err := api.Status().Update(context.TODO(), instance); err != nil {
+		return err
+	}
+
+	if err := checkDeployments(&manifest, instance, api); err != nil {
+		return err
+	}
+
+	// TODO: These should be configured by API, not manifest file.
 	manifest, err = mf.NewManifest(defaultSecret, false, api)
 	if err != nil {
 		return err
 	}
 
-	// TODO: These should be configured by API, not manifest file.
 	log.Info("Installing CA for issuer")
 	if err := manifest.ApplyAll(); err != nil {
 		return err
@@ -92,4 +111,25 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		return err
 	}
 	return api.Delete(context.TODO(), ns)
+}
+
+// Check for deployments in knative-serving-ingress
+// This function is copied from knativeserving_controller.go in serving-operator
+func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	log.Info("Checking deployments")
+	for _, u := range manifest.Resources {
+		if u.GetKind() == "Deployment" {
+			deployment := &appsv1.Deployment{}
+			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
+			if err != nil {
+				return err
+			}
+			for _, c := range deployment.Status.Conditions {
+				if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
+					return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
+				}
+			}
+		}
+	}
+	return nil
 }

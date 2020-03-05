@@ -54,8 +54,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	}
 	log.Info("Kourier is ready")
 
-	instance.Status.MarkDependenciesInstalled()
-	return api.Status().Update(context.TODO(), instance)
+	return nil
 }
 
 // Check for deployments in knative-serving-ingress

@@ -91,8 +91,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
 		r.createConsoleCLIDownload,
-		r.installKourier,
-		r.installCertManager,
+		r.installDependencies,
 		r.uninstallServiceMesh,
 	}
 	for _, stage := range stages {
@@ -156,14 +155,19 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 }
 
 // Install Kourier Ingress Gateway
-func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-	// install Kourier
-	return kourier.Apply(instance, r.client, r.scheme)
-}
+func (r *ReconcileKnativeServing) installDependencies(instance *servingv1alpha1.KnativeServing) error {
+	// Install cert manager
+	if err := certmanager.Apply(instance, r.client); err != nil {
+		return err
+	}
 
-// Install cert manager
-func (r *ReconcileKnativeServing) installCertManager(instance *servingv1alpha1.KnativeServing) error {
-	return certmanager.Apply(instance, r.client)
+	// Install Kourier
+	if err := kourier.Apply(instance, r.client, r.scheme); err != nil {
+		return err
+	}
+
+	instance.Status.MarkDependenciesInstalled()
+	return r.client.Status().Update(context.TODO(), instance)
 }
 
 // Uninstall obsolete SMCP deployed by previous version
