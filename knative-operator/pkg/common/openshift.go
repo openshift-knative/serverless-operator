@@ -35,6 +35,10 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 	Configure(ks, "network", "autoTLS", "Enabled")
+	// OpenShift Ingress redirects http so this config is not necessary, but
+	// Ingress does not become ready until cert is ready so we set Redirected here.
+	// see https://github.com/knative/serving/commit/5292f92bacd694458f2228b5a6b2fb7e8c918274
+	Configure(ks, "network", "httpProtocol", "Redirected")
 	return nil
 }
 

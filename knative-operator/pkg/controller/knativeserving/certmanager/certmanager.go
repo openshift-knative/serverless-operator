@@ -34,6 +34,8 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: These should be configured by API, not manifest file.
 	log.Info("Installing CA for issuer")
 	if err := manifest.ApplyAll(); err != nil {
 		return err
