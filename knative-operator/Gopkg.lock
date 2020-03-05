@@ -225,7 +225,6 @@
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
-    "cmp/cmpopts",
     "cmp/internal/diff",
     "cmp/internal/flags",
     "cmp/internal/function",
@@ -333,14 +332,6 @@
   version = "1.1.8"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4316e4bd7afb658ddd4cf1f9fa60440538fa0b79c0a2deba96f30a38f32c5f2d"
-  name = "github.com/knative/pkg"
-  packages = ["apis"]
-  pruneopts = "NT"
-  revision = "9d8b936ca0621af5762916bc899d4973363a2dc4"
-
-[[projects]]
   digest = "1:5181790e1f11c6b9cb42c70c5b902926c5e696b1e71bc24d4f82e6862ab3d078"
   name = "github.com/mailru/easyjson"
   packages = [
@@ -391,14 +382,6 @@
   pruneopts = "NT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
-
-[[projects]]
-  digest = "1:2fd2c30833c61ab0a121ce93e294307c42aa2cefe9dcc0bb8675c7c780971b80"
-  name = "github.com/openshift-knative/serverless-operator"
-  packages = ["serving/operator/pkg/apis/serving/v1alpha1"]
-  pruneopts = "NT"
-  revision = "48717753ebbde837ba2ca26e160edfe932134287"
-  version = "v1.3.0"
 
 [[projects]]
   branch = "release-4.2"
@@ -1042,12 +1025,8 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
-    "github.com/google/go-cmp/cmp",
-    "github.com/google/go-cmp/cmp/cmpopts",
     "github.com/jcrossley3/manifestival",
-    "github.com/knative/pkg/apis",
     "github.com/maistra/istio-operator/pkg/apis/maistra/v1",
-    "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1",
     "github.com/openshift/api/config/v1",
     "github.com/openshift/api/route/v1",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
@@ -1075,7 +1054,6 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
-    "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",

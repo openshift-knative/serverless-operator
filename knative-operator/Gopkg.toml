@@ -47,11 +47,6 @@ required = [
   name = "knative.dev/serving-operator"
   branch = "master"
 
-[[override]]
-  name = "github.com/openshift-knative/serverless-operator"
-  # This vendors the old api for compatibility reasons.
-  version = "=v1.3.0"
-
 [[constraint]]
   name = "github.com/openshift/api"
   branch = "release-4.2"
