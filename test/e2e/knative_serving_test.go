@@ -18,6 +18,7 @@ const (
 	testNamespace2        = "serverless-tests2"
 	image                 = "gcr.io/knative-samples/helloworld-go"
 	helloworldService     = "helloworld-go"
+	helloworldService2    = "helloworld-go2"
 	kubeHelloworldService = "kube-helloworld-go"
 	helloworldText        = "Hello World!"
 )
@@ -143,7 +144,7 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
 	// Deploy Knative service in the namespace first
-	ksvc, err = test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -178,6 +179,9 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 
 	// Check that Knative service still responds
 	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+
+	// Delete the Knative service
+	caCtx.Clients.Serving.ServingV1beta1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 }
 
 func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Context, viewCtx *test.Context) {
