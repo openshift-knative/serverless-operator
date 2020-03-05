@@ -232,7 +232,8 @@ function run_knative_serving_rolling_upgrade_tests {
     logger.info "New cluster version\n: $(oc get clusterversion)"
   fi
 
-  for kservice in `oc get ksvc -n serving-tests --no-headers -o name`; do
+  # Wait for all services to become ready again. Exclude the upgrade-probe as that'll be removed by the prober test above.
+  for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v "upgrade-probe"); do
     timeout 900 '[[ $(oc get $kservice -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
   done
 
