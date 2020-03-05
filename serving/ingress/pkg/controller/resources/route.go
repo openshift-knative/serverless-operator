@@ -17,7 +17,6 @@ import (
 const (
 	TimeoutAnnotation      = "haproxy.router.openshift.io/timeout"
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
-	KourierHttpPort        = "http2"
 	KourierHttpsPort       = "https"
 )
 

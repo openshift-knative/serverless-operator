@@ -71,11 +71,11 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHttpsPort),
 					},
 					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 				},
 			}},
@@ -119,11 +119,11 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHttpsPort),
 					},
 					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 				},
 			}},
@@ -154,11 +154,11 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHttpsPort),
 					},
 					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 				},
 			}, {
@@ -181,12 +181,11 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHttpsPort),
 					},
-
 					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 				},
 			}},
@@ -217,12 +216,11 @@ func TestMakeRoute(t *testing.T) {
 						Name: lbService,
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHttpsPort),
 					},
-
 					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 				},
 			}},
