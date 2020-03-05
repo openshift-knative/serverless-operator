@@ -2,7 +2,6 @@ aliases:
   serverless-approvers:
   - alanfx
   - mgencur
-  - bbrowning
   - jcrossley3
   - markusthoemmes
   - vdemeester
@@ -10,7 +9,6 @@ aliases:
   serverless-reviewers:
   - alanfx
   - mgencur
-  - bbrowning
   - jcrossley3
   - markusthoemmes
   - vdemeester
