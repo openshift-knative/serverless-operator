@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta "k8s.io/apimachinery/pkg/api/meta"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,7 +33,7 @@ func deleteSMCP(instance *servingv1alpha1.KnativeServing, api client.Client) err
 	log.Info("Deleting SMCP")
 	smcp := &maistrav1.ServiceMeshControlPlane{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: common.IngressNamespace(instance.GetNamespace()), Name: smcpName}, smcp); err != nil {
-		if apierrors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) || meta.IsNoMatchError(err) {
 			// We can safely ignore this. There is nothing to do for us.
 			return nil
 		} else if err != nil {
