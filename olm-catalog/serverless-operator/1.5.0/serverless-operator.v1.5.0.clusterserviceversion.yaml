@@ -306,7 +306,7 @@ spec:
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
                     - name: KOURIER_MANIFEST_PATH
-                      value: $KOURIER_MANIFEST_PATH
+                      value: deploy/resources/kourier/kourier-latest.yaml
       - name: knative-openshift-ingress
         spec:
           replicas: 1

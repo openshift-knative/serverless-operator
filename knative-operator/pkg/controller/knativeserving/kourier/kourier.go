@@ -17,13 +17,13 @@ import (
 )
 
 var (
-	log             = common.Log.WithName("kourier")
-	defaultManifest = "deploy/resources/kourier/kourier-latest.yaml"
+	log  = common.Log.WithName("kourier")
+	path = os.Getenv("KOURIER_MANIFEST_PATH")
 )
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
-	manifest, err := mf.NewManifest(manifestPath(), false, api)
+	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeSe
 // Delete deletes Kourier resources.
 func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Deleting Kourier Ingress")
-	manifest, err := mf.NewManifest(manifestPath(), false, api)
+	manifest, err := mf.NewManifest(path, false, api)
 	if err != nil {
 		return err
 	}
@@ -133,14 +133,4 @@ func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Trans
 		}
 		return nil
 	}
-}
-
-// manifestPath returns Kourier manifest path specified by KOURIER_MANIFEST_PATH.
-// If KOURIER_MANIFEST_PATH is empty returns default path.
-func manifestPath() string {
-	path := os.Getenv("KOURIER_MANIFEST_PATH")
-	if path != "" {
-		return path
-	}
-	return defaultManifest
 }
