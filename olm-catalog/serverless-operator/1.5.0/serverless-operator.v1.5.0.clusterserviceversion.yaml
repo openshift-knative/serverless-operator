@@ -425,7 +425,7 @@ spec:
     - name: IMAGE_webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
     - name: IMAGE_3scale-kourier-control
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
+      image: markusthoemmes/3scale-kourier:pr218
     - name: IMAGE_3scale-kourier-gateway
       image: docker.io/maistra/proxyv2-ubi8:1.0.4
     - name: knative-operator
