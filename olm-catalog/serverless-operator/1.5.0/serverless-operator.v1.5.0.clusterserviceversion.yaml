@@ -305,6 +305,8 @@ spec:
                       value: docker.io/maistra/proxyv2-ubi8:1.0.4
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
+                    - name: KOURIER_MANIFEST_PATH
+                      value: $KOURIER_MANIFEST_PATH
       - name: knative-openshift-ingress
         spec:
           replicas: 1
