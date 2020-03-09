@@ -4,7 +4,8 @@ KOURIER_VERSION=v0.3.10
 DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
-  echo "kourier-${KOURIER_VERSION}.yaml already exists"
+  echo "kourier-${KOURIER_VERSION}.yaml already exists. Please remove it."
+  echo -e "Run:\n   rm kourier-${KOURIER_VERSION}.yaml"
   exit 1
 fi
 
@@ -14,11 +15,20 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+cp kourier-${KOURIER_VERSION}.yaml kourier-${KOURIER_VERSION}-debug.yaml
+
 if [ -L "kourier-latest.yaml" ]; then
   unlink kourier-latest.yaml
 fi
+if [ -L "kourier-latest-debug.yaml" ]; then
+  unlink kourier-latest-debug.yaml
+fi
 
-ln -s kourier-${KOURIER_VERSION}.yaml kourier-latest.yaml
+ln -s kourier-${KOURIER_VERSION}.yaml       kourier-latest.yaml
+ln -s kourier-${KOURIER_VERSION}-debug.yaml kourier-latest-debug.yaml
 
-patch kourier-${KOURIER_VERSION}.yaml proxyv2-image.patch
-patch kourier-${KOURIER_VERSION}.yaml debug-log.patch
+patch kourier-${KOURIER_VERSION}.yaml       proxyv2-image.patch
+patch kourier-${KOURIER_VERSION}-debug.yaml proxyv2-image.patch
+
+# Apply debug log enable path to -debug.yaml only
+patch kourier-${KOURIER_VERSION}-debug.yaml debug-log.patch

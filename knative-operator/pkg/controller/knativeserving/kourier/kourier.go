@@ -18,7 +18,7 @@ import (
 
 var (
 	log  = common.Log.WithName("kourier")
-	path = "deploy/resources/kourier/kourier-latest.yaml"
+	path = os.Getenv("KOURIER_MANIFEST_PATH")
 )
 
 // Apply applies Kourier resources.
