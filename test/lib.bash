@@ -130,12 +130,12 @@ function run_knative_serving_e2e_and_conformance_tests {
   local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-{{.Name}}"
 
-  local parallel=3
+  local parallel=1
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
     rm ./test/e2e/grpc_test.go
-    parallel=2
+    parallel=1
   fi
 
   go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
