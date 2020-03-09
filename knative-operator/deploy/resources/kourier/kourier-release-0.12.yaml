@@ -8,28 +8,6 @@ kind: ConfigMap
 metadata:
   name: config-logging
   namespace: kourier-system
-data:
-      zap-logger-config: |
-        {
-          "level": "debug",
-          "development": false,
-          "outputPaths": ["stdout"],
-          "errorOutputPaths": ["stderr"],
-          "encoding": "json",
-          "encoderConfig": {
-            "timeKey": "ts",
-            "levelKey": "level",
-            "nameKey": "logger",
-            "callerKey": "caller",
-            "messageKey": "msg",
-            "stacktraceKey": "stacktrace",
-            "lineEnding": "",
-            "levelEncoder": "",
-            "timeEncoder": "iso8601",
-            "durationEncoder": "",
-            "callerEncoder": ""
-          }
-        }
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -62,7 +40,6 @@ metadata:
   name: 3scale-kourier-gateway
   namespace: kourier-system
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: 3scale-kourier-gateway
@@ -72,13 +49,12 @@ spec:
         app: 3scale-kourier-gateway
     spec:
       containers:
-        - command: ["/usr/local/bin/envoy"]
-          args:
-            - -l
-            - debug
+        - args:
             - -c
             - /tmp/config/envoy-bootstrap.yaml
-          image: docker.io/maistra/proxyv2-ubi8:1.0.4
+          command:
+            - /usr/local/bin/envoy
+          image: docker.io/maistra/proxyv2-ubi8:1.0.8
           imagePullPolicy: Always
           name: kourier-gateway
           ports:
@@ -123,7 +99,7 @@ spec:
         app: 3scale-kourier-control
     spec:
       containers:
-        - image: quay.io/3scale/kourier:v0.3.10
+        - image: quay.io/3scale/kourier:v0.3.11
           imagePullPolicy: Always
           name: kourier-control
           env:

@@ -289,6 +289,8 @@ spec:
                       value: "4.3.0"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
+                    - name: KOURIER_MANIFEST_PATH
+                      value: deploy/resources/kourier/kourier-latest.yaml
                     - name: IMAGE_queue-proxy
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-queue
                     - name: IMAGE_activator
@@ -302,11 +304,9 @@ spec:
                     - name: IMAGE_webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:knative-serving-webhook
                     - name: IMAGE_3scale-kourier-gateway
-                      value: docker.io/maistra/proxyv2-ubi8:1.0.4
+                      value: docker.io/maistra/proxyv2-ubi8:1.0.8
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
-                    - name: KOURIER_MANIFEST_PATH
-                      value: deploy/resources/kourier/kourier-latest.yaml
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -429,7 +429,7 @@ spec:
     - name: IMAGE_3scale-kourier-control
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
     - name: IMAGE_3scale-kourier-gateway
-      image: docker.io/maistra/proxyv2-ubi8:1.0.4
+      image: docker.io/maistra/proxyv2-ubi8:1.0.8
     - name: knative-operator
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress

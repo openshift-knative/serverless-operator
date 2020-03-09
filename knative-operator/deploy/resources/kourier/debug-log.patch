@@ -1,42 +1,42 @@
-diff --git a/knative-operator/deploy/resources/kourier/kourier-v0.3.9.yaml b/knative-operator/deploy/resources/kourier/kourier-v0.3.9.yaml
-index 23d5aa79..3f840c53 100644
---- a/knative-operator/deploy/resources/kourier/kourier-v0.3.9.yaml
-+++ b/knative-operator/deploy/resources/kourier/kourier-v0.3.9.yaml
+diff --git a/knative-operator/deploy/resources/kourier/kourier-release-0.12-debug.yaml b/knative-operator/deploy/resources/kourier/kourier-release-0.12-debug.yaml
+index 8203bbb5..4f98e817 100644
+--- a/knative-operator/deploy/resources/kourier/kourier-release-0.12-debug.yaml
++++ b/knative-operator/deploy/resources/kourier/kourier-release-0.12-debug.yaml
 @@ -8,6 +8,28 @@ kind: ConfigMap
  metadata:
    name: config-logging
    namespace: kourier-system
 +data:
-+      zap-logger-config: |
-+        {
-+          "level": "debug",
-+          "development": false,
-+          "outputPaths": ["stdout"],
-+          "errorOutputPaths": ["stderr"],
-+          "encoding": "json",
-+          "encoderConfig": {
-+            "timeKey": "ts",
-+            "levelKey": "level",
-+            "nameKey": "logger",
-+            "callerKey": "caller",
-+            "messageKey": "msg",
-+            "stacktraceKey": "stacktrace",
-+            "lineEnding": "",
-+            "levelEncoder": "",
-+            "timeEncoder": "iso8601",
-+            "durationEncoder": "",
-+            "callerEncoder": ""
-+          }
-+        }
++  zap-logger-config: |
++    {
++      "level": "debug",
++      "development": false,
++      "outputPaths": ["stdout"],
++      "errorOutputPaths": ["stderr"],
++      "encoding": "json",
++      "encoderConfig": {
++        "timeKey": "ts",
++        "levelKey": "level",
++        "nameKey": "logger",
++        "callerKey": "caller",
++        "messageKey": "msg",
++        "stacktraceKey": "stacktrace",
++        "lineEnding": "",
++        "levelEncoder": "",
++        "timeEncoder": "iso8601",
++        "durationEncoder": "",
++        "callerEncoder": ""
++      }
++    }
  ---
  apiVersion: v1
  kind: ConfigMap
-@@ -59,6 +81,8 @@ spec:
+@@ -50,6 +72,8 @@ spec:
+     spec:
        containers:
-         - command: ["/usr/local/bin/envoy"]
-           args:
+         - args:
 +            - -l
 +            - debug
              - -c
              - /tmp/config/envoy-bootstrap.yaml
-           image: docker.io/maistra/proxyv2-ubi8:1.0.4
+           command:

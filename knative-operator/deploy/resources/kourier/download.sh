@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=v0.3.10
+KOURIER_VERSION=release-0.12
 DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
@@ -26,9 +26,6 @@ fi
 
 ln -s kourier-${KOURIER_VERSION}.yaml       kourier-latest.yaml
 ln -s kourier-${KOURIER_VERSION}-debug.yaml kourier-latest-debug.yaml
-
-patch kourier-${KOURIER_VERSION}.yaml       proxyv2-image.patch
-patch kourier-${KOURIER_VERSION}-debug.yaml proxyv2-image.patch
 
 # Apply debug log enable path to -debug.yaml only
 patch kourier-${KOURIER_VERSION}-debug.yaml debug-log.patch
