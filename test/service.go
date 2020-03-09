@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -66,28 +67,37 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 	return service, nil
 }
 
-func WaitForControllerEnvironment(ctx *Context, ns, envName string) error {
+func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) error {
 	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
-		pods, _ := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
+		pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
 			LabelSelector: "app=controller",
 		})
-		for i := range pods.Items {
-			for _, container := range pods.Items[i].Spec.Containers {
+		if apierrs.IsUnauthorized(err) {
+			// These errors happen when resetting the proxy value. Just retry.
+			return false, nil
+		} else if err != nil {
+			return false, err
+		}
+		for _, pod := range pods.Items {
+			if !isPodReady(pod) {
+				return false, nil
+			}
+			for _, container := range pod.Spec.Containers {
 				for _, e := range container.Env {
-					if e.Name == envName && e.Value != "" {
-						if isPodReady(&pods.Items[i]) {
-							return true, nil
-						}
+					if e.Name == envName && e.Value != envValue {
+						return false, nil
 					}
 				}
 
 			}
 		}
-		return false, nil
+		// We only reach here if all controller pods are ready and have the
+		// respective value set.
+		return true, nil
 	})
 }
 
-func isPodReady(pod *corev1.Pod) bool {
+func isPodReady(pod corev1.Pod) bool {
 	if pod.DeletionTimestamp != nil || pod.Status.PodIP == "" {
 		return false
 	}
@@ -97,14 +107,6 @@ func isPodReady(pod *corev1.Pod) bool {
 		}
 	}
 	return false
-}
-
-func GetService(ctx *Context, name, namespace string) (*servingv1beta1.Service, error) {
-	service, err := ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return service, nil
 }
 
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1beta1.Service, err error) (bool, error)) (*servingv1beta1.Service, error) {
