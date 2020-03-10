@@ -42,7 +42,7 @@ function remove_installplan {
 function install_serverless_latest {
   deploy_serverless_operator_latest || return $?
   deploy_knativeserving_v1alpha1_1.3.0 || return $?
-  deploy_knativeeventing_v1alpha1_1.5.0 || return $?
+  deploy_knativeeventing_v1alpha1_1.6.0 || return $?
 }
 
 function deploy_serverless_operator_latest {
@@ -122,9 +122,9 @@ function deploy_knativeserving_v1alpha1_1.3.0 {
   logger.success 'Knative serving has been installed sucessfully.'
 }
 
-# Deploys the version of KnativeEventing from 1.5.0 release. The future releases should ensure compatibility with
+# Deploys the version of KnativeEventing from 1.6.0 release. The future releases should ensure compatibility with
 # this custom resource and accept it.
-function deploy_knativeeventing_v1alpha1_1.5.0 {
+function deploy_knativeeventing_v1alpha1_1.6.0 {
   logger.info 'Deploy Knative Eventing'
 
   # Wait for the CRD to appear
@@ -134,7 +134,7 @@ function deploy_knativeeventing_v1alpha1_1.5.0 {
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Install Knative Eventing
-  oc apply -n "${EVENTING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeeventing_cr_1.5.0.yaml" || return $?
+  oc apply -n "${EVENTING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeeventing_cr_1.6.0.yaml" || return $?
 
   timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
