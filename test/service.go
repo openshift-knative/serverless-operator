@@ -84,16 +84,14 @@ func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) er
 			}
 			for _, container := range pod.Spec.Containers {
 				for _, e := range container.Env {
-					if e.Name == envName && e.Value != envValue {
-						return false, nil
+					if e.Name == envName && e.Value == envValue {
+						return true, nil
 					}
 				}
 
 			}
 		}
-		// We only reach here if all controller pods are ready and have the
-		// respective value set.
-		return true, nil
+		return false, nil
 	})
 }
 
