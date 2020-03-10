@@ -27,6 +27,7 @@ const (
 	proxyHelloworldServiceSuccess = "proxy-helloworld-go-success"
 	proxyHelloworldService        = "proxy-helloworld-go"
 	httpProxy                     = "HTTP_PROXY"
+	proxyIP                       = "1.2.4.5:8999"
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -339,12 +340,12 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	}
 
 	t.Log("update global proxy with proxy server")
-	if err := test.UpdateGlobalProxy(caCtx, "http://1.2.4.5:8999"); err != nil {
+	if err := test.UpdateGlobalProxy(caCtx, "http://"+proxyIP); err != nil {
 		t.Fatal("Failed to update proxy", err)
 	}
 
 	t.Log("wait for controller to be ready after update")
-	if err := test.WaitForControllerEnvironment(caCtx, knativeServing, httpProxy, "http://1.2.4.5:8999"); err != nil {
+	if err := test.WaitForControllerEnvironment(caCtx, knativeServing, httpProxy, "http://"+proxyIP); err != nil {
 		t.Fatal(err)
 	}
 
@@ -359,7 +360,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 		for _, cond := range s.Status.Conditions {
 			// After global proxy update every call goes through proxy server
 			// Here it give unable to pull image because it tries to connect to not running http server
-			if strings.Contains(cond.Message, "dial tcp 1.2.4.5:8999: i/o timeout") {
+			if strings.Contains(cond.Message, "failed to fetch image information") && strings.Contains(cond.Message, proxyIP) {
 				return true, nil
 			}
 		}
