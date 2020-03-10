@@ -209,7 +209,7 @@ func (r *BaseIngressReconciler) reconcileDeletion(ctx context.Context, ci networ
 		}
 	}
 
-	logger.Info("Removing finalizer for ingress %q", ci.GetName())
+	logger.Infof("Removing finalizer for ingress %q", ci.GetName())
 	ci.SetFinalizers(ci.GetFinalizers()[1:])
 	return r.Client.Update(ctx, ci)
 }
