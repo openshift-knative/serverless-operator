@@ -5,7 +5,6 @@ import (
 	"os"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strings"
-	"time"
 )
 
 const MutationTimestampKey = "knative-serving-openshift/mutation"
@@ -51,9 +50,4 @@ func buildImageOverrideMapFromEnviron() map[string]string {
 		}
 	}
 	return overrideMap
-}
-
-// Mark the time when instance configured for OpenShift
-func annotateTimestamp(annotations map[string]string) {
-	annotations[MutationTimestampKey] = time.Now().Format(time.RFC3339)
 }

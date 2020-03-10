@@ -35,5 +35,4 @@ func TestMutateEventing(t *testing.T) {
 		t.Error(err)
 	}
 	verifyImageOverride(t, (*v1alpha1.Registry)(&ke.Spec.Registry), "foo", image)
-	verifyTimestamp(t, ke.GetAnnotations())
 }

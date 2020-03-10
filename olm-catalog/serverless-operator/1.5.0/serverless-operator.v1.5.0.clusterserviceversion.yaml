@@ -366,6 +366,8 @@ spec:
                       value: "4.3.0-0"
                     - name: REQUIRED_SERVING_NAMESPACE
                       value: "knative-serving"
+                    - name: REQUIRED_EVENTING_NAMESPACE
+                      value: "knative-eventing"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
                     - name: IMAGE_queue-proxy

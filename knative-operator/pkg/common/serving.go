@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	configv1 "github.com/openshift/api/config/v1"
