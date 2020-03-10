@@ -120,15 +120,14 @@ spec:
 
     - Rapid deployment of serverless containers
     - Automatic scaling up and down to zero
-    - Routing and network programming for Istio components
+    - Routing and network programming
     - Point-in-time snapshots of deployed code and configurations
 
     ## Prerequisites
 
     The Serverless Operator's provided APIs such as Knative Serving
     have certain requirements with regards to the size of the underlying
-    cluster and a working installation of Service Mesh. See
-    [Getting started with OpenShift Serverless](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index#serverless-getting-started)
+    cluster. See [Getting started with OpenShift Serverless](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index#serverless-getting-started)
     for more info.
 
     ## Further Information
