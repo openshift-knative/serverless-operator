@@ -306,7 +306,7 @@ spec:
                     - name: IMAGE_3scale-kourier-gateway
                       value: docker.io/maistra/proxyv2-ubi8:1.0.8
                     - name: IMAGE_3scale-kourier-control
-                      value: quay.io/3scale/kourier:fix
+                      value: markusthoemmes/3scale-kourier:fixeroo
       - name: knative-openshift-ingress
         spec:
           replicas: 1
