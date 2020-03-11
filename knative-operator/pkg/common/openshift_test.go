@@ -26,8 +26,8 @@ func TestMutate(t *testing.T) {
 	client := fake.NewFakeClient(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain))
 	ks := &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "knative-serving",
-			Namespace: "default",
+			Name:      servingName,
+			Namespace: namespace,
 		},
 	}
 	// Setup image override

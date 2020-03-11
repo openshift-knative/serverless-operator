@@ -23,8 +23,7 @@ func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*servin
 	if err != nil {
 		return nil, err
 	}
-	_, err = WaitForKnativeServingState(ctx, serving.Name, serving.Namespace, IsKnativeServingReady)
-	if err != nil {
+	if _, err = WaitForKnativeServingState(ctx, serving.Name, serving.Namespace, IsKnativeServingReady); err != nil {
 		return nil, err
 	}
 	return serving, nil
@@ -58,8 +57,10 @@ func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 }
 
 func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
-	var lastState *servingoperatorv1alpha1.KnativeServing
-	var err error
+	var (
+		lastState *servingoperatorv1alpha1.KnativeServing
+		err       error
+	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.ServingOperator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)

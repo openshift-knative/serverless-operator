@@ -2,12 +2,14 @@ package test
 
 import (
 	"strings"
+	"time"
 
 	servingv1beta1 "github.com/knative/serving/pkg/apis/serving/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -65,9 +67,51 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 	return service, nil
 }
 
+func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) error {
+	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
+		pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
+			LabelSelector: "app=controller",
+		})
+		if apierrs.IsUnauthorized(err) {
+			// These errors happen when resetting the proxy value. Just retry.
+			return false, nil
+		} else if err != nil {
+			return false, err
+		}
+		for _, pod := range pods.Items {
+			if !isPodReady(pod) {
+				return false, nil
+			}
+			for _, container := range pod.Spec.Containers {
+				for _, e := range container.Env {
+					if e.Name == envName && e.Value == envValue {
+						return true, nil
+					}
+				}
+
+			}
+		}
+		return false, nil
+	})
+}
+
+func isPodReady(pod corev1.Pod) bool {
+	if pod.DeletionTimestamp != nil || pod.Status.PodIP == "" {
+		return false
+	}
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1beta1.Service, err error) (bool, error)) (*servingv1beta1.Service, error) {
-	var lastState *servingv1beta1.Service
-	var err error
+	var (
+		lastState *servingv1beta1.Service
+		err       error
+	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.Serving.ServingV1beta1().Services(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
@@ -140,8 +184,7 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 		},
 	}
 
-	_, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment)
-	if err != nil {
+	if _, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment); err != nil {
 		return err
 	}
 
@@ -213,8 +256,10 @@ func WithRouteForServiceReady(ctx *Context, serviceName, namespace string) (*rou
 }
 
 func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *routev1.Route, err error) (bool, error)) (*routev1.Route, error) {
-	var lastState *routev1.Route
-	var err error
+	var (
+		lastState *routev1.Route
+		err       error
+	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.Route.Routes(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)

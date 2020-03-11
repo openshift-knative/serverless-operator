@@ -311,23 +311,28 @@
   version = "1.0.1"
 
 [[projects]]
-  digest = "1:e87d3f313113709e01fcf7a8b23cba603c0fce432557b93b970e06fda29ca445"
+  branch = "release-4.1"
+  digest = "1:ab0fab61b980b9956d11d17c8adc9ee56b553c3ff5ba12710792a3032ab91141"
   name = "github.com/openshift/api"
-  packages = ["route/v1"]
+  packages = [
+    "config/v1",
+    "route/v1",
+  ]
   pruneopts = "NUT"
-  revision = "0d921e363e951d89f583292c60d013c318df64dc"
-  version = "v3.9.0"
+  revision = "9ea19f9dd57858bb3fd8ec7051a99ca5e1ae88d6"
 
 [[projects]]
-  digest = "1:bd4946be1f134e0bff597a3438d2c6a435690953d4ebfcce514d898e42c40ea6"
+  branch = "release-4.1"
+  digest = "1:b2446d15625dac123cd5db1433acead4418e38572a71a758916bc739162927b5"
   name = "github.com/openshift/client-go"
   packages = [
+    "config/clientset/versioned/scheme",
+    "config/clientset/versioned/typed/config/v1",
     "route/clientset/versioned/scheme",
     "route/clientset/versioned/typed/route/v1",
   ]
   pruneopts = "NUT"
-  revision = "1fa528d3be060e4c7178eb69e76d37cf7e699e3c"
-  version = "v3.9.0"
+  revision = "0255926f53935175fe90b8e7672c4c06c17d79e6"
 
 [[projects]]
   digest = "1:c01e66557785d9d75328704d11c44c26582980cd78209475cb141b3eedd11e9f"
@@ -990,6 +995,7 @@
     "github.com/knative/test-infra/scripts",
     "github.com/knative/test-infra/tools/dep-collector",
     "github.com/openshift/api/route/v1",
+    "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1",
     "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators/v1alpha1",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client",
