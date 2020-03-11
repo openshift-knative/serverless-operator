@@ -7,7 +7,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
-	obsolete "github.com/openshift-knative/serverless-operator/serving/operator/pkg/apis/serving/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
@@ -179,13 +178,6 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
 		return nil
-	}
-
-	// Try to delete the "old" CR, if it's still there. Ignore any errors.
-	old := &obsolete.KnativeServing{}
-	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, old); err == nil {
-		// Oh, it actually still exists. Remove it, but ignore all errors!
-		r.client.Delete(context.TODO(), old)
 	}
 
 	if err := kourier.Delete(instance, r.client); err != nil {

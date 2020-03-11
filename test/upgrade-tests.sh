@@ -26,8 +26,7 @@ failed=0
 (( !failed )) && run_knative_serving_rolling_upgrade_tests "$KNATIVE_VERSION" || failed=6
 
 echo ">>> Knative Servings"
-oc get knativeserving.serving.knative.dev --all-namespaces -o yaml
-oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
+oc get knativeserving --all-namespaces -o yaml
 
 echo ">>> Knative Services"
 oc get ksvc --all-namespaces
@@ -43,8 +42,7 @@ echo "Sleeping so GC can run"
 sleep 120
 
 echo ">>> Knative Servings"
-oc get knativeserving.serving.knative.dev --all-namespaces -o yaml
-oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
+oc get knativeserving --all-namespaces -o yaml
 
 echo ">>> Knative Services"
 oc get ksvc --all-namespaces

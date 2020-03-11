@@ -62,14 +62,14 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Networking,Integration & Delivery,Cloud Provider,Developer Tools
     certified: "false"
-    containerImage: quay.io/openshift-knative/serverless-operator:v1.5.0
+    containerImage: quay.io/openshift-knative/serverless-operator:v1.6.0
     createdAt: "2019-07-27T17:00:00Z"
     description: |-
       Provides a collection of API's based on Knative to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat, Inc.
-  name: serverless-operator.v1.5.0
+  name: serverless-operator.v1.6.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -79,20 +79,6 @@ spec:
       displayName: Knative Serving
       kind: KnativeServing
       name: knativeservings.operator.knative.dev
-      statusDescriptors:
-      - description: The version of Knative Serving installed
-        displayName: Version
-        path: version
-      - description: Conditions of Knative Serving installed
-        displayName: Conditions
-        path: conditions
-        x-descriptors:
-        - 'urn:alm:descriptor:io.kubernetes.conditions'
-      version: v1alpha1
-    - description: Represents an installation of a particular version of Knative Serving
-      displayName: Knative Serving (obsolete)
-      kind: KnativeServing
-      name: knativeservings.serving.knative.dev
       statusDescriptors:
       - description: The version of Knative Serving installed
         displayName: Version
@@ -272,7 +258,7 @@ spec:
               serviceAccountName: knative-serving-operator
               containers:
                 - name: knative-serving-openshift
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.5.0:knative-operator
+                  image: $IMAGE_KNATIVE_OPERATOR
                   command:
                   - knative-serving-openshift
                   imagePullPolicy: Always
@@ -321,7 +307,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.5.0:knative-openshift-ingress
+                  image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -429,10 +415,10 @@ spec:
     - name: IMAGE_3scale-kourier-control
       image: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
     - name: IMAGE_3scale-kourier-gateway
-      image: docker.io/maistra/proxyv2-ubi8:1.0.8
+      image: docker.io/maistra/proxyv2-ubi8:1.0.4
     - name: knative-operator
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.5.0:knative-operator
+      image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.5.0:knative-openshift-ingress
-  replaces: serverless-operator.v1.4.1
-  version: 1.5.0
+      image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+  replaces: serverless-operator.v1.5.0
+  version: 1.6.0
