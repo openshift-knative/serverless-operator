@@ -186,7 +186,10 @@ function run_knative_serving_rolling_upgrade_tests {
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     local serving_version
-    serving_version=$(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    if oc get knativeserving.serving.knative.dev knative-serving -n "$SERVING_NAMESPACE" >/dev/null 2>&1; then
+      serving_version=$(oc get knativeserving.serving.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    fi
+    serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
     # Get the current/latest CSV
     local upgrade_to
