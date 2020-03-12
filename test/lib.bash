@@ -261,7 +261,7 @@ function run_knative_serving_operator_tests {
   (
   local version target serverless_rootdir exitstatus patchfile fork gitdesc
   version=$1
-  fork="${2:-knative}"
+  fork="${2:-openshift-knative}"
   serverless_rootdir="$(pwd)"
   make_temporary_gopath
 
