@@ -8,7 +8,6 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/pkg/ptr"
@@ -39,14 +38,15 @@ func mockController(spec appsv1.DeploymentSpec, name string) *appsv1.Deployment 
 }
 
 func TestProxySettingWithInvalidController(t *testing.T) {
-	client := fake.NewFakeClient()
+	client := fake.NewFakeClient(
+		mockController(appsv1.DeploymentSpec{}, "invalid"))
 	ks := &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      servingName,
 			Namespace: namespace,
 		},
 	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+	if err := common.ApplyProxySettings(ks, client); err != nil {
 		t.Error(err)
 	}
 }
@@ -73,7 +73,7 @@ func TestProxySettingForHTTPProxy(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+	if err := common.ApplyProxySettings(ks, client); err != nil {
 		t.Error(err)
 	}
 }
@@ -100,7 +100,7 @@ func TestProxySettingForHTTPSProxy(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+	if err := common.ApplyProxySettings(ks, client); err != nil {
 		t.Error(err)
 	}
 }
@@ -127,7 +127,7 @@ func TestProxySettingForNonExistedKey(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+	if err := common.ApplyProxySettings(ks, client); err != nil {
 		t.Error(err)
 	}
 }
@@ -154,7 +154,7 @@ func TestProxySettingWithSameKeyEmptyValue(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+	if err := common.ApplyProxySettings(ks, client); err != nil {
 		t.Error(err)
 	}
 }
