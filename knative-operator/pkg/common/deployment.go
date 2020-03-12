@@ -14,8 +14,9 @@ import (
 // ApplyProxySettings updates Knative controller env to use cluster wide proxy information
 func ApplyProxySettings(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	var proxyEnv = map[string]string{
-		"HTTP_PROXY": os.Getenv("HTTP_PROXY"),
-		"NO_PROXY":   os.Getenv("NO_PROXY"),
+		"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
+		"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
+		"NO_PROXY":    os.Getenv("NO_PROXY"),
 	}
 	deploy := &appsv1.Deployment{}
 	if err := c.Get(context.TODO(), client.ObjectKey{Name: "controller", Namespace: ks.GetNamespace()}, deploy); err != nil {

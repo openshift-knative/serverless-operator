@@ -18,10 +18,10 @@ import (
 
 const (
 	deploymentName = "controller"
-	httpProxy      = "http://192.168.130.11:30001"
-	noProxy        = "index.docker.io"
+	proxyValue     = "http://192.168.130.11:30001"
 	namespace      = "default"
 	servingName    = "knative-serving"
+	noProxy        = "index.docker.io"
 )
 
 func init() {
@@ -38,7 +38,7 @@ func mockController(spec appsv1.DeploymentSpec, name string) *appsv1.Deployment 
 	}
 }
 
-func TestUpdateWithInvalidController(t *testing.T) {
+func TestProxySettingWithInvalidController(t *testing.T) {
 	client := fake.NewFakeClient()
 	ks := &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
@@ -51,8 +51,8 @@ func TestUpdateWithInvalidController(t *testing.T) {
 	}
 }
 
-func TestUpdateWithPodSpec(t *testing.T) {
-	os.Setenv("HTTP_PROXY", httpProxy)
+func TestProxySettingForHTTPProxy(t *testing.T) {
+	os.Setenv("HTTP_PROXY", proxyValue)
 	client := fake.NewFakeClient(
 		mockController(appsv1.DeploymentSpec{
 			Replicas: ptr.Int32(1),
@@ -60,41 +60,8 @@ func TestUpdateWithPodSpec(t *testing.T) {
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{{
 						Env: []v1.EnvVar{{
-							Name:  "CONFIG_LOGGING_NAME",
-							Value: "config-logging",
-						}, {
-							Name:  "NO_PROXY",
-							Value: noProxy,
-						}},
-					}},
-				},
-			},
-		}, deploymentName))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
-		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
-		t.Error(err)
-	}
-}
-
-func TestUpdateWithPodSpecWithSameKey(t *testing.T) {
-	os.Setenv("HTTP_PROXY", httpProxy)
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{
-			Replicas: ptr.Int32(1),
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Env: []v1.EnvVar{{
-							Name:  "CONFIG_LOGGING_NAME",
-							Value: "config-logging",
-						}, {
 							Name:  "HTTP_PROXY",
-							Value: httpProxy,
+							Value: proxyValue,
 						}},
 					}},
 				},
@@ -111,7 +78,61 @@ func TestUpdateWithPodSpecWithSameKey(t *testing.T) {
 	}
 }
 
-func TestUpdateWithPodSpecWithSameKeyEmptyValue(t *testing.T) {
+func TestProxySettingForHTTPSProxy(t *testing.T) {
+	os.Setenv("HTTPS_PROXY", proxyValue)
+	client := fake.NewFakeClient(
+		mockController(appsv1.DeploymentSpec{
+			Replicas: ptr.Int32(1),
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{{
+						Env: []v1.EnvVar{{
+							Name:  "HTTPS_PROXY",
+							Value: proxyValue,
+						}},
+					}},
+				},
+			},
+		}, deploymentName))
+	ks := &servingv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      servingName,
+			Namespace: namespace,
+		},
+	}
+	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+		t.Error(err)
+	}
+}
+
+func TestProxySettingForNonExistedKey(t *testing.T) {
+	os.Setenv("NO_PROXY", noProxy)
+	client := fake.NewFakeClient(
+		mockController(appsv1.DeploymentSpec{
+			Replicas: ptr.Int32(1),
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{{
+						Env: []v1.EnvVar{{
+							Name:  "HTTP_PROXY",
+							Value: proxyValue,
+						}},
+					}},
+				},
+			},
+		}, deploymentName))
+	ks := &servingv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      servingName,
+			Namespace: namespace,
+		},
+	}
+	if err := common.ApplyProxySettings(ks, client); err != nil && apierrors.IsNotFound(err) {
+		t.Error(err)
+	}
+}
+
+func TestProxySettingWithSameKeyEmptyValue(t *testing.T) {
 	os.Setenv("HTTP_PROXY", "")
 	client := fake.NewFakeClient(
 		mockController(appsv1.DeploymentSpec{
@@ -120,11 +141,8 @@ func TestUpdateWithPodSpecWithSameKeyEmptyValue(t *testing.T) {
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{{
 						Env: []v1.EnvVar{{
-							Name:  "CONFIG_LOGGING_NAME",
-							Value: "config-logging",
-						}, {
 							Name:  "HTTP_PROXY",
-							Value: httpProxy,
+							Value: proxyValue,
 						}},
 					}},
 				},
