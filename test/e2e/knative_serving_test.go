@@ -193,6 +193,7 @@ func testUserPermissions(t *testing.T) {
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(paCtx, editCtx, viewCtx)
 
 	tests := []struct {
 		name        string
