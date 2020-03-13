@@ -38,7 +38,6 @@ func TestMutate(t *testing.T) {
 		t.Error(err)
 	}
 
-	verifyEgress(t, ks, networks)
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
@@ -48,18 +47,16 @@ func TestMutate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	verifyEgress(t, ks, networks)
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
 
 	// Force a change and rerun
-	ks.Spec.Config["network"]["istio.sidecar.includeOutboundIPRanges"] = "foo"
+	ks.Spec.Config["network"]["ingress.class"] = "foo"
 	err = common.Mutate(ks, client)
 	if err != nil {
 		t.Error(err)
 	}
-	verifyEgress(t, ks, networks)
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
@@ -84,13 +81,6 @@ func mockIngressConfig(domain string) *configv1.Ingress {
 		Spec: configv1.IngressSpec{
 			Domain: domain,
 		},
-	}
-}
-
-func verifyEgress(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
-	actual := ks.Spec.Config["network"]["istio.sidecar.includeOutboundIPRanges"]
-	if actual != expected {
-		t.Errorf("Expected '%v', got '%v'", expected, actual)
 	}
 }
 
