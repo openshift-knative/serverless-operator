@@ -41,7 +41,9 @@ func Subscription(subscriptionName string) *v1alpha1.Subscription {
 }
 
 func WithOperatorReady(ctx *Context, subscriptionName string) (*v1alpha1.Subscription, error) {
-	_, err := CreateSubscription(ctx, subscriptionName)
+	if _, err := CreateSubscription(ctx, subscriptionName); err != nil {
+		return nil, err
+	}
 
 	subs, err := WaitForSubscriptionState(ctx, subscriptionName, OperatorsNamespace, IsSubscriptionInstalledCSVPresent)
 	if err != nil {
@@ -55,7 +57,8 @@ func WithOperatorReady(ctx *Context, subscriptionName string) (*v1alpha1.Subscri
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(OperatorsNamespace).Delete(csv.Name, &metav1.DeleteOptions{})
+		ctx.T.Logf("Cleaning up CSV '%s/%s'", csv.Namespace, csv.Name)
+		return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csv.Namespace).Delete(csv.Name, &metav1.DeleteOptions{})
 	})
 
 	return subs, nil
@@ -67,7 +70,8 @@ func CreateSubscription(ctx *Context, name string) (*v1alpha1.Subscription, erro
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
-		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Delete(subs.Name, &metav1.DeleteOptions{})
+		ctx.T.Logf("Cleaning up Subscription '%s/%s'", subs.Namespace, subs.Name)
+		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(subs.Namespace).Delete(subs.Name, &metav1.DeleteOptions{})
 	})
 	return subs, nil
 }

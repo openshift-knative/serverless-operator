@@ -35,6 +35,7 @@ func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingop
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up KnativeServing '%s/%s'", serving.Namespace, serving.Name)
 		return DeleteKnativeServing(ctx, name, namespace)
 	})
 	return serving, nil
