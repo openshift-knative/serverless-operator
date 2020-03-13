@@ -105,14 +105,14 @@ function deploy_knativeserving_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
-   # Install Knative Serving
-  cat <<EOF | oc apply -f - || return $?
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${SERVING_NAMESPACE}
-EOF
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
+  # Install Knative Serving
+  # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
+  # ensure compatibility with this resource and its spec in the current format.
+  # This is a way to test backwards compatibility of the product with the older full-blown configuration.
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" || return $?
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
