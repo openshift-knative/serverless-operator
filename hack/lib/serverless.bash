@@ -105,6 +105,9 @@ function deploy_knativeserving_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
 
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
   # Install Knative Serving
   # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
   # ensure compatibility with this resource and its spec in the current format.
