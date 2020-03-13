@@ -153,7 +153,8 @@ func IsServiceReady(s *servingv1beta1.Service, err error) (bool, error) {
 func CreateDeployment(ctx *Context, name, namespace, image string) error {
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Namespace: namespace,
+			Name:      name,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
