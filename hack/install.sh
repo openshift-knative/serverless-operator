@@ -19,6 +19,6 @@ create_namespaces || exit $?
 exitcode=0
 
 (( !exitcode )) && ensure_catalogsource_installed || exitcode=3
-(( !exitcode )) && ensure_serverless_installed "operator" ${INSTALL_PREVIOUS_VERSION} || exitcode=4
+(( !exitcode )) && ensure_serverless_installed ${INSTALL_PREVIOUS_VERSION} || exitcode=4
 
 exit $exitcode

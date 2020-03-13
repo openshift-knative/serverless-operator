@@ -186,7 +186,7 @@ function run_knative_serving_rolling_upgrade_tests {
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     local serving_version
-    serving_version=$(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
     # Get the current/latest CSV
     local upgrade_to
@@ -202,10 +202,10 @@ function run_knative_serving_rolling_upgrade_tests {
       # Check we got RequirementsNotMet error
       [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
       # Check KnativeServing still has the old version
-      [[ $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
+      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" || return 1
-      timeout 900 '[[ ! ( $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
 
       # Assert that the old image references eventually fade away
       timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep $serving_version" || return 1
@@ -261,7 +261,7 @@ function run_knative_serving_operator_tests {
   (
   local version target serverless_rootdir exitstatus patchfile fork gitdesc
   version=$1
-  fork="${2:-knative}"
+  fork="${2:-openshift-knative}"
   serverless_rootdir="$(pwd)"
   make_temporary_gopath
 
@@ -344,7 +344,7 @@ function dump_openshift_ingress_state {
 
 function dump_knative_state {
   logger.info 'Dump of knative state'
-  oc describe knativeserving knative-serving -n "$SERVING_NAMESPACE" || true
+  oc describe knativeserving.operator.knative.dev knative-serving -n "$SERVING_NAMESPACE" || true
   oc get smcp --all-namespaces || true
   oc get smmr --all-namespaces || true
   oc get pods -n "$SERVING_NAMESPACE" || true
