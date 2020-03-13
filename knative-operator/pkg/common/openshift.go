@@ -18,7 +18,6 @@ var log = Log
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
 		ingressClass,
-		egress,
 		ingress,
 		configureLogURLTemplate,
 		ensureCustomCerts,
@@ -34,21 +33,6 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 
 func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
-	return nil
-}
-
-// configure egress
-func egress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	networkConfig := &configv1.Network{}
-	if err := c.Get(context.TODO(), client.ObjectKey{Name: "cluster"}, networkConfig); err != nil {
-		if !meta.IsNoMatchError(err) {
-			return err
-		}
-		log.Info("No OpenShift cluster network config available")
-		return nil
-	}
-	network := strings.Join(networkConfig.Spec.ServiceNetwork, ",")
-	Configure(ks, "network", "istio.sidecar.includeOutboundIPRanges", network)
 	return nil
 }
 
