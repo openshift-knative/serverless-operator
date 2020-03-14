@@ -15,10 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-  "knative.dev/pkg/apis/istio/v1alpha3"
+	"knative.dev/pkg/apis/istio/v1alpha3"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -62,6 +63,36 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// Watch for Kourier resources.
+	manifest, err := kourier.RawManifest(mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	resources := manifest.Resources()
+
+	gvkToKourier := make(map[schema.GroupVersionKind]runtime.Object)
+	for i := range resources {
+		resource := &resources[i]
+		gvkToKourier[resource.GroupVersionKind()] = resource
+	}
+
+	for _, t := range gvkToKourier {
+		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
+				annotations := obj.Meta.GetAnnotations()
+				ownerNamespace := annotations[kourier.OwnerNamespace]
+				ownerName := annotations[kourier.OwnerName]
+				if ownerNamespace != "" && ownerName != "" {
+					return []reconcile.Request{{
+						NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+					}}
+				}
+				return nil
+			})})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -239,7 +270,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 
 	log.Info("Running cleanup logic")
 	log.Info("Deleting kourier")
-	if err := kourier.Delete(instance, r.client); err != nil {
+	if err := kourier.Delete(instance, r.client, r.scheme); err != nil {
 		return fmt.Errorf("failed to delete kourier: %w", err)
 	}
 
