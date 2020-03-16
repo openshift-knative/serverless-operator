@@ -338,6 +338,8 @@ spec:
                       value: "knative-eventing"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
+                    - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
+                      value: deploy/resources/console_cli_download_kn_resources.yaml
                     - name: IMAGE_queue-proxy
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:knative-serving-queue
                     - name: IMAGE_activator
@@ -376,6 +378,8 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-filter
                     - name: IMAGE_DISPATCHER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+                    - name: IMAGE_KN_CLI_ARTIFACTS
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -531,5 +535,7 @@ spec:
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-filter
     - name: IMAGE_DISPATCHER_IMAGE
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+    - name: IMAGE_KN_CLI_ARTIFACTS
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
   replaces: serverless-operator.v1.6.0
   version: 1.7.0

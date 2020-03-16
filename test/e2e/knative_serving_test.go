@@ -77,6 +77,45 @@ func TestKnativeServing(t *testing.T) {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
+
+	})
+
+	t.Run("verify kn ConcoleCLIDownload CO and deployment resources", func(t *testing.T) {
+		// Check the status of Deployment for kn ConsoleCLIDownload
+		if err := test.CheckDeploymentScale(caCtx, knativeServing, "kn-cli-downloads", 1); err != nil {
+			t.Fatalf("failed to verify kn ConcoleCLIDownload Deployment: %v", err)
+		}
+		// Verify that Route for kn ConsoleCLIDownload is ready and has a host
+		host, err := test.CheckRouteIsReady(caCtx, knativeServing, "kn-cli-downloads")
+		if err != nil {
+			t.Fatalf("failed to verify kn ConsoleCLIDownload Route is ready: %v", err)
+		}
+		// Verify kn ConsoleCLIDownload CO and if download links are cluster local
+		ccd, err := caCtx.Clients.ConsoleCLIDownload.Get("kn", metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unable to GET kn ConsoleCLIDownload CO 'kn': %v", err)
+		}
+		// Verify the links in kn CCD CO
+		if len(ccd.Spec.Links) != 3 {
+			t.Fatalf("expecting 3 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
+		}
+		// Verify if individual link starts with correct route
+		protocol := "https://"
+		if !strings.HasPrefix(host, protocol) {
+			host = protocol + host
+		}
+		for _, link := range ccd.Spec.Links {
+			if !strings.HasPrefix(link.Href, host) {
+				t.Fatalf("incorrect href found for kn CCD, expecting prefix %s, found link %s", host, link.Href)
+			}
+			h, err := http.Head(link.Href)
+			if err != nil {
+				t.Fatalf("failed to HEAD request for URL %s, error: %v", link.Href, err)
+			}
+			if h.ContentLength < 1024*1024*10 {
+				t.Fatalf("failed to verify kn CCD, kn artifact %s size less than 10MB", link.Href)
+			}
+		}
 	})
 
 	t.Run("deploy knative service using kubeadmin", func(t *testing.T) {

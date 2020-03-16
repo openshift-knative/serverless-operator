@@ -257,6 +257,7 @@
   name = "github.com/openshift/api"
   packages = [
     "config/v1",
+    "console/v1",
     "route/v1",
   ]
   pruneopts = "NUT"
@@ -269,6 +270,8 @@
   packages = [
     "config/clientset/versioned/scheme",
     "config/clientset/versioned/typed/config/v1",
+    "console/clientset/versioned/scheme",
+    "console/clientset/versioned/typed/console/v1",
     "route/clientset/versioned/scheme",
     "route/clientset/versioned/typed/route/v1",
   ]
@@ -1008,6 +1011,7 @@
   input-imports = [
     "github.com/openshift/api/route/v1",
     "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1",
+    "github.com/openshift/client-go/console/clientset/versioned/typed/console/v1",
     "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators/v1alpha1",
     "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client",

@@ -19,11 +19,6 @@ import (
 
 var log = common.Log.WithName("kourier")
 
-const (
-	OwnerName      = "serving.knative.openshift.io/ownerName"
-	OwnerNamespace = "serving.knative.openshift.io/ownerNamespace"
-)
-
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
 	manifest, err := manifest(common.IngressNamespace(instance.GetNamespace()), api, instance, scheme)
@@ -121,7 +116,7 @@ func replaceDeploymentInstanceCount(availability *servingv1alpha1.HighAvailabili
 	scheme *runtime.Scheme) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
-			if availability != nil && availability.Replicas > 1{
+			if availability != nil && availability.Replicas > 1 {
 				deploy := &appsv1.Deployment{}
 				if err := scheme.Convert(u, deploy, nil); err != nil {
 					return err
@@ -152,8 +147,8 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 		replaceImageFromEnvironment("IMAGE_", scheme),
 		func(u *unstructured.Unstructured) error {
 			u.SetAnnotations(map[string]string{
-				OwnerName:      instance.Name,
-				OwnerNamespace: instance.Namespace,
+				common.ServingOwnerName:      instance.Name,
+				common.ServingOwnerNamespace: instance.Namespace,
 			})
 			return nil
 		},

@@ -108,6 +108,18 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 	return nil
 }
 
+func CheckRouteIsReady(ctx *Context, ns, name string) (string, error) {
+	r, err := ctx.Clients.Route.Routes(ns).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	ready, _ := RouteHasHost(r, nil)
+	if !ready {
+		return "", fmt.Errorf("route %s/%s is not ready yet")
+	}
+	return r.Status.Ingress[0].Host, nil
+}
+
 func isPodReady(pod corev1.Pod) bool {
 	if pod.DeletionTimestamp != nil || pod.Status.PodIP == "" {
 		return false
