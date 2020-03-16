@@ -5,8 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/common"
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/resources"
+	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -170,7 +169,7 @@ func TestRouteMigration(t *testing.T) {
 		cl := fake.NewFakeClient(ingress, &routev1.RouteList{Items: test.state})
 
 		// Create a Reconcile Ingress object with the scheme and fake client.
-		r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
+		r := &ReconcileIngress{client: cl, scheme: s}
 		// Mock request to simulate Reconcile() being called on an event for a
 		// watched resource .
 		req := reconcile.Request{
@@ -292,7 +291,7 @@ func TestIngressController(t *testing.T) {
 			// Create a fake client to mock API calls.
 			cl := fake.NewFakeClient(initObjs...)
 			// Create a Reconcile Ingress object with the scheme and fake client.
-			r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
+			r := &ReconcileIngress{client: cl, scheme: s}
 
 			// Mock request to simulate Reconcile() being called on an event for a
 			// watched resource .

@@ -2,18 +2,17 @@ package ingress
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/common"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
-	"knative.dev/pkg/logging"
-	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -21,8 +20,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"knative.dev/pkg/logging"
 	"knative.dev/serving/pkg/apis/networking"
+	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
+
+	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 )
 
 // Add creates a new Ingress Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -35,9 +38,6 @@ func Add(mgr manager.Manager) error {
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 	return &ReconcileIngress{
-		base: &common.BaseIngressReconciler{
-			Client: client,
-		},
 		client:   client,
 		scheme:   mgr.GetScheme(),
 		recorder: mgr.GetRecorder("knative-openshift-ingress"),
@@ -91,7 +91,6 @@ var _ reconcile.Reconciler = &ReconcileIngress{}
 
 // ReconcileIngress reconciles an Ingress object
 type ReconcileIngress struct {
-	base *common.BaseIngressReconciler
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client   client.Client
@@ -125,13 +124,13 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 	}
 	// Don't modify the informer's copy
 	ci := original.DeepCopy()
-	if newFinalizer, change := common.AppendIfAbsent(ci.Finalizers, "ocp-ingress"); change {
+	if newFinalizer, change := appendIfAbsent(ci.Finalizers, "ocp-ingress"); change {
 		ci.Finalizers = newFinalizer
 		if err := r.client.Update(context.TODO(), ci); err != nil {
 			return reconcile.Result{}, nil
 		}
 	}
-	reconcileErr := r.base.ReconcileIngress(ctx, ci)
+	reconcileErr := r.ReconcileIngress(ctx, ci)
 	if equality.Semantic.DeepEqual(original.Status, ci.Status) {
 		// If we didn't change anything then don't call updateStatus.
 		// This is important because the copy we loaded from the informer's
@@ -144,6 +143,143 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 	}
 
 	return reconcile.Result{}, reconcileErr
+}
+
+func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+	logger := logging.FromContext(ctx)
+
+	if ci.GetDeletionTimestamp() != nil {
+		return r.reconcileDeletion(ctx, ci)
+	}
+
+	logger.Infof("Reconciling ingress :%v", ci)
+
+	exposed := ci.GetSpec().Visibility == networkingv1alpha1.IngressVisibilityExternalIP
+	if exposed {
+		selector, existing, err := r.routeList(ctx, ci)
+		if err != nil {
+			logger.Errorf("Failed to list openshift routes %v", err)
+			return err
+		}
+		existingMap := routeMap(existing, selector)
+
+		routes, err := resources.MakeRoutes(ci)
+		if err != nil {
+			logger.Warnf("Failed to generate routes from ingress %v", err)
+			// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
+			return nil
+		}
+		for _, route := range routes {
+			logger.Infof("Creating/Updating OpenShift Route for host %s", route.Spec.Host)
+			if err := r.reconcileRoute(ctx, ci, route); err != nil {
+				return fmt.Errorf("failed to create route for host %s: %v", route.Spec.Host, err)
+			}
+			delete(existingMap, route.Name)
+		}
+		// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
+		for _, rt := range existingMap {
+			logger.Infof("Deleting obsoleted route for host: %s", rt.Spec.Host)
+			if err := r.deleteRoute(ctx, &rt); err != nil {
+				return err
+			}
+		}
+	} else {
+		if err := r.deleteRoutes(ctx, ci); err != nil {
+			return err
+		}
+	}
+
+	logger.Info("Ingress successfully synced")
+	return nil
+}
+
+func (r *ReconcileIngress) deleteRoute(ctx context.Context, route *routev1.Route) error {
+	logger := logging.FromContext(ctx)
+	logger.Infof("Deleting OpenShift Route for host %s", route.Spec.Host)
+	if err := r.client.Delete(ctx, route); err != nil {
+		return fmt.Errorf("failed to delete obsoleted route for host %s: %v", route.Spec.Host, err)
+	}
+	logger.Infof("Deleted OpenShift Route %q in namespace %q", route.Name, route.Namespace)
+	return nil
+}
+
+func (r *ReconcileIngress) deleteRoutes(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+	listOpts := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(map[string]string{
+			networking.IngressLabelKey: ci.GetName(),
+		}),
+	}
+	var routeList routev1.RouteList
+	if err := r.client.List(ctx, listOpts, &routeList); err != nil {
+		return err
+	}
+
+	for _, route := range routeList.Items {
+		if err := r.deleteRoute(ctx, &route); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci networkingv1alpha1.IngressAccessor, desired *routev1.Route) error {
+	logger := logging.FromContext(ctx)
+
+	// Check if this Route already exists
+	route := &routev1.Route{}
+	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, route)
+	if err != nil && errors.IsNotFound(err) {
+		err = r.client.Create(ctx, desired)
+		if err != nil {
+			logger.Errorf("Failed to create OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
+			return err
+		}
+		logger.Infof("Created OpenShift Route %q in namespace %q", desired.Name, desired.Namespace)
+	} else if err != nil {
+		return err
+	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) {
+		// Don't modify the informers copy
+		existing := route.DeepCopy()
+		existing.Spec = desired.Spec
+		existing.Annotations = desired.Annotations
+		err = r.client.Update(ctx, existing)
+		if err != nil {
+			logger.Errorf("Failed to update OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ReconcileIngress) reconcileDeletion(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+	logger := logging.FromContext(ctx)
+
+	if len(ci.GetFinalizers()) == 0 || ci.GetFinalizers()[0] != "ocp-ingress" {
+		return nil
+	}
+
+	if err := r.deleteRoutes(ctx, ci); err != nil {
+		return err
+	}
+
+	logger.Infof("Removing finalizer for ingress %q", ci.GetName())
+	ci.SetFinalizers(ci.GetFinalizers()[1:])
+	return r.client.Update(ctx, ci)
+}
+
+func (r *ReconcileIngress) routeList(ctx context.Context, ci networkingv1alpha1.IngressAccessor) (map[string]string, routev1.RouteList, error) {
+	ingressLabels := ci.GetLabels()
+	selector := map[string]string{
+		networking.IngressLabelKey:     ci.GetName(),
+		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
+		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
+	}
+	listOpts := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(selector),
+	}
+	var routeList routev1.RouteList
+	return selector, routeList, r.client.List(ctx, listOpts, &routeList)
 }
 
 // Update the Status of the Ingress.  Caller is responsible for checking
@@ -164,4 +300,38 @@ func (r *ReconcileIngress) updateStatus(ctx context.Context, desired *networking
 	existing.Status = desired.Status
 	err = r.client.Status().Update(ctx, existing)
 	return existing, err
+}
+
+// appendIfAbsent append namespace to member if its not exist
+func appendIfAbsent(members []string, routeNamespace string) ([]string, bool) {
+	for _, val := range members {
+		if val == routeNamespace {
+			return members, false
+		}
+	}
+	return append(members, routeNamespace), true
+}
+
+func routeMap(routes routev1.RouteList, selector map[string]string) map[string]routev1.Route {
+	mp := make(map[string]routev1.Route, len(routes.Items))
+	for _, route := range routes.Items {
+		// TODO: This routeFilter is used only for testing as fake client does not support list option
+		// and we can't bump the osdk version quickly. ref:
+		// https://github.com/openshift-knative/serverless-operator/serving/ingress/pull/24#discussion_r341804021
+		if routeLabelFilter(route, selector) {
+			mp[route.Name] = route
+		}
+	}
+	return mp
+}
+
+// routeLabelFilter verifies if the route has required labels.
+func routeLabelFilter(route routev1.Route, selector map[string]string) bool {
+	labels := route.GetLabels()
+	for k, v := range selector {
+		if labels[k] != v {
+			return false
+		}
+	}
+	return true
 }
