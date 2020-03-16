@@ -20,6 +20,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"knative.dev/serving/pkg/apis/networking"
+	"knative.dev/serving/pkg/apis/serving"
 )
 
 // Add creates a new Ingress Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -55,11 +58,27 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to secondary resource Routes and requeue the
-	// owner Ingress
-	err = c.Watch(&source.Kind{Type: &routev1.Route{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &networkingv1alpha1.Ingress{},
+	// Watch for changes to secondary resource Routes and requeue the owner Ingress
+	err = c.Watch(&source.Kind{Type: &routev1.Route{}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
+			labels := obj.Meta.GetLabels()
+
+			// These labels are already present on the routes so using them. The route
+			// namespace is guaranteed to be equal to the ingress namespace.
+			namespace := labels[serving.RouteNamespaceLabelKey]
+			name := labels[networking.IngressLabelKey]
+
+			if namespace == "" || name == "" {
+				return nil
+			}
+
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{
+					Namespace: namespace,
+					Name:      name,
+				},
+			}}
+		}),
 	})
 	if err != nil {
 		return err
