@@ -183,11 +183,8 @@
   digest = "1:c3050a9f4b141fcc3ef805c8b3e8e8242676557755ffb9d2707c26530cd71c9d"
   name = "github.com/gogo/protobuf"
   packages = [
-    "gogoproto",
     "proto",
-    "protoc-gen-gogo/descriptor",
     "sortkeys",
-    "types",
   ]
   pruneopts = "NT"
   revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
@@ -337,14 +334,6 @@
   pruneopts = "NT"
   revision = "1b2b06f5f209fea48ff5922d8bfb2b9ed5d8f00b"
   version = "v0.7.0"
-
-[[projects]]
-  branch = "maistra-1.0"
-  digest = "1:9b2800ba3774d0abebc4c705def63fd9194b49594891cb856f2c3bbdf89b5b95"
-  name = "github.com/maistra/istio-operator"
-  packages = ["pkg/apis/maistra/v1"]
-  pruneopts = "NT"
-  revision = "3a685c97183434bba135ac9b25900bfc20282b71"
 
 [[projects]]
   digest = "1:29b68c13e0f0af4e9ae4070e4dce03283e664619f71866aba739f8650bdc8c69"
@@ -704,17 +693,6 @@
   version = "v2.2.4"
 
 [[projects]]
-  branch = "release-1.1"
-  digest = "1:cfa241a87e0bc416528fdcb64b9562f76858766bb555717db4a83be741ee0e00"
-  name = "istio.io/api"
-  packages = [
-    "mesh/v1alpha1",
-    "networking/v1alpha3",
-  ]
-  pruneopts = "NT"
-  revision = "162827b552e84a48f0d9d45a8f10ea1623706663"
-
-[[projects]]
   digest = "1:18b9b70bdf29da610c0df032cf60ee7526a48756fa44012cc639dcb557335cbc"
   name = "k8s.io/api"
   packages = [
@@ -951,9 +929,6 @@
   name = "knative.dev/pkg"
   packages = [
     "apis",
-    "apis/istio",
-    "apis/istio/common/v1alpha1",
-    "apis/istio/v1alpha3",
     "kmp",
     "ptr",
   ]
@@ -995,7 +970,6 @@
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
-    "pkg/runtime/scheme",
     "pkg/runtime/signals",
     "pkg/source",
     "pkg/source/internal",
@@ -1042,7 +1016,6 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
-    "github.com/maistra/istio-operator/pkg/apis/maistra/v1",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1072,7 +1045,6 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
-    "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/pkg/ptr",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",

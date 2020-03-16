@@ -29,5 +29,5 @@ done
 # Parse the URL from the knative service
 URL=$(kubectl get ksvc $NAME | grep True | awk '{print $2}')
 
-# Fetch it, accounting for possible istio race conditions
+# Fetch it, accounting for possible ingress race conditions
 until curl -f $URL; do sleep 2; done

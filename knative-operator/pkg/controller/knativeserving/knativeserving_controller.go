@@ -6,7 +6,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/servicemesh"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
@@ -90,7 +89,6 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		r.ensureCustomCertsConfigMap,
 		r.createConsoleCLIDownload,
 		r.installKourier,
-		r.uninstallServiceMesh,
 		r.updateDeployment,
 	}
 	for _, stage := range stages {
@@ -162,11 +160,6 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	// install Kourier
 	return kourier.Apply(instance, r.client, r.scheme)
-}
-
-// Uninstall obsolete SMCP deployed by previous version
-func (r *ReconcileKnativeServing) uninstallServiceMesh(instance *servingv1alpha1.KnativeServing) error {
-	return servicemesh.Delete(instance, r.client)
 }
 
 // createConsoleCLIDownload creates CR for kn CLI download link

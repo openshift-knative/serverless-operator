@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -a __sources=(vars common ui scaleup namespaces catalogsource servicemesh serverless)
+declare -a __sources=(vars common ui scaleup namespaces catalogsource serverless)
 
 for source in "${__sources[@]}"; do
   # shellcheck disable=SC1091,SC1090
