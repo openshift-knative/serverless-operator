@@ -8,6 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 
 	configv1 "github.com/openshift/api/config/v1"
+	consolev1 "github.com/openshift/api/console/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -48,12 +50,36 @@ var (
 	defaultRequest = reconcile.Request{
 		NamespacedName: types.NamespacedName{Namespace: "knative-serving", Name: "knative-serving"},
 	}
+
+	defaultKnRoute = routev1.Route{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Route",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kn-cli-downloads",
+			Namespace: "knative-serving",
+		},
+		Status: routev1.RouteStatus{
+			Ingress: []routev1.RouteIngress{
+				routev1.RouteIngress{
+					Host:       "knroute.example.com",
+					RouterName: "default",
+					Conditions: []routev1.RouteIngressCondition{
+						routev1.RouteIngressCondition{
+							Type:   routev1.RouteAdmitted,
+							Status: corev1.ConditionTrue,
+						},
+					},
+				},
+			},
+		},
+	}
 )
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv("CONSOLE_DOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn.yaml")
+	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
@@ -90,14 +116,18 @@ func TestKourierReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ks := &defaultKnativeServing
 			ingress := &defaultIngress
+			knRoute := &defaultKnRoute
+			ccd := &consolev1.ConsoleCLIDownload{}
 
-			initObjs := []runtime.Object{ks, ingress}
+			initObjs := []runtime.Object{ks, ingress, knRoute}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
 			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
 			s.AddKnownTypes(v1alpha3.SchemeGroupVersion, &v1alpha3.VirtualServiceList{})
+			s.AddKnownTypes(routev1.GroupVersion, knRoute)
+			s.AddKnownTypes(consolev1.GroupVersion, ccd)
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
@@ -114,8 +144,20 @@ func TestKourierReconcile(t *testing.T) {
 				t.Fatalf("get: (%v)", err)
 			}
 
+			// Check kn ConsoleCLIDownload CR
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kn", Namespace: ""}, ccd)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
+
 			// Delete Kourier deployment.
 			err = cl.Delete(context.TODO(), deploy)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
+
+			// Delete ConsoleCLIDownload CR
+			err = cl.Delete(context.TODO(), ccd)
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
 			}
@@ -179,18 +221,20 @@ func TestDeleteVirtualServiceReconcile(t *testing.T) {
 			ks := &defaultKnativeServing
 			ingress := &defaultIngress
 			vs := &defaultVirtualService
+			knRoute := &defaultKnRoute
 
 			// Set annotation and label for test
 			vs.SetAnnotations(test.annotations)
 			vs.SetLabels(test.labels)
 
-			initObjs := []runtime.Object{ks, ingress, vs}
+			initObjs := []runtime.Object{ks, ingress, vs, knRoute}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
 			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
 			s.AddKnownTypes(v1alpha3.SchemeGroupVersion, vs)
+			s.AddKnownTypes(routev1.GroupVersion, knRoute)
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}

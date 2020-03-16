@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
+	consolev1 "github.com/openshift/api/console/v1"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -89,6 +90,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// common function to enqueue reconcile requests for resources
+	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
+		annotations := obj.Meta.GetAnnotations()
+		ownerNamespace := annotations[common.ServingOwnerNamespace]
+		ownerName := annotations[common.ServingOwnerName]
+		if ownerNamespace != "" && ownerName != "" {
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+			}}
+		}
+		return nil
+	})
+
 	// Watch for Kourier resources.
 	manifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
@@ -103,22 +117,35 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	for _, t := range gvkToKourier {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-				annotations := obj.Meta.GetAnnotations()
-				ownerNamespace := annotations[kourier.OwnerNamespace]
-				ownerName := annotations[kourier.OwnerName]
-				if ownerNamespace != "" && ownerName != "" {
-					return []reconcile.Request{{
-						NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-					}}
-				}
-				return nil
-			})})
+		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
 		if err != nil {
 			return err
 		}
 	}
+
+	// Watch for kn ConsoleCLIDownload resources
+	knManifest, err := consoleclidownload.RawManifest(mgr.GetClient())
+	if err != nil {
+		return err
+	}
+
+	knResources := knManifest.Resources()
+	gvkToCCD := make(map[schema.GroupVersionKind]runtime.Object)
+	for i := range knResources {
+		resource := &knResources[i]
+		gvkToCCD[resource.GroupVersionKind()] = resource
+	}
+
+	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
+	gvkToCCD[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
+
+	for _, t := range gvkToCCD {
+		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -168,7 +195,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
-		r.createConsoleCLIDownload,
+		r.installKnConsoleCLIDownload,
 		r.installKourier,
 		r.ensureProxySettings,
 		r.deleteVirtualService,
@@ -371,9 +398,9 @@ func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 	return kourier.Apply(instance, r.client, r.scheme)
 }
 
-// createConsoleCLIDownload creates CR for kn CLI download link
-func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
-	return consoleclidownload.Create(instance, r.client)
+// installKnConsoleCLIDownload creates CR for kn CLI download link
+func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
+	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
@@ -391,9 +418,9 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 		return fmt.Errorf("failed to delete kourier: %w", err)
 	}
 
-	log.Info("Deleting ConsoleCLIDownload")
-	if err := consoleclidownload.Delete(instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete ConsoleCLIDownload: %w", err)
+	log.Info("Deleting kn ConsoleCLIDownload")
+	if err := consoleclidownload.Delete(instance, r.client, r.scheme); err != nil {
+		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.

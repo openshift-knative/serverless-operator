@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	configV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
+	consolev1 "github.com/openshift/client-go/console/clientset/versioned/typed/console/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client"
 	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
@@ -32,16 +33,17 @@ type Context struct {
 
 // Clients holds instances of interfaces for making requests to various APIs
 type Clients struct {
-	Kube             *kubernetes.Clientset
-	KubeAggregator   *aggregator.Clientset
-	ServingOperator  servingoperatorv1alpha1.OperatorV1alpha1Interface
-	EventingOperator eventingoperatorv1alpha1.OperatorV1alpha1Interface
-	Serving          *servingversioned.Clientset
-	OLM              olmversioned.Interface
-	Dynamic          dynamic.Interface
-	Config           *rest.Config
-	Route            routev1.RouteV1Interface
-	ProxyConfig      configV1.ConfigV1Interface
+	Kube               *kubernetes.Clientset
+	KubeAggregator     *aggregator.Clientset
+	ServingOperator    servingoperatorv1alpha1.OperatorV1alpha1Interface
+	EventingOperator   eventingoperatorv1alpha1.OperatorV1alpha1Interface
+	Serving            *servingversioned.Clientset
+	OLM                olmversioned.Interface
+	Dynamic            dynamic.Interface
+	Config             *rest.Config
+	Route              routev1.RouteV1Interface
+	ProxyConfig        configV1.ConfigV1Interface
+	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -160,6 +162,11 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
+	clients.ConsoleCLIDownload, err = newConsoleCLIDownloadClient(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	clients.Config = cfg
 	return clients, nil
 }
@@ -202,6 +209,14 @@ func newOpenShiftProxyClient(cfg *rest.Config) (configV1.ConfigV1Interface, erro
 		return nil, err
 	}
 	return proxyClient, nil
+}
+
+func newConsoleCLIDownloadClient(cfg *rest.Config) (consolev1.ConsoleCLIDownloadInterface, error) {
+	consolev1, err := consolev1.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return consolev1.ConsoleCLIDownloads(), nil
 }
 
 // Cleanup for all contexts
