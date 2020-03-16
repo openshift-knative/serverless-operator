@@ -67,7 +67,7 @@ required = [
 
 [[constraint]]
   name = "knative.dev/serving"
-  branch = "release-0.9"
+  branch = "release-0.13"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
@@ -76,7 +76,7 @@ required = [
 # Align knative/pkg to the version used in knative/serving
 [[override]]
   name = "knative.dev/pkg"
-  branch = "release-0.9"
+  branch = "release-0.13"
 
 [prune]
   go-tests = true

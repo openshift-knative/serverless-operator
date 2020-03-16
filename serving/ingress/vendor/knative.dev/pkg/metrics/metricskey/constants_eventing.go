@@ -30,6 +30,12 @@ const (
 	// ResourceTypeKnativeSource is the Stackdriver resource type for Knative Sources.
 	ResourceTypeKnativeSource = "knative_source"
 
+	// LabelName is the label for the name of the resource.
+	LabelName = "name"
+
+	// LabelResourceGroup is the name of the resource CRD.
+	LabelResourceGroup = "resource_group"
+
 	// LabelTriggerName is the label for the name of the Trigger.
 	LabelTriggerName = "trigger_name"
 
@@ -44,15 +50,6 @@ const (
 
 	// LabelFilterType is the label for the Trigger filter attribute "type".
 	LabelFilterType = "filter_type"
-
-	// LabelFilterSource is the label for the Trigger filter attribute "source".
-	LabelFilterSource = "filter_source"
-
-	// LabelSourceName is the label for the name of the Source.
-	LabelSourceName = "source_name"
-
-	// LabelSourceResourceGroup is the name of the Source CRD.
-	LabelSourceResourceGroup = "source_resource_group"
 )
 
 var (
@@ -62,16 +59,16 @@ var (
 		LabelLocation,
 		LabelClusterName,
 		LabelNamespaceName,
-		LabelTriggerName,
 		LabelBrokerName,
+		LabelTriggerName,
 	)
 
 	// KnativeTriggerMetrics stores a set of metric types which are supported
 	// by resource type knative_trigger.
 	KnativeTriggerMetrics = sets.NewString(
-		"knative.dev/eventing/trigger/event_count",
-		"knative.dev/eventing/trigger/event_processing_latencies",
-		"knative.dev/eventing/trigger/event_dispatch_latencies",
+		"knative.dev/internal/eventing/trigger/event_count",
+		"knative.dev/internal/eventing/trigger/event_processing_latencies",
+		"knative.dev/internal/eventing/trigger/event_dispatch_latencies",
 	)
 
 	// KnativeBrokerLabels stores the set of resource labels for resource type knative_broker.
@@ -86,7 +83,7 @@ var (
 	// KnativeBrokerMetrics stores a set of metric types which are supported
 	// by resource type knative_trigger.
 	KnativeBrokerMetrics = sets.NewString(
-		"knative.dev/eventing/broker/event_count",
+		"knative.dev/internal/eventing/broker/event_count",
 	)
 
 	// KnativeSourceLabels stores the set of resource labels for resource type knative_source.
@@ -95,8 +92,8 @@ var (
 		LabelLocation,
 		LabelClusterName,
 		LabelNamespaceName,
-		LabelSourceName,
-		LabelSourceResourceGroup,
+		LabelName,
+		LabelResourceGroup,
 	)
 
 	// KnativeSourceMetrics stores a set of metric types which are supported

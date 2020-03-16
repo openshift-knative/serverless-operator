@@ -19,9 +19,10 @@ package test
 // crd contains functions that construct boilerplate CRD definitions.
 
 import (
+	"net/url"
 	"strings"
-	"testing"
 
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 )
 
@@ -32,7 +33,7 @@ type ResourceNames struct {
 	Revision      string
 	Service       string
 	TrafficTarget string
-	Domain        string
+	URL           *url.URL
 	Image         string
 }
 
@@ -51,7 +52,7 @@ var ObjectNameForTest = helpers.ObjectNameForTest
 
 // SubServiceNameForTest generates a random service name based on the test name and
 // the given subservice name.
-func SubServiceNameForTest(t *testing.T, subsvc string) string {
+func SubServiceNameForTest(t pkgTest.T, subsvc string) string {
 	fullPrefix := strings.TrimPrefix(t.Name(), "Test") + "-" + subsvc
 	return AppendRandomString(MakeK8sNamePrefix(fullPrefix))
 }

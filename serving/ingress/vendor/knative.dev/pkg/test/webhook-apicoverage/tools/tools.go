@@ -22,10 +22,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/user"
 	"path"
+	"path/filepath"
+	"regexp"
 
-	"github.com/pkg/errors"
 	"knative.dev/pkg/test/webhook-apicoverage/coveragecalculator"
 	"knative.dev/pkg/test/webhook-apicoverage/view"
 	"knative.dev/pkg/test/webhook-apicoverage/webhook"
@@ -52,6 +54,10 @@ const (
 	// WebhookResourcePercentageCoverageEndPoint constant for
 	// ResourcePercentageCoverage API endpoint.
 	WebhookResourcePercentageCoverageEndPoint = "https://%s:443" + webhook.ResourcePercentageCoverageEndPoint
+)
+
+var (
+	jUnitFileRegexExpr = regexp.MustCompile(`junit_.*\.xml`)
 )
 
 // GetDefaultKubePath helper method to fetch kubeconfig path.
@@ -112,7 +118,7 @@ func GetResourceCoverage(webhookIP string, resourceName string) (string, error) 
 	}
 	resp, err := client.Get(fmt.Sprintf(WebhookResourceCoverageEndPoint, webhookIP, resourceName))
 	if err != nil {
-		return "", errors.Wrap(err, "encountered error making resource coverage request")
+		return "", fmt.Errorf("encountered error making resource coverage request: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("invalid HTTP Status received for resource coverage request. Status: %d", resp.StatusCode)
@@ -120,7 +126,7 @@ func GetResourceCoverage(webhookIP string, resourceName string) (string, error) 
 
 	var body []byte
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		return "", errors.Wrap(err, "Failed reading resource coverage response")
+		return "", fmt.Errorf("failed reading resource coverage response: %w", err)
 	}
 
 	return string(body), nil
@@ -149,7 +155,7 @@ func GetTotalCoverage(webhookIP string) (*coveragecalculator.CoverageValues, err
 
 	resp, err := client.Get(fmt.Sprintf(WebhookTotalCoverageEndPoint, webhookIP))
 	if err != nil {
-		return nil, errors.Wrap(err, "encountered error making total coverage request")
+		return nil, fmt.Errorf("encountered error making total coverage request: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("invalid HTTP Status received for total coverage request. Status: %d", resp.StatusCode)
@@ -157,12 +163,12 @@ func GetTotalCoverage(webhookIP string) (*coveragecalculator.CoverageValues, err
 
 	var body []byte
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		return nil, fmt.Errorf("error reading total coverage response: %v", err)
+		return nil, fmt.Errorf("error reading total coverage response: %w", err)
 	}
 
 	var coverage coveragecalculator.CoverageValues
 	if err = json.Unmarshal(body, &coverage); err != nil {
-		return nil, errors.Wrap(err, "Failed unmarshalling response to CoverageValues instance")
+		return nil, fmt.Errorf("failed unmarshalling response to CoverageValues instance: %w", err)
 	}
 
 	return &coverage, nil
@@ -181,7 +187,7 @@ func GetAndWriteTotalCoverage(webhookIP string, outputFile string) error {
 
 	htmlData, err := view.GetHTMLCoverageValuesDisplay(totalCoverage)
 	if err != nil {
-		return errors.Wrap(err, "Failed building html file from total coverage. error")
+		return fmt.Errorf("failed building html file from total coverage: %w", err)
 	}
 
 	return ioutil.WriteFile(outputFile, []byte(htmlData), 0400)
@@ -199,21 +205,21 @@ func GetResourcePercentages(webhookIP string) (
 	resp, err := client.Get(fmt.Sprintf(WebhookResourcePercentageCoverageEndPoint,
 		webhookIP))
 	if err != nil {
-		return nil, errors.Wrap(err, "encountered error making resource percentage coverage request")
+		return nil, fmt.Errorf("encountered error making resource percentage coverage request: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Invalid HTTP Status received for resource"+
+		return nil, fmt.Errorf("invalid HTTP Status received for resource"+
 			" percentage coverage request. Status: %d", resp.StatusCode)
 	}
 
 	var body []byte
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		return nil, errors.Wrap(err, "Failed reading resource percentage coverage response")
+		return nil, fmt.Errorf("failed reading resource percentage coverage response: %w", err)
 	}
 
 	coveragePercentages := &coveragecalculator.CoveragePercentages{}
 	if err = json.Unmarshal(body, coveragePercentages); err != nil {
-		return nil, errors.Wrap(err, "Failed unmarshalling response to CoveragePercentages instance")
+		return nil, fmt.Errorf("failed unmarshalling response to CoveragePercentages instance: %w", err)
 	}
 
 	return coveragePercentages, nil
@@ -224,8 +230,20 @@ func WriteResourcePercentages(outputFile string,
 	coveragePercentages *coveragecalculator.CoveragePercentages) error {
 	htmlData, err := view.GetCoveragePercentageXMLDisplay(coveragePercentages)
 	if err != nil {
-		errors.Wrap(err, "Failed building coverage percentage xml file")
+		return fmt.Errorf("failed building coverage percentage xml file: %w", err)
 	}
 
 	return ioutil.WriteFile(outputFile, []byte(htmlData), 0400)
+}
+
+// Helper function to cleanup any existing Junit XML files.
+// This is done to ensure that we only have one Junit XML file providing the
+// API Coverage summary.
+func CleanupJunitFiles(artifactsDir string) {
+	filepath.Walk(artifactsDir, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() && jUnitFileRegexExpr.MatchString(info.Name()) {
+			os.Remove(path)
+		}
+		return nil
+	})
 }

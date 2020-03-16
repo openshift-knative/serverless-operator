@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"knative.dev/pkg/kmeta"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	asv1a1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
 	"knative.dev/serving/pkg/apis/networking"
@@ -83,10 +84,17 @@ func WithTraffic(pa *asv1a1.PodAutoscaler) {
 	pa.Status.MarkActive()
 }
 
-// WithPAStatusService annotats PA Status with the provided service name.
+// WithPAStatusService annotates PA Status with the provided service name.
 func WithPAStatusService(svc string) PodAutoscalerOption {
 	return func(pa *asv1a1.PodAutoscaler) {
 		pa.Status.ServiceName = svc
+	}
+}
+
+// WithPAMetricsService annotates PA Status with the provided service name.
+func WithPAMetricsService(svc string) PodAutoscalerOption {
+	return func(pa *asv1a1.PodAutoscaler) {
+		pa.Status.MetricsServiceName = svc
 	}
 }
 
@@ -118,14 +126,6 @@ func WithHPAClass(pa *asv1a1.PodAutoscaler) {
 		pa.Annotations = make(map[string]string)
 	}
 	pa.Annotations[autoscaling.ClassAnnotationKey] = autoscaling.HPA
-}
-
-// WithKPAClass updates the PA to add the kpa class annotation.
-func WithKPAClass(pa *asv1a1.PodAutoscaler) {
-	if pa.Annotations == nil {
-		pa.Annotations = make(map[string]string)
-	}
-	pa.Annotations[autoscaling.ClassAnnotationKey] = autoscaling.KPA
 }
 
 // WithPAContainerConcurrency returns a PodAutoscalerOption which sets
@@ -187,6 +187,11 @@ func WithMetricAnnotation(metric string) PodAutoscalerOption {
 	return withAnnotationValue(autoscaling.MetricAnnotationKey, metric)
 }
 
+// WithMetricOwnersRemoved clears the owner references of this PodAutoscaler.
+func WithMetricOwnersRemoved(m *asv1a1.Metric) {
+	m.OwnerReferences = nil
+}
+
 // WithUpperScaleBound sets maxScale to the given number.
 func WithUpperScaleBound(i int) PodAutoscalerOption {
 	return withAnnotationValue(autoscaling.MaxScaleAnnotationKey, strconv.Itoa(i))
@@ -197,13 +202,6 @@ func WithLowerScaleBound(i int) PodAutoscalerOption {
 	return withAnnotationValue(autoscaling.MinScaleAnnotationKey, strconv.Itoa(i))
 }
 
-// WithMSvcStatus sets the name of the metrics service.
-func WithMSvcStatus(s string) PodAutoscalerOption {
-	return func(pa *asv1a1.PodAutoscaler) {
-		pa.Status.MetricsServiceName = s
-	}
-}
-
 // K8sServiceOption enables further configuration of the Kubernetes Service.
 type K8sServiceOption func(*corev1.Service)
 
@@ -211,15 +209,6 @@ type K8sServiceOption func(*corev1.Service)
 func OverrideServiceName(name string) K8sServiceOption {
 	return func(svc *corev1.Service) {
 		svc.Name = name
-	}
-}
-
-func SvcWithAnnotationValue(key, value string) K8sServiceOption {
-	return func(svc *corev1.Service) {
-		if svc.Annotations == nil {
-			svc.Annotations = make(map[string]string)
-		}
-		svc.Annotations[key] = value
 	}
 }
 
@@ -246,13 +235,6 @@ func WithExternalName(name string) K8sServiceOption {
 // WithK8sSvcOwnersRemoved clears the owner references of this Service.
 func WithK8sSvcOwnersRemoved(svc *corev1.Service) {
 	svc.OwnerReferences = nil
-}
-
-// WithSvcSelector sets the selector of the service.
-func WithSvcSelector(sel map[string]string) K8sServiceOption {
-	return func(s *corev1.Service) {
-		s.Spec.Selector = sel
-	}
 }
 
 // EndpointsOption enables further configuration of the Kubernetes Endpoints.
@@ -319,13 +301,13 @@ func WithWaitingContainer(name, reason, message string) PodOption {
 	}
 }
 
-// IngressOption enables further configuration of the IngressAccessor.
-type IngressOption func(netv1alpha1.IngressAccessor)
+// IngressOption enables further configuration of the Ingress.
+type IngressOption func(*netv1alpha1.Ingress)
 
 // WithHosts sets the Hosts of the ingress rule specified index
 func WithHosts(index int, hosts ...string) IngressOption {
-	return func(ingress netv1alpha1.IngressAccessor) {
-		ingress.GetSpec().Rules[index].Hosts = hosts
+	return func(ingress *netv1alpha1.Ingress) {
+		ingress.Spec.Rules[index].Hosts = hosts
 	}
 }
 
@@ -350,16 +332,14 @@ func WithDeployRef(name string) SKSOption {
 
 // WithSKSReady marks SKS as ready.
 func WithSKSReady(sks *netv1alpha1.ServerlessService) {
-	WithPrivateService(sks.Name + "-private")(sks)
+	WithPrivateService(sks)
 	WithPubService(sks)
 	sks.Status.MarkEndpointsReady()
 }
 
 // WithPrivateService annotates SKS status with the private service name.
-func WithPrivateService(n string) SKSOption {
-	return func(sks *netv1alpha1.ServerlessService) {
-		sks.Status.PrivateServiceName = n
-	}
+func WithPrivateService(sks *netv1alpha1.ServerlessService) {
+	sks.Status.PrivateServiceName = kmeta.ChildName(sks.Name, "-private")
 }
 
 // WithSKSOwnersRemoved clears the owner references of this SKS resource.

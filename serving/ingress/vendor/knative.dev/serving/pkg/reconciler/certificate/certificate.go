@@ -19,22 +19,32 @@ package certificate
 import (
 	"context"
 	"fmt"
-	"reflect"
+	"hash/adler32"
+	"strconv"
 
-	cmv1alpha1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha1"
-	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
+	kubelisters "k8s.io/client-go/listers/core/v1"
+	certreconciler "knative.dev/serving/pkg/client/injection/reconciler/networking/v1alpha1/certificate"
+
+	"knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/pkg/tracker"
 	"knative.dev/serving/pkg/apis/networking/v1alpha1"
 	certmanagerclientset "knative.dev/serving/pkg/client/certmanager/clientset/versioned"
-	certmanagerlisters "knative.dev/serving/pkg/client/certmanager/listers/certmanager/v1alpha1"
-	listers "knative.dev/serving/pkg/client/listers/networking/v1alpha1"
-	"knative.dev/serving/pkg/reconciler"
+	acmelisters "knative.dev/serving/pkg/client/certmanager/listers/acme/v1alpha2"
+	certmanagerlisters "knative.dev/serving/pkg/client/certmanager/listers/certmanager/v1alpha2"
 	"knative.dev/serving/pkg/reconciler/certificate/config"
 	"knative.dev/serving/pkg/reconciler/certificate/resources"
 )
@@ -44,65 +54,34 @@ const (
 	noCMConditionMessage = "The ready condition of Cert Manager Certifiate does not exist."
 	notReconciledReason  = "ReconcileFailed"
 	notReconciledMessage = "Cert-Manager certificate has not yet been reconciled."
+	httpDomainLabel      = "acme.cert-manager.io/http-domain"
+	httpChallengePath    = "/.well-known/acme-challenge"
 )
+
+// It comes from cert-manager status:
+// https://github.com/jetstack/cert-manager/blob/b7e83b53820e712e7cf6b8dce3e5a050f249da79/pkg/controller/certificates/sync.go#L130
+var notReadyReasons = sets.NewString("InProgress", "Pending", "TemporaryCertificate")
 
 // Reconciler implements controller.Reconciler for Certificate resources.
 type Reconciler struct {
-	*reconciler.Base
-
 	// listers index properties about resources
-	knCertificateLister listers.CertificateLister
 	cmCertificateLister certmanagerlisters.CertificateLister
+	cmChallengeLister   acmelisters.ChallengeLister
+	cmIssuerLister      certmanagerlisters.ClusterIssuerLister
+	svcLister           kubelisters.ServiceLister
 	certManagerClient   certmanagerclientset.Interface
-
-	configStore reconciler.ConfigStore
+	tracker             tracker.Interface
 }
 
-// Check that our Reconciler implements controller.Reconciler
-var _ controller.Reconciler = (*Reconciler)(nil)
+// Check that our Reconciler implements certreconciler.Interface
+var _ certreconciler.Interface = (*Reconciler)(nil)
 
-// Reconcile compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Certificate resource
-// with the current status of the resource.
-func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
-	// Convert the namespace/name string into a distinct namespace and name
-	namespace, name, err := cache.SplitMetaNamespaceKey(key)
-	if err != nil {
-		c.Logger.Errorf("invalid resource key: %s", key)
-		return nil
-	}
-	logger := logging.FromContext(ctx)
-	ctx = c.configStore.ToContext(ctx)
-
-	original, err := c.knCertificateLister.Certificates(namespace).Get(name)
-	if apierrs.IsNotFound(err) {
-		logger.Errorf("Knative Certificate %s in work queue no longer exists", key)
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	// Don't modify the informers copy
-	knCert := original.DeepCopy()
-
+func (c *Reconciler) ReconcileKind(ctx context.Context, knCert *v1alpha1.Certificate) pkgreconciler.Event {
 	// Reconcile this copy of the Certificate and then write back any status
 	// updates regardless of whether the reconciliation errored out.
-	err = c.reconcile(ctx, knCert)
+	err := c.reconcile(ctx, knCert)
 	if err != nil {
-		logger.Warnw("Failed to reconcile certificate", zap.Error(err))
-		c.Recorder.Event(knCert, corev1.EventTypeWarning, "InternalError", err.Error())
 		knCert.Status.MarkNotReady(notReconciledReason, notReconciledMessage)
-	}
-	if equality.Semantic.DeepEqual(original.Status, knCert.Status) {
-		// If we didn't change anything then don't call updateStatus.
-		// This is important because the copy we loaded from the informer's
-		// cache may be stale and we don't want to overwrite a prior update
-		// to status with this stale state.
-	} else if _, err := c.updateStatus(knCert); err != nil {
-		logger.Warnw("Failed to update certificate status", zap.Error(err))
-		c.Recorder.Eventf(knCert, corev1.EventTypeWarning, "UpdateFailed",
-			"Failed to update status for Certificate %s: %v", key, err)
-		return err
 	}
 	return err
 }
@@ -113,10 +92,11 @@ func (c *Reconciler) reconcile(ctx context.Context, knCert *v1alpha1.Certificate
 	knCert.SetDefaults(ctx)
 	knCert.Status.InitializeConditions()
 
-	logger.Infof("Reconciling Cert-Manager certificate for Knative cert %s/%s.", knCert.Namespace, knCert.Name)
+	logger.Info("Reconciling Cert-Manager certificate for Knative cert.")
 	knCert.Status.ObservedGeneration = knCert.Generation
 
 	cmConfig := config.FromContext(ctx).CertManager
+
 	cmCert := resources.MakeCertManagerCertificate(cmConfig, knCert)
 	cmCert, err := c.reconcileCMCertificate(ctx, knCert, cmCert)
 	if err != nil {
@@ -126,66 +106,133 @@ func (c *Reconciler) reconcile(ctx context.Context, knCert *v1alpha1.Certificate
 	knCert.Status.NotAfter = cmCert.Status.NotAfter
 	// Propagate cert-manager Certificate status to Knative Certificate.
 	cmCertReadyCondition := resources.GetReadyCondition(cmCert)
+	logger.Infof("cm cert condition %v.", cmCertReadyCondition)
+
 	switch {
 	case cmCertReadyCondition == nil:
 		knCert.Status.MarkNotReady(noCMConditionReason, noCMConditionMessage)
-	case cmCertReadyCondition.Status == cmv1alpha1.ConditionUnknown:
+		return c.setHTTP01Challenges(knCert, cmCert)
+	case cmCertReadyCondition.Status == cmmeta.ConditionUnknown:
 		knCert.Status.MarkNotReady(cmCertReadyCondition.Reason, cmCertReadyCondition.Message)
-	case cmCertReadyCondition.Status == cmv1alpha1.ConditionTrue:
+		return c.setHTTP01Challenges(knCert, cmCert)
+	case cmCertReadyCondition.Status == cmmeta.ConditionTrue:
 		knCert.Status.MarkReady()
-	case cmCertReadyCondition.Status == cmv1alpha1.ConditionFalse:
-		knCert.Status.MarkFailed(cmCertReadyCondition.Reason, cmCertReadyCondition.Message)
+		knCert.Status.HTTP01Challenges = []v1alpha1.HTTP01Challenge{}
+	case cmCertReadyCondition.Status == cmmeta.ConditionFalse:
+		if notReadyReasons.Has(cmCertReadyCondition.Reason) {
+			knCert.Status.MarkNotReady(cmCertReadyCondition.Reason, cmCertReadyCondition.Message)
+		} else {
+			knCert.Status.MarkFailed(cmCertReadyCondition.Reason, cmCertReadyCondition.Message)
+		}
+		return c.setHTTP01Challenges(knCert, cmCert)
 	}
 	return nil
 }
 
-func (c *Reconciler) reconcileCMCertificate(ctx context.Context, knCert *v1alpha1.Certificate, desired *cmv1alpha1.Certificate) (*cmv1alpha1.Certificate, error) {
-	logger := logging.FromContext(ctx)
+func (c *Reconciler) reconcileCMCertificate(ctx context.Context, knCert *v1alpha1.Certificate, desired *cmv1alpha2.Certificate) (*cmv1alpha2.Certificate, error) {
+	recorder := controller.GetEventRecorder(ctx)
+
 	cmCert, err := c.cmCertificateLister.Certificates(desired.Namespace).Get(desired.Name)
 	if apierrs.IsNotFound(err) {
-		cmCert, err = c.certManagerClient.CertmanagerV1alpha1().Certificates(desired.Namespace).Create(desired)
+		cmCert, err = c.certManagerClient.CertmanagerV1alpha2().Certificates(desired.Namespace).Create(desired)
 		if err != nil {
-			logger.Errorw("Failed to create Cert-Manager certificate", zap.Error(err))
-			c.Recorder.Eventf(knCert, corev1.EventTypeWarning, "CreationFailed",
+			recorder.Eventf(knCert, corev1.EventTypeWarning, "CreationFailed",
 				"Failed to create Cert-Manager Certificate %s/%s: %v", desired.Name, desired.Namespace, err)
-			return nil, err
+			return nil, fmt.Errorf("failed to create Cert-Manager Certificate: %w", err)
 		}
-		c.Recorder.Eventf(knCert, corev1.EventTypeNormal, "Created",
+		recorder.Eventf(knCert, corev1.EventTypeNormal, "Created",
 			"Created Cert-Manager Certificate %s/%s", desired.Namespace, desired.Name)
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get Cert-Manager Certificate: %w", err)
 	} else if !metav1.IsControlledBy(desired, knCert) {
 		knCert.Status.MarkResourceNotOwned("CertManagerCertificate", desired.Name)
 		return nil, fmt.Errorf("knative Certificate %s in namespace %s does not own CertManager Certificate: %s", knCert.Name, knCert.Namespace, desired.Name)
 	} else if !equality.Semantic.DeepEqual(cmCert.Spec, desired.Spec) {
 		copy := cmCert.DeepCopy()
 		copy.Spec = desired.Spec
-		updated, err := c.certManagerClient.CertmanagerV1alpha1().Certificates(copy.Namespace).Update(copy)
+		updated, err := c.certManagerClient.CertmanagerV1alpha2().Certificates(copy.Namespace).Update(copy)
 		if err != nil {
-			logger.Errorw("Failed to update Cert-Manager Certificate", zap.Error(err))
-			c.Recorder.Eventf(knCert, corev1.EventTypeWarning, "UpdateFailed",
+			recorder.Eventf(knCert, corev1.EventTypeWarning, "UpdateFailed",
 				"Failed to create Cert-Manager Certificate %s/%s: %v", desired.Namespace, desired.Name, err)
-			return nil, err
+			return nil, fmt.Errorf("failed to update Cert-Manager Certificate: %w", err)
 		}
-		c.Recorder.Eventf(knCert, corev1.EventTypeNormal, "Updated",
+		recorder.Eventf(knCert, corev1.EventTypeNormal, "Updated",
 			"Updated Spec for Cert-Manager Certificate %s/%s", desired.Namespace, desired.Name)
 		return updated, nil
 	}
 	return cmCert, nil
 }
 
-func (c *Reconciler) updateStatus(desired *v1alpha1.Certificate) (*v1alpha1.Certificate, error) {
-	cert, err := c.knCertificateLister.Certificates(desired.Namespace).Get(desired.Name)
-	if err != nil {
-		return nil, err
+func (c *Reconciler) setHTTP01Challenges(knCert *v1alpha1.Certificate, cmCert *cmv1alpha2.Certificate) error {
+	if isHTTP, err := c.isHTTPChallenge(cmCert); err != nil {
+		return err
+	} else if !isHTTP {
+		return nil
 	}
-	// If there's nothing to update, just return.
-	if reflect.DeepEqual(cert.Status, desired.Status) {
-		return cert, nil
-	}
-	// Don't modify the informers copy
-	existing := cert.DeepCopy()
-	existing.Status = desired.Status
+	challenges := make([]v1alpha1.HTTP01Challenge, 0, len(cmCert.Spec.DNSNames))
+	for _, dnsName := range cmCert.Spec.DNSNames {
+		// This selector comes from:
+		// https://github.com/jetstack/cert-manager/blob/1b9b83a4b80068207b0a8070dadb0e760f5095f6/pkg/issuer/acme/http/pod.go#L34
+		selector := labels.NewSelector()
+		value := strconv.FormatUint(uint64(adler32.Checksum([]byte(dnsName))), 10)
+		req, err := labels.NewRequirement(httpDomainLabel, selection.Equals, []string{value})
+		if err != nil {
+			return fmt.Errorf("failed to create requirement %s=%s: %w", httpDomainLabel, value, err)
+		}
+		selector = selector.Add(*req)
 
-	return c.ServingClientSet.NetworkingV1alpha1().Certificates(existing.Namespace).UpdateStatus(existing)
+		svcs, err := c.svcLister.Services(knCert.Namespace).List(selector)
+		if err != nil {
+			return fmt.Errorf("failed to list services: %w", err)
+		}
+		if len(svcs) == 0 {
+			return fmt.Errorf("no challenge solver service for domain %s; selector=%v", dnsName, selector)
+		}
+
+		for _, svc := range svcs {
+			if err := c.tracker.Track(svcRef(svc.Namespace, svc.Name), knCert); err != nil {
+				return err
+			}
+			owner := svc.GetOwnerReferences()[0]
+			cmChallenge, err := c.cmChallengeLister.Challenges(knCert.Namespace).Get(owner.Name)
+			if err != nil {
+				return err
+			}
+
+			challenge := v1alpha1.HTTP01Challenge{
+				ServiceName:      svc.Name,
+				ServicePort:      svc.Spec.Ports[0].TargetPort,
+				ServiceNamespace: svc.Namespace,
+				URL: &apis.URL{
+					Scheme: "http",
+					Path:   fmt.Sprintf("%s/%s", httpChallengePath, cmChallenge.Spec.Token),
+					Host:   cmChallenge.Spec.DNSName,
+				},
+			}
+			challenges = append(challenges, challenge)
+		}
+	}
+	knCert.Status.HTTP01Challenges = challenges
+	return nil
+}
+
+func (c *Reconciler) isHTTPChallenge(cmCert *cmv1alpha2.Certificate) (bool, error) {
+	if issuer, err := c.cmIssuerLister.Get(cmCert.Spec.IssuerRef.Name); err != nil {
+		return false, err
+	} else {
+		return issuer.Spec.ACME != nil &&
+			len(issuer.Spec.ACME.Solvers) > 0 &&
+			issuer.Spec.ACME.Solvers[0].HTTP01 != nil, nil
+	}
+}
+
+func svcRef(namespace, name string) corev1.ObjectReference {
+	gvk := corev1.SchemeGroupVersion.WithKind("Service")
+	apiVersion, kind := gvk.ToAPIVersionAndKind()
+	return corev1.ObjectReference{
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Namespace:  namespace,
+		Name:       name,
+	}
 }

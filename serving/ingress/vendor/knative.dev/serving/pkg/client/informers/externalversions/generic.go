@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -65,8 +65,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		// Group=networking.internal.knative.dev, Version=v1alpha1
 	case networkingv1alpha1.SchemeGroupVersion.WithResource("certificates"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().Certificates().Informer()}, nil
-	case networkingv1alpha1.SchemeGroupVersion.WithResource("clusteringresses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().ClusterIngresses().Informer()}, nil
 	case networkingv1alpha1.SchemeGroupVersion.WithResource("ingresses"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().Ingresses().Informer()}, nil
 	case networkingv1alpha1.SchemeGroupVersion.WithResource("serverlessservices"):

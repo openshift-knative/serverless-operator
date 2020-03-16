@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
 	clientset "knative.dev/serving/pkg/client/certmanager/clientset/versioned"
-	certmanagerv1alpha1 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/certmanager/v1alpha1"
-	fakecertmanagerv1alpha1 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/certmanager/v1alpha1/fake"
+	acmev1alpha2 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/acme/v1alpha2"
+	fakeacmev1alpha2 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/acme/v1alpha2/fake"
+	certmanagerv1alpha2 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/certmanager/v1alpha2"
+	fakecertmanagerv1alpha2 "knative.dev/serving/pkg/client/certmanager/clientset/versioned/typed/certmanager/v1alpha2/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -41,7 +43,7 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 		}
 	}
 
-	cs := &Clientset{}
+	cs := &Clientset{tracker: o}
 	cs.discovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
 	cs.AddReactor("*", "*", testing.ObjectReaction(o))
 	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
@@ -63,20 +65,25 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 type Clientset struct {
 	testing.Fake
 	discovery *fakediscovery.FakeDiscovery
+	tracker   testing.ObjectTracker
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
 
-var _ clientset.Interface = &Clientset{}
-
-// CertmanagerV1alpha1 retrieves the CertmanagerV1alpha1Client
-func (c *Clientset) CertmanagerV1alpha1() certmanagerv1alpha1.CertmanagerV1alpha1Interface {
-	return &fakecertmanagerv1alpha1.FakeCertmanagerV1alpha1{Fake: &c.Fake}
+func (c *Clientset) Tracker() testing.ObjectTracker {
+	return c.tracker
 }
 
-// Certmanager retrieves the CertmanagerV1alpha1Client
-func (c *Clientset) Certmanager() certmanagerv1alpha1.CertmanagerV1alpha1Interface {
-	return &fakecertmanagerv1alpha1.FakeCertmanagerV1alpha1{Fake: &c.Fake}
+var _ clientset.Interface = &Clientset{}
+
+// AcmeV1alpha2 retrieves the AcmeV1alpha2Client
+func (c *Clientset) AcmeV1alpha2() acmev1alpha2.AcmeV1alpha2Interface {
+	return &fakeacmev1alpha2.FakeAcmeV1alpha2{Fake: &c.Fake}
+}
+
+// CertmanagerV1alpha2 retrieves the CertmanagerV1alpha2Client
+func (c *Clientset) CertmanagerV1alpha2() certmanagerv1alpha2.CertmanagerV1alpha2Interface {
+	return &fakecertmanagerv1alpha2.FakeCertmanagerV1alpha2{Fake: &c.Fake}
 }

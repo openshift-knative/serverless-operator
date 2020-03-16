@@ -123,47 +123,47 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 	// Don't modify the informer's copy
-	ci := original.DeepCopy()
-	if newFinalizer, change := appendIfAbsent(ci.Finalizers, "ocp-ingress"); change {
-		ci.Finalizers = newFinalizer
-		if err := r.client.Update(context.TODO(), ci); err != nil {
+	ing := original.DeepCopy()
+	if newFinalizer, change := appendIfAbsent(ing.Finalizers, "ocp-ingress"); change {
+		ing.Finalizers = newFinalizer
+		if err := r.client.Update(context.TODO(), ing); err != nil {
 			return reconcile.Result{}, nil
 		}
 	}
-	reconcileErr := r.ReconcileIngress(ctx, ci)
-	if equality.Semantic.DeepEqual(original.Status, ci.Status) {
+	reconcileErr := r.ReconcileIngress(ctx, ing)
+	if equality.Semantic.DeepEqual(original.Status, ing.Status) {
 		// If we didn't change anything then don't call updateStatus.
 		// This is important because the copy we loaded from the informer's
 		// cache may be stale and we don't want to overwrite a prior update
 		// to status with this stale state.
-	} else if _, err := r.updateStatus(ctx, ci); err != nil {
+	} else if _, err := r.updateStatus(ctx, ing); err != nil {
 		logger.Errorf("Failed to update ingress status %v", err)
-		r.recorder.Event(ci, corev1.EventTypeWarning, "SyncError", err.Error())
+		r.recorder.Event(ing, corev1.EventTypeWarning, "SyncError", err.Error())
 		return reconcile.Result{}, err
 	}
 
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
 	logger := logging.FromContext(ctx)
 
-	if ci.GetDeletionTimestamp() != nil {
-		return r.reconcileDeletion(ctx, ci)
+	if ing.GetDeletionTimestamp() != nil {
+		return r.reconcileDeletion(ctx, ing)
 	}
 
-	logger.Infof("Reconciling ingress :%v", ci)
+	logger.Infof("Reconciling ingress :%v", ing)
 
-	exposed := ci.GetSpec().Visibility == networkingv1alpha1.IngressVisibilityExternalIP
+	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
-		selector, existing, err := r.routeList(ctx, ci)
+		selector, existing, err := r.routeList(ctx, ing)
 		if err != nil {
 			logger.Errorf("Failed to list openshift routes %v", err)
 			return err
 		}
 		existingMap := routeMap(existing, selector)
 
-		routes, err := resources.MakeRoutes(ci)
+		routes, err := resources.MakeRoutes(ing)
 		if err != nil {
 			logger.Warnf("Failed to generate routes from ingress %v", err)
 			// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
@@ -171,7 +171,7 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ci networkingv1
 		}
 		for _, route := range routes {
 			logger.Infof("Creating/Updating OpenShift Route for host %s", route.Spec.Host)
-			if err := r.reconcileRoute(ctx, ci, route); err != nil {
+			if err := r.reconcileRoute(ctx, ing, route); err != nil {
 				return fmt.Errorf("failed to create route for host %s: %v", route.Spec.Host, err)
 			}
 			delete(existingMap, route.Name)
@@ -184,7 +184,7 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ci networkingv1
 			}
 		}
 	} else {
-		if err := r.deleteRoutes(ctx, ci); err != nil {
+		if err := r.deleteRoutes(ctx, ing); err != nil {
 			return err
 		}
 	}
@@ -203,10 +203,10 @@ func (r *ReconcileIngress) deleteRoute(ctx context.Context, route *routev1.Route
 	return nil
 }
 
-func (r *ReconcileIngress) deleteRoutes(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+func (r *ReconcileIngress) deleteRoutes(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
 	listOpts := &client.ListOptions{
 		LabelSelector: labels.SelectorFromSet(map[string]string{
-			networking.IngressLabelKey: ci.GetName(),
+			networking.IngressLabelKey: ing.GetName(),
 		}),
 	}
 	var routeList routev1.RouteList
@@ -222,7 +222,7 @@ func (r *ReconcileIngress) deleteRoutes(ctx context.Context, ci networkingv1alph
 	return nil
 }
 
-func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci networkingv1alpha1.IngressAccessor, desired *routev1.Route) error {
+func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1alpha1.Ingress, desired *routev1.Route) error {
 	logger := logging.FromContext(ctx)
 
 	// Check if this Route already exists
@@ -252,26 +252,26 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci networkingv1al
 	return nil
 }
 
-func (r *ReconcileIngress) reconcileDeletion(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
+func (r *ReconcileIngress) reconcileDeletion(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
 	logger := logging.FromContext(ctx)
 
-	if len(ci.GetFinalizers()) == 0 || ci.GetFinalizers()[0] != "ocp-ingress" {
+	if len(ing.GetFinalizers()) == 0 || ing.GetFinalizers()[0] != "ocp-ingress" {
 		return nil
 	}
 
-	if err := r.deleteRoutes(ctx, ci); err != nil {
+	if err := r.deleteRoutes(ctx, ing); err != nil {
 		return err
 	}
 
-	logger.Infof("Removing finalizer for ingress %q", ci.GetName())
-	ci.SetFinalizers(ci.GetFinalizers()[1:])
-	return r.client.Update(ctx, ci)
+	logger.Infof("Removing finalizer for ingress %q", ing.GetName())
+	ing.SetFinalizers(ing.GetFinalizers()[1:])
+	return r.client.Update(ctx, ing)
 }
 
-func (r *ReconcileIngress) routeList(ctx context.Context, ci networkingv1alpha1.IngressAccessor) (map[string]string, routev1.RouteList, error) {
-	ingressLabels := ci.GetLabels()
+func (r *ReconcileIngress) routeList(ctx context.Context, ing *networkingv1alpha1.Ingress) (map[string]string, routev1.RouteList, error) {
+	ingressLabels := ing.GetLabels()
 	selector := map[string]string{
-		networking.IngressLabelKey:     ci.GetName(),
+		networking.IngressLabelKey:     ing.GetName(),
 		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
 		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
 	}
@@ -285,18 +285,18 @@ func (r *ReconcileIngress) routeList(ctx context.Context, ci networkingv1alpha1.
 // Update the Status of the Ingress.  Caller is responsible for checking
 // for semantic differences before calling.
 func (r *ReconcileIngress) updateStatus(ctx context.Context, desired *networkingv1alpha1.Ingress) (*networkingv1alpha1.Ingress, error) {
-	ci := &networkingv1alpha1.Ingress{}
-	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, ci)
+	ing := &networkingv1alpha1.Ingress{}
+	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, ing)
 	if err != nil {
 		return nil, err
 	}
 
 	// If there's nothing to update, just return.
-	if reflect.DeepEqual(ci.Status, desired.Status) {
-		return ci, nil
+	if reflect.DeepEqual(ing.Status, desired.Status) {
+		return ing, nil
 	}
 	// Don't modify the informers copy
-	existing := ci.DeepCopy()
+	existing := ing.DeepCopy()
 	existing.Status = desired.Status
 	err = r.client.Status().Update(ctx, existing)
 	return existing, err

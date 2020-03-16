@@ -17,116 +17,76 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"time"
 
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
 	"go.uber.org/zap"
-	activatorconfig "knative.dev/serving/pkg/activator/config"
-	"knative.dev/serving/pkg/apis/serving"
-	"knative.dev/serving/pkg/queue"
 
-	"knative.dev/pkg/logging/logkey"
+	"knative.dev/pkg/logging"
+	pkgnet "knative.dev/pkg/network"
 	tracingconfig "knative.dev/pkg/tracing/config"
 	"knative.dev/serving/pkg/activator"
+	activatorconfig "knative.dev/serving/pkg/activator/config"
 	activatornet "knative.dev/serving/pkg/activator/net"
 	"knative.dev/serving/pkg/activator/util"
-	netlisters "knative.dev/serving/pkg/client/listers/networking/v1alpha1"
-	servinglisters "knative.dev/serving/pkg/client/listers/serving/v1alpha1"
-	pkghttp "knative.dev/serving/pkg/http"
 	"knative.dev/serving/pkg/network"
-
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	corev1listers "k8s.io/client-go/listers/core/v1"
+	"knative.dev/serving/pkg/queue"
 )
 
-// activationHandler will wait for an active endpoint for a revision
-// to be available before proxing the request
-type activationHandler struct {
-	logger    *zap.SugaredLogger
-	transport http.RoundTripper
-	reporter  activator.StatsReporter
-	throttler *activatornet.Throttler
-
-	endpointTimeout time.Duration
-
-	revisionLister servinglisters.RevisionLister
-	serviceLister  corev1listers.ServiceLister
-	sksLister      netlisters.ServerlessServiceLister
+// Throttler is the interface that Handler calls to Try to proxy the user request.
+type Throttler interface {
+	Try(context.Context, func(string) error) error
 }
 
-// The default time we'll try to probe the revision for activation.
-const defaulTimeout = 2 * time.Minute
+// activationHandler will wait for an active endpoint for a revision
+// to be available before proxying the request
+type activationHandler struct {
+	transport        http.RoundTripper
+	tracingTransport http.RoundTripper
+	throttler        Throttler
+	bufferPool       httputil.BufferPool
+}
 
 // New constructs a new http.Handler that deals with revision activation.
-func New(l *zap.SugaredLogger, r activator.StatsReporter,
-	t *activatornet.Throttler,
-	rl servinglisters.RevisionLister, sl corev1listers.ServiceLister,
-	sksL netlisters.ServerlessServiceLister) http.Handler {
-
+func New(ctx context.Context, t Throttler) http.Handler {
+	defaultTransport := pkgnet.AutoTransport
 	return &activationHandler{
-		logger:          l,
-		transport:       network.AutoTransport,
-		reporter:        r,
-		throttler:       t,
-		revisionLister:  rl,
-		sksLister:       sksL,
-		serviceLister:   sl,
-		endpointTimeout: defaulTimeout,
+		transport:        defaultTransport,
+		tracingTransport: &ochttp.Transport{Base: defaultTransport},
+		throttler:        t,
+		bufferPool:       network.NewBufferPool(),
 	}
 }
 
 func (a *activationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	namespace := pkghttp.LastHeaderValue(r.Header, activator.RevisionHeaderNamespace)
-	name := pkghttp.LastHeaderValue(r.Header, activator.RevisionHeaderName)
-	revID := types.NamespacedName{Namespace: namespace, Name: name}
-	logger := a.logger.With(zap.String(logkey.Key, revID.String()))
+	logger := logging.FromContext(r.Context())
+	tracingEnabled := activatorconfig.FromContext(r.Context()).Tracing.Backend != tracingconfig.None
 
-	revision, err := a.revisionLister.Revisions(namespace).Get(name)
-	if err != nil {
-		logger.Errorw("Error while getting revision", zap.Error(err))
-		sendError(err, w)
-		return
+	tryContext, trySpan := r.Context(), (*trace.Span)(nil)
+	if tracingEnabled {
+		tryContext, trySpan = trace.StartSpan(r.Context(), "throttler_try")
 	}
 
-	tryContext, trySpan := trace.StartSpan(r.Context(), "throttler_try")
-	if a.endpointTimeout > 0 {
-		var cancel context.CancelFunc
-		tryContext, cancel = context.WithTimeout(tryContext, a.endpointTimeout)
-		defer cancel()
-	}
-
-	err = a.throttler.Try(tryContext, revID, func(dest string) error {
+	if err := a.throttler.Try(tryContext, func(dest string) error {
 		trySpan.End()
 
-		var httpStatus int
-		target := url.URL{
+		proxyCtx, proxySpan := r.Context(), (*trace.Span)(nil)
+		if tracingEnabled {
+			proxyCtx, proxySpan = trace.StartSpan(r.Context(), "proxy")
+		}
+		a.proxyRequest(logger, w, r.WithContext(proxyCtx), &url.URL{
 			Scheme: "http",
 			Host:   dest,
-		}
-
-		proxyCtx, proxySpan := trace.StartSpan(r.Context(), "proxy")
-		httpStatus = a.proxyRequest(logger, w, r.WithContext(proxyCtx), &target)
+		}, tracingEnabled)
 		proxySpan.End()
 
-		configurationName := revision.Labels[serving.ConfigurationLabelKey]
-		serviceName := revision.Labels[serving.ServiceLabelKey]
-		// Do not report response time here. It is reported in pkg/activator/metric_handler.go to
-		// sum up all time spent on multiple handlers.
-		a.reporter.ReportRequestCount(namespace, serviceName, configurationName, name, httpStatus, 1)
-
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		// Set error on our capacity waiting span and end it
-		trySpan.Annotate([]trace.Attribute{
-			trace.StringAttribute("activator.throttler.error", err.Error()),
-		}, "ThrottlerTry")
+		trySpan.Annotate([]trace.Attribute{trace.StringAttribute("activator.throttler.error", err.Error())}, "ThrottlerTry")
 		trySpan.End()
 
 		logger.Errorw("Throttler try error", zap.Error(err))
@@ -140,36 +100,20 @@ func (a *activationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *activationHandler) proxyRequest(logger *zap.SugaredLogger, w http.ResponseWriter, r *http.Request, target *url.URL) int {
+func (a *activationHandler) proxyRequest(logger *zap.SugaredLogger, w http.ResponseWriter, r *http.Request, target *url.URL, tracingEnabled bool) {
 	network.RewriteHostIn(r)
+	r.Header.Set(network.ProxyHeaderName, activator.Name)
 
 	// Setup the reverse proxy.
 	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.BufferPool = a.bufferPool
 	proxy.Transport = a.transport
-	if config := activatorconfig.FromContext(r.Context()); config.Tracing.Backend != tracingconfig.None {
-		// When we collect metrics, we're wrapping the RoundTripper
-		// the proxy would use inside an annotating transport.
-		proxy.Transport = &ochttp.Transport{
-			Base: a.transport,
-		}
+	if tracingEnabled {
+		proxy.Transport = a.tracingTransport
 	}
 	proxy.FlushInterval = -1
-	proxy.ErrorHandler = network.ErrorHandler(logger)
-
-	r.Header.Set(network.ProxyHeaderName, activator.Name)
-
+	proxy.ErrorHandler = pkgnet.ErrorHandler(logger)
 	util.SetupHeaderPruning(proxy)
 
-	recorder := pkghttp.NewResponseRecorder(w, http.StatusOK)
-	proxy.ServeHTTP(recorder, r)
-	return recorder.ResponseCode
-}
-
-func sendError(err error, w http.ResponseWriter) {
-	msg := fmt.Sprintf("Error getting active endpoint: %v", err)
-	if k8serrors.IsNotFound(err) {
-		http.Error(w, msg, http.StatusNotFound)
-		return
-	}
-	http.Error(w, msg, http.StatusInternalServerError)
+	proxy.ServeHTTP(w, r)
 }

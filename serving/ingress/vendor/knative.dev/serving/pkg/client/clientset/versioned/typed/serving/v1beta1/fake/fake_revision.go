@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ func (c *FakeRevisions) DeleteCollection(options *v1.DeleteOptions, listOptions 
 // Patch applies the patch and returns the patched revision.
 func (c *FakeRevisions) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.Revision, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(revisionsResource, c.ns, name, data, subresources...), &v1beta1.Revision{})
+		Invokes(testing.NewPatchSubresourceAction(revisionsResource, c.ns, name, pt, data, subresources...), &v1beta1.Revision{})
 
 	if obj == nil {
 		return nil, err

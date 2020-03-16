@@ -26,6 +26,7 @@ import (
 )
 
 // +genclient
+// +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServerlessService is a proxy for the K8s service objects containing the
@@ -119,7 +120,7 @@ type ServerlessServiceStatus struct {
 
 // ConditionType represents a ServerlessService condition value
 const (
-	// ServerlessServiceConditionReady is set when the clusterIngress networking setting is
+	// ServerlessServiceConditionReady is set when the ingress networking setting is
 	// configured and it has a load balancer address.
 	ServerlessServiceConditionReady = apis.ConditionReady
 

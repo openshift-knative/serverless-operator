@@ -21,22 +21,22 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/metrics"
 	pkgmetrics "knative.dev/pkg/metrics"
+	"knative.dev/pkg/profiling"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/system"
 	tracingconfig "knative.dev/pkg/tracing/config"
 	"knative.dev/serving/pkg/apis/networking"
 	"knative.dev/serving/pkg/apis/serving"
-	"knative.dev/serving/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving/pkg/autoscaler"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
+	autoscalerconfig "knative.dev/serving/pkg/autoscaler/config"
 	"knative.dev/serving/pkg/deployment"
-	"knative.dev/serving/pkg/metrics"
 	"knative.dev/serving/pkg/network"
 	"knative.dev/serving/pkg/queue"
 	"knative.dev/serving/pkg/queue/readiness"
@@ -45,6 +45,7 @@ import (
 const (
 	localAddress             = "127.0.0.1"
 	requestQueueHTTPPortName = "queue-port"
+	profilingPortName        = "profiling-port"
 )
 
 var (
@@ -58,15 +59,20 @@ var (
 	}
 	queueNonServingPorts = []corev1.ContainerPort{{
 		// Provides health checks and lifecycle hooks.
-		Name:          v1alpha1.QueueAdminPortName,
+		Name:          v1.QueueAdminPortName,
 		ContainerPort: int32(networking.QueueAdminPort),
 	}, {
-		Name:          v1alpha1.AutoscalingQueueMetricsPortName,
+		Name:          v1.AutoscalingQueueMetricsPortName,
 		ContainerPort: int32(networking.AutoscalingQueueMetricsPort),
 	}, {
-		Name:          v1alpha1.UserQueueMetricsPortName,
+		Name:          v1.UserQueueMetricsPortName,
 		ContainerPort: int32(networking.UserQueueMetricsPort),
 	}}
+
+	profilingPort = corev1.ContainerPort{
+		Name:          profilingPortName,
+		ContainerPort: int32(profiling.ProfilingPort),
+	}
 
 	queueSecurityContext = &corev1.SecurityContext{
 		AllowPrivilegeEscalation: ptr.Bool(false),
@@ -181,8 +187,8 @@ func makeQueueProbe(in *corev1.Probe) *corev1.Probe {
 }
 
 // makeQueueContainer creates the container spec for the queue sidecar.
-func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, tracingConfig *tracingconfig.Config, observabilityConfig *metrics.ObservabilityConfig,
-	autoscalerConfig *autoscaler.Config, deploymentConfig *deployment.Config) (*corev1.Container, error) {
+func makeQueueContainer(rev *v1.Revision, loggingConfig *logging.Config, tracingConfig *tracingconfig.Config, observabilityConfig *metrics.ObservabilityConfig,
+	autoscalerConfig *autoscalerconfig.Config, deploymentConfig *deployment.Config) (*corev1.Container, error) {
 	configName := ""
 	if owner := metav1.GetControllerOf(rev); owner != nil && owner.Kind == "Configuration" {
 		configName = owner.Name
@@ -201,33 +207,41 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, t
 		ts = *rev.Spec.TimeoutSeconds
 	}
 
+	ports := queueNonServingPorts
+	if observabilityConfig.EnableProfiling {
+		ports = append(ports, profilingPort)
+	}
 	// We need to configure only one serving port for the Queue proxy, since
 	// we know the protocol that is being used by this application.
-	ports := queueNonServingPorts
+	servingPort := queueHTTPPort
 	if rev.GetProtocol() == networking.ProtocolH2C {
-		ports = append(ports, queueHTTP2Port)
-	} else {
-		ports = append(ports, queueHTTPPort)
+		servingPort = queueHTTP2Port
 	}
+	ports = append(ports, servingPort)
 
 	var volumeMounts []corev1.VolumeMount
 	if observabilityConfig.EnableVarLogCollection {
 		volumeMounts = append(volumeMounts, internalVolumeMount)
 	}
 
-	rp := rev.Spec.GetContainer().ReadinessProbe.DeepCopy()
+	if autoscalerConfig.EnableGracefulScaledown {
+		volumeMounts = append(volumeMounts, labelVolumeMount)
+	}
+
+	container := rev.Spec.GetContainer()
+	rp := container.ReadinessProbe.DeepCopy()
 
 	applyReadinessProbeDefaults(rp, userPort)
 
 	probeJSON, err := readiness.EncodeProbe(rp)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize readiness probe")
+		return nil, fmt.Errorf("failed to serialize readiness probe: %w", err)
 	}
 
 	return &corev1.Container{
 		Name:            QueueContainerName,
 		Image:           deploymentConfig.QueueSidecarImage,
-		Resources:       createQueueResources(rev.GetAnnotations(), rev.Spec.GetContainer()),
+		Resources:       createQueueResources(rev.GetAnnotations(), container),
 		Ports:           ports,
 		ReadinessProbe:  makeQueueProbe(rp),
 		VolumeMounts:    volumeMounts,
@@ -246,7 +260,7 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, t
 			Value: rev.Name,
 		}, {
 			Name:  "QUEUE_SERVING_PORT",
-			Value: strconv.Itoa(int(ports[len(ports)-1].ContainerPort)),
+			Value: strconv.Itoa(int(servingPort.ContainerPort)),
 		}, {
 			Name:  "CONTAINER_CONCURRENCY",
 			Value: strconv.Itoa(int(rev.Spec.GetContainerConcurrency())),
@@ -316,11 +330,21 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, t
 			Name:  "INTERNAL_VOLUME_PATH",
 			Value: internalVolumePath,
 		}, {
+			Name:  "DOWNWARD_API_LABELS_PATH",
+			Value: fmt.Sprintf("%s/%s", podInfoVolumePath, metadataLabelsPath),
+		}, {
 			Name:  "SERVING_READINESS_PROBE",
 			Value: probeJSON,
+		}, {
+			Name:  "ENABLE_PROFILING",
+			Value: strconv.FormatBool(observabilityConfig.EnableProfiling),
+		}, {
+			Name:  "SERVING_ENABLE_PROBE_REQUEST_LOG",
+			Value: strconv.FormatBool(observabilityConfig.EnableProbeRequestLog),
 		}},
 	}, nil
 }
+
 func applyReadinessProbeDefaults(p *corev1.Probe, port int32) {
 	switch {
 	case p == nil:
@@ -341,7 +365,12 @@ func applyReadinessProbeDefaults(p *corev1.Probe, port int32) {
 		p.TCPSocket.Host = localAddress
 		p.TCPSocket.Port = intstr.FromInt(int(port))
 	case p.Exec != nil:
-		//User-defined ExecProbe will still be run on user-container.
+		// User-defined ExecProbe will still be run on user-container.
+		// Use TCP probe in queue-proxy.
+		p.TCPSocket = &corev1.TCPSocketAction{
+			Host: localAddress,
+			Port: intstr.FromInt(int(port)),
+		}
 		p.Exec = nil
 	}
 

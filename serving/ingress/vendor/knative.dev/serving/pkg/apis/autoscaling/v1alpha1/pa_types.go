@@ -26,6 +26,7 @@ import (
 )
 
 // +genclient
+// +genreconciler:class=autoscaling.knative.dev/class
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // PodAutoscaler is a Knative abstraction that encapsulates the interface by which Knative
@@ -80,7 +81,7 @@ type PodAutoscalerSpec struct {
 	// This property will be dropped in future Knative releases and should
 	// not be used - use metadata.generation
 	//
-	// Tracking issue: https://knative.dev/serving/issues/643
+	// Tracking issue: https://github.com/knative/serving/issues/643
 	//
 	// +optional
 	DeprecatedGeneration int64 `json:"generation,omitempty"`
@@ -99,10 +100,6 @@ type PodAutoscalerSpec struct {
 	// Defaults to `ReachabilityUnknown`
 	// +optional
 	Reachability ReachabilityType `json:"reachability,omitempty"`
-
-	// DeprecatedServiceName holds the name of a core Kubernetes Service resource that
-	// load balances over the pods referenced by the ScaleTargetRef.
-	DeprecatedServiceName string `json:"serviceName"`
 
 	// The application-layer protocol. Matches `ProtocolType` inferred from the revision spec.
 	ProtocolType net.ProtocolType `json:"protocolType"`

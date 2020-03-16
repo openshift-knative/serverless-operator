@@ -25,15 +25,15 @@ const (
 var ErrNoValidLoadbalancerDomain = errors.New("unable to find Ingress LoadBalancer with DomainInternal set")
 
 // MakeRoutes creates OpenShift Routes from a Knative Ingress
-func MakeRoutes(ci networkingv1alpha1.IngressAccessor) ([]*routev1.Route, error) {
+func MakeRoutes(ci *networkingv1alpha1.Ingress) ([]*routev1.Route, error) {
 	routes := []*routev1.Route{}
 
 	// Skip all route creation for cluster-local ingresses.
-	if ci.GetSpec().Visibility == networkingv1alpha1.IngressVisibilityClusterLocal {
+	if ci.Spec.Visibility == networkingv1alpha1.IngressVisibilityClusterLocal {
 		return routes, nil
 	}
 
-	for _, rule := range ci.GetSpec().Rules {
+	for _, rule := range ci.Spec.Rules {
 		for _, host := range rule.Hosts {
 			// Ignore domains like myksvc.myproject.svc.cluster.local
 			// TODO: This also ignores any top-level vanity domains
@@ -57,7 +57,7 @@ func MakeRoutes(ci networkingv1alpha1.IngressAccessor) ([]*routev1.Route, error)
 	return routes, nil
 }
 
-func makeRoute(ci networkingv1alpha1.IngressAccessor, host string, rule networkingv1alpha1.IngressRule) (*routev1.Route, error) {
+func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alpha1.IngressRule) (*routev1.Route, error) {
 	// Take over annotaitons from ingress.
 	annotations := ci.GetAnnotations()
 	if annotations == nil {
@@ -101,8 +101,8 @@ func makeRoute(ci networkingv1alpha1.IngressAccessor, host string, rule networki
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
 	namespace := ""
-	if ci.GetStatus().LoadBalancer != nil {
-		for _, lbIngress := range ci.GetStatus().LoadBalancer.Ingress {
+	if ci.Status.LoadBalancer != nil {
+		for _, lbIngress := range ci.Status.LoadBalancer.Ingress {
 			if lbIngress.DomainInternal != "" {
 				// DomainInternal should look something like:
 				// kourier.knative-serving-ingress.svc.cluster.local

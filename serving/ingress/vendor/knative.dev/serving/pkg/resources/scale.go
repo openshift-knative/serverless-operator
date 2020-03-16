@@ -17,30 +17,15 @@ limitations under the License.
 package resources
 
 import (
-	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/apis/duck"
-	"knative.dev/pkg/controller"
-	"knative.dev/pkg/injection/clients/dynamicclient"
 	pav1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-
-// NewPodScalableInformerFactory produces an informer factory for PodScalable resources.
-func NewPodScalableInformerFactory(ctx context.Context) duck.InformerFactory {
-	return &duck.CachedInformerFactory{
-		Delegate: &duck.TypedInformerFactory{
-			Client:       dynamicclient.Get(ctx),
-			Type:         &pav1alpha1.PodScalable{},
-			ResyncPeriod: controller.GetResyncPeriod(ctx),
-			StopChannel:  ctx.Done(),
-		},
-	}
-}
 
 // ScaleResourceArguments returns GroupResource and the resource name.
 func ScaleResourceArguments(ref corev1.ObjectReference) (*schema.GroupVersionResource, string, error) {
@@ -57,16 +42,16 @@ func ScaleResourceArguments(ref corev1.ObjectReference) (*schema.GroupVersionRes
 func GetScaleResource(namespace string, ref corev1.ObjectReference, psInformerFactory duck.InformerFactory) (*pav1alpha1.PodScalable, error) {
 	gvr, name, err := ScaleResourceArguments(ref)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting the scale arguments")
+		return nil, fmt.Errorf("error getting the scale arguments: %w", err)
 	}
 	_, lister, err := psInformerFactory.Get(*gvr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error getting a lister for a pod scalable resource '%+v'", gvr)
+		return nil, fmt.Errorf("error getting a lister for a pod scalable resource '%+v': %w", gvr, err)
 	}
 
 	psObj, err := lister.ByNamespace(namespace).Get(name)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error fetching Pod Scalable %s/%s", namespace, name)
+		return nil, fmt.Errorf("error fetching Pod Scalable %s/%s: %w", namespace, name, err)
 	}
 	return psObj.(*pav1alpha1.PodScalable), nil
 }

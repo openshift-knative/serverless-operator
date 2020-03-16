@@ -30,7 +30,7 @@ const (
 func TestMakeRoute(t *testing.T) {
 	tests := []struct {
 		name    string
-		ingress networkingv1alpha1.IngressAccessor
+		ingress *networkingv1alpha1.Ingress
 		want    []*routev1.Route
 		wantErr error
 	}{
@@ -249,7 +249,7 @@ func TestMakeRoute(t *testing.T) {
 	}
 }
 
-func ingress(options ...ingressOption) networkingv1alpha1.IngressAccessor {
+func ingress(options ...ingressOption) *networkingv1alpha1.Ingress {
 	ing := &networkingv1alpha1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -293,16 +293,15 @@ func rule(options ...ruleOption) networkingv1alpha1.IngressRule {
 	return rule
 }
 
-type ingressOption func(networkingv1alpha1.IngressAccessor)
+type ingressOption func(*networkingv1alpha1.Ingress)
 
 func withRules(rules ...networkingv1alpha1.IngressRule) ingressOption {
-	return func(ing networkingv1alpha1.IngressAccessor) {
-		spec := ing.GetSpec()
-		spec.Rules = rules
+	return func(ing *networkingv1alpha1.Ingress) {
+		ing.Spec.Rules = rules
 	}
 }
 
-func withDisabledAnnotation(ing networkingv1alpha1.IngressAccessor) {
+func withDisabledAnnotation(ing *networkingv1alpha1.Ingress) {
 	annos := ing.GetAnnotations()
 	if annos == nil {
 		annos = map[string]string{}
@@ -311,14 +310,13 @@ func withDisabledAnnotation(ing networkingv1alpha1.IngressAccessor) {
 	ing.SetAnnotations(annos)
 }
 
-func withLocalVisibility(ing networkingv1alpha1.IngressAccessor) {
-	ing.GetSpec().Visibility = networkingv1alpha1.IngressVisibilityClusterLocal
+func withLocalVisibility(ing *networkingv1alpha1.Ingress) {
+	ing.Spec.Visibility = networkingv1alpha1.IngressVisibilityClusterLocal
 }
 
 func withLBInternalDomain(domain string) ingressOption {
-	return func(ing networkingv1alpha1.IngressAccessor) {
-		status := ing.GetStatus()
-		status.LoadBalancer.Ingress[0].DomainInternal = domain
+	return func(ing *networkingv1alpha1.Ingress) {
+		ing.Status.LoadBalancer.Ingress[0].DomainInternal = domain
 	}
 }
 

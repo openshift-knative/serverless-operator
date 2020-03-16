@@ -17,9 +17,14 @@ limitations under the License.
 package alerter
 
 import (
+	"fmt"
+	"log"
+
 	qpb "github.com/google/mako/proto/quickstore/quickstore_go_proto"
+	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/mako/alerter/github"
 	"knative.dev/pkg/test/mako/alerter/slack"
+	"knative.dev/pkg/test/mako/config"
 )
 
 // Alerter controls alert for performance regressions detected by Mako.
@@ -29,40 +34,52 @@ type Alerter struct {
 }
 
 // SetupGitHub will setup SetupGitHub for the alerter.
-func (alerter *Alerter) SetupGitHub(org, repo, githubTokenPath string) error {
+func (alerter *Alerter) SetupGitHub(org, repo, githubTokenPath string) {
 	issueHandler, err := github.Setup(org, repo, githubTokenPath, false)
 	if err != nil {
-		return err
+		log.Printf("Error happens in setup '%v', Github alerter will not be enabled", err)
 	}
 	alerter.githubIssueHandler = issueHandler
-	return nil
 }
 
 // SetupSlack will setup Slack for the alerter.
-func (alerter *Alerter) SetupSlack(repo, userName, readTokenPath, writeTokenPath string) error {
-	messageHandler, err := slack.Setup(userName, readTokenPath, writeTokenPath, repo, false)
+func (alerter *Alerter) SetupSlack(userName, readTokenPath, writeTokenPath string, channels []config.Channel) {
+	messageHandler, err := slack.Setup(userName, readTokenPath, writeTokenPath, channels, false)
 	if err != nil {
-		return err
+		log.Printf("Error happens in setup '%v', Slack alerter will not be enabled", err)
 	}
 	alerter.slackMessageHandler = messageHandler
-	return nil
 }
 
 // HandleBenchmarkResult will handle the benchmark result which returns from `q.Store()`
-func (alerter *Alerter) HandleBenchmarkResult(testName string, output qpb.QuickstoreOutput, err error) {
+func (alerter *Alerter) HandleBenchmarkResult(
+	benchmarkKey, benchmarkName string,
+	output qpb.QuickstoreOutput, err error) error {
 	if err != nil {
 		if output.GetStatus() == qpb.QuickstoreOutput_ANALYSIS_FAIL {
-			summary := output.GetSummaryOutput()
+			var errs []error
+			summary := fmt.Sprintf("%s\n\nSee run chart at: %s\n\nSee aggregate chart at: %s",
+				output.GetSummaryOutput(),
+				output.GetRunChartLink(),
+				"https://mako.dev/benchmark?tseconds=604800&benchmark_key="+benchmarkKey,
+			)
 			if alerter.githubIssueHandler != nil {
-				alerter.githubIssueHandler.CreateIssueForTest(testName, summary)
+				if err := alerter.githubIssueHandler.CreateIssueForTest(benchmarkName, summary); err != nil {
+					errs = append(errs, err)
+				}
 			}
 			if alerter.slackMessageHandler != nil {
-				alerter.slackMessageHandler.SendAlert(summary)
+				if err := alerter.slackMessageHandler.SendAlert(benchmarkName, summary); err != nil {
+					errs = append(errs, err)
+				}
 			}
+			return helpers.CombineErrors(errs)
 		}
-		return
+		return err
 	}
 	if alerter.githubIssueHandler != nil {
-		alerter.githubIssueHandler.CloseIssueForTest(testName)
+		return alerter.githubIssueHandler.CloseIssueForTest(benchmarkName)
 	}
+
+	return nil
 }

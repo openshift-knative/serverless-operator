@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
-	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -51,20 +51,21 @@ func WithRouteUID(uid types.UID) RouteOption {
 	}
 }
 
-// WithRouteDeletionTimestamp will set the DeletionTimestamp on the Route.
-func WithRouteDeletionTimestamp(r *v1alpha1.Route) {
-	t := metav1.NewTime(time.Unix(1e9, 0))
-	r.ObjectMeta.SetDeletionTimestamp(&t)
+// WithRouteGeneration sets the route's generation
+func WithRouteGeneration(generation int64) RouteOption {
+	return func(svc *v1alpha1.Route) {
+		svc.Status.ObservedGeneration = generation
+	}
+}
+
+// WithRouteObservedGeneneration sets the route's observed generation to it's generation
+func WithRouteObservedGeneration(r *v1alpha1.Route) {
+	r.Status.ObservedGeneration = r.Generation
 }
 
 // WithRouteFinalizer adds the Route finalizer to the Route.
 func WithRouteFinalizer(r *v1alpha1.Route) {
 	r.ObjectMeta.Finalizers = append(r.ObjectMeta.Finalizers, "routes.serving.knative.dev")
-}
-
-// WithAnotherRouteFinalizer adds a non-Route finalizer to the Route.
-func WithAnotherRouteFinalizer(r *v1alpha1.Route) {
-	r.ObjectMeta.Finalizers = append(r.ObjectMeta.Finalizers, "another.serving.knative.dev")
 }
 
 // WithConfigTarget sets the Route's traffic block to point at a particular Configuration.
@@ -179,7 +180,7 @@ func WithReadyCertificateName(name string) func(*v1alpha1.Route) {
 	}
 }
 
-// MarkIngressReady propagates a Ready=True ClusterIngress status to the Route.
+// MarkIngressReady propagates a Ready=True Ingress status to the Route.
 func MarkIngressReady(r *v1alpha1.Route) {
 	r.Status.PropagateIngressStatus(netv1alpha1.IngressStatus{
 		Status: duckv1.Status{
@@ -218,12 +219,12 @@ func MarkConfigurationFailed(name string) RouteOption {
 }
 
 // WithRouteLabel sets the specified label on the Route.
-func WithRouteLabel(key, value string) RouteOption {
+func WithRouteLabel(labels map[string]string) RouteOption {
 	return func(r *v1alpha1.Route) {
 		if r.Labels == nil {
 			r.Labels = make(map[string]string)
 		}
-		r.Labels[key] = value
+		r.Labels = labels
 	}
 }
 
@@ -235,4 +236,29 @@ func WithIngressClass(ingressClass string) RouteOption {
 		}
 		r.Annotations[networking.IngressClassAnnotationKey] = ingressClass
 	}
+}
+
+// WithRouteAnnotation sets the specified annotation on the Route.
+func WithRouteAnnotation(annotation map[string]string) RouteOption {
+	return func(r *v1alpha1.Route) {
+		if r.Annotations == nil {
+			r.Annotations = make(map[string]string)
+		}
+		r.Annotations = annotation
+	}
+}
+
+// Route creates a route with RouteOptions
+func Route(namespace, name string, ro ...RouteOption) *v1alpha1.Route {
+	r := &v1alpha1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	}
+	for _, opt := range ro {
+		opt(r)
+	}
+	r.SetDefaults(context.Background())
+	return r
 }

@@ -19,22 +19,28 @@ package certificate
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
-	cmclient "knative.dev/serving/pkg/client/certmanager/injection/client"
-	cmcertinformer "knative.dev/serving/pkg/client/certmanager/injection/informers/certmanager/v1alpha1/certificate"
-	kcertinformer "knative.dev/serving/pkg/client/injection/informers/networking/v1alpha1/certificate"
 
+	serviceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/service"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/pkg/tracker"
 	"knative.dev/serving/pkg/apis/networking"
+	cmclient "knative.dev/serving/pkg/client/certmanager/injection/client"
+	cmchallengeinformer "knative.dev/serving/pkg/client/certmanager/injection/informers/acme/v1alpha2/challenge"
+	cmcertinformer "knative.dev/serving/pkg/client/certmanager/injection/informers/certmanager/v1alpha2/certificate"
+	clusterinformer "knative.dev/serving/pkg/client/certmanager/injection/informers/certmanager/v1alpha2/clusterissuer"
+	kcertinformer "knative.dev/serving/pkg/client/injection/informers/networking/v1alpha1/certificate"
+	certreconciler "knative.dev/serving/pkg/client/injection/reconciler/networking/v1alpha1/certificate"
 	"knative.dev/serving/pkg/network"
-	"knative.dev/serving/pkg/reconciler"
+	servingreconciler "knative.dev/serving/pkg/reconciler"
 	"knative.dev/serving/pkg/reconciler/certificate/config"
 )
 
-const (
-	controllerAgentName = "certificate-controller"
-)
+const controllerAgentName = "certificate-controller"
 
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events.
@@ -42,21 +48,35 @@ func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
+	ctx = servingreconciler.AnnotateLoggerWithName(ctx, controllerAgentName)
+	logger := logging.FromContext(ctx)
 	knCertificateInformer := kcertinformer.Get(ctx)
 	cmCertificateInformer := cmcertinformer.Get(ctx)
+	cmChallengeInformer := cmchallengeinformer.Get(ctx)
+	clusterIssuerInformer := clusterinformer.Get(ctx)
+	svcInformer := serviceinformer.Get(ctx)
 
 	c := &Reconciler{
-		Base:                reconciler.NewBase(ctx, controllerAgentName, cmw),
-		knCertificateLister: knCertificateInformer.Lister(),
 		cmCertificateLister: cmCertificateInformer.Lister(),
-		// TODO(mattmoor): Move this to the base.
-		certManagerClient: cmclient.Get(ctx),
+		cmChallengeLister:   cmChallengeInformer.Lister(),
+		cmIssuerLister:      clusterIssuerInformer.Lister(),
+		svcLister:           svcInformer.Lister(),
+		certManagerClient:   cmclient.Get(ctx),
 	}
 
-	impl := controller.NewImpl(c, c.Logger, "Certificate")
+	impl := certreconciler.NewImpl(ctx, c, network.CertManagerCertificateClassName,
+		func(impl *controller.Impl) controller.Options {
+			logger.Info("Setting up ConfigMap receivers")
+			resyncCertOnCertManagerconfigChange := configmap.TypeFilter(&config.CertManagerConfig{})(func(string, interface{}) {
+				impl.GlobalResync(knCertificateInformer.Informer())
+			})
+			configStore := config.NewStore(logger.Named("config-store"), resyncCertOnCertManagerconfigChange)
+			configStore.WatchConfigs(cmw)
+			return controller.Options{ConfigStore: configStore}
+		})
 
-	c.Logger.Info("Setting up event handlers")
-	classFilterFunc := reconciler.AnnotationFilterFunc(networking.CertificateClassAnnotationKey, network.CertManagerCertificateClassName, true)
+	logger.Info("Setting up event handlers")
+	classFilterFunc := pkgreconciler.AnnotationFilterFunc(networking.CertificateClassAnnotationKey, network.CertManagerCertificateClassName, true)
 	certHandler := cache.FilteringResourceEventHandler{
 		FilterFunc: classFilterFunc,
 		Handler:    controller.HandleAll(impl.Enqueue),
@@ -65,13 +85,14 @@ func NewController(
 
 	cmCertificateInformer.Informer().AddEventHandler(controller.HandleAll(impl.EnqueueControllerOf))
 
-	c.Logger.Info("Setting up ConfigMap receivers")
-	resyncCertOnCertManagerconfigChange := configmap.TypeFilter(&config.CertManagerConfig{})(func(string, interface{}) {
-		impl.GlobalResync(knCertificateInformer.Informer())
-	})
-	configStore := config.NewStore(c.Logger.Named("config-store"), resyncCertOnCertManagerconfigChange)
-	configStore.WatchConfigs(cmw)
-	c.configStore = configStore
+	c.tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
+
+	svcInformer.Informer().AddEventHandler(controller.HandleAll(
+		controller.EnsureTypeMeta(
+			c.tracker.OnChanged,
+			corev1.SchemeGroupVersion.WithKind("Service"),
+		),
+	))
 
 	return impl
 }
