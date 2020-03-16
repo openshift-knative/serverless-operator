@@ -32,11 +32,8 @@ const (
 
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-	paCtx := test.SetupProjectAdmin(t)
-	editCtx := test.SetupEdit(t)
-	viewCtx := test.SetupView(t)
 
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx, paCtx, editCtx, viewCtx) })
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
 		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
@@ -71,7 +68,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("user permissions", func(t *testing.T) {
-		testUserPermissions(t, paCtx, editCtx, viewCtx)
+		testUserPermissions(t)
 	})
 
 	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
@@ -191,7 +188,13 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	caCtx.Clients.Serving.ServingV1beta1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 }
 
-func testUserPermissions(t *testing.T, paCtx *test.Context, editCtx *test.Context, viewCtx *test.Context) {
+func testUserPermissions(t *testing.T) {
+	paCtx := test.SetupProjectAdmin(t)
+	editCtx := test.SetupEdit(t)
+	viewCtx := test.SetupView(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(paCtx, editCtx, viewCtx)
+
 	tests := []struct {
 		name        string
 		userContext *test.Context
