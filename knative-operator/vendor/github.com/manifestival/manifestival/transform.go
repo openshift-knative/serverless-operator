@@ -9,45 +9,69 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Transform a resource from the manifest
+// Transformer transforms a resource from the manifest in place.
 type Transformer func(u *unstructured.Unstructured) error
 
+// Owner is a partial Kubernetes metadata schema.
 type Owner interface {
 	v1.Object
 	schema.ObjectKind
 }
 
-// If an error occurs, no resources are transformed
-func (f *Manifest) Transform(fns ...Transformer) error {
-	var results []unstructured.Unstructured
-	for i := 0; i < len(f.Resources); i++ {
-		spec := f.Resources[i].DeepCopy()
+// Transform applies an ordered set of Transformer functions to the
+// `Resources` in this Manifest.  If an error occurs, no resources are
+// transformed.
+func (m Manifest) Transform(fns ...Transformer) (Manifest, error) {
+	result := m
+	result.resources = m.Resources() // deep copies
+	for _, spec := range result.resources {
 		for _, transform := range fns {
-			err := transform(spec)
-			if err != nil {
-				return err
+			if transform != nil {
+				err := transform(&spec)
+				if err != nil {
+					return Manifest{}, err
+				}
 			}
 		}
-		results = append(results, *spec)
 	}
-	f.Resources = results
-	return nil
+	return result, nil
 }
 
-// We assume all resources in the manifest live in the same namespace
+// InjectNamespace creates a Transformer which adds a namespace to existing
+// resources if appropriate. We assume all resources in the manifest live in
+// the same namespace.
 func InjectNamespace(ns string) Transformer {
 	namespace := resolveEnv(ns)
 	return func(u *unstructured.Unstructured) error {
 		switch strings.ToLower(u.GetKind()) {
 		case "namespace":
 			u.SetName(namespace)
-		case "clusterrolebinding":
+		case "clusterrolebinding", "rolebinding":
 			subjects, _, _ := unstructured.NestedFieldNoCopy(u.Object, "subjects")
 			for _, subject := range subjects.([]interface{}) {
 				m := subject.(map[string]interface{})
 				if _, ok := m["namespace"]; ok {
 					m["namespace"] = namespace
 				}
+			}
+		case "validatingwebhookconfiguration", "mutatingwebhookconfiguration":
+			hooks, _, _ := unstructured.NestedFieldNoCopy(u.Object, "webhooks")
+			for _, hook := range hooks.([]interface{}) {
+				m := hook.(map[string]interface{})
+				if c, ok := m["clientConfig"]; ok {
+					cfg := c.(map[string]interface{})
+					if s, ok := cfg["service"]; ok {
+						srv := s.(map[string]interface{})
+						srv["namespace"] = namespace
+					}
+				}
+			}
+		case "apiservice":
+			spec, _, _ := unstructured.NestedFieldNoCopy(u.Object, "spec")
+			m := spec.(map[string]interface{})
+			if c, ok := m["service"]; ok {
+				srv := c.(map[string]interface{})
+				srv["namespace"] = namespace
 			}
 		}
 		if !isClusterScoped(u.GetKind()) {
@@ -57,6 +81,8 @@ func InjectNamespace(ns string) Transformer {
 	}
 }
 
+// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
+// `owner` to namespace-scoped objects.
 func InjectOwner(owner Owner) Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if !isClusterScoped(u.GetKind()) {

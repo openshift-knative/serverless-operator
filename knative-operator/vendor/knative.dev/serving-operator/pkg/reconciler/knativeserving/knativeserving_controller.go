@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	mf "github.com/jcrossley3/manifestival"
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -47,11 +47,6 @@ const (
 	deletionChange = "deletion"
 )
 
-var (
-	// Platform-specific behavior to affect the installation
-	platform common.Platforms
-)
-
 // Reconciler implements controller.Reconciler for Knativeserving resources.
 type Reconciler struct {
 	*reconciler.Base
@@ -59,6 +54,8 @@ type Reconciler struct {
 	knativeServingLister listers.KnativeServingLister
 	config               mf.Manifest
 	servings             map[string]int64
+	// Platform-specific behavior to affect the transform
+	platform common.Platforms
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -149,7 +146,7 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 	}
 
 	for _, stage := range stages {
-		if err := stage(manifest, ks); err != nil {
+		if err := stage(&manifest, ks); err != nil {
 			return err
 		}
 	}
@@ -158,11 +155,11 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 }
 
 // Transform the resources
-func (r *Reconciler) transform(instance *servingv1alpha1.KnativeServing) (*mf.Manifest, error) {
+func (r *Reconciler) transform(instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	r.Logger.Debug("Transforming manifest")
-	transforms, err := platform.Transformers(r.KubeClientSet, instance, r.Logger)
+	transforms, err := r.platform.Transformers(r.KubeClientSet, instance, r.Logger)
 	if err != nil {
-		return nil, err
+		return mf.Manifest{}, err
 	}
 	return r.config.Transform(transforms...)
 }
@@ -194,7 +191,7 @@ func (r *Reconciler) initStatus(_ *mf.Manifest, instance *servingv1alpha1.Knativ
 // Apply the manifest resources
 func (r *Reconciler) install(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	r.Logger.Debug("Installing manifest")
-	if err := manifest.ApplyAll(); err != nil {
+	if err := manifest.Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}
@@ -214,20 +211,18 @@ func (r *Reconciler) checkDeployments(manifest *mf.Manifest, instance *servingv1
 		}
 		return false
 	}
-	for _, u := range manifest.Resources {
-		if u.GetKind() == "Deployment" {
-			deployment, err := r.KubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
-			if err != nil {
-				instance.Status.MarkDeploymentsNotReady()
-				if errors.IsNotFound(err) {
-					return nil
-				}
-				return err
-			}
-			if !available(deployment) {
-				instance.Status.MarkDeploymentsNotReady()
+	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		deployment, err := r.KubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		if err != nil {
+			instance.Status.MarkDeploymentsNotReady()
+			if errors.IsNotFound(err) {
 				return nil
 			}
+			return err
+		}
+		if !available(deployment) {
+			instance.Status.MarkDeploymentsNotReady()
+			return nil
 		}
 	}
 	instance.Status.MarkDeploymentsAvailable()
@@ -252,7 +247,10 @@ func (r *Reconciler) delete(instance *servingv1alpha1.KnativeServing) error {
 		return nil
 	}
 	if len(r.servings) == 0 {
-		if err := r.config.DeleteAll(&metav1.DeleteOptions{}); err != nil {
+		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
+			return err
+		}
+		if err := r.config.Filter(mf.NoCRDs).Delete(); err != nil {
 			return err
 		}
 	}
@@ -274,17 +272,17 @@ func (r *Reconciler) deleteObsoleteResources(manifest *mf.Manifest, instance *se
 	resource.SetName("knative-ingressgateway")
 	resource.SetAPIVersion("v1")
 	resource.SetKind("Service")
-	if err := manifest.Delete(resource, &metav1.DeleteOptions{}); err != nil {
+	if err := manifest.Client.Delete(resource); err != nil {
 		return err
 	}
 	resource.SetAPIVersion("apps/v1")
 	resource.SetKind("Deployment")
-	if err := manifest.Delete(resource, &metav1.DeleteOptions{}); err != nil {
+	if err := manifest.Client.Delete(resource); err != nil {
 		return err
 	}
 	resource.SetAPIVersion("autoscaling/v1")
 	resource.SetKind("HorizontalPodAutoscaler")
-	if err := manifest.Delete(resource, &metav1.DeleteOptions{}); err != nil {
+	if err := manifest.Client.Delete(resource); err != nil {
 		return err
 	}
 	// config-controller from 0.5
@@ -292,7 +290,7 @@ func (r *Reconciler) deleteObsoleteResources(manifest *mf.Manifest, instance *se
 	resource.SetName("config-controller")
 	resource.SetAPIVersion("v1")
 	resource.SetKind("ConfigMap")
-	if err := manifest.Delete(resource, &metav1.DeleteOptions{}); err != nil {
+	if err := manifest.Client.Delete(resource); err != nil {
 		return err
 	}
 	return nil

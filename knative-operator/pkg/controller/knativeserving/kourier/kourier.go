@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	mf "github.com/jcrossley3/manifestival"
+	mfc "github.com/manifestival/controller-runtime-client"
+	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -23,15 +24,15 @@ var (
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
-	manifest, err := mf.NewManifest(path, false, api)
+	manifest, err := mfc.NewManifest(path, api)
 	if err != nil {
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace())), replaceImageFromEnvironment("IMAGE_", scheme)}
-	if err := manifest.Transform(transforms...); err != nil {
+	manifest, err = manifest.Transform(transforms...)
+	if err != nil {
 		return err
 	}
-
 	if instance.Status.IsFullySupported() {
 		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
 		if err := checkDeployments(&manifest, instance, api); err == nil {
@@ -46,7 +47,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	}
 
 	log.Info("Installing Kourier Ingress")
-	if err := manifest.ApplyAll(); err != nil {
+	if err := manifest.Apply(); err != nil {
 		return err
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
@@ -62,17 +63,15 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 // This function is copied from knativeserving_controller.go in serving-operator
 func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Checking deployments")
-	for _, u := range manifest.Resources {
-		if u.GetKind() == "Deployment" {
-			deployment := &appsv1.Deployment{}
-			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
-			if err != nil {
-				return err
-			}
-			for _, c := range deployment.Status.Conditions {
-				if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
-					return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
-				}
+	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		deployment := &appsv1.Deployment{}
+		err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
+		if err != nil {
+			return err
+		}
+		for _, c := range deployment.Status.Conditions {
+			if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
+				return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
 			}
 		}
 	}
@@ -82,16 +81,17 @@ func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeSe
 // Delete deletes Kourier resources.
 func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Deleting Kourier Ingress")
-	manifest, err := mf.NewManifest(path, false, api)
+	manifest, err := mfc.NewManifest(path, api)
 	if err != nil {
 		return err
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
 
-	if err := manifest.Transform(transforms...); err != nil {
+	manifest, err = manifest.Transform(transforms...)
+	if err != nil {
 		return err
 	}
-	if err := manifest.DeleteAll(); err != nil {
+	if err := manifest.Delete(); err != nil {
 		return err
 	}
 
