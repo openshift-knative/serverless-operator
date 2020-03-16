@@ -6,7 +6,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/resources"
 	routev1 "github.com/openshift/api/route/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
@@ -18,20 +17,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const NetworkPolicyAllowAllName = "knative-serving-allow-all"
-
 type BaseIngressReconciler struct {
 	Client client.Client
 }
 
 func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
 	logger := logging.FromContext(ctx)
-
-	// Delete obsoleted NeworkPolicy which required for ServiceMesh.
-	// TODO: This should be removed in the future version.
-	if err := r.deleteNetworkPolicy(ctx, ci); err != nil {
-		return err
-	}
 
 	if ci.GetDeletionTimestamp() != nil {
 		return r.reconcileDeletion(ctx, ci)
@@ -75,28 +66,6 @@ func (r *BaseIngressReconciler) ReconcileIngress(ctx context.Context, ci network
 	}
 
 	logger.Info("Ingress successfully synced")
-	return nil
-}
-
-func (r *BaseIngressReconciler) deleteNetworkPolicy(ctx context.Context, ci networkingv1alpha1.IngressAccessor) error {
-	logger := logging.FromContext(ctx)
-
-	networkPolicy := &networkingv1.NetworkPolicy{}
-	err := r.Client.Get(ctx, types.NamespacedName{Name: NetworkPolicyAllowAllName, Namespace: ci.GetNamespace()}, networkPolicy)
-
-	if errors.IsNotFound(err) {
-		// Doesn't exist, so no need to try to delete it
-		return nil
-	} else if err != nil {
-		return err
-	} else {
-		logger.Infof("Deleting NetworkPolicy %q in namespace %q", NetworkPolicyAllowAllName, ci.GetNamespace())
-		if err := r.Client.Delete(ctx, networkPolicy); err != nil {
-			logger.Errorf("Failed to delete NetworkPolicy %q in namespace %q: %v", NetworkPolicyAllowAllName, ci.GetNamespace(), err)
-			return err
-		}
-		logger.Infof("Deleted NetworkPolicy %q in namespace %q", NetworkPolicyAllowAllName, ci.GetNamespace())
-	}
 	return nil
 }
 
@@ -189,24 +158,9 @@ func (r *BaseIngressReconciler) reconcileDeletion(ctx context.Context, ci networ
 	if len(ci.GetFinalizers()) == 0 || ci.GetFinalizers()[0] != "ocp-ingress" {
 		return nil
 	}
-	// get list of ingress object for a namespace
-	ingressList := networkingv1alpha1.IngressList{}
-	if err := r.Client.List(ctx, &client.ListOptions{
-		Namespace: ci.GetNamespace(),
-	}, &ingressList); err != nil {
-		return err
-	}
 
-	_, list, err := r.routeList(ctx, ci)
-	if err != nil {
-		logger.Errorf("Failed to list openshift routes %v", err)
+	if err := r.deleteRoutes(ctx, ci); err != nil {
 		return err
-	}
-	for i := range list.Items {
-		if err := r.deleteRoute(ctx, &list.Items[i]); err != nil {
-			logger.Errorf("Failed to delete openshift route %q with error %v", list.Items[i].Name, err)
-			return err
-		}
 	}
 
 	logger.Infof("Removing finalizer for ingress %q", ci.GetName())
