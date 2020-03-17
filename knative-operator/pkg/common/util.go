@@ -5,8 +5,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-const MutationTimestampKey = "knative-serving-openshift/mutation"
-
 var Log = logf.Log.WithName("knative").WithName("openshift")
 
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.

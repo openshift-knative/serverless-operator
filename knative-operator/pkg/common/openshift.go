@@ -25,7 +25,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
-			return err
+			return fmt.Errorf("failed to mutate KnativeServing: %w", err)
 		}
 	}
 	return nil
@@ -41,7 +41,7 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	ingressConfig := &configv1.Ingress{}
 	if err := c.Get(context.TODO(), client.ObjectKey{Name: "cluster"}, ingressConfig); err != nil {
 		if !meta.IsNoMatchError(err) {
-			return err
+			return fmt.Errorf("failed to fetch ingress config: %w", err)
 		}
 		log.Info("No OpenShift ingress config available")
 		return nil

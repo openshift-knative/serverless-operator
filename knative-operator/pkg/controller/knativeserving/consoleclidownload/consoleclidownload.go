@@ -1,6 +1,8 @@
 package consoleclidownload
 
 import (
+	"fmt"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 
@@ -17,9 +19,12 @@ func Create(instance *servingv1alpha1.KnativeServing, apiclient client.Client) e
 	log.Info("Creating ConsoleCLIDownload CR for kn")
 	manifest, err := mfc.NewManifest(knConsoleCLIDownload, apiclient)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read ConsoleCLIDownload manifest: %w", err)
 	}
-	return manifest.Apply()
+	if err := manifest.Apply(); err != nil {
+		return fmt.Errorf("failed to apply ConsoleCLIDownload manifest: %w", err)
+	}
+	return nil
 }
 
 // Delete deletes ConsoleCLIDownload for kn CLI download links
@@ -27,7 +32,10 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client) e
 	log.Info("Deleting ConsoleCLIDownload CR for kn")
 	manifest, err := mfc.NewManifest(knConsoleCLIDownload, apiclient)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read ConsoleCLIDownload manifest: %w", err)
 	}
-	return manifest.Delete()
+	if err := manifest.Delete(); err != nil {
+		return fmt.Errorf("failed to delete ConsoleCLIDownload manifest: %w", err)
+	}
+	return nil
 }

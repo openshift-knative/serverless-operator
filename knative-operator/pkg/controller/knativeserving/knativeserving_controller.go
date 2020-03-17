@@ -2,6 +2,7 @@ package knativeserving
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
@@ -103,15 +104,19 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
 	before := instance.DeepCopy()
-	log.Info("Configuring KnativeServing for OpenShift")
 	if err := common.Mutate(instance, r.client); err != nil {
 		return err
 	}
 	if equality.Semantic.DeepEqual(before, instance) {
 		return nil
 	}
+
 	// Only apply the update if something changed.
-	return r.client.Update(context.TODO(), instance)
+	log.Info("Updating KnativeServing with mutated state for Openshift")
+	if err := r.client.Update(context.TODO(), instance); err != nil {
+		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
+	}
+	return nil
 }
 
 // updateDeployment updates Knative controller deployment
@@ -126,6 +131,7 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 			return nil
 		}
 	}
+	log.Info("Adding finalizer")
 	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName()))
 	return r.client.Update(context.TODO(), instance)
 }
@@ -146,8 +152,10 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 			if err := controllerutil.SetControllerReference(instance, cm, r.scheme); err != nil {
 				return err
 			}
+
+			log.Info("Creating Custom Certs Config Map")
 			if err = r.client.Create(ctx, cm); err != nil {
-				return err
+				return fmt.Errorf("failed to create custom certs config map: %w", err)
 			}
 			return nil
 		}
@@ -170,25 +178,31 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
+		log.Info("Finalizer is not first in line", "finalizers", instance.GetFinalizers())
 		return nil
 	}
 
+	log.Info("Running cleanup logic")
+	log.Info("Deleting kourier")
 	if err := kourier.Delete(instance, r.client); err != nil {
-		return err
+		return fmt.Errorf("failed to delete kourier: %w", err)
 	}
 
+	log.Info("Deleting ConsoleCLIDownload")
 	if err := consoleclidownload.Delete(instance, r.client); err != nil {
-		log.Info("Failed to delete ConsoleCLIDownload CR for kn..")
-		return err
+		return fmt.Errorf("failed to delete ConsoleCLIDownload: %w", err)
 	}
 
 	// The deletionTimestamp might've changed. Fetch the resource again.
 	refetched := &servingv1alpha1.KnativeServing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
-		return err
+		return fmt.Errorf("failed to refetch KnativeServing: %w", err)
 	}
 	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
-	return r.client.Update(context.TODO(), refetched)
+	if err := r.client.Update(context.TODO(), refetched); err != nil {
+		return fmt.Errorf("failed to update KnativeServing with removed finalizer: %w", err)
+	}
+	return nil
 }
 
 func finalizerName() string {
