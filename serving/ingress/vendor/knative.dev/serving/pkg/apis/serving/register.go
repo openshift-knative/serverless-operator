@@ -16,6 +16,8 @@ limitations under the License.
 
 package serving
 
+import "k8s.io/apimachinery/pkg/runtime/schema"
+
 const (
 	// GroupName is the group name for knative labels and annotations
 	GroupName = "serving.knative.dev"
@@ -33,13 +35,13 @@ const (
 
 	// RouteLabelKey is the label key attached to a Configuration indicating by
 	// which Route it is configured as traffic target.
-	// The key can also be attached to ClusterIngress resources to indicate
+	// The key can also be attached to Ingress resources to indicate
 	// which Route triggered their creation.
 	// The key is also attached to k8s Service resources to indicate which Route
 	// triggered their creation.
 	RouteLabelKey = GroupName + "/route"
 
-	// RouteNamespaceLabelKey is the label key attached to a ClusterIngress
+	// RouteNamespaceLabelKey is the label key attached to a Ingress
 	// by a Route to indicate which namespace the Route was created in.
 	RouteNamespaceLabelKey = GroupName + "/routeNamespace"
 
@@ -69,4 +71,40 @@ const (
 	// QueueSideCarResourcePercentageAnnotation is the percentage of user container resources to be used for queue-proxy
 	// It has to be in [0.1,100]
 	QueueSideCarResourcePercentageAnnotation = "queue.sidecar." + GroupName + "/resourcePercentage"
+
+	// VisibilityLabelKey is the label to indicate visibility of Route
+	// and KServices.  It can be an annotation too but since users are
+	// already using labels for domain, it probably best to keep this
+	// consistent.
+	VisibilityLabelKey = "serving.knative.dev/visibility"
+	// VisibilityClusterLocal is the label value for VisibilityLabelKey
+	// that will result to the Route/KService getting a cluster local
+	// domain suffix.
+	VisibilityClusterLocal = "cluster-local"
+)
+
+var (
+	// ServicesResource represents a Knative Service
+	ServicesResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "services",
+	}
+
+	// ConfigurationsResource represents a Knative Configuration
+	ConfigurationsResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "configurations",
+	}
+
+	// RevisionsResource represents a Knative Revision
+	RevisionsResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "revisions",
+	}
+
+	// RoutesResource represents a Knative Route
+	RoutesResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "routes",
+	}
 )

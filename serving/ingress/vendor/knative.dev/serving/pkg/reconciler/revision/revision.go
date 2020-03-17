@@ -18,27 +18,25 @@ package revision
 
 import (
 	"context"
-	"reflect"
+	"fmt"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
-	"go.uber.org/zap"
+
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	corev1listers "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/tools/cache"
+	cachingclientset "knative.dev/caching/pkg/client/clientset/versioned"
+	clientset "knative.dev/serving/pkg/client/clientset/versioned"
+	revisionreconciler "knative.dev/serving/pkg/client/injection/reconciler/serving/v1/revision"
+
 	cachinglisters "knative.dev/caching/pkg/client/listers/caching/v1alpha1"
 	"knative.dev/pkg/controller"
-	commonlogging "knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
-	"knative.dev/serving/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving/v1beta1"
 	palisters "knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1"
-	listers "knative.dev/serving/pkg/client/listers/serving/v1alpha1"
-	"knative.dev/serving/pkg/reconciler"
 	"knative.dev/serving/pkg/reconciler/revision/config"
 )
 
@@ -48,100 +46,44 @@ type resolver interface {
 
 // Reconciler implements controller.Reconciler for Revision resources.
 type Reconciler struct {
-	*reconciler.Base
+	kubeclient    kubernetes.Interface
+	client        clientset.Interface
+	cachingclient cachingclientset.Interface
 
 	// lister indexes properties about Revision
-	revisionLister      listers.RevisionLister
 	podAutoscalerLister palisters.PodAutoscalerLister
 	imageLister         cachinglisters.ImageLister
 	deploymentLister    appsv1listers.DeploymentLister
 	serviceLister       corev1listers.ServiceLister
-	configMapLister     corev1listers.ConfigMapLister
 
-	resolver    resolver
-	configStore reconciler.ConfigStore
+	resolver resolver
 }
 
-// Check that our Reconciler implements controller.Reconciler
-var _ controller.Reconciler = (*Reconciler)(nil)
+// Check that our Reconciler implements revisionreconciler.Interface
+var _ revisionreconciler.Interface = (*Reconciler)(nil)
 
-// Reconcile compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Revision resource
-// with the current status of the resource.
-func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
-	// Convert the namespace/name string into a distinct namespace and name
-	namespace, name, err := cache.SplitMetaNamespaceKey(key)
-	if err != nil {
-		c.Logger.Errorf("invalid resource key: %s", key)
-		return nil
-	}
-	logger := commonlogging.FromContext(ctx)
-	logger.Info("Running reconcile Revision")
-
-	ctx = c.configStore.ToContext(ctx)
-
-	// Get the Revision resource with this namespace/name
-	original, err := c.revisionLister.Revisions(namespace).Get(name)
-	// The resource may no longer exist, in which case we stop processing.
-	if apierrs.IsNotFound(err) {
-		logger.Errorf("revision %q in work queue no longer exists", key)
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	// Don't modify the informer's copy.
-	rev := original.DeepCopy()
-
-	// Reconcile this copy of the revision and then write back any status
-	// updates regardless of whether the reconciliation errored out.
-	reconcileErr := c.reconcile(ctx, rev)
-	if equality.Semantic.DeepEqual(original.Status, rev.Status) {
-		// If we didn't change anything then don't call updateStatus.
-		// This is important because the copy we loaded from the informer's
-		// cache may be stale and we don't want to overwrite a prior update
-		// to status with this stale state.
-	} else if _, err = c.updateStatus(rev); err != nil {
-		logger.Warnw("Failed to update revision status", zap.Error(err))
-		c.Recorder.Eventf(rev, corev1.EventTypeWarning, "UpdateFailed",
-			"Failed to update status for Revision %q: %v", rev.Name, err)
-		return err
-	}
-	if reconcileErr != nil {
-		c.Recorder.Event(rev, corev1.EventTypeWarning, "InternalError", reconcileErr.Error())
-		return reconcileErr
-	}
-	// TODO(mattmoor): Remove this after 0.7 cuts.
-	// If the spec has changed, then assume we need an upgrade and issue a patch to trigger
-	// the webhook to upgrade via defaulting.  Status updates do not trigger this due to the
-	// use of the /status resource.
-	if !equality.Semantic.DeepEqual(original.Spec, rev.Spec) {
-		revisions := v1alpha1.SchemeGroupVersion.WithResource("revisions")
-		if err := c.MarkNeedsUpgrade(revisions, rev.Namespace, rev.Name); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *Reconciler) reconcileDigest(ctx context.Context, rev *v1alpha1.Revision) error {
+func (c *Reconciler) reconcileDigest(ctx context.Context, rev *v1.Revision) error {
 	// The image digest has already been resolved.
 	if rev.Status.ImageDigest != "" {
 		return nil
 	}
 
+	var imagePullSecrets []string
+	for _, s := range rev.Spec.ImagePullSecrets {
+		imagePullSecrets = append(imagePullSecrets, s.Name)
+	}
 	cfgs := config.FromContext(ctx)
 	opt := k8schain.Options{
 		Namespace:          rev.Namespace,
 		ServiceAccountName: rev.Spec.ServiceAccountName,
-		// ImagePullSecrets: Not possible via RevisionSpec, since we
-		// don't expose such a field.
+		ImagePullSecrets:   imagePullSecrets,
 	}
 	digest, err := c.resolver.Resolve(rev.Spec.GetContainer().Image,
 		opt, cfgs.Deployment.RegistriesSkippingTagResolving)
 	if err != nil {
-		rev.Status.MarkContainerMissing(
-			v1alpha1.RevisionContainerMissingMessage(
+		err = fmt.Errorf("failed to resolve image to digest: %w", err)
+		rev.Status.MarkContainerHealthyFalse(v1.ReasonContainerMissing,
+			v1.RevisionContainerMissingMessage(
 				rev.Spec.GetContainer().Image, err.Error()))
 		return err
 	}
@@ -151,33 +93,20 @@ func (c *Reconciler) reconcileDigest(ctx context.Context, rev *v1alpha1.Revision
 	return nil
 }
 
-func (c *Reconciler) reconcile(ctx context.Context, rev *v1alpha1.Revision) error {
-	logger := commonlogging.FromContext(ctx)
-	if rev.GetDeletionTimestamp() != nil {
-		return nil
-	}
+func (c *Reconciler) ReconcileKind(ctx context.Context, rev *v1.Revision) pkgreconciler.Event {
 	readyBeforeReconcile := rev.Status.IsReady()
 
 	// We may be reading a version of the object that was stored at an older version
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	rev.SetDefaults(v1.WithUpgradeViaDefaulting(ctx))
-
+	rev.SetDefaults(ctx)
 	rev.Status.InitializeConditions()
 	c.updateRevisionLoggingURL(ctx, rev)
 
-	if err := rev.ConvertUp(ctx, &v1beta1.Revision{}); err != nil {
-		if ce, ok := err.(*v1alpha1.CannotConvertError); ok {
-			rev.Status.MarkResourceNotConvertible(ce)
-			return nil
-		}
-		return err
-	}
-
 	phases := []struct {
 		name string
-		f    func(context.Context, *v1alpha1.Revision) error
+		f    func(context.Context, *v1.Revision) error
 	}{{
 		name: "image digest",
 		f:    c.reconcileDigest,
@@ -194,14 +123,14 @@ func (c *Reconciler) reconcile(ctx context.Context, rev *v1alpha1.Revision) erro
 
 	for _, phase := range phases {
 		if err := phase.f(ctx, rev); err != nil {
-			logger.Errorw("Failed to reconcile", zap.String("phase", phase.name), zap.Error(err))
 			return err
 		}
 	}
 
 	readyAfterReconcile := rev.Status.IsReady()
 	if !readyBeforeReconcile && readyAfterReconcile {
-		c.Recorder.Event(rev, corev1.EventTypeNormal, "RevisionReady",
+		controller.GetEventRecorder(ctx).Event(
+			rev, corev1.EventTypeNormal, "RevisionReady",
 			"Revision becomes ready upon all resources being ready")
 	}
 
@@ -209,11 +138,7 @@ func (c *Reconciler) reconcile(ctx context.Context, rev *v1alpha1.Revision) erro
 	return nil
 }
 
-func (c *Reconciler) updateRevisionLoggingURL(
-	ctx context.Context,
-	rev *v1alpha1.Revision,
-) {
-
+func (c *Reconciler) updateRevisionLoggingURL(ctx context.Context, rev *v1.Revision) {
 	config := config.FromContext(ctx)
 	if config.Observability.LoggingURLTemplate == "" {
 		return
@@ -224,19 +149,4 @@ func (c *Reconciler) updateRevisionLoggingURL(
 	rev.Status.LogURL = strings.Replace(
 		config.Observability.LoggingURLTemplate,
 		"${REVISION_UID}", uid, -1)
-}
-
-func (c *Reconciler) updateStatus(desired *v1alpha1.Revision) (*v1alpha1.Revision, error) {
-	rev, err := c.revisionLister.Revisions(desired.Namespace).Get(desired.Name)
-	if err != nil {
-		return nil, err
-	}
-	// If there's nothing to update, just return.
-	if reflect.DeepEqual(rev.Status, desired.Status) {
-		return rev, nil
-	}
-	// Don't modify the informers copy
-	existing := rev.DeepCopy()
-	existing.Status = desired.Status
-	return c.ServingClientSet.ServingV1alpha1().Revisions(desired.Namespace).UpdateStatus(existing)
 }

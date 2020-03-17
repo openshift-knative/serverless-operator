@@ -34,7 +34,7 @@ import (
 // materializing that container image from source. Revisions are created by
 // updates to a Configuration.
 //
-// See also: https://knative.dev/serving/blob/master/docs/spec/overview.md#revision
+// See also: https://github.com/knative/serving/blob/master/docs/spec/overview.md#revision
 type Revision struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -72,7 +72,7 @@ type RevisionTemplateSpec struct {
 }
 
 // DeprecatedRevisionServingStateType is an enumeration of the levels of serving readiness of the Revision.
-// See also: https://knative.dev/serving/blob/master/docs/spec/errors.md#error-conditions-and-reporting
+// See also: https://github.com/knative/serving/blob/master/docs/spec/errors.md#error-conditions-and-reporting
 type DeprecatedRevisionServingStateType string
 
 const (
@@ -87,7 +87,7 @@ const (
 	// anymore. It should not have any Istio routes or Kubernetes resources.
 	// A Revision may be brought out of retirement, but it may take longer than
 	// it would from a "Reserve" state.
-	// Note: currently not set anywhere. See https://knative.dev/serving/issues/1203
+	// Note: currently not set anywhere. See https://github.com/knative/serving/issues/1203
 	DeprecatedRevisionServingStateRetired DeprecatedRevisionServingStateType = "Retired"
 )
 
@@ -118,7 +118,7 @@ type RevisionSpec struct {
 	// This property will be dropped in future Knative releases and should
 	// not be used - use metadata.generation
 	//
-	// Tracking issue: https://knative.dev/serving/issues/643
+	// Tracking issue: https://github.com/knative/serving/issues/643
 	//
 	// +optional
 	DeprecatedGeneration int64 `json:"generation,omitempty"`
@@ -153,7 +153,7 @@ type RevisionSpec struct {
 	// this Container, including: name and lifecycle.
 	// See also the runtime contract for more information about the execution
 	// environment:
-	// https://knative.dev/serving/blob/master/docs/runtime-contract.md
+	// https://github.com/knative/serving/blob/master/docs/runtime-contract.md
 	// +optional
 	DeprecatedContainer *corev1.Container `json:"container,omitempty"`
 }
@@ -161,14 +161,14 @@ type RevisionSpec struct {
 const (
 	// RevisionConditionReady is set when the revision is starting to materialize
 	// runtime resources, and becomes true when those resources are ready.
-	RevisionConditionReady = apis.ConditionReady
+	RevisionConditionReady = v1.RevisionConditionReady
 	// RevisionConditionResourcesAvailable is set when underlying
 	// Kubernetes resources have been provisioned.
-	RevisionConditionResourcesAvailable apis.ConditionType = "ResourcesAvailable"
+	RevisionConditionResourcesAvailable = v1.RevisionConditionResourcesAvailable
 	// RevisionConditionContainerHealthy is set when the revision readiness check completes.
-	RevisionConditionContainerHealthy apis.ConditionType = "ContainerHealthy"
+	RevisionConditionContainerHealthy = v1.RevisionConditionContainerHealthy
 	// RevisionConditionActive is set when the revision is receiving traffic.
-	RevisionConditionActive apis.ConditionType = "Active"
+	RevisionConditionActive = v1.RevisionConditionActive
 )
 
 // RevisionStatus communicates the observed state of the Revision (from the controller).

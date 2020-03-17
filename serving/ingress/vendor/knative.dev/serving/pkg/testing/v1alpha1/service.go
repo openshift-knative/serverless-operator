@@ -49,7 +49,6 @@ func Service(name, namespace string, so ...ServiceOption) *v1alpha1.Service {
 	for _, opt := range so {
 		opt(s)
 	}
-	s.SetDefaults(context.Background())
 	return s
 }
 
@@ -63,8 +62,17 @@ func ServiceWithoutNamespace(name string, so ...ServiceOption) *v1alpha1.Service
 	for _, opt := range so {
 		opt(s)
 	}
-	s.SetDefaults(context.Background())
 	return s
+}
+
+// DefaultService creates a service with ServiceOptions and with default values set
+func DefaultService(name, namespace string, so ...ServiceOption) *v1alpha1.Service {
+	return Service(name, namespace, append(so, WithServiceDefaults)...)
+}
+
+// WithServiceDefaults will set the default values on the service.
+func WithServiceDefaults(svc *v1alpha1.Service) {
+	svc.SetDefaults(context.Background())
 }
 
 // WithServiceDeletionTimestamp will set the DeletionTimestamp on the Service.
@@ -156,21 +164,33 @@ func WithRunLatestRollout(s *v1alpha1.Service) {
 	}
 }
 
-// WithInlineConfigSpec confgures the Service to use the given config spec
+// WithInlineConfigSpec configures the Service to use the given config spec
 func WithInlineConfigSpec(config v1alpha1.ConfigurationSpec) ServiceOption {
 	return func(svc *v1alpha1.Service) {
 		svc.Spec.ConfigurationSpec = config
 	}
 }
 
-// WithInlineRouteSpec confgures the Service to use the given route spec
+// WithServiceGeneration sets the service's generation
+func WithServiceGeneration(generation int64) ServiceOption {
+	return func(svc *v1alpha1.Service) {
+		svc.Status.ObservedGeneration = generation
+	}
+}
+
+// WithServiceGeneration sets the service's observed generation to it's generation
+func WithServiceObservedGeneration(svc *v1alpha1.Service) {
+	svc.Status.ObservedGeneration = svc.Generation
+}
+
+// WithInlineRouteSpec configures the Service to use the given route spec
 func WithInlineRouteSpec(config v1alpha1.RouteSpec) ServiceOption {
 	return func(svc *v1alpha1.Service) {
 		svc.Spec.RouteSpec = config
 	}
 }
 
-// WithRunLatestConfigSpec confgures the Service to use a "runLatest" configuration
+// WithRunLatestConfigSpec configures the Service to use a "runLatest" configuration
 func WithRunLatestConfigSpec(config v1alpha1.ConfigurationSpec) ServiceOption {
 	return func(svc *v1alpha1.Service) {
 		svc.Spec = v1alpha1.ServiceSpec{
@@ -259,7 +279,7 @@ func WithServiceAnnotations(annotations map[string]string) ServiceOption {
 	}
 }
 
-// WithContainerConcurrency setss the container concurrency on the resource.
+// WithContainerConcurrency sets the container concurrency on the resource.
 func WithContainerConcurrency(cc int) ServiceOption {
 	return func(s *v1alpha1.Service) {
 		if s.Spec.DeprecatedRunLatest != nil {
@@ -311,6 +331,11 @@ func MarkRouteNotOwned(service *v1alpha1.Service) {
 	service.Status.MarkRouteNotOwned(servicenames.Route(service))
 }
 
+// MarkRevisionNameTake calls the function of the same name on the Service's status
+func MarkRevisionNameTaken(service *v1alpha1.Service) {
+	service.Status.MarkRevisionNameTaken(service.Spec.GetTemplate().GetName())
+}
+
 // WithPinnedRollout configures the Service to use a "pinned" rollout,
 // which is pinned to the named revision.
 // Deprecated, since PinnedType is deprecated.
@@ -346,19 +371,6 @@ func WithReleaseRolloutAndPercentageConfigSpec(percentage int, config v1alpha1.C
 				Revisions:      names,
 				RolloutPercent: percentage,
 				Configuration:  config,
-			},
-		}
-	}
-}
-
-// WithReleaseRolloutConfigSpec configures the Service to use a "release" rollout,
-// which spans the provided revisions.
-func WithReleaseRolloutConfigSpec(config v1alpha1.ConfigurationSpec, names ...string) ServiceOption {
-	return func(s *v1alpha1.Service) {
-		s.Spec = v1alpha1.ServiceSpec{
-			DeprecatedRelease: &v1alpha1.ReleaseType{
-				Revisions:     names,
-				Configuration: config,
 			},
 		}
 	}
@@ -423,6 +435,17 @@ func WithSvcStatusTraffic(targets ...v1alpha1.TrafficTarget) ServiceOption {
 			tt.URL = domains.URL(domains.HTTPScheme, tt.Tag+".example.com")
 		}
 		r.Status.Traffic = targets
+	}
+}
+
+// WithRouteStatus sets the Service's status's route status field traffic block to the specified traffic targets.
+func WithRouteStatus(targets ...v1alpha1.TrafficTarget) ServiceOption {
+	return func(s *v1alpha1.Service) {
+		// Automatically inject URL into TrafficTarget status
+		for _, tt := range targets {
+			tt.URL = domains.URL(domains.HTTPScheme, tt.Tag+".example.com")
+		}
+		s.Status.RouteStatusFields.Traffic = targets
 	}
 }
 

@@ -5,11 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/common"
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/resources"
+	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
-	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -171,7 +169,7 @@ func TestRouteMigration(t *testing.T) {
 		cl := fake.NewFakeClient(ingress, &routev1.RouteList{Items: test.state})
 
 		// Create a Reconcile Ingress object with the scheme and fake client.
-		r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
+		r := &ReconcileIngress{client: cl, scheme: s}
 		// Mock request to simulate Reconcile() being called on an event for a
 		// watched resource .
 		req := reconcile.Request{
@@ -261,208 +259,6 @@ func TestIngressController(t *testing.T) {
 			wantNetworkPolicy: false,
 			deleted:           false,
 		},
-		{
-			name:              "reconcile with existing managed NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile with existing istio-mesh NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "istio-mesh",
-						Namespace: namespace,
-						Labels:    map[string]string{"maistra.io/owner": "knative-serving-ingress"},
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile with existing managed and istio-mesh NetworkPolicies",
-			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "istio-mesh",
-						Namespace: namespace,
-						Labels:    map[string]string{"maistra.io/owner": "knative-serving-ingress"},
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile with user-added NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "my-network-policy",
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile with existing managed and user-added NetworkPolicies",
-			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "my-network-policy",
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile deletion with existing managed NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string(nil),
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           true,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile deletion with existing istio-mesh NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string(nil),
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           true,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "istio-mesh",
-						Namespace: namespace,
-						Labels:    map[string]string{"maistra.io/owner": "knative-serving-ingress"},
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile deletion with existing managed and istio-mesh NetworkPolicies",
-			annotations:       map[string]string{},
-			want:              map[string]string(nil),
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           true,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "istio-mesh",
-						Namespace: namespace,
-						Labels:    map[string]string{"maistra.io/owner": "knative-serving-ingress"},
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile deletion with user-added NetworkPolicy",
-			annotations:       map[string]string{},
-			want:              map[string]string(nil),
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           true,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "my-network-policy",
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
-		{
-			name:              "reconcile deletion with existing managed and user-added NetworkPolicies",
-			annotations:       map[string]string{},
-			want:              map[string]string(nil),
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           true,
-			extraObjs: []runtime.Object{
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "my-network-policy",
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-				&networkingv1.NetworkPolicy{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      common.NetworkPolicyAllowAllName,
-						Namespace: namespace,
-					},
-					Spec: networkingv1.NetworkPolicySpec{},
-				},
-			},
-		},
 	}
 
 	for _, test := range tests {
@@ -495,7 +291,7 @@ func TestIngressController(t *testing.T) {
 			// Create a fake client to mock API calls.
 			cl := fake.NewFakeClient(initObjs...)
 			// Create a Reconcile Ingress object with the scheme and fake client.
-			r := &ReconcileIngress{base: &common.BaseIngressReconciler{Client: cl}, client: cl, scheme: s}
+			r := &ReconcileIngress{client: cl, scheme: s}
 
 			// Mock request to simulate Reconcile() being called on an event for a
 			// watched resource .
@@ -509,18 +305,9 @@ func TestIngressController(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
-			// Check if NetworkPolicy has been created
-			networkPolicy := &networkingv1.NetworkPolicy{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: common.NetworkPolicyAllowAllName, Namespace: namespace}, networkPolicy)
-			if test.wantNetworkPolicy {
-				assert.Nil(t, err)
-			} else {
-				assert.True(t, errors.IsNotFound(err))
-			}
-
 			// Check if route has been created.
 			routes := &routev1.Route{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: serviceMeshNamespace}, routes)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: serviceMeshNamespace}, routes)
 
 			assert.True(t, test.wantRouteErr(err))
 			assert.Equal(t, test.want, routes.ObjectMeta.Annotations)

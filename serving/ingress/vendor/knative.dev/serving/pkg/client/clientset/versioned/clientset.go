@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ limitations under the License.
 package versioned
 
 import (
+	"fmt"
+
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -32,16 +34,10 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	AutoscalingV1alpha1() autoscalingv1alpha1.AutoscalingV1alpha1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Autoscaling() autoscalingv1alpha1.AutoscalingV1alpha1Interface
 	NetworkingV1alpha1() networkingv1alpha1.NetworkingV1alpha1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Networking() networkingv1alpha1.NetworkingV1alpha1Interface
 	ServingV1alpha1() servingv1alpha1.ServingV1alpha1Interface
 	ServingV1beta1() servingv1beta1.ServingV1beta1Interface
 	ServingV1() servingv1.ServingV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Serving() servingv1.ServingV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -60,20 +56,8 @@ func (c *Clientset) AutoscalingV1alpha1() autoscalingv1alpha1.AutoscalingV1alpha
 	return c.autoscalingV1alpha1
 }
 
-// Deprecated: Autoscaling retrieves the default version of AutoscalingClient.
-// Please explicitly pick a version.
-func (c *Clientset) Autoscaling() autoscalingv1alpha1.AutoscalingV1alpha1Interface {
-	return c.autoscalingV1alpha1
-}
-
 // NetworkingV1alpha1 retrieves the NetworkingV1alpha1Client
 func (c *Clientset) NetworkingV1alpha1() networkingv1alpha1.NetworkingV1alpha1Interface {
-	return c.networkingV1alpha1
-}
-
-// Deprecated: Networking retrieves the default version of NetworkingClient.
-// Please explicitly pick a version.
-func (c *Clientset) Networking() networkingv1alpha1.NetworkingV1alpha1Interface {
 	return c.networkingV1alpha1
 }
 
@@ -92,12 +76,6 @@ func (c *Clientset) ServingV1() servingv1.ServingV1Interface {
 	return c.servingV1
 }
 
-// Deprecated: Serving retrieves the default version of ServingClient.
-// Please explicitly pick a version.
-func (c *Clientset) Serving() servingv1.ServingV1Interface {
-	return c.servingV1
-}
-
 // Discovery retrieves the DiscoveryClient
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	if c == nil {
@@ -107,9 +85,14 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 }
 
 // NewForConfig creates a new Clientset for the given config.
+// If config's RateLimiter is not set and QPS and Burst are acceptable,
+// NewForConfig will generate a rate-limiter in configShallowCopy.
 func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
 	if configShallowCopy.RateLimiter == nil && configShallowCopy.QPS > 0 {
+		if configShallowCopy.Burst <= 0 {
+			return nil, fmt.Errorf("Burst is required to be greater than 0 when RateLimiter is not set and QPS is set to greater than 0")
+		}
 		configShallowCopy.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(configShallowCopy.QPS, configShallowCopy.Burst)
 	}
 	var cs Clientset

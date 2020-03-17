@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ func (c *FakeServerlessServices) DeleteCollection(options *v1.DeleteOptions, lis
 // Patch applies the patch and returns the patched serverlessService.
 func (c *FakeServerlessServices) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ServerlessService, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(serverlessservicesResource, c.ns, name, data, subresources...), &v1alpha1.ServerlessService{})
+		Invokes(testing.NewPatchSubresourceAction(serverlessservicesResource, c.ns, name, pt, data, subresources...), &v1alpha1.ServerlessService{})
 
 	if obj == nil {
 		return nil, err

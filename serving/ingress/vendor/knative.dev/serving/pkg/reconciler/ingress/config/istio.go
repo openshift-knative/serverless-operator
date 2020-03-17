@@ -19,13 +19,13 @@ package config
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"knative.dev/pkg/network"
 	"knative.dev/pkg/system"
+	"knative.dev/serving/pkg/apis/networking"
 )
 
 const (
@@ -33,21 +33,17 @@ const (
 	// customizations for istio related features.
 	IstioConfigName = "config-istio"
 
-	// GatewayKeyPrefix is the prefix of all keys to configure Istio gateways for public ClusterIngresses.
-	GatewayKeyPrefix = "gateway."
+	// gatewayKeyPrefix is the prefix of all keys to configure Istio gateways for public Ingresses.
+	gatewayKeyPrefix = "gateway."
 
-	// LocalGatewayKeyPrefix is the prefix of all keys to configure Istio gateways for public & private ClusterIngresses.
-	LocalGatewayKeyPrefix = "local-gateway."
-
-	// ReconcileExternalGatewayKey the is the name of the configuration entry that specifies
-	// reconciling external Istio Gateways or not.
-	ReconcileExternalGatewayKey = "reconcileExternalGateway"
+	// localGatewayKeyPrefix is the prefix of all keys to configure Istio gateways for public & private Ingresses.
+	localGatewayKeyPrefix = "local-gateway."
 )
 
 func defaultGateways() []Gateway {
 	return []Gateway{{
 		Namespace: system.Namespace(),
-		Name:      "knative-ingress-gateway",
+		Name:      networking.KnativeIngressGateway,
 		ServiceURL: fmt.Sprintf("istio-ingressgateway.istio-system.svc.%s",
 			network.GetClusterDomainName()),
 	}}
@@ -56,13 +52,11 @@ func defaultGateways() []Gateway {
 func defaultLocalGateways() []Gateway {
 	return []Gateway{{
 		Namespace: system.Namespace(),
-		Name:      "cluster-local-gateway",
-		ServiceURL: fmt.Sprintf("cluster-local-gateway.istio-system.svc.%s",
+		Name:      networking.ClusterLocalGateway,
+		ServiceURL: fmt.Sprintf(networking.ClusterLocalGateway+".istio-system.svc.%s",
 			network.GetClusterDomainName()),
 	}}
 }
-
-var defaultReconcileGateway = false
 
 // Gateway specifies the name of the Gateway and the K8s Service backing it.
 type Gateway struct {
@@ -79,21 +73,18 @@ func (g Gateway) QualifiedName() string {
 // Istio contains istio related configuration defined in the
 // istio config map.
 type Istio struct {
-	// IngressGateway specifies the gateway urls for public ClusterIngress.
+	// IngressGateway specifies the gateway urls for public Ingress.
 	IngressGateways []Gateway
 
-	// LocalGateway specifies the gateway urls for public & private ClusterIngress.
+	// LocalGateway specifies the gateway urls for public & private Ingress.
 	LocalGateways []Gateway
-
-	// ReconcileExternalGateway specifies if external Istio Gateways will be reconciled or not.
-	ReconcileExternalGateway bool
 }
 
 func parseGateways(configMap *corev1.ConfigMap, prefix string) ([]Gateway, error) {
 	urls := map[string]string{}
 	gatewayNames := []string{}
 	for k, v := range configMap.Data {
-		if !strings.HasPrefix(k, prefix) {
+		if !strings.HasPrefix(k, prefix) || k == prefix {
 			continue
 		}
 		gatewayName, serviceURL := k[len(prefix):], v
@@ -106,9 +97,18 @@ func parseGateways(configMap *corev1.ConfigMap, prefix string) ([]Gateway, error
 	sort.Strings(gatewayNames)
 	gateways := make([]Gateway, len(gatewayNames))
 	for i, gatewayName := range gatewayNames {
+		var namespace, name string
+		parts := strings.SplitN(gatewayName, ".", 2)
+		if len(parts) == 1 {
+			namespace = system.Namespace()
+			name = parts[0]
+		} else {
+			namespace = parts[0]
+			name = parts[1]
+		}
 		gateways[i] = Gateway{
-			Namespace:  system.Namespace(),
-			Name:       gatewayName,
+			Namespace:  namespace,
+			Name:       name,
 			ServiceURL: urls[gatewayName],
 		}
 	}
@@ -117,31 +117,24 @@ func parseGateways(configMap *corev1.ConfigMap, prefix string) ([]Gateway, error
 
 // NewIstioFromConfigMap creates an Istio config from the supplied ConfigMap
 func NewIstioFromConfigMap(configMap *corev1.ConfigMap) (*Istio, error) {
-	gateways, err := parseGateways(configMap, GatewayKeyPrefix)
+	gateways, err := parseGateways(configMap, gatewayKeyPrefix)
 	if err != nil {
 		return nil, err
 	}
 	if len(gateways) == 0 {
 		gateways = defaultGateways()
 	}
-	localGateways, err := parseGateways(configMap, LocalGatewayKeyPrefix)
+	localGateways, err := parseGateways(configMap, localGatewayKeyPrefix)
+	if err != nil {
+		return nil, err
+	}
 	if len(localGateways) == 0 {
 		localGateways = defaultLocalGateways()
 	}
 	localGateways = removeMeshGateway(localGateways)
-	if err != nil {
-		return nil, err
-	}
-	reconcileGateway := defaultReconcileGateway
-	if reconcileGatewayStr := configMap.Data[ReconcileExternalGatewayKey]; len(reconcileGatewayStr) != 0 {
-		if reconcileGateway, err = strconv.ParseBool(reconcileGatewayStr); err != nil {
-			return nil, err
-		}
-	}
 	return &Istio{
-		IngressGateways:          gateways,
-		LocalGateways:            localGateways,
-		ReconcileExternalGateway: reconcileGateway,
+		IngressGateways: gateways,
+		LocalGateways:   localGateways,
 	}, nil
 }
 

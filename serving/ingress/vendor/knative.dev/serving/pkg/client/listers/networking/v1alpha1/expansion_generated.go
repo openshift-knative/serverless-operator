@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ type CertificateListerExpansion interface{}
 // CertificateNamespaceListerExpansion allows custom methods to be added to
 // CertificateNamespaceLister.
 type CertificateNamespaceListerExpansion interface{}
-
-// ClusterIngressListerExpansion allows custom methods to be added to
-// ClusterIngressLister.
-type ClusterIngressListerExpansion interface{}
 
 // IngressListerExpansion allows custom methods to be added to
 // IngressLister.

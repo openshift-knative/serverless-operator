@@ -18,21 +18,21 @@ package revision
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	"knative.dev/pkg/kmp"
 	"knative.dev/pkg/logging"
-	av1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving/v1alpha1"
+	autoscaling "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
+	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/reconciler/revision/config"
 	"knative.dev/serving/pkg/reconciler/revision/resources"
 	presources "knative.dev/serving/pkg/resources"
 )
 
-func (c *Reconciler) createDeployment(ctx context.Context, rev *v1alpha1.Revision) (*appsv1.Deployment, error) {
+func (c *Reconciler) createDeployment(ctx context.Context, rev *v1.Revision) (*appsv1.Deployment, error) {
 	cfgs := config.FromContext(ctx)
 
 	deployment, err := resources.MakeDeployment(
@@ -46,13 +46,13 @@ func (c *Reconciler) createDeployment(ctx context.Context, rev *v1alpha1.Revisio
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to make deployment")
+		return nil, fmt.Errorf("failed to make deployment: %w", err)
 	}
 
-	return c.KubeClientSet.AppsV1().Deployments(deployment.Namespace).Create(deployment)
+	return c.kubeclient.AppsV1().Deployments(deployment.Namespace).Create(deployment)
 }
 
-func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1alpha1.Revision, have *appsv1.Deployment) (*appsv1.Deployment, error) {
+func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1.Revision, have *appsv1.Deployment) (*appsv1.Deployment, error) {
 	logger := logging.FromContext(ctx)
 	cfgs := config.FromContext(ctx)
 
@@ -67,7 +67,7 @@ func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1alpha1
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to update deployment")
+		return nil, fmt.Errorf("failed to update deployment: %w", err)
 	}
 
 	// Preserve the current scale of the Deployment.
@@ -89,7 +89,7 @@ func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1alpha1
 	// Carry over new labels.
 	desiredDeployment.Labels = presources.UnionMaps(deployment.Labels, desiredDeployment.Labels)
 
-	d, err := c.KubeClientSet.AppsV1().Deployments(deployment.Namespace).Update(desiredDeployment)
+	d, err := c.kubeclient.AppsV1().Deployments(deployment.Namespace).Update(desiredDeployment)
 	if err != nil {
 		return nil, err
 	}
@@ -109,14 +109,14 @@ func (c *Reconciler) checkAndUpdateDeployment(ctx context.Context, rev *v1alpha1
 	return d, nil
 }
 
-func (c *Reconciler) createImageCache(ctx context.Context, rev *v1alpha1.Revision) (*caching.Image, error) {
+func (c *Reconciler) createImageCache(ctx context.Context, rev *v1.Revision) (*caching.Image, error) {
 	image := resources.MakeImageCache(rev)
 
-	return c.CachingClientSet.CachingV1alpha1().Images(image.Namespace).Create(image)
+	return c.cachingclient.CachingV1alpha1().Images(image.Namespace).Create(image)
 }
 
-func (c *Reconciler) createPA(ctx context.Context, rev *v1alpha1.Revision) (*av1alpha1.PodAutoscaler, error) {
+func (c *Reconciler) createPA(ctx context.Context, rev *v1.Revision) (*autoscaling.PodAutoscaler, error) {
 	pa := resources.MakePA(rev)
 
-	return c.ServingClientSet.AutoscalingV1alpha1().PodAutoscalers(pa.Namespace).Create(pa)
+	return c.client.AutoscalingV1alpha1().PodAutoscalers(pa.Namespace).Create(pa)
 }

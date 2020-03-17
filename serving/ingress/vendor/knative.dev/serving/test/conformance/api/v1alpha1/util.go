@@ -21,11 +21,10 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"regexp"
+	"net/url"
 	"strings"
-	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/google/go-containerregistry/pkg/name"
 	"golang.org/x/sync/errgroup"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
@@ -35,12 +34,12 @@ import (
 	v1a1test "knative.dev/serving/test/v1alpha1"
 )
 
-func waitForExpectedResponse(t *testing.T, clients *test.Clients, domain, expectedResponse string) error {
-	client, err := pkgTest.NewSpoofingClient(clients.KubeClient, t.Logf, domain, test.ServingFlags.ResolvableDomain)
+func waitForExpectedResponse(t pkgTest.TLegacy, clients *test.Clients, url *url.URL, expectedResponse string) error {
+	client, err := pkgTest.NewSpoofingClient(clients.KubeClient, t.Logf, url.Hostname(), test.ServingFlags.ResolvableDomain)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://%s", domain), nil)
+	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -48,12 +47,13 @@ func waitForExpectedResponse(t *testing.T, clients *test.Clients, domain, expect
 	return err
 }
 
-func validateDomains(
-	t *testing.T, clients *test.Clients, baseDomain string,
+func validateDomains(t pkgTest.TLegacy, clients *test.Clients, baseDomain *url.URL,
 	baseExpected, trafficTargets, targetsExpected []string) error {
-	var subdomains []string
+	var subdomains []*url.URL
 	for _, target := range trafficTargets {
-		subdomains = append(subdomains, target+"-"+baseDomain)
+		subdomain, _ := url.Parse(baseDomain.String())
+		subdomain.Host = target + "-" + baseDomain.Host
+		subdomains = append(subdomains, subdomain)
 	}
 
 	g, _ := errgroup.WithContext(context.Background())
@@ -64,19 +64,19 @@ func validateDomains(
 		// Check for each of the responses we expect from the base domain.
 		resp := resp
 		g.Go(func() error {
-			t.Logf("Waiting for route to update domain: %s", baseDomain)
+			t.Logf("Waiting for route to update %s", baseDomain)
 			return waitForExpectedResponse(t, clients, baseDomain, resp)
 		})
 	}
 	for i, s := range subdomains {
 		i, s := i, s
 		g.Go(func() error {
-			t.Logf("Waiting for route to update domain: %s", s)
+			t.Logf("Waiting for route to update %s", s)
 			return waitForExpectedResponse(t, clients, s, targetsExpected[i])
 		})
 	}
 	if err := g.Wait(); err != nil {
-		return errors.Wrap(err, "error with initial domain probing")
+		return fmt.Errorf("error with initial domain probing: %w", err)
 	}
 
 	g.Go(func() error {
@@ -95,30 +95,30 @@ func validateDomains(
 		})
 	}
 	if err := g.Wait(); err != nil {
-		return errors.Wrap(err, "error checking routing distribution")
+		return fmt.Errorf("error checking routing distribution: %w", err)
 	}
 	return nil
 }
 
 // checkDistribution sends "num" requests to "domain", then validates that
 // we see each body in "expectedResponses" at least "min" times.
-func checkDistribution(t *testing.T, clients *test.Clients, domain string, num, min int, expectedResponses []string) error {
-	client, err := pkgTest.NewSpoofingClient(clients.KubeClient, t.Logf, domain, test.ServingFlags.ResolvableDomain)
+func checkDistribution(t pkgTest.TLegacy, clients *test.Clients, url *url.URL, num, min int, expectedResponses []string) error {
+	client, err := pkgTest.NewSpoofingClient(clients.KubeClient, t.Logf, url.Hostname(), test.ServingFlags.ResolvableDomain)
 	if err != nil {
 		return err
 	}
 
-	t.Logf("Performing %d concurrent requests to %s", num, domain)
-	actualResponses, err := sendRequests(client, domain, num)
+	t.Logf("Performing %d concurrent requests to %s", num, url)
+	actualResponses, err := sendRequests(client, url, num)
 	if err != nil {
 		return err
 	}
 
-	return checkResponses(t, num, min, domain, expectedResponses, actualResponses)
+	return checkResponses(t, num, min, url.Hostname(), expectedResponses, actualResponses)
 }
 
 // checkResponses verifies that each "expectedResponse" is present in "actualResponses" at least "min" times.
-func checkResponses(t *testing.T, num int, min int, domain string, expectedResponses []string, actualResponses []string) error {
+func checkResponses(t pkgTest.TLegacy, num int, min int, domain string, expectedResponses []string, actualResponses []string) error {
 	// counts maps the expected response body to the number of matching requests we saw.
 	counts := make(map[string]int)
 	// badCounts maps the unexpected response body to the number of matching requests we saw.
@@ -166,8 +166,8 @@ func checkResponses(t *testing.T, num int, min int, domain string, expectedRespo
 	return nil
 }
 
-// sendRequests sends "num" requests to "domain", returning a string for each spoof.Response.Body.
-func sendRequests(client spoof.Interface, domain string, num int) ([]string, error) {
+// sendRequests sends "num" requests to "url", returning a string for each spoof.Response.Body.
+func sendRequests(client spoof.Interface, url *url.URL, num int) ([]string, error) {
 	responses := make([]string, num)
 
 	// Launch "num" requests, recording the responses we get in "responses".
@@ -176,7 +176,7 @@ func sendRequests(client spoof.Interface, domain string, num int) ([]string, err
 		// We don't index into "responses" inside the goroutine to avoid a race, see #1545.
 		result := &responses[i]
 		g.Go(func() error {
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://%s", domain), nil)
+			req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 			if err != nil {
 				return err
 			}
@@ -196,17 +196,17 @@ func sendRequests(client spoof.Interface, domain string, num int) ([]string, err
 // Validates service health and vended content match for a runLatest Service.
 // The checks in this method should be able to be performed at any point in a
 // runLatest Service's lifecycle so long as the service is in a "Ready" state.
-func validateRunLatestDataPlane(t *testing.T, clients *test.Clients, names test.ResourceNames, expectedText string) error {
+func validateRunLatestDataPlane(t pkgTest.TLegacy, clients *test.Clients, names test.ResourceNames, expectedText string) error {
 	t.Logf("Checking that the endpoint vends the expected text: %s", expectedText)
 	_, err := pkgTest.WaitForEndpointState(
 		clients.KubeClient,
 		t.Logf,
-		names.Domain,
+		names.URL,
 		v1a1test.RetryingRouteInconsistency(pkgTest.MatchesAllOf(pkgTest.IsStatusOK, pkgTest.EventuallyMatchesBody(expectedText))),
 		"WaitForEndpointToServeText",
 		test.ServingFlags.ResolvableDomain)
 	if err != nil {
-		return fmt.Errorf("the endpoint for Route %s at domain %s didn't serve the expected text \"%s\": %v", names.Route, names.Domain, expectedText, err)
+		return fmt.Errorf("the endpoint for Route %s at %s didn't serve the expected text %q: %w", names.Route, names.URL.String(), expectedText, err)
 	}
 
 	return nil
@@ -215,17 +215,17 @@ func validateRunLatestDataPlane(t *testing.T, clients *test.Clients, names test.
 // Validates the state of Configuration, Revision, and Route objects for a runLatest Service.
 // The checks in this method should be able to be performed at any point in a
 // runLatest Service's lifecycle so long as the service is in a "Ready" state.
-func validateRunLatestControlPlane(t *testing.T, clients *test.Clients, names test.ResourceNames, expectedGeneration string) error {
-	t.Log("Checking to ensure Revision is in desired state with generation: ", expectedGeneration)
+func validateRunLatestControlPlane(t pkgTest.T, clients *test.Clients, names test.ResourceNames, expectedGeneration string) error {
+	t.Log("Checking to ensure Revision is in desired state with", "generation", expectedGeneration)
 	err := v1a1test.CheckRevisionState(clients.ServingAlphaClient, names.Revision, func(r *v1alpha1.Revision) (bool, error) {
 		if ready, err := v1a1test.IsRevisionReady(r); !ready {
-			return false, fmt.Errorf("revision %s did not become ready to serve traffic: %v", names.Revision, err)
+			return false, fmt.Errorf("revision %s did not become ready to serve traffic: %w", names.Revision, err)
 		}
 		if r.Status.ImageDigest == "" {
 			return false, fmt.Errorf("imageDigest not present for revision %s", names.Revision)
 		}
 		if validDigest, err := validateImageDigest(names.Image, r.Status.ImageDigest); !validDigest {
-			return false, fmt.Errorf("imageDigest %s is not valid for imageName %s: %v", r.Status.ImageDigest, names.Image, err)
+			return false, fmt.Errorf("imageDigest %s is not valid for imageName %s: %w", r.Status.ImageDigest, names.Image, err)
 		}
 		return true, nil
 	})
@@ -234,16 +234,16 @@ func validateRunLatestControlPlane(t *testing.T, clients *test.Clients, names te
 	}
 	err = v1a1test.CheckRevisionState(clients.ServingAlphaClient, names.Revision, v1a1test.IsRevisionAtExpectedGeneration(expectedGeneration))
 	if err != nil {
-		return fmt.Errorf("revision %s did not have an expected annotation with generation %s: %v", names.Revision, expectedGeneration, err)
+		return fmt.Errorf("revision %s did not have an expected annotation with generation %s: %w", names.Revision, expectedGeneration, err)
 	}
 
 	t.Log("Checking to ensure Configuration is in desired state.")
 	err = v1a1test.CheckConfigurationState(clients.ServingAlphaClient, names.Config, func(c *v1alpha1.Configuration) (bool, error) {
 		if c.Status.LatestCreatedRevisionName != names.Revision {
-			return false, fmt.Errorf("the Configuration %s was not updated indicating that the Revision %s was created: %v", names.Config, names.Revision, err)
+			return false, fmt.Errorf("the Configuration %s was not updated indicating that the Revision %s was created: %w", names.Config, names.Revision, err)
 		}
 		if c.Status.LatestReadyRevisionName != names.Revision {
-			return false, fmt.Errorf("the Configuration %s was not updated indicating that the Revision %s was ready: %v", names.Config, names.Revision, err)
+			return false, fmt.Errorf("the Configuration %s was not updated indicating that the Revision %s was ready: %w", names.Config, names.Revision, err)
 		}
 		return true, nil
 	})
@@ -251,18 +251,18 @@ func validateRunLatestControlPlane(t *testing.T, clients *test.Clients, names te
 		return err
 	}
 
-	t.Log("Checking to ensure Route is in desired state with generation: ", expectedGeneration)
+	t.Log("Checking to ensure Route is in desired state with", "generation", expectedGeneration)
 	err = v1a1test.CheckRouteState(clients.ServingAlphaClient, names.Route, v1a1test.AllRouteTrafficAtRevision(names))
 	if err != nil {
-		return fmt.Errorf("the Route %s was not updated to route traffic to the Revision %s: %v", names.Route, names.Revision, err)
+		return fmt.Errorf("the Route %s was not updated to route traffic to the Revision %s: %w", names.Route, names.Revision, err)
 	}
 
 	return nil
 }
 
 // Validates labels on Revision, Configuration, and Route objects when created by a Service
-// see spec here: https://knative.dev/serving/blob/master/docs/spec/spec.md#revision
-func validateLabelsPropagation(t *testing.T, objects v1a1test.ResourceObjects, names test.ResourceNames) error {
+// see spec here: https://github.com/knative/serving/blob/master/docs/spec/spec.md#revision
+func validateLabelsPropagation(t pkgTest.T, objects v1a1test.ResourceObjects, names test.ResourceNames) error {
 	t.Log("Validate Labels on Revision Object")
 	revision := objects.Revision
 
@@ -325,6 +325,15 @@ func validateReleaseServiceShape(objs *v1a1test.ResourceObjects) error {
 }
 
 func validateImageDigest(imageName string, imageDigest string) (bool, error) {
-	imageDigestRegex := fmt.Sprintf("%s/%s@sha256:[0-9a-f]{64}", pkgTest.Flags.DockerRepo, imageName)
-	return regexp.MatchString(imageDigestRegex, imageDigest)
+	ref, err := name.ParseReference(pkgTest.ImagePath(imageName))
+	if err != nil {
+		return false, err
+	}
+
+	digest, err := name.NewDigest(imageDigest)
+	if err != nil {
+		return false, err
+	}
+
+	return ref.Context().String() == digest.Context().String(), nil
 }

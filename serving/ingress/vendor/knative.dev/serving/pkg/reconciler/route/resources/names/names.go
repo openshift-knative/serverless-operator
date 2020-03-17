@@ -17,8 +17,6 @@ limitations under the License.
 package names
 
 import (
-	"fmt"
-
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/network"
 )
@@ -31,12 +29,6 @@ func K8sServiceFullname(route kmeta.Accessor) string {
 	return network.GetServiceHostname(K8sService(route), route.GetNamespace())
 }
 
-// ClusterIngress returns the name for the ClusterIngress
-// child resource for the given Route.
-func ClusterIngress(route kmeta.Accessor) string {
-	return fmt.Sprintf("route-%s", route.GetUID())
-}
-
 // Ingress returns the name for the Ingress
 // child resource for the given Route.
 func Ingress(route kmeta.Accessor) string {
@@ -46,5 +38,5 @@ func Ingress(route kmeta.Accessor) string {
 // Certificate returns the name for the Certificate
 // child resource for the given Route.
 func Certificate(route kmeta.Accessor) string {
-	return fmt.Sprintf("route-%s", route.GetUID())
+	return "route-" + string(route.GetUID())
 }

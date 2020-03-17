@@ -309,14 +309,6 @@
   version = "v1.0.4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
-  name = "github.com/mattbaird/jsonpatch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
-
-[[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
@@ -536,7 +528,6 @@
     "context/ctxhttp",
     "http/httpguts",
     "http2",
-    "http2/h2c",
     "http2/hpack",
     "idna",
   ]
@@ -620,6 +611,14 @@
   ]
   pruneopts = "NT"
   revision = "f8c04913dfb7b2339a756441456bdbe0af6eb508"
+
+[[projects]]
+  digest = "1:79c5b7c79609e7e2d0c5a6509cc5894bb8ee9c2ca6e741214f8aa4317beeea59"
+  name = "gomodules.xyz/jsonpatch"
+  packages = ["v2"]
+  pruneopts = "NT"
+  revision = "1c2a0262323edc27502942d9727c95646b1c3cbe"
+  version = "v2.1.0"
 
 [[projects]]
   digest = "1:902ffa11f1d8c19c12b05cabffe69e1a16608ad03a8899ebcb9c6bde295660ae"
@@ -991,28 +990,28 @@
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
-  branch = "release-0.9"
-  digest = "1:74beefdc27f70c8d8eeec2bb0f1100c520f97799346e0a900f90cacb91b4205c"
+  branch = "release-0.13"
+  digest = "1:dec0d3059482bac8bff3c4798f0bddbcf6c19ede82832b1ef273a8dcf4b2b279"
   name = "knative.dev/pkg"
   packages = [
     "apis",
     "apis/duck",
     "apis/duck/v1",
-    "apis/v1alpha1",
     "changeset",
     "configmap",
     "kmeta",
     "kmp",
     "logging",
     "logging/logkey",
-    "network",
+    "profiling",
+    "tracker",
   ]
   pruneopts = "NT"
-  revision = "74659889c421b26b9a416fd203f5a8d3e602bfb2"
+  revision = "a56a6ea3fa56b9c9c2482a5bda0005dd2364d183"
 
 [[projects]]
-  branch = "release-0.9"
-  digest = "1:d28e7f13fa50eb8dd76b2a8342ceff9795b892a14828b1a9fb4fb1d369c567a2"
+  branch = "release-0.13"
+  digest = "1:bf59337db29bb77ad48f78c9df311af866afe923f20f3ff853b5d28dfed67674"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -1020,12 +1019,11 @@
     "pkg/apis/networking",
     "pkg/apis/networking/v1alpha1",
     "pkg/apis/serving",
-    "pkg/gc",
+    "pkg/autoscaler/config",
     "pkg/network",
-    "pkg/reconciler/route/config",
   ]
   pruneopts = "NT"
-  revision = "b066e90ccd6f091e0faf65a759f3ce789d373457"
+  revision = "53713006b1c53c6b052e15731c8e14df67998ac6"
 
 [[projects]]
   digest = "1:06035489efbd51ccface65fc878ceeb849aba05b2f9443c8993f363fc96e80ac"
@@ -1102,7 +1100,6 @@
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/assert",
     "k8s.io/api/core/v1",
-    "k8s.io/api/networking/v1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions",

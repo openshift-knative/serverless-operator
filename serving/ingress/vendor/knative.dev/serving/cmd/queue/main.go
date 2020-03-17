@@ -18,8 +18,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -31,38 +33,34 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
 	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/stats"
+	"go.opencensus.io/stats/view"
 	"go.opencensus.io/trace"
 	"go.uber.org/zap"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+
 	pkglogging "knative.dev/pkg/logging"
 	"knative.dev/pkg/logging/logkey"
 	"knative.dev/pkg/metrics"
+	pkgnet "knative.dev/pkg/network"
+	"knative.dev/pkg/profiling"
 	"knative.dev/pkg/signals"
 	"knative.dev/pkg/tracing"
 	tracingconfig "knative.dev/pkg/tracing/config"
 	"knative.dev/serving/pkg/activator"
 	activatorutil "knative.dev/serving/pkg/activator/util"
 	"knative.dev/serving/pkg/apis/networking"
-	"knative.dev/serving/pkg/autoscaler"
 	pkghttp "knative.dev/serving/pkg/http"
 	"knative.dev/serving/pkg/logging"
 	"knative.dev/serving/pkg/network"
 	"knative.dev/serving/pkg/queue"
 	"knative.dev/serving/pkg/queue/health"
 	"knative.dev/serving/pkg/queue/readiness"
-	queuestats "knative.dev/serving/pkg/queue/stats"
 )
 
 const (
-	// Add a little buffer space between request handling and stat
-	// reporting so that latency in the stat pipeline doesn't
-	// interfere with request handling.
-	statReportingQueueLength = 10
-
 	// Add enough buffer to not block request serving on stats collection
 	requestCountingQueueLength = 100
 
@@ -72,21 +70,10 @@ const (
 	// in the mesh.
 	quitSleepDuration = 20 * time.Second
 
-	badProbeTemplate = "unexpected probe header value: %s"
+	badProbeTemplate   = "unexpected probe header value: %s"
+	failingHealthcheck = "failing healthcheck"
 
-	// Metrics' names (without component prefix).
-	requestCountN          = "request_count"
-	responseTimeInMsecN    = "request_latencies"
-	appRequestCountN       = "app_request_count"
-	appResponseTimeInMsecN = "app_request_latencies"
-	queueDepthN            = "queue_depth"
-
-	// requestQueueHealthPath specifies the path for health checks for
-	// queue-proxy.
-	requestQueueHealthPath = "/health"
-
-	healthURLTemplate = "http://127.0.0.1:%d" + requestQueueHealthPath
-	tcpProbeTimeout   = 100 * time.Millisecond
+	healthURLTemplate = "http://127.0.0.1:%d"
 	// The 25 millisecond retry interval is an unscientific compromise between wanting to get
 	// started as early as possible while still wanting to give the container some breathing
 	// room to get up and running.
@@ -98,28 +85,6 @@ const (
 var (
 	logger *zap.SugaredLogger
 
-	// Metric counters.
-	requestCountM = stats.Int64(
-		requestCountN,
-		"The number of requests that are routed to queue-proxy",
-		stats.UnitDimensionless)
-	responseTimeInMsecM = stats.Float64(
-		responseTimeInMsecN,
-		"The response time in millisecond",
-		stats.UnitMilliseconds)
-	appRequestCountM = stats.Int64(
-		appRequestCountN,
-		"The number of requests that are routed to user-container",
-		stats.UnitDimensionless)
-	appResponseTimeInMsecM = stats.Float64(
-		appResponseTimeInMsecN,
-		"The response time in millisecond",
-		stats.UnitMilliseconds)
-	queueDepthM = stats.Int64(
-		queueDepthN,
-		"The current number of items in the serving and waiting queue, or not reported if unlimited concurrency.",
-		stats.UnitDimensionless)
-
 	readinessProbeTimeout = flag.Int("probe-period", -1, "run readiness probe with given timeout")
 )
 
@@ -129,11 +94,13 @@ type config struct {
 	UserPort               int    `split_words:"true" required:"true"`
 	RevisionTimeoutSeconds int    `split_words:"true" required:"true"`
 	ServingReadinessProbe  string `split_words:"true" required:"true"`
+	EnableProfiling        bool   `split_words:"true"` // optional
 
 	// Logging configuration
-	ServingLoggingConfig      string `split_words:"true" required:"true"`
-	ServingLoggingLevel       string `split_words:"true" required:"true"`
-	ServingRequestLogTemplate string `split_words:"true"` // optional
+	ServingLoggingConfig         string `split_words:"true" required:"true"`
+	ServingLoggingLevel          string `split_words:"true" required:"true"`
+	ServingRequestLogTemplate    string `split_words:"true"` // optional
+	ServingEnableProbeRequestLog bool   `split_words:"true"` // optional
 
 	// Metrics configuration
 	ServingNamespace             string `split_words:"true" required:"true"`
@@ -150,6 +117,9 @@ type config struct {
 	VarLogVolumeName       string `split_words:"true"` // optional
 	InternalVolumePath     string `split_words:"true"` // optional
 
+	// DownwardAPI configuration for pod labels
+	DownwardAPILabelsPath string `split_words:"true"`
+
 	// Tracing configuration
 	TracingConfigDebug                bool                      `split_words:"true"` // optional
 	TracingConfigBackend              tracingconfig.BackendType `split_words:"true"` // optional
@@ -159,23 +129,19 @@ type config struct {
 }
 
 // Make handler a closure for testing.
-func handler(reqChan chan queue.ReqEvent, breaker *queue.Breaker, handler http.Handler,
-	prober func() bool) func(http.ResponseWriter, *http.Request) {
+func proxyHandler(reqChan chan queue.ReqEvent, breaker *queue.Breaker, tracingEnabled bool, next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ph := network.KnativeProbeHeader(r)
-		switch {
-		case ph != "":
-			handleKnativeProbe(w, r, ph, prober)
-			return
-		case network.IsKubeletProbe(r):
-			probeCtx, probeSpan := trace.StartSpan(r.Context(), "probe")
-			// Do not count health checks for concurrency metrics
-			handler.ServeHTTP(w, r.WithContext(probeCtx))
-			probeSpan.End()
+		if network.IsKubeletProbe(r) {
+			next.ServeHTTP(w, r)
 			return
 		}
-		proxyCtx, proxySpan := trace.StartSpan(r.Context(), "proxy")
-		defer proxySpan.End()
+
+		if tracingEnabled {
+			proxyCtx, proxySpan := trace.StartSpan(r.Context(), "proxy")
+			r = r.WithContext(proxyCtx)
+			defer proxySpan.End()
+		}
+
 		// Metrics for autoscaling.
 		in, out := queue.ReqIn, queue.ReqOut
 		if activator.Name == network.KnativeProxyHeader(r) {
@@ -190,7 +156,7 @@ func handler(reqChan chan queue.ReqEvent, breaker *queue.Breaker, handler http.H
 		// Enforce queuing and concurrency limits.
 		if breaker != nil {
 			if err := breaker.Maybe(r.Context(), func() {
-				handler.ServeHTTP(w, r.WithContext(proxyCtx))
+				next.ServeHTTP(w, r)
 			}); err != nil {
 				switch err {
 				case context.DeadlineExceeded, queue.ErrRequestQueueFull:
@@ -200,41 +166,92 @@ func handler(reqChan chan queue.ReqEvent, breaker *queue.Breaker, handler http.H
 				}
 			}
 		} else {
-			handler.ServeHTTP(w, r.WithContext(proxyCtx))
+			next.ServeHTTP(w, r)
 		}
 	}
 }
 
-func handleKnativeProbe(w http.ResponseWriter, r *http.Request, ph string, prober func() bool) {
-	_, probeSpan := trace.StartSpan(r.Context(), "probe")
-	defer probeSpan.End()
-
-	if ph != queue.Name {
-		http.Error(w, fmt.Sprintf(badProbeTemplate, ph), http.StatusBadRequest)
-		probeSpan.Annotate([]trace.Attribute{
-			trace.StringAttribute("queueproxy.probe.error", fmt.Sprintf(badProbeTemplate, ph))}, "error")
-		return
+func preferPodForScaledown(downwardAPILabelsPath string) (bool, error) {
+	// Short circuit a rejection when no label path file is mounted
+	if _, err := os.Stat(downwardAPILabelsPath); os.IsNotExist(err) {
+		return false, nil
 	}
 
-	if prober == nil {
-		http.Error(w, "no probe", http.StatusInternalServerError)
-		probeSpan.Annotate([]trace.Attribute{
-			trace.StringAttribute("queueproxy.probe.error", "no probe")}, "error")
-		return
+	contentBytes, err := ioutil.ReadFile(downwardAPILabelsPath)
+	if err != nil {
+		return false, err
 	}
 
-	if !prober() {
-		http.Error(w, "container not ready", http.StatusServiceUnavailable)
-		probeSpan.Annotate([]trace.Attribute{
-			trace.StringAttribute("queueproxy.probe.error", "container not ready")}, "error")
-		return
+	content := string(contentBytes)
+	if content == "" {
+		return false, nil
 	}
 
-	// Respond with the name of the component handling the request.
-	w.Write([]byte(queue.Name))
+	scaleDown, err := strconv.ParseBool(content)
+	if err != nil {
+		return false, fmt.Errorf("failed parsing the label value: %w", err)
+	}
+
+	return scaleDown, nil
 }
 
-func probeQueueHealthPath(port int, timeoutSeconds int) error {
+func knativeProbeHandler(healthState *health.State, prober func() bool, isAggressive bool, tracingEnabled bool, next http.Handler, env config, logger *zap.SugaredLogger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ph := network.KnativeProbeHeader(r)
+
+		if ph == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		var probeSpan *trace.Span
+		if tracingEnabled {
+			_, probeSpan = trace.StartSpan(r.Context(), "probe")
+			defer probeSpan.End()
+		}
+
+		if ph != queue.Name {
+			http.Error(w, fmt.Sprintf(badProbeTemplate, ph), http.StatusBadRequest)
+			probeSpan.Annotate([]trace.Attribute{
+				trace.StringAttribute("queueproxy.probe.error", fmt.Sprintf(badProbeTemplate, ph))}, "error")
+			return
+		}
+
+		preferScaledown, err := preferPodForScaledown(env.DownwardAPILabelsPath)
+		if err != nil {
+			logger.Errorw("Failed to determine scale down preference", zap.Error(err))
+		}
+		if preferScaledown {
+			//Deliberately failing the readiness probe when pod is labelled for scale down
+			http.Error(w, failingHealthcheck, http.StatusBadRequest)
+			probeSpan.Annotate([]trace.Attribute{
+				trace.StringAttribute("queueproxy.probe.error", "intentionally failing health check")}, "error")
+			return
+		}
+
+		if prober == nil {
+			http.Error(w, "no probe", http.StatusInternalServerError)
+			probeSpan.Annotate([]trace.Attribute{
+				trace.StringAttribute("queueproxy.probe.error", "no probe")}, "error")
+			return
+		}
+
+		healthState.HandleHealthProbe(func() bool {
+			if !prober() {
+				probeSpan.Annotate([]trace.Attribute{
+					trace.StringAttribute("queueproxy.probe.error", "container not ready")}, "error")
+				return false
+			}
+			return true
+		}, isAggressive, w)
+	}
+}
+
+func probeQueueHealthPath(port, timeoutSeconds int, env config) error {
+	if port <= 0 {
+		return fmt.Errorf("port must be a positive value, got %d", port)
+	}
+
 	url := fmt.Sprintf(healthURLTemplate, port)
 	timeoutDuration := readiness.PollTimeout
 	if timeoutSeconds != 0 {
@@ -255,16 +272,34 @@ func probeQueueHealthPath(port int, timeoutSeconds int) error {
 	// Using PollImmediateUntil instead of PollImmediate because if timeout is reached while waiting for first
 	// invocation of conditionFunc, it exits immediately without trying for a second time.
 	timeoutErr := wait.PollImmediateUntil(aggressivePollInterval, func() (bool, error) {
-		var res *http.Response
-		if res, lastErr = httpClient.Get(url); res == nil {
+		var req *http.Request
+		req, lastErr = http.NewRequest(http.MethodGet, url, nil)
+		if lastErr != nil {
+			// Return nil error for retrying
+			return false, nil
+		}
+		// Add the header to indicate this is a probe request.
+		req.Header.Add(network.ProbeHeaderName, queue.Name)
+		req.Header.Add(network.UserAgentKey, network.QueueProxyUserAgent)
+		res, lastErr := httpClient.Do(req)
+		if lastErr != nil {
+			// Return nil error for retrying
 			return false, nil
 		}
 		defer res.Body.Close()
-		return health.IsHTTPProbeReady(res), nil
+		success := health.IsHTTPProbeReady(res)
+		// The check for preferForScaledown() fails readiness faster
+		// in the presence of the label
+		if preferScaleDown, err := preferPodForScaledown(env.DownwardAPILabelsPath); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else if !success && preferScaleDown {
+			return false, errors.New("failing probe deliberately for pod scaledown")
+		}
+		return success, nil
 	}, stopCh)
 
 	if lastErr != nil {
-		return errors.Wrap(lastErr, "failed to probe")
+		return fmt.Errorf("failed to probe: %w", lastErr)
 	}
 
 	// An http.StatusOK was never returned during probing
@@ -278,21 +313,21 @@ func probeQueueHealthPath(port int, timeoutSeconds int) error {
 func main() {
 	flag.Parse()
 
-	// If this is set, we run as a standalone binary to probe the queue-proxy.
-	if *readinessProbeTimeout >= 0 {
-		if err := probeQueueHealthPath(networking.QueueAdminPort, *readinessProbeTimeout); err != nil {
-			// used instead of the logger to produce a concise event message
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
 	// Parse the environment.
 	var env config
 	if err := envconfig.Process("", &env); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+
+	// If this is set, we run as a standalone binary to probe the queue-proxy.
+	if *readinessProbeTimeout >= 0 {
+		if err := probeQueueHealthPath(env.QueueServingPort, *readinessProbeTimeout, env); err != nil {
+			// used instead of the logger to produce a concise event message
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		os.Exit(0)
 	}
 
 	// Setup the logger.
@@ -301,28 +336,30 @@ func main() {
 	defer flush(logger)
 
 	logger = logger.With(
-		zap.String(logkey.Key, types.NamespacedName{Namespace: env.ServingNamespace, Name: env.ServingRevision}.String()),
+		zap.String(logkey.Key, types.NamespacedName{
+			Namespace: env.ServingNamespace,
+			Name:      env.ServingRevision,
+		}.String()),
 		zap.String(logkey.Pod, env.ServingPod))
 
 	if err := validateEnv(env); err != nil {
 		logger.Fatal(err.Error())
 	}
 
+	// Report stats on Go memory usage every 30 seconds.
+	msp := metrics.NewMemStatsAll()
+	msp.Start(context.Background(), 30*time.Second)
+	if err := view.Register(msp.DefaultViews()...); err != nil {
+		logger.Fatalw("Error exporting go memstats view", zap.Error(err))
+	}
+
 	// Setup reporters and processes to handle stat reporting.
-	promStatReporter, err := queue.NewPrometheusStatsReporter(env.ServingNamespace, env.ServingConfiguration, env.ServingRevision, env.ServingPod, reportingPeriod)
+	promStatReporter, err := queue.NewPrometheusStatsReporter(
+		env.ServingNamespace, env.ServingConfiguration, env.ServingRevision,
+		env.ServingPod, reportingPeriod)
 	if err != nil {
 		logger.Fatalw("Failed to create stats reporter", zap.Error(err))
 	}
-
-	statChan := make(chan *autoscaler.Stat, statReportingQueueLength)
-	defer close(statChan)
-	go func() {
-		for s := range statChan {
-			if err := promStatReporter.Report(s); err != nil {
-				logger.Errorw("Error while sending stat", zap.Error(err))
-			}
-		}
-	}()
 
 	reqChan := make(chan queue.ReqEvent, requestCountingQueueLength)
 	defer close(reqChan)
@@ -330,18 +367,14 @@ func main() {
 	reportTicker := time.NewTicker(reportingPeriod)
 	defer reportTicker.Stop()
 
-	queue.NewStats(env.ServingPod, queue.Channels{
-		ReqChan:    reqChan,
-		ReportChan: reportTicker.C,
-		StatChan:   statChan,
-	}, time.Now())
+	queue.NewStats(time.Now(), reqChan, reportTicker.C, promStatReporter.Report)
 
 	// Setup probe to run for checking user-application healthiness.
 	probe := buildProbe(env.ServingReadinessProbe)
 	healthState := &health.State{}
 
-	server := buildServer(env, probe, reqChan, logger)
-	adminServer := buildAdminServer(healthState, probe, logger)
+	server := buildServer(env, healthState, probe, reqChan, logger)
+	adminServer := buildAdminServer(healthState)
 	metricsServer := buildMetricsServer(promStatReporter)
 
 	servers := map[string]*http.Server{
@@ -350,12 +383,16 @@ func main() {
 		"metrics": metricsServer,
 	}
 
+	if env.EnableProfiling {
+		servers["profile"] = profiling.NewServer(profiling.NewHandler(logger, true))
+	}
+
 	errCh := make(chan error, len(servers))
 	for name, server := range servers {
 		go func(name string, s *http.Server) {
 			// Don't forward ErrServerClosed as that indicates we're already shutting down.
 			if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				errCh <- errors.Wrapf(err, "%s server failed", name)
+				errCh <- fmt.Errorf("%s server failed: %w", name, err)
 			}
 		}(name, server)
 	}
@@ -388,11 +425,15 @@ func main() {
 			if err := server.Shutdown(context.Background()); err != nil {
 				logger.Errorw("Failed to shutdown proxy server", zap.Error(err))
 			}
+			// Removing the main server from the shutdown logic as we've already shut it down.
+			delete(servers, "main")
 		})
 
 		flush(logger)
-		if err := adminServer.Shutdown(context.Background()); err != nil {
-			logger.Errorw("Failed to shutdown admin-server", zap.Error(err))
+		for serverName, srv := range servers {
+			if err := srv.Shutdown(context.Background()); err != nil {
+				logger.Errorw("Failed to shutdown server", zap.String("server", serverName), zap.Error(err))
+			}
 		}
 	}
 }
@@ -420,7 +461,8 @@ func buildProbe(probeJSON string) *readiness.Probe {
 	return readiness.NewProbe(coreProbe)
 }
 
-func buildServer(env config, rp *readiness.Probe, reqChan chan queue.ReqEvent, logger *zap.SugaredLogger) *http.Server {
+func buildServer(env config, healthState *health.State, rp *readiness.Probe, reqChan chan queue.ReqEvent,
+	logger *zap.SugaredLogger) *http.Server {
 	target := &url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort("127.0.0.1", strconv.Itoa(env.UserPort)),
@@ -428,40 +470,41 @@ func buildServer(env config, rp *readiness.Probe, reqChan chan queue.ReqEvent, l
 
 	httpProxy := httputil.NewSingleHostReverseProxy(target)
 	httpProxy.Transport = buildTransport(env, logger)
-	httpProxy.ErrorHandler = network.ErrorHandler(logger)
-
+	httpProxy.ErrorHandler = pkgnet.ErrorHandler(logger)
+	httpProxy.BufferPool = network.NewBufferPool()
 	httpProxy.FlushInterval = -1
 	activatorutil.SetupHeaderPruning(httpProxy)
 
 	breaker := buildBreaker(env)
 	metricsSupported := supportsMetrics(env, logger)
+	tracingEnabled := env.TracingConfigBackend != tracingconfig.None
 
 	// Create queue handler chain.
 	// Note: innermost handlers are specified first, ie. the last handler in the chain will be executed first.
 	var composedHandler http.Handler = httpProxy
 	if metricsSupported {
-		composedHandler = pushRequestMetricHandler(httpProxy, appRequestCountM, appResponseTimeInMsecM,
-			queueDepthM, breaker, env)
+		composedHandler = requestAppMetricsHandler(composedHandler, breaker, env)
 	}
-	composedHandler = http.HandlerFunc(handler(reqChan, breaker, composedHandler, rp.ProbeContainer))
+	composedHandler = proxyHandler(reqChan, breaker, tracingEnabled, composedHandler)
 	composedHandler = queue.ForwardedShimHandler(composedHandler)
 	composedHandler = queue.TimeToFirstByteTimeoutHandler(composedHandler,
 		time.Duration(env.RevisionTimeoutSeconds)*time.Second, "request timeout")
 	composedHandler = pushRequestLogHandler(composedHandler, env)
 
 	if metricsSupported {
-		composedHandler = pushRequestMetricHandler(composedHandler, requestCountM, responseTimeInMsecM,
-			nil /*queueDepthM*/, nil /*breaker*/, env)
+		composedHandler = requestMetricsHandler(composedHandler, env)
 	}
 	composedHandler = tracing.HTTPSpanMiddleware(composedHandler)
+
+	composedHandler = knativeProbeHandler(healthState, rp.ProbeContainer, rp.IsAggressive(), tracingEnabled, composedHandler, env, logger)
 	composedHandler = network.NewProbeHandler(composedHandler)
 
-	return network.NewServer(":"+strconv.Itoa(env.QueueServingPort), composedHandler)
+	return pkgnet.NewServer(":"+strconv.Itoa(env.QueueServingPort), composedHandler)
 }
 
 func buildTransport(env config, logger *zap.SugaredLogger) http.RoundTripper {
 	if env.TracingConfigBackend == tracingconfig.None {
-		return network.AutoTransport
+		return pkgnet.AutoTransport
 	}
 
 	oct := tracing.NewOpenCensusTracer(tracing.WithExporter(env.ServingPod, logger))
@@ -474,7 +517,7 @@ func buildTransport(env config, logger *zap.SugaredLogger) http.RoundTripper {
 	})
 
 	return &ochttp.Transport{
-		Base: network.AutoTransport,
+		Base: pkgnet.AutoTransport,
 	}
 }
 
@@ -506,16 +549,9 @@ func supportsMetrics(env config, logger *zap.SugaredLogger) bool {
 	return true
 }
 
-func buildAdminServer(healthState *health.State, probe *readiness.Probe, logger *zap.SugaredLogger) *http.Server {
+func buildAdminServer(healthState *health.State) *http.Server {
 	adminMux := http.NewServeMux()
-	adminMux.HandleFunc(requestQueueHealthPath, healthState.HealthHandler(func() bool {
-		if !probe.ProbeContainer() {
-			return false
-		}
-		logger.Info("User-container successfully probed.")
-		return true
-	}, probe.IsAggressive()))
-	adminMux.HandleFunc(queue.RequestQueueDrainPath, healthState.DrainHandler())
+	adminMux.HandleFunc(queue.RequestQueueDrainPath, healthState.DrainHandlerFunc())
 
 	return &http.Server{
 		Addr:    ":" + strconv.Itoa(networking.QueueAdminPort),
@@ -557,7 +593,7 @@ func pushRequestLogHandler(currentHandler http.Handler, env config) http.Handler
 		PodIP:         env.ServingPodIP,
 	}
 	handler, err := pkghttp.NewRequestLogHandler(currentHandler, logging.NewSyncFileWriter(os.Stdout), env.ServingRequestLogTemplate,
-		pkghttp.RequestLogTemplateInputGetterFromRevision(revInfo))
+		pkghttp.RequestLogTemplateInputGetterFromRevision(revInfo), env.ServingEnableProbeRequestLog)
 
 	if err != nil {
 		logger.Errorw("Error setting up request logger. Request logs will be unavailable.", zap.Error(err))
@@ -566,20 +602,24 @@ func pushRequestLogHandler(currentHandler http.Handler, env config) http.Handler
 	return handler
 }
 
-func pushRequestMetricHandler(currentHandler http.Handler, countMetric *stats.Int64Measure,
-	latencyMetric *stats.Float64Measure, queueDepthMetric *stats.Int64Measure, breaker *queue.Breaker, env config) http.Handler {
-	r, err := queuestats.NewStatsReporter(env.ServingNamespace, env.ServingService, env.ServingConfiguration, env.ServingRevision, countMetric, latencyMetric, queueDepthMetric)
+func requestMetricsHandler(currentHandler http.Handler, env config) http.Handler {
+	h, err := queue.NewRequestMetricsHandler(currentHandler, env.ServingNamespace,
+		env.ServingService, env.ServingConfiguration, env.ServingRevision, env.ServingPod)
 	if err != nil {
 		logger.Errorw("Error setting up request metrics reporter. Request metrics will be unavailable.", zap.Error(err))
 		return currentHandler
 	}
+	return h
+}
 
-	handler, err := queue.NewRequestMetricHandler(currentHandler, r, breaker)
+func requestAppMetricsHandler(currentHandler http.Handler, breaker *queue.Breaker, env config) http.Handler {
+	h, err := queue.NewAppRequestMetricsHandler(currentHandler, breaker, env.ServingNamespace,
+		env.ServingService, env.ServingConfiguration, env.ServingRevision, env.ServingPod)
 	if err != nil {
-		logger.Errorw("Error setting up request metrics handler. Request metrics will be unavailable.", zap.Error(err))
+		logger.Errorw("Error setting up app request metrics reporter. Request metrics will be unavailable.", zap.Error(err))
 		return currentHandler
 	}
-	return handler
+	return h
 }
 
 func setupMetricsExporter(backend string) error {

@@ -1,6 +1,23 @@
+/*
+Copyright 2019 The Knative Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package e2e
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -13,11 +30,12 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/google/go-cmp/cmp"
-	perrors "github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/system"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/serving/pkg/apis/networking"
-	"knative.dev/serving/pkg/autoscaler"
+	autoscalerconfig "knative.dev/serving/pkg/autoscaler/config"
 	"knative.dev/serving/test"
 	v1a1test "knative.dev/serving/test/v1alpha1"
 )
@@ -33,8 +51,15 @@ func SetupAlternativeNamespace(t *testing.T) *test.Clients {
 	return SetupWithNamespace(t, test.AlternativeServingNamespace)
 }
 
+//SetupServingNamespaceforSecurityTesting creates the client objects needed in e2e tests
+// under the security testing namespace.
+func SetupServingNamespaceforSecurityTesting(t *testing.T) *test.Clients {
+	return SetupWithNamespace(t, test.ServingNamespaceforSecurityTesting)
+}
+
 // SetupWithNamespace creates the client objects needed in the e2e tests under the specified namespace.
 func SetupWithNamespace(t *testing.T, namespace string) *test.Clients {
+	pkgTest.SetupLoggingFlags()
 	clients, err := test.NewClients(
 		pkgTest.Flags.Kubeconfig,
 		pkgTest.Flags.Cluster,
@@ -47,14 +72,26 @@ func SetupWithNamespace(t *testing.T, namespace string) *test.Clients {
 
 // autoscalerCM returns the current autoscaler config map deployed to the
 // test cluster.
-func autoscalerCM(clients *test.Clients) (*autoscaler.Config, error) {
+func autoscalerCM(clients *test.Clients) (*autoscalerconfig.Config, error) {
 	autoscalerCM, err := clients.KubeClient.Kube.CoreV1().ConfigMaps("knative-serving").Get(
-		autoscaler.ConfigName,
+		autoscalerconfig.ConfigName,
 		metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return autoscaler.NewConfigFromMap(autoscalerCM.Data)
+	return autoscalerconfig.NewConfigFromMap(autoscalerCM.Data)
+}
+
+// rawCM returns the raw knative config map for the given name
+func rawCM(clients *test.Clients, name string) (*corev1.ConfigMap, error) {
+	return clients.KubeClient.Kube.CoreV1().ConfigMaps("knative-serving").Get(
+		name,
+		metav1.GetOptions{})
+}
+
+// patchCM updates the existing config map with the supplied value.
+func patchCM(clients *test.Clients, cm *corev1.ConfigMap) (*corev1.ConfigMap, error) {
+	return clients.KubeClient.Kube.CoreV1().ConfigMaps("knative-serving").Update(cm)
 }
 
 // WaitForScaleToZero will wait for the specified deployment to scale to 0 replicas.
@@ -65,13 +102,15 @@ func WaitForScaleToZero(t *testing.T, deploymentName string, clients *test.Clien
 
 	cfg, err := autoscalerCM(clients)
 	if err != nil {
-		return perrors.Wrap(err, "failed to get autoscaler configmap")
+		return fmt.Errorf("failed to get autoscaler configmap: %w", err)
 	}
 
 	return pkgTest.WaitForDeploymentState(
 		clients.KubeClient,
 		deploymentName,
-		test.DeploymentScaledToZeroFunc,
+		func(d *appsv1.Deployment) (bool, error) {
+			return d.Status.ReadyReplicas == 0, nil
+		},
 		"DeploymentIsScaledDown",
 		test.ServingNamespace,
 		cfg.ScaleToZeroGracePeriod*6,

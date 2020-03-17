@@ -19,10 +19,12 @@ package slack
 import (
 	"flag"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"knative.dev/pkg/test/helpers"
+	"knative.dev/pkg/test/mako/config"
 	"knative.dev/pkg/test/slackutil"
 )
 
@@ -30,7 +32,7 @@ var minInterval = flag.Duration("min-alert-interval", 24*time.Hour, "The minimum
 
 const (
 	messageTemplate = `
-As of %s, there is a new performance regression detected from automation test:
+As of %s, there is a new performance regression detected from test automation for %s:
 %s`
 )
 
@@ -38,12 +40,12 @@ As of %s, there is a new performance regression detected from automation test:
 type MessageHandler struct {
 	readClient  slackutil.ReadOperations
 	writeClient slackutil.WriteOperations
-	config      repoConfig
+	channels    []config.Channel
 	dryrun      bool
 }
 
 // Setup creates the necessary setup to make calls to work with slack
-func Setup(userName, readTokenPath, writeTokenPath, repo string, dryrun bool) (*MessageHandler, error) {
+func Setup(userName, readTokenPath, writeTokenPath string, channels []config.Channel, dryrun bool) (*MessageHandler, error) {
 	readClient, err := slackutil.NewReadClient(userName, readTokenPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot authenticate to slack read client: %v", err)
@@ -52,32 +54,21 @@ func Setup(userName, readTokenPath, writeTokenPath, repo string, dryrun bool) (*
 	if err != nil {
 		return nil, fmt.Errorf("cannot authenticate to slack write client: %v", err)
 	}
-	var config *repoConfig
-	for _, repoConfig := range repoConfigs {
-		if repoConfig.repo == repo {
-			config = &repoConfig
-			break
-		}
-	}
-	if config == nil {
-		return nil, fmt.Errorf("no channel configuration found for repo %v", repo)
-	}
 	return &MessageHandler{
 		readClient:  readClient,
 		writeClient: writeClient,
-		config:      *config,
+		channels:    channels,
 		dryrun:      dryrun,
 	}, nil
 }
 
-// SendAlert will send the alert text to the slack channel(s)
-func (smh *MessageHandler) SendAlert(text string) error {
+// SendAlert will send alert for performance regression to the slack channel(s)
+func (smh *MessageHandler) SendAlert(testName, summary string) error {
 	dryrun := smh.dryrun
-	channels := smh.config.channels
 	errCh := make(chan error)
 	var wg sync.WaitGroup
-	for i := range channels {
-		channel := channels[i]
+	for i := range smh.channels {
+		channel := smh.channels[i]
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -85,30 +76,36 @@ func (smh *MessageHandler) SendAlert(text string) error {
 			startTime := time.Now().Add(-1 * *minInterval)
 			var messageHistory []string
 			if err := helpers.Run(
-				fmt.Sprintf("retrieving message history in channel %q", channel.name),
+				fmt.Sprintf("retrieving message history in channel %q", channel.Name),
 				func() error {
 					var err error
-					messageHistory, err = smh.readClient.MessageHistory(channel.identity, startTime)
+					messageHistory, err = smh.readClient.MessageHistory(channel.Identity, startTime)
 					return err
 				},
 				dryrun,
 			); err != nil {
-				errCh <- fmt.Errorf("failed to retrieve message history in channel %q", channel.name)
+				errCh <- fmt.Errorf("failed to retrieve message history in channel %q", channel.Name)
 			}
-			// do not send message again if messages were sent on the same channel a short while ago
-			if len(messageHistory) != 0 {
-				return
+			// decorate the test name for more accurate match
+			decoratedTestName := decoratedName(testName)
+			// do not send message again if alert for this test has been sent to
+			// the channel a short while ago
+			for _, message := range messageHistory {
+				if strings.Contains(message, decoratedTestName) {
+					return
+				}
 			}
+
 			// send the alert message to the channel
-			message := fmt.Sprintf(messageTemplate, time.Now(), text)
+			message := fmt.Sprintf(messageTemplate, time.Now().UTC(), decoratedTestName, summary)
 			if err := helpers.Run(
-				fmt.Sprintf("sending message %q to channel %q", message, channel.name),
+				fmt.Sprintf("sending message %q to channel %q", message, channel.Name),
 				func() error {
-					return smh.writeClient.Post(message, channel.identity)
+					return smh.writeClient.Post(message, channel.Identity)
 				},
 				dryrun,
 			); err != nil {
-				errCh <- fmt.Errorf("failed to send message to channel %q", channel.name)
+				errCh <- fmt.Errorf("failed to send message to channel %q", channel.Name)
 			}
 		}()
 	}
@@ -124,4 +121,9 @@ func (smh *MessageHandler) SendAlert(text string) error {
 	}
 
 	return helpers.CombineErrors(errs)
+}
+
+// decoratedName returns a name with decoration for easy identification.
+func decoratedName(name string) string {
+	return fmt.Sprintf("[%s]", name)
 }
