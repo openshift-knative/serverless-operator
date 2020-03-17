@@ -181,7 +181,7 @@ spec:
     started](https://docs.openshift.com/container-platform/4.3/serverless/serverless-getting-started.html)
     sections.
 
-    Interested in learning even more ? Check out the [tutorials](https://redhat-developer-demos.github.io/knative-tutorial/knative-tutorial/index.html).
+    Interested in learning even more? Check out the [tutorials](https://redhat-developer-demos.github.io/knative-tutorial/knative-tutorial/index.html).
 
   displayName: OpenShift Serverless Operator
   icon:
