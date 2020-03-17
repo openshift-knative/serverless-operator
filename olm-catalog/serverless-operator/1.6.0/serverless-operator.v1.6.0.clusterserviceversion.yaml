@@ -93,12 +93,12 @@ spec:
   description: |-
     The Red Hat OpenShift Serverless Operator provides a collection of APIs that
     enables containers, microservices and functions to run "serverless".
-    Applications can scale up and down (to zero) on demand and be triggered by a
+    Serverless applications can scale up and down (to zero) on demand and be triggered by a
     number of event sources. OpenShift Serverless integrates with a number of
     platform services, such as Metering and Monitoring and it is based on the open
     source project Knative.  
 
-    This is a **[Tech Preview release](https://access.redhat.com/support/offerings/techpreview)!**
+    This is a **[Technology Preview release](https://access.redhat.com/support/offerings/techpreview)!**
 
     ## Prerequisites
 
