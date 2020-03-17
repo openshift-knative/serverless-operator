@@ -270,7 +270,7 @@ spec:
                     - name: OPERATOR_NAME
                       value: "knative-serving-openshift"
                     - name: MIN_OPENSHIFT_VERSION
-                      value: "4.3.0"
+                      value: "4.3.0-0"
                     - name: REQUIRED_NAMESPACE
                       value: "knative-serving"
                     - name: KOURIER_MANIFEST_PATH
