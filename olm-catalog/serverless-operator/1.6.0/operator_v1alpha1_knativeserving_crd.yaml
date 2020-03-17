@@ -21,11 +21,13 @@ spec:
     shortNames:
     - ks
     singular: knativeserving
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
+      type: object
       description: Schema for the knativeservings API
       properties:
         apiVersion:
