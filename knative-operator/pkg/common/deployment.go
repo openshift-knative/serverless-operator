@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -22,7 +23,7 @@ func ApplyProxySettings(ks *servingv1alpha1.KnativeServing, c client.Client) err
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
-		return err
+		return fmt.Errorf("failed to fetch controller deployment: %w", err)
 	}
 	for c := range deploy.Spec.Template.Spec.Containers {
 		for k, v := range proxyEnv {
@@ -35,7 +36,11 @@ func ApplyProxySettings(ks *servingv1alpha1.KnativeServing, c client.Client) err
 			}
 		}
 	}
-	return c.Update(context.TODO(), deploy)
+	log.Info("Applying proxy settings to the controller deployment")
+	if err := c.Update(context.TODO(), deploy); err != nil {
+		return fmt.Errorf("failed to update controller deployment with proxy settings: %w", err)
+	}
+	return nil
 }
 
 func remove(env []v1.EnvVar, key string) []v1.EnvVar {

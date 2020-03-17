@@ -26,12 +26,12 @@ var (
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
 	manifest, err := mfc.NewManifest(path, api)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read kourier manifest: %w", err)
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace())), replaceImageFromEnvironment("IMAGE_", scheme)}
 	manifest, err = manifest.Transform(transforms...)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to transform kourier manifest: %w", err)
 	}
 	if instance.Status.IsFullySupported() {
 		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
@@ -43,15 +43,15 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	// Us reaching here means we need to do something and/or wait longer.
 	instance.Status.MarkDependencyInstalling("Kourier")
 	if err := api.Status().Update(context.TODO(), instance); err != nil {
-		return err
+		return fmt.Errorf("failed to update KnativeServing status: %w", err)
 	}
 
 	log.Info("Installing Kourier Ingress")
 	if err := manifest.Apply(); err != nil {
-		return err
+		return fmt.Errorf("failed to apply kourier manifest: %w", err)
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
-		return err
+		return fmt.Errorf("failed to check kourier deployments: %w", err)
 	}
 	log.Info("Kourier is ready")
 
@@ -83,16 +83,16 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Deleting Kourier Ingress")
 	manifest, err := mfc.NewManifest(path, api)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read kourier manifest: %w", err)
 	}
 	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
 
 	manifest, err = manifest.Transform(transforms...)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to transform kourier manifest: %w", err)
 	}
 	if err := manifest.Delete(); err != nil {
-		return err
+		return fmt.Errorf("failed to delete kourier manifest: %w", err)
 	}
 
 	log.Info("Deleting ingress namespace")
@@ -102,9 +102,12 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		// We can safely ignore this. There is nothing to do for us.
 		return nil
 	} else if err != nil {
-		return err
+		return fmt.Errorf("failed to fetch ingress namespace: %w", err)
 	}
-	return api.Delete(context.TODO(), ns)
+	if err := api.Delete(context.TODO(), ns); err != nil {
+		return fmt.Errorf("failed to remove ingress namespace: %w", err)
+	}
+	return nil
 }
 
 // replaceImageFromEnvironment replaces Koureir images with the images specified by env value.
