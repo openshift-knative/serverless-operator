@@ -39,11 +39,6 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
 		log.Error(err, "")
-		if !instance.Status.IsFullySupported() {
-			// If the instance is already DependencyInstalling status, do not update it.
-			// This avoids frequent LastTransitionTimestamp update.
-			return err
-		}
 		instance.Status.MarkDependencyInstalling("Kourier")
 		if apiErr := api.Status().Update(context.TODO(), instance); apiErr != nil {
 			return fmt.Errorf("failed to update KnativeServing status: %w", err)
