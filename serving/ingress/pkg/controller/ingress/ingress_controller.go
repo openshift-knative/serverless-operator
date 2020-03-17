@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -20,10 +22,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/logging"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
+	servingresources "knative.dev/serving/pkg/resources"
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 )
@@ -52,8 +56,28 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to primary resource Ingress
-	err = c.Watch(&source.Kind{Type: &networkingv1alpha1.Ingress{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to primary and secondary Ingress
+	err = c.Watch(&source.Kind{Type: &networkingv1alpha1.Ingress{}}, &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
+			owners := obj.Meta.GetOwnerReferences()
+
+			// If the current owner is an ingress itself, we want to enqueue that.
+			if len(owners) > 0 && owners[0].Kind == "Ingress" {
+				return []reconcile.Request{{
+					NamespacedName: types.NamespacedName{
+						Namespace: obj.Meta.GetNamespace(),
+						Name:      owners[0].Name,
+					},
+				}}
+			}
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{
+					Namespace: obj.Meta.GetNamespace(),
+					Name:      obj.Meta.GetName(),
+				},
+			}}
+		}),
+	})
 	if err != nil {
 		return err
 	}
@@ -153,7 +177,12 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 	}
 
 	logger.Infof("Reconciling ingress :%v", ing)
+	child, err := r.reconcileChildIngress(ctx, ing)
+	if err != nil {
+		return fmt.Errorf("failed to reconcile child ingress: %v", err)
+	}
 
+	ing.Status = child.Status
 	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
 		selector, existing, err := r.routeList(ctx, ing)
@@ -169,11 +198,15 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 			// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
 			return nil
 		}
+
+		activeRoutes := make([]*routev1.Route, 0)
 		for _, route := range routes {
 			logger.Infof("Creating/Updating OpenShift Route for host %s", route.Spec.Host)
-			if err := r.reconcileRoute(ctx, ing, route); err != nil {
+			r, err := r.reconcileRoute(ctx, ing, route)
+			if err != nil {
 				return fmt.Errorf("failed to create route for host %s: %v", route.Spec.Host, err)
 			}
+			activeRoutes = append(activeRoutes, r)
 			delete(existingMap, route.Name)
 		}
 		// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
@@ -183,6 +216,12 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 				return err
 			}
 		}
+
+		if !allRoutesReady(activeRoutes) {
+			ing.Status.MarkLoadBalancerNotReady()
+		} else {
+			logger.Info("All routes ready")
+		}
 	} else {
 		if err := r.deleteRoutes(ctx, ing); err != nil {
 			return err
@@ -191,6 +230,57 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 
 	logger.Info("Ingress successfully synced")
 	return nil
+}
+
+func (r *ReconcileIngress) reconcileChildIngress(ctx context.Context, parent *networkingv1alpha1.Ingress) (*networkingv1alpha1.Ingress, error) {
+	logger := logging.FromContext(ctx)
+	desired := makeChildIngress(parent)
+
+	// Check if this Ingress already exists
+	child := &networkingv1alpha1.Ingress{}
+	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, child)
+	if err != nil && errors.IsNotFound(err) {
+		err = r.client.Create(ctx, desired)
+		if err != nil {
+			logger.Errorf("Failed to create child Ingress %q in namespace %q: %v", desired.Name, desired.Namespace, err)
+			return nil, err
+		}
+		logger.Infof("Created child Ingress %q in namespace %q", desired.Name, desired.Namespace)
+		return desired, nil
+	} else if err != nil {
+		return nil, err
+	} else if !equality.Semantic.DeepEqual(child.Spec, desired.Spec) || !equality.Semantic.DeepEqual(child.Annotations, desired.Annotations) {
+		// Don't modify the informers copy
+		existing := child.DeepCopy()
+		existing.Spec = desired.Spec
+		existing.Annotations = desired.Annotations
+		err = r.client.Update(ctx, existing)
+		if err != nil {
+			logger.Errorf("Failed to update child Ingress %q in namespace %q: %v", desired.Name, desired.Namespace, err)
+			return nil, err
+		}
+		return existing, nil
+	}
+
+	parent.Status = child.Status
+	return child, nil
+}
+
+func makeChildIngress(parent *networkingv1alpha1.Ingress) *networkingv1alpha1.Ingress {
+	class := parent.Annotations[networking.IngressClassAnnotationKey]
+	child := &networkingv1alpha1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: parent.Namespace,
+			Name:      parent.Name + "-child",
+			Annotations: servingresources.UnionMaps(parent.Annotations, map[string]string{
+				networking.IngressClassAnnotationKey: strings.TrimPrefix(class, "openshift."),
+			}),
+			Labels:          parent.Labels,
+			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(parent)},
+		},
+		Spec: parent.Spec,
+	}
+	return child
 }
 
 func (r *ReconcileIngress) deleteRoute(ctx context.Context, route *routev1.Route) error {
@@ -222,7 +312,7 @@ func (r *ReconcileIngress) deleteRoutes(ctx context.Context, ing *networkingv1al
 	return nil
 }
 
-func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1alpha1.Ingress, desired *routev1.Route) error {
+func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1alpha1.Ingress, desired *routev1.Route) (*routev1.Route, error) {
 	logger := logging.FromContext(ctx)
 
 	// Check if this Route already exists
@@ -232,11 +322,12 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 		err = r.client.Create(ctx, desired)
 		if err != nil {
 			logger.Errorf("Failed to create OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
+			return nil, err
 		}
 		logger.Infof("Created OpenShift Route %q in namespace %q", desired.Name, desired.Namespace)
+		return desired, nil
 	} else if err != nil {
-		return err
+		return nil, err
 	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) {
 		// Don't modify the informers copy
 		existing := route.DeepCopy()
@@ -245,11 +336,12 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 		err = r.client.Update(ctx, existing)
 		if err != nil {
 			logger.Errorf("Failed to update OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
+			return nil, err
 		}
+		return existing, nil
 	}
 
-	return nil
+	return route, nil
 }
 
 func (r *ReconcileIngress) reconcileDeletion(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
@@ -334,4 +426,27 @@ func routeLabelFilter(route routev1.Route, selector map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func allRoutesReady(rs []*routev1.Route) bool {
+	for _, r := range rs {
+		if !isRouteReady(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func isRouteReady(r *routev1.Route) bool {
+	for _, ing := range r.Status.Ingress {
+		for _, cond := range ing.Conditions {
+			if cond.Type != routev1.RouteAdmitted {
+				continue
+			}
+			if cond.Status == corev1.ConditionTrue {
+				return true
+			}
+		}
+	}
+	return false
 }
