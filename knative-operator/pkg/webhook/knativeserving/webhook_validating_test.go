@@ -43,6 +43,21 @@ func TestInvalidVersion(t *testing.T) {
 	}
 }
 
+func TestPreReleaseVersionConstraint(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
+
+	for _, version := range []string{"4.3.0", "4.3.5", "4.3.0-0.ci-2020-03-11-221411", "4.3.0+build"} {
+		validator := KnativeServingValidator{}
+		validator.InjectDecoder(&mockDecoder{})
+		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
+		result := validator.Handle(context.TODO(), types.Request{})
+		if !result.Response.Allowed {
+			t.Errorf("Version %q was supposed to pass but didn't", version)
+		}
+	}
+}
+
 func mockClusterVersion(version string) *configv1.ClusterVersion {
 	return &configv1.ClusterVersion{
 		ObjectMeta: metav1.ObjectMeta{
