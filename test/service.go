@@ -62,6 +62,7 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1beta1
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
 		return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(service.Name, &metav1.DeleteOptions{})
 	})
 	return service, nil
@@ -152,7 +153,8 @@ func IsServiceReady(s *servingv1beta1.Service, err error) (bool, error) {
 func CreateDeployment(ctx *Context, name, namespace, image string) error {
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Namespace: namespace,
+			Name:      name,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
@@ -189,6 +191,7 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 	}
 
 	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up Deployment '%s/%s'", deployment.Namespace, deployment.Name)
 		return ctx.Clients.Kube.AppsV1().Deployments(namespace).Delete(deployment.Name, &metav1.DeleteOptions{})
 	})
 
@@ -223,6 +226,7 @@ func CreateKubeService(ctx *Context, name, namespace string) (*corev1.Service, e
 	}
 
 	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up K8s Service '%s/%s'", kubeService.Namespace, kubeService.Name)
 		return ctx.Clients.Serving.ServingV1beta1().Services(namespace).Delete(svc.Name, &metav1.DeleteOptions{})
 	})
 
@@ -249,6 +253,7 @@ func WithRouteForServiceReady(ctx *Context, serviceName, namespace string) (*rou
 	}
 
 	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up OCP Route '%s/%s'", r.Namespace, r.Name)
 		return ctx.Clients.Route.Routes(namespace).Delete(route.Name, &metav1.DeleteOptions{})
 	})
 
