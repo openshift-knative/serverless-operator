@@ -50,6 +50,8 @@ function run_e2e_tests {
     logger.error 'Tests have failures!'
   fi
 
+  wait_for_knative_serving_ingress_ns_deleted || return 1
+
   return $failed
 }
 
