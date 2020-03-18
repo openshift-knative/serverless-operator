@@ -88,7 +88,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	reconcileErr := r.reconcileKnativeServing(instance)
 
 	if !equality.Semantic.DeepEqual(original.Status, instance.Status) {
-		if err := r.updateStatus(instance); err != nil {
+		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
 			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
 		}
 	}
@@ -222,21 +222,4 @@ func finalizerName() string {
 		panic(err)
 	}
 	return name
-}
-
-func (r *ReconcileKnativeServing) updateStatus(desired *servingv1alpha1.KnativeServing) error {
-	ks := &servingv1alpha1.KnativeServing{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, ks)
-	if err != nil {
-		return err
-	}
-
-	// If there's nothing to update, just return.
-	if equality.Semantic.DeepEqual(ks.Status, desired.Status) {
-		return nil
-	}
-	// Don't modify the informers copy
-	existing := ks.DeepCopy()
-	existing.Status = desired.Status
-	return r.client.Status().Update(context.TODO(), existing)
 }
