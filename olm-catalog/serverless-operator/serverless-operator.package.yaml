@@ -1,4 +1,9 @@
 packageName: serverless-operator
+defaultChannel: techpreview
 channels:
 - name: techpreview
+  currentCSV: serverless-operator.v1.6.0
+- name: techpreview-4.3
+  currentCSV: serverless-operator.v1.6.0
+- name: techpreview-4.4
   currentCSV: serverless-operator.v1.6.0
