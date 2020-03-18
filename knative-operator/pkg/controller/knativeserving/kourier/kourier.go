@@ -33,29 +33,28 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	if err != nil {
 		return fmt.Errorf("failed to transform kourier manifest: %w", err)
 	}
-	if instance.Status.IsFullySupported() {
-		// TODO: verify deployed kourier is not different from kourier-latest.yaml accurately.
-		if err := checkDeployments(&manifest, instance, api); err == nil {
-			return nil
-		}
-	}
-
-	// Us reaching here means we need to do something and/or wait longer.
-	instance.Status.MarkDependencyInstalling("Kourier")
-	if err := api.Status().Update(context.TODO(), instance); err != nil {
-		return fmt.Errorf("failed to update KnativeServing status: %w", err)
-	}
-
 	log.Info("Installing Kourier Ingress")
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply kourier manifest: %w", err)
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
-		return fmt.Errorf("failed to check kourier deployments: %w", err)
+		log.Error(err, "")
+		prev := instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled)
+		instance.Status.MarkDependencyInstalling("Kourier")
+		if prev == instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled) {
+			return err
+		}
+		if apiErr := api.Status().Update(context.TODO(), instance); apiErr != nil {
+			return fmt.Errorf("failed to update KnativeServing status: %w", err)
+		}
+		return err
 	}
 	log.Info("Kourier is ready")
-
+	prev := instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled)
 	instance.Status.MarkDependenciesInstalled()
+	if prev.Status == instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled).Status {
+		return nil
+	}
 	return api.Status().Update(context.TODO(), instance)
 }
 
