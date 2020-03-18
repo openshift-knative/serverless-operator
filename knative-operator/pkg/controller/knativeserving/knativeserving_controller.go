@@ -71,8 +71,8 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	reqLogger.Info("Reconciling KnativeServing")
 
 	// Fetch the KnativeServing instance
-	instance := &servingv1alpha1.KnativeServing{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	original := &servingv1alpha1.KnativeServing{}
+	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -80,10 +80,22 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		return reconcile.Result{}, err
 	}
 
-	if instance.GetDeletionTimestamp() != nil {
-		return reconcile.Result{}, r.delete(instance)
+	if original.GetDeletionTimestamp() != nil {
+		return reconcile.Result{}, r.delete(original)
 	}
 
+	instance := original.DeepCopy()
+	reconcileErr := r.reconcileKnativeServing(instance)
+
+	if !equality.Semantic.DeepEqual(original.Status, instance.Status) {
+		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
+		}
+	}
+	return reconcile.Result{}, reconcileErr
+}
+
+func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alpha1.KnativeServing) error {
 	stages := []func(*servingv1alpha1.KnativeServing) error{
 		r.configure,
 		r.ensureFinalizers,
@@ -94,11 +106,10 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
-			return reconcile.Result{}, err
+			return err
 		}
 	}
-
-	return reconcile.Result{}, nil
+	return nil
 }
 
 // configure default settings for OpenShift
