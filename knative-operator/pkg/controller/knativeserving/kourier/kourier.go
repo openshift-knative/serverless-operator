@@ -38,24 +38,12 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 		return fmt.Errorf("failed to apply kourier manifest: %w", err)
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
-		log.Error(err, "")
-		prev := instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled)
 		instance.Status.MarkDependencyInstalling("Kourier")
-		if prev == instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled) {
-			return err
-		}
-		if apiErr := api.Status().Update(context.TODO(), instance); apiErr != nil {
-			return fmt.Errorf("failed to update KnativeServing status: %w", err)
-		}
-		return err
+		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Kourier is ready")
-	prev := instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled)
 	instance.Status.MarkDependenciesInstalled()
-	if prev.Status == instance.Status.GetCondition(servingv1alpha1.DependenciesInstalled).Status {
-		return nil
-	}
-	return api.Status().Update(context.TODO(), instance)
+	return nil
 }
 
 // Check for deployments in knative-serving-ingress
