@@ -22,6 +22,8 @@ type Manifestival interface {
 	Transform(fns ...Transformer) (Manifest, error)
 	// Filters resources in a Manifest; Predicates are AND'd
 	Filter(fns ...Predicate) Manifest
+	// Show how applying the manifest would change the cluster
+	DryRun() ([]MergePatch, error)
 }
 
 // Manifest tracks a set of concrete resources which should be managed as a
@@ -70,6 +72,24 @@ func (m Manifest) Apply(opts ...ApplyOption) error {
 	return nil
 }
 
+// Delete removes all resources in the Manifest
+func (m Manifest) Delete(opts ...DeleteOption) error {
+	a := make([]unstructured.Unstructured, len(m.resources))
+	copy(a, m.resources) // shallow copy is fine
+	// we want to delete in reverse order
+	for left, right := 0, len(a)-1; left < right; left, right = left+1, right-1 {
+		a[left], a[right] = a[right], a[left]
+	}
+	for _, spec := range a {
+		if okToDelete(&spec) {
+			if err := m.delete(&spec, opts...); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // apply updates or creates a particular resource
 func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) error {
 	current, err := m.get(spec)
@@ -86,13 +106,13 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 		if ApplyWith(opts).Replace {
 			return m.update(spec.DeepCopy(), lastApplied(spec), opts...)
 		}
-		diff, err := patch.New(spec, current)
+		diff, err := patch.New(current, spec)
 		if err != nil {
 			return err
 		}
 		if diff != nil {
 			m.log.Info("Merging", "diff", diff)
-			if err := diff.Apply(current); err != nil {
+			if err := diff.Merge(current); err != nil {
 				return err
 			}
 			return m.update(current, lastApplied(spec), opts...)
@@ -106,25 +126,6 @@ func (m Manifest) update(obj *unstructured.Unstructured, config string, opts ...
 	m.logResource("Updating", obj)
 	annotate(obj, v1.LastAppliedConfigAnnotation, config)
 	return m.Client.Update(obj, opts...)
-}
-
-// Delete removes all resources in the Manifest, silently ignoring
-// NotFound errors by default
-func (m Manifest) Delete(opts ...DeleteOption) error {
-	a := make([]unstructured.Unstructured, len(m.resources))
-	copy(a, m.resources) // shallow copy is fine
-	// we want to delete in reverse order
-	for left, right := 0, len(a)-1; left < right; left, right = left+1, right-1 {
-		a[left], a[right] = a[right], a[left]
-	}
-	for _, spec := range a {
-		if okToDelete(&spec) {
-			if err := m.delete(&spec, opts...); err != nil {
-				m.log.Error(err, "Delete failed")
-			}
-		}
-	}
-	return nil
 }
 
 // delete removes the specified object

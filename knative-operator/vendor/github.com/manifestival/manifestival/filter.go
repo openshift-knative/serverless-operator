@@ -86,6 +86,18 @@ func ByLabel(label, value string) Predicate {
 	}
 }
 
+// ByLabels returns true when the resource contains any of the labels.
+func ByLabels(labels map[string]string) Predicate {
+	return func(u *unstructured.Unstructured) bool {
+		for key, value := range labels {
+			if v := u.GetLabels()[key]; v == value {
+				return true
+			}
+		}
+		return false
+	}
+}
+
 // ByGVK returns resources of a particular GroupVersionKind
 func ByGVK(gvk schema.GroupVersionKind) Predicate {
 	return func(u *unstructured.Unstructured) bool {
