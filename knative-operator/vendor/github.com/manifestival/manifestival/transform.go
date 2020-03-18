@@ -24,10 +24,11 @@ type Owner interface {
 func (m Manifest) Transform(fns ...Transformer) (Manifest, error) {
 	result := m
 	result.resources = m.Resources() // deep copies
-	for _, spec := range result.resources {
+	for i := range result.resources {
+		spec := &result.resources[i]
 		for _, transform := range fns {
 			if transform != nil {
-				err := transform(&spec)
+				err := transform(spec)
 				if err != nil {
 					return Manifest{}, err
 				}
