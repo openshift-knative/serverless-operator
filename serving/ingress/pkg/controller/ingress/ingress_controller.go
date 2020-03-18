@@ -185,6 +185,9 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 	ing.Status = child.Status
 	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
+		// Mark ourselves unhealthy until proven otherwise.
+		ing.Status.MarkLoadBalancerNotReady()
+
 		selector, existing, err := r.routeList(ctx, ing)
 		if err != nil {
 			logger.Errorf("Failed to list openshift routes %v", err)
@@ -217,10 +220,9 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 			}
 		}
 
-		if !allRoutesReady(activeRoutes) {
-			ing.Status.MarkLoadBalancerNotReady()
-		} else {
-			logger.Info("All routes ready")
+		if allRoutesReady(activeRoutes) {
+			// Take over the childs status if the routes are good.
+			ing.Status = child.Status
 		}
 	} else {
 		if err := r.deleteRoutes(ctx, ing); err != nil {
