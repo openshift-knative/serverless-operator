@@ -33,7 +33,7 @@ const (
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(caCtx) })
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
 		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
@@ -100,7 +100,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-		caCtx.Cleanup()
+		caCtx.Cleanup(t)
 		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
 			t.Fatalf("Operators still running: %v", err)
 		}
@@ -193,8 +193,8 @@ func testUserPermissions(t *testing.T) {
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(paCtx, editCtx, viewCtx) })
-	defer test.CleanupAll(paCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
 	tests := []struct {
 		name        string

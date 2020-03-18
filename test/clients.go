@@ -189,16 +189,18 @@ func newOpenShiftProxyClient(cfg *rest.Config) (configV1.ConfigV1Interface, erro
 }
 
 // Cleanup for all contexts
-func CleanupAll(contexts ...*Context) {
+func CleanupAll(t *testing.T, contexts ...*Context) {
 	for _, ctx := range contexts {
-		ctx.Cleanup()
+		ctx.Cleanup(t)
 	}
 }
 
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
-func (ctx *Context) Cleanup() {
+func (ctx *Context) Cleanup(t *testing.T) {
 	for _, f := range ctx.CleanupList {
-		f()
+		if err := f(); err != nil {
+			t.Logf("Failed to clean up: %v", err)
+		}
 	}
 }
 
