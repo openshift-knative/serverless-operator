@@ -64,6 +64,7 @@ func (v *KnativeServingValidator) validate(ctx context.Context, ks *servingv1alp
 	stages := []func(context.Context, *servingv1alpha1.KnativeServing) (bool, string, error){
 		v.validateNamespace,
 		v.validateVersion,
+		v.validateLoneliness,
 	}
 	for _, stage := range stages {
 		allowed, reason, err = stage(ctx, ks)
@@ -138,6 +139,20 @@ func (v *KnativeServingValidator) validateNamespace(ctx context.Context, ks *ser
 	ns, required := os.LookupEnv("REQUIRED_NAMESPACE")
 	if required && ns != ks.Namespace {
 		return false, fmt.Sprintf("KnativeServing may only be created in %s namespace", ns), nil
+	}
+	return true, "", nil
+}
+
+// validate this is the only KS in this namespace
+func (v *KnativeServingValidator) validateLoneliness(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
+	list := &servingv1alpha1.KnativeServingList{}
+	if err := v.client.List(ctx, &client.ListOptions{Namespace: ks.Namespace}, list); err != nil {
+		return false, "Unable to list KnativeServings", err
+	}
+	for _, v := range list.Items {
+		if ks.Name != v.Name {
+			return false, "Only one KnativeServing allowed per namespace", nil
+		}
 	}
 	return true, "", nil
 }

@@ -16,7 +16,7 @@ spec:
       serviceAccountName: knative-serving-openshift
       containers:
         - name: knative-serving-openshift
-          image: docker.io/jcrossley3/knative-serving-openshift:dev
+          image: docker.io/jcrossley3/knative-operator
           command:
           - knative-serving-openshift
           imagePullPolicy: Always
@@ -33,3 +33,5 @@ spec:
               value: "4.1.13"
             - name: REQUIRED_NAMESPACE
               value: "knative-serving"
+            - name: KOURIER_MANIFEST_PATH
+              value: deploy/resources/kourier/kourier-latest.yaml
