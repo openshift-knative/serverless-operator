@@ -57,6 +57,15 @@ metadata:
               }
             }
           }
+        },
+        {
+          "apiVersion": "operator.knative.dev/v1alpha1",
+          "kind": "KnativeEventing",
+          "metadata": {
+            "name": "knative-eventing"
+          },
+          "spec": {
+          }
         }
       ]
     capabilities: Seamless Upgrades
@@ -68,7 +77,7 @@ metadata:
       Provides a collection of API's based on Knative to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
-    operators.operatorframework.io/internal-objects: '["knativeservings.operator.knative.dev"]'
+    operators.operatorframework.io/internal-objects: '["knativeservings.operator.knative.dev","knativeeventings.operator.knative.dev"]'
     support: Red Hat, Inc.
   name: serverless-operator.v1.6.0
   namespace: placeholder
@@ -90,6 +99,15 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:io.kubernetes.conditions'
       version: v1alpha1
+    - description: Represents an installation of a particular version of Knative Eventing
+      displayName: Knative Eventing
+      kind: KnativeEventing
+      name: knativeeventings.operator.knative.dev
+      statusDescriptors:
+      - description: The version of Knative Eventing installed
+        displayName: Version
+        path: version
+      version: v1alpha1
   minKubeVersion: 1.15.0
   description: |-
     The Red Hat Serverless Operator provides a collection of API's to
@@ -110,6 +128,21 @@ spec:
     - Routing and network programming
     - Point-in-time snapshots of deployed code and configurations
 
+    # Knative Eventing
+      Knative Eventing is a system that is designed to address a common need for cloud native
+      development and provides composable primitives to enable late-binding event sources and
+      event consumers.
+      Knative Eventing is designed to address a common need for cloud
+      native development:
+      1. Services are loosely coupled during development and deployed independently
+      1. A producer can generate events before a consumer is listening, and a consumer
+         can express an interest in an event or class of events that is not yet being
+         produced.
+      1. Services can be connected to create new applications
+         - without modifying producer or consumer, and
+         - with the ability to select a specific subset of events from a particular
+           producer.
+
     ## Prerequisites
 
     The Serverless Operator's provided APIs such as Knative Serving
@@ -119,8 +152,8 @@ spec:
 
     ## Further Information
 
-    For documentation on using Knative Serving, see the
-    [serving section](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index#knative-serving).
+    For documentation on using Knative, see the
+    [Serverless documentation site](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index).
 
   displayName: OpenShift Serverless Operator
   icon:
@@ -242,6 +275,41 @@ spec:
                 - containerPort: 9090
                   name: metrics
               serviceAccountName: knative-serving-operator
+      - name: knative-eventing-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: knative-eventing-operator
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: "false"
+              labels:
+                name: knative-eventing-operator
+            spec:
+              containers:
+              - env:
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: OPERATOR_NAME
+                  value: knative-eventing-operator
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: METRICS_DOMAIN
+                  value: knative.dev/eventing-operator
+                # TODO
+                image: gcr.io/knative-releases/knative.dev/eventing-operator/cmd/manager@sha256:746f378e2e1d88d31ac090856d5f050ca937a8b8bca82a4ae14701074c8c44f3
+                imagePullPolicy: IfNotPresent
+                name: knative-eventing-operator
+                ports:
+                - containerPort: 9090
+                  name: metrics
+              serviceAccountName: knative-serving-operator
       - name: knative-serving-openshift
         spec:
           replicas: 1
@@ -272,8 +340,10 @@ spec:
                       value: "knative-serving-openshift"
                     - name: MIN_OPENSHIFT_VERSION
                       value: "4.3.0-0"
-                    - name: REQUIRED_NAMESPACE
+                    - name: REQUIRED_SERVING_NAMESPACE
                       value: "knative-serving"
+                    - name: REQUIRED_EVENTING_NAMESPACE
+                      value: "knative-eventing"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
                     - name: IMAGE_queue-proxy
@@ -292,6 +362,17 @@ spec:
                       value: docker.io/maistra/proxyv2-ubi8:1.0.8
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
+                    # TODO
+                    - name: IMAGE_eventing-controller
+                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:58e64d346c696096441714abb3cd2792ea3498db1325ed5ceb5551ef544d4df7
+                    - name: IMAGE_eventing-webhook
+                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:d1e5538a8a0ebda46495398b1d268c81567a216e974edd8871364cd2543a3e07
+                    - name: IMAGE_broker_controller
+                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/channel_broker@sha256:853e0d194223da4356af7c9a17c79afa0ef96b93fd956d5febb2b1f2be78c717
+                    - name: IMAGE_imc-controller
+                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:68d8ea6569e3f5afbf2fabe4f897b6331cc767cc994b7279feb9128a2331bb1a
+                    - name: IMAGE_imc-dispatcher
+                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:4c50fe6179dbead67a72606d771c2d64cf87e5676bac0a54e967c80ec730edaa
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -359,6 +440,7 @@ spec:
           - apps
           resourceNames:
           - knative-serving-operator
+          - knative-eventing-operator
           resources:
           - deployments/finalizers
           verbs:
@@ -387,6 +469,7 @@ spec:
   - scale to zero
   - knative
   - serving
+  - eventing
   links:
   - name: Documentation
     url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.2/html-single/serverless/index
@@ -421,5 +504,19 @@ spec:
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
       image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+    # TODO
+    - name: knative-eventing-operator
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-operator
+    # TODO
+    - name: IMAGE_eventing-controller
+      value: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:58e64d346c696096441714abb3cd2792ea3498db1325ed5ceb5551ef544d4df7
+    - name: IMAGE_eventing-webhook
+      value: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:d1e5538a8a0ebda46495398b1d268c81567a216e974edd8871364cd2543a3e07
+    - name: IMAGE_broker_controller
+      value: gcr.io/knative-releases/knative.dev/eventing/cmd/channel_broker@sha256:853e0d194223da4356af7c9a17c79afa0ef96b93fd956d5febb2b1f2be78c717
+    - name: IMAGE_imc-controller
+      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:68d8ea6569e3f5afbf2fabe4f897b6331cc767cc994b7279feb9128a2331bb1a
+    - name: IMAGE_imc-dispatcher
+      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:4c50fe6179dbead67a72606d771c2d64cf87e5676bac0a54e967c80ec730edaa
   replaces: serverless-operator.v1.5.0
   version: 1.6.0
