@@ -17,14 +17,25 @@ import (
 
 func init() {
 	configv1.AddToScheme(scheme.Scheme)
+	servingv1alpha1.AddToScheme(scheme.Scheme)
+}
+
+var ks1 = &servingv1alpha1.KnativeServing{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "ks1",
+	},
+}
+var ks2 = &servingv1alpha1.KnativeServing{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "ks2",
+	},
 }
 
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_NAMESPACE", "knative-serving")
 	validator := KnativeServingValidator{}
-	// The mock will return a KS in the 'default' namespace
-	validator.InjectDecoder(&mockDecoder{})
+	validator.InjectDecoder(&mockDecoder{ks1})
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Error("The required namespace is wrong, but the request is allowed")
@@ -35,7 +46,7 @@ func TestInvalidVersion(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
 	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{})
+	validator.InjectDecoder(&mockDecoder{ks1})
 	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("3.2.0")))
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
@@ -49,12 +60,23 @@ func TestPreReleaseVersionConstraint(t *testing.T) {
 
 	for _, version := range []string{"4.3.0", "4.3.5", "4.3.0-0.ci-2020-03-11-221411", "4.3.0+build"} {
 		validator := KnativeServingValidator{}
-		validator.InjectDecoder(&mockDecoder{})
+		validator.InjectDecoder(&mockDecoder{ks1})
 		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
 		result := validator.Handle(context.TODO(), types.Request{})
 		if !result.Response.Allowed {
-			t.Errorf("Version %q was supposed to pass but didn't", version)
+			t.Errorf("Version %q was supposed to pass but didn't: %v", version, result.Response)
 		}
+	}
+}
+
+func TestLoneliness(t *testing.T) {
+	os.Clearenv()
+	validator := KnativeServingValidator{}
+	validator.InjectDecoder(&mockDecoder{ks1})
+	validator.InjectClient(fake.NewFakeClient(ks2))
+	result := validator.Handle(context.TODO(), types.Request{})
+	if result.Response.Allowed {
+		t.Errorf("Too many KnativeServings: %v", result.Response)
 	}
 }
 
@@ -79,16 +101,7 @@ var _ types.Decoder = (*mockDecoder)(nil)
 
 func (mock *mockDecoder) Decode(_ types.Request, obj runtime.Object) error {
 	if p, ok := obj.(*servingv1alpha1.KnativeServing); ok {
-		if mock.ks != nil {
-			*p = *mock.ks
-		} else {
-			*p = servingv1alpha1.KnativeServing{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "knative-serving",
-					Namespace: "default",
-				},
-			}
-		}
+		*p = *mock.ks
 	}
 	return nil
 }
