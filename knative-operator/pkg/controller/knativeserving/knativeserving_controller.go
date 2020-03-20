@@ -153,7 +153,6 @@ func (r *ReconcileKnativeServing) deleteVirtualService(instance *servingv1alpha1
 	ctx := context.TODO()
 	if err := r.client.List(ctx, listOpts, list); err != nil {
 		if meta.IsNoMatchError(err) {
-			log.Info("failed to list VirtualServices")
 			// VirtualService CRD is not installed.
 			return nil
 		}
