@@ -12,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
@@ -151,14 +152,19 @@ func (r *ReconcileKnativeServing) deleteVirtualService(instance *servingv1alpha1
 	list := &v1alpha3.VirtualServiceList{}
 	ctx := context.TODO()
 	if err := r.client.List(ctx, listOpts, list); err != nil {
+		if meta.IsNoMatchError(err) {
+			log.Info("failed to list VirtualServices")
+			// VirtualService CRD is not installed.
+			return nil
+		}
 		return err
 	}
 	for i := range list.Items {
-		if list.Items[i].GetAnnotations()[ingressClassKey] == istioIngressClass {
-			log.Info(fmt.Sprintf("deleting VirtualService %s/%s", list.Items[i].GetName(), list.Items[i].GetNamespace()))
-
-			if err := r.client.Delete(ctx, &list.Items[i]); err != nil {
-				return fmt.Errorf("failed to delete VirtualService %s/%s: %w", list.Items[i].GetName(), list.Items[i].GetNamespace(), err)
+		vs := &list.Items[i]
+		if vs.GetAnnotations()[ingressClassKey] == istioIngressClass {
+			log.Info(fmt.Sprintf("deleting VirtualService %s/%s", vs.GetNamespace(), vs.GetName()))
+			if err := r.client.Delete(ctx, vs); err != nil {
+				return fmt.Errorf("failed to delete VirtualService %s/%s: %w", vs.GetNamespace(), vs.GetName(), err)
 			}
 		}
 	}
