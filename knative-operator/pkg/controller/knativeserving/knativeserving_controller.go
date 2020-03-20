@@ -17,7 +17,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
-	"knative.dev/pkg/apis/istio/v1alpha3"
+	"k8s.io/apimachinery/pkg/util/sets"
+  "knative.dev/pkg/apis/istio/v1alpha3"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -228,8 +229,11 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
-	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName() {
-		log.Info("Finalizer is not first in line", "finalizers", instance.GetFinalizers())
+	finalizer := finalizerName()
+	finalizers := sets.NewString(instance.GetFinalizers()...)
+
+	if !finalizers.Has(finalizer) {
+		log.Info("Finalizer has already been removed, nothing to do")
 		return nil
 	}
 
@@ -244,12 +248,17 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 		return fmt.Errorf("failed to delete ConsoleCLIDownload: %w", err)
 	}
 
-	// The deletionTimestamp might've changed. Fetch the resource again.
+	// The above might take a while, so we refetch the resource again in case it has changed.
 	refetched := &servingv1alpha1.KnativeServing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
 		return fmt.Errorf("failed to refetch KnativeServing: %w", err)
 	}
-	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
+
+	// Update the refetched finalizer list.
+	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers.Delete(finalizer)
+	refetched.SetFinalizers(finalizers.List())
+
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeServing with removed finalizer: %w", err)
 	}

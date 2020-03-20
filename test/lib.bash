@@ -265,7 +265,7 @@ function run_knative_serving_operator_tests {
   logger.info "Checkout the code ${fork}/serving-operator @ ${version}"
   target="${GOPATH}/src/knative.dev/serving-operator"
   mkdir -p "$target"
-  git clone --branch "${version}" --depth 1 \
+  git clone --branch "openshift-${version}" --depth 1 \
     "https://github.com/${fork}/serving-operator.git" \
     "${target}"
   pushd "${target}" || return $?
