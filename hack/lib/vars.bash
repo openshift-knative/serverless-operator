@@ -5,7 +5,7 @@ readonly BUILD_NUMBER=${BUILD_NUMBER:-$(uuidgen)}
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/github.com/knative/test-infra/scripts/e2e-tests.sh"
 
-readonly KNATIVE_VERSION="${KNATIVE_VERSION:-v0.13.0}"
+readonly KNATIVE_VERSION="${KNATIVE_VERSION:-v0.13.1}"
 
 readonly CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.yaml}"
 readonly DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
