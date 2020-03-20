@@ -25,11 +25,11 @@ spec:
       stale-revision-minimum-generations: "1"
       stale-revision-timeout: "15h"
     logging:
-      loglevel.activator: "info"
-      loglevel.autoscaler: "info"
-      loglevel.controller: "info"
-      loglevel.queueproxy: "info"
-      loglevel.webhook: "info"
+      loglevel.activator: "debug"
+      loglevel.autoscaler: "debug"
+      loglevel.controller: "debug"
+      loglevel.queueproxy: "debug"
+      loglevel.webhook: "debug"
     observability:
       logging.enable-var-log-collection: "false"
       metrics.backend-destination: "prometheus"
