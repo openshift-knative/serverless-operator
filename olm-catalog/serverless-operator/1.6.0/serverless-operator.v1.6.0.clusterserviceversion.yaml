@@ -302,8 +302,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/eventing-operator
-                # TODO
-                image: gcr.io/knative-releases/knative.dev/eventing-operator/cmd/manager@sha256:746f378e2e1d88d31ac090856d5f050ca937a8b8bca82a4ae14701074c8c44f3
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-eventing-operator
                 ports:
@@ -362,17 +361,16 @@ spec:
                       value: docker.io/maistra/proxyv2-ubi8:1.0.8
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.12.1:kourier
-                    # TODO
                     - name: IMAGE_eventing-controller
-                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:58e64d346c696096441714abb3cd2792ea3498db1325ed5ceb5551ef544d4df7
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
                     - name: IMAGE_eventing-webhook
-                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:d1e5538a8a0ebda46495398b1d268c81567a216e974edd8871364cd2543a3e07
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
                     - name: IMAGE_broker_controller
-                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/channel_broker@sha256:853e0d194223da4356af7c9a17c79afa0ef96b93fd956d5febb2b1f2be78c717
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
                     - name: IMAGE_imc-controller
-                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:68d8ea6569e3f5afbf2fabe4f897b6331cc767cc994b7279feb9128a2331bb1a
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
                     - name: IMAGE_imc-dispatcher
-                      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:4c50fe6179dbead67a72606d771c2d64cf87e5676bac0a54e967c80ec730edaa
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -504,19 +502,17 @@ spec:
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
       image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
-    # TODO
     - name: knative-eventing-operator
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-operator
-    # TODO
     - name: IMAGE_eventing-controller
-      value: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:58e64d346c696096441714abb3cd2792ea3498db1325ed5ceb5551ef544d4df7
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
     - name: IMAGE_eventing-webhook
-      value: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:d1e5538a8a0ebda46495398b1d268c81567a216e974edd8871364cd2543a3e07
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
     - name: IMAGE_broker_controller
-      value: gcr.io/knative-releases/knative.dev/eventing/cmd/channel_broker@sha256:853e0d194223da4356af7c9a17c79afa0ef96b93fd956d5febb2b1f2be78c717
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
     - name: IMAGE_imc-controller
-      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:68d8ea6569e3f5afbf2fabe4f897b6331cc767cc994b7279feb9128a2331bb1a
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
     - name: IMAGE_imc-dispatcher
-      value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:4c50fe6179dbead67a72606d771c2d64cf87e5676bac0a54e967c80ec730edaa
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
   replaces: serverless-operator.v1.5.0
   version: 1.6.0
