@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/apis/istio/v1alpha3"
 	"knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -80,6 +81,7 @@ func TestKourierReconcile(t *testing.T) {
 			s := scheme.Scheme
 			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
+			s.AddKnownTypes(v1alpha3.SchemeGroupVersion, &v1alpha3.VirtualServiceList{})
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
