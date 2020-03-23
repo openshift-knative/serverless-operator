@@ -17,50 +17,86 @@ func init() {
 	configv1.AddToScheme(scheme.Scheme)
 }
 
+func newKs() *servingv1alpha1.KnativeServing {
+	return &servingv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      servingName,
+			Namespace: namespace,
+		},
+	}
+}
+
 func TestMutate(t *testing.T) {
 	const (
 		networks = "foo,bar,baz"
 		domain   = "fubar"
 		image    = "docker.io/queue:tag"
 	)
-	client := fake.NewFakeClient(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
+	os.Setenv("IMAGE_queue-proxy", image)
+	type check func(*testing.T, *servingv1alpha1.KnativeServing)
+
+	cases := []struct {
+		name string
+		ks   *servingv1alpha1.KnativeServing
+		ha   check
+	}{
+		{
+			name: "HA defaulted",
+			ks:   newKs(),
+			ha:   verifyDefaultHA,
+		},
+		{
+			name: "HA not defaulted",
+			ks: func() *servingv1alpha1.KnativeServing {
+				s := newKs()
+				s.Spec.HighAvailability = &servingv1alpha1.HighAvailability{
+					Replicas: 1,
+				}
+
+				return s
+			}(),
+			ha: verifyOverriddenHA,
 		},
 	}
-	// Setup image override
-	os.Setenv("IMAGE_queue-proxy", image)
-	// Mutate for OpenShift
-	err := common.Mutate(ks, client)
-	if err != nil {
-		t.Error(err)
-	}
 
-	verifyIngress(t, ks, domain)
-	verifyImageOverride(t, ks, image)
-	verifyCerts(t, ks)
-	verifyHA(t, ks)
+	for i := range cases {
+		tc := cases[i]
+		ks := tc.ks
 
-	// Rerun, should be a noop
-	err = common.Mutate(ks, client)
-	if err != nil {
-		t.Error(err)
-	}
-	verifyIngress(t, ks, domain)
-	verifyImageOverride(t, ks, image)
-	verifyCerts(t, ks)
+		client := fake.NewFakeClient(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain))
+		// Setup image override
+		// Mutate for OpenShift
+		err := common.Mutate(ks, client)
+		if err != nil {
+			t.Error(err)
+		}
 
-	// Force a change and rerun
-	ks.Spec.Config["network"]["ingress.class"] = "foo"
-	err = common.Mutate(ks, client)
-	if err != nil {
-		t.Error(err)
+		verifyIngress(t, ks, domain)
+		verifyImageOverride(t, ks, image)
+		verifyCerts(t, ks)
+		tc.ha(t, ks)
+
+		// Rerun, should be a noop
+		err = common.Mutate(ks, client)
+		if err != nil {
+			t.Error(err)
+		}
+		verifyIngress(t, ks, domain)
+		verifyImageOverride(t, ks, image)
+		verifyCerts(t, ks)
+		tc.ha(t, ks)
+
+		// Force a change and rerun
+		ks.Spec.Config["network"]["ingress.class"] = "foo"
+		err = common.Mutate(ks, client)
+		if err != nil {
+			t.Error(err)
+		}
+		verifyIngress(t, ks, domain)
+		verifyImageOverride(t, ks, image)
+		verifyCerts(t, ks)
+		tc.ha(t, ks)
 	}
-	verifyIngress(t, ks, domain)
-	verifyImageOverride(t, ks, image)
-	verifyCerts(t, ks)
 }
 
 func mockNetworkConfig(networks []string) *configv1.Network {
@@ -108,13 +144,21 @@ func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	}
 }
 
-func verifyHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyDefaultHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+	verifyHA(t, ks, 2)
+}
+
+func verifyOverriddenHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+	verifyHA(t, ks, 1)
+}
+
+func verifyHA(t *testing.T, ks *servingv1alpha1.KnativeServing, replicas int32) {
 	if ks.Spec.HighAvailability == nil {
 		t.Error("Missing HA")
 		return
 	}
 
-	if ks.Spec.HighAvailability.Replicas != 2 {
-		t.Errorf("Wrong ha replica size: %v", ks.Spec.HighAvailability.Replicas)
+	if ks.Spec.HighAvailability.Replicas != replicas {
+		t.Errorf("Wrong ha replica size: expected%v, got %v", replicas, ks.Spec.HighAvailability.Replicas)
 	}
 }
