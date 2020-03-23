@@ -22,12 +22,23 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		configureLogURLTemplate,
 		ensureCustomCerts,
 		imagesFromEnviron,
+		defaultToHa,
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
 			return fmt.Errorf("failed to mutate KnativeServing: %w", err)
 		}
 	}
+	return nil
+}
+
+func defaultToHa(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	if ks.Spec.HighAvailability == nil {
+		ks.Spec.HighAvailability = &servingv1alpha1.HighAvailability{
+			Replicas: 2,
+		}
+	}
+
 	return nil
 }
 

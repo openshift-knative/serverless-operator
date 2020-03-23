@@ -41,6 +41,7 @@ func TestMutate(t *testing.T) {
 	verifyIngress(t, ks, domain)
 	verifyImageOverride(t, ks, image)
 	verifyCerts(t, ks)
+	verifyHA(t, ks)
 
 	// Rerun, should be a noop
 	err = common.Mutate(ks, client)
@@ -104,5 +105,16 @@ func verifyImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expec
 func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
+	}
+}
+
+func verifyHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+	if ks.Spec.HighAvailability == nil {
+		t.Error("Missing HA")
+		return
+	}
+
+	if ks.Spec.HighAvailability.Replicas != 2 {
+		t.Errorf("Wrong ha replica size: %v", ks.Spec.HighAvailability.Replicas)
 	}
 }
