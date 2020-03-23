@@ -17,21 +17,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var (
-	log  = common.Log.WithName("kourier")
-	path = os.Getenv("KOURIER_MANIFEST_PATH")
+var log = common.Log.WithName("kourier")
+
+const (
+	OwnerName      = "serving.knative.openshift.io/ownerName"
+	OwnerNamespace = "serving.knative.openshift.io/ownerNamespace"
 )
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
-	manifest, err := mfc.NewManifest(path, api)
+	manifest, err := manifest(common.IngressNamespace(instance.GetNamespace()), api, instance, scheme)
 	if err != nil {
-		return fmt.Errorf("failed to read kourier manifest: %w", err)
-	}
-	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace())), replaceImageFromEnvironment("IMAGE_", scheme)}
-	manifest, err = manifest.Transform(transforms...)
-	if err != nil {
-		return fmt.Errorf("failed to transform kourier manifest: %w", err)
+		return fmt.Errorf("failed to load kourier manifest: %w", err)
 	}
 	log.Info("Installing Kourier Ingress")
 	if err := manifest.Apply(); err != nil {
@@ -66,18 +63,13 @@ func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeSe
 }
 
 // Delete deletes Kourier resources.
-func Delete(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func Delete(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
 	log.Info("Deleting Kourier Ingress")
-	manifest, err := mfc.NewManifest(path, api)
+	manifest, err := manifest(common.IngressNamespace(instance.GetNamespace()), api, instance, scheme)
 	if err != nil {
-		return fmt.Errorf("failed to read kourier manifest: %w", err)
+		return fmt.Errorf("failed to load kourier manifest: %w", err)
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(common.IngressNamespace(instance.GetNamespace()))}
 
-	manifest, err = manifest.Transform(transforms...)
-	if err != nil {
-		return fmt.Errorf("failed to transform kourier manifest: %w", err)
-	}
 	if err := manifest.Delete(); err != nil {
 		return fmt.Errorf("failed to delete kourier manifest: %w", err)
 	}
@@ -123,4 +115,31 @@ func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Trans
 		}
 		return nil
 	}
+}
+
+// RawManifest returns kourier raw manifest without transformations
+func RawManifest(apiclient client.Client) (mf.Manifest, error) {
+	return mfc.NewManifest(manifestPath(), apiclient)
+}
+
+// manifest returns kourier manifest after transformed
+func manifest(namespace string, apiclient client.Client, instance *servingv1alpha1.KnativeServing, scheme *runtime.Scheme) (mf.Manifest, error) {
+	manifest, err := RawManifest(apiclient)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+	transforms := []mf.Transformer{mf.InjectNamespace(namespace), replaceImageFromEnvironment("IMAGE_", scheme),
+		func(u *unstructured.Unstructured) error {
+			u.SetAnnotations(map[string]string{
+				OwnerName:      instance.Name,
+				OwnerNamespace: instance.Namespace,
+			})
+			return nil
+		},
+	}
+	return manifest.Transform(transforms...)
+}
+
+func manifestPath() string {
+	return os.Getenv("KOURIER_MANIFEST_PATH")
 }
