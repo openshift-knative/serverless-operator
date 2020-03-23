@@ -34,9 +34,26 @@ var (
 			Domain: "example.com",
 		},
 	}
+
+	defaultVirtualService = v1alpha3.VirtualService{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "vsName",
+			Namespace: "vsNamespace",
+		},
+	}
+
+	defaultRequest = reconcile.Request{
+		NamespacedName: types.NamespacedName{Namespace: "knative-serving", Name: "knative-serving"},
+	}
 )
 
-// TestKourierReconcile runs Reconcile to verify if expected Kourier resources are reconciled.
+func init() {
+	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
+	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
+	os.Setenv("CONSOLE_DOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn.yaml")
+}
+
+// TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
 func TestKourierReconcile(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
@@ -44,31 +61,27 @@ func TestKourierReconcile(t *testing.T) {
 		name           string
 		ownerName      string
 		ownerNamespace string
-		reconciled     bool
+		deleted        bool
 	}{
 		{
 			name:           "reconcile request with same KnativeServing owner",
 			ownerName:      "knative-serving",
 			ownerNamespace: "knative-serving",
-			reconciled:     true,
+			deleted:        true,
 		},
 		{
 			name:           "reconcile request with different KnativeServing owner name",
 			ownerName:      "FOO",
 			ownerNamespace: "knative-serving",
-			reconciled:     false,
+			deleted:        false,
 		},
 		{
 			name:           "reconcile request with different KnativeServing owner namespace",
 			ownerName:      "knative-serving",
 			ownerNamespace: "FOO",
-			reconciled:     false,
+			deleted:        false,
 		},
 	}
-
-	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv("CONSOLE_DOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn.yaml")
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -86,11 +99,8 @@ func TestKourierReconcile(t *testing.T) {
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
 
-			req := reconcile.Request{
-				NamespacedName: types.NamespacedName{Namespace: "knative-serving", Name: "knative-serving"},
-			}
 			// Reconcile to intialize
-			if _, err := r.Reconcile(req); err != nil {
+			if _, err := r.Reconcile(defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
@@ -108,7 +118,7 @@ func TestKourierReconcile(t *testing.T) {
 			}
 
 			// Reconcile again with test requests.
-			req = reconcile.Request{
+			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{Namespace: test.ownerNamespace, Name: test.ownerName},
 			}
 			if _, err := r.Reconcile(req); err != nil {
@@ -117,13 +127,85 @@ func TestKourierReconcile(t *testing.T) {
 
 			// Check again if Kourier deployment is created after reconcile.
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
-			if test.reconciled {
+			if test.deleted {
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 			}
-			if !test.reconciled {
+			if !test.deleted {
 				if !errors.IsNotFound(err) {
+					t.Fatalf("get: (%v)", err)
+				}
+			}
+		})
+	}
+}
+
+// TestKourierReconcile runs Reconcile to verify if orphaned virtualservice is deleted or not
+func TestDeleteVirtualServiceReconcile(t *testing.T) {
+	logf.SetLogger(logf.ZapLogger(true))
+
+	tests := []struct {
+		name        string
+		labels      map[string]string
+		annotations map[string]string
+		deleted     bool
+	}{
+		{
+			name:        "delete virtualservice with expected label and annotation",
+			labels:      map[string]string{routeLabelKey: "something", "a": "b"},
+			annotations: map[string]string{ingressClassKey: istioIngressClass, "c": "d"},
+			deleted:     true,
+		},
+		{
+			name:        "do not delete virtualservice with expected label but without annotation",
+			labels:      map[string]string{routeLabelKey: "something", "a": "b"},
+			annotations: map[string]string{"c": "d"},
+			deleted:     false,
+		},
+		{
+			name:        "do not delete virtualservice with expected annotation but without label",
+			labels:      map[string]string{"a": "b"},
+			annotations: map[string]string{ingressClassKey: istioIngressClass, "c": "d"},
+			deleted:     false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ks := &defaultKnativeServing
+			ingress := &defaultIngress
+			vs := &defaultVirtualService
+
+			// Set annotation and label for test
+			vs.SetAnnotations(test.annotations)
+			vs.SetLabels(test.labels)
+
+			initObjs := []runtime.Object{ks, ingress, vs}
+
+			// Register operator types with the runtime scheme.
+			s := scheme.Scheme
+			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
+			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
+			s.AddKnownTypes(v1alpha3.SchemeGroupVersion, vs)
+
+			cl := fake.NewFakeClient(initObjs...)
+			r := &ReconcileKnativeServing{client: cl, scheme: s}
+
+			if _, err := r.Reconcile(defaultRequest); err != nil {
+				t.Fatalf("reconcile: (%v)", err)
+			}
+
+			// Check if VirtualService is deleted.
+			refetched := &v1alpha3.VirtualService{}
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: "vsName", Namespace: "vsNamespace"}, refetched)
+			if test.deleted {
+				if !errors.IsNotFound(err) {
+					t.Fatalf("get: (%v)", err)
+				}
+			}
+			if !test.deleted {
+				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 			}
