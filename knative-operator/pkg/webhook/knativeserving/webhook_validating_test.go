@@ -58,13 +58,28 @@ func TestPreReleaseVersionConstraint(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
 
-	for _, version := range []string{"4.3.0", "4.3.5", "4.3.0-0.ci-2020-03-11-221411", "4.3.0+build"} {
+	for _, version := range []string{"4.3.0", "4.4.0", "4.3.5", "4.3.0-alpha", "4.3.0-0.ci-2020-03-11-221411", "4.3.0+build"} {
 		validator := KnativeServingValidator{}
 		validator.InjectDecoder(&mockDecoder{ks1})
 		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
 		result := validator.Handle(context.TODO(), types.Request{})
 		if !result.Response.Allowed {
 			t.Errorf("Version %q was supposed to pass but didn't: %v", version, result.Response)
+		}
+	}
+}
+
+func TestInvalidVersionConstraint(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
+
+	for _, version := range []string{"4.0.0", "4.1.12", "4.1.13-alpha", "4.1.13-0.ci-2020-03-11-221411"} {
+		validator := KnativeServingValidator{}
+		validator.InjectDecoder(&mockDecoder{ks1})
+		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
+		result := validator.Handle(context.TODO(), types.Request{})
+		if result.Response.Allowed {
+			t.Errorf("Version %q was NOT supposed to pass but it did: %v", version, result.Response)
 		}
 	}
 }
@@ -77,102 +92,6 @@ func TestLoneliness(t *testing.T) {
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Errorf("Too many KnativeServings: %v", result.Response)
-	}
-}
-
-func TestInvalidMinorVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.0.0")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if result.Response.Allowed {
-		t.Error("The version is too low, but the request is allowed")
-	}
-}
-
-func TestInvalidPatchVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.1.12")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if result.Response.Allowed {
-		t.Error("The version is too low, but the request is allowed")
-	}
-}
-
-func TestInvalidPrereleaseVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.13")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.1.13-alpha")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if result.Response.Allowed {
-		t.Error("The version is too low, but the request is allowed")
-	}
-}
-
-func TestValidMajorVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.3.0")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if !result.Response.Allowed {
-		t.Error("The version is later, but the request is not allowed")
-	}
-}
-
-func TestValidMinorVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.4.0")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if !result.Response.Allowed {
-		t.Error("The version is later, but the request is not allowed")
-	}
-}
-
-func TestValidPatchVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.3.1")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if !result.Response.Allowed {
-		t.Error("The version is later, but the request is not allowed")
-	}
-}
-
-func TestValidPrereleaseAlphaVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.3.0-alpha")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if !result.Response.Allowed {
-		t.Error("The version is later, but the request is not allowed")
-	}
-}
-
-func TestValidPrereleaseNightlyVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.3.0-0")
-	validator := KnativeServingValidator{}
-	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("4.3.0-0.nightly-2020-01-28-050934")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if !result.Response.Allowed {
-		t.Error("The version is later, but the request is not allowed")
 	}
 }
 
