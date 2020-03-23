@@ -7,6 +7,11 @@ function ensure_serverless_installed {
     logger.success 'Serverless is already installed.'
     return 0
   fi
+
+  # Deploy config-logging configmap before running serving-opreator pod.
+  # Otherwise, we cannot change log level by configmap.
+  enable_debug_log
+
   if [[ $prev == "true" ]]; then
     install_serverless_previous
   else
@@ -137,4 +142,37 @@ function teardown_serverless {
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
   logger.success 'Serverless has been uninstalled.'
+}
+
+# Enable debug log on knative-serving-operator
+function enable_debug_log {
+cat <<-EOF | oc apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: ${OPERATORS_NAMESPACE}
+data:
+  zap-logger-config: |
+    {
+      "level": "debug",
+      "development": false,
+      "outputPaths": ["stdout"],
+      "errorOutputPaths": ["stderr"],
+      "encoding": "json",
+      "encoderConfig": {
+        "timeKey": "ts",
+        "levelKey": "level",
+        "nameKey": "logger",
+        "callerKey": "caller",
+        "messageKey": "msg",
+        "stacktraceKey": "stacktrace",
+        "lineEnding": "",
+        "levelEncoder": "",
+        "timeEncoder": "iso8601",
+        "durationEncoder": "",
+        "callerEncoder": ""
+      }
+    }
+EOF
 }
