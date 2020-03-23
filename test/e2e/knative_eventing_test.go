@@ -71,4 +71,11 @@ func TestKnativeEventing(t *testing.T) {
 			t.Fatalf("Some deployments were to be deleted but not in namespace %s. Err: %v", knativeEventing, err)
 		}
 	})
+
+	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
+		caCtx.Cleanup(t)
+		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
+			t.Fatalf("Operators still running: %v", err)
+		}
+	})
 }
