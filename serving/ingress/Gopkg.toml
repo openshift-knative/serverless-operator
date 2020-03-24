@@ -58,12 +58,11 @@ required = [
 
 [[override]]
   name = "sigs.k8s.io/controller-runtime"
-  version = "=v0.1.10"
+  version = "=v0.1.12"
 
 [[constraint]]
   name = "github.com/operator-framework/operator-sdk"
-  # The version rule is used for a specific release and the master branch for in between releases.
-  version = "=v0.8.0" #osdk_version_annotation
+  version = "=v0.10.1"
 
 [[constraint]]
   name = "knative.dev/serving"

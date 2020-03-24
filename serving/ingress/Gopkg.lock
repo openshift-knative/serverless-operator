@@ -341,7 +341,7 @@
   version = "v3.9.0"
 
 [[projects]]
-  digest = "1:ce4e43d2eef4a4c40c6e8439c724e34e6fd7e48959a340038e3cd02762cdb437"
+  digest = "1:2f871701d245034b68d5f2d852191e9b96ef2d13c1d79296581e0a42a5bccc6b"
   name = "github.com/operator-framework/operator-sdk"
   packages = [
     "pkg/k8sutil",
@@ -352,8 +352,8 @@
     "version",
   ]
   pruneopts = "NT"
-  revision = "78c472461e75e6c64589cfadf577a2004b8a26b3"
-  version = "v0.8.0"
+  revision = "872e7d997486bb587660fc8d6226eaab8b5c1087"
+  version = "v0.10.1"
 
 [[projects]]
   digest = "1:93b1d84c5fa6d1ea52f4114c37714cddd84d5b78f151b62bb101128dd51399bf"
@@ -1026,7 +1026,7 @@
   revision = "53713006b1c53c6b052e15731c8e14df67998ac6"
 
 [[projects]]
-  digest = "1:06035489efbd51ccface65fc878ceeb849aba05b2f9443c8993f363fc96e80ac"
+  digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
   name = "sigs.k8s.io/controller-runtime"
   packages = [
     "pkg/cache",
@@ -1040,6 +1040,7 @@
     "pkg/handler",
     "pkg/internal/controller",
     "pkg/internal/controller/metrics",
+    "pkg/internal/objectutil",
     "pkg/internal/recorder",
     "pkg/leaderelection",
     "pkg/manager",
@@ -1059,8 +1060,8 @@
     "pkg/webhook/types",
   ]
   pruneopts = "NT"
-  revision = "12d98582e72927b6cd0123e2b4e819f9341ce62c"
-  version = "v0.1.10"
+  revision = "f1eaba5087d69cebb154c6a48193e6667f5b512c"
+  version = "v0.1.12"
 
 [[projects]]
   digest = "1:0a14ea9a2647d064bb9d48b2de78306e74b196681efd7b654eb0b518d90c2e8d"
