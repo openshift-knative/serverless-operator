@@ -61,38 +61,27 @@ var (
 			},
 		},
 	}
-
-	defaultIngressForClusterLocal = &networkingv1alpha1.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			UID:         uid,
-			Labels:      map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name},
-			Annotations: map[string]string{networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-		},
-		Spec: networkingv1alpha1.IngressSpec{
-			Visibility: networkingv1alpha1.IngressVisibilityExternalIP,
-			Rules: []networkingv1alpha1.IngressRule{{
-				Hosts: []string{"test.default.svc.cluster.local"},
-				HTTP: &networkingv1alpha1.HTTPIngressRuleValue{
-					Paths: []networkingv1alpha1.HTTPIngressPath{{
-						Timeout: &metav1.Duration{Duration: 5 * time.Second},
-					}},
-				},
-			}},
-		},
-		Status: networkingv1alpha1.IngressStatus{
-			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
-				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
-					DomainInternal: "cluster-local-gateway." + serviceMeshNamespace + ".svc.cluster.local",
-				}},
-			},
-		},
-	}
 )
 
 func TestRouteMigration(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
+
+	var (
+		noRemoveOtherLabel = routev1.Route{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "no-remove-other-label",
+				Labels: map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+			},
+			Spec: routev1.RouteSpec{Host: "c.example.com"},
+		}
+		noRemoveMissingLabel = routev1.Route{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "no-remove-missing-label",
+				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
+			},
+			Spec: routev1.RouteSpec{Host: "b.example.com"},
+		}
+	)
 
 	test := struct {
 		name  string
@@ -107,19 +96,7 @@ func TestRouteMigration(t *testing.T) {
 				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
 			},
 			Spec: routev1.RouteSpec{Host: domainName},
-		}, {
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-missing-label",
-				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
-			},
-			Spec: routev1.RouteSpec{Host: "b.example.com"},
-		}, {
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-other-label",
-				Labels: map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-			},
-			Spec: routev1.RouteSpec{Host: "c.example.com"},
-		}},
+		}, noRemoveMissingLabel, noRemoveOtherLabel},
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        routeName0,
@@ -141,19 +118,7 @@ func TestRouteMigration(t *testing.T) {
 					InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 				},
 			},
-		}, {
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-missing-label",
-				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
-			},
-			Spec: routev1.RouteSpec{Host: "b.example.com"},
-		}, {
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-other-label",
-				Labels: map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-			},
-			Spec: routev1.RouteSpec{Host: "c.example.com"},
-		}},
+		}, noRemoveMissingLabel, noRemoveOtherLabel},
 	}
 
 	t.Run(test.name, func(t *testing.T) {
@@ -192,8 +157,9 @@ func TestRouteMigration(t *testing.T) {
 		// Updating ingress with DeletionTimestamp instead of cl.Delete because delete operation doesn't handle finalizers properly.
 		ingress.DeletionTimestamp = &metav1.Time{Time: time.Now()}
 		if err := cl.Update(context.TODO(), ingress); err != nil {
-			t.Fatalf("failed to update ingress: (%v)", err)
+			t.Fatalf("failed to delete ingress: (%v)", err)
 		}
+
 		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, &networkingv1alpha1.IngressList{})
 		if _, err := r.Reconcile(req); err != nil {
 			t.Fatalf("reconcile: (%v)", err)
@@ -203,7 +169,7 @@ func TestRouteMigration(t *testing.T) {
 		routeListdelete := &routev1.RouteList{}
 		err = cl.List(context.TODO(), &client.ListOptions{}, routeListdelete)
 		assert.Nil(t, err)
-		assert.Empty(t, routeListdelete.Items)
+		assert.ElementsMatch(t, routeListdelete.Items, []routev1.Route{noRemoveOtherLabel, noRemoveMissingLabel})
 
 		// check finalizers has been removed from ingress.
 		ingressListdelete := &networkingv1alpha1.IngressList{}
