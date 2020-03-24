@@ -3,7 +3,7 @@
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local prev=${1:-false}
-  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1&& \
+  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
      oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
   then
     logger.success 'Serverless is already installed.'
@@ -137,6 +137,8 @@ kind: KnativeEventing
 metadata:
   name: knative-eventing
   namespace: ${EVENTING_NAMESPACE}
+spec:
+  {}
 EOF
 
   timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7

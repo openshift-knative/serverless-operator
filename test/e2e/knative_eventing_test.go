@@ -17,7 +17,6 @@ var knativeControlPlaneDeploymentNames = []string{
 	"eventing-webhook",
 	"imc-controller",
 	"imc-dispatcher",
-	"sources-controller",
 }
 
 func TestKnativeEventing(t *testing.T) {

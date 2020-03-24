@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/appscode/jsonpatch"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
@@ -61,7 +60,7 @@ func (a *KnativeEventingConfigurator) Handle(ctx context.Context, req types.Requ
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}
-	return PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
+	return util.PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
 }
 
 // KnativeEventingConfigurator implements inject.Client.
@@ -82,21 +81,4 @@ var _ inject.Decoder = (*KnativeEventingConfigurator)(nil)
 func (v *KnativeEventingConfigurator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
-}
-
-// PatchResponseFromRaw takes 2 byte arrays and returns a new response with json patch.
-// The original object should be passed in as raw bytes to avoid the roundtripping problem
-// described in https://github.com/kubernetes-sigs/kubebuilder/issues/510.
-func PatchResponseFromRaw(original, current []byte) types.Response {
-	patches, err := jsonpatch.CreatePatch(original, current)
-	if err != nil {
-		return admission.ErrorResponse(http.StatusInternalServerError, err)
-	}
-	return types.Response{
-		Patches: patches,
-		Response: &admissionv1beta1.AdmissionResponse{
-			Allowed:   true,
-			PatchType: func() *admissionv1beta1.PatchType { pt := admissionv1beta1.PatchTypeJSONPatch; return &pt }(),
-		},
-	}
 }
