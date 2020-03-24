@@ -112,6 +112,14 @@ spec:
                     image location of the individual knative image.
                   type: object
               type: object
+            high-availability:
+              description: Allows specification of HA control plane
+              type: object
+              properties:
+                replicas:
+                  description: The number of replicas that HA parts of the control plane will be scaled to
+                  type: integer
+                  minimum: 1
           type: object
         status:
           description: Status defines the observed state of KnativeServing
