@@ -33,7 +33,7 @@ var ks2 = &servingv1alpha1.KnativeServing{
 
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("REQUIRED_NAMESPACE", "knative-serving")
+	os.Setenv("REQUIRED_SERVING_NAMESPACE", "knative-serving")
 	validator := KnativeServingValidator{}
 	validator.InjectDecoder(&mockDecoder{ks1})
 	result := validator.Handle(context.TODO(), types.Request{})
