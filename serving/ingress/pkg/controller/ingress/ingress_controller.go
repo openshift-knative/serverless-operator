@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	routev1 "github.com/openshift/api/route/v1"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -21,12 +22,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/logging/logkey"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 )
+
+var baseLogger *zap.SugaredLogger
+
+func init() {
+	loggingConfig, _ := logging.NewConfigFromMap(nil) // force the default values
+	baseLogger, _ = logging.NewLoggerFromConfig(loggingConfig, "knative-openshift-ingress")
+}
 
 // Add creates a new Ingress Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -106,8 +115,8 @@ type ReconcileIngress struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	ctx := context.TODO()
-	logger := logging.FromContext(ctx)
+	logger := baseLogger.With(logkey.Key, request.NamespacedName.String())
+	ctx := logging.WithLogger(context.Background(), logger)
 
 	// Fetch the Ingress instance
 	original := &networkingv1alpha1.Ingress{}

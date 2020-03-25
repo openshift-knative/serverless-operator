@@ -47,6 +47,7 @@ func main() {
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	pflag.Set("zap-time-encoding", "iso8601")
 
 	pflag.Parse()
 
