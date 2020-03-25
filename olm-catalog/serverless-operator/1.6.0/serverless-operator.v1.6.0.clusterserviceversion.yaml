@@ -97,63 +97,63 @@ spec:
     Serverless applications can scale up and down (to zero) on demand and be triggered by a
     number of event sources. OpenShift Serverless integrates with a number of
     platform services, such as Metering and Monitoring and it is based on the open
-    source project Knative.  
-    
+    source project Knative.
+
     This is a **[Technology Preview release](https://access.redhat.com/support/offerings/techpreview)!**
-    
+
     # Prerequisites
-    The components provided with the OpenShift Serverless operator require minimum cluster sizes on 
-    OpenShift Container Platform. For more information, see the documentation on [Getting started 
+    The components provided with the OpenShift Serverless operator require minimum cluster sizes on
+    OpenShift Container Platform. For more information, see the documentation on [Getting started
     with OpenShift Serverless](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index#serverless-getting-started).
-    
+
     # Supported Features
     - **Easy to get started:** Provides a simplified developer experience to deploy
       and run cloud native applications on Kubernetes, providing powerful
       abstractions.
     - **Immutable Revisions:** Deploy new features performing canary, A/B or
-      blue-green testing with gradual traffic rollout following best practices.      
+      blue-green testing with gradual traffic rollout following best practices.
     - **Use any programming language or runtime of choice:** From Java, Python, Go
       and JavaScript to Quarkus, SpringBoot or Node.js.
-    - **Automatic scaling:** Removes the requirement to configure numbers of replicas 
-      or idling behavior. Applications automatically scale to zero when not in use, 
-      or scale up to meet demand, with built in reliability and fault tolerance. 
-    - **Event Driven Applications:** You can build loosely coupled, distributed applications 
-      that can be connected to a variety of either built in or third party event sources, 
+    - **Automatic scaling:** Removes the requirement to configure numbers of replicas
+      or idling behavior. Applications automatically scale to zero when not in use,
+      or scale up to meet demand, with built in reliability and fault tolerance.
+    - **Event Driven Applications:** You can build loosely coupled, distributed applications
+      that can be connected to a variety of either built in or third party event sources,
       powered by operators.
-    - **Ready for the hybrid cloud:** Provides true, portable serverless functionality, 
-      that can run anywhere OpenShift Container Platform runs. You can leverage data 
+    - **Ready for the hybrid cloud:** Provides true, portable serverless functionality,
+      that can run anywhere OpenShift Container Platform runs. You can leverage data
       locality and SaaS as you need it.
-    
+
     # Components & APIs
     This operator provides the following components:
-    
+
     ## Knative Serving
     Knative Serving builds on Kubernetes to support deploying and serving of
     applications and functions as serverless containers. Serving is easy to get
     started with and scales to support advanced scenarios. Other features
-    includes: 
+    includes:
     - Rapid deployment of serverless containers
     - Automatic scaling up and down to zero
     - Routing and network programming
     - Point-in-time snapshots of deployed code and configurations
     ![](https://i.imgur.com/vqL48B8.png)
-    
+
     ## Knative Client - `kn`
     The Knative client `kn` is your door to the Knative world. It allows you to
     create Knative resources interactively from the command line or from within
     Shell scripts.
-    
+
     `kn` offers you:
     - Full support for managing all features of Knative Serving (services,
-      revisions, traffic splits) 
+      revisions, traffic splits)
     - Growing support Knative eventing, closely following its development
-      (managing of sources & triggers) 
-    - A plugin architecture similar to that of kubectl plugins 
+      (managing of sources & triggers)
+    - A plugin architecture similar to that of kubectl plugins
     - A thin client-specific API in golang which helps in tasks like synchronously
-      waiting on Knative service write operations.  
+      waiting on Knative service write operations.
     - An easy integration of Knative into Tekton Pipelines by using kn in a Tekton
       Task.
-    
+
     # Further Information
     For documentation on OpenShift Serverless, see:
     - [Installation
