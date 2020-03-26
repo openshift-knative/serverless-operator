@@ -3,9 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"os"
-	"strings"
-
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -104,23 +101,15 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 
 // imagesFromEnviron overrides registry images
 func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
-	if ks.Spec.Registry.Override == nil {
-		ks.Spec.Registry.Override = map[string]string{}
-	} // else return since overriding user from env might surprise me?
-	for _, e := range os.Environ() {
-		pair := strings.SplitN(e, "=", 2)
-		if strings.HasPrefix(pair[0], "IMAGE_") {
-			name := strings.SplitN(pair[0], "_", 2)[1]
-			switch name {
-			case "default":
-				ks.Spec.Registry.Default = pair[1]
-			case "queue-proxy":
-				Configure(ks, "deployment", "queueSidecarImage", pair[1])
-				fallthrough
-			default:
-				ks.Spec.Registry.Override[name] = pair[1]
-			}
-		}
+	ks.Spec.Registry.Override = buildImageOverrideMapFromEnviron()
+
+	if defaultVal, ok := ks.Spec.Registry.Override["default"]; ok {
+		ks.Spec.Registry.Default = defaultVal
+	}
+
+	// special case for queue-proxy
+	if qpVal, ok := ks.Spec.Registry.Override["queue-proxy"]; ok {
+		Configure(ks, "deployment", "queueSidecarImage", qpVal)
 	}
 	log.Info("Setting", "registry", ks.Spec.Registry)
 	return nil

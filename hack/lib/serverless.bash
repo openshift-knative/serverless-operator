@@ -121,7 +121,7 @@ function deploy_knativeserving_cr {
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Serverless has been installed sucessfully.'
+  logger.success 'Knative Serving has been installed sucessfully.'
 }
 
 function teardown_serverless {
