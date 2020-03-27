@@ -53,7 +53,7 @@ function deploy_serverless_operator_latest {
   local rootdir csv
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   # Get CSV from the given channel
-  csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
+  csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
 
   deploy_serverless_operator "${csv}"
 }
@@ -70,21 +70,28 @@ metadata:
   name: "${OPERATOR}"
   namespace: "${OPERATORS_NAMESPACE}"
 spec:
-  channel: "${CHANNEL}"
+  channel: "${OLM_CHANNEL}"
   name: "${OPERATOR}"
-  source: "${OPERATOR}"
+  source: "${OLM_SOURCE}"
   sourceNamespace: "${OLM_NAMESPACE}"
   installPlanApproval: Manual
   startingCSV: "${csv}"
 EOF
 
   # Approve the initial installplan automatically
-  approve_csv "$csv" || return 5
+  approve_csv "$csv" "$OLM_CHANNEL" || return 5
 }
 
 function approve_csv {
-  local csv_version install_plan
+  local csv_version install_plan channel
   csv_version=$1
+  channel=$2
+
+  # Switch channel and source if required
+  oc get subscription "$OPERATOR" -n "${OPERATORS_NAMESPACE}" -oyaml | \
+    sed -e "s/\(.*channel:\).*/\1 ${channel}/" \
+        -e "s/\(.*source:\).*/\1 ${OLM_SOURCE}/" \
+    oc replace -f -
 
   # Wait for the installplan to be available
   timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]" || return 1
