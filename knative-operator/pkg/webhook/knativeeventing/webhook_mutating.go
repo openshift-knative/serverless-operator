@@ -18,7 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
-// Add creates a new KnativeEventing Webhook
+// MutatingWebhook creates a new KnativeEventing mutating webhook
 func MutatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 	common.Log.Info("Setting up mutating webhook for KnativeEventing")
 	return builder.NewWebhookBuilder().
