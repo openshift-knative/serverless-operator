@@ -2,6 +2,7 @@ package knativeserving_test
 
 import (
 	"context"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/testutil"
 	"os"
 	"testing"
 
@@ -47,7 +48,7 @@ func TestInvalidVersion(t *testing.T) {
 	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
 	validator := KnativeServingValidator{}
 	validator.InjectDecoder(&mockDecoder{ks1})
-	validator.InjectClient(fake.NewFakeClient(mockClusterVersion("3.2.0")))
+	validator.InjectClient(fake.NewFakeClient(testutil.MockClusterVersion("3.2.0")))
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Error("The version is too low, but the request is allowed")
@@ -61,7 +62,7 @@ func TestPreReleaseVersionConstraint(t *testing.T) {
 	for _, version := range []string{"4.3.0", "4.4.0", "4.3.5", "4.3.0-alpha", "4.3.0-0.ci-2020-03-11-221411", "4.3.0+build"} {
 		validator := KnativeServingValidator{}
 		validator.InjectDecoder(&mockDecoder{ks1})
-		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
+		validator.InjectClient(fake.NewFakeClient(testutil.MockClusterVersion(version)))
 		result := validator.Handle(context.TODO(), types.Request{})
 		if !result.Response.Allowed {
 			t.Errorf("Version %q was supposed to pass but didn't: %v", version, result.Response)
@@ -76,7 +77,7 @@ func TestInvalidVersionConstraint(t *testing.T) {
 	for _, version := range []string{"4.0.0", "4.1.12", "4.1.13-alpha", "4.1.13-0.ci-2020-03-11-221411"} {
 		validator := KnativeServingValidator{}
 		validator.InjectDecoder(&mockDecoder{ks1})
-		validator.InjectClient(fake.NewFakeClient(mockClusterVersion(version)))
+		validator.InjectClient(fake.NewFakeClient(testutil.MockClusterVersion(version)))
 		result := validator.Handle(context.TODO(), types.Request{})
 		if result.Response.Allowed {
 			t.Errorf("Version %q was NOT supposed to pass but it did: %v", version, result.Response)
@@ -92,19 +93,6 @@ func TestLoneliness(t *testing.T) {
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Errorf("Too many KnativeServings: %v", result.Response)
-	}
-}
-
-func mockClusterVersion(version string) *configv1.ClusterVersion {
-	return &configv1.ClusterVersion{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "version",
-		},
-		Status: configv1.ClusterVersionStatus{
-			Desired: configv1.Update{
-				Version: version,
-			},
-		},
 	}
 }
 
