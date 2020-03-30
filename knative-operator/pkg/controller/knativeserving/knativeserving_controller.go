@@ -221,28 +221,48 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
+	const (
+		// Using both the serviceCA annotation and the trustedCA label is safe. The serviceCA reconciler
+		// will only reconcile once and then short-circuit on an existing key, see https://git.io/JvNSr.
+		// The trustedCA label reconciles in an additive way, see https://git.io/JvNSV.
+
+		// Docs: https://github.com/openshift/service-ca-operator
+		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
+		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
+		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+	)
+
 	certs := instance.Spec.ControllerCustomCerts
 	if certs.Type != "ConfigMap" || certs.Name == "" {
 		return nil
 	}
 	cm := &corev1.ConfigMap{}
 	ctx := context.TODO()
-	if err := r.client.Get(ctx, client.ObjectKey{Name: certs.Name, Namespace: instance.GetNamespace()}, cm); err != nil {
-		if errors.IsNotFound(err) {
-			cm.Name = certs.Name
-			cm.Namespace = instance.GetNamespace()
-			cm.Annotations = map[string]string{"service.alpha.openshift.io/inject-cabundle": "true"}
-			if err := controllerutil.SetControllerReference(instance, cm, r.scheme); err != nil {
-				return err
-			}
-
-			log.Info("Creating Custom Certs Config Map")
-			if err = r.client.Create(ctx, cm); err != nil {
-				return fmt.Errorf("failed to create custom certs config map: %w", err)
-			}
-			return nil
+	err := r.client.Get(ctx, client.ObjectKey{Name: certs.Name, Namespace: instance.GetNamespace()}, cm)
+	if errors.IsNotFound(err) {
+		cm.Name = certs.Name
+		cm.Namespace = instance.GetNamespace()
+		cm.Annotations = map[string]string{serviceCAKey: "true"}
+		cm.Labels = map[string]string{trustedCAKey: "true"}
+		if err := controllerutil.SetControllerReference(instance, cm, r.scheme); err != nil {
+			return err
 		}
+
+		log.Info("Creating Custom Certs Config Map")
+		if err = r.client.Create(ctx, cm); err != nil {
+			return fmt.Errorf("failed to create custom certs config map: %w", err)
+		}
+		return nil
+	} else if err != nil {
 		return err
+	} else if cm.Annotations[serviceCAKey] != "true" || cm.Labels[trustedCAKey] != "true" {
+		log.Info("Updating Custom Certs Config Map")
+		existing := cm.DeepCopy()
+		existing.Annotations = map[string]string{serviceCAKey: "true"}
+		existing.Labels = map[string]string{trustedCAKey: "true"}
+		if err = r.client.Update(ctx, existing); err != nil {
+			return fmt.Errorf("failed to update custom certs config map: %w", err)
+		}
 	}
 	return nil
 }
