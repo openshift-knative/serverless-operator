@@ -211,7 +211,7 @@ function run_knative_serving_rolling_upgrade_tests {
     local latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
     [[ $latest_cluster_version != "" ]] || return 1
 
-    oc adm upgrade --to-latest=true
+    oc adm upgrade --to-latest=true --force=true
 
     timeout 7200 '[[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.version==\"${latest_cluster_version}\")].state}") != Completed ]]' || return 1
 
