@@ -403,7 +403,7 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
                     - name: IMAGE_eventing-webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
-                    - name: IMAGE_broker_controller
+                    - name: IMAGE_broker-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
                     - name: IMAGE_imc-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
@@ -558,7 +558,7 @@ spec:
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
     - name: IMAGE_eventing-webhook
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
-    - name: IMAGE_broker_controller
+    - name: IMAGE_broker-controller
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
     - name: IMAGE_imc-controller
       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
