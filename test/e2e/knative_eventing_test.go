@@ -31,8 +31,7 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("deploy knativeeventing cr and wait for it to be ready", func(t *testing.T) {
-		_, err := v1a1test.WithKnativeEventingReady(caCtx, knativeEventing, knativeEventing)
-		if err != nil {
+		if _, err := v1a1test.WithKnativeEventingReady(caCtx, knativeEventing, knativeEventing); err != nil {
 			t.Fatal("Failed to deploy KnativeEventing", err)
 		}
 	})
@@ -40,14 +39,12 @@ func TestKnativeEventing(t *testing.T) {
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		for i := range knativeControlPlaneDeploymentNames {
 			deploymentName := knativeControlPlaneDeploymentNames[i]
-			_, err := test.WithDeploymentReady(caCtx, deploymentName, knativeEventing)
-			if err != nil {
+			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeEventing); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
 
-		err := test.WithDeploymentCount(caCtx, knativeEventing, len(knativeControlPlaneDeploymentNames))
-		if err != nil {
+		if err := test.WithDeploymentCount(caCtx, knativeEventing, len(knativeControlPlaneDeploymentNames)); err != nil {
 			t.Fatalf("Deployment count in namespace %s is not the same as expected %d: %v", knativeEventing, len(knativeControlPlaneDeploymentNames), err)
 		}
 	})
@@ -59,14 +56,12 @@ func TestKnativeEventing(t *testing.T) {
 
 		for i := range knativeControlPlaneDeploymentNames {
 			deploymentName := knativeControlPlaneDeploymentNames[i]
-			err := test.WithDeploymentGone(caCtx, deploymentName, knativeEventing)
-			if err != nil {
+			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeEventing); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
 		}
 
-		err := test.WithDeploymentCount(caCtx, knativeEventing, 0)
-		if err != nil {
+		if err := test.WithDeploymentCount(caCtx, knativeEventing, 0); err != nil {
 			t.Fatalf("Some deployments were to be deleted but not in namespace %s. Err: %v", knativeEventing, err)
 		}
 	})
