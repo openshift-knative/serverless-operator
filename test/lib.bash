@@ -140,6 +140,12 @@ function run_knative_serving_e2e_and_conformance_tests {
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" || failed=1
 
+  # Run the helloworld test with an image pulled into the internal registry.
+  oc tag -n serving-tests "registry.svc.ci.openshift.org/openshift/knative-${knative_version}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
+  go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
+    --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
+
   remove_temporary_gopath
 
   return $failed
