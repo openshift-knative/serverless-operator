@@ -427,7 +427,7 @@ spec:
   - serving
   links:
   - name: Documentation
-    url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.3/html-single/serverless_applications/index
+    url: https://docs.openshift.com/container-platform/4.3/serverless/serverless-getting-started.html
   - name: Source Repository
     url: https://github.com/openshift-knative/serverless-operator
   maintainers:
