@@ -119,7 +119,7 @@ func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Trans
 
 // RawManifest returns kourier raw manifest without transformations
 func RawManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(manifestPath(), apiclient)
+	return mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
 // manifest returns kourier manifest after transformed

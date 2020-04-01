@@ -8,6 +8,7 @@ import (
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 
 	mfc "github.com/manifestival/controller-runtime-client"
+	mf "github.com/manifestival/manifestival"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,7 +19,7 @@ var log = common.Log.WithName("consoleclidownload")
 // Create creates ConsoleCLIDownload for kn CLI download links
 func Create(instance *servingv1alpha1.KnativeServing, apiclient client.Client) error {
 	log.Info("Creating ConsoleCLIDownload CR for kn")
-	manifest, err := mfc.NewManifest(manifestPath(), apiclient)
+	manifest, err := mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 	if err != nil {
 		return fmt.Errorf("failed to read ConsoleCLIDownload manifest: %w", err)
 	}
@@ -31,7 +32,7 @@ func Create(instance *servingv1alpha1.KnativeServing, apiclient client.Client) e
 // Delete deletes ConsoleCLIDownload for kn CLI download links
 func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client) error {
 	log.Info("Deleting ConsoleCLIDownload CR for kn")
-	manifest, err := mfc.NewManifest(manifestPath(), apiclient)
+	manifest, err := mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 	if err != nil {
 		return fmt.Errorf("failed to read ConsoleCLIDownload manifest: %w", err)
 	}
