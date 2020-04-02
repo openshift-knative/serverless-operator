@@ -126,7 +126,7 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 
 func WaitForOperatorDepsDeleted(ctx *Context) error {
 	serverlessDependencies := []string{"knative-openshift-ingress",
-		"knative-serving-operator", "knative-eventing-operator", "knative-serving-openshift"}
+		"knative-serving-operator", "knative-eventing-operator", "knative-openshift"}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(metav1.ListOptions{})
