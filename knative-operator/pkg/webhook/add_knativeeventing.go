@@ -1,5 +1,3 @@
-// +build eventing
-
 package webhook
 
 import (

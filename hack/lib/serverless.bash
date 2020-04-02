@@ -3,7 +3,9 @@
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local prev=${1:-false}
-  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
+     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
+  then
     logger.success 'Serverless is already installed.'
     return 0
   fi
@@ -44,6 +46,7 @@ function remove_installplan {
 function install_serverless_latest {
   deploy_serverless_operator_latest || return $?
   deploy_knativeserving_cr || return $?
+  deploy_knativeeventing_cr || return $?
 }
 
 function deploy_serverless_operator_latest {
@@ -124,6 +127,28 @@ function deploy_knativeserving_cr {
   logger.success 'Knative Serving has been installed sucessfully.'
 }
 
+function deploy_knativeeventing_cr {
+  logger.info 'Deploy Knative Eventing'
+
+  # Wait for the CRD to appear
+  timeout 900 "[[ \$(oc get crd | grep -c knativeeventings.operator.knative.dev) -eq 0 ]]" || return 6
+
+  # Install Knative Eventing
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${EVENTING_NAMESPACE}
+spec:
+  {}
+EOF
+
+  timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative Eventing has been installed sucessfully.'
+}
+
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
@@ -133,6 +158,13 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative serving pods running'
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
+
+  if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeEventing CR'
+    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
+  fi
+  logger.info 'Ensure no knative eventing pods running'
+  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} -o jsonpath='{.items}') != '[]' ]]" || return 9
 
   oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
   for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
