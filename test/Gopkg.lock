@@ -983,7 +983,8 @@
   revision = "34157973944a3419f1e38fce8dfb11a2fb5aadbb"
 
 [[projects]]
-  digest = "1:523c3ac6cc9add7e48dc6677c7a58263aff6dd70036a2675417681fcde6818ad"
+  branch = "master"
+  digest = "1:dedbfc40271c4edc55fffa1a4e8a65d3e5cce99d114978c332fc4e199a3d9e97"
   name = "knative.dev/serving-operator"
   packages = [
     "pkg/apis/serving/v1alpha1",
@@ -992,8 +993,7 @@
     "pkg/client/clientset/versioned/typed/serving/v1alpha1",
   ]
   pruneopts = "NUT"
-  revision = "034c1b718821111eff15c2e199491c8ec5c51f3d"
-  version = "v0.11.1"
+  revision = "d0e771a0a4adb9893b9e7af9c9eb866f9dd937df"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"

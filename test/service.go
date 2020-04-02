@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -94,6 +95,17 @@ func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) er
 		}
 		return false, nil
 	})
+}
+
+func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
+	d, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if d.Status.ReadyReplicas != int32(scale) {
+		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", d.Status.ReadyReplicas, scale)
+	}
+	return nil
 }
 
 func isPodReady(pod corev1.Pod) bool {

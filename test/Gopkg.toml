@@ -34,7 +34,7 @@ required = [
   version = "kubernetes-1.15.3"
 
 [[constraint]]
-  version = "v0.11.1"
+  branch = "master"
   name = "knative.dev/serving-operator"
 
 [[constraint]]
