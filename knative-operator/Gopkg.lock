@@ -933,12 +933,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:b816754e53e8788f12ca9d22475753337ec9d31053b238556f9623aec9b31e16"
+  digest = "1:6d629027f3b6a5318d535c04749bc8800ab71f37a96cf33069987046054d913f"
   name = "knative.dev/eventing-operator"
   packages = ["pkg/apis/eventing/v1alpha1"]
   pruneopts = "NT"
-  revision = "555983588e228976afab7d34b0900143360e552b"
+  revision = "150e71756ca7b0a8d6c1e376a068d0e1ddf95236"
+  version = "v0.13.2"
 
 [[projects]]
   branch = "release-0.10"
@@ -960,12 +960,12 @@
   revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
 
 [[projects]]
-  branch = "master"
-  digest = "1:093630dffc99d90e08b044d5b41c3f29a3117ba3b7c12f1b03c89edd01ea09c5"
+  digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
   name = "knative.dev/serving-operator"
   packages = ["pkg/apis/serving/v1alpha1"]
   pruneopts = "NT"
-  revision = "b26eeff11c2b2aefc0111b80742db4f118737b85"
+  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
+  version = "v0.13.2"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"

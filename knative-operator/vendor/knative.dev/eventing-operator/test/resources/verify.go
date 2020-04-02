@@ -108,7 +108,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 		t.Fatal(err)
 	}
 	// verify all but the CRD's and the Namespace are gone
-	for _, u := range m.Filter(mf.NoCRDs, mf.None(mf.ByKind("Namespace"))).Resources() {
+	for _, u := range m.Filter(mf.NotCRDs, mf.Complement(mf.ByKind("Namespace"))).Resources() {
 		waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 			if _, err := m.Client.Get(&u); apierrs.IsNotFound(err) {
 				return true, nil
@@ -120,7 +120,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 		}
 	}
 	// verify all the CRD's remain
-	for _, u := range m.Filter(mf.CRDs).Resources() {
+	for _, u := range m.Filter(mf.JustCRDs).Resources() {
 		if _, err := m.Client.Get(&u); apierrs.IsNotFound(err) {
 			t.Fatalf("The %s CRD was deleted", u.GetName())
 		}
