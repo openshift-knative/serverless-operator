@@ -28,6 +28,7 @@ const (
 	proxyHelloworldService        = "proxy-helloworld-go"
 	httpProxy                     = "HTTP_PROXY"
 	proxyIP                       = "1.2.4.5:8999"
+	haReplicas                    = 2
 )
 
 func TestKnativeServing(t *testing.T) {
@@ -58,6 +59,14 @@ func TestKnativeServing(t *testing.T) {
 
 		if api.Spec.Service != nil && api.Spec.Service.Namespace == knativeServing && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
+		}
+
+		// The list of deployments that are HA-ed
+		haDeployments := []string{"controller, autoscaler-hpa"}
+		for _, deployment := range haDeployments {
+			if err := test.CheckDeploymentScale(caCtx, testNamespace, deployment, haReplicas); err != nil {
+				t.Fatalf("Failed to verify default HA settings: %v", err)
+			}
 		}
 	})
 
