@@ -28,4 +28,4 @@ readonly UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 
 readonly INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-readonly CHANNEL="${CHANNEL:-"preview-4.3"}"
+readonly CHANNEL="${CHANNEL:-"4.3"}"

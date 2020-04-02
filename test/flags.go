@@ -29,8 +29,8 @@ func initializeFlags() *FlagsStruct {
 		"Provide the path to the `kubeconfig` file you'd like to use for these tests. The `current-context` will be used.")
 	flag.StringVar(&f.CatalogSource, "catalogsource", "serverless-operator",
 		"CatalogSource in the openshift-marketplace namespace for the serverless-operator Subscription, \"serverless-operator\" by default")
-	flag.StringVar(&f.Channel, "channel", "preview-4.3",
-		"serverless-operator Subscription channel, \"preview-4.3\" by default.")
+	flag.StringVar(&f.Channel, "channel", "4.3",
+		"serverless-operator Subscription channel, \"4.3\" by default.")
 
 	return &f
 }
