@@ -67,15 +67,15 @@ function deploy_serverless_operator {
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: ${OPERATOR}
-  namespace: ${OPERATORS_NAMESPACE}
+  name: "${OPERATOR}"
+  namespace: "${OPERATORS_NAMESPACE}"
 spec:
-  channel: ${CHANNEL}
-  name: ${OPERATOR}
-  source: ${OPERATOR}
-  sourceNamespace: ${OLM_NAMESPACE}
+  channel: "${CHANNEL}"
+  name: "${OPERATOR}"
+  source: "${OPERATOR}"
+  sourceNamespace: "${OLM_NAMESPACE}"
   installPlanApproval: Manual
-  startingCSV: ${csv}
+  startingCSV: "${csv}"
 EOF
 
   # Approve the initial installplan automatically
