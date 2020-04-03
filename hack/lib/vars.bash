@@ -28,4 +28,7 @@ readonly UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 
 readonly INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-readonly CHANNEL="${CHANNEL:-"4.3"}"
+export OLM_CHANNEL="${OLM_CHANNEL:-"4.3"}"
+# Change this when upgrades need switching to a different channel
+export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
+export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
