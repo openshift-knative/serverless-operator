@@ -53,7 +53,7 @@ function deploy_serverless_operator_latest {
   local rootdir csv
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   # Get CSV from the given channel
-  csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: ${CHANNEL}$/{n;p;}" | awk '{ print $2 }')
+  csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
 
   deploy_serverless_operator "${csv}"
 }
@@ -67,15 +67,15 @@ function deploy_serverless_operator {
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: ${OPERATOR}
-  namespace: ${OPERATORS_NAMESPACE}
+  name: "${OPERATOR}"
+  namespace: "${OPERATORS_NAMESPACE}"
 spec:
-  channel: ${CHANNEL}
-  name: ${OPERATOR}
-  source: ${OPERATOR}
-  sourceNamespace: ${OLM_NAMESPACE}
+  channel: "${CHANNEL}"
+  name: "${OPERATOR}"
+  source: "${OPERATOR}"
+  sourceNamespace: "${OLM_NAMESPACE}"
   installPlanApproval: Manual
-  startingCSV: ${csv}
+  startingCSV: "${csv}"
 EOF
 
   # Approve the initial installplan automatically
