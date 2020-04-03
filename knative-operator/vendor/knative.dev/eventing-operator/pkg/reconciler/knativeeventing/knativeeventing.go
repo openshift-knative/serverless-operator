@@ -41,9 +41,7 @@ import (
 )
 
 var (
-	platform    common.Platforms
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	platform common.Platforms
 )
 
 // Reconciler implements controller.Reconciler for Knativeeventing resources.
@@ -73,16 +71,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
 	if apierrs.IsNotFound(err) {
 		// The resource was deleted
 		r.eventings.Delete(key)
-		var RBAC = mf.Any(role, rolebinding)
-
 		if r.eventings.Len() == 0 {
-			if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
-				return err
-			}
-			// Delete Roles last, as they may be useful for human operators to clean up.
-			if err := r.config.Filter(RBAC).Delete(); err != nil {
-				return err
-			}
+			r.config.Filter(mf.NotCRDs).Delete()
 		}
 		return nil
 
@@ -165,18 +155,7 @@ func (r *Reconciler) transform(instance *eventingv1alpha1.KnativeEventing) (mf.M
 func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
 	r.Logger.Debug("Installing manifest")
 	defer r.updateStatus(ke)
-	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
-	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
-	// (Cluster)RoleBindings, then the rest of the manifest.
-	if err := manifest.Filter(role).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
-		return err
-	}
-	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
-		return err
-	}
-	if err := manifest.Filter(mf.None(mf.Any(role, rolebinding))).Apply(); err != nil {
+	if err := manifest.Apply(); err != nil {
 		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
 		return err
 	}

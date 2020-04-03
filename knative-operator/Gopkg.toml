@@ -45,11 +45,11 @@ required = [
 
 [[constraint]]
   name = "knative.dev/serving-operator"
-  branch = "master"
+  version = "=v0.13.2"
 
 [[constraint]]
   name = "knative.dev/eventing-operator"
-  branch = "master"
+  version = "=v0.13.2"
 
 [[constraint]]
   name = "github.com/openshift/api"
