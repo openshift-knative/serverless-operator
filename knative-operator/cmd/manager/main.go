@@ -84,7 +84,7 @@ func main() {
 
 	ctx := context.TODO()
 	// Become the leader before proceeding
-	err = leader.Become(ctx, "knative-serving-openshift-lock")
+	err = leader.Become(ctx, "knative-openshift-lock")
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
