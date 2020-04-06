@@ -7,7 +7,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -34,6 +33,9 @@ const (
 	routeLabelKey     = "serving.knative.dev/route"
 	ingressClassKey   = "networking.knative.dev/ingress.class"
 	istioIngressClass = "istio.ingress.networking.knative.dev"
+
+	// This needs to remain "knative-serving-openshift" to be compatible with earlier versions.
+	finalizerName = "knative-serving-openshift"
 )
 
 var log = common.Log.WithName("controller")
@@ -210,12 +212,12 @@ func (r *ReconcileKnativeServing) updateDeployment(instance *servingv1alpha1.Kna
 // set a finalizer to clean up service mesh when instance is deleted
 func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.KnativeServing) error {
 	for _, finalizer := range instance.GetFinalizers() {
-		if finalizer == finalizerName() {
+		if finalizer == finalizerName {
 			return nil
 		}
 	}
 	log.Info("Adding finalizer")
-	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName()))
+	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
 	return r.client.Update(context.TODO(), instance)
 }
 
@@ -280,10 +282,9 @@ func (r *ReconcileKnativeServing) createConsoleCLIDownload(instance *servingv1al
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
-	finalizer := finalizerName()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
-	if !finalizers.Has(finalizer) {
+	if !finalizers.Has(finalizerName) {
 		log.Info("Finalizer has already been removed, nothing to do")
 		return nil
 	}
@@ -307,19 +308,11 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 
 	// Update the refetched finalizer list.
 	finalizers = sets.NewString(refetched.GetFinalizers()...)
-	finalizers.Delete(finalizer)
+	finalizers.Delete(finalizerName)
 	refetched.SetFinalizers(finalizers.List())
 
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeServing with removed finalizer: %w", err)
 	}
 	return nil
-}
-
-func finalizerName() string {
-	name, err := k8sutil.GetOperatorName()
-	if err != nil {
-		panic(err)
-	}
-	return name
 }
