@@ -5,7 +5,7 @@
 
 if ! whoami &>/dev/null; then
   if [ -w /etc/passwd ]; then
-    echo "${USER_NAME:-knative-openshift}:x:$(id -u):$(id -g):${USER_NAME:-knative-openshift} user:${HOME}:/sbin/nologin" >> /etc/passwd
+    echo "${USER_NAME:-knative-serving-openshift}:x:$(id -u):$(id -g):${USER_NAME:-knative-serving-openshift} user:${HOME}:/sbin/nologin" >> /etc/passwd
   fi
 fi
 

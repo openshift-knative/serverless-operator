@@ -1,7 +1,7 @@
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-openshift
+  name: knative-serving-openshift
 rules:
 - apiGroups:
   - ""
@@ -37,7 +37,7 @@ rules:
   resources:
   - deployments/finalizers
   resourceNames:
-  - knative-openshift
+  - knative-serving-openshift
   verbs:
   - "update"
 - apiGroups:
@@ -56,7 +56,7 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-openshift
+  name: knative-serving-openshift
 rules:
   - apiGroups: ["*"]
     resources: ["*"]

@@ -347,24 +347,24 @@ spec:
                 - containerPort: 9090
                   name: metrics
               serviceAccountName: knative-serving-operator
-      - name: knative-openshift
+      - name: knative-serving-openshift
         spec:
           replicas: 1
           selector:
             matchLabels:
-              name: knative-openshift
+              name: knative-serving-openshift
           template:
             metadata:
               labels:
-                name: knative-openshift
+                name: knative-serving-openshift
                 app: openshift-admission-server
             spec:
               serviceAccountName: knative-serving-operator
               containers:
-                - name: knative-openshift
+                - name: knative-serving-openshift
                   image: $IMAGE_KNATIVE_OPERATOR
                   command:
-                  - knative-openshift
+                  - knative-serving-openshift
                   imagePullPolicy: Always
                   env:
                     - name: WATCH_NAMESPACE
@@ -374,7 +374,7 @@ spec:
                         fieldRef:
                           fieldPath: metadata.name
                     - name: OPERATOR_NAME
-                      value: "knative-openshift"
+                      value: "knative-serving-openshift"
                     - name: MIN_OPENSHIFT_VERSION
                       value: "4.3.0-0"
                     - name: REQUIRED_SERVING_NAMESPACE

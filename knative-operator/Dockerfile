@@ -9,9 +9,9 @@ RUN go build -o /usr/bin/manager ./cmd/manager
 
 FROM openshift/origin-base
 
-ENV OPERATOR=/usr/local/bin/knative-openshift \
+ENV OPERATOR=/usr/local/bin/knative-serving-openshift \
     USER_UID=1001 \
-    USER_NAME=knative-openshift
+    USER_NAME=knative-serving-openshift
 
 COPY --from=builder /usr/bin/manager ${OPERATOR}
 
