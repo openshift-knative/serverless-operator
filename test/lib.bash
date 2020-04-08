@@ -87,14 +87,14 @@ function remove_temporary_gopath {
 }
 
 function checkout_knative_serving {
-  local knative_version=$1
+  local revision="${KNATIVE_SERVING_VERSION:-"release-${1}"}"
   # Setup a temporary GOPATH to safely check out the repository without breaking other things.
   make_temporary_gopath
 
   # Checkout the relevant code to run
   export KNATIVE_SERVING_HOME="$GOPATH/src/knative.dev/serving"
   mkdir -p "$KNATIVE_SERVING_HOME"
-  git clone -b "release-${knative_version}" --depth 1 https://github.com/openshift/knative-serving.git "$KNATIVE_SERVING_HOME"
+  git clone -b "$revision" --depth 1 "$KNATIVE_SERVING_REPO" "$KNATIVE_SERVING_HOME"
   git describe --always --tags
 }
 
@@ -263,18 +263,14 @@ function end_prober_test {
 
 function run_knative_serving_operator_tests {
   (
-  local version target serverless_rootdir exitstatus patchfile fork gitdesc
-  version=$1
-  fork="${2:-openshift-knative}"
-  serverless_rootdir="$(pwd)"
+  local revision target exitstatus gitdesc
+  revision="${KNATIVE_SERVING_OPERATOR_VERSION:-"openshift-${1}"}"
   make_temporary_gopath
 
-  logger.info "Checkout the code ${fork}/serving-operator @ ${version}"
+  logger.info "Checkout the code from $KNATIVE_SERVING_OPERATOR_REPO @ ${revision}"
   target="${GOPATH}/src/knative.dev/serving-operator"
   mkdir -p "$target"
-  git clone --branch "openshift-${version}" --depth 1 \
-    "https://github.com/${fork}/serving-operator.git" \
-    "${target}"
+  git clone --branch "$revision" --depth 1 "$KNATIVE_SERVING_OPERATOR_REPO" "${target}"
   pushd "${target}" || return $?
 
   gitdesc=$(git describe --always --tags --dirty)
