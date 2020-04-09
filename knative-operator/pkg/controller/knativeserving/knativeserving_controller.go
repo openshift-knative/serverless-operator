@@ -3,6 +3,7 @@ package knativeserving
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
@@ -146,7 +147,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.ensureCustomCertsConfigMap,
 		r.createConsoleCLIDownload,
 		r.installKourier,
-		r.updateDeployment,
+		r.ensureProxySettings,
 		r.deleteVirtualService,
 	}
 	for _, stage := range stages {
@@ -204,9 +205,14 @@ func (r *ReconcileKnativeServing) deleteVirtualService(instance *servingv1alpha1
 	return nil
 }
 
-// updateDeployment updates Knative controller deployment
-func (r *ReconcileKnativeServing) updateDeployment(instance *servingv1alpha1.KnativeServing) error {
-	return common.ApplyProxySettings(instance, r.client)
+// ensureProxySettings updates the proxy settings on the KnativeServing controller.
+func (r *ReconcileKnativeServing) ensureProxySettings(instance *servingv1alpha1.KnativeServing) error {
+	proxyEnv := map[string]string{
+		"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
+		"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
+		"NO_PROXY":    os.Getenv("NO_PROXY"),
+	}
+	return common.ApplyEnvironmentToDeployment(instance.Namespace, "controller", proxyEnv, r.client)
 }
 
 // set a finalizer to clean up service mesh when instance is deleted
