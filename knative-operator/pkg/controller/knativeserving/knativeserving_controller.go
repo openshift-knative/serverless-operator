@@ -65,6 +65,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// Watch for changes to owned ConfigMaps
+	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
+		OwnerType:    &servingv1alpha1.KnativeServing{},
+		IsController: true,
+	})
+	if err != nil {
+		return err
+	}
+
 	// Watch for Kourier resources.
 	manifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
@@ -224,49 +233,93 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
 	const (
-		// Using both the serviceCA annotation and the trustedCA label is safe. The serviceCA reconciler
-		// will only reconcile once and then short-circuit on an existing key, see https://git.io/JvNSr.
-		// The trustedCA label reconciles in an additive way, see https://git.io/JvNSV.
-
 		// Docs: https://github.com/openshift/service-ca-operator
-		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
+		serviceCAKey     = "service.alpha.openshift.io/inject-cabundle"
+		serviceCAContent = "service-ca.crt"
 		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
-		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+		trustedCAKey     = "config.openshift.io/inject-trusted-cabundle"
+		trustedCAContent = "tls-ca-bundle.pem"
 	)
 
 	certs := instance.Spec.ControllerCustomCerts
 	if certs.Type != "ConfigMap" || certs.Name == "" {
 		return nil
 	}
-	cm := &corev1.ConfigMap{}
+
+	serviceCACM, err := r.reconcileConfigMap(instance, certs.Name+"-service-ca", map[string]string{serviceCAKey: "true"}, nil, nil)
+	if err != nil {
+		return fmt.Errorf("error reconciling serviceCACM: %w", err)
+	}
+	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca", nil, map[string]string{trustedCAKey: "true"}, nil)
+	if err != nil {
+		return fmt.Errorf("error reconciling serviceCACM: %w", err)
+	}
+
+	combinedContents := make(map[string]string, len(serviceCACM.Data)+len(trustedCACM.Data))
+	for key, value := range serviceCACM.Data {
+		combinedContents[key] = value
+	}
+	for key, value := range trustedCACM.Data {
+		combinedContents[key] = value
+	}
+
+	if _, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents); err != nil {
+		return fmt.Errorf("error reconciling custom certs CM: %w", err)
+	}
+
+	return nil
+}
+
+func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.KnativeServing, name string,
+	annotations, labels map[string]string, data map[string]string) (*corev1.ConfigMap, error) {
 	ctx := context.TODO()
-	err := r.client.Get(ctx, client.ObjectKey{Name: certs.Name, Namespace: instance.GetNamespace()}, cm)
+	cm := &corev1.ConfigMap{}
+	err := r.client.Get(ctx, client.ObjectKey{Name: name, Namespace: instance.GetNamespace()}, cm)
 	if errors.IsNotFound(err) {
-		cm.Name = certs.Name
+		cm.Name = name
 		cm.Namespace = instance.GetNamespace()
-		cm.Annotations = map[string]string{serviceCAKey: "true"}
-		cm.Labels = map[string]string{trustedCAKey: "true"}
+		cm.Annotations = annotations
+		cm.Labels = labels
+		cm.Data = data
 		if err := controllerutil.SetControllerReference(instance, cm, r.scheme); err != nil {
-			return err
+			return nil, fmt.Errorf("failed to set ownerRef on configmap %s: %w", name, err)
 		}
 
-		log.Info("Creating Custom Certs Config Map")
+		log.Info("Creating config map", "name", name)
 		if err = r.client.Create(ctx, cm); err != nil {
-			return fmt.Errorf("failed to create custom certs config map: %w", err)
+			return nil, fmt.Errorf("failed to create config map %s: %w", name, err)
 		}
-		return nil
+		return cm, nil
 	} else if err != nil {
-		return err
-	} else if cm.Annotations[serviceCAKey] != "true" || cm.Labels[trustedCAKey] != "true" {
-		log.Info("Updating Custom Certs Config Map")
-		existing := cm.DeepCopy()
-		existing.Annotations = map[string]string{serviceCAKey: "true"}
-		existing.Labels = map[string]string{trustedCAKey: "true"}
-		if err = r.client.Update(ctx, existing); err != nil {
-			return fmt.Errorf("failed to update custom certs config map: %w", err)
+		return nil, err
+	} else {
+		copy := cm.DeepCopy()
+		changed := false
+		if !equality.Semantic.DeepEqual(labels, cm.Labels) {
+			copy.Labels = labels
+			changed = true
+		}
+		if !equality.Semantic.DeepEqual(annotations, cm.Annotations) {
+			copy.Annotations = annotations
+			changed = true
+		}
+
+		// We only want to interfere with data if we actually desire new data.
+		if data != nil && !equality.Semantic.DeepEqual(data, cm.Data) {
+			copy.Data = data
+			changed = true
+		}
+
+		// Only update if we've actually seen a change.
+		if changed {
+			log.Info("Updating config map", "name", name)
+			if err = r.client.Update(ctx, copy); err != nil {
+				return nil, fmt.Errorf("failed to update config map %s: %w", name, err)
+			}
+			return copy, nil
 		}
 	}
-	return nil
+	return cm, nil
 }
 
 // Install Kourier Ingress Gateway
