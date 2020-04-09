@@ -2,6 +2,7 @@ package common_test
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -87,10 +88,23 @@ func TestApplyEnvironmentToDeployment(t *testing.T) {
 				if err := c.Get(context.TODO(), client.ObjectKey{Name: test.expect.Name, Namespace: test.expect.Namespace}, got); err != nil {
 					t.Fatalf("Deployment.Get = %v, want no error", err)
 				}
+
+				sortEnv(got)
+				sortEnv(test.expect)
+
 				if !equality.Semantic.DeepEqual(test.expect, got) {
 					t.Fatalf("Deployment wasn't what we expected: %#v, want %#v", got, test.expect)
 				}
 			}
+		})
+	}
+}
+
+func sortEnv(deploy *appsv1.Deployment) {
+	for i := range deploy.Spec.Template.Spec.Containers {
+		container := &deploy.Spec.Template.Spec.Containers[i]
+		sort.Slice(container.Env, func(i, j int) bool {
+			return container.Env[i].Name < container.Env[j].Name
 		})
 	}
 }
