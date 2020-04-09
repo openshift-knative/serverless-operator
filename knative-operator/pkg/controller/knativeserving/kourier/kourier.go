@@ -89,7 +89,7 @@ func Delete(instance *servingv1alpha1.KnativeServing, api client.Client, scheme 
 	return nil
 }
 
-// replaceImageFromEnvironment replaces Koureir images with the images specified by env value.
+// replaceImageFromEnvironment replaces Kourier images with the images specified by env value.
 // This func is copied from serving/operator/pkg/controller/knativeserving/common/transform.go and modified.
 func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
@@ -117,6 +117,22 @@ func replaceImageFromEnvironment(prefix string, scheme *runtime.Scheme) mf.Trans
 	}
 }
 
+func replaceDeploymentInstanceCount(availability *servingv1alpha1.HighAvailability,
+	scheme *runtime.Scheme) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" {
+			if availability.Replicas > 1 {
+				deploy := &appsv1.Deployment{}
+				if err := scheme.Convert(u, deploy, nil); err != nil {
+					return err
+				}
+				deploy.Spec.Replicas = &availability.Replicas
+			}
+		}
+		return nil
+	}
+}
+
 // RawManifest returns kourier raw manifest without transformations
 func RawManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
@@ -128,7 +144,9 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 	if err != nil {
 		return mf.Manifest{}, err
 	}
-	transforms := []mf.Transformer{mf.InjectNamespace(namespace), replaceImageFromEnvironment("IMAGE_", scheme),
+	transforms := []mf.Transformer{
+		mf.InjectNamespace(namespace),
+		replaceImageFromEnvironment("IMAGE_", scheme),
 		func(u *unstructured.Unstructured) error {
 			u.SetAnnotations(map[string]string{
 				OwnerName:      instance.Name,
@@ -136,6 +154,7 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 			})
 			return nil
 		},
+		replaceDeploymentInstanceCount(instance.Spec.HighAvailability, scheme),
 	}
 	return manifest.Transform(transforms...)
 }
