@@ -9,6 +9,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -243,6 +244,8 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
 		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
 		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+
+		certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 	)
 
 	certs := instance.Spec.ControllerCustomCerts
@@ -271,8 +274,33 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 		combinedContents[key] = value
 	}
 
-	if _, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents); err != nil {
+	combinedCM, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents)
+	if err != nil {
 		return fmt.Errorf("error reconciling custom certs CM: %w", err)
+	}
+
+	// Check if we need to "kick" the controller deployment.
+	controller := &appsv1.Deployment{}
+	err = r.client.Get(context.TODO(), client.ObjectKey{Namespace: instance.Namespace, Name: "controller"}, controller)
+	// If the controller doesn't yet exist, exit early.
+	if errors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("error fetching controller deployment: %w", err)
+	}
+
+	// If the annotation's version is already the latest version, exit early.
+	if combinedCM.ResourceVersion == controller.Spec.Template.Annotations[certVersionKey] {
+		return nil
+	}
+
+	if controller.Spec.Template.Annotations == nil {
+		controller.Spec.Template.Annotations = make(map[string]string)
+	}
+
+	controller.Spec.Template.Annotations[certVersionKey] = combinedCM.ResourceVersion
+	if err := r.client.Update(context.TODO(), controller); err != nil {
+		return fmt.Errorf("error updating the controller annotation: %w", err)
 	}
 
 	return nil
