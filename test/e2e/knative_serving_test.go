@@ -50,21 +50,18 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
-		if apierrs.IsNotFound(err) {
-			// We're good if no APIService exists at all
-			return
-		} else if err != nil {
+		// We're good if no APIService exists at all
+		if err != nil && !apierrs.IsNotFound(err) {
 			t.Fatalf("Failed to fetch APIService: %v", err)
 		}
 
-		if api.Spec.Service != nil && api.Spec.Service.Namespace == knativeServing && api.Spec.Service.Name == "autoscaler" {
+		if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == knativeServing && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 
 		// The list of deployments that are HA-ed
-		haDeployments := []string{"controller, autoscaler-hpa"}
-		for _, deployment := range haDeployments {
-			if err := test.CheckDeploymentScale(caCtx, testNamespace, deployment, haReplicas); err != nil {
+		for _, deployment := range []string{"controller, autoscaler-hpa"} {
+			if err := test.CheckDeploymentScale(caCtx, knativeServing, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
