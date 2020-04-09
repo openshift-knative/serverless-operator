@@ -242,6 +242,10 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 	)
 
 	certs := instance.Spec.ControllerCustomCerts
+
+	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
+	// cause us to automatically pull in the relevant ConfigMaps from the cluster. The user needs
+	// to specifically opt-out of this today by specifying an empty Name and ConfigMap explicitly.
 	if certs.Type != "ConfigMap" || certs.Name == "" {
 		return nil
 	}
