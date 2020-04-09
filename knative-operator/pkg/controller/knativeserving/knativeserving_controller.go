@@ -234,11 +234,9 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
 	const (
 		// Docs: https://github.com/openshift/service-ca-operator
-		serviceCAKey     = "service.alpha.openshift.io/inject-cabundle"
-		serviceCAContent = "service-ca.crt"
+		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
 		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
-		trustedCAKey     = "config.openshift.io/inject-trusted-cabundle"
-		trustedCAContent = "tls-ca-bundle.pem"
+		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
 	)
 
 	certs := instance.Spec.ControllerCustomCerts
