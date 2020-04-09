@@ -127,6 +127,9 @@ func replaceDeploymentInstanceCount(availability *servingv1alpha1.HighAvailabili
 					return err
 				}
 				deploy.Spec.Replicas = &availability.Replicas
+				if err := scheme.Convert(deploy, u, nil); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
