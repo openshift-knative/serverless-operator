@@ -88,7 +88,7 @@ func TestApplyEnvironmentToDeployment(t *testing.T) {
 					t.Fatalf("Deployment.Get = %v, want no error", err)
 				}
 				if !equality.Semantic.DeepEqual(test.expect, got) {
-					t.Fatalf("Deployment wasn't wat we expected: %#v, want %#v", got, test.expect)
+					t.Fatalf("Deployment wasn't what we expected: %#v, want %#v", got, test.expect)
 				}
 			}
 		})
