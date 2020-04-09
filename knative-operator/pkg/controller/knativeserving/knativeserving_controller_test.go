@@ -5,8 +5,11 @@ import (
 	"os"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+
 	configv1 "github.com/openshift/api/config/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -210,5 +213,122 @@ func TestDeleteVirtualServiceReconcile(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestCustomCertsConfigMap(t *testing.T) {
+	ks := &v1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-serving",
+			Namespace: "knative-serving",
+		},
+		Spec: v1alpha1.KnativeServingSpec{
+			ControllerCustomCerts: v1alpha1.CustomCerts{
+				Name: "test-cm",
+				Type: "ConfigMap",
+			},
+		},
+	}
+
+	serviceCAAnnotations := map[string]string{"service.alpha.openshift.io/inject-cabundle": "true"}
+	trustedCALabels := map[string]string{"config.openshift.io/inject-trusted-cabundle": "true"}
+
+	tests := []struct {
+		name string
+		in   []runtime.Object
+		out  []*corev1.ConfigMap
+	}{{
+		name: "plain field",
+		out: []*corev1.ConfigMap{
+			cm("test-cm", nil, nil, nil),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil),
+		},
+	}, {
+		name: "upgrade from 1.6.0",
+		in: []runtime.Object{
+			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}),
+		},
+		out: []*corev1.ConfigMap{
+			cm("test-cm", nil, nil, nil), // TODO: maybe we shouldn't stomp, retaining behavior from master though.
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil),
+		},
+	}, {
+		name: "just one secondary already filled",
+		in: []runtime.Object{
+			cm("test-cm", nil, serviceCAAnnotations, nil),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+		},
+		out: []*corev1.ConfigMap{
+			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+		},
+	}, {
+		name: "both secondaries filled",
+		in: []runtime.Object{
+			cm("test-cm", nil, serviceCAAnnotations, nil),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+		},
+		out: []*corev1.ConfigMap{
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+		},
+	}, {
+		name: "certificate gets rolled",
+		in: []runtime.Object{
+			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}),
+		},
+		out: []*corev1.ConfigMap{
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}),
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cl := fake.NewFakeClient(test.in...)
+			s := scheme.Scheme
+			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
+
+			r := &ReconcileKnativeServing{client: cl, scheme: s}
+
+			if err := r.ensureCustomCertsConfigMap(ks); err != nil {
+				t.Fatal(err)
+			}
+
+			for _, want := range test.out {
+				got := &corev1.ConfigMap{}
+				if err := cl.Get(context.TODO(), types.NamespacedName{Name: want.Name, Namespace: want.Namespace}, got); err != nil {
+					t.Fatalf("Failed to fetch cm: %v", err)
+				}
+
+				// Avoid ownerRef comparison for now.
+				got.OwnerReferences = nil
+
+				if !equality.Semantic.DeepEqual(got, want) {
+					t.Fatalf("ConfigMaps %#v not equal to %#v", got, want)
+				}
+			}
+		})
+	}
+}
+
+func cm(name string, labels, annotations, data map[string]string) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace:   "knative-serving",
+			Name:        name,
+			Annotations: annotations,
+			Labels:      labels,
+		},
+		Data: data,
 	}
 }
