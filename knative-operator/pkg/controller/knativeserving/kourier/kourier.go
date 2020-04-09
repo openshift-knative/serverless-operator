@@ -121,7 +121,7 @@ func replaceDeploymentInstanceCount(availability *servingv1alpha1.HighAvailabili
 	scheme *runtime.Scheme) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
-			if availability.Replicas > 1 {
+			if availability != nil && availability.Replicas > 1{
 				deploy := &appsv1.Deployment{}
 				if err := scheme.Convert(u, deploy, nil); err != nil {
 					return err
