@@ -20,7 +20,7 @@ func init() {
 func newKs() *servingv1alpha1.KnativeServing {
 	return &servingv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
+			Name:      "knative-serving",
 			Namespace: namespace,
 		},
 	}

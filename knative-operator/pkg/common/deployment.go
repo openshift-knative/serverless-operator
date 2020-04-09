@@ -3,31 +3,31 @@ package common
 import (
 	"context"
 	"fmt"
-	"os"
+
+	"k8s.io/apimachinery/pkg/api/equality"
 
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ApplyProxySettings updates Knative controller env to use cluster wide proxy information
-func ApplyProxySettings(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	var proxyEnv = map[string]string{
-		"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
-		"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
-		"NO_PROXY":    os.Getenv("NO_PROXY"),
-	}
+// ApplyEnvironmentToDeployment adds/removes the specified values in the map to the environment
+// variables of the specified deployment.
+// NotFound errors are ignored.
+func ApplyEnvironmentToDeployment(namespace, name string, env map[string]string, c client.Client) error {
 	deploy := &appsv1.Deployment{}
-	if err := c.Get(context.TODO(), client.ObjectKey{Name: "controller", Namespace: ks.GetNamespace()}, deploy); err != nil {
+	if err := c.Get(context.TODO(), client.ObjectKey{Name: name, Namespace: namespace}, deploy); err != nil {
+		// We ignore NotFound errors.
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("failed to fetch controller deployment: %w", err)
+		return fmt.Errorf("failed to fetch deployment: %w", err)
 	}
+
+	before := deploy.DeepCopy()
 	for c := range deploy.Spec.Template.Spec.Containers {
-		for k, v := range proxyEnv {
+		for k, v := range env {
 			// If value is not empty then update deployment controller with env
 			if v != "" {
 				deploy.Spec.Template.Spec.Containers[c].Env = appendUnique(deploy.Spec.Template.Spec.Containers[c].Env, k, v)
@@ -37,10 +37,15 @@ func ApplyProxySettings(ks *servingv1alpha1.KnativeServing, c client.Client) err
 			}
 		}
 	}
-	log.Info("Applying proxy settings to the controller deployment")
-	if err := c.Update(context.TODO(), deploy); err != nil {
-		return fmt.Errorf("failed to update controller deployment with proxy settings: %w", err)
+
+	// Only update if we actually changed something.
+	if !equality.Semantic.DeepEqual(before.Spec.Template.Spec, deploy.Spec.Template.Spec) {
+		log.Info("Updating environment of deployment", "namespace", namespace, "name", name, "env", env)
+		if err := c.Update(context.TODO(), deploy); err != nil {
+			return fmt.Errorf("failed to update deployment with new environment: %w", err)
+		}
 	}
+
 	return nil
 }
 

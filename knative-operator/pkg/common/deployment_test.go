@@ -1,160 +1,96 @@
 package common_test
 
 import (
-	"os"
+	"context"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	configv1 "github.com/openshift/api/config/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/pkg/ptr"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 const (
 	deploymentName = "controller"
-	proxyValue     = "http://192.168.130.11:30001"
 	namespace      = "default"
-	servingName    = "knative-serving"
-	noProxy        = "index.docker.io"
 )
 
-func init() {
-	configv1.AddToScheme(scheme.Scheme)
-}
-
-func mockController(spec appsv1.DeploymentSpec, name string) *appsv1.Deployment {
+func deployment(name string, containers ...v1.Container) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Spec: spec,
-	}
-}
-
-func TestProxySettingWithInvalidController(t *testing.T) {
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{}, "invalid"))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
-		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestProxySettingForHTTPProxy(t *testing.T) {
-	os.Setenv("HTTP_PROXY", proxyValue)
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: ptr.Int32(1),
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Env: []v1.EnvVar{{
-							Name:  "HTTP_PROXY",
-							Value: proxyValue,
-						}},
-					}},
+					Containers: containers,
 				},
 			},
-		}, deploymentName))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
 		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil {
-		t.Error(err)
 	}
 }
 
-func TestProxySettingForHTTPSProxy(t *testing.T) {
-	os.Setenv("HTTPS_PROXY", proxyValue)
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{
-			Replicas: ptr.Int32(1),
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Env: []v1.EnvVar{{
-							Name:  "HTTPS_PROXY",
-							Value: proxyValue,
-						}},
-					}},
-				},
-			},
-		}, deploymentName))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
-		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil {
-		t.Error(err)
+func container(env ...v1.EnvVar) v1.Container {
+	return v1.Container{
+		Env: env,
 	}
 }
 
-func TestProxySettingForNonExistedKey(t *testing.T) {
-	os.Setenv("NO_PROXY", noProxy)
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{
-			Replicas: ptr.Int32(1),
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Env: []v1.EnvVar{{
-							Name:  "HTTP_PROXY",
-							Value: proxyValue,
-						}},
-					}},
-				},
-			},
-		}, deploymentName))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
-		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil {
-		t.Error(err)
-	}
+func envVar(name, value string) v1.EnvVar {
+	return v1.EnvVar{Name: name, Value: value}
 }
 
-func TestProxySettingWithSameKeyEmptyValue(t *testing.T) {
-	os.Setenv("HTTP_PROXY", "")
-	client := fake.NewFakeClient(
-		mockController(appsv1.DeploymentSpec{
-			Replicas: ptr.Int32(1),
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Env: []v1.EnvVar{{
-							Name:  "HTTP_PROXY",
-							Value: proxyValue,
-						}},
-					}},
-				},
-			},
-		}, deploymentName))
-	ks := &servingv1alpha1.KnativeServing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      servingName,
-			Namespace: namespace,
-		},
-	}
-	if err := common.ApplyProxySettings(ks, client); err != nil {
-		t.Error(err)
+func TestApplyEnvironmentToDeployment(t *testing.T) {
+	tests := []struct {
+		name   string
+		in     *appsv1.Deployment
+		env    map[string]string
+		expect *appsv1.Deployment
+	}{{
+		name:   "not found",
+		in:     deployment("something else"),
+		env:    map[string]string{"test": "foo"},
+		expect: deployment("something else"),
+	}, {
+		name:   "add vars",
+		in:     deployment(deploymentName, container(envVar("other", "bar"))),
+		env:    map[string]string{"test": "foo", "test2": "foo2"},
+		expect: deployment(deploymentName, container(envVar("other", "bar"), envVar("test", "foo"), envVar("test2", "foo2"))),
+	}, {
+		name:   "change var",
+		in:     deployment(deploymentName, container(envVar("test", "bar"))),
+		env:    map[string]string{"test": "foo"},
+		expect: deployment(deploymentName, container(envVar("test", "foo"))),
+	}, {
+		name:   "delete var",
+		in:     deployment(deploymentName, container(envVar("test", "bar"))),
+		env:    map[string]string{"test": ""},
+		expect: deployment(deploymentName, container()),
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			c := fake.NewFakeClient(test.in)
+			if err := common.ApplyEnvironmentToDeployment(namespace, deploymentName, test.env, c); err != nil {
+				t.Fatalf("ApplyEnvironmentToDeployment = %v, want no error", err)
+			}
+
+			if test.expect != nil {
+				got := &appsv1.Deployment{}
+				if err := c.Get(context.TODO(), client.ObjectKey{Name: test.expect.Name, Namespace: test.expect.Namespace}, got); err != nil {
+					t.Fatalf("Deployment.Get = %v, want no error", err)
+				}
+				if !equality.Semantic.DeepEqual(test.expect, got) {
+					t.Fatalf("Deployment wasn't what we expected: %#v, want %#v", got, test.expect)
+				}
+			}
+		})
 	}
 }
