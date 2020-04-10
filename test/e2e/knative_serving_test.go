@@ -59,9 +59,15 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 
-		// The list of deployments that are HA-ed
+		// Check the status of deployments in the knative serving namespace
 		for _, deployment := range []string{"controller", "autoscaler-hpa"} {
 			if err := test.CheckDeploymentScale(caCtx, knativeServing, deployment, haReplicas); err != nil {
+				t.Fatalf("Failed to verify default HA settings: %v", err)
+			}
+		}
+		// Check the status of deployments in the ingress namespace.
+		for _, deployment := range []string{"3scale-kourier-control", "3scale-kourier-gateway"} {
+			if err := test.CheckDeploymentScale(caCtx, knativeServing+"-ingress", deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
