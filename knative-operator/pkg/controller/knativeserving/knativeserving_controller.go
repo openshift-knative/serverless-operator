@@ -298,6 +298,9 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 		controller.Spec.Template.Annotations = make(map[string]string)
 	}
 
+	log.Info("Updating controller cert version",
+		"old", controller.Spec.Template.Annotations[certVersionKey], "new", combinedCM.ResourceVersion)
+
 	controller.Spec.Template.Annotations[certVersionKey] = combinedCM.ResourceVersion
 	if err := r.client.Update(context.TODO(), controller); err != nil {
 		return fmt.Errorf("error updating the controller annotation: %w", err)
