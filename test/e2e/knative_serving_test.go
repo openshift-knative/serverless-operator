@@ -60,7 +60,7 @@ func TestKnativeServing(t *testing.T) {
 		}
 
 		// Check the status of deployments in the knative serving namespace
-		for _, deployment := range []string{"controller", "autoscaler-hpa"} {
+		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
 			if err := test.CheckDeploymentScale(caCtx, knativeServing, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
