@@ -6,6 +6,10 @@ readonly BUILD_NUMBER=${BUILD_NUMBER:-$(uuidgen)}
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/github.com/knative/test-infra/scripts/e2e-tests.sh"
 
 readonly KNATIVE_VERSION="${KNATIVE_VERSION:-v0.13.2}"
+readonly KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
+readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-}"
+readonly KNATIVE_SERVING_OPERATOR_REPO="${KNATIVE_SERVING_OPERATOR_REPO:-"https://github.com/openshift-knative/serving-operator.git"}"
+readonly KNATIVE_SERVING_OPERATOR_VERSION="${KNATIVE_SERVING_OPERATOR_VERSION:-}"
 
 readonly CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.yaml}"
 readonly DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
