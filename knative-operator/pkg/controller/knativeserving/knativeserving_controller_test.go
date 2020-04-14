@@ -230,8 +230,8 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		},
 	}
 
-	serviceCAAnnotations := map[string]string{"service.alpha.openshift.io/inject-cabundle": "true"}
-	trustedCALabels := map[string]string{"config.openshift.io/inject-trusted-cabundle": "true"}
+	serviceCAAnnotations := map[string]string{serviceCAKey: "true"}
+	trustedCALabels := map[string]string{trustedCAKey: "true"}
 
 	tests := []struct {
 		name    string
@@ -351,7 +351,7 @@ func ctrl(certVersion string) *appsv1.Deployment {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"serving.knative.openshift.io/mounted-cert-version": certVersion,
+						certVersionKey: certVersion,
 					},
 				},
 			},

@@ -38,6 +38,19 @@ const (
 
 	// This needs to remain "knative-serving-openshift" to be compatible with earlier versions.
 	finalizerName = "knative-serving-openshift"
+
+	// serviceCAKey is an annotation key to trigger Openshift to populate service-ca certs to the
+	// ConfigMap carrying the annotation.
+	// Docs: https://github.com/openshift/service-ca-operator
+	serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
+	// trustedCAKey is a label key to trigger Openshift to populate trusted CA certs to the
+	// ConfigMap carrying the label. This includes CA certs specified in cluster-wide proxy settings.
+	// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
+	trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+
+	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
+	// controller's PodTemplate to make it redeploy on certificate changes.
+	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 )
 
 var log = common.Log.WithName("controller")
@@ -239,15 +252,6 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
-	const (
-		// Docs: https://github.com/openshift/service-ca-operator
-		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
-		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
-		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
-
-		certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
-	)
-
 	certs := instance.Spec.ControllerCustomCerts
 
 	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
