@@ -230,66 +230,75 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		},
 	}
 
-	serviceCAAnnotations := map[string]string{"service.alpha.openshift.io/inject-cabundle": "true"}
-	trustedCALabels := map[string]string{"config.openshift.io/inject-trusted-cabundle": "true"}
+	serviceCAAnnotations := map[string]string{serviceCAKey: "true"}
+	trustedCALabels := map[string]string{trustedCAKey: "true"}
 
 	tests := []struct {
-		name string
-		in   []runtime.Object
-		out  []*corev1.ConfigMap
+		name    string
+		in      []runtime.Object
+		out     []*corev1.ConfigMap
+		outCtrl *appsv1.Deployment
 	}{{
 		name: "plain field",
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil),
+			cm("test-cm", nil, nil, nil, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
 		},
 	}, {
 		name: "upgrade from 1.6.0",
 		in: []runtime.Object{
-			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}),
+			ctrl(""),
+			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil), // TODO: maybe we shouldn't stomp, retaining behavior from master though.
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil),
+			cm("test-cm", nil, nil, nil, "1"), // TODO: maybe we shouldn't stomp, retaining behavior from master though.
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
 		},
+		outCtrl: ctrl("1"),
 	}, {
 		name: "just one secondary already filled",
 		in: []runtime.Object{
-			cm("test-cm", nil, serviceCAAnnotations, nil),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+			ctrl("2"),
+			cm("test-cm", nil, serviceCAAnnotations, nil, "3"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "3"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
+		outCtrl: ctrl("3"),
 	}, {
 		name: "both secondaries filled",
 		in: []runtime.Object{
-			cm("test-cm", nil, serviceCAAnnotations, nil),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+			ctrl("0"),
+			cm("test-cm", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "1"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
+		outCtrl: ctrl("1"),
 	}, {
 		name: "certificate gets rolled",
 		in: []runtime.Object{
-			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}),
+			ctrl("10"),
+			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "100"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "100"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
+		outCtrl: ctrl("100"),
 	}}
 
 	for _, test := range tests {
@@ -317,17 +326,47 @@ func TestCustomCertsConfigMap(t *testing.T) {
 					t.Fatalf("ConfigMaps %#v not equal to %#v", got, want)
 				}
 			}
+
+			if test.outCtrl != nil {
+				got := &appsv1.Deployment{}
+				if err := cl.Get(context.TODO(), types.NamespacedName{Name: test.outCtrl.Name, Namespace: test.outCtrl.Namespace}, got); err != nil {
+					t.Fatalf("Failed to fetch controller: %v", err)
+				}
+
+				if !equality.Semantic.DeepEqual(got, test.outCtrl) {
+					t.Fatalf("ConfigMaps %#v not equal to %#v", got, test.outCtrl)
+				}
+			}
 		})
 	}
 }
 
-func cm(name string, labels, annotations, data map[string]string) *corev1.ConfigMap {
+func ctrl(certVersion string) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "controller",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						certVersionKey: certVersion,
+					},
+				},
+			},
+		},
+	}
+}
+
+func cm(name string, labels, annotations, data map[string]string, resourceVersion string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace:   "knative-serving",
-			Name:        name,
-			Annotations: annotations,
-			Labels:      labels,
+			Namespace:       "knative-serving",
+			Name:            name,
+			Annotations:     annotations,
+			Labels:          labels,
+			ResourceVersion: resourceVersion,
 		},
 		Data: data,
 	}

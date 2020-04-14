@@ -9,6 +9,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -37,6 +38,19 @@ const (
 
 	// This needs to remain "knative-serving-openshift" to be compatible with earlier versions.
 	finalizerName = "knative-serving-openshift"
+
+	// serviceCAKey is an annotation key to trigger Openshift to populate service-ca certs to the
+	// ConfigMap carrying the annotation.
+	// Docs: https://github.com/openshift/service-ca-operator
+	serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
+	// trustedCAKey is a label key to trigger Openshift to populate trusted CA certs to the
+	// ConfigMap carrying the label. This includes CA certs specified in cluster-wide proxy settings.
+	// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
+	trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+
+	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
+	// controller's PodTemplate to make it redeploy on certificate changes.
+	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 )
 
 var log = common.Log.WithName("controller")
@@ -238,13 +252,6 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
-	const (
-		// Docs: https://github.com/openshift/service-ca-operator
-		serviceCAKey = "service.alpha.openshift.io/inject-cabundle"
-		// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
-		trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
-	)
-
 	certs := instance.Spec.ControllerCustomCerts
 
 	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
@@ -271,8 +278,36 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 		combinedContents[key] = value
 	}
 
-	if _, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents); err != nil {
+	combinedCM, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents)
+	if err != nil {
 		return fmt.Errorf("error reconciling custom certs CM: %w", err)
+	}
+
+	// Check if we need to "kick" the controller deployment.
+	controller := &appsv1.Deployment{}
+	err = r.client.Get(context.TODO(), client.ObjectKey{Namespace: instance.Namespace, Name: "controller"}, controller)
+	// If the controller doesn't yet exist, exit early.
+	if errors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("error fetching controller deployment: %w", err)
+	}
+
+	// If the annotation's version is already the latest version, exit early.
+	if combinedCM.ResourceVersion == controller.Spec.Template.Annotations[certVersionKey] {
+		return nil
+	}
+
+	if controller.Spec.Template.Annotations == nil {
+		controller.Spec.Template.Annotations = make(map[string]string)
+	}
+
+	log.Info("Updating controller cert version",
+		"old", controller.Spec.Template.Annotations[certVersionKey], "new", combinedCM.ResourceVersion)
+
+	controller.Spec.Template.Annotations[certVersionKey] = combinedCM.ResourceVersion
+	if err := r.client.Update(context.TODO(), controller); err != nil {
+		return fmt.Errorf("error updating the controller annotation: %w", err)
 	}
 
 	return nil
