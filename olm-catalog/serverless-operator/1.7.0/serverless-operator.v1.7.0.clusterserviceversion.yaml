@@ -116,8 +116,6 @@ spec:
     platform services, such as Metering and Monitoring and it is based on the open
     source project Knative.
 
-    This is a **[Technology Preview release](https://access.redhat.com/support/offerings/techpreview)!**
-
     # Prerequisites
     The components provided with the OpenShift Serverless operator require minimum cluster sizes on
     OpenShift Container Platform. For more information, see the documentation on [Getting started
@@ -156,6 +154,9 @@ spec:
     ![](https://i.imgur.com/vqL48B8.png)
 
     ## Knative Eventing
+
+    Knative Eventing is a **[Technology Preview feature](https://access.redhat.com/support/offerings/techpreview)!**
+        
     Knative Eventing is a system that is designed to address a common need for cloud native
     development and provides composable primitives to enable late-binding event sources and
     event consumers.
@@ -525,7 +526,7 @@ spec:
   maintainers:
   - email: serverless-support@redhat.com
     name: Serverless Team
-  maturity: alpha
+  maturity: stable
   provider:
     name: Red Hat, Inc.
   relatedImages:
