@@ -1,6 +1,10 @@
 package e2e
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -90,6 +94,10 @@ func TestKnativeServing(t *testing.T) {
 	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
 		t.Skip("SRKVS-462: This test needs thorough hardening")
 		testKnativeServingForGlobalProxy(t, caCtx)
+	})
+
+	t.Run("verify both http and https work", func(t *testing.T) {
+		testKnativeServiceHTTPS(t, caCtx)
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
@@ -322,6 +330,56 @@ func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, exp
 		"WaitForRouteToServeText",
 		true); err != nil {
 		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeDomain, expectedText, err)
+	}
+}
+
+func testKnativeServiceHTTPS(t *testing.T, caCtx *test.Context) {
+	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
+
+	// Implicitly checks that HTTP works.
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+
+	// Now check that HTTPS works.
+	httpsURL := ksvc.Status.URL.DeepCopy()
+	httpsURL.Scheme = "https"
+
+	// First, download the cert from the host so we can trust it later.
+	conn, err := tls.Dial("tcp", httpsURL.Host+":443", &tls.Config{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		t.Fatal("Failed to connect to download certificate", err)
+	}
+	defer conn.Close()
+
+	// Add the cert to our cert pool, so it's trusted.
+	certPool, err := x509.SystemCertPool()
+	if err != nil {
+		t.Fatal("Failed to load system cert pool", err)
+	}
+	for _, cert := range conn.ConnectionState().PeerCertificates {
+		certPool.AddCert(cert)
+	}
+
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: certPool,
+		},
+	}}
+	t.Log("Requesting", httpsURL.String())
+	resp, err := client.Get(httpsURL.String())
+	if err != nil {
+		t.Fatalf("Request to %v failed, err: %v", httpsURL, err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Error("Failed to read body", err)
+		}
+		t.Fatalf("Response failed, status %v, body %v", resp.StatusCode, string(body))
 	}
 }
 
