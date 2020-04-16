@@ -30,6 +30,7 @@ failed=0
 
 # Run upstream knative serving tests
 (( !failed )) && ensure_serverless_installed || failed=6
+(( !failed )) && run_serverless_addon_tests || failed=5
 (( !failed )) && run_knative_serving_e2e_and_conformance_tests "$KNATIVE_VERSION" || failed=7
 (( !failed )) && teardown_serverless || failed=8
 

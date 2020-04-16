@@ -56,6 +56,36 @@ function run_e2e_tests {
   return $failed
 }
 
+function run_serverless_addon_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/addon \
+    --channel "$OLM_CHANNEL" \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  if (( !failed )); then
+    logger.success 'Tests have passed'
+  else
+    logger.error 'Tests have failures!'
+  fi
+
+  wait_for_knative_serving_ingress_ns_deleted || return 1
+
+  return $failed
+}
+
 function wait_for_knative_serving_ingress_ns_deleted {
   timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || true
   # Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1798282 on Azure - if loadbalancer status is empty
