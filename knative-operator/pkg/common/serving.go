@@ -12,8 +12,18 @@ import (
 
 var log = Log
 
+const (
+	// defaultDomainTemplate is a value for domainTemplate in config-network.
+	// As Knative on OpenShift uses OpenShift's wildcard cert the domain level must have "<sub>.domain", not "<sub1>.<sub2>.domain".
+	DefaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+
+	// defaultIngressClass is a value for ingress.class in config-network.
+	DefaultIngressClass = "kourier.ingress.networking.knative.dev"
+)
+
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
+		domainTemplate,
 		ingressClass,
 		ingress,
 		configureLogURLTemplate,
@@ -39,8 +49,13 @@ func defaultToHa(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	return nil
 }
 
+func domainTemplate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	Configure(ks, "network", "domainTemplate", DefaultDomainTemplate)
+	return nil
+}
+
 func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	Configure(ks, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
+	Configure(ks, "network", "ingress.class", DefaultIngressClass)
 	return nil
 }
 
