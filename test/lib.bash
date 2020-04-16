@@ -95,7 +95,7 @@ function checkout_knative_serving {
   export KNATIVE_SERVING_HOME="$GOPATH/src/knative.dev/serving"
   mkdir -p "$KNATIVE_SERVING_HOME"
   #git clone -b "$revision" --depth 1 "$KNATIVE_SERVING_REPO" "$KNATIVE_SERVING_HOME"
-  git clone -b "test-name-limit" --depth 1 "https://github.com/nak3/serving.git" "$KNATIVE_SERVING_HOME"
+  git clone -b "backport" --depth 1 "https://github.com/nak3/serving.git" "$KNATIVE_SERVING_HOME"
   git describe --always --tags
 }
 
