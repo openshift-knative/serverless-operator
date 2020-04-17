@@ -10,7 +10,7 @@ required = [
   unused-packages = true
 
 [[prune.project]]
-  name = "github.com/knative/test-infra"
+  name = "knative.dev/test-infra"
   non-go = false
 
 [[override]]
