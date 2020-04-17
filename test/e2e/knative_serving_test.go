@@ -108,7 +108,12 @@ func TestKnativeServing(t *testing.T) {
 			if !strings.HasPrefix(link.Href, host) {
 				t.Fatalf("incorrect href found for kn CCD, expecting prefix %s, found link %s", host, link.Href)
 			}
-			h, err := http.Head(link.Href)
+			client := &http.Client{Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true, // OCP clusters have self-signed certs by default.
+				},
+			}}
+			h, err := client.Head(link.Href)
 			if err != nil {
 				t.Fatalf("failed to HEAD request for URL %s, error: %v", link.Href, err)
 			}
