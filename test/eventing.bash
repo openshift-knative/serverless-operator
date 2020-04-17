@@ -26,11 +26,7 @@ function run_knative_eventing_tests {
     --dockerrepo 'quay.io/openshift-knative' \
     || exitstatus=$? && true
 
-  if (( !exitstatus )); then
-    logger.success 'Tests have passed'
-  else
-    logger.error 'Tests have failures!'
-  fi
+  print_test_result ${exitstatus}
 
   remove_temporary_gopath
 
@@ -39,19 +35,23 @@ function run_knative_eventing_tests {
 }
 
 function run_knative_eventing_operator_tests {
-  (
-  local exitstatus=0
   logger.info 'Running eventing operator tests'
+  (
+  local exitstatus test_namespace_saved
+  exitstatus=0
 
   checkout_knative_eventing_operator
 
-  logger.warn 'TODO(ksuszyns): Write eventing operator tests execution.'
+  test_namespace_saved="${TEST_NAMESPACE}"
+  export TEST_NAMESPACE="${EVENTING_NAMESPACE}"
 
-  if (( !exitstatus )); then
-    logger.success 'Tests have passed'
-  else
-    logger.error 'Tests have failures!'
-  fi
+  go_test_e2e -timeout=20m -parallel=1 ./test/e2e \
+    --kubeconfig "$KUBECONFIG" \
+    || exitstatus=$? && true
+
+  export TEST_NAMESPACE="${test_namespace_saved}"
+
+  print_test_result ${exitstatus}
 
   remove_temporary_gopath
 
