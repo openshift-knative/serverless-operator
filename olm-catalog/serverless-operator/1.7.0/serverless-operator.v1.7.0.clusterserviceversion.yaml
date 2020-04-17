@@ -353,7 +353,7 @@ spec:
                     - name: IMAGE_3scale-kourier-gateway
                       value: docker.io/maistra/proxyv2-ubi8:1.0.8
                     - name: IMAGE_3scale-kourier-control
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kourier
+                      value: quay.io/3scale/kourier:fix_duplication
                     - name: IMAGE_eventing-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
                     - name: IMAGE_eventing-webhook
