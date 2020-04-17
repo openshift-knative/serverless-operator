@@ -21,7 +21,7 @@ failed=0
 (( !failed )) && logger.success 'Cluster prepared for testing.'
 
 (( !failed )) && install_serverless_previous || failed=5
-(( !failed )) && run_knative_serving_rolling_upgrade_tests "$KNATIVE_VERSION" || failed=6
+(( !failed )) && run_knative_serving_rolling_upgrade_tests || failed=6
 
 echo ">>> Knative Servings"
 oc get knativeserving.operator.knative.dev --all-namespaces -o yaml

@@ -24,14 +24,17 @@ failed=0
 # Run serverless-operator specific tests.
 (( !failed )) && run_e2e_tests || failed=4
 
-# Run upstream knative serving operator tests
 (( !failed )) && deploy_serverless_operator_latest || failed=11
-(( !failed )) && run_knative_serving_operator_tests "$KNATIVE_VERSION" || failed=12
 
-# Run upstream knative serving tests
-(( !failed )) && ensure_serverless_installed || failed=6
-(( !failed )) && run_knative_serving_e2e_and_conformance_tests "$KNATIVE_VERSION" || failed=7
-(( !failed )) && teardown_serverless || failed=8
+# Run upstream knative serving operator tests
+(( !failed )) && run_knative_serving_operator_tests || failed=12
+# Run upstream knative eventing operator tests
+(( !failed )) && run_knative_eventing_operator_tests || failed=14
+
+# Run upstream knative serving & eventing tests
+(( !failed )) && ensure_serverless_installed || failed=15
+(( !failed )) && run_knative_serving_e2e_and_conformance_tests || failed=16
+(( !failed )) && run_knative_eventing_tests || failed=17
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
