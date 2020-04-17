@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2019 The Knative Authors
 #
@@ -47,7 +47,7 @@ export E2E_CLUSTER_ZONE=${E2E_CLUSTER_ZONE:-}
 readonly E2E_CLUSTER_BACKUP_REGIONS=${E2E_CLUSTER_BACKUP_REGIONS:-us-west1 us-east1}
 readonly E2E_CLUSTER_BACKUP_ZONES=${E2E_CLUSTER_BACKUP_ZONES:-}
 
-readonly E2E_CLUSTER_MACHINE=${E2E_CLUSTER_MACHINE:-n1-standard-4}
+readonly E2E_CLUSTER_MACHINE=${E2E_CLUSTER_MACHINE:-e2-standard-4}
 readonly E2E_GKE_ENVIRONMENT=${E2E_GKE_ENVIRONMENT:-prod}
 readonly E2E_GKE_COMMAND_GROUP=${E2E_GKE_COMMAND_GROUP:-beta}
 
@@ -81,7 +81,6 @@ function teardown_test_resources() {
 function go_test_e2e() {
   local test_options=""
   local go_options=""
-  (( EMIT_METRICS )) && test_options="-emitmetrics"
   [[ ! " $@" == *" -tags="* ]] && go_options="-tags=e2e"
   report_go_test -v -race -count=1 ${go_options} $@ ${test_options}
 }
@@ -93,13 +92,32 @@ function dump_cluster_state() {
   echo "***         E2E TEST FAILED         ***"
   echo "***    Start of information dump    ***"
   echo "***************************************"
-  echo ">>> All resources:"
-  kubectl get all --all-namespaces
-  echo ">>> Services:"
-  kubectl get services --all-namespaces
-  echo ">>> Events:"
-  kubectl get events --all-namespaces
-  function_exists dump_extra_cluster_state && dump_extra_cluster_state
+
+  local output="${ARTIFACTS}/k8s.dump-$(basename ${E2E_SCRIPT}).txt"
+  echo ">>> The dump is located at ${output}"
+
+  for crd in $(kubectl api-resources --verbs=list -o name | sort); do
+    local count="$(kubectl get $crd --all-namespaces --no-headers 2>/dev/null | wc -l)"
+    echo ">>> ${crd} (${count} objects)"
+    if [[ "${count}" > "0" ]]; then
+      echo ">>> ${crd} (${count} objects)" >> ${output}
+
+      echo ">>> Listing" >> ${output}
+      kubectl get ${crd} --all-namespaces >> ${output}
+
+      echo ">>> Details" >> ${output}
+      if [[ "${crd}" == "secrets" ]]; then
+        echo "Secrets are ignored for security reasons" >> ${output}
+      else
+        kubectl get ${crd} --all-namespaces -o yaml >> ${output}
+      fi
+    fi
+  done
+
+  if function_exists dump_extra_cluster_state; then
+    echo ">>> Extra dump" >> ${output}
+    dump_extra_cluster_state >> ${output}
+  fi
   echo "***************************************"
   echo "***         E2E TEST FAILED         ***"
   echo "***     End of information dump     ***"
@@ -209,14 +227,16 @@ function create_test_cluster() {
   echo "Test script is ${E2E_SCRIPT}"
   # Set arguments for this script again
   local test_cmd_args="--run-tests"
-  (( EMIT_METRICS )) && test_cmd_args+=" --emit-metrics"
   (( SKIP_KNATIVE_SETUP )) && test_cmd_args+=" --skip-knative-setup"
   [[ -n "${GCP_PROJECT}" ]] && test_cmd_args+=" --gcp-project ${GCP_PROJECT}"
   [[ -n "${E2E_SCRIPT_CUSTOM_FLAGS[@]}" ]] && test_cmd_args+=" ${E2E_SCRIPT_CUSTOM_FLAGS[@]}"
   local extra_flags=()
-  if (( IS_BOSKOS )); then # Add arbitrary duration, wait for Boskos projects acquisition before error out
+  if (( IS_BOSKOS )); then
+    # Add arbitrary duration, wait for Boskos projects acquisition before error out
     extra_flags+=(--boskos-wait-duration=20m)
-  else # Only let kubetest tear down the cluster if not using Boskos, it's done by Janitor if using Boskos
+  elif (( ! SKIP_TEARDOWNS )); then
+    # Only let kubetest tear down the cluster if not using Boskos and teardowns are not expected to be skipped,
+    # it's done by Janitor if using Boskos
     extra_flags+=(--down)
   fi
 
@@ -226,7 +246,7 @@ function create_test_cluster() {
   local test_wrapper="${kubedir}/e2e-test.sh"
   mkdir ${kubedir}/cluster
   ln -s "$(which kubectl)" ${kubedir}/cluster/kubectl.sh
-  echo "#!/bin/bash" > ${test_wrapper}
+  echo "#!/usr/bin/env bash" > ${test_wrapper}
   echo "cd $(pwd) && set -x" >> ${test_wrapper}
   echo "${E2E_SCRIPT} ${test_cmd_args}" >> ${test_wrapper}
   chmod +x ${test_wrapper}
@@ -291,7 +311,8 @@ function create_test_cluster_with_retries() {
       # - latest GKE not available in this region/zone yet (https://github.com/knative/test-infra/issues/694)
       [[ -z "$(grep -Fo 'does not have enough resources available to fulfill' ${cluster_creation_log})" \
           && -z "$(grep -Fo 'ResponseError: code=400, message=No valid versions with the prefix' ${cluster_creation_log})" \
-          && -z "$(grep -Po 'ResponseError: code=400, message=Master version "[0-9a-z\-\.]+" is unsupported' ${cluster_creation_log})" ]] \
+          && -z "$(grep -Po 'ResponseError: code=400, message=Master version "[0-9a-z\-\.]+" is unsupported' ${cluster_creation_log})"  \
+          && -z "$(grep -Po 'only \d+ nodes out of \d+ have registered; this is likely due to Nodes failing to start correctly' ${cluster_creation_log})" ]] \
           && return 1
     done
   done
@@ -304,6 +325,9 @@ function setup_test_cluster() {
   # Fail fast during setup.
   set -o errexit
   set -o pipefail
+
+  header "Test cluster setup"
+  kubectl get nodes
 
   header "Setting up test cluster"
 
@@ -344,7 +368,8 @@ function setup_test_cluster() {
 
   export KO_DATA_PATH="${REPO_ROOT_DIR}/.git"
 
-  trap teardown_test_resources EXIT
+  # Do not run teardowns if we explicitly want to skip them.
+  (( ! SKIP_TEARDOWNS )) && trap teardown_test_resources EXIT
 
   # Handle failures ourselves, so we can dump useful info.
   set +o errexit
@@ -396,9 +421,9 @@ function fail_test() {
 }
 
 RUN_TESTS=0
-EMIT_METRICS=0
 SKIP_KNATIVE_SETUP=0
 SKIP_ISTIO_ADDON=0
+SKIP_TEARDOWNS=0
 GCP_PROJECT=""
 E2E_SCRIPT=""
 E2E_CLUSTER_VERSION=""
@@ -432,8 +457,8 @@ function initialize() {
     # Try parsing flag as a standard one.
     case ${parameter} in
       --run-tests) RUN_TESTS=1 ;;
-      --emit-metrics) EMIT_METRICS=1 ;;
       --skip-knative-setup) SKIP_KNATIVE_SETUP=1 ;;
+      --skip-teardowns) SKIP_TEARDOWNS=1 ;;
       --skip-istio-addon) SKIP_ISTIO_ADDON=1 ;;
       *)
         [[ $# -ge 2 ]] || abort "missing parameter after $1"
@@ -463,12 +488,12 @@ function initialize() {
   (( SKIP_ISTIO_ADDON )) || GKE_ADDONS="--addons=Istio"
 
   readonly RUN_TESTS
-  readonly EMIT_METRICS
   readonly GCP_PROJECT
   readonly IS_BOSKOS
   readonly EXTRA_CLUSTER_CREATION_FLAGS
   readonly EXTRA_KUBETEST_FLAGS
   readonly SKIP_KNATIVE_SETUP
+  readonly SKIP_TEARDOWNS
   readonly GKE_ADDONS
 
   if (( ! RUN_TESTS )); then

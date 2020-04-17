@@ -15,44 +15,48 @@ required = [
 
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.15.3"
+  version = "kubernetes-1.16.4"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.15.3"
+  version = "kubernetes-1.16.4"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.15.3"
+  version = "kubernetes-1.16.4"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.15.3"
+  version = "kubernetes-1.16.4"
 
 [[override]]
   name = "k8s.io/kube-aggregator"
-  version = "kubernetes-1.15.3"
+  version = "kubernetes-1.16.4"
 
 [[constraint]]
-  branch = "master"
   name = "knative.dev/serving-operator"
+  branch = "release-0.13"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/knative/test-infra"
+  branch = "release-0.13"
 
 [[constraint]]
-  branch = "release-0.7"
-  name = "github.com/knative/serving"
+  name = "knative.dev/serving"
+  branch = "release-0.13"
 
 [[constraint]]
-  branch = "master"
+  name = "knative.dev/pkg"
+  branch = "release-0.13"
+
+[[constraint]]
   name = "github.com/operator-framework/operator-lifecycle-manager"
+  branch = "release-4.3"
 
 [[constraint]]
   name = "github.com/openshift/api"
-  branch = "release-4.1"
+  branch = "release-4.3"
 
-[[ constraint ]]
+[[constraint]]
   name = "github.com/openshift/client-go"
-  branch = "release-4.1"
+  branch = "release-4.3"
