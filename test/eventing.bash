@@ -21,7 +21,7 @@ function run_knative_eventing_tests {
 
   checkout_knative_eventing
 
-  go_test_e2e -timeout=90m -parallel=1 ./test/e2e \
+  go_test_e2e -timeout=90m -parallel=12 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
     --dockerrepo 'quay.io/openshift-knative' \
     || exitstatus=$? && true
