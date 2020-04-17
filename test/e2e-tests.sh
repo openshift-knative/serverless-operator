@@ -7,9 +7,9 @@ set -Eeuo pipefail
 
 # Enable extra verbosity if running in CI.
 if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+  set -x
   env
 fi
-debugging.setup
 
 register_teardown || exit $?
 scale_up_workers || exit $?

@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 
-readonly BUILD_NUMBER=${BUILD_NUMBER:-$(head -c 128 < /dev/urandom | base64 | fold -w 8 | head -n 1)}
-
-if [[ -n "${ARTIFACT_DIR}" ]]; then
-  ARTIFACTS="${ARTIFACT_DIR}/build-${BUILD_NUMBER}"
-  readonly ARTIFACTS
-  mkdir -p "${ARTIFACTS}"
-fi
+readonly BUILD_NUMBER=${BUILD_NUMBER:-$(uuidgen)}
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/github.com/knative/test-infra/scripts/e2e-tests.sh"
