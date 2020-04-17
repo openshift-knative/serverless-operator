@@ -216,17 +216,6 @@
   version = "v1.1.7"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:50482e6fd500cf50c4a29d640cda026206145c6716dff72e4368a5e57fdb7095"
-  name = "github.com/knative/test-infra"
-  packages = [
-    "scripts",
-    "tools/dep-collector",
-  ]
-  pruneopts = "UT"
-  revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
-
-[[projects]]
   digest = "1:58999a98719fddbac6303cb17e8d85b945f60b72f48e3a2df6b950b97fa926f1"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -995,6 +984,17 @@
   revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
 
 [[projects]]
+  branch = "release-0.13"
+  digest = "1:f2a8f0a8c2f73f0901d6e20088e061bdb8766792a68737cbfad8e0e6e1e2b6f1"
+  name = "knative.dev/test-infra"
+  packages = [
+    "scripts",
+    "tools/dep-collector",
+  ]
+  pruneopts = "NUT"
+  revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
+
+[[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
   name = "sigs.k8s.io/yaml"
   packages = ["."]
@@ -1006,8 +1006,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/knative/test-infra/scripts",
-    "github.com/knative/test-infra/tools/dep-collector",
     "github.com/openshift/api/route/v1",
     "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1",
     "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1",
@@ -1034,8 +1032,10 @@
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "knative.dev/serving-operator/pkg/client/clientset/versioned",
     "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1",
-    "knative.dev/serving/pkg/apis/serving/v1beta1",
+    "knative.dev/serving/pkg/apis/serving/v1",
     "knative.dev/serving/pkg/client/clientset/versioned",
+    "knative.dev/test-infra/scripts",
+    "knative.dev/test-infra/tools/dep-collector",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
