@@ -46,7 +46,7 @@ type OperatorGroupStatus struct {
 	ServiceAccountRef *corev1.ObjectReference `json:"serviceAccountRef,omitempty"`
 
 	// LastUpdated is a timestamp of the last time the OperatorGroup's status was Updated.
-	LastUpdated metav1.Time `json:"lastUpdated"`
+	LastUpdated *metav1.Time `json:"lastUpdated"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -58,6 +58,7 @@ type OperatorGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
 
+	// +optional
 	Spec   OperatorGroupSpec   `json:"spec"`
 	Status OperatorGroupStatus `json:"status,omitempty"`
 }
@@ -73,8 +74,10 @@ type OperatorGroupList struct {
 }
 
 func (o *OperatorGroup) BuildTargetNamespaces() string {
-	sort.Strings(o.Status.Namespaces)
-	return strings.Join(o.Status.Namespaces, ",")
+	ns := make([]string, len(o.Status.Namespaces))
+	copy(ns, o.Status.Namespaces)
+	sort.Strings(ns)
+	return strings.Join(ns, ",")
 }
 
 // IsServiceAccountSpecified returns true if the spec has a service account name specified.
