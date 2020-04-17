@@ -25,9 +25,10 @@ import (
 	unsafe "unsafe"
 
 	operators "github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators"
-	corev1 "k8s.io/api/core/v1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
@@ -87,6 +88,26 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*operators.AppLink)(nil), (*AppLink)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_operators_AppLink_To_v1alpha1_AppLink(a.(*operators.AppLink), b.(*AppLink), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*BundleLookup)(nil), (*operators.BundleLookup)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_BundleLookup_To_operators_BundleLookup(a.(*BundleLookup), b.(*operators.BundleLookup), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*operators.BundleLookup)(nil), (*BundleLookup)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_operators_BundleLookup_To_v1alpha1_BundleLookup(a.(*operators.BundleLookup), b.(*BundleLookup), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*BundleLookupCondition)(nil), (*operators.BundleLookupCondition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_BundleLookupCondition_To_operators_BundleLookupCondition(a.(*BundleLookupCondition), b.(*operators.BundleLookupCondition), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*operators.BundleLookupCondition)(nil), (*BundleLookupCondition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_operators_BundleLookupCondition_To_v1alpha1_BundleLookupCondition(a.(*operators.BundleLookupCondition), b.(*BundleLookupCondition), scope)
 	}); err != nil {
 		return err
 	}
@@ -330,6 +351,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*RegistryPoll)(nil), (*operators.RegistryPoll)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_RegistryPoll_To_operators_RegistryPoll(a.(*RegistryPoll), b.(*operators.RegistryPoll), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*operators.RegistryPoll)(nil), (*RegistryPoll)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_operators_RegistryPoll_To_v1alpha1_RegistryPoll(a.(*operators.RegistryPoll), b.(*RegistryPoll), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*RegistryServiceStatus)(nil), (*operators.RegistryServiceStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_RegistryServiceStatus_To_operators_RegistryServiceStatus(a.(*RegistryServiceStatus), b.(*operators.RegistryServiceStatus), scope)
 	}); err != nil {
@@ -490,6 +521,26 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*UpdateStrategy)(nil), (*operators.UpdateStrategy)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_UpdateStrategy_To_operators_UpdateStrategy(a.(*UpdateStrategy), b.(*operators.UpdateStrategy), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*operators.UpdateStrategy)(nil), (*UpdateStrategy)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_operators_UpdateStrategy_To_v1alpha1_UpdateStrategy(a.(*operators.UpdateStrategy), b.(*UpdateStrategy), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*WebhookDescription)(nil), (*operators.WebhookDescription)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_WebhookDescription_To_operators_WebhookDescription(a.(*WebhookDescription), b.(*operators.WebhookDescription), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*operators.WebhookDescription)(nil), (*WebhookDescription)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_operators_WebhookDescription_To_v1alpha1_WebhookDescription(a.(*operators.WebhookDescription), b.(*WebhookDescription), scope)
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -551,7 +602,7 @@ func autoConvert_v1alpha1_APIServiceDescription_To_operators_APIServiceDescripti
 	out.Resources = *(*[]operators.APIResourceReference)(unsafe.Pointer(&in.Resources))
 	out.StatusDescriptors = *(*[]operators.StatusDescriptor)(unsafe.Pointer(&in.StatusDescriptors))
 	out.SpecDescriptors = *(*[]operators.SpecDescriptor)(unsafe.Pointer(&in.SpecDescriptors))
-	out.ActionDescriptor = *(*[]operators.ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptor))
+	out.ActionDescriptors = *(*[]operators.ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptors))
 	return nil
 }
 
@@ -572,7 +623,7 @@ func autoConvert_operators_APIServiceDescription_To_v1alpha1_APIServiceDescripti
 	out.Resources = *(*[]APIResourceReference)(unsafe.Pointer(&in.Resources))
 	out.StatusDescriptors = *(*[]StatusDescriptor)(unsafe.Pointer(&in.StatusDescriptors))
 	out.SpecDescriptors = *(*[]SpecDescriptor)(unsafe.Pointer(&in.SpecDescriptors))
-	out.ActionDescriptor = *(*[]ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptor))
+	out.ActionDescriptors = *(*[]ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptors))
 	return nil
 }
 
@@ -586,7 +637,7 @@ func autoConvert_v1alpha1_ActionDescriptor_To_operators_ActionDescriptor(in *Act
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -600,7 +651,7 @@ func autoConvert_operators_ActionDescriptor_To_v1alpha1_ActionDescriptor(in *ope
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -631,6 +682,64 @@ func Convert_operators_AppLink_To_v1alpha1_AppLink(in *operators.AppLink, out *A
 	return autoConvert_operators_AppLink_To_v1alpha1_AppLink(in, out, s)
 }
 
+func autoConvert_v1alpha1_BundleLookup_To_operators_BundleLookup(in *BundleLookup, out *operators.BundleLookup, s conversion.Scope) error {
+	out.Path = in.Path
+	out.Identifier = in.Identifier
+	out.Replaces = in.Replaces
+	out.CatalogSourceRef = (*v1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
+	out.Conditions = *(*[]operators.BundleLookupCondition)(unsafe.Pointer(&in.Conditions))
+	return nil
+}
+
+// Convert_v1alpha1_BundleLookup_To_operators_BundleLookup is an autogenerated conversion function.
+func Convert_v1alpha1_BundleLookup_To_operators_BundleLookup(in *BundleLookup, out *operators.BundleLookup, s conversion.Scope) error {
+	return autoConvert_v1alpha1_BundleLookup_To_operators_BundleLookup(in, out, s)
+}
+
+func autoConvert_operators_BundleLookup_To_v1alpha1_BundleLookup(in *operators.BundleLookup, out *BundleLookup, s conversion.Scope) error {
+	out.Path = in.Path
+	out.Identifier = in.Identifier
+	out.Replaces = in.Replaces
+	out.CatalogSourceRef = (*v1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
+	out.Conditions = *(*[]BundleLookupCondition)(unsafe.Pointer(&in.Conditions))
+	return nil
+}
+
+// Convert_operators_BundleLookup_To_v1alpha1_BundleLookup is an autogenerated conversion function.
+func Convert_operators_BundleLookup_To_v1alpha1_BundleLookup(in *operators.BundleLookup, out *BundleLookup, s conversion.Scope) error {
+	return autoConvert_operators_BundleLookup_To_v1alpha1_BundleLookup(in, out, s)
+}
+
+func autoConvert_v1alpha1_BundleLookupCondition_To_operators_BundleLookupCondition(in *BundleLookupCondition, out *operators.BundleLookupCondition, s conversion.Scope) error {
+	out.Type = operators.BundleLookupConditionType(in.Type)
+	out.Status = v1.ConditionStatus(in.Status)
+	out.Reason = in.Reason
+	out.Message = in.Message
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	return nil
+}
+
+// Convert_v1alpha1_BundleLookupCondition_To_operators_BundleLookupCondition is an autogenerated conversion function.
+func Convert_v1alpha1_BundleLookupCondition_To_operators_BundleLookupCondition(in *BundleLookupCondition, out *operators.BundleLookupCondition, s conversion.Scope) error {
+	return autoConvert_v1alpha1_BundleLookupCondition_To_operators_BundleLookupCondition(in, out, s)
+}
+
+func autoConvert_operators_BundleLookupCondition_To_v1alpha1_BundleLookupCondition(in *operators.BundleLookupCondition, out *BundleLookupCondition, s conversion.Scope) error {
+	out.Type = BundleLookupConditionType(in.Type)
+	out.Status = v1.ConditionStatus(in.Status)
+	out.Reason = in.Reason
+	out.Message = in.Message
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	return nil
+}
+
+// Convert_operators_BundleLookupCondition_To_v1alpha1_BundleLookupCondition is an autogenerated conversion function.
+func Convert_operators_BundleLookupCondition_To_v1alpha1_BundleLookupCondition(in *operators.BundleLookupCondition, out *BundleLookupCondition, s conversion.Scope) error {
+	return autoConvert_operators_BundleLookupCondition_To_v1alpha1_BundleLookupCondition(in, out, s)
+}
+
 func autoConvert_v1alpha1_CRDDescription_To_operators_CRDDescription(in *CRDDescription, out *operators.CRDDescription, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Version = in.Version
@@ -640,7 +749,7 @@ func autoConvert_v1alpha1_CRDDescription_To_operators_CRDDescription(in *CRDDesc
 	out.Resources = *(*[]operators.APIResourceReference)(unsafe.Pointer(&in.Resources))
 	out.StatusDescriptors = *(*[]operators.StatusDescriptor)(unsafe.Pointer(&in.StatusDescriptors))
 	out.SpecDescriptors = *(*[]operators.SpecDescriptor)(unsafe.Pointer(&in.SpecDescriptors))
-	out.ActionDescriptor = *(*[]operators.ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptor))
+	out.ActionDescriptors = *(*[]operators.ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptors))
 	return nil
 }
 
@@ -658,7 +767,7 @@ func autoConvert_operators_CRDDescription_To_v1alpha1_CRDDescription(in *operato
 	out.Resources = *(*[]APIResourceReference)(unsafe.Pointer(&in.Resources))
 	out.StatusDescriptors = *(*[]StatusDescriptor)(unsafe.Pointer(&in.StatusDescriptors))
 	out.SpecDescriptors = *(*[]SpecDescriptor)(unsafe.Pointer(&in.SpecDescriptors))
-	out.ActionDescriptor = *(*[]ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptor))
+	out.ActionDescriptors = *(*[]ActionDescriptor)(unsafe.Pointer(&in.ActionDescriptors))
 	return nil
 }
 
@@ -701,7 +810,17 @@ func Convert_operators_CatalogSource_To_v1alpha1_CatalogSource(in *operators.Cat
 
 func autoConvert_v1alpha1_CatalogSourceList_To_operators_CatalogSourceList(in *CatalogSourceList, out *operators.CatalogSourceList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]operators.CatalogSource)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]operators.CatalogSource, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha1_CatalogSource_To_operators_CatalogSource(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -712,7 +831,17 @@ func Convert_v1alpha1_CatalogSourceList_To_operators_CatalogSourceList(in *Catal
 
 func autoConvert_operators_CatalogSourceList_To_v1alpha1_CatalogSourceList(in *operators.CatalogSourceList, out *CatalogSourceList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]CatalogSource)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]CatalogSource, len(*in))
+		for i := range *in {
+			if err := Convert_operators_CatalogSource_To_v1alpha1_CatalogSource(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -726,6 +855,7 @@ func autoConvert_v1alpha1_CatalogSourceSpec_To_operators_CatalogSourceSpec(in *C
 	out.ConfigMap = in.ConfigMap
 	out.Address = in.Address
 	out.Image = in.Image
+	out.UpdateStrategy = (*operators.UpdateStrategy)(unsafe.Pointer(in.UpdateStrategy))
 	out.Secrets = *(*[]string)(unsafe.Pointer(&in.Secrets))
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
@@ -746,6 +876,7 @@ func autoConvert_operators_CatalogSourceSpec_To_v1alpha1_CatalogSourceSpec(in *o
 	out.ConfigMap = in.ConfigMap
 	out.Address = in.Address
 	out.Image = in.Image
+	out.UpdateStrategy = (*UpdateStrategy)(unsafe.Pointer(in.UpdateStrategy))
 	out.Secrets = *(*[]string)(unsafe.Pointer(&in.Secrets))
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
@@ -764,6 +895,7 @@ func Convert_operators_CatalogSourceSpec_To_v1alpha1_CatalogSourceSpec(in *opera
 func autoConvert_v1alpha1_CatalogSourceStatus_To_operators_CatalogSourceStatus(in *CatalogSourceStatus, out *operators.CatalogSourceStatus, s conversion.Scope) error {
 	out.Message = in.Message
 	out.Reason = operators.ConditionReason(in.Reason)
+	out.LatestImageRegistryPoll = (*metav1.Time)(unsafe.Pointer(in.LatestImageRegistryPoll))
 	out.ConfigMapResource = (*operators.ConfigMapResourceReference)(unsafe.Pointer(in.ConfigMapResource))
 	out.RegistryServiceStatus = (*operators.RegistryServiceStatus)(unsafe.Pointer(in.RegistryServiceStatus))
 	out.GRPCConnectionState = (*operators.GRPCConnectionState)(unsafe.Pointer(in.GRPCConnectionState))
@@ -781,6 +913,7 @@ func autoConvert_operators_CatalogSourceStatus_To_v1alpha1_CatalogSourceStatus(i
 	out.ConfigMapResource = (*ConfigMapResourceReference)(unsafe.Pointer(in.ConfigMapResource))
 	out.RegistryServiceStatus = (*RegistryServiceStatus)(unsafe.Pointer(in.RegistryServiceStatus))
 	out.GRPCConnectionState = (*GRPCConnectionState)(unsafe.Pointer(in.GRPCConnectionState))
+	out.LatestImageRegistryPoll = (*metav1.Time)(unsafe.Pointer(in.LatestImageRegistryPoll))
 	return nil
 }
 
@@ -825,8 +958,8 @@ func autoConvert_v1alpha1_ClusterServiceVersionCondition_To_operators_ClusterSer
 	out.Phase = operators.ClusterServiceVersionPhase(in.Phase)
 	out.Message = in.Message
 	out.Reason = operators.ConditionReason(in.Reason)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	return nil
 }
 
@@ -839,8 +972,8 @@ func autoConvert_operators_ClusterServiceVersionCondition_To_v1alpha1_ClusterSer
 	out.Phase = ClusterServiceVersionPhase(in.Phase)
 	out.Message = in.Message
 	out.Reason = ConditionReason(in.Reason)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	return nil
 }
 
@@ -883,7 +1016,8 @@ func autoConvert_v1alpha1_ClusterServiceVersionSpec_To_operators_ClusterServiceV
 	if err := Convert_v1alpha1_APIServiceDefinitions_To_operators_APIServiceDefinitions(&in.APIServiceDefinitions, &out.APIServiceDefinitions, s); err != nil {
 		return err
 	}
-	out.NativeAPIs = *(*[]v1.GroupVersionKind)(unsafe.Pointer(&in.NativeAPIs))
+	out.WebhookDefinitions = *(*[]operators.WebhookDescription)(unsafe.Pointer(&in.WebhookDefinitions))
+	out.NativeAPIs = *(*[]metav1.GroupVersionKind)(unsafe.Pointer(&in.NativeAPIs))
 	out.MinKubeVersion = in.MinKubeVersion
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
@@ -898,7 +1032,7 @@ func autoConvert_v1alpha1_ClusterServiceVersionSpec_To_operators_ClusterServiceV
 	out.Replaces = in.Replaces
 	out.Labels = *(*map[string]string)(unsafe.Pointer(&in.Labels))
 	out.Annotations = *(*map[string]string)(unsafe.Pointer(&in.Annotations))
-	out.Selector = (*v1.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
 	return nil
 }
 
@@ -919,7 +1053,8 @@ func autoConvert_operators_ClusterServiceVersionSpec_To_v1alpha1_ClusterServiceV
 	if err := Convert_operators_APIServiceDefinitions_To_v1alpha1_APIServiceDefinitions(&in.APIServiceDefinitions, &out.APIServiceDefinitions, s); err != nil {
 		return err
 	}
-	out.NativeAPIs = *(*[]v1.GroupVersionKind)(unsafe.Pointer(&in.NativeAPIs))
+	out.WebhookDefinitions = *(*[]WebhookDescription)(unsafe.Pointer(&in.WebhookDefinitions))
+	out.NativeAPIs = *(*[]metav1.GroupVersionKind)(unsafe.Pointer(&in.NativeAPIs))
 	out.MinKubeVersion = in.MinKubeVersion
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
@@ -934,7 +1069,7 @@ func autoConvert_operators_ClusterServiceVersionSpec_To_v1alpha1_ClusterServiceV
 	out.Replaces = in.Replaces
 	out.Labels = *(*map[string]string)(unsafe.Pointer(&in.Labels))
 	out.Annotations = *(*map[string]string)(unsafe.Pointer(&in.Annotations))
-	out.Selector = (*v1.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
 	return nil
 }
 
@@ -947,12 +1082,12 @@ func autoConvert_v1alpha1_ClusterServiceVersionStatus_To_operators_ClusterServic
 	out.Phase = operators.ClusterServiceVersionPhase(in.Phase)
 	out.Message = in.Message
 	out.Reason = operators.ConditionReason(in.Reason)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	out.Conditions = *(*[]operators.ClusterServiceVersionCondition)(unsafe.Pointer(&in.Conditions))
 	out.RequirementStatus = *(*[]operators.RequirementStatus)(unsafe.Pointer(&in.RequirementStatus))
-	out.CertsLastUpdated = (*v1.Time)(unsafe.Pointer(in.CertsLastUpdated))
-	out.CertsRotateAt = (*v1.Time)(unsafe.Pointer(in.CertsRotateAt))
+	out.CertsLastUpdated = (*metav1.Time)(unsafe.Pointer(in.CertsLastUpdated))
+	out.CertsRotateAt = (*metav1.Time)(unsafe.Pointer(in.CertsRotateAt))
 	return nil
 }
 
@@ -965,12 +1100,12 @@ func autoConvert_operators_ClusterServiceVersionStatus_To_v1alpha1_ClusterServic
 	out.Phase = ClusterServiceVersionPhase(in.Phase)
 	out.Message = in.Message
 	out.Reason = ConditionReason(in.Reason)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	out.Conditions = *(*[]ClusterServiceVersionCondition)(unsafe.Pointer(&in.Conditions))
 	out.RequirementStatus = *(*[]RequirementStatus)(unsafe.Pointer(&in.RequirementStatus))
-	out.CertsLastUpdated = (*v1.Time)(unsafe.Pointer(in.CertsLastUpdated))
-	out.CertsRotateAt = (*v1.Time)(unsafe.Pointer(in.CertsRotateAt))
+	out.CertsLastUpdated = (*metav1.Time)(unsafe.Pointer(in.CertsLastUpdated))
+	out.CertsRotateAt = (*metav1.Time)(unsafe.Pointer(in.CertsRotateAt))
 	return nil
 }
 
@@ -1161,9 +1296,9 @@ func Convert_operators_InstallPlan_To_v1alpha1_InstallPlan(in *operators.Install
 
 func autoConvert_v1alpha1_InstallPlanCondition_To_operators_InstallPlanCondition(in *InstallPlanCondition, out *operators.InstallPlanCondition, s conversion.Scope) error {
 	out.Type = operators.InstallPlanConditionType(in.Type)
-	out.Status = corev1.ConditionStatus(in.Status)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.Status = v1.ConditionStatus(in.Status)
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	out.Reason = operators.InstallPlanConditionReason(in.Reason)
 	out.Message = in.Message
 	return nil
@@ -1176,9 +1311,9 @@ func Convert_v1alpha1_InstallPlanCondition_To_operators_InstallPlanCondition(in 
 
 func autoConvert_operators_InstallPlanCondition_To_v1alpha1_InstallPlanCondition(in *operators.InstallPlanCondition, out *InstallPlanCondition, s conversion.Scope) error {
 	out.Type = InstallPlanConditionType(in.Type)
-	out.Status = corev1.ConditionStatus(in.Status)
-	out.LastUpdateTime = (*v1.Time)(unsafe.Pointer(in.LastUpdateTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.Status = v1.ConditionStatus(in.Status)
+	out.LastUpdateTime = (*metav1.Time)(unsafe.Pointer(in.LastUpdateTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	out.Reason = InstallPlanConditionReason(in.Reason)
 	out.Message = in.Message
 	return nil
@@ -1243,6 +1378,7 @@ func autoConvert_v1alpha1_InstallPlanSpec_To_operators_InstallPlanSpec(in *Insta
 	out.ClusterServiceVersionNames = *(*[]string)(unsafe.Pointer(&in.ClusterServiceVersionNames))
 	out.Approval = operators.Approval(in.Approval)
 	out.Approved = in.Approved
+	out.Generation = in.Generation
 	return nil
 }
 
@@ -1257,6 +1393,7 @@ func autoConvert_operators_InstallPlanSpec_To_v1alpha1_InstallPlanSpec(in *opera
 	out.ClusterServiceVersionNames = *(*[]string)(unsafe.Pointer(&in.ClusterServiceVersionNames))
 	out.Approval = Approval(in.Approval)
 	out.Approved = in.Approved
+	out.Generation = in.Generation
 	return nil
 }
 
@@ -1270,7 +1407,8 @@ func autoConvert_v1alpha1_InstallPlanStatus_To_operators_InstallPlanStatus(in *I
 	out.Conditions = *(*[]operators.InstallPlanCondition)(unsafe.Pointer(&in.Conditions))
 	out.CatalogSources = *(*[]string)(unsafe.Pointer(&in.CatalogSources))
 	out.Plan = *(*[]*operators.Step)(unsafe.Pointer(&in.Plan))
-	out.AttenuatedServiceAccountRef = (*corev1.ObjectReference)(unsafe.Pointer(in.AttenuatedServiceAccountRef))
+	out.BundleLookups = *(*[]operators.BundleLookup)(unsafe.Pointer(&in.BundleLookups))
+	out.AttenuatedServiceAccountRef = (*v1.ObjectReference)(unsafe.Pointer(in.AttenuatedServiceAccountRef))
 	return nil
 }
 
@@ -1284,7 +1422,8 @@ func autoConvert_operators_InstallPlanStatus_To_v1alpha1_InstallPlanStatus(in *o
 	out.Conditions = *(*[]InstallPlanCondition)(unsafe.Pointer(&in.Conditions))
 	out.CatalogSources = *(*[]string)(unsafe.Pointer(&in.CatalogSources))
 	out.Plan = *(*[]*Step)(unsafe.Pointer(&in.Plan))
-	out.AttenuatedServiceAccountRef = (*corev1.ObjectReference)(unsafe.Pointer(in.AttenuatedServiceAccountRef))
+	out.BundleLookups = *(*[]BundleLookup)(unsafe.Pointer(&in.BundleLookups))
+	out.AttenuatedServiceAccountRef = (*v1.ObjectReference)(unsafe.Pointer(in.AttenuatedServiceAccountRef))
 	return nil
 }
 
@@ -1339,6 +1478,26 @@ func autoConvert_operators_NamedInstallStrategy_To_v1alpha1_NamedInstallStrategy
 // Convert_operators_NamedInstallStrategy_To_v1alpha1_NamedInstallStrategy is an autogenerated conversion function.
 func Convert_operators_NamedInstallStrategy_To_v1alpha1_NamedInstallStrategy(in *operators.NamedInstallStrategy, out *NamedInstallStrategy, s conversion.Scope) error {
 	return autoConvert_operators_NamedInstallStrategy_To_v1alpha1_NamedInstallStrategy(in, out, s)
+}
+
+func autoConvert_v1alpha1_RegistryPoll_To_operators_RegistryPoll(in *RegistryPoll, out *operators.RegistryPoll, s conversion.Scope) error {
+	out.Interval = (*metav1.Duration)(unsafe.Pointer(in.Interval))
+	return nil
+}
+
+// Convert_v1alpha1_RegistryPoll_To_operators_RegistryPoll is an autogenerated conversion function.
+func Convert_v1alpha1_RegistryPoll_To_operators_RegistryPoll(in *RegistryPoll, out *operators.RegistryPoll, s conversion.Scope) error {
+	return autoConvert_v1alpha1_RegistryPoll_To_operators_RegistryPoll(in, out, s)
+}
+
+func autoConvert_operators_RegistryPoll_To_v1alpha1_RegistryPoll(in *operators.RegistryPoll, out *RegistryPoll, s conversion.Scope) error {
+	out.Interval = (*metav1.Duration)(unsafe.Pointer(in.Interval))
+	return nil
+}
+
+// Convert_operators_RegistryPoll_To_v1alpha1_RegistryPoll is an autogenerated conversion function.
+func Convert_operators_RegistryPoll_To_v1alpha1_RegistryPoll(in *operators.RegistryPoll, out *RegistryPoll, s conversion.Scope) error {
+	return autoConvert_operators_RegistryPoll_To_v1alpha1_RegistryPoll(in, out, s)
 }
 
 func autoConvert_v1alpha1_RegistryServiceStatus_To_operators_RegistryServiceStatus(in *RegistryServiceStatus, out *operators.RegistryServiceStatus, s conversion.Scope) error {
@@ -1408,7 +1567,7 @@ func autoConvert_v1alpha1_SpecDescriptor_To_operators_SpecDescriptor(in *SpecDes
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -1422,7 +1581,7 @@ func autoConvert_operators_SpecDescriptor_To_v1alpha1_SpecDescriptor(in *operato
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -1436,7 +1595,7 @@ func autoConvert_v1alpha1_StatusDescriptor_To_operators_StatusDescriptor(in *Sta
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -1450,7 +1609,7 @@ func autoConvert_operators_StatusDescriptor_To_v1alpha1_StatusDescriptor(in *ope
 	out.DisplayName = in.DisplayName
 	out.Description = in.Description
 	out.XDescriptors = *(*[]string)(unsafe.Pointer(&in.XDescriptors))
-	out.Value = (*json.RawMessage)(unsafe.Pointer(in.Value))
+	out.Value = *(*json.RawMessage)(unsafe.Pointer(&in.Value))
 	return nil
 }
 
@@ -1616,8 +1775,8 @@ func Convert_operators_Subscription_To_v1alpha1_Subscription(in *operators.Subsc
 }
 
 func autoConvert_v1alpha1_SubscriptionCatalogHealth_To_operators_SubscriptionCatalogHealth(in *SubscriptionCatalogHealth, out *operators.SubscriptionCatalogHealth, s conversion.Scope) error {
-	out.CatalogSourceRef = (*corev1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
-	out.LastUpdated = (*v1.Time)(unsafe.Pointer(in.LastUpdated))
+	out.CatalogSourceRef = (*v1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
+	out.LastUpdated = (*metav1.Time)(unsafe.Pointer(in.LastUpdated))
 	out.Healthy = in.Healthy
 	return nil
 }
@@ -1628,8 +1787,8 @@ func Convert_v1alpha1_SubscriptionCatalogHealth_To_operators_SubscriptionCatalog
 }
 
 func autoConvert_operators_SubscriptionCatalogHealth_To_v1alpha1_SubscriptionCatalogHealth(in *operators.SubscriptionCatalogHealth, out *SubscriptionCatalogHealth, s conversion.Scope) error {
-	out.CatalogSourceRef = (*corev1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
-	out.LastUpdated = (*v1.Time)(unsafe.Pointer(in.LastUpdated))
+	out.CatalogSourceRef = (*v1.ObjectReference)(unsafe.Pointer(in.CatalogSourceRef))
+	out.LastUpdated = (*metav1.Time)(unsafe.Pointer(in.LastUpdated))
 	out.Healthy = in.Healthy
 	return nil
 }
@@ -1641,11 +1800,11 @@ func Convert_operators_SubscriptionCatalogHealth_To_v1alpha1_SubscriptionCatalog
 
 func autoConvert_v1alpha1_SubscriptionCondition_To_operators_SubscriptionCondition(in *SubscriptionCondition, out *operators.SubscriptionCondition, s conversion.Scope) error {
 	out.Type = operators.SubscriptionConditionType(in.Type)
-	out.Status = corev1.ConditionStatus(in.Status)
+	out.Status = v1.ConditionStatus(in.Status)
 	out.Reason = in.Reason
 	out.Message = in.Message
-	out.LastHeartbeatTime = (*v1.Time)(unsafe.Pointer(in.LastHeartbeatTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastHeartbeatTime = (*metav1.Time)(unsafe.Pointer(in.LastHeartbeatTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	return nil
 }
 
@@ -1656,11 +1815,11 @@ func Convert_v1alpha1_SubscriptionCondition_To_operators_SubscriptionCondition(i
 
 func autoConvert_operators_SubscriptionCondition_To_v1alpha1_SubscriptionCondition(in *operators.SubscriptionCondition, out *SubscriptionCondition, s conversion.Scope) error {
 	out.Type = SubscriptionConditionType(in.Type)
-	out.Status = corev1.ConditionStatus(in.Status)
+	out.Status = v1.ConditionStatus(in.Status)
 	out.Reason = in.Reason
 	out.Message = in.Message
-	out.LastHeartbeatTime = (*v1.Time)(unsafe.Pointer(in.LastHeartbeatTime))
-	out.LastTransitionTime = (*v1.Time)(unsafe.Pointer(in.LastTransitionTime))
+	out.LastHeartbeatTime = (*metav1.Time)(unsafe.Pointer(in.LastHeartbeatTime))
+	out.LastTransitionTime = (*metav1.Time)(unsafe.Pointer(in.LastTransitionTime))
 	return nil
 }
 
@@ -1670,14 +1829,14 @@ func Convert_operators_SubscriptionCondition_To_v1alpha1_SubscriptionCondition(i
 }
 
 func autoConvert_v1alpha1_SubscriptionConfig_To_operators_SubscriptionConfig(in *SubscriptionConfig, out *operators.SubscriptionConfig, s conversion.Scope) error {
-	out.Selector = (*v1.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
 	out.NodeSelector = *(*map[string]string)(unsafe.Pointer(&in.NodeSelector))
-	out.Tolerations = *(*[]corev1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Tolerations = *(*[]v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	out.Resources = in.Resources
-	out.EnvFrom = *(*[]corev1.EnvFromSource)(unsafe.Pointer(&in.EnvFrom))
-	out.Env = *(*[]corev1.EnvVar)(unsafe.Pointer(&in.Env))
-	out.Volumes = *(*[]corev1.Volume)(unsafe.Pointer(&in.Volumes))
-	out.VolumeMounts = *(*[]corev1.VolumeMount)(unsafe.Pointer(&in.VolumeMounts))
+	out.EnvFrom = *(*[]v1.EnvFromSource)(unsafe.Pointer(&in.EnvFrom))
+	out.Env = *(*[]v1.EnvVar)(unsafe.Pointer(&in.Env))
+	out.Volumes = *(*[]v1.Volume)(unsafe.Pointer(&in.Volumes))
+	out.VolumeMounts = *(*[]v1.VolumeMount)(unsafe.Pointer(&in.VolumeMounts))
 	return nil
 }
 
@@ -1687,14 +1846,14 @@ func Convert_v1alpha1_SubscriptionConfig_To_operators_SubscriptionConfig(in *Sub
 }
 
 func autoConvert_operators_SubscriptionConfig_To_v1alpha1_SubscriptionConfig(in *operators.SubscriptionConfig, out *SubscriptionConfig, s conversion.Scope) error {
-	out.Selector = (*v1.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
 	out.NodeSelector = *(*map[string]string)(unsafe.Pointer(&in.NodeSelector))
-	out.Tolerations = *(*[]corev1.Toleration)(unsafe.Pointer(&in.Tolerations))
+	out.Tolerations = *(*[]v1.Toleration)(unsafe.Pointer(&in.Tolerations))
 	out.Resources = in.Resources
-	out.EnvFrom = *(*[]corev1.EnvFromSource)(unsafe.Pointer(&in.EnvFrom))
-	out.Env = *(*[]corev1.EnvVar)(unsafe.Pointer(&in.Env))
-	out.Volumes = *(*[]corev1.Volume)(unsafe.Pointer(&in.Volumes))
-	out.VolumeMounts = *(*[]corev1.VolumeMount)(unsafe.Pointer(&in.VolumeMounts))
+	out.EnvFrom = *(*[]v1.EnvFromSource)(unsafe.Pointer(&in.EnvFrom))
+	out.Env = *(*[]v1.EnvVar)(unsafe.Pointer(&in.Env))
+	out.Volumes = *(*[]v1.Volume)(unsafe.Pointer(&in.Volumes))
+	out.VolumeMounts = *(*[]v1.VolumeMount)(unsafe.Pointer(&in.VolumeMounts))
 	return nil
 }
 
@@ -1767,7 +1926,8 @@ func autoConvert_v1alpha1_SubscriptionStatus_To_operators_SubscriptionStatus(in 
 	out.Install = (*operators.InstallPlanReference)(unsafe.Pointer(in.Install))
 	out.State = operators.SubscriptionState(in.State)
 	out.Reason = operators.ConditionReason(in.Reason)
-	out.InstallPlanRef = (*corev1.ObjectReference)(unsafe.Pointer(in.InstallPlanRef))
+	out.InstallPlanGeneration = in.InstallPlanGeneration
+	out.InstallPlanRef = (*v1.ObjectReference)(unsafe.Pointer(in.InstallPlanRef))
 	out.CatalogHealth = *(*[]operators.SubscriptionCatalogHealth)(unsafe.Pointer(&in.CatalogHealth))
 	out.Conditions = *(*[]operators.SubscriptionCondition)(unsafe.Pointer(&in.Conditions))
 	out.LastUpdated = in.LastUpdated
@@ -1785,7 +1945,8 @@ func autoConvert_operators_SubscriptionStatus_To_v1alpha1_SubscriptionStatus(in 
 	out.Install = (*InstallPlanReference)(unsafe.Pointer(in.Install))
 	out.State = SubscriptionState(in.State)
 	out.Reason = ConditionReason(in.Reason)
-	out.InstallPlanRef = (*corev1.ObjectReference)(unsafe.Pointer(in.InstallPlanRef))
+	out.InstallPlanGeneration = in.InstallPlanGeneration
+	out.InstallPlanRef = (*v1.ObjectReference)(unsafe.Pointer(in.InstallPlanRef))
 	out.CatalogHealth = *(*[]SubscriptionCatalogHealth)(unsafe.Pointer(&in.CatalogHealth))
 	out.Conditions = *(*[]SubscriptionCondition)(unsafe.Pointer(&in.Conditions))
 	out.LastUpdated = in.LastUpdated
@@ -1795,4 +1956,68 @@ func autoConvert_operators_SubscriptionStatus_To_v1alpha1_SubscriptionStatus(in 
 // Convert_operators_SubscriptionStatus_To_v1alpha1_SubscriptionStatus is an autogenerated conversion function.
 func Convert_operators_SubscriptionStatus_To_v1alpha1_SubscriptionStatus(in *operators.SubscriptionStatus, out *SubscriptionStatus, s conversion.Scope) error {
 	return autoConvert_operators_SubscriptionStatus_To_v1alpha1_SubscriptionStatus(in, out, s)
+}
+
+func autoConvert_v1alpha1_UpdateStrategy_To_operators_UpdateStrategy(in *UpdateStrategy, out *operators.UpdateStrategy, s conversion.Scope) error {
+	out.RegistryPoll = (*operators.RegistryPoll)(unsafe.Pointer(in.RegistryPoll))
+	return nil
+}
+
+// Convert_v1alpha1_UpdateStrategy_To_operators_UpdateStrategy is an autogenerated conversion function.
+func Convert_v1alpha1_UpdateStrategy_To_operators_UpdateStrategy(in *UpdateStrategy, out *operators.UpdateStrategy, s conversion.Scope) error {
+	return autoConvert_v1alpha1_UpdateStrategy_To_operators_UpdateStrategy(in, out, s)
+}
+
+func autoConvert_operators_UpdateStrategy_To_v1alpha1_UpdateStrategy(in *operators.UpdateStrategy, out *UpdateStrategy, s conversion.Scope) error {
+	out.RegistryPoll = (*RegistryPoll)(unsafe.Pointer(in.RegistryPoll))
+	return nil
+}
+
+// Convert_operators_UpdateStrategy_To_v1alpha1_UpdateStrategy is an autogenerated conversion function.
+func Convert_operators_UpdateStrategy_To_v1alpha1_UpdateStrategy(in *operators.UpdateStrategy, out *UpdateStrategy, s conversion.Scope) error {
+	return autoConvert_operators_UpdateStrategy_To_v1alpha1_UpdateStrategy(in, out, s)
+}
+
+func autoConvert_v1alpha1_WebhookDescription_To_operators_WebhookDescription(in *WebhookDescription, out *operators.WebhookDescription, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Type = operators.WebhookAdmissionType(in.Type)
+	out.DeploymentName = in.DeploymentName
+	out.ContainerPort = in.ContainerPort
+	out.Rules = *(*[]admissionregistrationv1.RuleWithOperations)(unsafe.Pointer(&in.Rules))
+	out.FailurePolicy = (*admissionregistrationv1.FailurePolicyType)(unsafe.Pointer(in.FailurePolicy))
+	out.MatchPolicy = (*admissionregistrationv1.MatchPolicyType)(unsafe.Pointer(in.MatchPolicy))
+	out.ObjectSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.ObjectSelector))
+	out.SideEffects = (*admissionregistrationv1.SideEffectClass)(unsafe.Pointer(in.SideEffects))
+	out.TimeoutSeconds = (*int32)(unsafe.Pointer(in.TimeoutSeconds))
+	out.AdmissionReviewVersions = *(*[]string)(unsafe.Pointer(&in.AdmissionReviewVersions))
+	out.ReinvocationPolicy = (*admissionregistrationv1.ReinvocationPolicyType)(unsafe.Pointer(in.ReinvocationPolicy))
+	out.WebhookPath = (*string)(unsafe.Pointer(in.WebhookPath))
+	return nil
+}
+
+// Convert_v1alpha1_WebhookDescription_To_operators_WebhookDescription is an autogenerated conversion function.
+func Convert_v1alpha1_WebhookDescription_To_operators_WebhookDescription(in *WebhookDescription, out *operators.WebhookDescription, s conversion.Scope) error {
+	return autoConvert_v1alpha1_WebhookDescription_To_operators_WebhookDescription(in, out, s)
+}
+
+func autoConvert_operators_WebhookDescription_To_v1alpha1_WebhookDescription(in *operators.WebhookDescription, out *WebhookDescription, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Type = WebhookAdmissionType(in.Type)
+	out.DeploymentName = in.DeploymentName
+	out.ContainerPort = in.ContainerPort
+	out.Rules = *(*[]admissionregistrationv1.RuleWithOperations)(unsafe.Pointer(&in.Rules))
+	out.FailurePolicy = (*admissionregistrationv1.FailurePolicyType)(unsafe.Pointer(in.FailurePolicy))
+	out.MatchPolicy = (*admissionregistrationv1.MatchPolicyType)(unsafe.Pointer(in.MatchPolicy))
+	out.ObjectSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.ObjectSelector))
+	out.SideEffects = (*admissionregistrationv1.SideEffectClass)(unsafe.Pointer(in.SideEffects))
+	out.TimeoutSeconds = (*int32)(unsafe.Pointer(in.TimeoutSeconds))
+	out.AdmissionReviewVersions = *(*[]string)(unsafe.Pointer(&in.AdmissionReviewVersions))
+	out.ReinvocationPolicy = (*admissionregistrationv1.ReinvocationPolicyType)(unsafe.Pointer(in.ReinvocationPolicy))
+	out.WebhookPath = (*string)(unsafe.Pointer(in.WebhookPath))
+	return nil
+}
+
+// Convert_operators_WebhookDescription_To_v1alpha1_WebhookDescription is an autogenerated conversion function.
+func Convert_operators_WebhookDescription_To_v1alpha1_WebhookDescription(in *operators.WebhookDescription, out *WebhookDescription, s conversion.Scope) error {
+	return autoConvert_operators_WebhookDescription_To_v1alpha1_WebhookDescription(in, out, s)
 }

@@ -284,8 +284,8 @@
   version = "v0.2.2"
 
 [[projects]]
-  branch = "release-4.3"
-  digest = "1:be9d4dd882bae5907fd35e0f91ca45519a10d91361d3b0190584b5b59fe749de"
+  branch = "master"
+  digest = "1:08b66b6604b29909591c29138d9c2e946c4d7467b49cd0bb2864e066e2dc6fb1"
   name = "github.com/operator-framework/operator-lifecycle-manager"
   packages = [
     "pkg/api/apis/operators",
@@ -303,7 +303,7 @@
     "pkg/lib/version",
   ]
   pruneopts = "NUT"
-  revision = "5ff376fd8c14bf6a99b314ad402ceb5641f71fdd"
+  revision = "a86ee09c3111050e9b4a7299a4db05175fcf0fe8"
 
 [[projects]]
   digest = "1:14715f705ff5dfe0ffd6571d7d201dd8e921030f8070321a79380d8ca4ec1a24"
@@ -1018,6 +1018,7 @@
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/client-go/dynamic",

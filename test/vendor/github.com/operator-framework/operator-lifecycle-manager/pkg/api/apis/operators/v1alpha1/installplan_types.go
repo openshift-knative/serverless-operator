@@ -28,6 +28,7 @@ type InstallPlanSpec struct {
 	ClusterServiceVersionNames []string `json:"clusterServiceVersionNames"`
 	Approval                   Approval `json:"approval"`
 	Approved                   bool     `json:"approved"`
+	Generation                 int      `json:"generation"`
 }
 
 // InstallPlanPhase is the current status of a InstallPlan as a whole.
@@ -65,10 +66,12 @@ const (
 type StepStatus string
 
 const (
-	StepStatusUnknown    StepStatus = "Unknown"
-	StepStatusNotPresent StepStatus = "NotPresent"
-	StepStatusPresent    StepStatus = "Present"
-	StepStatusCreated    StepStatus = "Created"
+	StepStatusUnknown             StepStatus = "Unknown"
+	StepStatusNotPresent          StepStatus = "NotPresent"
+	StepStatusPresent             StepStatus = "Present"
+	StepStatusCreated             StepStatus = "Created"
+	StepStatusWaitingForAPI       StepStatus = "WaitingForApi"
+	StepStatusUnsupportedResource StepStatus = "UnsupportedResource"
 )
 
 // ErrInvalidInstallPlan is the error returned by functions that operate on
@@ -84,7 +87,9 @@ type InstallPlanStatus struct {
 	Conditions     []InstallPlanCondition `json:"conditions,omitempty"`
 	CatalogSources []string               `json:"catalogSources"`
 	Plan           []*Step                `json:"plan,omitempty"`
-
+	// BundleLookups is the set of in-progress requests to pull and unpackage bundle content to the cluster.
+	// +optional
+	BundleLookups []BundleLookup `json:"bundleLookups,omitempty"`
 	// AttenuatedServiceAccountRef references the service account that is used
 	// to do scoped operator install.
 	AttenuatedServiceAccountRef *corev1.ObjectReference `json:"attenuatedServiceAccountRef,omitempty"`
@@ -135,6 +140,57 @@ func (s *InstallPlanStatus) SetCondition(cond InstallPlanCondition) InstallPlanC
 	return cond
 }
 
+func OrderSteps(steps []*Step) []*Step {
+	// CSVs must be applied first
+	csvList := []*Step{}
+
+	// CRDs must be applied second
+	crdList := []*Step{}
+
+	// Other resources may be applied in any order
+	remainingResources := []*Step{}
+	for _, step := range steps {
+		switch step.Resource.Kind {
+		case crdKind:
+			crdList = append(crdList, step)
+		case ClusterServiceVersionKind:
+			csvList = append(csvList, step)
+		default:
+			remainingResources = append(remainingResources, step)
+		}
+	}
+
+	result := make([]*Step, len(steps))
+	i := 0
+
+	for j := range csvList {
+		result[i] = csvList[j]
+		i++
+	}
+
+	for j := range crdList {
+		result[i] = crdList[j]
+		i++
+	}
+
+	for j := range remainingResources {
+		result[i] = remainingResources[j]
+		i++
+	}
+
+	return result
+}
+
+func (s InstallPlanStatus) NeedsRequeue() bool {
+	for _, step := range s.Plan {
+		switch step.Status {
+		case StepStatusWaitingForAPI:
+			return true
+		}
+	}
+
+	return false
+}
 func ConditionFailed(cond InstallPlanConditionType, reason InstallPlanConditionReason, message string, now *metav1.Time) InstallPlanCondition {
 	return InstallPlanCondition{
 		Type:               cond,
@@ -162,41 +218,94 @@ type Step struct {
 	Status    StepStatus   `json:"status"`
 }
 
-// ManifestsMatch returns true if the CSV manifests in the StepResources of the given list of steps
-// matches those in the InstallPlanStatus.
-func (s *InstallPlanStatus) CSVManifestsMatch(steps []*Step) bool {
-	if s.Plan == nil && steps == nil {
-		return true
-	}
-	if s.Plan == nil || steps == nil {
-		return false
+// BundleLookupConditionType is a category of the overall state of a BundleLookup.
+type BundleLookupConditionType string
+
+const (
+	// BundleLookupPending describes BundleLookups that are not complete.
+	BundleLookupPending BundleLookupConditionType = "BundleLookupPending"
+
+	crdKind = "CustomResourceDefinition"
+)
+
+type BundleLookupCondition struct {
+	// Type of condition.
+	Type BundleLookupConditionType `json:"type"`
+	// Status of the condition, one of True, False, Unknown.
+	Status corev1.ConditionStatus `json:"status"`
+	// The reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+	// A human readable message indicating details about the transition.
+	// +optional
+	Message string `json:"message,omitempty"`
+	// Last time the condition was probed.
+	// +optional
+	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
+	// Last time the condition transitioned from one status to another.
+	// +optional
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
+}
+
+// BundleLookup is a request to pull and unpackage the content of a bundle to the cluster.
+type BundleLookup struct {
+	// Path refers to the location of a bundle to pull.
+	// It's typically an image reference.
+	Path string `json:"path"`
+	// Identifier is the catalog-unique name of the operator (the name of the CSV for bundles that contain CSVs)
+	Identifier string `json:"identifier"`
+	// Replaces is the name of the bundle to replace with the one found at Path.
+	Replaces string `json:"replaces"`
+	// CatalogSourceRef is a reference to the CatalogSource the bundle path was resolved from.
+	CatalogSourceRef *corev1.ObjectReference `json:"catalogSourceRef"`
+	// Conditions represents the overall state of a BundleLookup.
+	// +optional
+	Conditions []BundleLookupCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+}
+
+// GetCondition returns the BundleLookupCondition of the given type if it exists in the BundleLookup's Conditions.
+// Returns a condition of the given type with a ConditionStatus of "Unknown" if not found.
+func (b BundleLookup) GetCondition(conditionType BundleLookupConditionType) BundleLookupCondition {
+	for _, cond := range b.Conditions {
+		if cond.Type == conditionType {
+			return cond
+		}
 	}
 
-	manifests := make(map[string]struct{})
-	for _, step := range s.Plan {
-		resource := step.Resource
-		if resource.Kind != ClusterServiceVersionKind {
+	return BundleLookupCondition{
+		Type:   conditionType,
+		Status: corev1.ConditionUnknown,
+	}
+}
+
+// RemoveCondition removes the BundleLookupCondition of the given type from the BundleLookup's Conditions if it exists.
+func (b *BundleLookup) RemoveCondition(conditionType BundleLookupConditionType) {
+	for i, cond := range b.Conditions {
+		if cond.Type == conditionType {
+			b.Conditions = append(b.Conditions[:i], b.Conditions[i+1:]...)
+			if len(b.Conditions) == 0 {
+				b.Conditions = nil
+			}
+			return
+		}
+	}
+}
+
+// SetCondition replaces the existing BundleLookupCondition of the same type, or adds it if it was not found.
+func (b *BundleLookup) SetCondition(cond BundleLookupCondition) BundleLookupCondition {
+	for i, existing := range b.Conditions {
+		if existing.Type != cond.Type {
 			continue
 		}
-		manifests[resource.Manifest] = struct{}{}
-	}
-
-	for _, step := range steps {
-		resource := step.Resource
-		if resource.Kind != ClusterServiceVersionKind {
-			continue
+		if existing.Status == cond.Status {
+			cond.LastTransitionTime = existing.LastTransitionTime
 		}
-		if _, ok := manifests[resource.Manifest]; !ok {
-			return false
-		}
-		delete(manifests, resource.Manifest)
+		b.Conditions[i] = cond
+		return cond
 	}
+	b.Conditions = append(b.Conditions, cond)
 
-	if len(manifests) == 0 {
-		return true
-	}
-
-	return false
+	return cond
 }
 
 func (s *Step) String() string {

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,7 +79,7 @@ type StatusDescriptor struct {
 	DisplayName  string
 	Description  string
 	XDescriptors []string
-	Value        *json.RawMessage
+	Value        json.RawMessage
 }
 
 // SpecDescriptor describes a field in a spec block of a CRD so that OLM can consume it
@@ -86,7 +88,7 @@ type SpecDescriptor struct {
 	DisplayName  string
 	Description  string
 	XDescriptors []string
-	Value        *json.RawMessage
+	Value        json.RawMessage
 }
 
 // ActionDescriptor describes a declarative action that can be performed on a custom resource instance
@@ -95,7 +97,7 @@ type ActionDescriptor struct {
 	DisplayName  string
 	Description  string
 	XDescriptors []string
-	Value        *json.RawMessage
+	Value        json.RawMessage
 }
 
 // CRDDescription provides details to OLM about the CRDs
@@ -108,7 +110,7 @@ type CRDDescription struct {
 	Resources         []APIResourceReference
 	StatusDescriptors []StatusDescriptor
 	SpecDescriptors   []SpecDescriptor
-	ActionDescriptor  []ActionDescriptor
+	ActionDescriptors []ActionDescriptor
 }
 
 // APIServiceDescription provides details to OLM about apis provided via aggregation
@@ -124,7 +126,88 @@ type APIServiceDescription struct {
 	Resources         []APIResourceReference
 	StatusDescriptors []StatusDescriptor
 	SpecDescriptors   []SpecDescriptor
-	ActionDescriptor  []ActionDescriptor
+	ActionDescriptors []ActionDescriptor
+}
+
+// WebhookAdmissionType is the type of admission webhooks supported by OLM
+type WebhookAdmissionType string
+
+const (
+	// ValidatingAdmissionWebhook is for validating admission webhooks
+	ValidatingAdmissionWebhook WebhookAdmissionType = "ValidatingAdmissionWebhook"
+	// MutatingAdmissionWebhook is for mutating admission webhooks
+	MutatingAdmissionWebhook WebhookAdmissionType = "MutatingAdmissionWebhook"
+)
+
+// WebhookDescription provides details to OLM about required webhooks
+// +k8s:openapi-gen=true
+type WebhookDescription struct {
+	Name                    string
+	Type                    WebhookAdmissionType
+	DeploymentName          string
+	ContainerPort           int32
+	Rules                   []admissionregistrationv1.RuleWithOperations
+	FailurePolicy           *admissionregistrationv1.FailurePolicyType
+	MatchPolicy             *admissionregistrationv1.MatchPolicyType
+	ObjectSelector          *metav1.LabelSelector
+	SideEffects             *admissionregistrationv1.SideEffectClass
+	TimeoutSeconds          *int32
+	AdmissionReviewVersions []string
+	ReinvocationPolicy      *admissionregistrationv1.ReinvocationPolicyType
+	WebhookPath             *string
+}
+
+// GetValidatingWebhook returns a ValidatingWebhook generated from the WebhookDescription
+func (w *WebhookDescription) GetValidatingWebhook(namespace string, namespaceSelector *metav1.LabelSelector, caBundle []byte) admissionregistrationv1.ValidatingWebhook {
+	return admissionregistrationv1.ValidatingWebhook{
+		Name:                    w.Name,
+		Rules:                   w.Rules,
+		FailurePolicy:           w.FailurePolicy,
+		MatchPolicy:             w.MatchPolicy,
+		NamespaceSelector:       namespaceSelector,
+		ObjectSelector:          w.ObjectSelector,
+		SideEffects:             w.SideEffects,
+		TimeoutSeconds:          w.TimeoutSeconds,
+		AdmissionReviewVersions: w.AdmissionReviewVersions,
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
+				Name:      w.DomainName() + "-service",
+				Namespace: namespace,
+				Path:      w.WebhookPath,
+			},
+			CABundle: caBundle,
+		},
+	}
+}
+
+// GetMutatingWebhook returns a MutatingWebhook generated from the WebhookDescription
+func (w *WebhookDescription) GetMutatingWebhook(namespace string, namespaceSelector *metav1.LabelSelector, caBundle []byte) admissionregistrationv1.MutatingWebhook {
+	return admissionregistrationv1.MutatingWebhook{
+		Name:                    w.Name,
+		Rules:                   w.Rules,
+		FailurePolicy:           w.FailurePolicy,
+		MatchPolicy:             w.MatchPolicy,
+		NamespaceSelector:       namespaceSelector,
+		ObjectSelector:          w.ObjectSelector,
+		SideEffects:             w.SideEffects,
+		TimeoutSeconds:          w.TimeoutSeconds,
+		AdmissionReviewVersions: w.AdmissionReviewVersions,
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
+				Name:      w.DomainName() + "-service",
+				Namespace: namespace,
+				Path:      w.WebhookPath,
+			},
+			CABundle: caBundle,
+		},
+		ReinvocationPolicy: w.ReinvocationPolicy,
+	}
+}
+
+// DomainName returns the result of replacing all periods in the given Webhook name with hyphens
+func (w *WebhookDescription) DomainName() string {
+	// Replace all '.'s with "-"s to convert to a DNS-1035 label
+	return strings.Replace(w.DeploymentName, ".", "-", -1)
 }
 
 // APIResourceReference is a Kubernetes resource type used by a custom resource
@@ -163,6 +246,7 @@ type ClusterServiceVersionSpec struct {
 	Maturity                  string
 	CustomResourceDefinitions CustomResourceDefinitions
 	APIServiceDefinitions     APIServiceDefinitions
+	WebhookDefinitions        []WebhookDescription
 	NativeAPIs                []metav1.GroupVersionKind
 	MinKubeVersion            string
 	DisplayName               string
@@ -267,6 +351,7 @@ const (
 	CSVReasonTooManyOperatorGroups                       ConditionReason = "TooManyOperatorGroups"
 	CSVReasonInterOperatorGroupOwnerConflict             ConditionReason = "InterOperatorGroupOwnerConflict"
 	CSVReasonCannotModifyStaticOperatorGroupProvidedAPIs ConditionReason = "CannotModifyStaticOperatorGroupProvidedAPIs"
+	CSVReasonUnsupportedWebhookRules                     ConditionReason = "UnsupportedWebhookRules"
 )
 
 // Conditions appear in the status as a record of state transitions on the ClusterServiceVersion

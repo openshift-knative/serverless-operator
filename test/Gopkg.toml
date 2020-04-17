@@ -51,7 +51,7 @@ required = [
 
 [[constraint]]
   name = "github.com/operator-framework/operator-lifecycle-manager"
-  branch = "release-4.3"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/openshift/api"

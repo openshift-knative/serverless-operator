@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -15,6 +16,9 @@ const (
 	OperatorGroupProvidedAPIsAnnotationKey = "olm.providedAPIs"
 
 	OperatorGroupKind = "OperatorGroup"
+
+	operatorGroupLabelPrefix   = "olm.operatorgroup/"
+	operatorGroupLabelTemplate = operatorGroupLabelPrefix + "%s.%s"
 )
 
 // OperatorGroupSpec is the spec for an OperatorGroup resource.
@@ -26,6 +30,7 @@ type OperatorGroupSpec struct {
 	// TargetNamespaces is an explicit set of namespaces to target.
 	// If it is set, Selector is ignored.
 	// +optional
+	// +listType=set
 	TargetNamespaces []string `json:"targetNamespaces,omitempty"`
 
 	// ServiceAccountName is the admin specified service account which will be
@@ -40,6 +45,7 @@ type OperatorGroupSpec struct {
 // OperatorGroupStatus is the status for an OperatorGroupResource.
 type OperatorGroupStatus struct {
 	// Namespaces is the set of target namespaces for the OperatorGroup.
+	// +listType=set
 	Namespaces []string `json:"namespaces,omitempty"`
 
 	// ServiceAccountRef references the service account object specified.
@@ -69,7 +75,7 @@ type OperatorGroup struct {
 type OperatorGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-
+	// +listType=set
 	Items []OperatorGroup `json:"items"`
 }
 
@@ -96,4 +102,33 @@ func (o *OperatorGroup) HasServiceAccountSynced() bool {
 	}
 
 	return false
+}
+
+// OGLabelKeyAndValue returns a key and value that should be applied to namespaces listed in the OperatorGroup.
+func (o *OperatorGroup) OGLabelKeyAndValue() (string, string) {
+	return fmt.Sprintf(operatorGroupLabelTemplate, o.GetNamespace(), o.GetName()), ""
+}
+
+// NamespaceLabelSelector provides a selector that can be used to filter namespaces that belong to the OperatorGroup.
+func (o *OperatorGroup) NamespaceLabelSelector() *metav1.LabelSelector {
+	if len(o.Spec.TargetNamespaces) == 0 {
+		// If no target namespaces are set, check if a selector exists.
+		if o.Spec.Selector != nil {
+			return o.Spec.Selector
+		}
+		// No selector exists, return nil which should be used to select EVERYTHING.
+		return nil
+	}
+	// Return a label that should be present on all namespaces defined in the OperatorGroup.Spec.TargetNamespaces field.
+	ogKey, ogValue := o.OGLabelKeyAndValue()
+	return &metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			ogKey: ogValue,
+		},
+	}
+}
+
+// IsOperatorGroupLabel returns true if the label is an OperatorGroup label.
+func IsOperatorGroupLabel(label string) bool {
+	return strings.HasPrefix(label, operatorGroupLabelPrefix)
 }

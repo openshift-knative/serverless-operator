@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,8 +54,9 @@ type NamedInstallStrategy struct {
 
 // StrategyDeploymentPermissions describe the rbac rules and service account needed by the install strategy
 type StrategyDeploymentPermissions struct {
-	ServiceAccountName string            `json:"serviceAccountName"`
-	Rules              []rbac.PolicyRule `json:"rules"`
+	ServiceAccountName string `json:"serviceAccountName"`
+	// +listType=set
+	Rules []rbac.PolicyRule `json:"rules"`
 }
 
 // StrategyDeploymentSpec contains the name and spec for the deployment ALM should create
@@ -77,62 +80,156 @@ func (d *StrategyDetailsDeployment) GetStrategyName() string {
 // StatusDescriptor describes a field in a status block of a CRD so that OLM can consume it
 // +k8s:openapi-gen=true
 type StatusDescriptor struct {
-	Path         string           `json:"path"`
-	DisplayName  string           `json:"displayName,omitempty"`
-	Description  string           `json:"description,omitempty"`
-	XDescriptors []string         `json:"x-descriptors,omitempty"`
-	Value        *json.RawMessage `json:"value,omitempty"`
+	Path        string `json:"path"`
+	DisplayName string `json:"displayName,omitempty"`
+	Description string `json:"description,omitempty"`
+	// +listType=set
+	XDescriptors []string        `json:"x-descriptors,omitempty"`
+	Value        json.RawMessage `json:"value,omitempty"`
 }
 
 // SpecDescriptor describes a field in a spec block of a CRD so that OLM can consume it
 // +k8s:openapi-gen=true
 type SpecDescriptor struct {
-	Path         string           `json:"path"`
-	DisplayName  string           `json:"displayName,omitempty"`
-	Description  string           `json:"description,omitempty"`
-	XDescriptors []string         `json:"x-descriptors,omitempty"`
-	Value        *json.RawMessage `json:"value,omitempty"`
+	Path        string `json:"path"`
+	DisplayName string `json:"displayName,omitempty"`
+	Description string `json:"description,omitempty"`
+	// +listType=set
+	XDescriptors []string        `json:"x-descriptors,omitempty"`
+	Value        json.RawMessage `json:"value,omitempty"`
 }
 
 // ActionDescriptor describes a declarative action that can be performed on a custom resource instance
 // +k8s:openapi-gen=true
 type ActionDescriptor struct {
-	Path         string           `json:"path"`
-	DisplayName  string           `json:"displayName,omitempty"`
-	Description  string           `json:"description,omitempty"`
-	XDescriptors []string         `json:"x-descriptors,omitempty"`
-	Value        *json.RawMessage `json:"value,omitempty"`
+	Path        string `json:"path"`
+	DisplayName string `json:"displayName,omitempty"`
+	Description string `json:"description,omitempty"`
+	// +listType=set
+	XDescriptors []string        `json:"x-descriptors,omitempty"`
+	Value        json.RawMessage `json:"value,omitempty"`
 }
 
 // CRDDescription provides details to OLM about the CRDs
 // +k8s:openapi-gen=true
 type CRDDescription struct {
-	Name              string                 `json:"name"`
-	Version           string                 `json:"version"`
-	Kind              string                 `json:"kind"`
-	DisplayName       string                 `json:"displayName,omitempty"`
-	Description       string                 `json:"description,omitempty"`
-	Resources         []APIResourceReference `json:"resources,omitempty"`
-	StatusDescriptors []StatusDescriptor     `json:"statusDescriptors,omitempty"`
-	SpecDescriptors   []SpecDescriptor       `json:"specDescriptors,omitempty"`
-	ActionDescriptor  []ActionDescriptor     `json:"actionDescriptors,omitempty"`
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	Kind        string `json:"kind"`
+	DisplayName string `json:"displayName,omitempty"`
+	Description string `json:"description,omitempty"`
+	// +listType=set
+	Resources []APIResourceReference `json:"resources,omitempty"`
+	// +listType=set
+	StatusDescriptors []StatusDescriptor `json:"statusDescriptors,omitempty"`
+	// +listType=set
+	SpecDescriptors []SpecDescriptor `json:"specDescriptors,omitempty"`
+	// +listType=set
+	ActionDescriptors []ActionDescriptor `json:"actionDescriptors,omitempty"`
+}
+
+// WebhookAdmissionType is the type of admission webhooks supported by OLM
+type WebhookAdmissionType string
+
+const (
+	// ValidatingAdmissionWebhook is for validating admission webhooks
+	ValidatingAdmissionWebhook WebhookAdmissionType = "ValidatingAdmissionWebhook"
+	// MutatingAdmissionWebhook is for mutating admission webhooks
+	MutatingAdmissionWebhook WebhookAdmissionType = "MutatingAdmissionWebhook"
+)
+
+// WebhookDescription provides details to OLM about required webhooks
+// +k8s:openapi-gen=true
+type WebhookDescription struct {
+	Name           string               `json:"name"`
+	Type           WebhookAdmissionType `json:"type"`
+	DeploymentName string               `json:"deploymentName,omitempty"`
+	ContainerPort  int32                `json:"containerPort,omitempty"`
+	// +listType=set
+	Rules          []admissionregistrationv1.RuleWithOperations `json:"rules,omitempty"`
+	FailurePolicy  *admissionregistrationv1.FailurePolicyType   `json:"failurePolicy,omitempty"`
+	MatchPolicy    *admissionregistrationv1.MatchPolicyType     `json:"matchPolicy,omitempty"`
+	ObjectSelector *metav1.LabelSelector                        `json:"objectSelector,omitempty"`
+	SideEffects    *admissionregistrationv1.SideEffectClass     `json:"sideEffects,"`
+	TimeoutSeconds *int32                                       `json:"timeoutSeconds,omitempty"`
+	// +listType=set
+	AdmissionReviewVersions []string                                        `json:"admissionReviewVersions"`
+	ReinvocationPolicy      *admissionregistrationv1.ReinvocationPolicyType `json:"reinvocationPolicy,omitempty"`
+	WebhookPath             *string                                         `json:"webhookPath,omitempty"`
+}
+
+// GetValidatingWebhook returns a ValidatingWebhook generated from the WebhookDescription
+func (w *WebhookDescription) GetValidatingWebhook(namespace string, namespaceSelector *metav1.LabelSelector, caBundle []byte) admissionregistrationv1.ValidatingWebhook {
+	return admissionregistrationv1.ValidatingWebhook{
+		Name:                    w.Name,
+		Rules:                   w.Rules,
+		FailurePolicy:           w.FailurePolicy,
+		MatchPolicy:             w.MatchPolicy,
+		NamespaceSelector:       namespaceSelector,
+		ObjectSelector:          w.ObjectSelector,
+		SideEffects:             w.SideEffects,
+		TimeoutSeconds:          w.TimeoutSeconds,
+		AdmissionReviewVersions: w.AdmissionReviewVersions,
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
+				Name:      w.DomainName() + "-service",
+				Namespace: namespace,
+				Path:      w.WebhookPath,
+			},
+			CABundle: caBundle,
+		},
+	}
+}
+
+// GetMutatingWebhook returns a MutatingWebhook generated from the WebhookDescription
+func (w *WebhookDescription) GetMutatingWebhook(namespace string, namespaceSelector *metav1.LabelSelector, caBundle []byte) admissionregistrationv1.MutatingWebhook {
+	return admissionregistrationv1.MutatingWebhook{
+		Name:                    w.Name,
+		Rules:                   w.Rules,
+		FailurePolicy:           w.FailurePolicy,
+		MatchPolicy:             w.MatchPolicy,
+		NamespaceSelector:       namespaceSelector,
+		ObjectSelector:          w.ObjectSelector,
+		SideEffects:             w.SideEffects,
+		TimeoutSeconds:          w.TimeoutSeconds,
+		AdmissionReviewVersions: w.AdmissionReviewVersions,
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
+				Name:      w.DomainName() + "-service",
+				Namespace: namespace,
+				Path:      w.WebhookPath,
+			},
+			CABundle: caBundle,
+		},
+		ReinvocationPolicy: w.ReinvocationPolicy,
+	}
+}
+
+// DomainName returns the result of replacing all periods in the given Webhook name with hyphens
+func (w *WebhookDescription) DomainName() string {
+	// Replace all '.'s with "-"s to convert to a DNS-1035 label
+	return strings.Replace(w.DeploymentName, ".", "-", -1)
 }
 
 // APIServiceDescription provides details to OLM about apis provided via aggregation
 // +k8s:openapi-gen=true
 type APIServiceDescription struct {
-	Name              string                 `json:"name"`
-	Group             string                 `json:"group"`
-	Version           string                 `json:"version"`
-	Kind              string                 `json:"kind"`
-	DeploymentName    string                 `json:"deploymentName,omitempty"`
-	ContainerPort     int32                  `json:"containerPort,omitempty"`
-	DisplayName       string                 `json:"displayName,omitempty"`
-	Description       string                 `json:"description,omitempty"`
-	Resources         []APIResourceReference `json:"resources,omitempty"`
-	StatusDescriptors []StatusDescriptor     `json:"statusDescriptors,omitempty"`
-	SpecDescriptors   []SpecDescriptor       `json:"specDescriptors,omitempty"`
-	ActionDescriptor  []ActionDescriptor     `json:"actionDescriptors,omitempty"`
+	Name           string `json:"name"`
+	Group          string `json:"group"`
+	Version        string `json:"version"`
+	Kind           string `json:"kind"`
+	DeploymentName string `json:"deploymentName,omitempty"`
+	ContainerPort  int32  `json:"containerPort,omitempty"`
+	DisplayName    string `json:"displayName,omitempty"`
+	Description    string `json:"description,omitempty"`
+	// +listType=set
+	Resources []APIResourceReference `json:"resources,omitempty"`
+	// +listType=set
+	StatusDescriptors []StatusDescriptor `json:"statusDescriptors,omitempty"`
+	// +listType=set
+	SpecDescriptors []SpecDescriptor `json:"specDescriptors,omitempty"`
+	// +listType=set
+	ActionDescriptors []ActionDescriptor `json:"actionDescriptors,omitempty"`
 }
 
 // APIResourceReference is a Kubernetes resource type used by a custom resource
@@ -154,7 +251,9 @@ func (d APIServiceDescription) GetName() string {
 // If the CRD is present in the Owned list, it is implicitly required.
 // +k8s:openapi-gen=true
 type CustomResourceDefinitions struct {
-	Owned    []CRDDescription `json:"owned,omitempty"`
+	// +listType=set
+	Owned []CRDDescription `json:"owned,omitempty"`
+	// +listType=set
 	Required []CRDDescription `json:"required,omitempty"`
 }
 
@@ -162,7 +261,9 @@ type CustomResourceDefinitions struct {
 // an operator being ran by ClusterServiceVersion.
 // +k8s:openapi-gen=true
 type APIServiceDefinitions struct {
-	Owned    []APIServiceDescription `json:"owned,omitempty"`
+	// +listType=set
+	Owned []APIServiceDescription `json:"owned,omitempty"`
+	// +listType=set
 	Required []APIServiceDescription `json:"required,omitempty"`
 }
 
@@ -174,18 +275,26 @@ type ClusterServiceVersionSpec struct {
 	Maturity                  string                    `json:"maturity,omitempty"`
 	CustomResourceDefinitions CustomResourceDefinitions `json:"customresourcedefinitions,omitempty"`
 	APIServiceDefinitions     APIServiceDefinitions     `json:"apiservicedefinitions,omitempty"`
-	NativeAPIs                []metav1.GroupVersionKind `json:"nativeAPIs,omitempty"`
-	MinKubeVersion            string                    `json:"minKubeVersion,omitempty"`
-	DisplayName               string                    `json:"displayName"`
-	Description               string                    `json:"description,omitempty"`
-	Keywords                  []string                  `json:"keywords,omitempty"`
-	Maintainers               []Maintainer              `json:"maintainers,omitempty"`
-	Provider                  AppLink                   `json:"provider,omitempty"`
-	Links                     []AppLink                 `json:"links,omitempty"`
-	Icon                      []Icon                    `json:"icon,omitempty"`
+	// +listType=set
+	WebhookDefinitions []WebhookDescription `json:"webhookdefinitions,omitempty"`
+	// +listType=set
+	NativeAPIs     []metav1.GroupVersionKind `json:"nativeAPIs,omitempty"`
+	MinKubeVersion string                    `json:"minKubeVersion,omitempty"`
+	DisplayName    string                    `json:"displayName"`
+	Description    string                    `json:"description,omitempty"`
+	// +listType=set
+	Keywords []string `json:"keywords,omitempty"`
+	// +listType=set
+	Maintainers []Maintainer `json:"maintainers,omitempty"`
+	Provider    AppLink      `json:"provider,omitempty"`
+	// +listType=set
+	Links []AppLink `json:"links,omitempty"`
+	// +listType=set
+	Icon []Icon `json:"icon,omitempty"`
 
 	// InstallModes specify supported installation types
 	// +optional
+	// +listType=set
 	InstallModes []InstallMode `json:"installModes,omitempty"`
 
 	// The name of a CSV this one replaces. Should match the `metadata.Name` field of the old CSV.
@@ -195,11 +304,13 @@ type ClusterServiceVersionSpec struct {
 	// Map of string keys and values that can be used to organize and categorize
 	// (scope and select) objects.
 	// +optional
+	// +listType=map
 	Labels map[string]string `json:"labels,omitempty" protobuf:"bytes,11,rep,name=labels"`
 
 	// Annotations is an unstructured key value map stored with a resource that may be
 	// set by external tools to store and retrieve arbitrary metadata.
 	// +optional
+	// +listType=map
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,12,rep,name=annotations"`
 
 	// Label selector for related resources.
@@ -280,6 +391,7 @@ const (
 	CSVReasonInterOperatorGroupOwnerConflict             ConditionReason = "InterOperatorGroupOwnerConflict"
 	CSVReasonCannotModifyStaticOperatorGroupProvidedAPIs ConditionReason = "CannotModifyStaticOperatorGroupProvidedAPIs"
 	CSVReasonDetectedClusterChange                       ConditionReason = "DetectedClusterChange"
+	CSVReasonUnsupportedWebhookRules                     ConditionReason = "UnsupportedWebhookRules"
 )
 
 // Conditions appear in the status as a record of state transitions on the ClusterServiceVersion
@@ -348,13 +460,14 @@ type DependentStatus struct {
 }
 
 type RequirementStatus struct {
-	Group      string            `json:"group"`
-	Version    string            `json:"version"`
-	Kind       string            `json:"kind"`
-	Name       string            `json:"name"`
-	Status     StatusReason      `json:"status"`
-	Message    string            `json:"message"`
-	UUID       string            `json:"uuid,omitempty"`
+	Group   string       `json:"group"`
+	Version string       `json:"version"`
+	Kind    string       `json:"kind"`
+	Name    string       `json:"name"`
+	Status  StatusReason `json:"status"`
+	Message string       `json:"message"`
+	UUID    string       `json:"uuid,omitempty"`
+	// +listType=set
 	Dependents []DependentStatus `json:"dependents,omitempty"`
 }
 
@@ -377,8 +490,10 @@ type ClusterServiceVersionStatus struct {
 	// +optional
 	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
 	// List of conditions, a history of state transitions
+	// +listType=set
 	Conditions []ClusterServiceVersionCondition `json:"conditions,omitempty"`
 	// The status of each requirement for this CSV
+	// +listType=set
 	RequirementStatus []RequirementStatus `json:"requirementStatus,omitempty"`
 	// Last time the owned APIService certs were updated
 	// +optional
@@ -407,7 +522,7 @@ type ClusterServiceVersion struct {
 type ClusterServiceVersionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-
+	// +listType=set
 	Items []ClusterServiceVersion `json:"items"`
 }
 
