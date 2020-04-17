@@ -20,6 +20,28 @@ readonly COLOR_CYAN='\e[0;36m'
 readonly COLOR_LIGHT_RED='\e[1;31m'
 readonly COLOR_LIGHT_YELLOW='\e[1;33m'
 
+function debugging.setup {
+  local debuglog debugdir
+  debugdir="${ARTIFACTS:-/tmp}"
+  debuglog="${debugdir}/debuglog-$(basename "$0").log"
+  logger.debug "Debug log (set -x) is written to: ${debuglog}"
+  # ref: https://serverfault.com/a/579078
+  # Use FD 19 to capture the debug stream caused by "set -x":
+  exec 19> "$debuglog"
+  # Tell bash about it  (there's nothing special about 19, its arbitrary)
+  export BASH_XTRACEFD=19
+
+  # Register finish of debugging at exit
+  trap debugging.finish EXIT
+  set -x
+}
+
+function debugging.finish {
+  # Close the output:
+  set +x
+  exec 19>&-
+}
+
 function logger.debug {
   logger.__log 'DEBUG' "${COLOR_BLUE}" "$*"
 }
