@@ -5,10 +5,10 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
-	servingv1beta1 "github.com/knative/serving/pkg/apis/serving/v1beta1"
 	"github.com/openshift-knative/serverless-operator/test"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	pkgTest "knative.dev/pkg/test"
 	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
 const (
@@ -147,7 +148,10 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	if err != nil {
 		t.Fatal("Failed to create route for service", svc.Name, err)
 	}
-	kubeServiceURL := "http://" + route.Status.Ingress[0].Host
+	kubeServiceURL, err := url.Parse("http://" + route.Status.Ingress[0].Host)
+	if err != nil {
+		t.Fatal("Failed to parse url", err)
+	}
 
 	// Check Kube service responds
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
@@ -159,11 +163,11 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	}
 
 	// Check that both services respond
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
-	caCtx.Clients.Serving.ServingV1beta1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 
 	// Check that Kube service still responds
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
@@ -180,7 +184,7 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	}
 
 	// Check that Knative service responds
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	//Create deployment
 	err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
@@ -196,10 +200,13 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	if err != nil {
 		t.Fatal("Failed to create route for service", svc.Name, err)
 	}
-	kubeServiceURL = "http://" + route.Status.Ingress[0].Host
+	kubeServiceURL, err = url.Parse("http://" + route.Status.Ingress[0].Host)
+	if err != nil {
+		t.Fatal("Failed to parse url", err)
+	}
 
 	// Check that both services respond
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
@@ -208,10 +215,10 @@ func testKnativeVersusKubeServicesInOneNamespace(t *testing.T, caCtx *test.Conte
 	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
 	// Check that Knative service still responds
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Delete the Knative service
-	caCtx.Clients.Serving.ServingV1beta1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 }
 
 func testUserPermissions(t *testing.T) {
@@ -229,14 +236,14 @@ func testUserPermissions(t *testing.T) {
 	}{{
 		name: "user with view role can get",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: viewCtx,
 	}, {
 		name: "user with view role can list",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: viewCtx,
@@ -251,21 +258,21 @@ func testUserPermissions(t *testing.T) {
 	}, {
 		name: "user with view role cannot delete",
 		operation: func(c *test.Context) error {
-			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete(helloworldService, &metav1.DeleteOptions{})
+			return c.Clients.Serving.ServingV1().Services(testNamespace).Delete(helloworldService, &metav1.DeleteOptions{})
 		},
 		userContext: viewCtx,
 		wantErrStr:  "is forbidden",
 	}, {
 		name: "user with project admin role can get",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: paCtx,
 	}, {
 		name: "user with project admin role can list",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: paCtx,
@@ -279,20 +286,20 @@ func testUserPermissions(t *testing.T) {
 	}, {
 		name: "user with project admin role can delete",
 		operation: func(c *test.Context) error {
-			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete("projectadmin-service", &metav1.DeleteOptions{})
+			return c.Clients.Serving.ServingV1().Services(testNamespace).Delete("projectadmin-service", &metav1.DeleteOptions{})
 		},
 		userContext: paCtx,
 	}, {
 		name: "user with edit role can get",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).Get(helloworldService, metav1.GetOptions{})
 			return err
 		},
 		userContext: editCtx,
 	}, {
 		name: "user with edit role can list",
 		operation: func(c *test.Context) error {
-			_, err := c.Clients.Serving.ServingV1beta1().Services(testNamespace).List(metav1.ListOptions{})
+			_, err := c.Clients.Serving.ServingV1().Services(testNamespace).List(metav1.ListOptions{})
 			return err
 		},
 		userContext: editCtx,
@@ -306,7 +313,7 @@ func testUserPermissions(t *testing.T) {
 	}, {
 		name: "user with edit role can delete",
 		operation: func(c *test.Context) error {
-			return c.Clients.Serving.ServingV1beta1().Services(testNamespace).Delete("useredit-service", &metav1.DeleteOptions{})
+			return c.Clients.Serving.ServingV1().Services(testNamespace).Delete("useredit-service", &metav1.DeleteOptions{})
 
 		},
 		userContext: editCtx,
@@ -325,16 +332,16 @@ func testUserPermissions(t *testing.T) {
 	}
 }
 
-func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeDomain, expectedText string) {
+func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
 	t.Helper()
 	if _, err := pkgTest.WaitForEndpointState(
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 		t.Logf,
-		routeDomain,
+		routeURL,
 		pkgTest.EventuallyMatchesBody(expectedText),
 		"WaitForRouteToServeText",
 		true); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeDomain, expectedText, err)
+		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
 	}
 }
 
@@ -345,7 +352,7 @@ func testKnativeServiceHTTPS(t *testing.T, caCtx *test.Context) {
 	}
 
 	// Implicitly checks that HTTP works.
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.Host, helloworldText)
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Now check that HTTPS works.
 	httpsURL := ksvc.Status.URL.DeepCopy()
@@ -417,14 +424,14 @@ func testRouteConflictBehavior(t *testing.T, caCtx *test.Context) {
 			t.Fatal("Knative Service not ready", err)
 		}
 
-		waitForRouteServingText(t, caCtx, olderSvc.Status.URL.Host, helloworldText)
+		waitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
 		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
 		if err != nil {
 			t.Fatal("Failed to create conflicting Knative Service", err)
 		}
 
-		if _, err := test.WaitForServiceState(caCtx, newer.Name, newer.Namespace, func(s *servingv1beta1.Service, err error) (bool, error) {
+		if _, err := test.WaitForServiceState(caCtx, newer.Name, newer.Namespace, func(s *servingv1.Service, err error) (bool, error) {
 			if err != nil {
 				return false, err
 			}
@@ -462,7 +469,7 @@ func testRouteConflictBehavior(t *testing.T, caCtx *test.Context) {
 		}
 
 		for _, svc := range services {
-			if err := caCtx.Clients.Serving.ServingV1beta1().Services(svc.Namespace).Delete(svc.Name, &metav1.DeleteOptions{}); err != nil {
+			if err := caCtx.Clients.Serving.ServingV1().Services(svc.Namespace).Delete(svc.Name, &metav1.DeleteOptions{}); err != nil {
 				t.Fatalf("Failed to remove ksvc %v: %v", svc, err)
 			}
 		}
@@ -513,7 +520,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	if _, err := test.CreateService(caCtx, proxyHelloworldService, testNamespace, proxyImage); err != nil {
 		t.Fatal("Failed to create service", err)
 	}
-	svcState, err := test.WaitForServiceState(caCtx, proxyHelloworldService, testNamespace, func(s *servingv1beta1.Service, err error) (bool, error) {
+	svcState, err := test.WaitForServiceState(caCtx, proxyHelloworldService, testNamespace, func(s *servingv1.Service, err error) (bool, error) {
 		if err != nil {
 			return false, err
 		}

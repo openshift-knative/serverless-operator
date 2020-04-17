@@ -77,15 +77,6 @@ type HighAvailability struct {
 	Replicas int32 `json:"replicas"`
 }
 
-// ResourceRequirementsOverride enables the user to override any container's
-// resource requests/limits specified in the embedded manifest
-type ResourceRequirementsOverride struct {
-	// The container name
-	Container string `json:"container"`
-	// The desired ResourceRequirements
-	corev1.ResourceRequirements
-}
-
 // KnativeServingSpec defines the desired state of KnativeServing
 // +k8s:openapi-gen=true
 type KnativeServingSpec struct {
@@ -114,10 +105,6 @@ type KnativeServingSpec struct {
 	// Allows specification of HA control plane
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
-
-	// Override containers' resource requirements
-	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
