@@ -26,6 +26,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Networking,Integration & Delivery,Cloud Provider,Developer Tools
     certified: "false"
+    containerImage: quay.io/openshift-knative/serverless-operator:v1.7.0
     createdAt: "2020-04-20T17:00:00Z"
     description: |-
       Provides a collection of API's based on Knative to support deploying and serving
