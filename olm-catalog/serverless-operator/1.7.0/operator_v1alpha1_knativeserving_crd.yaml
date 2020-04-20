@@ -119,7 +119,6 @@ spec:
                 replicas:
                   description: The number of replicas that HA parts of the control plane will be scaled to
                   type: integer
-                  minimum: 1
           type: object
         status:
           description: Status defines the observed state of KnativeServing
