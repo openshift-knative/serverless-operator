@@ -194,18 +194,14 @@ function run_knative_serving_rolling_upgrade_tests {
 function run_knative_serving_operator_tests {
   logger.info 'Running Serving operator tests'
   (
-  local exitstatus test_namespace_saved
-  exitstatus=0
+  local exitstatus=0
   checkout_knative_serving_operator
 
-  test_namespace_saved="${TEST_NAMESPACE}"
   export TEST_NAMESPACE="${SERVING_NAMESPACE}"
 
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
     || exitstatus=5$? && true
-
-  export TEST_NAMESPACE="${test_namespace_saved}"
 
   print_test_result ${exitstatus}
 
