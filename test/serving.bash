@@ -72,6 +72,8 @@ function run_knative_serving_e2e_and_conformance_tests {
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
 
+  print_test_result ${failed}
+
   remove_temporary_gopath
 
   return $failed
@@ -181,20 +183,20 @@ function run_knative_serving_rolling_upgrade_tests {
 function run_knative_serving_operator_tests {
   logger.info 'Running Serving operator tests'
   (
-  local exitstatus=0
+  local exitstatus test_namespace_saved
+  exitstatus=0
   checkout_knative_serving_operator
 
-  # shellcheck disable=SC2030
-  export TEST_NAMESPACE="knative-serving"
+  test_namespace_saved="${TEST_NAMESPACE}"
+  export TEST_NAMESPACE="${SERVING_NAMESPACE}"
+
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
     || exitstatus=5$? && true
 
-  if (( !exitstatus )); then
-    logger.success 'Tests have passed'
-  else
-    logger.error 'Tests have failures!'
-  fi
+  export TEST_NAMESPACE="${test_namespace_saved}"
+
+  print_test_result ${exitstatus}
 
   wait_for_knative_serving_ingress_ns_deleted || return 1
 

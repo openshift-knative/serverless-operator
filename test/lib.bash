@@ -29,6 +29,17 @@ function register_teardown {
   return 2
 }
 
+function print_test_result {
+  local test_status
+  test_status="${1:?status is required}"
+
+  if ! (( test_status )); then
+    logger.success '🌟 Tests have passed 🌟'
+  else
+    logger.error '🚨 Tests have failures! 🚨'
+  fi
+}
+
 function run_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -48,11 +59,7 @@ function run_e2e_tests {
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
 
-  if (( !failed )); then
-    logger.success 'Tests have passed'
-  else
-    logger.error 'Tests have failures!'
-  fi
+  print_test_result ${failed}
 
   wait_for_knative_serving_ingress_ns_deleted || return 1
 

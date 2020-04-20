@@ -87,10 +87,11 @@ function approve_csv {
   csv_version=$1
   channel=$2
 
-  # Switch channel and source if required
-  oc get subscription "$OPERATOR" -n "${OPERATORS_NAMESPACE}" -oyaml | \
-    sed -e "s/\(.*channel:\).*/\1 ${channel}/" \
-        -e "s/\(.*source:\).*/\1 ${OLM_SOURCE}/" | oc replace -f -
+  # Ensure channel and source is set properly
+  oc patch subscription "$OPERATOR" -n "${OPERATORS_NAMESPACE}" \
+    --type 'merge' \
+    --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}' \
+    || return $?
 
   # Wait for the installplan to be available
   timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]" || return 1

@@ -19,16 +19,14 @@ create_htpasswd_users && add_roles || exit $?
 failed=0
 
 (( !failed )) && install_catalogsource || failed=3
-(( !failed )) && logger.success 'Cluster prepared for testing.'
+(( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
 (( !failed )) && run_e2e_tests || failed=4
 
+# Run upstream knative serving & eventing operator tests
 (( !failed )) && deploy_serverless_operator_latest || failed=11
-
-# Run upstream knative serving operator tests
 (( !failed )) && run_knative_serving_operator_tests || failed=12
-# Run upstream knative eventing operator tests
 (( !failed )) && run_knative_eventing_operator_tests || failed=14
 
 # Run upstream knative serving & eventing tests
