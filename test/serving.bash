@@ -71,6 +71,17 @@ function run_knative_serving_e2e_and_conformance_tests {
   go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
+  
+  # Prevent HPA from scaling to make HA tests more stable
+  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec":{"maxReplicas":2}}' || failed=3
+
+  # Use sed as the -spoofinterval parameter is not available yet
+  sed "s/\(.*requestInterval =\).*/\1 10 * time.Millisecond/" -i test/vendor/knative.dev/pkg/test/spoof/spoof.go
+
+  go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
+    --resolvabledomain \
+    --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" || failed=4
 
   print_test_result ${failed}
 
