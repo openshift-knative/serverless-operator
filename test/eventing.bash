@@ -37,19 +37,15 @@ function run_knative_eventing_tests {
 function run_knative_eventing_operator_tests {
   logger.info 'Running eventing operator tests'
   (
-  local exitstatus test_namespace_saved
-  exitstatus=0
+  local exitstatus=0
 
   checkout_knative_eventing_operator
 
-  test_namespace_saved="${TEST_NAMESPACE}"
   export TEST_NAMESPACE="${EVENTING_NAMESPACE}"
 
   go_test_e2e -timeout=20m -parallel=1 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
     || exitstatus=$? && true
-
-  export TEST_NAMESPACE="${test_namespace_saved}"
 
   print_test_result ${exitstatus}
 
