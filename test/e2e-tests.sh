@@ -31,6 +31,10 @@ failed=0
 
 # Run upstream knative serving & eventing tests
 (( !failed )) && ensure_serverless_installed || failed=15
+
+# Run knative serving additional e2e tests
+(( !failed )) && run_serving_e2e_tests || failed=5
+
 (( !failed )) && run_knative_serving_e2e_and_conformance_tests || failed=16
 (( !failed )) && run_knative_eventing_tests || failed=17
 

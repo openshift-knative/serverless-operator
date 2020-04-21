@@ -66,6 +66,31 @@ function run_e2e_tests {
   return $failed
 }
 
+function run_serving_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  wait_for_knative_serving_ingress_ns_deleted || return 1
+
+  return $failed
+}
+
 # Setup a temporary GOPATH to safely check out the repository without breaking other things.
 # CAUTION: function overrides GOPATH so use it in subshell or restore original value!
 function make_temporary_gopath {
