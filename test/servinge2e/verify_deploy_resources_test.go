@@ -70,7 +70,7 @@ func checkRouteIsReady(ctx *test.Context, ns, name string) (string, error) {
 	}
 	ready, _ := routeHasHost(r, nil)
 	if !ready {
-		return "", fmt.Errorf("route %s/%s is not ready yet")
+		return "", fmt.Errorf("route %s/%s is not ready yet", ns, name)
 	}
 	return r.Status.Ingress[0].Host, nil
 }
