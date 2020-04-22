@@ -8,13 +8,28 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	testNamespace         = "serverless-tests"
+	testNamespace2        = "serverless-tests2"
+	image                 = "gcr.io/knative-samples/helloworld-go"
+	helloworldService     = "helloworld-go"
+	helloworldService2    = "helloworld-go2"
+	kubeHelloworldService = "kube-helloworld-go"
+	helloworldText        = "Hello World!"
+)
+
 func TestUserPermissions(t *testing.T) {
 
+	caCtx := test.SetupClusterAdmin(t)
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
-	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx)
+
+	if _, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image); err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
 
 	tests := []struct {
 		name        string
