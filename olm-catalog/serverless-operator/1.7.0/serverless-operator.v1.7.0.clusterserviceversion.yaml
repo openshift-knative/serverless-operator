@@ -533,7 +533,7 @@ spec:
     - name: IMAGE_BROKER_FILTER_IMAGE
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-filter
     - name: IMAGE_DISPATCHER_IMAGE
-      imagimage: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
     - name: IMAGE_KN_CLI_ARTIFACTS
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
   replaces: serverless-operator.v1.6.0
