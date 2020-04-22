@@ -86,8 +86,6 @@ function run_serving_e2e_tests {
 
   print_test_result ${failed}
 
-  wait_for_knative_serving_ingress_ns_deleted || return 1
-
   return $failed
 }
 

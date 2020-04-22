@@ -3,7 +3,7 @@ package servinge2e
 import (
 	"testing"
 
-	"github.com/hemanrnjn/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 const (
@@ -17,13 +17,12 @@ const (
 )
 
 func TestDeploymentUsingKubeadmin(t *testing.T) {
-	t.Run("deploy knative service using kubeadmin", func(t *testing.T) {
-		caCtx := test.SetupClusterAdmin(t)
-		test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-		defer test.CleanupAll(t, caCtx)
 
-		if _, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image); err != nil {
-			t.Fatal("Knative Service not ready", err)
-		}
-	})
+	caCtx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
+	defer test.CleanupAll(t, caCtx)
+
+	if _, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image); err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
 }

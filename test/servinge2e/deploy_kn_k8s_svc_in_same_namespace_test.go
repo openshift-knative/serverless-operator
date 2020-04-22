@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/hemanrnjn/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,97 +13,96 @@ import (
 )
 
 func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
-	t.Run("deploy knative and kubernetes service in same namespace", func(t *testing.T) {
-		caCtx := test.SetupClusterAdmin(t)
-		test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-		defer test.CleanupAll(t, caCtx)
 
-		//Create deployment
-		err := test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
-		if err != nil {
-			t.Fatal("Deployment not created", err)
-		}
-		// Deploy plain Kube service
-		svc, err := createKubeService(caCtx, kubeHelloworldService, testNamespace2)
-		if err != nil {
-			t.Fatal("Kubernetes service not created", err)
-		}
-		route, err := withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
-		if err != nil {
-			t.Fatal("Failed to create route for service", svc.Name, err)
-		}
-		kubeServiceURL, err := url.Parse("http://" + route.Status.Ingress[0].Host)
-		if err != nil {
-			t.Fatal("Failed to parse url", err)
-		}
+	caCtx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
+	defer test.CleanupAll(t, caCtx)
 
-		// Check Kube service responds
-		waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	//Create deployment
+	err := test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Deployment not created", err)
+	}
+	// Deploy plain Kube service
+	svc, err := createKubeService(caCtx, kubeHelloworldService, testNamespace2)
+	if err != nil {
+		t.Fatal("Kubernetes service not created", err)
+	}
+	route, err := withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	if err != nil {
+		t.Fatal("Failed to create route for service", svc.Name, err)
+	}
+	kubeServiceURL, err := url.Parse("http://" + route.Status.Ingress[0].Host)
+	if err != nil {
+		t.Fatal("Failed to parse url", err)
+	}
 
-		// Deploy Knative service in the same namespace
-		ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
-		if err != nil {
-			t.Fatal("Knative Service not ready", err)
-		}
+	// Check Kube service responds
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
-		// Check that both services respond
-		waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
-		waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	// Deploy Knative service in the same namespace
+	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
 
-		// Delete Knative service
-		caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
+	// Check that both services respond
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
-		// Check that Kube service still responds
-		waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	// Delete Knative service
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 
-		// Remove the Kube service
-		caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-		caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-		caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	// Check that Kube service still responds
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
-		// Deploy Knative service in the namespace first
-		ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
-		if err != nil {
-			t.Fatal("Knative Service not ready", err)
-		}
+	// Remove the Kube service
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
-		// Check that Knative service responds
-		waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	// Deploy Knative service in the namespace first
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
 
-		//Create deployment
-		err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
-		if err != nil {
-			t.Fatal("Deployment not created", err)
-		}
-		// Deploy plain Kube service
-		svc, err = createKubeService(caCtx, kubeHelloworldService, testNamespace2)
-		if err != nil {
-			t.Fatal("Kubernetes service not created", err)
-		}
-		route, err = withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
-		if err != nil {
-			t.Fatal("Failed to create route for service", svc.Name, err)
-		}
-		kubeServiceURL, err = url.Parse("http://" + route.Status.Ingress[0].Host)
-		if err != nil {
-			t.Fatal("Failed to parse url", err)
-		}
+	// Check that Knative service responds
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
-		// Check that both services respond
-		waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
-		waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	//Create deployment
+	err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	if err != nil {
+		t.Fatal("Deployment not created", err)
+	}
+	// Deploy plain Kube service
+	svc, err = createKubeService(caCtx, kubeHelloworldService, testNamespace2)
+	if err != nil {
+		t.Fatal("Kubernetes service not created", err)
+	}
+	route, err = withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	if err != nil {
+		t.Fatal("Failed to create route for service", svc.Name, err)
+	}
+	kubeServiceURL, err = url.Parse("http://" + route.Status.Ingress[0].Host)
+	if err != nil {
+		t.Fatal("Failed to parse url", err)
+	}
 
-		// Remove the Kube service
-		caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-		caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-		caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	// Check that both services respond
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
-		// Check that Knative service still responds
-		waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	// Remove the Kube service
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
-		// Delete the Knative service
-		caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
-	})
+	// Check that Knative service still responds
+	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+
+	// Delete the Knative service
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 }
 
 func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
