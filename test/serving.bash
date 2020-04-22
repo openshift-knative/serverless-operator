@@ -150,13 +150,13 @@ function run_knative_serving_rolling_upgrade_tests {
       # Assert that the old image references eventually fade away
       timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep $serving_version" || return 1
     fi
-    end_prober_test ${PROBER_PID}
+    end_prober_test ${PROBER_PID} || return $?
   fi
 
   # Might not work in OpenShift CI but we want it here so that we can consume this script later and re-use
   if [[ $UPGRADE_CLUSTER == true ]]; then
     # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
-    end_prober_test ${PROBER_PID}
+    end_prober_test ${PROBER_PID} || return $?
 
     local latest_cluster_version
     latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
