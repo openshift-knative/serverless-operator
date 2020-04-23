@@ -39,17 +39,11 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const (
-	olmNamespace = "olm"
-)
-
 var (
-	olmOperatorKey     = types.NamespacedName{Namespace: olmNamespace, Name: "olm-operator"}
-	catalogOperatorKey = types.NamespacedName{Namespace: olmNamespace, Name: "catalog-operator"}
-	packageServerKey   = types.NamespacedName{Namespace: olmNamespace, Name: "packageserver"}
+	olmOperatorKey     = types.NamespacedName{Namespace: olmresourceclient.OLMNamespace, Name: "olm-operator"}
+	catalogOperatorKey = types.NamespacedName{Namespace: olmresourceclient.OLMNamespace, Name: "catalog-operator"}
+	packageServerKey   = types.NamespacedName{Namespace: olmresourceclient.OLMNamespace, Name: "packageserver"}
 )
-
-var ErrOLMNotInstalled = errors.New("no existing installation found")
 
 type Client struct {
 	*olmresourceclient.Client
@@ -78,8 +72,11 @@ func (c Client) InstallVersion(ctx context.Context, version string) (*olmresourc
 	objs := toObjects(resources...)
 
 	status := c.GetObjectsStatus(ctx, objs...)
-	if status.HasExistingResources() {
+	installed, err := status.HasInstalledResources()
+	if installed {
 		return nil, errors.New("detected existing OLM resources: OLM must be completely uninstalled before installation")
+	} else if err != nil {
+		return nil, errors.New("detected errored OLM resources, see resource statuses for more details")
 	}
 
 	log.Print("Creating CRDs and resources")
@@ -135,8 +132,9 @@ func (c Client) UninstallVersion(ctx context.Context, version string) error {
 	objs := toObjects(resources...)
 
 	status := c.GetObjectsStatus(ctx, objs...)
-	if !status.HasExistingResources() {
-		return ErrOLMNotInstalled
+	installed, err := status.HasInstalledResources()
+	if !installed && err == nil {
+		return olmresourceclient.ErrOLMNotInstalled
 	}
 
 	log.Infof("Uninstalling resources for version %q", version)
@@ -154,8 +152,9 @@ func (c Client) GetStatus(ctx context.Context, version string) (*olmresourceclie
 	objs := toObjects(resources...)
 
 	status := c.GetObjectsStatus(ctx, objs...)
-	if !status.HasExistingResources() {
-		return nil, ErrOLMNotInstalled
+	installed, err := status.HasInstalledResources()
+	if !installed && err == nil {
+		return nil, olmresourceclient.ErrOLMNotInstalled
 	}
 	return &status, nil
 }
@@ -284,6 +283,5 @@ func (c Client) getSubscriptionCSV(ctx context.Context, subKey types.NamespacedN
 		log.Printf("  Found installed CSV %q", installedCSV)
 		return true, nil
 	}
-
 	return csvKey, wait.PollImmediateUntil(time.Second, subscriptionInstalledCSV, ctx.Done())
 }
