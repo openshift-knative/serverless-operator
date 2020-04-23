@@ -124,6 +124,7 @@ function end_prober_test {
   echo "done" > /tmp/prober-signal
   logger.info "Waiting for prober test to finish"
   wait "${PROBER_PID}"
+  return $?
 }
 
 function teardown {
