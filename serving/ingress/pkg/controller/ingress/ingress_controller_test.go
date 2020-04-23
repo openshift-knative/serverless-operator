@@ -18,7 +18,6 @@ import (
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
 	"knative.dev/serving/pkg/network"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -99,10 +98,11 @@ func TestRouteMigration(t *testing.T) {
 		}, noRemoveMissingLabel, noRemoveOtherLabel},
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        routeName0,
-				Namespace:   serviceMeshNamespace,
-				Labels:      map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-				Annotations: map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+				Name:            routeName0,
+				Namespace:       serviceMeshNamespace,
+				Labels:          map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+				Annotations:     map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+				ResourceVersion: "1",
 			},
 			Spec: routev1.RouteSpec{
 				Host: domainName,
@@ -148,7 +148,7 @@ func TestRouteMigration(t *testing.T) {
 		}
 
 		routeList := &routev1.RouteList{}
-		err := cl.List(context.TODO(), &client.ListOptions{}, routeList)
+		err := cl.List(context.TODO(), routeList)
 		assert.Nil(t, err)
 
 		routes := routeList.Items
@@ -167,13 +167,13 @@ func TestRouteMigration(t *testing.T) {
 
 		// check openshift routes has been removed.
 		routeListdelete := &routev1.RouteList{}
-		err = cl.List(context.TODO(), &client.ListOptions{}, routeListdelete)
+		err = cl.List(context.TODO(), routeListdelete)
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, routeListdelete.Items, []routev1.Route{noRemoveOtherLabel, noRemoveMissingLabel})
 
 		// check finalizers has been removed from ingress.
 		ingressListdelete := &networkingv1alpha1.IngressList{}
-		err = cl.List(context.TODO(), &client.ListOptions{}, ingressListdelete)
+		err = cl.List(context.TODO(), ingressListdelete)
 		assert.Nil(t, err)
 		assert.Empty(t, len(ingressListdelete.Items[0].Finalizers))
 	})
