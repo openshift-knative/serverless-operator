@@ -42,6 +42,11 @@ func buildImageOverrideMapFromEnviron() map[string]string {
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], "IMAGE_") {
 			name := strings.SplitN(pair[0], "_", 2)[1]
+			// convert
+			// "IMAGE_eventing-controller__eventing-controller=docker.io/foo2"
+			// to
+			// eventing-controller/eventing-controller: docker.io/foo2
+			name = strings.Replace(name, "__", "/", 1)
 			if pair[1] != "" {
 				overrideMap[name] = pair[1]
 			}
