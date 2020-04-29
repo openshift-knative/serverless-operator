@@ -16,14 +16,12 @@ package scorecard
 
 import (
 	"fmt"
-	"strings"
+	"log"
 
-	"github.com/operator-framework/operator-sdk/internal/pkg/scaffold"
-	"github.com/operator-framework/operator-sdk/internal/pkg/scorecard"
-	scplugins "github.com/operator-framework/operator-sdk/internal/pkg/scorecard/plugins"
-	"github.com/operator-framework/operator-sdk/version"
+	"github.com/operator-framework/operator-sdk/internal/scorecard"
+	schelpers "github.com/operator-framework/operator-sdk/internal/scorecard/helpers"
+	scplugins "github.com/operator-framework/operator-sdk/internal/scorecard/plugins"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,29 +32,34 @@ func NewCmd() *cobra.Command {
 		Short: "Run scorecard tests",
 		Long: `Runs blackbox scorecard tests on an operator
 `,
-		RunE: scorecard.ScorecardTests,
+		RunE: scorecard.Tests,
 	}
 
 	scorecardCmd.Flags().String(scorecard.ConfigOpt, "", fmt.Sprintf("config file (default is '<project_dir>/%s'; the config file's extension and format can be .yaml, .json, or .toml)", scorecard.DefaultConfigFile))
-	scorecardCmd.Flags().String(scplugins.NamespaceOpt, "", "Namespace of custom resource created in cluster")
 	scorecardCmd.Flags().String(scplugins.KubeconfigOpt, "", "Path to kubeconfig of custom resource created in cluster")
-	scorecardCmd.Flags().Int(scplugins.InitTimeoutOpt, 60, "Timeout for status block on CR to be created in seconds")
-	scorecardCmd.Flags().Bool(scplugins.OlmDeployedOpt, false, "The OLM has deployed the operator. Use only the CSV for test data")
-	scorecardCmd.Flags().String(scplugins.CSVPathOpt, "", "Path to CSV being tested")
-	scorecardCmd.Flags().Bool(scplugins.BasicTestsOpt, true, "Enable basic operator checks")
-	scorecardCmd.Flags().Bool(scplugins.OLMTestsOpt, true, "Enable OLM integration checks")
-	scorecardCmd.Flags().String(scplugins.NamespacedManifestOpt, "", "Path to manifest for namespaced resources (e.g. RBAC and Operator manifest)")
-	scorecardCmd.Flags().String(scplugins.GlobalManifestOpt, "", "Path to manifest for Global resources (e.g. CRD manifests)")
-	scorecardCmd.Flags().StringSlice(scplugins.CRManifestOpt, nil, "Path to manifest for Custom Resource (required) (specify flag multiple times for multiple CRs)")
-	scorecardCmd.Flags().String(scplugins.ProxyImageOpt, fmt.Sprintf("quay.io/operator-framework/scorecard-proxy:%s", strings.TrimSuffix(version.Version, "+git")), "Image name for scorecard proxy")
-	scorecardCmd.Flags().String(scplugins.ProxyPullPolicyOpt, "Always", "Pull policy for scorecard proxy image")
-	scorecardCmd.Flags().String(scplugins.CRDsDirOpt, scaffold.CRDsDir, "Directory containing CRDs (all CRD manifest filenames must have the suffix 'crd.yaml')")
-	scorecardCmd.Flags().StringP(scorecard.OutputFormatOpt, "o", scorecard.HumanReadableOutputFormat, fmt.Sprintf("Output format for results. Valid values: %s, %s", scorecard.HumanReadableOutputFormat, scorecard.JSONOutputFormat))
-	scorecardCmd.Flags().String(scorecard.PluginDirOpt, "scorecard", "Scorecard plugin directory (plugin exectuables must be in a \"bin\" subdirectory")
+	scorecardCmd.Flags().StringP(scorecard.OutputFormatOpt, "o", scorecard.TextOutputFormat, fmt.Sprintf("Output format for results. Valid values: %s, %s", scorecard.TextOutputFormat, scorecard.JSONOutputFormat))
+	scorecardCmd.Flags().String(schelpers.VersionOpt, schelpers.DefaultScorecardVersion, "scorecard version. Valid values: v1alpha1, v1alpha2")
+	scorecardCmd.Flags().StringP(scorecard.SelectorOpt, "l", "", "selector (label query) to filter tests on (only valid when version is v1alpha2)")
+	scorecardCmd.Flags().BoolP(scorecard.ListOpt, "L", false, "If true, only print the test names that would be run based on selector filtering (only valid when version is v1alpha2)")
 
-	if err := viper.BindPFlags(scorecardCmd.Flags()); err != nil {
-		log.Fatalf("Failed to bind scorecard flags to viper: %v", err)
+	// TODO: make config file global and make this a top level flag
+	if err := viper.BindPFlag(scorecard.ConfigOpt, scorecardCmd.Flags().Lookup(scorecard.ConfigOpt)); err != nil {
+		log.Fatalf("Unable to add config :%v", err)
 	}
-
+	if err := viper.BindPFlag("scorecard."+scplugins.KubeconfigOpt, scorecardCmd.Flags().Lookup(scplugins.KubeconfigOpt)); err != nil {
+		log.Fatalf("Unable to add kubeconfig :%v", err)
+	}
+	if err := viper.BindPFlag("scorecard."+scorecard.OutputFormatOpt, scorecardCmd.Flags().Lookup(scorecard.OutputFormatOpt)); err != nil {
+		log.Fatalf("Unable to add output format :%v", err)
+	}
+	if err := viper.BindPFlag("scorecard."+schelpers.VersionOpt, scorecardCmd.Flags().Lookup(schelpers.VersionOpt)); err != nil {
+		log.Fatalf("Unable to add version :%v", err)
+	}
+	if err := viper.BindPFlag("scorecard."+scorecard.SelectorOpt, scorecardCmd.Flags().Lookup(scorecard.SelectorOpt)); err != nil {
+		log.Fatalf("Unable to add selector :%v", err)
+	}
+	if err := viper.BindPFlag("scorecard."+scorecard.ListOpt, scorecardCmd.Flags().Lookup(scorecard.ListOpt)); err != nil {
+		log.Fatalf("Unable to add list :%v", err)
+	}
 	return scorecardCmd
 }

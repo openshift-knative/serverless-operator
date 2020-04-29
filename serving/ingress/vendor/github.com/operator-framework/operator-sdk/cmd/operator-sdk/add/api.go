@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 
 	"github.com/operator-framework/operator-sdk/cmd/operator-sdk/internal/genutil"
-	"github.com/operator-framework/operator-sdk/internal/pkg/scaffold"
-	"github.com/operator-framework/operator-sdk/internal/pkg/scaffold/input"
+	"github.com/operator-framework/operator-sdk/internal/scaffold"
+	"github.com/operator-framework/operator-sdk/internal/scaffold/input"
 	"github.com/operator-framework/operator-sdk/internal/util/projutil"
 
 	"github.com/pkg/errors"
@@ -31,28 +31,31 @@ import (
 )
 
 var (
-	apiVersion string
-	kind       string
+	apiVersion     string
+	kind           string
+	skipGeneration bool
 )
 
-func newAddApiCmd() *cobra.Command {
+func newAddAPICmd() *cobra.Command {
 	apiCmd := &cobra.Command{
 		Use:   "api",
 		Short: "Adds a new api definition under pkg/apis",
-		Long: `operator-sdk add api --kind=<kind> --api-version=<group/version> creates the
-api definition for a new custom resource under pkg/apis. This command must be
-run from the project root directory. If the api already exists at
-pkg/apis/<group>/<version> then the command will not overwrite and return an
-error.
+		Long: `operator-sdk add api --kind=<kind> --api-version=<group/version> creates
+the api definition for a new custom resource under pkg/apis. This command
+must be run from the project root directory. If the api already exists at
+pkg/apis/<group>/<version> then the command will not overwrite and return
+an error.
 
-This command runs Kubernetes deepcopy and OpenAPI V3 generators on tagged
-types in all paths under pkg/apis. Go code is generated under
-pkg/apis/<group>/<version>/zz_generated.{deepcopy,openapi}.go. CRD's are
-generated, or updated if they exist for a particular group + version + kind,
-under deploy/crds/<group>_<version>_<kind>_crd.yaml; OpenAPI V3 validation YAML
-is generated as a 'validation' object.
+By default, this command runs Kubernetes deepcopy and CRD generators on
+tagged types in all paths under pkg/apis. Go code is generated under
+pkg/apis/<group>/<version>/zz_generated.deepcopy.go. CRD's are generated,
+or updated if they exist for a particular group + version + kind, under
+deploy/crds/<full group>_<resource>_crd.yaml; OpenAPI V3 validation YAML
+is generated as a 'validation' object. Generation can be disabled with the
+--skip-generation flag.
 
 Example:
+
 	$ operator-sdk add api --api-version=app.example.com/v1alpha1 --kind=AppService
 	$ tree pkg/apis
 	pkg/apis/
@@ -64,10 +67,9 @@ Example:
 			├── register.go
 			├── appservice_types.go
 			├── zz_generated.deepcopy.go
-			├── zz_generated.openapi.go
 	$ tree deploy/crds
-	├── deploy/crds/app_v1alpha1_appservice_cr.yaml
-	├── deploy/crds/app_v1alpha1_appservice_crd.yaml
+	├── deploy/crds/app.example.com_v1alpha1_appservice_cr.yaml
+	├── deploy/crds/app.example.com_appservices_crd.yaml
 `,
 		RunE: apiRun,
 	}
@@ -80,6 +82,7 @@ Example:
 	if err := apiCmd.MarkFlagRequired("kind"); err != nil {
 		log.Fatalf("Failed to mark `kind` flag for `add api` subcommand as required")
 	}
+	apiCmd.Flags().BoolVar(&skipGeneration, "skip-generation", false, "Skip generation of deepcopy and OpenAPI code and OpenAPI CRD specs")
 
 	return apiCmd
 }
@@ -132,14 +135,16 @@ func apiRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to update the RBAC manifest for the resource (%v, %v): (%v)", r.APIVersion, r.Kind, err)
 	}
 
-	// Run k8s codegen for deepcopy
-	if err := genutil.K8sCodegen(); err != nil {
-		return err
-	}
+	if !skipGeneration {
+		// Run k8s codegen for deepcopy
+		if err := genutil.K8sCodegen(); err != nil {
+			return err
+		}
 
-	// Generate a validation spec for the new CRD.
-	if err := genutil.OpenAPIGen(); err != nil {
-		return err
+		// Generate a validation spec for the new CRD.
+		if err := genutil.CRDGen(); err != nil {
+			return err
+		}
 	}
 
 	log.Info("API generation complete.")

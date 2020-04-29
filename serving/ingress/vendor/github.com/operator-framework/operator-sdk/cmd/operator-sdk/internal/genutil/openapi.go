@@ -21,8 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/operator-framework/operator-sdk/internal/pkg/scaffold"
-	"github.com/operator-framework/operator-sdk/internal/pkg/scaffold/input"
+	"github.com/operator-framework/operator-sdk/internal/scaffold"
 	"github.com/operator-framework/operator-sdk/internal/util/k8sutil"
 	"github.com/operator-framework/operator-sdk/internal/util/projutil"
 
@@ -36,10 +35,9 @@ import (
 func OpenAPIGen() error {
 	projutil.MustInProjectRoot()
 
-	absProjectPath := projutil.MustGetwd()
 	repoPkg := projutil.GetGoPkg()
 
-	gvMap, err := parseGroupVersions()
+	gvMap, err := k8sutil.ParseGroupSubpackages(scaffold.ApisDir)
 	if err != nil {
 		return fmt.Errorf("failed to parse group versions: (%v)", err)
 	}
@@ -51,41 +49,10 @@ func OpenAPIGen() error {
 	log.Infof("Running OpenAPI code-generation for Custom Resource group versions: [%v]\n", gvb.String())
 
 	apisPkg := filepath.Join(repoPkg, scaffold.ApisDir)
-	fqApis := createFQAPIs(apisPkg, gvMap)
+	fqApis := k8sutil.CreateFQAPIs(apisPkg, gvMap)
 	f := func(a string) error { return openAPIGen(a, fqApis) }
 	if err = generateWithHeaderFile(f); err != nil {
 		return err
-	}
-
-	s := &scaffold.Scaffold{}
-	cfg := &input.Config{
-		Repo:           repoPkg,
-		AbsProjectPath: absProjectPath,
-		ProjectName:    filepath.Base(absProjectPath),
-	}
-	crds, err := k8sutil.GetCRDs(scaffold.CRDsDir)
-	if err != nil {
-		return err
-	}
-	for _, crd := range crds {
-		g, v, k := crd.Spec.Group, crd.Spec.Version, crd.Spec.Names.Kind
-		if v == "" {
-			if len(crd.Spec.Versions) != 0 {
-				v = crd.Spec.Versions[0].Name
-			} else {
-				return fmt.Errorf("crd of group %s kind %s has no version", g, k)
-			}
-		}
-		r, err := scaffold.NewResource(g+"/"+v, k)
-		if err != nil {
-			return err
-		}
-		err = s.Execute(cfg,
-			&scaffold.CRD{Resource: r, IsOperatorGo: projutil.IsOperatorGo()},
-		)
-		if err != nil {
-			return err
-		}
 	}
 
 	log.Info("Code-generation complete.")
@@ -97,7 +64,9 @@ func openAPIGen(hf string, fqApis []string) error {
 	if err != nil {
 		return err
 	}
-	flag.Set("logtostderr", "true")
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		return err
+	}
 	for _, api := range fqApis {
 		api = filepath.FromSlash(api)
 		// Use relative API path so the generator writes to the correct path.

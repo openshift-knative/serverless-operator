@@ -17,14 +17,13 @@ package handler
 import (
 	"strings"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	crtHandler "sigs.k8s.io/controller-runtime/pkg/handler"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var log = logf.Log.WithName("event_handler")
@@ -45,8 +44,6 @@ const (
 // 3. namespaced primary object and dependent namespaced scoped but in a different namespace object.
 type EnqueueRequestForAnnotation struct {
 	Type string
-
-	mapper meta.RESTMapper
 }
 
 var _ crtHandler.EventHandler = &EnqueueRequestForAnnotation{}

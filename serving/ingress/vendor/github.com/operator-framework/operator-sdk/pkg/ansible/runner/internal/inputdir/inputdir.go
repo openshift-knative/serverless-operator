@@ -25,7 +25,7 @@ import (
 	"github.com/operator-framework/operator-sdk/internal/util/fileutil"
 	"github.com/spf13/afero"
 
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var log = logf.Log.WithName("inputdir")
@@ -135,32 +135,34 @@ func (i *InputDir) Write() error {
 	// ANSIBLE_INVENTORY takes precedence over our generated hosts file
 	// so if the envvar is set we don't bother making it, we just copy
 	// the inventory into our runner directory
-	ansible_inventory := os.Getenv("ANSIBLE_INVENTORY")
-	if ansible_inventory == "" {
+	ansibleInventory := os.Getenv("ANSIBLE_INVENTORY")
+	if ansibleInventory == "" {
 		// If ansible-runner is running in a python virtual environment, propagate
 		// that to ansible.
 		venv := os.Getenv("VIRTUAL_ENV")
 		hosts := "localhost ansible_connection=local"
 		if venv != "" {
-			hosts = fmt.Sprintf("%s ansible_python_interpreter=%s", hosts, filepath.Join(venv, "bin/python"))
+			hosts = fmt.Sprintf("%s ansible_python_interpreter=%s", hosts, filepath.Join(venv, "bin", "python3"))
+		} else {
+			hosts = fmt.Sprintf("%s ansible_python_interpreter=%s", hosts, "{{ansible_playbook_python}}")
 		}
 		err = i.addFile("inventory/hosts", []byte(hosts))
 		if err != nil {
 			return err
 		}
 	} else {
-		fi, err := os.Stat(ansible_inventory)
+		fi, err := os.Stat(ansibleInventory)
 		if err != nil {
 			return err
 		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			err = i.copyInventory(ansible_inventory, filepath.Join(i.Path, "inventory"))
+			err = i.copyInventory(ansibleInventory, filepath.Join(i.Path, "inventory"))
 			if err != nil {
 				return err
 			}
 		case mode.IsRegular():
-			err = i.copyInventory(ansible_inventory, filepath.Join(i.Path, "inventory/hosts"))
+			err = i.copyInventory(ansibleInventory, filepath.Join(i.Path, "inventory/hosts"))
 			if err != nil {
 				return err
 			}
