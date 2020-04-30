@@ -22,7 +22,7 @@ failed=0
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-(( !failed )) && downstream_e2e_tests || failed=4
+(( !failed )) && serverless_operator_e2e_tests || failed=4
 
 # Run upstream knative serving & eventing operator tests
 (( !failed )) && deploy_serverless_operator_latest || failed=11

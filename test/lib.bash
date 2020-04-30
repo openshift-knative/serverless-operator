@@ -40,7 +40,7 @@ function print_test_result {
   fi
 }
 
-function downstream_e2e_tests {
+function serverless_operator_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
