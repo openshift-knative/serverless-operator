@@ -34,7 +34,7 @@ function run_knative_eventing_tests {
   )
 }
 
-function run_knative_eventing_operator_tests {
+function knative_eventing_operator_tests {
   logger.info 'Running eventing operator tests'
   (
   local exitstatus=0

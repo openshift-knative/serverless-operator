@@ -40,7 +40,7 @@ function prepare_knative_serving_tests {
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 }
 
-function run_knative_serving_e2e_and_conformance_tests {
+function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
   (
 
@@ -191,7 +191,7 @@ function run_knative_serving_rolling_upgrade_tests {
   )
 }
 
-function run_knative_serving_operator_tests {
+function knative_serving_operator_tests {
   logger.info 'Running Serving operator tests'
   (
   local exitstatus=0

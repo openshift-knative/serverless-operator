@@ -40,7 +40,7 @@ function print_test_result {
   fi
 }
 
-function run_e2e_tests {
+function downstream_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -65,7 +65,7 @@ function run_e2e_tests {
   return $failed
 }
 
-function run_serving_e2e_tests {
+function downstream_serving_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
