@@ -14,7 +14,7 @@ function checkout_knative_eventing_operator {
     "${KNATIVE_EVENTING_OPERATOR_BRANCH}"
 }
 
-function run_knative_eventing_tests {
+function knative_eventing_tests {
   (
   local exitstatus=0
   logger.info 'Running eventing tests'
@@ -34,7 +34,7 @@ function run_knative_eventing_tests {
   )
 }
 
-function run_knative_eventing_operator_tests {
+function knative_eventing_operator_tests {
   logger.info 'Running eventing operator tests'
   (
   local exitstatus=0

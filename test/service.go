@@ -12,7 +12,6 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
@@ -106,18 +105,6 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", d.Status.ReadyReplicas, scale)
 	}
 	return nil
-}
-
-func CheckRouteIsReady(ctx *Context, ns, name string) (string, error) {
-	r, err := ctx.Clients.Route.Routes(ns).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	ready, _ := RouteHasHost(r, nil)
-	if !ready {
-		return "", fmt.Errorf("route %s/%s is not ready yet")
-	}
-	return r.Status.Ingress[0].Host, nil
 }
 
 func isPodReady(pod corev1.Pod) bool {
@@ -222,68 +209,6 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 	return nil
 }
 
-func CreateKubeService(ctx *Context, name, namespace string) (*corev1.Service, error) {
-	kubeService := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{
-				{
-					Port: 80,
-					TargetPort: intstr.IntOrString{
-						Type:   intstr.Int,
-						IntVal: 8080,
-					},
-				},
-			},
-			Selector: map[string]string{
-				"app": name,
-			},
-		},
-	}
-
-	svc, err := ctx.Clients.Kube.CoreV1().Services(namespace).Create(kubeService)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up K8s Service '%s/%s'", kubeService.Namespace, kubeService.Name)
-		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(svc.Name, &metav1.DeleteOptions{})
-	})
-
-	return svc, nil
-}
-
-func WithRouteForServiceReady(ctx *Context, serviceName, namespace string) (*routev1.Route, error) {
-	r := &routev1.Route{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceName,
-			Namespace: namespace,
-		},
-		Spec: routev1.RouteSpec{
-			To: routev1.RouteTargetReference{
-				Kind: "Service",
-				Name: serviceName,
-			},
-		},
-	}
-
-	route, err := ctx.Clients.Route.Routes(namespace).Create(r)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up OCP Route '%s/%s'", r.Namespace, r.Name)
-		return ctx.Clients.Route.Routes(namespace).Delete(route.Name, &metav1.DeleteOptions{})
-	})
-
-	return WaitForRouteState(ctx, route.Name, route.Namespace, RouteHasHost)
-}
-
 func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *routev1.Route, err error) (bool, error)) (*routev1.Route, error) {
 	var (
 		lastState *routev1.Route
@@ -298,12 +223,6 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 		return lastState, errors.Wrapf(waitErr, "OpenShift Route %s is not in desired state, got: %+v", name, lastState)
 	}
 	return lastState, nil
-}
-
-func RouteHasHost(r *routev1.Route, err error) (bool, error) {
-	return len(r.Status.Ingress) != 0 && len(r.Status.Ingress[0].Conditions) != 0 &&
-		r.Status.Ingress[0].Conditions[0].Type == routev1.RouteAdmitted &&
-		r.Status.Ingress[0].Conditions[0].Status == corev1.ConditionTrue, nil
 }
 
 func int32Ptr(i int32) *int32 { return &i }

@@ -40,7 +40,7 @@ function print_test_result {
   fi
 }
 
-function run_e2e_tests {
+function serverless_operator_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -55,13 +55,35 @@ function run_e2e_tests {
 
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
 
   print_test_result ${failed}
 
   wait_for_knative_serving_ingress_ns_deleted || return 1
+
+  return $failed
+}
+
+function downstream_serving_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
 
   return $failed
 }
