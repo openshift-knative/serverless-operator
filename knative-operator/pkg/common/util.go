@@ -1,8 +1,8 @@
 package common
 
 import (
+	"fmt"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	"os"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strings"
 )
@@ -34,14 +34,27 @@ func IngressNamespace(servingNamespace string) string {
 	return servingNamespace + "-ingress"
 }
 
-// buildImageOverrideMapFromEnviron creates a map to overrides registry images
-func buildImageOverrideMapFromEnviron() map[string]string {
+// BuildImageOverrideMapFromEnviron creates a map to overrides registry images
+func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 	overrideMap := map[string]string{}
 
-	for _, e := range os.Environ() {
+	for _, e := range environ {
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], "IMAGE_") {
-			name := strings.SplitN(pair[0], "_", 2)[1]
+			// convert
+			// "IMAGE_container=docker.io/foo"
+			// "IMAGE_deployment_container=docker.io/foo2"
+			// to
+			// container: docker.io/foo
+			// deployment/container: docker.io/foo2
+			var name string
+			parts := strings.SplitN(pair[0], "_", -1)
+			if len(parts) == 3 {
+				name = fmt.Sprintf("%s/%s", parts[1], parts[2])
+			} else {
+				name = parts[1]
+			}
+
 			if pair[1] != "" {
 				overrideMap[name] = pair[1]
 			}
