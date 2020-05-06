@@ -7,6 +7,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -116,7 +117,7 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 
 // imagesFromEnviron overrides registry images
 func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
-	ks.Spec.Registry.Override = buildImageOverrideMapFromEnviron()
+	ks.Spec.Registry.Override = BuildImageOverrideMapFromEnviron(os.Environ())
 
 	if defaultVal, ok := ks.Spec.Registry.Override["default"]; ok {
 		ks.Spec.Registry.Default = defaultVal

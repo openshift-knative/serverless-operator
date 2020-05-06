@@ -19,7 +19,8 @@ func init() {
 
 func TestMutateEventing(t *testing.T) {
 	const (
-		image = "docker.io/foo:tag"
+		image1 = "docker.io/foo:tag"
+		image2 = "docker.io/baz:tag"
 	)
 	client := fake.NewFakeClient()
 	ke := &eventingv1alpha1.KnativeEventing{
@@ -29,10 +30,14 @@ func TestMutateEventing(t *testing.T) {
 		},
 	}
 	// Setup image override
-	os.Setenv("IMAGE_foo", image)
+	os.Setenv("IMAGE_foo", image1)
+	// Setup image override with deployment name
+	os.Setenv("IMAGE_bar_baz", image2)
+
 	// Mutate for OpenShift
 	if err := common.MutateEventing(ke, client); err != nil {
 		t.Error(err)
 	}
-	verifyImageOverride(t, (*v1alpha1.Registry)(&ke.Spec.Registry), "foo", image)
+	verifyImageOverride(t, (*v1alpha1.Registry)(&ke.Spec.Registry), "foo", image1)
+	verifyImageOverride(t, (*v1alpha1.Registry)(&ke.Spec.Registry), "bar/baz", image2)
 }
