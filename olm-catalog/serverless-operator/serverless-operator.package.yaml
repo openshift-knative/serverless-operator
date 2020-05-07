@@ -6,6 +6,6 @@ channels:
 - name: "preview-4.3"
   currentCSV: serverless-operator.v1.6.0
 - name: "4.3"
-  currentCSV: serverless-operator.v1.7.0
+  currentCSV: serverless-operator.v1.8.0
 - name: "4.4"
-  currentCSV: serverless-operator.v1.7.0
+  currentCSV: serverless-operator.v1.8.0
