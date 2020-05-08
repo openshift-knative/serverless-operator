@@ -2,17 +2,18 @@ package knativeeventing_test
 
 import (
 	"context"
+	"os"
+	"testing"
+
+	eventingv1alpha1 "github.com/knative-sandbox/operator/pkg/apis/operator/v1alpha1"
 	. "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/testutil"
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
-	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
-	"testing"
 )
 
 func init() {

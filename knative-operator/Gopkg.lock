@@ -324,6 +324,14 @@
   version = "1.1.8"
 
 [[projects]]
+  digest = "1:296e3b496facdcce5db4ff3490cd221fd9dff38fe0b89283add11463753ede96"
+  name = "github.com/knative-sandbox/operator"
+  packages = ["pkg/apis/operator/v1alpha1"]
+  pruneopts = "NT"
+  revision = "a115cb120488a7eb525b1c54905f6bfadcb15bc1"
+  version = "v0.14.1"
+
+[[projects]]
   digest = "1:5181790e1f11c6b9cb42c70c5b902926c5e696b1e71bc24d4f82e6862ab3d078"
   name = "github.com/mailru/easyjson"
   packages = [
@@ -934,14 +942,6 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:6d629027f3b6a5318d535c04749bc8800ab71f37a96cf33069987046054d913f"
-  name = "knative.dev/eventing-operator"
-  packages = ["pkg/apis/eventing/v1alpha1"]
-  pruneopts = "NT"
-  revision = "150e71756ca7b0a8d6c1e376a068d0e1ddf95236"
-  version = "v0.13.2"
-
-[[projects]]
   branch = "release-0.10"
   digest = "1:56e2d5d36e35d62ecc6662e4f5b6b3e6caf83c79fd808055e028fe72bfad016c"
   name = "knative.dev/pkg"
@@ -949,7 +949,6 @@
     "apis",
     "apis/duck",
     "apis/duck/v1",
-    "apis/duck/v1beta1",
     "apis/istio",
     "apis/istio/common/v1alpha1",
     "apis/istio/v1alpha3",
@@ -959,14 +958,6 @@
   ]
   pruneopts = "NT"
   revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
-
-[[projects]]
-  digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
-  name = "knative.dev/serving-operator"
-  packages = ["pkg/apis/serving/v1alpha1"]
-  pruneopts = "NT"
-  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
-  version = "v0.13.2"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1041,6 +1032,7 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
+    "github.com/knative-sandbox/operator/pkg/apis/operator/v1alpha1",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1074,10 +1066,8 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
-    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
     "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/pkg/ptr",
-    "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/client/fake",

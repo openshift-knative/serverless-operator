@@ -3,11 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
+	"os"
+
+	servingv1alpha1 "github.com/knative-sandbox/operator/pkg/apis/operator/v1alpha1"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

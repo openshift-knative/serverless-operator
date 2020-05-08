@@ -8,7 +8,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "github.com/knative-sandbox/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestBuildImageOverrideMapFromEnviron(t *testing.T) {

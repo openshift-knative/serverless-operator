@@ -44,12 +44,8 @@ required = [
   version = "=v0.1.12"
 
 [[constraint]]
-  name = "knative.dev/serving-operator"
-  version = "=v0.13.2"
-
-[[constraint]]
-  name = "knative.dev/eventing-operator"
-  version = "=v0.13.2"
+  name = "github.com/knative-sandbox/operator"
+  version = "v0.14.1"
 
 [[constraint]]
   name = "github.com/openshift/api"

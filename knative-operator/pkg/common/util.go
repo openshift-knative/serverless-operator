@@ -2,9 +2,10 @@ package common
 
 import (
 	"fmt"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strings"
+
+	servingv1alpha1 "github.com/knative-sandbox/operator/pkg/apis/operator/v1alpha1"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var Log = logf.Log.WithName("knative").WithName("openshift")
