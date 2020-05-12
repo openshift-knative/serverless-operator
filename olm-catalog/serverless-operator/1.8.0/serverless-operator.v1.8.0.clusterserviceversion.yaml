@@ -359,7 +359,7 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-controller
                     - name: IMAGE_eventing-webhook_eventing-webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-webhook
-                    - name: IMAGE_broker-controller_eventing_controller
+                    - name: IMAGE_broker-controller_eventing-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-channel-broker
                     - name: IMAGE_broker-filter_filter
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-mtbroker-filter
