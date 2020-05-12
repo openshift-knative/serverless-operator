@@ -374,7 +374,7 @@ spec:
                     - name: IMAGE_v0.14.0-upgrade_upgrade-brokers
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-upgrade-v0-14-0
                     - name: IMAGE_PING_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-ping
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-adapter
                     - name: IMAGE_JOB_RUNNER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-jobrunner
                     - name: IMAGE_APISERVER_RA_IMAGE
@@ -524,7 +524,7 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-controller
     - name: IMAGE_eventing-webhook_eventing-webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-webhook
-    - name: IMAGE_broker-controller_eventing_controller
+    - name: IMAGE_broker-controller_eventing-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-channel-broker
     - name: IMAGE_broker-filter_filter
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-mtbroker-filter
@@ -536,8 +536,10 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-channel-controller
     - name: IMAGE_imc-dispatcher_dispatcher
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-channel-dispatcher
+    - name: IMAGE_v0.14.0-upgrade_upgrade-brokers
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-upgrade-v0-14-0
     - name: IMAGE_PING_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-ping
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-adapter
     - name: IMAGE_JOB_RUNNER_IMAGE
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-eventing-jobrunner
     - name: IMAGE_APISERVER_RA_IMAGE

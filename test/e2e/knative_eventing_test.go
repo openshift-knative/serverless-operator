@@ -13,10 +13,13 @@ const (
 
 var knativeControlPlaneDeploymentNames = []string{
 	"broker-controller",
+	"broker-filter",
+	"broker-ingress",
 	"eventing-controller",
 	"eventing-webhook",
 	"imc-controller",
 	"imc-dispatcher",
+	"mt-broker-controller",
 }
 
 func TestKnativeEventing(t *testing.T) {
