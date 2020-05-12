@@ -1,13 +1,14 @@
 package common
 
 import (
-	"fmt"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strings"
 )
 
 var Log = logf.Log.WithName("knative").WithName("openshift")
+
+const ImagePrefix = "IMAGE_"
 
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.
 func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
@@ -40,21 +41,19 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 
 	for _, e := range environ {
 		pair := strings.SplitN(e, "=", 2)
-		if strings.HasPrefix(pair[0], "IMAGE_") {
+		if strings.HasPrefix(pair[0], ImagePrefix) {
 			// convert
 			// "IMAGE_container=docker.io/foo"
-			// "IMAGE_deployment_container=docker.io/foo2"
+			// "IMAGE_deployment__container=docker.io/foo2"
+			// "IMAGE_env_var=docker.io/foo3"
+			// "IMAGE_deployment__env_var=docker.io/foo4"
 			// to
 			// container: docker.io/foo
 			// deployment/container: docker.io/foo2
-			var name string
-			parts := strings.SplitN(pair[0], "_", -1)
-			if len(parts) == 3 {
-				name = fmt.Sprintf("%s/%s", parts[1], parts[2])
-			} else {
-				name = parts[1]
-			}
-
+			// env_var: docker.io/foo3
+			// deployment/env_var: docker.io/foo4
+			name := strings.TrimPrefix(pair[0], ImagePrefix)
+			name = strings.Replace(name, "__", "/", 1)
 			if pair[1] != "" {
 				overrideMap[name] = pair[1]
 			}

@@ -27,9 +27,27 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			},
 		},
 		{
+			name: "Simple env var",
+			envMap: map[string]string{
+				"IMAGE_CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+			expected: map[string]string{
+				"CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+		},
+		{
+			name: "Simple env var with deployment name",
+			envMap: map[string]string{
+				"IMAGE_eventing-controller__CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+			expected: map[string]string{
+				"eventing-controller/CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+		},
+		{
 			name: "Deployment+container name",
 			envMap: map[string]string{
-				"IMAGE_foo_bar": "quay.io/myimage",
+				"IMAGE_foo__bar": "quay.io/myimage",
 			},
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage",
@@ -38,8 +56,8 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 		{
 			name: "Deployment+container and container name",
 			envMap: map[string]string{
-				"IMAGE_foo_bar": "quay.io/myimage1",
-				"IMAGE_bar":     "quay.io/myimage2",
+				"IMAGE_foo__bar": "quay.io/myimage1",
+				"IMAGE_bar":      "quay.io/myimage2",
 			},
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage1",
