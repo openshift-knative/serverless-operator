@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -107,8 +108,9 @@ func TestRouteMigration(t *testing.T) {
 			Spec: routev1.RouteSpec{
 				Host: domainName,
 				To: routev1.RouteTargetReference{
-					Kind: "Service",
-					Name: "istio-ingressgateway",
+					Kind:   "Service",
+					Name:   "istio-ingressgateway",
+					Weight: ptr.Int32(100),
 				},
 				Port: &routev1.RoutePort{
 					TargetPort: intstr.FromString(resources.KourierHttpPort),
@@ -117,6 +119,7 @@ func TestRouteMigration(t *testing.T) {
 					Termination:                   routev1.TLSTerminationEdge,
 					InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 				},
+				WildcardPolicy: routev1.WildcardPolicyNone,
 			},
 		}, noRemoveMissingLabel, noRemoveOtherLabel},
 	}
