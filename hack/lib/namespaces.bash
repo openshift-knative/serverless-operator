@@ -15,7 +15,7 @@ function delete_namespaces {
   for ns in "${NAMESPACES[@]}"; do
     if oc get ns "${ns}" >/dev/null 2>&1; then
       logger.info "Waiting until there are no pods in ${ns} to safely remove it..."
-      timeout 600 "[[ \$(oc get pods -n $ns -o jsonpath='{.items}') != '[]' ]]"
+      timeout 600 "[[ \$(oc get pods -n $ns --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
       oc delete ns "$ns"
     fi
   done
