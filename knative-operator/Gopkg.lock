@@ -403,22 +403,10 @@
   packages = [
     "config/v1",
     "console/v1",
-    "operator/v1",
     "route/v1",
   ]
   pruneopts = "NT"
   revision = "d4a64ec2cbd86f11ea74dfdcf6520d5833d0c6cd"
-
-[[projects]]
-  branch = "master"
-  digest = "1:f67f701e8553f7665488b3394e2d39f2aa1c58a2d35fe78d2691731d6f17a5ee"
-  name = "github.com/openshift/console-operator"
-  packages = [
-    "pkg/api",
-    "pkg/console/subresource/util",
-  ]
-  pruneopts = "NT"
-  revision = "6909082444d9743d9bd1f35d58b6443f65749d47"
 
 [[projects]]
   digest = "1:2f871701d245034b68d5f2d852191e9b96ef2d13c1d79296581e0a42a5bccc6b"
@@ -1058,7 +1046,6 @@
     "github.com/openshift/api/config/v1",
     "github.com/openshift/api/console/v1",
     "github.com/openshift/api/route/v1",
-    "github.com/openshift/console-operator/pkg/console/subresource/util",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
     "github.com/operator-framework/operator-sdk/pkg/kube-metrics",
     "github.com/operator-framework/operator-sdk/pkg/leader",
@@ -1084,7 +1071,6 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/sets",
-    "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
