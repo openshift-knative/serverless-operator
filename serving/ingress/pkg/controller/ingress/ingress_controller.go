@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/google/go-cmp/cmp"
 	routev1 "github.com/openshift/api/route/v1"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
@@ -146,9 +146,7 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 		// cache may be stale and we don't want to overwrite a prior update
 		// to status with this stale state.
 	} else if _, err := r.updateStatus(ctx, ing); err != nil {
-		logger.Errorf("Failed to update ingress status %v", err)
-		r.recorder.Event(ing, corev1.EventTypeWarning, "SyncError", err.Error())
-		return reconcile.Result{}, err
+		return reconcile.Result{}, fmt.Errorf("failed to update ingress status: %w", err)
 	}
 
 	return reconcile.Result{}, reconcileErr
@@ -161,14 +159,11 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 		return r.reconcileDeletion(ctx, ing)
 	}
 
-	logger.Infof("Reconciling ingress :%v", ing)
-
 	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
 	if exposed {
 		existing, err := r.routeList(ctx, ing)
 		if err != nil {
-			logger.Errorf("Failed to list openshift routes %v", err)
-			return err
+			return fmt.Errorf("failed to list routes: %w", err)
 		}
 		existingMap := make(map[string]routev1.Route, len(existing.Items))
 		for _, route := range existing.Items {
@@ -182,15 +177,13 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 			return nil
 		}
 		for _, route := range routes {
-			logger.Infof("Creating/Updating OpenShift Route for host %s", route.Spec.Host)
 			if err := r.reconcileRoute(ctx, ing, route); err != nil {
-				return fmt.Errorf("failed to create route for host %s: %v", route.Spec.Host, err)
+				return err
 			}
 			delete(existingMap, route.Name)
 		}
 		// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
 		for _, rt := range existingMap {
-			logger.Infof("Deleting obsoleted route for host: %s", rt.Spec.Host)
 			if err := r.deleteRoute(ctx, &rt); err != nil {
 				return err
 			}
@@ -207,11 +200,10 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 
 func (r *ReconcileIngress) deleteRoute(ctx context.Context, route *routev1.Route) error {
 	logger := logging.FromContext(ctx)
-	logger.Infof("Deleting OpenShift Route for host %s", route.Spec.Host)
+	logger.Infof("Deleting route %s(%s)", route.Name, route.Spec.Host)
 	if err := r.client.Delete(ctx, route); err != nil {
-		return fmt.Errorf("failed to delete obsoleted route for host %s: %v", route.Spec.Host, err)
+		return fmt.Errorf("failed to delete route: %w", err)
 	}
-	logger.Infof("Deleted OpenShift Route %q in namespace %q", route.Name, route.Namespace)
 	return nil
 }
 
@@ -236,23 +228,22 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 	route := &routev1.Route{}
 	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, route)
 	if err != nil && errors.IsNotFound(err) {
+		logger.Infof("Creating route %s(%s)", desired.Name, desired.Spec.Host)
 		err = r.client.Create(ctx, desired)
 		if err != nil {
-			logger.Errorf("Failed to create OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
+			return fmt.Errorf("failed to create route :%w", err)
 		}
-		logger.Infof("Created OpenShift Route %q in namespace %q", desired.Name, desired.Namespace)
 	} else if err != nil {
-		return err
+		return fmt.Errorf("failed to get route: %w", err)
 	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) {
+		logger.Infof("Updating route %s(%s) diff: %s", desired.Name, desired.Spec.Host, cmp.Diff(route.Spec, desired.Spec))
 		// Don't modify the informers copy
 		existing := route.DeepCopy()
 		existing.Spec = desired.Spec
 		existing.Annotations = desired.Annotations
 		err = r.client.Update(ctx, existing)
 		if err != nil {
-			logger.Errorf("Failed to update OpenShift Route %q in namespace %q: %v", desired.Name, desired.Namespace, err)
-			return err
+			return fmt.Errorf("failed to update route: %w", err)
 		}
 	}
 
