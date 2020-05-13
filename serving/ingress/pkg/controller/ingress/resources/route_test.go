@@ -9,6 +9,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -67,8 +68,9 @@ func TestMakeRoute(t *testing.T) {
 				Spec: routev1.RouteSpec{
 					Host: externalDomain,
 					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString(KourierHttpPort),
@@ -77,6 +79,7 @@ func TestMakeRoute(t *testing.T) {
 						Termination:                   routev1.TLSTerminationEdge,
 						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}},
 		},
@@ -115,8 +118,9 @@ func TestMakeRoute(t *testing.T) {
 				Spec: routev1.RouteSpec{
 					Host: externalDomain,
 					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString(KourierHttpPort),
@@ -125,6 +129,7 @@ func TestMakeRoute(t *testing.T) {
 						Termination:                   routev1.TLSTerminationEdge,
 						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}},
 		},
@@ -150,8 +155,9 @@ func TestMakeRoute(t *testing.T) {
 				Spec: routev1.RouteSpec{
 					Host: externalDomain,
 					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString(KourierHttpPort),
@@ -160,6 +166,7 @@ func TestMakeRoute(t *testing.T) {
 						Termination:                   routev1.TLSTerminationEdge,
 						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}, {
 				ObjectMeta: metav1.ObjectMeta{
@@ -177,8 +184,9 @@ func TestMakeRoute(t *testing.T) {
 				Spec: routev1.RouteSpec{
 					Host: externalDomain2,
 					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString(KourierHttpPort),
@@ -188,6 +196,7 @@ func TestMakeRoute(t *testing.T) {
 						Termination:                   routev1.TLSTerminationEdge,
 						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}},
 		},
@@ -213,8 +222,9 @@ func TestMakeRoute(t *testing.T) {
 				Spec: routev1.RouteSpec{
 					Host: externalDomain2,
 					To: routev1.RouteTargetReference{
-						Kind: "Service",
-						Name: lbService,
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString(KourierHttpPort),
@@ -224,6 +234,7 @@ func TestMakeRoute(t *testing.T) {
 						Termination:                   routev1.TLSTerminationEdge,
 						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}},
 		},

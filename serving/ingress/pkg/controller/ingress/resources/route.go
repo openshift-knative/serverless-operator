@@ -9,6 +9,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
 	"knative.dev/serving/pkg/apis/serving"
@@ -132,13 +133,15 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 				TargetPort: intstr.FromString(KourierHttpPort),
 			},
 			To: routev1.RouteTargetReference{
-				Kind: "Service",
-				Name: serviceName,
+				Kind:   "Service",
+				Name:   serviceName,
+				Weight: ptr.Int32(100),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination:                   routev1.TLSTerminationEdge,
 				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
 			},
+			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
 	}
 	return route, nil
