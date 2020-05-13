@@ -49,6 +49,10 @@ func TestKnativeEventing(t *testing.T) {
 		}
 	})
 
+	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
+		verifyNoDisallowedImageReference(t, caCtx, knativeEventing)
+	})
+
 	t.Run("remove knativeeventing cr", func(t *testing.T) {
 		if err := v1a1test.DeleteKnativeEventing(caCtx, knativeEventing, knativeEventing); err != nil {
 			t.Fatal("Failed to remove Knative Eventing", err)

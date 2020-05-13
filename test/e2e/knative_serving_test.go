@@ -68,6 +68,10 @@ func TestKnativeServing(t *testing.T) {
 
 	})
 
+	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
+		verifyNoDisallowedImageReference(t, caCtx, knativeServing)
+	})
+
 	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
 		t.Skip("SRKVS-462: This test needs thorough hardening")
 		testKnativeServingForGlobalProxy(t, caCtx)
