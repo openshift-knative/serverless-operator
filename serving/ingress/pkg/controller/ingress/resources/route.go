@@ -2,7 +2,6 @@ package resources
 
 import (
 	"crypto/sha256"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -20,10 +19,6 @@ const (
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
 	KourierHttpPort        = "http2"
 )
-
-// ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
-// said field does not contain a value we can work with.
-var ErrNoValidLoadbalancerDomain = errors.New("unable to find Ingress LoadBalancer with DomainInternal set")
 
 // MakeRoutes creates OpenShift Routes from a Knative Ingress
 func MakeRoutes(ci *networkingv1alpha1.Ingress) ([]*routev1.Route, error) {
@@ -100,30 +95,15 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	labels[serving.RouteNamespaceLabelKey] = ingressLabels[serving.RouteNamespaceLabelKey]
 
 	name := routeName(string(ci.GetUID()), host)
-	serviceName := ""
-	namespace := ""
-	if ci.Status.LoadBalancer != nil {
-		for _, lbIngress := range ci.Status.LoadBalancer.Ingress {
-			if lbIngress.DomainInternal != "" {
-				// DomainInternal should look something like:
-				// kourier.knative-serving-ingress.svc.cluster.local
-				parts := strings.Split(lbIngress.DomainInternal, ".")
-				if len(parts) > 2 && parts[2] == "svc" {
-					serviceName = parts[0]
-					namespace = parts[1]
-				}
-			}
-		}
-	}
-
-	if serviceName == "" || namespace == "" {
-		return nil, ErrNoValidLoadbalancerDomain
+	serviceName, _, err := IngressName(ci)
+	if err != nil {
+		return nil, err
 	}
 
 	route := &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
-			Namespace:   namespace,
+			Namespace:   ci.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},

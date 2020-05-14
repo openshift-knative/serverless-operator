@@ -17,8 +17,15 @@ rules:
   - services
   - events
   - configmaps
+  - endpoints
   verbs:
   - "*"
+- apiGroups:
+  - ""
+  resources:
+  - endpoints/restricted
+  verbs:
+  - "create"
 - apiGroups:
   - ""
   resources:
