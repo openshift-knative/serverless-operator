@@ -38,9 +38,11 @@ readonly OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-operators}"
 readonly SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
 readonly SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
 readonly EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
+# eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
+readonly ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
 
 declare -a NAMESPACES
-NAMESPACES=("${SERVING_NAMESPACE}" "${SERVERLESS_NAMESPACE}" "${EVENTING_NAMESPACE}")
+NAMESPACES=("${SERVING_NAMESPACE}" "${SERVERLESS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${ZIPKIN_NAMESPACE}")
 export NAMESPACES
 readonly UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"

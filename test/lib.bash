@@ -156,6 +156,7 @@ function teardown {
   fi
   logger.warn "Teardown 💀"
   teardown_serverless
+  teardown_tracing
   delete_namespaces
   delete_catalog_source
   delete_users

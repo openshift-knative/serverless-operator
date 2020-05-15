@@ -36,7 +36,9 @@ failed=0
 (( !failed )) && downstream_serving_e2e_tests || failed=5
 
 (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=16
-(( !failed )) && knative_eventing_tests || failed=17
+
+(( !failed )) && install_tracing || failed=17
+(( !failed )) && knative_eventing_tests || failed=18
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
