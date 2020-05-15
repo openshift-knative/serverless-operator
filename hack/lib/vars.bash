@@ -44,6 +44,8 @@ NAMESPACES=("${SERVING_NAMESPACE}" "${SERVERLESS_NAMESPACE}" "${EVENTING_NAMESPA
 export NAMESPACES
 readonly UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
+# Change this when forcing the upgrade to an image that is not yet available via upgrade channel
+readonly UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 
 readonly INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
 export OLM_CHANNEL="${OLM_CHANNEL:-"4.3"}"
