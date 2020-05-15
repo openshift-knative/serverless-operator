@@ -10,14 +10,6 @@ function wait_for_knative_serving_ingress_ns_deleted {
   timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || return 1
 }
 
-function checkout_knative_serving {
-  checkout_repo 'knative.dev/serving' \
-    "${KNATIVE_SERVING_REPO}" \
-    "${KNATIVE_SERVING_VERSION}" \
-    "${KNATIVE_SERVING_BRANCH}"
-  export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
-}
-
 function checkout_knative_serving_operator {
   checkout_repo 'knative.dev/serving-operator' \
     "${KNATIVE_SERVING_OPERATOR_REPO}" \
@@ -43,10 +35,6 @@ function prepare_knative_serving_tests {
 function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
   (
-
-  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
-    checkout_knative_serving
-  fi
   cd "$KNATIVE_SERVING_HOME" || return $?
 
   prepare_knative_serving_tests || return $?
@@ -85,8 +73,6 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   print_test_result ${failed}
 
-  remove_temporary_gopath
-
   return $failed
   )
 }
@@ -99,9 +85,6 @@ function run_knative_serving_rolling_upgrade_tests {
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
-    checkout_knative_serving
-  fi
   cd "$KNATIVE_SERVING_HOME" || return $?
 
   prepare_knative_serving_tests || return $?
@@ -185,8 +168,6 @@ function run_knative_serving_rolling_upgrade_tests {
     --resolvabledomain || return 1
 
   oc delete --ignore-not-found=true ksvc pizzaplanet-upgrade-service scale-to-zero-upgrade-service upgrade-probe -n serving-tests
-
-  remove_temporary_gopath
 
   return 0
   )

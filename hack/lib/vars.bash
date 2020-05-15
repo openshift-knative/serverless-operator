@@ -13,6 +13,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/
 
 readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.13.3}"
 readonly KNATIVE_SERVING_OPERATOR_VERSION="${KNATIVE_SERVING_OPERATOR_VERSION:-v0.13.3}"
+# KNATIVE_SEVING_HOME is filled with Knative Serving sources by ci-operator
+readonly KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.13.0}"
 readonly KNATIVE_EVENTING_OPERATOR_VERSION="${KNATIVE_EVENTING_OPERATOR_VERSION:-v0.13.3}"
 
