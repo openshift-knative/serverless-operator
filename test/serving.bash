@@ -116,17 +116,16 @@ function run_knative_serving_rolling_upgrade_tests {
 
   logger.info "Starting prober test"
 
-  # TODO: Re-enable Prober test (https://issues.redhat.com/browse/SRVKS-542)
-  # rm -f /tmp/prober-signal
-  # go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
-  #   --imagetemplate "$image_template" \
-  #   --kubeconfig "$KUBECONFIG" \
-  #   --resolvabledomain &
+  rm -f /tmp/prober-signal
+  go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
+    --imagetemplate "$image_template" \
+    --kubeconfig "$KUBECONFIG" \
+    --resolvabledomain &
 
   # Wait for the upgrade-probe kservice to be ready before proceeding
-  # timeout 900 '[[ $(oc get services.serving.knative.dev upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
+  timeout 900 '[[ $(oc get services.serving.knative.dev upgrade-probe -n serving-tests -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]' || return 1
 
-  # PROBER_PID=$!
+  PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
@@ -142,19 +141,23 @@ function run_knative_serving_rolling_upgrade_tests {
       fi
       # Check we got RequirementsNotMet error
       [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
+      # Check KnativeServing still has the old version
+      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
-      
-      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
 
+      # Assert that the old image references eventually fade away
+      # Ignore kn-cli-artifacts as it's not part of the Knative Serving deployment.
+      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep -v kn-cli-artifacts | grep $serving_version" || return 1
     fi
-    # end_prober_test ${PROBER_PID} || return $?
+    end_prober_test ${PROBER_PID} || return $?
   fi
 
   # Might not work in OpenShift CI but we want it here so that we can consume this script later and re-use
   if [[ $UPGRADE_CLUSTER == true ]]; then
     # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
-    # end_prober_test ${PROBER_PID} || return $?
+    end_prober_test ${PROBER_PID} || return $?
 
     local latest_cluster_version
     latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
