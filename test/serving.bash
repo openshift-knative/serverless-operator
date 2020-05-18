@@ -148,7 +148,8 @@ function run_knative_serving_rolling_upgrade_tests {
       timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
 
       # Assert that the old image references eventually fade away
-      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep $serving_version" || return 1
+      # Ignore kn-cli-artifacts as it's not part of the Knative Serving deployment.
+      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep -v kn-cli-artifacts | grep $serving_version" || return 1
     fi
     end_prober_test ${PROBER_PID} || return $?
   fi
