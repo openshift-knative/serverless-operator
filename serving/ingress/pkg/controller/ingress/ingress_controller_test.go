@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,12 +26,13 @@ import (
 )
 
 const (
-	name                 = "ingress-operator"
-	serviceMeshNamespace = "knative-serving-ingress"
-	namespace            = "ingress-namespace"
-	uid                  = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
-	domainName           = name + "." + namespace + ".default.domainName"
-	routeName0           = "route-" + uid + "-336636653035"
+	name             = "ingress-operator"
+	ingressNamespace = "knative-serving-ingress"
+	ingressName      = "kourier"
+	namespace        = "ingress-namespace"
+	uid              = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
+	domainName       = name + "." + namespace + ".default.domainName"
+	routeName0       = "route-" + uid + "-336636653035"
 )
 
 var (
@@ -56,10 +58,20 @@ var (
 		Status: networkingv1alpha1.IngressStatus{
 			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
 				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
-					DomainInternal: "istio-ingressgateway." + serviceMeshNamespace + ".svc.cluster.local",
+					DomainInternal: ingressName + "." + ingressNamespace + ".svc.cluster.local",
 				}},
 			},
 		},
+	}
+	ingressEndpoints = &corev1.Endpoints{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ingressName,
+			Namespace: ingressNamespace,
+		},
+		Subsets: []corev1.EndpointSubset{{
+			Addresses: []corev1.EndpointAddress{{IP: "127.0.0.1"}},
+			Ports:     []corev1.EndpointPort{{Port: 8012}, {Port: 8013}},
+		}},
 	}
 )
 
@@ -88,19 +100,20 @@ func TestRouteMigration(t *testing.T) {
 		state []routev1.Route
 		want  []routev1.Route
 	}{
-		name: "Clean up old route and new route is generated",
+		name: "Remove route in knative-serving-ingress ns and move it to user namespace",
 
 		state: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   "to-be-reconciled-0",
-				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+				Name:      "to-be-reconciled-0",
+				Namespace: ingressNamespace,
+				Labels:    map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
 			},
 			Spec: routev1.RouteSpec{Host: domainName},
 		}, noRemoveMissingLabel, noRemoveOtherLabel},
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            routeName0,
-				Namespace:       serviceMeshNamespace,
+				Namespace:       namespace,
 				Labels:          map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
 				Annotations:     map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 				ResourceVersion: "1",
@@ -109,7 +122,7 @@ func TestRouteMigration(t *testing.T) {
 				Host: domainName,
 				To: routev1.RouteTargetReference{
 					Kind:   "Service",
-					Name:   "istio-ingressgateway",
+					Name:   ingressName,
 					Weight: ptr.Int32(100),
 				},
 				Port: &routev1.RoutePort{
@@ -133,8 +146,10 @@ func TestRouteMigration(t *testing.T) {
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
 
+		initObjs := []runtime.Object{ingress, &routev1.RouteList{Items: test.state}, ingressEndpoints}
+
 		// Create a fake client to mock API calls.
-		cl := fake.NewFakeClient(ingress, &routev1.RouteList{Items: test.state})
+		cl := fake.NewFakeClient(initObjs...)
 
 		// Create a Reconcile Ingress object with the scheme and fake client.
 		r := &ReconcileIngress{client: cl, scheme: s}
@@ -155,6 +170,7 @@ func TestRouteMigration(t *testing.T) {
 		assert.Nil(t, err)
 
 		routes := routeList.Items
+
 		assert.ElementsMatch(t, routes, test.want)
 
 		// Updating ingress with DeletionTimestamp instead of cl.Delete because delete operation doesn't handle finalizers properly.
@@ -249,7 +265,7 @@ func TestIngressController(t *testing.T) {
 			// route object
 			route := &routev1.Route{}
 
-			initObjs := []runtime.Object{ingress, route}
+			initObjs := []runtime.Object{ingress, route, ingressEndpoints}
 			initObjs = append(initObjs, test.extraObjs...)
 
 			// Register operator types with the runtime scheme.
@@ -276,7 +292,7 @@ func TestIngressController(t *testing.T) {
 
 			// Check if route has been created.
 			routes := &routev1.Route{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: serviceMeshNamespace}, routes)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: namespace}, routes)
 
 			assert.True(t, test.wantRouteErr(err))
 			assert.Equal(t, test.want, routes.ObjectMeta.Annotations)

@@ -23,6 +23,8 @@ const (
 	lbService   = "lb-service"
 	lbNamespace = "lb-namespace"
 
+	ingressNamespace = "ingress-namespace"
+
 	uid        = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
 	routeName0 = "route-" + uid + "-323531366235"
 	routeName1 = "route-" + uid + "-663738313063"
@@ -62,7 +64,7 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation: "600s",
 					},
-					Namespace: lbNamespace,
+					Namespace: ingressNamespace,
 					Name:      routeName0,
 				},
 				Spec: routev1.RouteSpec{
@@ -112,7 +114,7 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation: "3600s",
 					},
-					Namespace: lbNamespace,
+					Namespace: ingressNamespace,
 					Name:      routeName0,
 				},
 				Spec: routev1.RouteSpec{
@@ -149,7 +151,7 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation: "600s",
 					},
-					Namespace: lbNamespace,
+					Namespace: ingressNamespace,
 					Name:      routeName0,
 				},
 				Spec: routev1.RouteSpec{
@@ -178,7 +180,7 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation: "600s",
 					},
-					Namespace: lbNamespace,
+					Namespace: ingressNamespace,
 					Name:      routeName1,
 				},
 				Spec: routev1.RouteSpec{
@@ -216,7 +218,7 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation: "600s",
 					},
-					Namespace: lbNamespace,
+					Namespace: ingressNamespace,
 					Name:      routeName1,
 				},
 				Spec: routev1.RouteSpec{
@@ -267,7 +269,7 @@ func ingress(options ...ingressOption) *networkingv1alpha1.Ingress {
 				serving.RouteLabelKey:          "route1",
 				serving.RouteNamespaceLabelKey: "default",
 			},
-			Namespace: "default",
+			Namespace: ingressNamespace,
 			Name:      "ingress",
 			UID:       uid,
 		},
