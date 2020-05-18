@@ -18,9 +18,6 @@ function checkout_knative_serving_operator {
 }
 
 function prepare_knative_serving_tests {
-  # Remove unneeded manifest
-  rm test/config/100-istio-default-domain.yaml
-
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
