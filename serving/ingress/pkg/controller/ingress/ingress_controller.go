@@ -155,7 +155,7 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 	return reconcile.Result{}, r.reconcileEndpoints(ctx, ing)
 }
 
-func (r *ReconcileIngress) routeExist(ctx context.Context, ing *networkingv1alpha1.Ingress) (bool, error) {
+func (r *ReconcileIngress) ingressExist(ctx context.Context, ing *networkingv1alpha1.Ingress) (bool, error) {
 	// List Route
 	listOpts := &client.ListOptions{
 		Namespace: ing.Namespace, // List only one namespace
@@ -163,12 +163,12 @@ func (r *ReconcileIngress) routeExist(ctx context.Context, ing *networkingv1alph
 			serving.RouteNamespaceLabelKey: ing.Namespace,
 		}),
 	}
-	var routeList routev1.RouteList
-	err := r.client.List(ctx, &routeList, listOpts)
+	var ingList networkingv1alpha1.IngressList
+	err := r.client.List(ctx, &ingList, listOpts)
 	if err != nil {
 		return true, err
 	}
-	if len(routeList.Items) == 0 {
+	if len(ingList.Items) == 0 {
 		return false, nil
 	}
 	return true, nil
@@ -183,7 +183,7 @@ func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networking
 	}
 
 	// If there are no route in the namespace, cleanup.
-	if exist, err := r.routeExist(ctx, ing); err != nil {
+	if exist, err := r.ingressExist(ctx, ing); err != nil {
 		return err
 	} else if !exist {
 		return r.deleteService(ctx, ing, serviceName)
@@ -222,8 +222,8 @@ func (r *ReconcileIngress) reconcileEndpoints(ctx context.Context, ing *networki
 	if err != nil {
 		return err
 	}
-	// If there are no route in the namespace, cleanup.
-	if exist, err := r.routeExist(ctx, ing); err != nil {
+	// If there are no ingress in the namespace, cleanup.
+	if exist, err := r.ingressExist(ctx, ing); err != nil {
 		return err
 	} else if !exist {
 		return r.deleteEndpoints(ctx, ing, serviceName)
