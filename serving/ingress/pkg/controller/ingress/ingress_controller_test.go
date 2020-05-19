@@ -75,6 +75,103 @@ var (
 	}
 )
 
+func TestRouteNamespaceMigration(t *testing.T) {
+	logf.SetLogger(logf.ZapLogger(true))
+
+	var (
+		noMoveOtherLabel = routev1.Route{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "no-remove-other-label",
+				Labels: map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+			},
+			Spec: routev1.RouteSpec{Host: "c.example.com"},
+		}
+		noMoveMissingLabel = routev1.Route{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "no-remove-missing-label",
+				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
+			},
+			Spec: routev1.RouteSpec{Host: "b.example.com"},
+		}
+	)
+
+	test := struct {
+		name  string
+		state []routev1.Route
+		want  []routev1.Route
+	}{
+		name: "Remove route in knative-serving-ingress ns and move it to user namespace",
+
+		state: []routev1.Route{{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      routeName0,
+				Namespace: ingressNamespace,
+				Labels:    map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+			},
+			Spec: routev1.RouteSpec{Host: domainName},
+		}, noMoveMissingLabel, noMoveOtherLabel},
+		want: []routev1.Route{{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:            routeName0,
+				Namespace:       namespace,
+				Labels:          map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+				Annotations:     map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+				ResourceVersion: "1",
+			},
+			Spec: routev1.RouteSpec{
+				Host: domainName,
+				To: routev1.RouteTargetReference{
+					Kind:   "Service",
+					Name:   ingressName,
+					Weight: ptr.Int32(100),
+				},
+				Port: &routev1.RoutePort{
+					TargetPort: intstr.FromString(resources.KourierHttpPort),
+				},
+				TLS: &routev1.TLSConfig{
+					Termination:                   routev1.TLSTerminationEdge,
+					InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+				},
+				WildcardPolicy: routev1.WildcardPolicyNone,
+			},
+		}, noMoveMissingLabel, noMoveOtherLabel},
+	}
+
+	t.Run(test.name, func(t *testing.T) {
+		ingress := defaultIngress.DeepCopy()
+
+		// Register operator types with the runtime scheme.
+		s := scheme.Scheme
+		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
+		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
+		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
+
+		initObjs := []runtime.Object{ingress, &routev1.RouteList{Items: test.state}, ingressEndpoints}
+
+		// Create a fake client to mock API calls.
+		cl := fake.NewFakeClient(initObjs...)
+
+		// Create a Reconcile Ingress object with the scheme and fake client.
+		r := &ReconcileIngress{client: cl, scheme: s}
+		// Mock request to simulate Reconcile() being called on an event for a
+		// watched resource .
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+		if _, err := r.Reconcile(req); err != nil {
+			t.Fatalf("reconcile: (%v)", err)
+		}
+
+		routeList := &routev1.RouteList{}
+		err := cl.List(context.TODO(), routeList)
+		assert.Nil(t, err)
+		assert.ElementsMatch(t, routeList.Items, test.want)
+	})
+}
+
 func TestRouteMigration(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
@@ -100,7 +197,7 @@ func TestRouteMigration(t *testing.T) {
 		state []routev1.Route
 		want  []routev1.Route
 	}{
-		name: "Remove route in knative-serving-ingress ns and move it to user namespace",
+		name: "Clean up old route and new route is generated",
 
 		state: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
