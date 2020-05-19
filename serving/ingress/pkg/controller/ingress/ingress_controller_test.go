@@ -73,27 +73,30 @@ var (
 			Ports:     []corev1.EndpointPort{{Port: 8012}, {Port: 8013}},
 		}},
 	}
+	// otherLabelRoute has unexpected label.
+	otherLabelRoute = routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "no-remove-other-label",
+			Namespace: "knative-serving-ingress",
+			Labels:    map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
+		},
+		Spec: routev1.RouteSpec{Host: "c.example.com"},
+	}
+	// missingLabelRoute has a missing label.
+	missingLabelRoute = routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "no-remove-missing-label",
+			Namespace: "knative-serving-ingress",
+			Labels:    map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
+		},
+		Spec: routev1.RouteSpec{Host: "b.example.com"},
+	}
 )
 
 func TestRouteNamespaceMigration(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
-	var (
-		noMoveOtherLabel = routev1.Route{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-other-label",
-				Labels: map[string]string{networking.IngressLabelKey: "another", serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
-			},
-			Spec: routev1.RouteSpec{Host: "c.example.com"},
-		}
-		noMoveMissingLabel = routev1.Route{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   "no-remove-missing-label",
-				Labels: map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name},
-			},
-			Spec: routev1.RouteSpec{Host: "b.example.com"},
-		}
-	)
+	var ()
 
 	test := struct {
 		name  string
@@ -109,7 +112,7 @@ func TestRouteNamespaceMigration(t *testing.T) {
 				Labels:    map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
 			},
 			Spec: routev1.RouteSpec{Host: domainName},
-		}, noMoveMissingLabel, noMoveOtherLabel},
+		}, missingLabelRoute, otherLabelRoute},
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            routeName0,
@@ -134,7 +137,7 @@ func TestRouteNamespaceMigration(t *testing.T) {
 				},
 				WildcardPolicy: routev1.WildcardPolicyNone,
 			},
-		}, noMoveMissingLabel, noMoveOtherLabel},
+		}, missingLabelRoute, otherLabelRoute},
 	}
 
 	t.Run(test.name, func(t *testing.T) {
@@ -143,6 +146,7 @@ func TestRouteNamespaceMigration(t *testing.T) {
 		// Register operator types with the runtime scheme.
 		s := scheme.Scheme
 		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
+		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, &networkingv1alpha1.IngressList{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
 
@@ -240,6 +244,7 @@ func TestRouteMigration(t *testing.T) {
 		// Register operator types with the runtime scheme.
 		s := scheme.Scheme
 		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, ingress)
+		s.AddKnownTypes(networkingv1alpha1.SchemeGroupVersion, &networkingv1alpha1.IngressList{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.Route{})
 		s.AddKnownTypes(routev1.SchemeGroupVersion, &routev1.RouteList{})
 
