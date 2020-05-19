@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	apiErrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -120,7 +120,7 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 	original := &networkingv1alpha1.Ingress{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
-		if apiErrors.IsNotFound(err) {
+		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
@@ -156,7 +156,6 @@ func (r *ReconcileIngress) Reconcile(request reconcile.Request) (reconcile.Resul
 }
 
 func (r *ReconcileIngress) ingressExist(ctx context.Context, ing *networkingv1alpha1.Ingress) (bool, error) {
-	// List Route
 	listOpts := &client.ListOptions{
 		Namespace: ing.Namespace, // List only one namespace
 		LabelSelector: labels.SelectorFromSet(map[string]string{
@@ -174,7 +173,7 @@ func (r *ReconcileIngress) ingressExist(ctx context.Context, ing *networkingv1al
 	return true, nil
 }
 
-// ReconcileService ...
+// reconcileService reconciles service for ingress gateway.
 func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
 	logger := logging.FromContext(ctx)
 	serviceName, _, err := resources.IngressName(ing)
@@ -182,7 +181,7 @@ func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networking
 		return err
 	}
 
-	// If there are no route in the namespace, cleanup.
+	// If there are no kingress in the namespace, cleanup service.
 	if exist, err := r.ingressExist(ctx, ing); err != nil {
 		return err
 	} else if !exist {
@@ -192,7 +191,7 @@ func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networking
 	desired := resources.MakeK8sService(ctx, ing, serviceName)
 	existing := &corev1.Service{}
 	err = r.client.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: ing.Namespace}, existing)
-	if err != nil && apiErrors.IsNotFound(err) {
+	if err != nil && errors.IsNotFound(err) {
 		err = r.client.Create(ctx, desired)
 		if err != nil {
 			return fmt.Errorf("failed to create k8s service for ingress: %w", err)
@@ -203,9 +202,8 @@ func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networking
 		logger.Infof("Updating service %s diff: %s", desired.Name, cmp.Diff(existing.Spec, desired.Spec))
 		// Don't modify the informers copy
 		existing := existing.DeepCopy()
-		clusterIP := existing.Spec.ClusterIP
+		desired.Spec.ClusterIP = existing.Spec.ClusterIP // ClusterIP is immutable.
 		existing.Spec = desired.Spec
-		existing.Spec.ClusterIP = clusterIP
 		existing.Annotations = desired.Annotations
 		err = r.client.Update(ctx, existing)
 		if err != nil {
@@ -215,14 +213,14 @@ func (r *ReconcileIngress) reconcileService(ctx context.Context, ing *networking
 	return nil
 }
 
-// ReconcileService ...
+// reconcileEndpoints reconciles endpoints for ingress gateway.
 func (r *ReconcileIngress) reconcileEndpoints(ctx context.Context, ing *networkingv1alpha1.Ingress) error {
 	logger := logging.FromContext(ctx)
 	serviceName, namespace, err := resources.IngressName(ing)
 	if err != nil {
 		return err
 	}
-	// If there are no ingress in the namespace, cleanup.
+	// If there are no kingress in the namespace, cleanup endpoints.
 	if exist, err := r.ingressExist(ctx, ing); err != nil {
 		return err
 	} else if !exist {
@@ -231,14 +229,14 @@ func (r *ReconcileIngress) reconcileEndpoints(ctx context.Context, ing *networki
 
 	ingEps := &corev1.Endpoints{}
 	err = r.client.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: namespace}, ingEps)
-	if apiErrors.IsNotFound(err) {
+	if errors.IsNotFound(err) {
 		return fmt.Errorf("Kourier endpoint is not found: %w", err)
 	}
 
 	desired := resources.MakeEndpoints(ingEps, ing, serviceName)
 	existing := &corev1.Endpoints{}
 	err = r.client.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: ing.Namespace}, existing)
-	if err != nil && apiErrors.IsNotFound(err) {
+	if err != nil && errors.IsNotFound(err) {
 		err = r.client.Create(ctx, desired)
 		if err != nil {
 			return fmt.Errorf("failed to create enpdoint service: %w", err)
@@ -308,7 +306,7 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 func (r *ReconcileIngress) deleteService(ctx context.Context, ing *networkingv1alpha1.Ingress, serviceName string) error {
 	existing := &corev1.Service{}
 	err := r.client.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: ing.Namespace}, existing)
-	if apiErrors.IsNotFound(err) {
+	if errors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
 		return err
@@ -319,7 +317,7 @@ func (r *ReconcileIngress) deleteService(ctx context.Context, ing *networkingv1a
 func (r *ReconcileIngress) deleteEndpoints(ctx context.Context, ing *networkingv1alpha1.Ingress, serviceName string) error {
 	existingEps := &corev1.Endpoints{}
 	err := r.client.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: ing.Namespace}, existingEps)
-	if apiErrors.IsNotFound(err) {
+	if errors.IsNotFound(err) {
 		return nil
 	} else if err != nil {
 		return err
@@ -356,7 +354,7 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 	// Clean up obsolete route in knative-serving-ingress namespace.
 	obsoleteRoute := &routev1.Route{}
 	err := r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: "knative-serving-ingress"}, obsoleteRoute)
-	if apiErrors.IsNotFound(err) {
+	if errors.IsNotFound(err) {
 		// No obsolete route in knative-serving-ingress ns found. Nothing to do.
 	} else if err != nil {
 		return fmt.Errorf("failed to get route: %w", err)
@@ -367,7 +365,7 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 	// Check if this Route already exists
 	route := &routev1.Route{}
 	err = r.client.Get(ctx, types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, route)
-	if err != nil && apiErrors.IsNotFound(err) {
+	if err != nil && errors.IsNotFound(err) {
 		logger.Infof("Creating route %s(%s)", desired.Name, desired.Spec.Host)
 		err = r.client.Create(ctx, desired)
 		if err != nil {

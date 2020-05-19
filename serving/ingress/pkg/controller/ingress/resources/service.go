@@ -9,6 +9,7 @@ import (
 	"knative.dev/serving/pkg/resources"
 )
 
+// MakeK8sService constructs a K8s Service to expose Kourier gateway endpoints.
 func MakeK8sService(ctx context.Context, ing *networkingv1alpha1.Ingress, name string) *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
