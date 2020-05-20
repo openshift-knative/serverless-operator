@@ -21,9 +21,11 @@ function knative_eventing_tests {
 
   checkout_knative_eventing
 
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+
   go_test_e2e -timeout=90m -parallel=1 ./test/e2e \
     --kubeconfig "$KUBECONFIG" \
-    --dockerrepo 'quay.io/openshift-knative' \
+    --imagetemplate "$image_template" \
     || exitstatus=$? && true
 
   print_test_result ${exitstatus}
