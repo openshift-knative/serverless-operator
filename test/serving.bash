@@ -94,7 +94,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running Serving rolling upgrade tests"
   (
-  local failed upgrade_to cluster_version serving_version
+  local failed upgrade_to latest_cluster_version cluster_version serving_version
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -159,13 +159,15 @@ function run_knative_serving_rolling_upgrade_tests {
     # End the prober test now before we start cluster upgrade, up until now we should have zero failed requests
     end_prober_test ${PROBER_PID} || return $?
 
-    local latest_cluster_version
-    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
-    [[ $latest_cluster_version != "" ]] || return 1
-
-    oc adm upgrade --to-latest=true --force=true
-
-    timeout 7200 '[[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.version==\"${latest_cluster_version}\")].state}") != Completed ]]' || return 1
+    if [[ -n "$UPGRADE_OCP_IMAGE" ]]; then
+      oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" --force=true --allow-explicit-upgrade
+      timeout 7200 '[[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.image==\"${UPGRADE_OCP_IMAGE}\")].state}") != Completed ]]' || return 1
+    else
+      latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
+      [[ $latest_cluster_version != "" ]] || return 1
+      oc adm upgrade --to-latest=true --force=true
+      timeout 7200 '[[ $(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.version==\"${latest_cluster_version}\")].state}") != Completed ]]' || return 1
+    fi
 
     logger.info "New cluster version\n: $(oc get clusterversion)"
   fi
