@@ -183,8 +183,12 @@
   digest = "1:c3050a9f4b141fcc3ef805c8b3e8e8242676557755ffb9d2707c26530cd71c9d"
   name = "github.com/gogo/protobuf"
   packages = [
+    "gogoproto",
+    "jsonpb",
     "proto",
+    "protoc-gen-gogo/descriptor",
     "sortkeys",
+    "types",
   ]
   pruneopts = "NT"
   revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
@@ -363,14 +367,6 @@
   pruneopts = "NT"
   revision = "24b83195037b3bc61fcda2d28b7b0518bce293b6"
   version = "v1.0.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
-  name = "github.com/mattbaird/jsonpatch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
 
 [[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
@@ -668,6 +664,14 @@
   revision = "ed542cd5b28ad1b474f8ff7ca112cad2c3ac2dc8"
 
 [[projects]]
+  digest = "1:79c5b7c79609e7e2d0c5a6509cc5894bb8ee9c2ca6e741214f8aa4317beeea59"
+  name = "gomodules.xyz/jsonpatch"
+  packages = ["v2"]
+  pruneopts = "NT"
+  revision = "1c2a0262323edc27502942d9727c95646b1c3cbe"
+  version = "v2.1.0"
+
+[[projects]]
   digest = "1:ef33a89dbeefa3d834fff6b9e0b342311d4bf1a90cbe9c646e79797940b61c88"
   name = "google.golang.org/appengine"
   packages = [
@@ -701,6 +705,30 @@
   pruneopts = "NT"
   revision = "f221b8435cfb71e54062f6c6e99e9ade30b124d5"
   version = "v2.2.4"
+
+[[projects]]
+  digest = "1:406ba9e1567d138092a5e1a6e3c3384d3d7fffb2d287b29a18e7d9b77ad62279"
+  name = "istio.io/api"
+  packages = ["networking/v1alpha3"]
+  pruneopts = "NT"
+  revision = "4b064f75ad8f6cd93521b0527e9ec9fc60f42900"
+  version = "1.5.4"
+
+[[projects]]
+  digest = "1:1ae5570b3ab60458cbd29d90513a2333faa56b605b2057117e86bc5f7a37ea9d"
+  name = "istio.io/client-go"
+  packages = ["pkg/apis/networking/v1alpha3"]
+  pruneopts = "NT"
+  revision = "289a91f51a8e5dafc058e038ab737621273fb984"
+  version = "1.5.4"
+
+[[projects]]
+  digest = "1:6f91da5c96bcfaa89a13014b14907f0f28f8e48317f1122b90dda61d0bcc734a"
+  name = "istio.io/gogo-genproto"
+  packages = ["googleapis/google/api"]
+  pruneopts = "NT"
+  revision = "d3e214cd829acb60b7be007b636f0c7eb023d0a1"
+  version = "1.5.4"
 
 [[projects]]
   digest = "1:18b9b70bdf29da610c0df032cf60ee7526a48756fa44012cc639dcb557335cbc"
@@ -942,23 +970,21 @@
   version = "v0.13.2"
 
 [[projects]]
-  branch = "release-0.10"
-  digest = "1:56e2d5d36e35d62ecc6662e4f5b6b3e6caf83c79fd808055e028fe72bfad016c"
+  branch = "release-0.13"
+  digest = "1:366e2eaed09b354c22bc3921147021cde38aeb24a02d782b3d524b50c335ae80"
   name = "knative.dev/pkg"
   packages = [
     "apis",
     "apis/duck",
     "apis/duck/v1",
     "apis/duck/v1beta1",
-    "apis/istio",
-    "apis/istio/common/v1alpha1",
-    "apis/istio/v1alpha3",
-    "apis/v1alpha1",
+    "kmeta",
     "kmp",
     "ptr",
+    "tracker",
   ]
   pruneopts = "NT"
-  revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
+  revision = "87426b54db6f1200e2cb9086055fdf7fe90307dc"
 
 [[projects]]
   digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
@@ -1055,6 +1081,7 @@
     "github.com/operator-framework/operator-sdk/pkg/restmapper",
     "github.com/operator-framework/operator-sdk/version",
     "github.com/spf13/pflag",
+    "istio.io/client-go/pkg/apis/networking/v1alpha3",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
@@ -1075,7 +1102,6 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
-    "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/pkg/ptr",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",

@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"knative.dev/pkg/apis/istio/v1alpha3"
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 )
 
