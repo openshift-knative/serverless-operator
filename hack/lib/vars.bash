@@ -42,11 +42,14 @@ readonly EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 declare -a NAMESPACES
 NAMESPACES=("${SERVING_NAMESPACE}" "${SERVERLESS_NAMESPACE}" "${EVENTING_NAMESPACE}")
 export NAMESPACES
-readonly UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
-
 readonly INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
+# Specify concrete INITIAL_CSV when trying to install older Serverless than one version back.
+export INITIAL_CSV="${INITIAL_CSV:-}"
 export OLM_CHANNEL="${OLM_CHANNEL:-"preview-4.6"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
+# Specify whether upgrade tests should use Manual or Automatic approval strategy
+export AUTO_UPGRADES="${AUTO_UPGRADES:-"false"}"
+readonly CSVS_BREAKING_PROBER_TEST="serverless-operator.v1.7.0" # Separate by space

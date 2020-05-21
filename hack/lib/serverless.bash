@@ -22,7 +22,7 @@ function ensure_serverless_installed {
 }
 
 function install_serverless_previous {
-  local rootdir current_csv previous_csv
+  local previous_csv rootdir current_csv
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Remove installplan from previous installations, leaving this would make the operator
@@ -30,9 +30,51 @@ function install_serverless_previous {
   current_csv=$("${rootdir}/hack/catalog.sh" | grep currentCSV | awk '{ print $2 }')
   remove_installplan "$current_csv"
 
-  previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
-  deploy_serverless_operator "$previous_csv"  || return $?
+  if [[ -n "$INITIAL_CSV" ]]; then
+    previous_csv="$INITIAL_CSV"
+  else
+    previous_csv="$(latest_minus_one_csv)"
+  fi
+
+  deploy_serverless_operator "$previous_csv" || return $?
   deploy_knativeserving_cr || return $?
+}
+
+function latest_minus_one_csv {
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  echo "$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')"
+}
+
+function latest_minus_two_csv {
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  echo "$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n2 | head -n1 | awk '{ print $2 }')"
+}
+
+function oldest_compatible_csv {
+  local channel="$1" rootdir latest_csv csv_version minKubeVersion oldest_compat_csv_file oldest_compat_csv
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  # Get the latest CSV name
+  latest_csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${channel}\"$/{n;p;}" | awk '{ print $2 }')
+  # Get the version substring from the CSV name
+  version_substring=$(echo "$latest_csv" | sed "s/serverless.operator\.v\(.*\)/\1/")
+  # Get minKubeVersion from the latest CSV
+  min_kube_version=$(grep minKubeVersion "${rootdir}/olm-catalog/serverless-operator/${version_substring}/${latest_csv}.clusterserviceversion.yaml")
+  # Find oldest CSV file that has the same minKubeVersion as the latest => should work on the given OCP
+  oldest_compat_csv_file=$(grep -lR "${min_kube_version}" "${rootdir}/olm-catalog/serverless-operator" | sort | head -n 1)
+  # Parse the CSV name from the CSV file
+  oldest_compat_csv=$(basename "${oldest_compat_csv_file}" | sed "s/\(.*\)\.clusterserviceversion\.yaml/\1/")
+  # If there's no previous CSV with same minKubeVersion use latest-1
+  [[ "$oldest_compat_csv" == "$latest_csv" ]] && oldest_compat_csv="$(latest_minus_one_csv)"
+  [[ "$oldest_compat_csv" != "" ]] && echo "$oldest_compat_csv" || return 1
+}
+
+# Returns CSV to which we can upgrade from the CSV specified by first parameter
+function eligible_upgrade {
+  local from="$1" root_dir upgrade_file
+  upgrade_file=$(grep -lR "replaces: ${from}" "${rootdir}/olm-catalog/serverless-operator") || return $?
+  echo "$(basename "${upgrade_file}" | sed "s/\(.*\)\.clusterserviceversion\.yaml/\1/")"
 }
 
 function remove_installplan {
@@ -80,6 +122,8 @@ EOF
 
   # Approve the initial installplan automatically
   approve_csv "$csv" "$OLM_CHANNEL" || return 5
+
+  csv_installed "$csv" || return 1
 }
 
 function approve_csv {
@@ -98,11 +142,20 @@ function approve_csv {
 
   install_plan=$(find_install_plan $csv_version)
   oc get $install_plan -n ${OPERATORS_NAMESPACE} -o yaml | sed 's/\(.*approved:\) false/\1 true/' | oc replace -f -
+}
 
-  if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
+function csv_installed {
+  local csv="$1"
+  if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
     oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
     return 1
   fi
+}
+
+function automate_approval {
+  oc patch subscription "$OPERATOR" -n "$OPERATORS_NAMESPACE" \
+    --type 'merge' \
+    --patch '{"spec": {"installPlanApproval": "Automatic"}}' || return $?
 }
 
 function find_install_plan {

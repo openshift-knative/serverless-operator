@@ -9,6 +9,9 @@ images:
 install:
 	./hack/install.sh
 
+# Installs CSV version latest-1.
+# To override this, specify a concrete version by passing
+# INITIAL_CSV=serverless-operator.v1.X.X.
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
