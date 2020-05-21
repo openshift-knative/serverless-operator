@@ -9,3 +9,5 @@ channels:
   currentCSV: serverless-operator.v1.7.1
 - name: "4.4"
   currentCSV: serverless-operator.v1.7.1
+- name: "4.5"
+  currentCSV: serverless-operator.v1.7.1
