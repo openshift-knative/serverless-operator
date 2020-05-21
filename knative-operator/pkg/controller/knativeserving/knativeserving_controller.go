@@ -10,16 +10,12 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	consolev1 "github.com/openshift/api/console/v1"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -33,7 +29,6 @@ import (
 )
 
 const (
-	routeLabelKey     = "serving.knative.dev/route"
 	ingressClassKey   = "networking.knative.dev/ingress.class"
 	istioIngressClass = "istio.ingress.networking.knative.dev"
 
@@ -198,7 +193,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.installKnConsoleCLIDownload,
 		r.installKourier,
 		r.ensureProxySettings,
-		r.deleteVirtualService,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -222,35 +216,6 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 	log.Info("Updating KnativeServing with mutated state for Openshift")
 	if err := r.client.Update(context.TODO(), instance); err != nil {
 		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
-	}
-	return nil
-}
-
-// deleteVirtualService removes obsoleted VirtualServices.
-func (r *ReconcileKnativeServing) deleteVirtualService(instance *servingv1alpha1.KnativeServing) error {
-	labelSelector := labels.NewSelector()
-	req, err := labels.NewRequirement(routeLabelKey, selection.Exists, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create requirement for label: %w", err)
-	}
-	listOpts := &client.ListOptions{LabelSelector: labelSelector.Add(*req)}
-	list := &v1alpha3.VirtualServiceList{}
-	ctx := context.TODO()
-	if err := r.client.List(ctx, listOpts, list); err != nil {
-		if meta.IsNoMatchError(err) {
-			// VirtualService CRD is not installed.
-			return nil
-		}
-		return err
-	}
-	for i := range list.Items {
-		vs := &list.Items[i]
-		if vs.GetAnnotations()[ingressClassKey] == istioIngressClass {
-			log.Info(fmt.Sprintf("deleting VirtualService %s/%s", vs.GetNamespace(), vs.GetName()))
-			if err := r.client.Delete(ctx, vs); err != nil {
-				return fmt.Errorf("failed to delete VirtualService %s/%s: %w", vs.GetNamespace(), vs.GetName(), err)
-			}
-		}
 	}
 	return nil
 }

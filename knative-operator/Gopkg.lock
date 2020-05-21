@@ -183,12 +183,8 @@
   digest = "1:c3050a9f4b141fcc3ef805c8b3e8e8242676557755ffb9d2707c26530cd71c9d"
   name = "github.com/gogo/protobuf"
   packages = [
-    "gogoproto",
-    "jsonpb",
     "proto",
-    "protoc-gen-gogo/descriptor",
     "sortkeys",
-    "types",
   ]
   pruneopts = "NT"
   revision = "5628607bb4c51c3157aacc3a50f0ab707582b805"
@@ -707,30 +703,6 @@
   version = "v2.2.4"
 
 [[projects]]
-  digest = "1:406ba9e1567d138092a5e1a6e3c3384d3d7fffb2d287b29a18e7d9b77ad62279"
-  name = "istio.io/api"
-  packages = ["networking/v1alpha3"]
-  pruneopts = "NT"
-  revision = "4b064f75ad8f6cd93521b0527e9ec9fc60f42900"
-  version = "1.5.4"
-
-[[projects]]
-  digest = "1:1ae5570b3ab60458cbd29d90513a2333faa56b605b2057117e86bc5f7a37ea9d"
-  name = "istio.io/client-go"
-  packages = ["pkg/apis/networking/v1alpha3"]
-  pruneopts = "NT"
-  revision = "289a91f51a8e5dafc058e038ab737621273fb984"
-  version = "1.5.4"
-
-[[projects]]
-  digest = "1:6f91da5c96bcfaa89a13014b14907f0f28f8e48317f1122b90dda61d0bcc734a"
-  name = "istio.io/gogo-genproto"
-  packages = ["googleapis/google/api"]
-  pruneopts = "NT"
-  revision = "d3e214cd829acb60b7be007b636f0c7eb023d0a1"
-  version = "1.5.4"
-
-[[projects]]
   digest = "1:18b9b70bdf29da610c0df032cf60ee7526a48756fa44012cc639dcb557335cbc"
   name = "k8s.io/api"
   packages = [
@@ -1081,7 +1053,6 @@
     "github.com/operator-framework/operator-sdk/pkg/restmapper",
     "github.com/operator-framework/operator-sdk/version",
     "github.com/spf13/pflag",
-    "istio.io/client-go/pkg/apis/networking/v1alpha3",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
@@ -1091,10 +1062,8 @@
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
-    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/apimachinery/pkg/selection",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/sets",
