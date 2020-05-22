@@ -30,11 +30,9 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 		return fmt.Errorf("failed to apply kourier manifest: %w", err)
 	}
 	if err := checkDeployments(&manifest, instance, api); err != nil {
-		instance.Status.MarkDependencyInstalling("Kourier")
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Kourier is ready")
-	instance.Status.MarkDependenciesInstalled()
 	return nil
 }
 
