@@ -51,6 +51,10 @@ required = [
   name = "knative.dev/eventing-operator"
   version = "=v0.13.2"
 
+[[override]]
+  name = "knative.dev/pkg"
+  branch = "release-0.13"
+
 [[constraint]]
   name = "github.com/openshift/api"
   branch = "release-4.2"

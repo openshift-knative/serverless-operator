@@ -365,14 +365,6 @@
   version = "v1.0.4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
-  name = "github.com/mattbaird/jsonpatch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
-
-[[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
@@ -668,6 +660,14 @@
   revision = "ed542cd5b28ad1b474f8ff7ca112cad2c3ac2dc8"
 
 [[projects]]
+  digest = "1:79c5b7c79609e7e2d0c5a6509cc5894bb8ee9c2ca6e741214f8aa4317beeea59"
+  name = "gomodules.xyz/jsonpatch"
+  packages = ["v2"]
+  pruneopts = "NT"
+  revision = "1c2a0262323edc27502942d9727c95646b1c3cbe"
+  version = "v2.1.0"
+
+[[projects]]
   digest = "1:ef33a89dbeefa3d834fff6b9e0b342311d4bf1a90cbe9c646e79797940b61c88"
   name = "google.golang.org/appengine"
   packages = [
@@ -942,23 +942,21 @@
   version = "v0.13.2"
 
 [[projects]]
-  branch = "release-0.10"
-  digest = "1:56e2d5d36e35d62ecc6662e4f5b6b3e6caf83c79fd808055e028fe72bfad016c"
+  branch = "release-0.13"
+  digest = "1:366e2eaed09b354c22bc3921147021cde38aeb24a02d782b3d524b50c335ae80"
   name = "knative.dev/pkg"
   packages = [
     "apis",
     "apis/duck",
     "apis/duck/v1",
     "apis/duck/v1beta1",
-    "apis/istio",
-    "apis/istio/common/v1alpha1",
-    "apis/istio/v1alpha3",
-    "apis/v1alpha1",
+    "kmeta",
     "kmp",
     "ptr",
+    "tracker",
   ]
   pruneopts = "NT"
-  revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
+  revision = "87426b54db6f1200e2cb9086055fdf7fe90307dc"
 
 [[projects]]
   digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
@@ -1064,10 +1062,8 @@
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
-    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/apimachinery/pkg/selection",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/sets",
@@ -1075,7 +1071,6 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
-    "knative.dev/pkg/apis/istio/v1alpha3",
     "knative.dev/pkg/ptr",
     "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
