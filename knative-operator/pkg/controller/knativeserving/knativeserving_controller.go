@@ -395,8 +395,8 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.K
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	// install Kourier
+	instance.Status.MarkDependencyInstalling("Kourier")
 	if err := kourier.Apply(instance, r.client, r.scheme); err != nil {
-		instance.Status.MarkDependencyInstalling("Kourier")
 		return err
 	}
 	instance.Status.MarkDependenciesInstalled()
