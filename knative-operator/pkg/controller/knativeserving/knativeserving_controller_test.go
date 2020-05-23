@@ -316,7 +316,6 @@ func TestKnativeServingStatus(t *testing.T) {
 	s := scheme.Scheme
 	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 	s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-	s.AddKnownTypes(v1alpha3.SchemeGroupVersion, &v1alpha3.VirtualServiceList{})
 	s.AddKnownTypes(routev1.GroupVersion, knRoute)
 
 	cl := fake.NewFakeClient(initObjs...)
