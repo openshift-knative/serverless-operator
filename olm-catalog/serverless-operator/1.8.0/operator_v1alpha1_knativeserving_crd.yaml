@@ -55,12 +55,59 @@ spec:
                   type: object
               type: object
             config:
-              additionalProperties:
-                additionalProperties:
-                  type: string
-                type: object
               description: A means to override the corresponding entries in the upstream
                 configmaps
+              properties:
+                autoscaler:
+                  additionalProperties:
+                    type: string
+                  type: object
+                defaults:
+                  additionalProperties:
+                    type: string
+                  type: object
+                deployment:
+                  additionalProperties:
+                    type: string
+                  type: object
+                domain:
+                  additionalProperties:
+                    type: string
+                  type: object
+                gc:
+                  additionalProperties:
+                    type: string
+                  type: object
+                logging:
+                  additionalProperties:
+                    type: string
+                  type: object
+                network:
+                  additionalProperties:
+                    type: string
+                  type: object
+                observability:
+                  additionalProperties:
+                    type: string
+                  type: object
+                tracing:
+                  description: configuration for tracing
+                  properties:
+                    backend:
+                      description: The backend for tracing. It may be "zipkin" or
+                        "none". The default is "none"
+                      type: string
+                    debug:
+                      description: URL to jaeger collector where traces are sent.
+                        This must be specified when backend is "zipkin".
+                      type: string
+                    sample-rate:
+                      description: Percentage (0-1) of requests to trace
+                      type: string
+                    zipkin-endpoint:
+                      description: URL to zipkin collector where traces are sent.
+                      type: string
+                  type: object
               type: object
             controller-custom-certs:
               description: Enabling the controller to trust registries with self-signed
