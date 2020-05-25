@@ -302,6 +302,55 @@ func TestCustomCertsConfigMap(t *testing.T) {
 	}
 }
 
+// TestKnativeServingStatus tests KnativeServing CR status with Kourier's installation failure.
+func TestKnativeServingStatus(t *testing.T) {
+	logf.SetLogger(logf.ZapLogger(true))
+
+	ks := &defaultKnativeServing
+	ingress := &defaultIngress
+	knRoute := &defaultKnRoute
+
+	initObjs := []runtime.Object{ks, ingress, knRoute}
+
+	// Register operator types with the runtime scheme.
+	s := scheme.Scheme
+	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
+	s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
+	s.AddKnownTypes(routev1.GroupVersion, knRoute)
+
+	cl := fake.NewFakeClient(initObjs...)
+	r := &ReconcileKnativeServing{client: cl, scheme: s}
+
+	// Test with invalid Kourier manifest file.
+	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/non-exist-file")
+	if _, err := r.Reconcile(defaultRequest); err == nil {
+		t.Fatalf("reconcile does not fail with invalid manifest path")
+	}
+
+	failedKs := &v1alpha1.KnativeServing{}
+	err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving", Namespace: "knative-serving"}, failedKs)
+	if err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled).Status != corev1.ConditionFalse {
+		t.Fatalf("status: (%v)", failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled))
+	}
+
+	// Reconcile with correct Kourier manifest file.
+	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
+	if _, err := r.Reconcile(defaultRequest); err != nil {
+		t.Fatalf("reconcile: (%v)", err)
+	}
+	successKs := &v1alpha1.KnativeServing{}
+	err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving", Namespace: "knative-serving"}, successKs)
+	if err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if successKs.Status.GetCondition(v1alpha1.DependenciesInstalled).Status != corev1.ConditionTrue {
+		t.Fatalf("status: (%v)", failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled))
+	}
+}
+
 func ctrl(certVersion string) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
