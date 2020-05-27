@@ -69,7 +69,7 @@ var (
 		},
 	}
 
-	dashbaordNamespace = corev1.Namespace{
+	dashboardNamespace = corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: dashboard.ConfigManagedNamespace,
 		},
@@ -119,7 +119,7 @@ func TestKourierReconcile(t *testing.T) {
 			ingress := &defaultIngress
 			knRoute := &defaultKnRoute
 			ccd := &consolev1.ConsoleCLIDownload{}
-			ns := &dashbaordNamespace
+			ns := &dashboardNamespace
 
 			initObjs := []runtime.Object{ks, ingress, knRoute, ns}
 

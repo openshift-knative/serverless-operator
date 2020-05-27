@@ -402,7 +402,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 
 	log.Info("Deleting dashboard")
 	if err := dashboard.Delete(instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete dashboard confirmap: %w", err)
+		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.

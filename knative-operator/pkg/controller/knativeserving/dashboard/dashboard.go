@@ -62,7 +62,7 @@ func manifest(instance *servingv1alpha1.KnativeServing, apiclient client.Client)
 	}
 
 	// set owner to watch events.
-	transforms := []mf.Transformer{common.SetOwnerAnnotations(instance)}
+	transforms := []mf.Transformer{mf.InjectNamespace(ConfigManagedNamespace), common.SetOwnerAnnotations(instance)}
 
 	manifest, err = manifest.Transform(transforms...)
 	if err != nil {
