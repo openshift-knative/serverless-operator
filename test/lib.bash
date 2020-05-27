@@ -9,6 +9,7 @@ readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
+NAMESPACES+=("serverless-tests3")
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
@@ -189,4 +190,34 @@ function delete_users {
     fi
   done < "users.htpasswd"
   rm -v users.htpasswd
+}
+
+function add_networkpolicy {
+  local NAMESPACE=$1
+  cat <<EOF | oc apply -f -
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-by-default
+  namespace: "$1"
+spec:
+  podSelector:
+EOF
+
+  cat <<EOF | oc apply -f -
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-serving-system-namespace
+  namespace: "$1"
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          serving.knative.openshift.io/system-namespace: "true"
+  podSelector: {}
+  policyTypes:
+  - Ingress
+EOF
 }
