@@ -21,6 +21,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
 )
 
 var (
@@ -64,6 +66,12 @@ var (
 					},
 				},
 			},
+		},
+	}
+
+	dashbaordNamespace = corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: dashboard.ConfigManagedNamespace,
 		},
 	}
 )
@@ -111,8 +119,9 @@ func TestKourierReconcile(t *testing.T) {
 			ingress := &defaultIngress
 			knRoute := &defaultKnRoute
 			ccd := &consolev1.ConsoleCLIDownload{}
+			ns := &dashbaordNamespace
 
-			initObjs := []runtime.Object{ks, ingress, knRoute}
+			initObjs := []runtime.Object{ks, ingress, knRoute, ns}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme

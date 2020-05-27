@@ -1,20 +1,33 @@
 package dashboard
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var log = common.Log.WithName("dashboard")
 
+const ConfigManagedNamespace = "openshift-config-managed"
+
 // Apply applies dashboard resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
+	if apierrors.IsNotFound(err) {
+		log.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("failed to get namepsace %q: %w", ConfigManagedNamespace, err)
+	}
+
 	manifest, err := manifest(instance, api)
 	if err != nil {
 		return fmt.Errorf("failed to load dashboard manifest: %w", err)
