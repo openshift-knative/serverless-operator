@@ -23,6 +23,11 @@ func TestNetworkPolicy(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
+	ksvc, err := test.WithServiceReady(caCtx, "networkpolicy-test", testNamespace3, image)
+	if err != nil {
+		t.Fatal("Knative Service not ready", err)
+	}
+
 	policy := &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: policyNameDeny,
@@ -33,16 +38,11 @@ func TestNetworkPolicy(t *testing.T) {
 		},
 	}
 
-	_, err := caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policy)
+	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policy)
 	if err != nil && !apierrs.IsAlreadyExists(err) {
 		t.Fatalf("Failed to create networkpolicy %v: %v", policy, err)
 	}
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameDeny, &metav1.DeleteOptions{})
-
-	ksvc, err := test.WithServiceReady(caCtx, "networkpolicy-test", testNamespace3, image)
-	if err != nil {
-		t.Fatal("Knative Service not ready", err)
-	}
 
 	_, err = http.Get(ksvc.Status.URL.String())
 	if err == nil {
