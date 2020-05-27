@@ -7,6 +7,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	consolev1 "github.com/openshift/api/console/v1"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
@@ -192,6 +193,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.ensureCustomCertsConfigMap,
 		r.installKnConsoleCLIDownload,
 		r.installKourier,
+		r.installDashboard,
 		r.ensureProxySettings,
 	}
 	for _, stage := range stages {
@@ -373,6 +375,11 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
+// installDashboard installs daashboard for OpenShift webconsole
+func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
+	return dashboard.Apply(instance, r.client)
+}
+
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	finalizers := sets.NewString(instance.GetFinalizers()...)
@@ -391,6 +398,11 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	log.Info("Deleting kn ConsoleCLIDownload")
 	if err := consoleclidownload.Delete(instance, r.client, r.scheme); err != nil {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
+	}
+
+	log.Info("Deleting dashboard")
+	if err := dashboard.Delete(instance, r.client); err != nil {
+		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.

@@ -1,9 +1,12 @@
 package common
 
 import (
+	"strings"
+
+	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strings"
 )
 
 var Log = logf.Log.WithName("knative").WithName("openshift")
@@ -60,4 +63,15 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 		}
 	}
 	return overrideMap
+}
+
+// SetOwnerAnnotations is a transformer to set owner annotations on given object
+func SetOwnerAnnotations(instance *servingv1alpha1.KnativeServing) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		u.SetAnnotations(map[string]string{
+			ServingOwnerName:      instance.Name,
+			ServingOwnerNamespace: instance.Namespace,
+		})
+		return nil
+	}
 }

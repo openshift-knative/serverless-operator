@@ -21,6 +21,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
 )
 
 var (
@@ -66,12 +68,19 @@ var (
 			},
 		},
 	}
+
+	dashboardNamespace = corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: dashboard.ConfigManagedNamespace,
+		},
+	}
 )
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
+	os.Setenv("DASHBOARD_MANIFEST_PATH", "dashboard/testdata/grafana-dash-knative.yaml")
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
@@ -110,8 +119,9 @@ func TestKourierReconcile(t *testing.T) {
 			ingress := &defaultIngress
 			knRoute := &defaultKnRoute
 			ccd := &consolev1.ConsoleCLIDownload{}
+			ns := &dashboardNamespace
 
-			initObjs := []runtime.Object{ks, ingress, knRoute}
+			initObjs := []runtime.Object{ks, ingress, knRoute, ns}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme

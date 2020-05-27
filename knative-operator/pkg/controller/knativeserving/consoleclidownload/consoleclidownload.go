@@ -179,7 +179,7 @@ func manifest(instance *servingv1alpha1.KnativeServing, apiclient client.Client,
 	// 3. Set Owner annotations
 	transforms := []mf.Transformer{mf.InjectNamespace(instance.GetNamespace()),
 		replaceKnCLIArtifactsImage(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), scheme),
-		setOwnerAnnotations(instance),
+		common.SetOwnerAnnotations(instance),
 	}
 
 	manifest, err = manifest.Transform(transforms...)
@@ -221,17 +221,6 @@ func replaceKnCLIArtifactsImage(image string, scheme *runtime.Scheme) mf.Transfo
 				return fmt.Errorf("failed to convert Deployment obj to unstructured: %w", err)
 			}
 		}
-		return nil
-	}
-}
-
-// setOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *servingv1alpha1.KnativeServing) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			common.ServingOwnerName:      instance.Name,
-			common.ServingOwnerNamespace: instance.Namespace,
-		})
 		return nil
 	}
 }
