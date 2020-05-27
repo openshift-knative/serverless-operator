@@ -17,8 +17,11 @@ function prepare_knative_serving_tests {
   oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
+  # Add networkpolicy to test namespace and label to serving namespaces for testing under the strict networkpolicy.
   add_networkpolicy "serving-tests"
   add_networkpolicy "serving-tests-alt"
+  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true         || true
+  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true || true
 
   export GATEWAY_OVERRIDE="kourier"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
