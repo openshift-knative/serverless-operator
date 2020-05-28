@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=release-0.13
-DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/net-kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
+KOURIER_VERSION=release-0.15
+DOWNLOAD_URL=https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
   echo "kourier-${KOURIER_VERSION}.yaml already exists. Please remove it."
@@ -28,4 +28,4 @@ ln -s kourier-${KOURIER_VERSION}.yaml       kourier-latest.yaml
 ln -s kourier-${KOURIER_VERSION}-debug.yaml kourier-latest-debug.yaml
 
 # Apply debug log enable path to -debug.yaml only
-patch kourier-${KOURIER_VERSION}-debug.yaml debug-log.patch
+#patch kourier-${KOURIER_VERSION}-debug.yaml debug-log.patch
