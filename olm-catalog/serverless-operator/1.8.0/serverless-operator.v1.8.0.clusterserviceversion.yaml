@@ -294,7 +294,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/eventing-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:knative-eventing-operator
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-eventing-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-eventing-operator
                 ports:
@@ -511,7 +511,7 @@ spec:
     - name: knative-openshift-ingress
       image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
     - name: knative-eventing-operator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:knative-eventing-operator
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-eventing-operator
     - name: IMAGE_eventing-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
     - name: IMAGE_eventing-webhook
