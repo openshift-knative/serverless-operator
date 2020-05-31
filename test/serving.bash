@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-function wait_for_knative_serving_ingress_ns_deleted {
-  timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || true
+function wait_for_kourier_service_deleted {
   # Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1798282 on Azure - if loadbalancer status is empty
   # it's safe to remove the finalizer.
   if oc -n knative-serving-ingress get svc kourier >/dev/null 2>&1 && [ "$(oc -n knative-serving-ingress get svc kourier -ojsonpath="{.status.loadBalancer.*}")" = "" ]; then
     oc -n knative-serving-ingress patch services/kourier --type=json --patch='[{"op":"replace","path":"/metadata/finalizers","value":[]}]'
   fi
-  timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || return 1
 }
 
 function checkout_knative_serving {
@@ -37,7 +35,7 @@ function prepare_knative_serving_tests {
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
 
   export GATEWAY_OVERRIDE="kourier"
-  export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
+  export GATEWAY_NAMESPACE_OVERRIDE="knative-serving"
 }
 
 function upstream_knative_serving_e2e_and_conformance_tests {
@@ -206,7 +204,7 @@ function knative_serving_operator_tests {
 
   print_test_result ${exitstatus}
 
-  wait_for_knative_serving_ingress_ns_deleted || return 1
+  wait_for_kourier_service_deleted || return 1
 
   remove_temporary_gopath
 

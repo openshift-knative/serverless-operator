@@ -10,7 +10,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
@@ -21,7 +20,7 @@ var log = common.Log.WithName("kourier")
 
 // Apply applies Kourier resources.
 func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
-	manifest, err := manifest(common.IngressNamespace(instance.GetNamespace()), api, instance, scheme)
+	manifest, err := manifest(instance.GetNamespace(), api, instance, scheme)
 	if err != nil {
 		return fmt.Errorf("failed to load kourier manifest: %w", err)
 	}
@@ -36,8 +35,8 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	return nil
 }
 
-// Check for deployments in knative-serving-ingress
-// This function is copied from knativeserving_controller.go in serving-operator
+// Check for deployments.
+// This function is copied from knativeserving_controller.go in serving-operator.
 func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
@@ -58,26 +57,13 @@ func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeSe
 // Delete deletes Kourier resources.
 func Delete(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *runtime.Scheme) error {
 	log.Info("Deleting Kourier Ingress")
-	manifest, err := manifest(common.IngressNamespace(instance.GetNamespace()), api, instance, scheme)
+	manifest, err := manifest(instance.GetNamespace(), api, instance, scheme)
 	if err != nil {
 		return fmt.Errorf("failed to load kourier manifest: %w", err)
 	}
 
 	if err := manifest.Delete(); err != nil {
 		return fmt.Errorf("failed to delete kourier manifest: %w", err)
-	}
-
-	log.Info("Deleting ingress namespace")
-	ns := &v1.Namespace{}
-	err = api.Get(context.TODO(), client.ObjectKey{Name: common.IngressNamespace(instance.GetNamespace())}, ns)
-	if apierrors.IsNotFound(err) {
-		// We can safely ignore this. There is nothing to do for us.
-		return nil
-	} else if err != nil {
-		return fmt.Errorf("failed to fetch ingress namespace: %w", err)
-	}
-	if err := api.Delete(context.TODO(), ns); err != nil {
-		return fmt.Errorf("failed to remove ingress namespace: %w", err)
 	}
 	return nil
 }

@@ -33,11 +33,6 @@ func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
 	return true
 }
 
-// IngressNamespace returns namespace where ingress is deployed.
-func IngressNamespace(servingNamespace string) string {
-	return servingNamespace + "-ingress"
-}
-
 // BuildImageOverrideMapFromEnviron creates a map to overrides registry images
 func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 	overrideMap := map[string]string{}

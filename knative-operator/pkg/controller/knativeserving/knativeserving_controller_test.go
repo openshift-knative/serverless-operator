@@ -140,7 +140,7 @@ func TestKourierReconcile(t *testing.T) {
 
 			// Check if Kourier is deployed.
 			deploy := &appsv1.Deployment{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving"}, deploy)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
@@ -172,7 +172,7 @@ func TestKourierReconcile(t *testing.T) {
 			}
 
 			// Check again if Kourier deployment is created after reconcile.
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving"}, deploy)
 			if test.deleted {
 				if err != nil {
 					t.Fatalf("get: (%v)", err)

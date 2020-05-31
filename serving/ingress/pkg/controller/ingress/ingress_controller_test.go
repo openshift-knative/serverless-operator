@@ -25,12 +25,12 @@ import (
 )
 
 const (
-	name                 = "ingress-operator"
-	serviceMeshNamespace = "knative-serving-ingress"
-	namespace            = "ingress-namespace"
-	uid                  = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
-	domainName           = name + "." + namespace + ".default.domainName"
-	routeName0           = "route-" + uid + "-336636653035"
+	name             = "ingress-operator"
+	servingNamespace = "knative-serving"
+	namespace        = "ingress-namespace"
+	uid              = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
+	domainName       = name + "." + namespace + ".default.domainName"
+	routeName0       = "route-" + uid + "-336636653035"
 )
 
 var (
@@ -56,7 +56,7 @@ var (
 		Status: networkingv1alpha1.IngressStatus{
 			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
 				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
-					DomainInternal: "istio-ingressgateway." + serviceMeshNamespace + ".svc.cluster.local",
+					DomainInternal: "kourier." + servingNamespace + ".svc.cluster.local",
 				}},
 			},
 		},
@@ -100,7 +100,7 @@ func TestRouteMigration(t *testing.T) {
 		want: []routev1.Route{{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            routeName0,
-				Namespace:       serviceMeshNamespace,
+				Namespace:       servingNamespace,
 				Labels:          map[string]string{networking.IngressLabelKey: name, serving.RouteLabelKey: name, serving.RouteNamespaceLabelKey: namespace},
 				Annotations:     map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
 				ResourceVersion: "1",
@@ -109,7 +109,7 @@ func TestRouteMigration(t *testing.T) {
 				Host: domainName,
 				To: routev1.RouteTargetReference{
 					Kind:   "Service",
-					Name:   "istio-ingressgateway",
+					Name:   "kourier",
 					Weight: ptr.Int32(100),
 				},
 				Port: &routev1.RoutePort{
@@ -276,7 +276,7 @@ func TestIngressController(t *testing.T) {
 
 			// Check if route has been created.
 			routes := &routev1.Route{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: serviceMeshNamespace}, routes)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: servingNamespace}, routes)
 
 			assert.True(t, test.wantRouteErr(err))
 			assert.Equal(t, test.want, routes.ObjectMeta.Annotations)
