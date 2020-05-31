@@ -126,6 +126,12 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 	if err != nil {
 		return mf.Manifest{}, err
 	}
+
+	manifest = manifest.Filter(mf.None(
+		mf.ByKind("namespace"),
+		mf.ByName("config-leader-election"), mf.ByName("config-logging"), mf.ByName("config-config-observability"),
+	))
+
 	transforms := []mf.Transformer{
 		mf.InjectNamespace(namespace),
 		replaceImageFromEnvironment("IMAGE_", scheme),
