@@ -24,9 +24,8 @@ find $OLM_DIR -name '*_crd.yaml' | sort -n | xargs -I{} cp {} $CRD_DIR/
 
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_CI" ]; then
-  # Workaround for https://issues.redhat.com/browse/DPTP-1182
-  export IMAGE_KNATIVE_OPERATOR="${RELEASE_IMAGE_LATEST%/*}/stable:knative-operator"
-  export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${RELEASE_IMAGE_LATEST%/*}/stable:knative-openshift-ingress"
+  export IMAGE_KNATIVE_OPERATOR="${IMAGE_FORMAT//\$\{component\}/knative-operator}"
+  export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${IMAGE_FORMAT//\$\{component\}/knative-openshift-ingress}"
 elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
   export IMAGE_KNATIVE_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-operator"
   export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
