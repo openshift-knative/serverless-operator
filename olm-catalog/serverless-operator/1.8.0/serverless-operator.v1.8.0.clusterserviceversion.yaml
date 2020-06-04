@@ -348,7 +348,7 @@ spec:
                     - name: IMAGE_autoscaler-hpa
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler-hpa
                     - name: IMAGE_controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-controller
+                      value: docker.io/markusthoemmes/controller-f6fdb41c6acbc726e29a3104ff2ef720:latest
                     - name: IMAGE_webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-webhook
                     - name: IMAGE_3scale-kourier-gateway
@@ -497,7 +497,7 @@ spec:
     - name: IMAGE_autoscaler-hpa
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler-hpa
     - name: IMAGE_controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-controller
+      image: docker.io/markusthoemmes/controller-f6fdb41c6acbc726e29a3104ff2ef720:latest
     - name: IMAGE_webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-webhook
     - name: IMAGE_3scale-kourier-control
