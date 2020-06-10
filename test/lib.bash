@@ -189,9 +189,6 @@ function gather_knative_state {
   oc --insecure-skip-tls-verify adm must-gather \
     --image=quay.io/openshift-knative/must-gather \
     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
-
-  tar -czC "$gather_dir" -f "${gather_dir}.tar.gz" .
-  rm -rf "$gather_dir"
 }
 
 # == Test users
