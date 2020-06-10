@@ -171,7 +171,6 @@ function dump_state {
   logger.info 'Environment'
   env
 
-  dump_cluster_state
   dump_openshift_olm_state
   dump_openshift_ingress_state
   dump_knative_state
