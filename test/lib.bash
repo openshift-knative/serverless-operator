@@ -171,34 +171,24 @@ function dump_state {
   logger.info 'Environment'
   env
 
-  dump_openshift_olm_state
-  dump_openshift_ingress_state
-  dump_knative_state
+  dump_subscriptions
+  gather_knative_state
 }
 
-function dump_openshift_olm_state {
+function dump_subscriptions {
   logger.info "Dump of subscriptions.operators.coreos.com"
   # This is for status checking.
   oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
-  logger.info "Dump of catalog operator log"
-  oc logs -n openshift-operator-lifecycle-manager deployment/catalog-operator || true
 }
 
-function dump_openshift_ingress_state {
-  logger.info "Dump of routes.route.openshift.io"
-  oc get routes.route.openshift.io -o yaml --all-namespaces || true
-  logger.info "Dump of routes.serving.knative.dev"
-  oc get routes.serving.knative.dev -o yaml --all-namespaces || true
-  logger.info "Dump of openshift-ingress log"
-  oc logs deployment/knative-openshift-ingress -n "$SERVING_NAMESPACE" || true
-}
+function gather_knative_state {
+  logger.info 'Gather knative state'
+  local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
+  mkdir -p "$gather_dir"
 
-function dump_knative_state {
-  logger.info 'Dump of knative state'
-  oc describe knativeserving.operator.knative.dev knative-serving -n "$SERVING_NAMESPACE" || true
-  oc describe knativeeventing.operator.knative.dev knative-eventing -n "$EVENTING_NAMESPACE" || true
-  oc get pods -n "$SERVING_NAMESPACE" || true
-  oc get ksvc --all-namespaces || true
+  oc --insecure-skip-tls-verify adm must-gather \
+    --image=quay.io/openshift-knative/must-gather \
+    --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
 
 # == Test users
