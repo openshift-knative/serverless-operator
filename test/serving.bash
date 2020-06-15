@@ -10,13 +10,6 @@ function wait_for_knative_serving_ingress_ns_deleted {
   timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || return 1
 }
 
-function checkout_knative_serving_operator {
-  checkout_repo 'knative.dev/serving-operator' \
-    "${KNATIVE_SERVING_OPERATOR_REPO}" \
-    "${KNATIVE_SERVING_OPERATOR_VERSION}" \
-    "${KNATIVE_SERVING_OPERATOR_BRANCH}"
-}
-
 function prepare_knative_serving_tests {
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
@@ -169,28 +162,3 @@ function run_knative_serving_rolling_upgrade_tests {
   return 0
   )
 }
-
-function knative_serving_operator_tests {
-  logger.info 'Running Serving operator tests'
-  (
-  local exitstatus=0
-  checkout_knative_serving_operator
-
-  export TEST_NAMESPACE="${SERVING_NAMESPACE}"
-
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
-    --kubeconfig "$KUBECONFIG" \
-    || exitstatus=5$? && true
-
-  print_test_result ${exitstatus}
-
-  wait_for_knative_serving_ingress_ns_deleted || return 1
-
-  remove_temporary_gopath
-
-  return $exitstatus
-  )
-}
-
-
-

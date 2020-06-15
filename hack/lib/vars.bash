@@ -12,18 +12,12 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
 readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.13.3}"
-readonly KNATIVE_SERVING_OPERATOR_VERSION="${KNATIVE_SERVING_OPERATOR_VERSION:-v0.13.3}"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.13.0}"
-readonly KNATIVE_EVENTING_OPERATOR_VERSION="${KNATIVE_EVENTING_OPERATOR_VERSION:-v0.13.3}"
 
 readonly KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
-readonly KNATIVE_SERVING_OPERATOR_BRANCH="${KNATIVE_SERVING_OPERATOR_BRANCH:-openshift-${KNATIVE_SERVING_OPERATOR_VERSION}}"
 readonly KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
-readonly KNATIVE_SERVING_OPERATOR_REPO="${KNATIVE_SERVING_OPERATOR_REPO:-"https://github.com/openshift-knative/serving-operator.git"}"
 readonly KNATIVE_EVENTING_BRANCH="${KNATIVE_EVENTING_BRANCH:-release-${KNATIVE_EVENTING_VERSION}}"
-readonly KNATIVE_EVENTING_OPERATOR_BRANCH="${KNATIVE_EVENTING_OPERATOR_BRANCH:-openshift-${KNATIVE_EVENTING_OPERATOR_VERSION}}"
 readonly KNATIVE_EVENTING_REPO="${KNATIVE_EVENTING_REPO:-"https://github.com/openshift/knative-eventing.git"}"
-readonly KNATIVE_EVENTING_OPERATOR_REPO="${KNATIVE_EVENTING_OPERATOR_REPO:-"https://github.com/openshift-knative/eventing-operator.git"}"
 
 # Directories below are filled with source code by ci-operator
 readonly KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
