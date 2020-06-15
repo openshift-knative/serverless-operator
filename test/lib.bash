@@ -150,7 +150,7 @@ function end_prober_test {
 }
 
 function teardown {
-  if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+  if [ -n "$OPENSHIFT_CI" ]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
     return 0
   fi

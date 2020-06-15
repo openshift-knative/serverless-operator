@@ -13,6 +13,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/
 
 readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.13.3}"
 readonly KNATIVE_SERVING_OPERATOR_VERSION="${KNATIVE_SERVING_OPERATOR_VERSION:-v0.13.3}"
+# KNATIVE_SEVING_HOME is filled with Knative Serving sources by ci-operator
+readonly KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.13.0}"
 readonly KNATIVE_EVENTING_OPERATOR_VERSION="${KNATIVE_EVENTING_OPERATOR_VERSION:-v0.13.3}"
 
@@ -29,7 +31,7 @@ readonly CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.ya
 readonly DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
 readonly INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
 readonly KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
-readonly OPENSHIFT_BUILD_NAMESPACE="${OPENSHIFT_BUILD_NAMESPACE:-}"
+readonly OPENSHIFT_CI="${OPENSHIFT_CI:-}"
 readonly OPERATOR="${OPERATOR:-serverless-operator}"
 readonly SCALE_UP="${SCALE_UP:-6}"
 

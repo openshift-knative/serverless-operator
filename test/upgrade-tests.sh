@@ -6,7 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 set -Eeuo pipefail
 
 # Enable extra verbosity if running in CI.
-if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+if [ -n "$OPENSHIFT_CI" ]; then
   env
 fi
 debugging.setup
