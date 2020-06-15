@@ -10,7 +10,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

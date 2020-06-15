@@ -942,6 +942,14 @@
   version = "v0.13.2"
 
 [[projects]]
+  digest = "1:0dcdd37af6bad18955efca0788a439adfb0fb2a9ff0740acd1d5d3168ca4f079"
+  name = "knative.dev/operator"
+  packages = ["pkg/apis/operator/v1alpha1"]
+  pruneopts = "NT"
+  revision = "8a21397650377eb44015dc1fdc9fa769db6823ff"
+  version = "v0.14.2"
+
+[[projects]]
   branch = "release-0.13"
   digest = "1:366e2eaed09b354c22bc3921147021cde38aeb24a02d782b3d524b50c335ae80"
   name = "knative.dev/pkg"
@@ -957,14 +965,6 @@
   ]
   pruneopts = "NT"
   revision = "87426b54db6f1200e2cb9086055fdf7fe90307dc"
-
-[[projects]]
-  digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
-  name = "knative.dev/serving-operator"
-  packages = ["pkg/apis/serving/v1alpha1"]
-  pruneopts = "NT"
-  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
-  version = "v0.13.2"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1071,8 +1071,8 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
+    "knative.dev/operator/pkg/apis/operator/v1alpha1",
     "knative.dev/pkg/ptr",
-    "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/client/fake",

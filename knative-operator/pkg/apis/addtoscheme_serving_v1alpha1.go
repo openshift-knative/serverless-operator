@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func init() {

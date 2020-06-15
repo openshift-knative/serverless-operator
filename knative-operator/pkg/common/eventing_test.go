@@ -1,9 +1,10 @@
 package common_test
 
 import (
-	"knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
 	"os"
 	"testing"
+
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"

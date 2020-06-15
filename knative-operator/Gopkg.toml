@@ -44,8 +44,8 @@ required = [
   version = "=v0.1.12"
 
 [[constraint]]
-  name = "knative.dev/serving-operator"
-  version = "=v0.13.2"
+  name = "knative.dev/operator"
+  version = "=v0.14.2"
 
 [[constraint]]
   name = "knative.dev/eventing-operator"
