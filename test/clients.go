@@ -18,8 +18,8 @@ import (
 	aggregator "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	eventingoperatorversioned "knative.dev/eventing-operator/pkg/client/clientset/versioned"
 	eventingoperatorv1alpha1 "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1"
-	servingoperatorversioned "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	servingoperatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
+	servingoperatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 )
 

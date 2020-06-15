@@ -6,7 +6,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func KnativeServing(name, namespace string) *servingoperatorv1alpha1.KnativeServing {
