@@ -88,59 +88,6 @@ function downstream_serving_e2e_tests {
   return $failed
 }
 
-# Setup a temporary GOPATH to safely check out the repository without breaking other things.
-# CAUTION: function overrides GOPATH so use it in subshell or restore original value!
-function make_temporary_gopath {
-  local tmp_gopath
-  tmp_gopath="$(mktemp -d -t gopath-XXXXXXXXXX)"
-  ORIGINAL_GOPATH="$(go env GOPATH)"
-  export ORIGINAL_GOPATH
-  export ORIGINAL_PATH="${PATH}"
-  if [[ -d "$(go env GOPATH)/bin" ]]; then
-    cp -rv "$(go env GOPATH)/bin" "${tmp_gopath}"
-  fi
-  logger.info "Temporary GOPATH is: ${tmp_gopath}"
-  export GOPATH="$tmp_gopath"
-  export PATH="${GOPATH}/bin:${PATH}"
-}
-
-function remove_temporary_gopath {
-  if [[ "$GOPATH" =~ .*gopath-[0-9a-zA-Z]{10} ]]; then
-    logger.info "Removing GOPATH: ${GOPATH}"
-    rm -rf "${GOPATH}"
-  fi
-  if [[ -n "${ORIGINAL_PATH}" ]]; then
-    export PATH="${ORIGINAL_PATH}"
-    unset ORIGINAL_PATH
-  fi
-  if [[ -n "${ORIGINAL_GOPATH}" ]]; then
-    export GOPATH="${ORIGINAL_GOPATH}"
-    unset ORIGINAL_GOPATH
-  fi
-}
-
-function checkout_repo {
-  local target repo version gitref gitdesc targetpath
-  target="${1:?Pass target directory as arg[1]}"
-  repo="${2:?Pass repository as arg[2]}"
-  version="${3:?Pass version as arg[3]}"
-  gitref="${4:?Pass git branch as arg[4]}"
-
-  # Setup a temporary GOPATH to safely check out the repository without breaking other things.
-  make_temporary_gopath
-  # Checkout the relevant code to run
-  targetpath="${GOPATH}/src/${target}"
-  mkdir -p "$targetpath"
-  logger.info "Checking out the ${repo} @ ${version}"
-  git clone --branch "${gitref}" \
-    --depth 1 \
-    "${repo}" \
-    "${targetpath}"
-  cd "${targetpath}" || return $?
-  gitdesc="$(git describe --always --tags --dirty)"
-  logger.info "${repo} at ${gitref} has been resolved to ${gitdesc}"
-}
-
 function end_prober_test {
   local PROBER_PID=$1
   echo "done" > /tmp/prober-signal
