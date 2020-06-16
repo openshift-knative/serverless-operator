@@ -260,7 +260,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-serving-operator
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-serving-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
@@ -505,7 +505,7 @@ spec:
     - name: IMAGE_3scale-kourier-gateway
       image: docker.io/maistra/proxyv2-ubi8:1.0.8
     - name: knative-serving-operator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:knative-serving-operator
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-serving-operator
     - name: knative-operator
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
