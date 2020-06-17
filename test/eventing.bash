@@ -2,20 +2,26 @@
 
 function knative_eventing_tests {
   (
-  local exitstatus=0
+  local failed=0
   logger.info 'Running eventing tests'
 
   cd "$KNATIVE_EVENTING_HOME" || return $?
 
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
-  go_test_e2e -timeout=90m -parallel=1 ./test/e2e \
+  go_test_e2e -timeout=90m -parallel=12 ./test/e2e -brokerclass=ChannelBasedBroker -channels=messaging.knative.dev/v1alpha1:InMemoryChannel,messaging.knative.dev/v1alpha1:Channel,messaging.knative.dev/v1beta1:InMemoryChannel \
     --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    || exitstatus=$? && true
+    --imagetemplate "$image_template" || failed=1
 
-  print_test_result ${exitstatus}
+  oc patch cm config-br-defaults -n knative-eventing -p '{"data":{"default-br-config":"clusterDefault:\n  brokerClass: MTChannelBasedBroker\n  apiVersion: v1\n  kind: ConfigMap\n  name: config-br-default-channel\n  namespace: knative-eventing\n"}}' --type=merge || failed=2
 
-  return $exitstatus
+  go_test_e2e -timeout=90m -parallel=12 ./test/e2e -brokerclass=MTChannelBasedBroker -channels=messaging.knative.dev/v1alpha1:InMemoryChannel,messaging.knative.dev/v1alpha1:Channel,messaging.knative.dev/v1beta1:InMemoryChannel \
+    --kubeconfig "$KUBECONFIG" \
+    --imagetemplate "$image_template" || failed=3
+
+
+  print_test_result ${failed}
+
+  return $failed
   )
 }
