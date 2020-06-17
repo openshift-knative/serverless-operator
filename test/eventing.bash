@@ -2,6 +2,7 @@
 
 function knative_eventing_tests {
   (
+  local failed=0
   logger.info 'Running eventing tests'
 
   cd "$KNATIVE_EVENTING_HOME" || return $?
@@ -21,6 +22,6 @@ function knative_eventing_tests {
 
   print_test_result ${failed}
 
-  return $exitstatus
+  return $failed
   )
 }
