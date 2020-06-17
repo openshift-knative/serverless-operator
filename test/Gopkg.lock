@@ -917,19 +917,6 @@
   revision = "94aeca20bf0991bf33922a5938174b9147ab8ca7"
 
 [[projects]]
-  digest = "1:f187cb36645d52efa179418cf73449252ffa817e2b9dd63885531274084d6d43"
-  name = "knative.dev/eventing-operator"
-  packages = [
-    "pkg/apis/eventing/v1alpha1",
-    "pkg/client/clientset/versioned",
-    "pkg/client/clientset/versioned/scheme",
-    "pkg/client/clientset/versioned/typed/eventing/v1alpha1",
-  ]
-  pruneopts = "NUT"
-  revision = "2932fb937a550cf72a1d1a5220eb0c81bb74b042"
-  version = "v0.13.1"
-
-[[projects]]
   branch = "release-0.14"
   digest = "1:32c9c93d6b2db808f166672fd963640a9fb42e18c3575e19d103c4d1ec38c8a5"
   name = "knative.dev/operator"
@@ -1041,8 +1028,6 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
-    "knative.dev/eventing-operator/pkg/client/clientset/versioned",
-    "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1",
     "knative.dev/operator/pkg/apis/operator/v1alpha1",
     "knative.dev/operator/pkg/client/clientset/versioned",
     "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1",
