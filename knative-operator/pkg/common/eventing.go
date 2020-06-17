@@ -1,8 +1,9 @@
 package common
 
 import (
-	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
 	"os"
+
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

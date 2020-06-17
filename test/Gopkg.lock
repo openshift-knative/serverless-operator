@@ -1041,7 +1041,6 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
-    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
     "knative.dev/eventing-operator/pkg/client/clientset/versioned",
     "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1",
     "knative.dev/operator/pkg/apis/operator/v1alpha1",

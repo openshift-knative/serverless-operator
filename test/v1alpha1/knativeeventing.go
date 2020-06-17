@@ -6,7 +6,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	eventingoperatorv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
+	eventingoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func KnativeEventing(name, namespace string) *eventingoperatorv1alpha1.KnativeEventing {
