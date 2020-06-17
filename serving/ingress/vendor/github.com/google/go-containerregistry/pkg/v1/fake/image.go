@@ -2,10 +2,10 @@
 package fake
 
 import (
-	sync "sync"
+	"sync"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	types "github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
 type FakeImage struct {
@@ -131,6 +131,18 @@ type FakeImage struct {
 		result1 []byte
 		result2 error
 	}
+	SizeStub        func() (int64, error)
+	sizeMutex       sync.RWMutex
+	sizeArgsForCall []struct {
+	}
+	sizeReturns struct {
+		result1 int64
+		result2 error
+	}
+	sizeReturnsOnCall map[int]struct {
+		result1 int64
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -158,7 +170,15 @@ func (fake *FakeImage) ConfigFileCallCount() int {
 	return len(fake.configFileArgsForCall)
 }
 
+func (fake *FakeImage) ConfigFileCalls(stub func() (*v1.ConfigFile, error)) {
+	fake.configFileMutex.Lock()
+	defer fake.configFileMutex.Unlock()
+	fake.ConfigFileStub = stub
+}
+
 func (fake *FakeImage) ConfigFileReturns(result1 *v1.ConfigFile, result2 error) {
+	fake.configFileMutex.Lock()
+	defer fake.configFileMutex.Unlock()
 	fake.ConfigFileStub = nil
 	fake.configFileReturns = struct {
 		result1 *v1.ConfigFile
@@ -167,6 +187,8 @@ func (fake *FakeImage) ConfigFileReturns(result1 *v1.ConfigFile, result2 error) 
 }
 
 func (fake *FakeImage) ConfigFileReturnsOnCall(i int, result1 *v1.ConfigFile, result2 error) {
+	fake.configFileMutex.Lock()
+	defer fake.configFileMutex.Unlock()
 	fake.ConfigFileStub = nil
 	if fake.configFileReturnsOnCall == nil {
 		fake.configFileReturnsOnCall = make(map[int]struct {
@@ -203,7 +225,15 @@ func (fake *FakeImage) ConfigNameCallCount() int {
 	return len(fake.configNameArgsForCall)
 }
 
+func (fake *FakeImage) ConfigNameCalls(stub func() (v1.Hash, error)) {
+	fake.configNameMutex.Lock()
+	defer fake.configNameMutex.Unlock()
+	fake.ConfigNameStub = stub
+}
+
 func (fake *FakeImage) ConfigNameReturns(result1 v1.Hash, result2 error) {
+	fake.configNameMutex.Lock()
+	defer fake.configNameMutex.Unlock()
 	fake.ConfigNameStub = nil
 	fake.configNameReturns = struct {
 		result1 v1.Hash
@@ -212,6 +242,8 @@ func (fake *FakeImage) ConfigNameReturns(result1 v1.Hash, result2 error) {
 }
 
 func (fake *FakeImage) ConfigNameReturnsOnCall(i int, result1 v1.Hash, result2 error) {
+	fake.configNameMutex.Lock()
+	defer fake.configNameMutex.Unlock()
 	fake.ConfigNameStub = nil
 	if fake.configNameReturnsOnCall == nil {
 		fake.configNameReturnsOnCall = make(map[int]struct {
@@ -248,7 +280,15 @@ func (fake *FakeImage) DigestCallCount() int {
 	return len(fake.digestArgsForCall)
 }
 
+func (fake *FakeImage) DigestCalls(stub func() (v1.Hash, error)) {
+	fake.digestMutex.Lock()
+	defer fake.digestMutex.Unlock()
+	fake.DigestStub = stub
+}
+
 func (fake *FakeImage) DigestReturns(result1 v1.Hash, result2 error) {
+	fake.digestMutex.Lock()
+	defer fake.digestMutex.Unlock()
 	fake.DigestStub = nil
 	fake.digestReturns = struct {
 		result1 v1.Hash
@@ -257,6 +297,8 @@ func (fake *FakeImage) DigestReturns(result1 v1.Hash, result2 error) {
 }
 
 func (fake *FakeImage) DigestReturnsOnCall(i int, result1 v1.Hash, result2 error) {
+	fake.digestMutex.Lock()
+	defer fake.digestMutex.Unlock()
 	fake.DigestStub = nil
 	if fake.digestReturnsOnCall == nil {
 		fake.digestReturnsOnCall = make(map[int]struct {
@@ -294,6 +336,12 @@ func (fake *FakeImage) LayerByDiffIDCallCount() int {
 	return len(fake.layerByDiffIDArgsForCall)
 }
 
+func (fake *FakeImage) LayerByDiffIDCalls(stub func(v1.Hash) (v1.Layer, error)) {
+	fake.layerByDiffIDMutex.Lock()
+	defer fake.layerByDiffIDMutex.Unlock()
+	fake.LayerByDiffIDStub = stub
+}
+
 func (fake *FakeImage) LayerByDiffIDArgsForCall(i int) v1.Hash {
 	fake.layerByDiffIDMutex.RLock()
 	defer fake.layerByDiffIDMutex.RUnlock()
@@ -302,6 +350,8 @@ func (fake *FakeImage) LayerByDiffIDArgsForCall(i int) v1.Hash {
 }
 
 func (fake *FakeImage) LayerByDiffIDReturns(result1 v1.Layer, result2 error) {
+	fake.layerByDiffIDMutex.Lock()
+	defer fake.layerByDiffIDMutex.Unlock()
 	fake.LayerByDiffIDStub = nil
 	fake.layerByDiffIDReturns = struct {
 		result1 v1.Layer
@@ -310,6 +360,8 @@ func (fake *FakeImage) LayerByDiffIDReturns(result1 v1.Layer, result2 error) {
 }
 
 func (fake *FakeImage) LayerByDiffIDReturnsOnCall(i int, result1 v1.Layer, result2 error) {
+	fake.layerByDiffIDMutex.Lock()
+	defer fake.layerByDiffIDMutex.Unlock()
 	fake.LayerByDiffIDStub = nil
 	if fake.layerByDiffIDReturnsOnCall == nil {
 		fake.layerByDiffIDReturnsOnCall = make(map[int]struct {
@@ -347,6 +399,12 @@ func (fake *FakeImage) LayerByDigestCallCount() int {
 	return len(fake.layerByDigestArgsForCall)
 }
 
+func (fake *FakeImage) LayerByDigestCalls(stub func(v1.Hash) (v1.Layer, error)) {
+	fake.layerByDigestMutex.Lock()
+	defer fake.layerByDigestMutex.Unlock()
+	fake.LayerByDigestStub = stub
+}
+
 func (fake *FakeImage) LayerByDigestArgsForCall(i int) v1.Hash {
 	fake.layerByDigestMutex.RLock()
 	defer fake.layerByDigestMutex.RUnlock()
@@ -355,6 +413,8 @@ func (fake *FakeImage) LayerByDigestArgsForCall(i int) v1.Hash {
 }
 
 func (fake *FakeImage) LayerByDigestReturns(result1 v1.Layer, result2 error) {
+	fake.layerByDigestMutex.Lock()
+	defer fake.layerByDigestMutex.Unlock()
 	fake.LayerByDigestStub = nil
 	fake.layerByDigestReturns = struct {
 		result1 v1.Layer
@@ -363,6 +423,8 @@ func (fake *FakeImage) LayerByDigestReturns(result1 v1.Layer, result2 error) {
 }
 
 func (fake *FakeImage) LayerByDigestReturnsOnCall(i int, result1 v1.Layer, result2 error) {
+	fake.layerByDigestMutex.Lock()
+	defer fake.layerByDigestMutex.Unlock()
 	fake.LayerByDigestStub = nil
 	if fake.layerByDigestReturnsOnCall == nil {
 		fake.layerByDigestReturnsOnCall = make(map[int]struct {
@@ -399,7 +461,15 @@ func (fake *FakeImage) LayersCallCount() int {
 	return len(fake.layersArgsForCall)
 }
 
+func (fake *FakeImage) LayersCalls(stub func() ([]v1.Layer, error)) {
+	fake.layersMutex.Lock()
+	defer fake.layersMutex.Unlock()
+	fake.LayersStub = stub
+}
+
 func (fake *FakeImage) LayersReturns(result1 []v1.Layer, result2 error) {
+	fake.layersMutex.Lock()
+	defer fake.layersMutex.Unlock()
 	fake.LayersStub = nil
 	fake.layersReturns = struct {
 		result1 []v1.Layer
@@ -408,6 +478,8 @@ func (fake *FakeImage) LayersReturns(result1 []v1.Layer, result2 error) {
 }
 
 func (fake *FakeImage) LayersReturnsOnCall(i int, result1 []v1.Layer, result2 error) {
+	fake.layersMutex.Lock()
+	defer fake.layersMutex.Unlock()
 	fake.LayersStub = nil
 	if fake.layersReturnsOnCall == nil {
 		fake.layersReturnsOnCall = make(map[int]struct {
@@ -444,7 +516,15 @@ func (fake *FakeImage) ManifestCallCount() int {
 	return len(fake.manifestArgsForCall)
 }
 
+func (fake *FakeImage) ManifestCalls(stub func() (*v1.Manifest, error)) {
+	fake.manifestMutex.Lock()
+	defer fake.manifestMutex.Unlock()
+	fake.ManifestStub = stub
+}
+
 func (fake *FakeImage) ManifestReturns(result1 *v1.Manifest, result2 error) {
+	fake.manifestMutex.Lock()
+	defer fake.manifestMutex.Unlock()
 	fake.ManifestStub = nil
 	fake.manifestReturns = struct {
 		result1 *v1.Manifest
@@ -453,6 +533,8 @@ func (fake *FakeImage) ManifestReturns(result1 *v1.Manifest, result2 error) {
 }
 
 func (fake *FakeImage) ManifestReturnsOnCall(i int, result1 *v1.Manifest, result2 error) {
+	fake.manifestMutex.Lock()
+	defer fake.manifestMutex.Unlock()
 	fake.ManifestStub = nil
 	if fake.manifestReturnsOnCall == nil {
 		fake.manifestReturnsOnCall = make(map[int]struct {
@@ -489,7 +571,15 @@ func (fake *FakeImage) MediaTypeCallCount() int {
 	return len(fake.mediaTypeArgsForCall)
 }
 
+func (fake *FakeImage) MediaTypeCalls(stub func() (types.MediaType, error)) {
+	fake.mediaTypeMutex.Lock()
+	defer fake.mediaTypeMutex.Unlock()
+	fake.MediaTypeStub = stub
+}
+
 func (fake *FakeImage) MediaTypeReturns(result1 types.MediaType, result2 error) {
+	fake.mediaTypeMutex.Lock()
+	defer fake.mediaTypeMutex.Unlock()
 	fake.MediaTypeStub = nil
 	fake.mediaTypeReturns = struct {
 		result1 types.MediaType
@@ -498,6 +588,8 @@ func (fake *FakeImage) MediaTypeReturns(result1 types.MediaType, result2 error) 
 }
 
 func (fake *FakeImage) MediaTypeReturnsOnCall(i int, result1 types.MediaType, result2 error) {
+	fake.mediaTypeMutex.Lock()
+	defer fake.mediaTypeMutex.Unlock()
 	fake.MediaTypeStub = nil
 	if fake.mediaTypeReturnsOnCall == nil {
 		fake.mediaTypeReturnsOnCall = make(map[int]struct {
@@ -534,7 +626,15 @@ func (fake *FakeImage) RawConfigFileCallCount() int {
 	return len(fake.rawConfigFileArgsForCall)
 }
 
+func (fake *FakeImage) RawConfigFileCalls(stub func() ([]byte, error)) {
+	fake.rawConfigFileMutex.Lock()
+	defer fake.rawConfigFileMutex.Unlock()
+	fake.RawConfigFileStub = stub
+}
+
 func (fake *FakeImage) RawConfigFileReturns(result1 []byte, result2 error) {
+	fake.rawConfigFileMutex.Lock()
+	defer fake.rawConfigFileMutex.Unlock()
 	fake.RawConfigFileStub = nil
 	fake.rawConfigFileReturns = struct {
 		result1 []byte
@@ -543,6 +643,8 @@ func (fake *FakeImage) RawConfigFileReturns(result1 []byte, result2 error) {
 }
 
 func (fake *FakeImage) RawConfigFileReturnsOnCall(i int, result1 []byte, result2 error) {
+	fake.rawConfigFileMutex.Lock()
+	defer fake.rawConfigFileMutex.Unlock()
 	fake.RawConfigFileStub = nil
 	if fake.rawConfigFileReturnsOnCall == nil {
 		fake.rawConfigFileReturnsOnCall = make(map[int]struct {
@@ -579,7 +681,15 @@ func (fake *FakeImage) RawManifestCallCount() int {
 	return len(fake.rawManifestArgsForCall)
 }
 
+func (fake *FakeImage) RawManifestCalls(stub func() ([]byte, error)) {
+	fake.rawManifestMutex.Lock()
+	defer fake.rawManifestMutex.Unlock()
+	fake.RawManifestStub = stub
+}
+
 func (fake *FakeImage) RawManifestReturns(result1 []byte, result2 error) {
+	fake.rawManifestMutex.Lock()
+	defer fake.rawManifestMutex.Unlock()
 	fake.RawManifestStub = nil
 	fake.rawManifestReturns = struct {
 		result1 []byte
@@ -588,6 +698,8 @@ func (fake *FakeImage) RawManifestReturns(result1 []byte, result2 error) {
 }
 
 func (fake *FakeImage) RawManifestReturnsOnCall(i int, result1 []byte, result2 error) {
+	fake.rawManifestMutex.Lock()
+	defer fake.rawManifestMutex.Unlock()
 	fake.RawManifestStub = nil
 	if fake.rawManifestReturnsOnCall == nil {
 		fake.rawManifestReturnsOnCall = make(map[int]struct {
@@ -597,6 +709,61 @@ func (fake *FakeImage) RawManifestReturnsOnCall(i int, result1 []byte, result2 e
 	}
 	fake.rawManifestReturnsOnCall[i] = struct {
 		result1 []byte
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeImage) Size() (int64, error) {
+	fake.sizeMutex.Lock()
+	ret, specificReturn := fake.sizeReturnsOnCall[len(fake.sizeArgsForCall)]
+	fake.sizeArgsForCall = append(fake.sizeArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Size", []interface{}{})
+	fake.sizeMutex.Unlock()
+	if fake.SizeStub != nil {
+		return fake.SizeStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.sizeReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeImage) SizeCallCount() int {
+	fake.sizeMutex.RLock()
+	defer fake.sizeMutex.RUnlock()
+	return len(fake.sizeArgsForCall)
+}
+
+func (fake *FakeImage) SizeCalls(stub func() (int64, error)) {
+	fake.sizeMutex.Lock()
+	defer fake.sizeMutex.Unlock()
+	fake.SizeStub = stub
+}
+
+func (fake *FakeImage) SizeReturns(result1 int64, result2 error) {
+	fake.sizeMutex.Lock()
+	defer fake.sizeMutex.Unlock()
+	fake.SizeStub = nil
+	fake.sizeReturns = struct {
+		result1 int64
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeImage) SizeReturnsOnCall(i int, result1 int64, result2 error) {
+	fake.sizeMutex.Lock()
+	defer fake.sizeMutex.Unlock()
+	fake.SizeStub = nil
+	if fake.sizeReturnsOnCall == nil {
+		fake.sizeReturnsOnCall = make(map[int]struct {
+			result1 int64
+			result2 error
+		})
+	}
+	fake.sizeReturnsOnCall[i] = struct {
+		result1 int64
 		result2 error
 	}{result1, result2}
 }
@@ -624,6 +791,8 @@ func (fake *FakeImage) Invocations() map[string][][]interface{} {
 	defer fake.rawConfigFileMutex.RUnlock()
 	fake.rawManifestMutex.RLock()
 	defer fake.rawManifestMutex.RUnlock()
+	fake.sizeMutex.RLock()
+	defer fake.sizeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

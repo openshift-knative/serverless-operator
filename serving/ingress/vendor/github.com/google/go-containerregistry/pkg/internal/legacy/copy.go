@@ -23,10 +23,10 @@ import (
 	"net/url"
 
 	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/logs"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
 // CopySchema1 allows `[g]crane cp` to work with old images without adding
@@ -38,32 +38,24 @@ func CopySchema1(desc *remote.Descriptor, srcRef, dstRef name.Reference, srcAuth
 	}
 
 	for _, layer := range m.FSLayers {
-		src := fmt.Sprintf("%s@%s", srcRef.Context(), layer.BlobSum)
-		blobSrc, err := name.NewDigest(src)
-		if err != nil {
-			return err
-		}
-		dst := fmt.Sprintf("%s@%s", dstRef.Context(), layer.BlobSum)
-		blobDst, err := name.NewDigest(dst)
+		src := srcRef.Context().Digest(layer.BlobSum)
+		dst := dstRef.Context().Digest(layer.BlobSum)
+
+		blob, err := remote.Layer(src, remote.WithAuth(srcAuth))
 		if err != nil {
 			return err
 		}
 
-		blob, err := remote.Layer(blobSrc, remote.WithAuth(srcAuth))
-		if err != nil {
-			return err
-		}
-
-		if err := remote.WriteLayer(blobDst, blob, remote.WithAuth(dstAuth)); err != nil {
+		if err := remote.WriteLayer(dst.Context(), blob, remote.WithAuth(dstAuth)); err != nil {
 			return err
 		}
 	}
 
-	return putManifest(desc.Manifest, desc.MediaType, dstRef, dstAuth)
+	return putManifest(desc, dstRef, dstAuth)
 }
 
 // TODO: perhaps expose this in remote?
-func putManifest(body []byte, mt types.MediaType, dstRef name.Reference, dstAuth authn.Authenticator) error {
+func putManifest(desc *remote.Descriptor, dstRef name.Reference, dstAuth authn.Authenticator) error {
 	reg := dstRef.Context().Registry
 	scopes := []string{dstRef.Scope(transport.PushScope)}
 	tr, err := transport.New(reg, dstAuth, http.DefaultTransport, scopes)
@@ -78,11 +70,11 @@ func putManifest(body []byte, mt types.MediaType, dstRef name.Reference, dstAuth
 		Path:   fmt.Sprintf("/v2/%s/manifests/%s", dstRef.Context().RepositoryStr(), dstRef.Identifier()),
 	}
 
-	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(desc.Manifest))
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", string(mt))
+	req.Header.Set("Content-Type", string(desc.MediaType))
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -90,7 +82,13 @@ func putManifest(body []byte, mt types.MediaType, dstRef name.Reference, dstAuth
 	}
 	defer resp.Body.Close()
 
-	return transport.CheckError(resp, http.StatusOK, http.StatusCreated, http.StatusAccepted)
+	if err := transport.CheckError(resp, http.StatusOK, http.StatusCreated, http.StatusAccepted); err != nil {
+		return err
+	}
+
+	// The image was successfully pushed!
+	logs.Progress.Printf("%v: digest: %v size: %d", dstRef, desc.Digest, len(desc.Manifest))
+	return nil
 }
 
 type fslayer struct {

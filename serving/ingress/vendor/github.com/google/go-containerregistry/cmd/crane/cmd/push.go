@@ -26,7 +26,7 @@ func init() { Root.AddCommand(NewCmdPush()) }
 // NewCmdPush creates a new cobra.Command for the push subcommand.
 func NewCmdPush() *cobra.Command {
 	return &cobra.Command{
-		Use:   "push",
+		Use:   "push TARBALL IMAGE",
 		Short: "Push image contents as a tarball to a remote registry",
 		Args:  cobra.ExactArgs(2),
 		Run: func(_ *cobra.Command, args []string) {
@@ -36,7 +36,7 @@ func NewCmdPush() *cobra.Command {
 				log.Fatalf("loading %s as tarball: %v", path, err)
 			}
 
-			if err := crane.Push(img, tag); err != nil {
+			if err := crane.Push(img, tag, options...); err != nil {
 				log.Fatalf("pushing %s: %v", tag, err)
 			}
 		},

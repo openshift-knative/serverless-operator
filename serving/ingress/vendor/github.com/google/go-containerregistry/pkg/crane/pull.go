@@ -16,10 +16,13 @@ package crane
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/google/go-containerregistry/pkg/authn"
+	legacy "github.com/google/go-containerregistry/pkg/legacy/tarball"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
@@ -30,13 +33,14 @@ import (
 const iWasADigestTag = "i-was-a-digest"
 
 // Pull returns a v1.Image of the remote image src.
-func Pull(src string) (v1.Image, error) {
-	ref, err := name.ParseReference(src)
+func Pull(src string, opt ...Option) (v1.Image, error) {
+	o := makeOptions(opt...)
+	ref, err := name.ParseReference(src, o.name...)
 	if err != nil {
 		return nil, fmt.Errorf("parsing tag %q: %v", src, err)
 	}
 
-	return remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	return remote.Image(ref, o.remote...)
 }
 
 // Save writes the v1.Image img as a tarball at path with tag src.
@@ -56,12 +60,48 @@ func Save(img v1.Image, src, path string) error {
 		if !ok {
 			return fmt.Errorf("ref wasn't a tag or digest")
 		}
-		s := fmt.Sprintf("%s:%s", d.Repository.Name(), iWasADigestTag)
-		tag, err = name.NewTag(s)
-		if err != nil {
-			return fmt.Errorf("parsing digest as tag (%s): %v", s, err)
-		}
+		tag = d.Repository.Tag(iWasADigestTag)
 	}
 
 	return tarball.WriteToFile(path, tag, img)
+}
+
+// PullLayer returns the given layer from a registry.
+func PullLayer(ref string, opt ...Option) (v1.Layer, error) {
+	o := makeOptions(opt...)
+	digest, err := name.NewDigest(ref, o.name...)
+	if err != nil {
+		return nil, err
+	}
+
+	return remote.Layer(digest, o.remote...)
+}
+
+// SaveLegacy writes the v1.Image img as a legacy tarball at path with tag src.
+func SaveLegacy(img v1.Image, src, path string) error {
+	ref, err := name.ParseReference(src)
+	if err != nil {
+		return fmt.Errorf("parsing ref %q: %v", src, err)
+	}
+
+	w, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	return legacy.Write(ref, img, w)
+}
+
+// SaveOCI writes the v1.Image img as an OCI Image Layout at path. If a layout
+// already exists at that path, it will add the image to the index.
+func SaveOCI(img v1.Image, path string) error {
+	p, err := layout.FromPath(path)
+	if err != nil {
+		p, err = layout.Write(path, empty.Index)
+		if err != nil {
+			return err
+		}
+	}
+	return p.AppendImage(img)
 }

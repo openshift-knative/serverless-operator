@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/google/go-containerregistry/pkg/crane"
@@ -26,25 +27,42 @@ func init() { Root.AddCommand(NewCmdPull()) }
 
 // NewCmdPull creates a new cobra.Command for the pull subcommand.
 func NewCmdPull() *cobra.Command {
-	var cachePath string
-	pull := &cobra.Command{
-		Use:   "pull",
+	var cachePath, format string
+
+	cmd := &cobra.Command{
+		Use:   "pull IMAGE TARBALL",
 		Short: "Pull a remote image by reference and store its contents in a tarball",
 		Args:  cobra.ExactArgs(2),
 		Run: func(_ *cobra.Command, args []string) {
 			src, path := args[0], args[1]
-			img, err := crane.Pull(src)
+			img, err := crane.Pull(src, options...)
 			if err != nil {
 				log.Fatal(err)
 			}
 			if cachePath != "" {
 				img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 			}
-			if err := crane.Save(img, src, path); err != nil {
-				log.Fatalf("saving tarball %s: %v", path, err)
+
+			switch format {
+			case "tarball":
+				if err := crane.Save(img, src, path); err != nil {
+					log.Fatalf("saving tarball %s: %v", path, err)
+				}
+			case "legacy":
+				if err := crane.SaveLegacy(img, src, path); err != nil {
+					log.Fatalf("saving legacy tarball %s: %v", path, err)
+				}
+			case "oci":
+				if err := crane.SaveOCI(img, path); err != nil {
+					log.Fatalf("saving oci image layout %s: %v", path, err)
+				}
+			default:
+				log.Fatalf("unexpected --format: %q (valid values are: tarball, legacy, and oci)", format)
 			}
 		},
 	}
-	pull.Flags().StringVarP(&cachePath, "cache_path", "c", "", "Path to cache image layers")
-	return pull
+	cmd.Flags().StringVarP(&cachePath, "cache_path", "c", "", "Path to cache image layers")
+	cmd.Flags().StringVar(&format, "format", "tarball", fmt.Sprintf("Format in which to save images (%q, %q, or %q)", "tarball", "legacy", "oci"))
+
+	return cmd
 }

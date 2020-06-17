@@ -2,15 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os/exec"
-	"strings"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 )
 
 // Version can be set via:
-// -ldflags="-X 'github.com/google/go-containerregistry/pkg/crane.Version=$TAG'"
+// -ldflags="-X 'github.com/google/go-containerregistry/cmd/crane/cmd.Version=$TAG'"
 var Version string
 
 func init() { Root.AddCommand(NewCmdVersion()) }
@@ -20,15 +18,19 @@ func NewCmdVersion() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the version",
-		Args:  cobra.NoArgs,
+		Long: `The version string is completely dependent on how the binary was built, so you should not depend on the version format. It may change without notice.
+
+This could be an arbitrary string, if specified via -ldflags.
+This could also be the go module version, if built with go modules (often "(devel)").`,
+		Args: cobra.NoArgs,
 		Run: func(_ *cobra.Command, _ []string) {
 			if Version == "" {
-				// If Version is unset, use the current commit.
-				hash, err := exec.Command("git", "rev-parse", "HEAD").Output()
-				if err != nil {
-					log.Fatalf("error parsing git commit: %v", err)
+				i, ok := debug.ReadBuildInfo()
+				if !ok {
+					fmt.Println("could not determine build information")
+					return
 				}
-				Version = strings.TrimSpace(string(hash))
+				Version = i.Main.Version
 			}
 			fmt.Println(Version)
 		},
