@@ -81,8 +81,8 @@ EOF
 function teardown_tracing {
   logger.warn 'Teardown tracing'
 
-  oc delete service    -n ${ZIPKIN_NAMESPACE} zipkin
-  oc delete deployment -n ${ZIPKIN_NAMESPACE} zipkin
+  oc delete service    -n "${ZIPKIN_NAMESPACE}" zipkin
+  oc delete deployment -n "${ZIPKIN_NAMESPACE}" zipkin
 
   timeout 600 "[[ \$(oc get pods -n ${ZIPKIN_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 2
 
