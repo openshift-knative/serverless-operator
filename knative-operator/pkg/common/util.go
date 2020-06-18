@@ -5,7 +5,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 

@@ -23,6 +23,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -43,8 +44,9 @@ import (
 const (
 	// probeConcurrency defines how many probing calls can be issued simultaneously
 	probeConcurrency = 15
-	//probeTimeout defines the maximum amount of time a request will wait
+	// probeTimeout defines the maximum amount of time a request will wait
 	probeTimeout = 1 * time.Second
+	probePath    = "/healthz"
 )
 
 var dialContext = (&net.Dialer{Timeout: probeTimeout}).DialContext
@@ -356,14 +358,16 @@ func (m *Prober) processWorkItem() bool {
 			return dialContext(ctx, network, net.JoinHostPort(item.podIP, item.podPort))
 		}}
 
+	probeURL := deepCopy(item.url)
+	probeURL.Path = path.Join(probeURL.Path, probePath)
+
 	ok, err := prober.Do(
 		item.context,
 		transport,
-		item.url.String(),
+		probeURL.String(),
 		prober.WithHeader(network.UserAgentKey, network.IngressReadinessUserAgent),
 		prober.WithHeader(network.ProbeHeaderName, network.ProbeHeaderValue),
-		prober.ExpectsStatusCodes([]int{http.StatusOK}),
-		prober.ExpectsHeader(network.HashHeaderName, item.ingressState.hash))
+		m.probeVerifier(item))
 
 	// In case of cancellation, drop the work item
 	select {
@@ -394,4 +398,44 @@ func (m *Prober) updateStates(ingressState *ingressState, podState *podState) {
 			m.readyCallback(ingressState.ing)
 		}
 	}
+}
+
+func (m *Prober) probeVerifier(item *workItem) prober.Verifier {
+	return func(r *http.Response, _ []byte) (bool, error) {
+		// In the happy path, the probe request is forwarded to Activator or Queue-Proxy and the response (HTTP 200)
+		// contains the "K-Network-Hash" header that can be compared with the expected hash. If the hashes match,
+		// probing is successful, if they don't match, a new probe will be sent later.
+		// An HTTP 404/503 is expected in the case of the creation of a new Knative service because the rules will
+		// not be present in the Envoy config until the new VirtualService is applied.
+		// No information can be extracted from any other scenario (e.g. HTTP 302), therefore in that case,
+		// probing is assumed to be successful because it is better to say that an Ingress is Ready before it
+		// actually is Ready than never marking it as Ready. It is best effort.
+		switch r.StatusCode {
+		case http.StatusOK:
+			hash := r.Header.Get(network.HashHeaderName)
+			switch hash {
+			case "":
+				m.logger.Errorf("Probing of %s abandoned, IP: %s:%s: the response doesn't contain the %q header",
+					item.url, item.podIP, item.podPort, network.HashHeaderName)
+				return true, nil
+			case item.ingressState.hash:
+				return true, nil
+			default:
+				return false, fmt.Errorf("unexpected hash: want %q, got %q", item.ingressState.hash, hash)
+			}
+		case http.StatusNotFound, http.StatusServiceUnavailable:
+			return false, fmt.Errorf("unexpected status code: want %v, got %v", http.StatusOK, http.StatusNotFound)
+		default:
+			m.logger.Errorf("Probing of %s abandoned, IP: %s:%s: the response status is %v, expected 200 or 404",
+				item.url, item.podIP, item.podPort, r.StatusCode)
+			return true, nil
+		}
+	}
+}
+
+// deepCopy copies a URL into a new one
+func deepCopy(in *url.URL) *url.URL {
+	// Safe to ignore the error since this is a deep copy
+	newURL, _ := url.Parse(in.String())
+	return newURL
 }

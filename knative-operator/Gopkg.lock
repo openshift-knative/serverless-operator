@@ -221,7 +221,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:4d7cb4a80c941824472da4b52de752882d0403a461c7a2cf1b965156edce126d"
+  digest = "1:6f048a68c8a02228cf105d3918caf0f1bc996c70304f83598c8a5fa74f8d6334"
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
@@ -231,7 +231,8 @@
     "cmp/internal/value",
   ]
   pruneopts = "NT"
-  revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
+  revision = "7e5cb83929c528b29e5a8ac1244eab0436f79bce"
+  version = "v0.4.1"
 
 [[projects]]
   digest = "1:52c5834e2bebac9030c97cc0798ac11c3aa8a39f098aeb419f142533da6cd3cc"
@@ -934,37 +935,28 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:6d629027f3b6a5318d535c04749bc8800ab71f37a96cf33069987046054d913f"
-  name = "knative.dev/eventing-operator"
-  packages = ["pkg/apis/eventing/v1alpha1"]
+  digest = "1:0dcdd37af6bad18955efca0788a439adfb0fb2a9ff0740acd1d5d3168ca4f079"
+  name = "knative.dev/operator"
+  packages = ["pkg/apis/operator/v1alpha1"]
   pruneopts = "NT"
-  revision = "150e71756ca7b0a8d6c1e376a068d0e1ddf95236"
-  version = "v0.13.2"
+  revision = "8a21397650377eb44015dc1fdc9fa769db6823ff"
+  version = "v0.14.2"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:366e2eaed09b354c22bc3921147021cde38aeb24a02d782b3d524b50c335ae80"
+  branch = "release-0.14"
+  digest = "1:b5fc33a7242f3d7677e8aadda24a459f2bec2954c1178b1e32e020eb3f6ef993"
   name = "knative.dev/pkg"
   packages = [
     "apis",
     "apis/duck",
     "apis/duck/v1",
-    "apis/duck/v1beta1",
     "kmeta",
     "kmp",
     "ptr",
     "tracker",
   ]
   pruneopts = "NT"
-  revision = "87426b54db6f1200e2cb9086055fdf7fe90307dc"
-
-[[projects]]
-  digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
-  name = "knative.dev/serving-operator"
-  packages = ["pkg/apis/serving/v1alpha1"]
-  pruneopts = "NT"
-  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
-  version = "v0.13.2"
+  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1070,9 +1062,8 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
-    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
+    "knative.dev/operator/pkg/apis/operator/v1alpha1",
     "knative.dev/pkg/ptr",
-    "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
     "sigs.k8s.io/controller-runtime/pkg/client/fake",

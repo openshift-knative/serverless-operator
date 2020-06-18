@@ -3,12 +3,13 @@ package knativeeventing
 import (
 	"context"
 	"fmt"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	eventingv1alpha1 "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"

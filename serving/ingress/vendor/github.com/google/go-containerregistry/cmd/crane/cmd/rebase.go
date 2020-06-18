@@ -28,22 +28,23 @@ func init() { Root.AddCommand(NewCmdRebase()) }
 // NewCmdRebase creates a new cobra.Command for the rebase subcommand.
 func NewCmdRebase() *cobra.Command {
 	var orig, oldBase, newBase, rebased string
+
 	rebaseCmd := &cobra.Command{
 		Use:   "rebase",
 		Short: "Rebase an image onto a new base image",
 		Args:  cobra.NoArgs,
 		Run: func(*cobra.Command, []string) {
-			origImg, err := crane.Pull(orig)
+			origImg, err := crane.Pull(orig, options...)
 			if err != nil {
 				log.Fatalf("pulling %s: %v", orig, err)
 			}
 
-			oldBaseImg, err := crane.Pull(oldBase)
+			oldBaseImg, err := crane.Pull(oldBase, options...)
 			if err != nil {
 				log.Fatalf("pulling %s: %v", oldBase, err)
 			}
 
-			newBaseImg, err := crane.Pull(newBase)
+			newBaseImg, err := crane.Pull(newBase, options...)
 			if err != nil {
 				log.Fatalf("pulling %s: %v", newBase, err)
 			}
@@ -53,7 +54,7 @@ func NewCmdRebase() *cobra.Command {
 				log.Fatalf("rebasing: %v", err)
 			}
 
-			if err := crane.Push(img, rebased); err != nil {
+			if err := crane.Push(img, rebased, options...); err != nil {
 				log.Fatalf("pushing %s: %v", rebased, err)
 			}
 

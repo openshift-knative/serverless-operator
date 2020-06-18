@@ -134,7 +134,7 @@
   version = "v1.3.2"
 
 [[projects]]
-  digest = "1:bf40199583e5143d1472fc34d10d6f4b69d97572142acf343b3e43136da40823"
+  digest = "1:ea920fc7bb1d9a2fe99782eb6a5b4e809dfbfcfabd6ab55a387353934acbf09c"
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
@@ -144,14 +144,15 @@
     "cmp/internal/value",
   ]
   pruneopts = "NUT"
-  revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
+  revision = "7e5cb83929c528b29e5a8ac1244eab0436f79bce"
+  version = "v0.4.1"
 
 [[projects]]
   digest = "1:ecc8bd577aaaa8ce2c3ad060e61e1daeadbab1d14a0934f019ad2995c3a666b0"
   name = "github.com/google/go-containerregistry"
   packages = ["pkg/name"]
   pruneopts = "NUT"
-  revision = "955bf358a3d8d1ebfa6204338ef3fe364255cd85"
+  revision = "3d03ed9b1ca2ad5d78d43832e8e46adc31d2b961"
 
 [[projects]]
   digest = "1:3ec6c8e4b700377066dbb5ab3155c55f97109ab6147fee9423a68506d79bbafa"
@@ -175,6 +176,14 @@
   ]
   pruneopts = "NUT"
   revision = "c3068f13fcc3961fd05f96f13c8250e350db4209"
+
+[[projects]]
+  digest = "1:ab3ec1fe3e39bac4b3ab63390767766622be35b7cab03f47f787f9ec60522a53"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:5e092394bed250d7fda36cef8b7e1d22bb2d5f71878bbb137be5fc1c2705f965"
@@ -908,21 +917,21 @@
   revision = "94aeca20bf0991bf33922a5938174b9147ab8ca7"
 
 [[projects]]
-  digest = "1:f187cb36645d52efa179418cf73449252ffa817e2b9dd63885531274084d6d43"
-  name = "knative.dev/eventing-operator"
+  branch = "release-0.14"
+  digest = "1:32c9c93d6b2db808f166672fd963640a9fb42e18c3575e19d103c4d1ec38c8a5"
+  name = "knative.dev/operator"
   packages = [
-    "pkg/apis/eventing/v1alpha1",
+    "pkg/apis/operator/v1alpha1",
     "pkg/client/clientset/versioned",
     "pkg/client/clientset/versioned/scheme",
-    "pkg/client/clientset/versioned/typed/eventing/v1alpha1",
+    "pkg/client/clientset/versioned/typed/operator/v1alpha1",
   ]
   pruneopts = "NUT"
-  revision = "2932fb937a550cf72a1d1a5220eb0c81bb74b042"
-  version = "v0.13.1"
+  revision = "43fce8e820eda5dc1c15fbff2afb500d03886c0b"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:0a05db4637a55e8ab686fe1317061bf554337d343ae13143639709377b61b7f2"
+  branch = "release-0.14"
+  digest = "1:d5b530238d820e67563f8c6e3ca2bccfe8bcdbe168545cbac81b9ad691bb9c5b"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -945,11 +954,11 @@
     "tracker",
   ]
   pruneopts = "NUT"
-  revision = "a56a6ea3fa56b9c9c2482a5bda0005dd2364d183"
+  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:52cf47878942372b234e89993c4d1755c53fe754726cde91b17021a581c9233a"
+  branch = "release-0.14"
+  digest = "1:6b7c92118e70948390a751d134cbcdb34dde745cdff54a68b2e27b5cf23bbb04"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -971,23 +980,10 @@
     "pkg/client/clientset/versioned/typed/serving/v1beta1",
   ]
   pruneopts = "NUT"
-  revision = "aa470a6af2da383a5cc81483dfd476d41bbd1830"
+  revision = "4f12c1fec52f6aaa3a383fa0164c3cfa7c4faa8d"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:7e7a10fdeb43d3538b83efc0ede8ce5f3ed21a464366c8f9d7f5c90c68ecf183"
-  name = "knative.dev/serving-operator"
-  packages = [
-    "pkg/apis/serving/v1alpha1",
-    "pkg/client/clientset/versioned",
-    "pkg/client/clientset/versioned/scheme",
-    "pkg/client/clientset/versioned/typed/serving/v1alpha1",
-  ]
-  pruneopts = "NUT"
-  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
-
-[[projects]]
-  branch = "release-0.13"
+  branch = "release-0.14"
   digest = "1:50482e6fd500cf50c4a29d640cda026206145c6716dff72e4368a5e57fdb7095"
   name = "knative.dev/test-infra"
   packages = [
@@ -1022,6 +1018,8 @@
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/runtime",
+    "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/wait",
@@ -1030,13 +1028,11 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
-    "knative.dev/eventing-operator/pkg/apis/eventing/v1alpha1",
-    "knative.dev/eventing-operator/pkg/client/clientset/versioned",
-    "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1",
+    "knative.dev/operator/pkg/apis/operator/v1alpha1",
+    "knative.dev/operator/pkg/client/clientset/versioned",
+    "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1",
+    "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/test",
-    "knative.dev/serving-operator/pkg/apis/serving/v1alpha1",
-    "knative.dev/serving-operator/pkg/client/clientset/versioned",
-    "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1",
     "knative.dev/serving/pkg/apis/serving/v1",
     "knative.dev/serving/pkg/client/clientset/versioned",
     "knative.dev/test-infra/scripts",

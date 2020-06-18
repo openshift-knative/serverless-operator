@@ -6,7 +6,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func KnativeServing(name, namespace string) *servingoperatorv1alpha1.KnativeServing {
@@ -30,7 +30,7 @@ func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*servin
 }
 
 func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
-	serving, err := ctx.Clients.ServingOperator.KnativeServings(namespace).Create(KnativeServing(name, namespace))
+	serving, err := ctx.Clients.Operator.KnativeServings(namespace).Create(KnativeServing(name, namespace))
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingop
 }
 
 func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.ServingOperator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Operator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -63,7 +63,7 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.ServingOperator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Operator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

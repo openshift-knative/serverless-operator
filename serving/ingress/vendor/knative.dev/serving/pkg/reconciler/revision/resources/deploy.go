@@ -34,7 +34,6 @@ import (
 	"knative.dev/serving/pkg/network"
 	"knative.dev/serving/pkg/queue"
 	"knative.dev/serving/pkg/reconciler/revision/resources/names"
-	"knative.dev/serving/pkg/resources"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -142,6 +141,23 @@ func makePodSpec(rev *v1.Revision, loggingConfig *logging.Config, tracingConfig 
 		return nil, fmt.Errorf("failed to create queue-proxy container: %w", err)
 	}
 
+	userContainer := BuildUserContainer(rev)
+	podSpec := BuildPodSpec(rev, []corev1.Container{*userContainer, *queueContainer})
+
+	// Add the Knative internal volume only if /var/log collection is enabled
+	if observabilityConfig.EnableVarLogCollection {
+		podSpec.Volumes = append(podSpec.Volumes, internalVolume)
+	}
+
+	if autoscalerConfig.EnableGracefulScaledown {
+		podSpec.Volumes = append(podSpec.Volumes, labelVolume)
+	}
+
+	return podSpec, nil
+}
+
+// BuildUserContainer makes a container from the Revision template.
+func BuildUserContainer(rev *v1.Revision) *corev1.Container {
 	userContainer := rev.Spec.GetContainer().DeepCopy()
 	// Adding or removing an overwritten corev1.Container field here? Don't forget to
 	// update the fieldmasks / validations in pkg/apis/serving
@@ -178,28 +194,18 @@ func makePodSpec(rev *v1.Revision, loggingConfig *logging.Config, tracingConfig 
 
 	// If the client provides probes, we should fill in the port for them.
 	rewriteUserProbe(userContainer.LivenessProbe, userPortInt)
+	return userContainer
+}
 
-	podSpec := &corev1.PodSpec{
-		Containers: []corev1.Container{
-			*userContainer,
-			*queueContainer,
-		},
+// BuildPodSpec creates a PodSpec from the given revision and containers.
+func BuildPodSpec(rev *v1.Revision, containers []corev1.Container) *corev1.PodSpec {
+	return &corev1.PodSpec{
+		Containers:                    containers,
 		Volumes:                       append([]corev1.Volume{varLogVolume}, rev.Spec.Volumes...),
 		ServiceAccountName:            rev.Spec.ServiceAccountName,
 		TerminationGracePeriodSeconds: rev.Spec.TimeoutSeconds,
 		ImagePullSecrets:              rev.Spec.ImagePullSecrets,
 	}
-
-	// Add the Knative internal volume only if /var/log collection is enabled
-	if observabilityConfig.EnableVarLogCollection {
-		podSpec.Volumes = append(podSpec.Volumes, internalVolume)
-	}
-
-	if autoscalerConfig.EnableGracefulScaledown {
-		podSpec.Volumes = append(podSpec.Volumes, labelVolume)
-	}
-
-	return podSpec, nil
 }
 
 func getUserPort(rev *v1.Revision) int32 {
@@ -231,13 +237,9 @@ func MakeDeployment(rev *v1.Revision,
 	loggingConfig *logging.Config, tracingConfig *tracingconfig.Config, networkConfig *network.Config, observabilityConfig *metrics.ObservabilityConfig,
 	autoscalerConfig *autoscalerconfig.Config, deploymentConfig *deployment.Config) (*appsv1.Deployment, error) {
 
-	podTemplateAnnotations := resources.FilterMap(rev.GetAnnotations(), func(k string) bool {
+	podTemplateAnnotations := kmeta.FilterMap(rev.GetAnnotations(), func(k string) bool {
 		return k == serving.RevisionLastPinnedAnnotationKey
 	})
-
-	// TODO(mattmoor): Once we have a mechanism for decorating arbitrary deployments (and opting
-	// out via annotation) we should explicitly disable that here to avoid redundant Image
-	// resources.
 
 	podSpec, err := makePodSpec(rev, loggingConfig, tracingConfig, observabilityConfig, autoscalerConfig, deploymentConfig)
 	if err != nil {
@@ -249,7 +251,7 @@ func MakeDeployment(rev *v1.Revision,
 			Name:      names.Deployment(rev),
 			Namespace: rev.Namespace,
 			Labels:    makeLabels(rev),
-			Annotations: resources.FilterMap(rev.GetAnnotations(), func(k string) bool {
+			Annotations: kmeta.FilterMap(rev.GetAnnotations(), func(k string) bool {
 				// Exclude the heartbeat label, which can have high variance.
 				return k == serving.RevisionLastPinnedAnnotationKey
 			}),

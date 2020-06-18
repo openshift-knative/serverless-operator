@@ -45,11 +45,11 @@
 
 [[constraint]]
   name = "knative.dev/serving"
-  branch = "release-0.13"
+  branch = "release-0.14"
 
 [[override]]
   name = "knative.dev/pkg"
-  branch = "release-0.13"
+  branch = "release-0.14"
 
 [prune]
   go-tests = true

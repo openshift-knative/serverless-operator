@@ -23,10 +23,10 @@ import (
 
 	"github.com/mattbaird/jsonpatch"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-
 	"knative.dev/pkg/apis/duck"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/logging"
@@ -133,8 +133,7 @@ func CreateServiceReady(t pkgTest.T, clients *test.Clients, names *test.Resource
 func CreateService(t pkgTest.T, clients *test.Clients, names test.ResourceNames, fopt ...rtesting.ServiceOption) (*v1.Service, error) {
 	service := Service(names, fopt...)
 	LogResourceObject(t, ResourceObjects{Service: service})
-	svc, err := clients.ServingClient.Services.Create(service)
-	return svc, err
+	return clients.ServingClient.Services.Create(service)
 }
 
 // PatchService patches the existing service passed in with the applied mutations.
@@ -223,7 +222,7 @@ func WaitForServiceState(client *test.ServingClients, name string, inState func(
 	})
 
 	if waitErr != nil {
-		return fmt.Errorf("service %q is not in desired state, got: %+v: %w", name, lastState, waitErr)
+		return fmt.Errorf("service %q is not in desired state, got: %#v: %w", name, lastState, waitErr)
 	}
 	return nil
 }
@@ -239,7 +238,7 @@ func CheckServiceState(client *test.ServingClients, name string, inState func(s 
 	if done, err := inState(s); err != nil {
 		return err
 	} else if !done {
-		return fmt.Errorf("service %q is not in desired state, got: %+v", name, s)
+		return fmt.Errorf("service %q is not in desired state, got: %#v", name, s)
 	}
 	return nil
 }
@@ -253,5 +252,12 @@ func IsServiceReady(s *v1.Service) (bool, error) {
 // IsServiceNotReady will check the status conditions of the service and return true if the service is
 // not ready.
 func IsServiceNotReady(s *v1.Service) (bool, error) {
-	return s.Generation == s.Status.ObservedGeneration && !s.Status.IsReady(), nil
+	result := s.Status.GetCondition(v1.ServiceConditionReady)
+	return s.Generation == s.Status.ObservedGeneration && result != nil && result.Status == corev1.ConditionFalse, nil
+}
+
+// IsServiceRoutesNotReady checks the RoutesReady status of the service and returns true only if RoutesReady is set to False.
+func IsServiceRoutesNotReady(s *v1.Service) (bool, error) {
+	result := s.Status.GetCondition(v1.ServiceConditionRoutesReady)
+	return s.Generation == s.Status.ObservedGeneration && result != nil && result.Status == corev1.ConditionFalse, nil
 }

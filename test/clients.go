@@ -16,10 +16,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	aggregator "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
-	eventingoperatorversioned "knative.dev/eventing-operator/pkg/client/clientset/versioned"
-	eventingoperatorv1alpha1 "knative.dev/eventing-operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1"
-	servingoperatorversioned "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -35,8 +33,7 @@ type Context struct {
 type Clients struct {
 	Kube               *kubernetes.Clientset
 	KubeAggregator     *aggregator.Clientset
-	ServingOperator    servingoperatorv1alpha1.OperatorV1alpha1Interface
-	EventingOperator   eventingoperatorv1alpha1.OperatorV1alpha1Interface
+	Operator           operatorv1alpha1.OperatorV1alpha1Interface
 	Serving            *servingversioned.Clientset
 	OLM                olmversioned.Interface
 	Dynamic            dynamic.Interface
@@ -132,12 +129,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
-	clients.ServingOperator, err = newKnativeServingClients(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.EventingOperator, err = newKnativeEventingClients(cfg)
+	clients.Operator, err = newKnativeOperatorClients(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -179,16 +171,8 @@ func newOLMClient(configPath string) (olmversioned.Interface, error) {
 	return olmclient, nil
 }
 
-func newKnativeServingClients(cfg *rest.Config) (servingoperatorv1alpha1.OperatorV1alpha1Interface, error) {
-	cs, err := servingoperatorversioned.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return cs.OperatorV1alpha1(), nil
-}
-
-func newKnativeEventingClients(cfg *rest.Config) (eventingoperatorv1alpha1.OperatorV1alpha1Interface, error) {
-	cs, err := eventingoperatorversioned.NewForConfig(cfg)
+func newKnativeOperatorClients(cfg *rest.Config) (operatorv1alpha1.OperatorV1alpha1Interface, error) {
+	cs, err := operatorversioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}

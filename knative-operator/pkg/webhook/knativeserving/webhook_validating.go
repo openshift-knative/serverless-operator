@@ -9,7 +9,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"

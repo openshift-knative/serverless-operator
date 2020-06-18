@@ -83,7 +83,7 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:4d7cb4a80c941824472da4b52de752882d0403a461c7a2cf1b965156edce126d"
+  digest = "1:6f048a68c8a02228cf105d3918caf0f1bc996c70304f83598c8a5fa74f8d6334"
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
@@ -93,14 +93,15 @@
     "cmp/internal/value",
   ]
   pruneopts = "NT"
-  revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
+  revision = "7e5cb83929c528b29e5a8ac1244eab0436f79bce"
+  version = "v0.4.1"
 
 [[projects]]
-  digest = "1:12ef8791a428ab63be9adf5e690ec5f16efd4ec1c80a8b5e07bd425696257bad"
+  digest = "1:b45010abff032bc343f0d36c72ecf22c95bc074be88429b44f3506d231870bb9"
   name = "github.com/google/go-containerregistry"
   packages = ["pkg/name"]
   pruneopts = "NT"
-  revision = "b02d448a3705facf11018efff34f1d2830be5724"
+  revision = "3d03ed9b1ca2ad5d78d43832e8e46adc31d2b961"
 
 [[projects]]
   branch = "master"
@@ -772,8 +773,8 @@
   revision = "581e00157fb1a0435d4fac54a52d1ca1e481d60e"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:dec0d3059482bac8bff3c4798f0bddbcf6c19ede82832b1ef273a8dcf4b2b279"
+  branch = "release-0.14"
+  digest = "1:b5fc33a7242f3d7677e8aadda24a459f2bec2954c1178b1e32e020eb3f6ef993"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -786,14 +787,15 @@
     "logging",
     "logging/logkey",
     "profiling",
+    "ptr",
     "tracker",
   ]
   pruneopts = "NT"
-  revision = "a56a6ea3fa56b9c9c2482a5bda0005dd2364d183"
+  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
 
 [[projects]]
-  branch = "release-0.13"
-  digest = "1:bf59337db29bb77ad48f78c9df311af866afe923f20f3ff853b5d28dfed67674"
+  branch = "release-0.14"
+  digest = "1:34859eab9b3146186546f6dde687467d82feb7f06d96863be853a5a90aa09f4d"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -805,7 +807,7 @@
     "pkg/network",
   ]
   pruneopts = "NT"
-  revision = "53713006b1c53c6b052e15731c8e14df67998ac6"
+  revision = "8c65d713bb9e69d9f48df1348217e41bb26c6afe"
 
 [[projects]]
   digest = "1:fdf6c6bbb39a27ec36f40aefa6dd3be37475210bbac2a808ddd7cc84715664f8"
@@ -871,7 +873,6 @@
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/assert",
     "go.uber.org/zap",
-    "k8s.io/api/core/v1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions",
@@ -886,9 +887,9 @@
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/tools/cache",
-    "k8s.io/client-go/tools/record",
     "knative.dev/pkg/logging",
     "knative.dev/pkg/logging/logkey",
+    "knative.dev/pkg/ptr",
     "knative.dev/serving/pkg/apis/networking",
     "knative.dev/serving/pkg/apis/networking/v1alpha1",
     "knative.dev/serving/pkg/apis/serving",

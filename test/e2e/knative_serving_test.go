@@ -9,7 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	servingoperatorv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
