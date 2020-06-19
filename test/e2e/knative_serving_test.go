@@ -25,7 +25,7 @@ const (
 	testNamespace                 = "serverless-tests"
 	testNamespace2                = "serverless-tests2"
 	image                         = "quay.io/multi-arch/knative-samples-helloworld-go:latest"
-	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
+	proxyImage                    = "quay.io/multi-arch/knative-samples-autoscale-go:latest"
 	helloworldService             = "helloworld-go"
 	helloworldService2            = "helloworld-go2"
 	kubeHelloworldService         = "kube-helloworld-go"
