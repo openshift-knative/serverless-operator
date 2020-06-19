@@ -7,7 +7,9 @@ import (
 
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,6 +34,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		ensureCustomCerts,
 		imagesFromEnviron,
 		defaultToHa,
+		defaultResources,
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
@@ -48,6 +51,22 @@ func defaultToHa(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		}
 	}
 
+	return nil
+}
+
+func defaultResources(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	if ks.Spec.Resources == nil {
+		ks.Spec.Resources = []servingv1alpha1.ResourceRequirementsOverride{
+			servingv1alpha1.ResourceRequirementsOverride{
+				Container: "webhook",
+				ResourceRequirements: corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("1024Mi"),
+					},
+				},
+			},
+		}
+	}
 	return nil
 }
 

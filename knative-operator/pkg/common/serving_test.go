@@ -76,6 +76,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyResources(t, ks)
 		tc.ha(t, ks)
 
 		// Rerun, should be a noop
@@ -88,6 +89,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyResources(t, ks)
 		tc.ha(t, ks)
 
 		// Force a change and rerun
@@ -102,6 +104,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyResources(t, ks)
 		tc.ha(t, ks)
 	}
 }
@@ -157,6 +160,12 @@ func verifyQueueProxySidecarImageOverride(t *testing.T, ks *servingv1alpha1.Knat
 func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
+	}
+}
+
+func verifyResources(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+	if ks.Spec.Resources == nil {
+		t.Error("Missing resources config")
 	}
 }
 
