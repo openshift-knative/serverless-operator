@@ -260,7 +260,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-operator
+                image: quay.io/multi-arch/openshift-serverless-1-knative-serving-rhel8-operator:v0.13.3-2
                 imagePullPolicy: IfNotPresent
                 name: knative-serving-operator
                 ports:
@@ -294,7 +294,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/eventing-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-eventing-operator
+                image: quay.io/multi-arch/openshift-serverless-1-eventing-rhel8-operator:v0.13.3-2
                 imagePullPolicy: IfNotPresent
                 name: knative-eventing-operator
                 ports:
@@ -340,45 +340,45 @@ spec:
                     - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
                       value: deploy/resources/console_cli_download_kn_resources.yaml
                     - name: IMAGE_queue-proxy
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-queue
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-queue-rhel8:v0.13.3-2
                     - name: IMAGE_activator
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-activator
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-activator-rhel8:v0.13.3-2
                     - name: IMAGE_autoscaler
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-autoscaler-rhel8:v0.13.3-2
                     - name: IMAGE_autoscaler-hpa
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler-hpa
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-autoscaler-hpa-rhel8:v0.13.3-2
                     - name: IMAGE_controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-controller
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-controller-rhel8:v0.13.3-2
                     - name: IMAGE_webhook
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-webhook
+                      value: quay.io/multi-arch/openshift-serverless-1-serving-webhook-rhel8:v0.13.3-2
                     - name: IMAGE_3scale-kourier-gateway
-                      value: docker.io/maistra/proxyv2-ubi8:1.0.8
+                      value: quay.io/multi-arch/openshift-service-mesh-proxyv2-rhel8:1.1
                     - name: IMAGE_3scale-kourier-control
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:kourier
+                      value: quay.io/multi-arch/openshift-serverless-1-kourier-control-rhel8:v0.13.3-2
                     - name: IMAGE_eventing-controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-controller-rhel8:v0.13.3-2
                     - name: IMAGE_eventing-webhook
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-webhook-rhel8:v0.13.3-2
                     - name: IMAGE_broker-controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-channel-broker-rhel8:v0.13.3-2
                     - name: IMAGE_imc-controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-controller-rhel8:v0.13.3-2
                     - name: IMAGE_imc-dispatcher
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-dispatcher-rhel8:v0.13.3-2
                     - name: IMAGE_CRONJOB_RA_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-cronjob-receive-adapter
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-cronjob-receive-adapter-rhel8:v0.13.3-2
                     - name: IMAGE_PING_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-ping
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-ping-source-rhel8:v0.13.3-2
                     - name: IMAGE_APISERVER_RA_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-apiserver-receive-adapter
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-apiserver-receive-adapter-rhel8:v0.13.3-2
                     - name: IMAGE_BROKER_INGRESS_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-ingress
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-broker-ingress-rhel8:v0.13.3-2
                     - name: IMAGE_BROKER_FILTER_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-filter
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-broker-filter-rhel8:v0.13.3-2
                     - name: IMAGE_DISPATCHER_IMAGE
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+                      value: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-dispatcher-rhel8:v0.13.3-2
                     - name: IMAGE_KN_CLI_ARTIFACTS
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
+                      value: quay.io/multi-arch/openshift-serverless-1-kn-cli-artifacts-rhel8:v0.13.3-2
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -489,52 +489,52 @@ spec:
     name: Red Hat, Inc.
   relatedImages:
     - name: IMAGE_QUEUE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-queue
+      image: quay.io/multi-arch/openshift-serverless-1-serving-queue-rhel8:v0.13.3-2
     - name: IMAGE_activator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-activator
+      image: quay.io/multi-arch/openshift-serverless-1-serving-activator-rhel8:v0.13.3-2
     - name: IMAGE_autoscaler
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler
+      image: quay.io/multi-arch/openshift-serverless-1-serving-autoscaler-rhel8:v0.13.3-2
     - name: IMAGE_autoscaler-hpa
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-autoscaler-hpa
+      image: quay.io/multi-arch/openshift-serverless-1-serving-autoscaler-hpa-rhel8:v0.13.3-2
     - name: IMAGE_controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-controller
+      image: quay.io/multi-arch/openshift-serverless-1-serving-controller-rhel8:v0.13.3-2
     - name: IMAGE_webhook
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-webhook
+      image: quay.io/multi-arch/openshift-serverless-1-serving-webhook-rhel8:v0.13.3-2
     - name: IMAGE_3scale-kourier-control
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:kourier
+      image: quay.io/multi-arch/openshift-serverless-1-kourier-control-rhel8:v0.13.3-2
     - name: IMAGE_3scale-kourier-gateway
-      image: docker.io/maistra/proxyv2-ubi8:1.0.8
+      image: quay.io/multi-arch/openshift-service-mesh-proxyv2-rhel8:1.1
     - name: knative-serving-operator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-operator
+      image: quay.io/multi-arch/openshift-serverless-1-knative-serving-rhel8-operator:v0.13.3-2
     - name: knative-operator
       image: $IMAGE_KNATIVE_OPERATOR
     - name: knative-openshift-ingress
       image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
     - name: knative-eventing-operator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-eventing-operator
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-rhel8-operator:v0.13.3-2
     - name: IMAGE_eventing-controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-controller
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-controller-rhel8:v0.13.3-2
     - name: IMAGE_eventing-webhook
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-webhook
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-webhook-rhel8:v0.13.3-2
     - name: IMAGE_broker-controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-broker
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-channel-broker-rhel8:v0.13.3-2
     - name: IMAGE_imc-controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-controller
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-controller-rhel8:v0.13.3-2
     - name: IMAGE_imc-dispatcher
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-dispatcher-rhel8:v0.13.3-2
     - name: IMAGE_CRONJOB_RA_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-cronjob-receive-adapter
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-cronjob-receive-adapter-rhel8:v0.13.3-2
     - name: IMAGE_PING_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-ping
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-ping-source-rhel8:v0.13.3-2
     - name: IMAGE_APISERVER_RA_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-apiserver-receive-adapter
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-apiserver-receive-adapter-rhel8:v0.13.3-2
     - name: IMAGE_BROKER_INGRESS_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-ingress
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-broker-ingress-rhel8:v0.13.3-2
     - name: IMAGE_BROKER_FILTER_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-filter
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-broker-filter-rhel8:v0.13.3-2
     - name: IMAGE_DISPATCHER_IMAGE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.0:knative-eventing-channel-dispatcher
+      image: quay.io/multi-arch/openshift-serverless-1-eventing-in-memory-channel-dispatcher-rhel8:v0.13.3-2
     - name: IMAGE_KN_CLI_ARTIFACTS
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
+      image: quay.io/multi-arch/openshift-serverless-1-kn-cli-artifacts-rhel8:v0.13.3-2
   replaces: serverless-operator.v1.7.0
   version: 1.7.1

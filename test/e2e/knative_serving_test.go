@@ -24,7 +24,7 @@ const (
 	knativeServing                = "knative-serving"
 	testNamespace                 = "serverless-tests"
 	testNamespace2                = "serverless-tests2"
-	image                         = "gcr.io/knative-samples/helloworld-go"
+	image                         = "quay.io/multi-arch/knative-samples-helloworld-go:latest"
 	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
 	helloworldService             = "helloworld-go"
 	helloworldService2            = "helloworld-go2"

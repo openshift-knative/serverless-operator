@@ -52,11 +52,11 @@ function run_knative_serving_e2e_and_conformance_tests {
   prepare_knative_serving_tests || return $?
 
   local failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  image_template="quay.io/multiarch-origin-e2e/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
   local parallel=3
 
-  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = None ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
     rm ./test/e2e/grpc_test.go
     parallel=2
@@ -67,7 +67,7 @@ function run_knative_serving_e2e_and_conformance_tests {
     --imagetemplate "$image_template" || failed=1
 
   # Run the helloworld test with an image pulled into the internal registry.
-  oc tag -n serving-tests "registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
+  oc tag -n serving-tests "quay.io/multiarch-origin-e2e/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
   go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
@@ -107,7 +107,7 @@ function run_knative_serving_rolling_upgrade_tests {
   prepare_knative_serving_tests || return $?
 
   failed=0
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  image_template="quay.io/multiarch-origin-e2e/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
