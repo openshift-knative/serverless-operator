@@ -34,7 +34,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		ensureCustomCerts,
 		imagesFromEnviron,
 		defaultToHa,
-		defaultResources,
+		ensureWebhookMemoryLimit,
 	}
 	for _, stage := range stages {
 		if err := stage(ks, c); err != nil {
@@ -54,19 +54,29 @@ func defaultToHa(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	return nil
 }
 
-func defaultResources(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	if ks.Spec.Resources == nil {
-		ks.Spec.Resources = []servingv1alpha1.ResourceRequirementsOverride{
-			servingv1alpha1.ResourceRequirementsOverride{
-				Container: "webhook",
-				ResourceRequirements: corev1.ResourceRequirements{
-					Limits: corev1.ResourceList{
-						corev1.ResourceMemory: resource.MustParse("1024Mi"),
-					},
-				},
-			},
+func ensureWebhookMemoryLimit(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+	const mem = "1024Mi"
+	for i, v := range ks.Spec.Resources {
+		if v.Container == "webhook" {
+			if v.Limits == nil {
+				v.Limits = corev1.ResourceList{}
+			}
+			if _, ok := v.Limits[corev1.ResourceMemory]; ok {
+				return nil
+			}
+			v.Limits[corev1.ResourceMemory] = resource.MustParse(mem)
+			ks.Spec.Resources[i] = v
+			return nil
 		}
 	}
+	ks.Spec.Resources = append(ks.Spec.Resources, servingv1alpha1.ResourceRequirementsOverride{
+		Container: "webhook",
+		ResourceRequirements: corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				corev1.ResourceMemory: resource.MustParse(mem),
+			},
+		},
+	})
 	return nil
 }
 
