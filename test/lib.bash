@@ -77,6 +77,10 @@ function downstream_serving_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
+  # Add system-namespace labels to serving.knative.openshift.io/system-namespace=true system namespaces for TestNetworkPolicy.
+  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true         || true
+  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true || true
+
   local failed=0
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
