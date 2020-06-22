@@ -7,6 +7,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -76,6 +77,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyWebookMemoryLimit(t, ks)
 		tc.ha(t, ks)
 
 		// Rerun, should be a noop
@@ -88,6 +90,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyWebookMemoryLimit(t, ks)
 		tc.ha(t, ks)
 
 		// Force a change and rerun
@@ -102,6 +105,7 @@ func TestMutate(t *testing.T) {
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
 		verifyCerts(t, ks)
+		verifyWebookMemoryLimit(t, ks)
 		tc.ha(t, ks)
 	}
 }
@@ -158,6 +162,17 @@ func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
 	}
+}
+
+func verifyWebookMemoryLimit(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+	for _, v := range ks.Spec.Resources {
+		if v.Container == "webhook" {
+			if _, ok := v.Limits[corev1.ResourceMemory]; ok {
+				return
+			}
+		}
+	}
+	t.Error("Missing webhook memory limit")
 }
 
 func verifyDefaultHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
