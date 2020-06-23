@@ -2,6 +2,7 @@ package common_test
 
 import (
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/yaml"
 )
 
 func init() {
@@ -107,6 +109,80 @@ func TestMutate(t *testing.T) {
 		verifyCerts(t, ks)
 		verifyWebookMemoryLimit(t, ks)
 		tc.ha(t, ks)
+	}
+}
+
+func TestWebhookMemoryLimit(t *testing.T) {
+	var testdata = []byte(`
+- input:
+    apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: no-overrides
+  expected:
+  - container: webhook
+    limits:
+      memory: 1024Mi
+- input:
+    apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: add-webhook-to-existing-override
+    spec:
+      resources:
+      - container: activator
+        limits:
+          cpu: 9999m
+          memory: 999Mi
+  expected:
+  - container: activator
+    limits:
+      cpu: 9999m
+      memory: 999Mi
+  - container: webhook
+    limits:
+      memory: 1024Mi
+- input:
+    apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: preserve-webhook-values
+    spec:
+      resources:
+      - container: webhook
+        requests:
+          cpu: 22m
+          memory: 22Mi
+        limits:
+          cpu: 220m
+          memory: 220Mi
+  expected:
+  - container: webhook
+    requests:
+      cpu: 22m
+      memory: 22Mi
+    limits:
+      cpu: 220m
+      memory: 220Mi
+`)
+	tests := []struct {
+		Input    servingv1alpha1.KnativeServing
+		Expected []servingv1alpha1.ResourceRequirementsOverride
+	}{}
+	if err := yaml.Unmarshal(testdata, &tests); err != nil {
+		t.Fatalf("Failed to unmarshal tests: %v", err)
+	}
+	client := fake.NewFakeClient(mockIngressConfig("whatever"))
+	for _, test := range tests {
+		t.Run(test.Input.Name, func(t *testing.T) {
+			err := common.Mutate(&test.Input, client)
+			if err != nil {
+				t.Error(err)
+			}
+			if !reflect.DeepEqual(test.Input.Spec.Resources, test.Expected) {
+				t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", test.Input.Name, test.Expected, test.Input.Spec.Resources)
+			}
+		})
 	}
 }
 
