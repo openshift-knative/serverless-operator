@@ -386,7 +386,7 @@ spec:
                     - name: IMAGE_DISPATCHER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-eventing-channel-dispatcher
                     - name: IMAGE_KN_CLI_ARTIFACTS
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -551,6 +551,6 @@ spec:
     - name: IMAGE_DISPATCHER_IMAGE
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-eventing-channel-dispatcher
     - name: IMAGE_KN_CLI_ARTIFACTS
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.13.2:kn-cli-artifacts
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts
   replaces: serverless-operator.v1.7.1
   version: 1.8.0
