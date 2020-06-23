@@ -77,9 +77,8 @@ function downstream_serving_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  # Add system-namespace labels to serving.knative.openshift.io/system-namespace=true system namespaces for TestNetworkPolicy.
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true || true
+  # Add system-namespace labels for TestNetworkPolicy.
+  add_systemnamespace_label
 
   local failed=0
 
@@ -194,6 +193,11 @@ function delete_users {
     fi
   done < "users.htpasswd"
   rm -v users.htpasswd
+}
+
+function add_systemnamespace_label {
+  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function add_networkpolicy {
