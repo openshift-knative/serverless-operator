@@ -1,5 +1,5 @@
 packageName: serverless-operator
-defaultChannel: "4.4"
+defaultChannel: "4.3"
 channels:
 - name: "candidate"
   currentCSV: serverless-operator.v1.8.0-rc1
