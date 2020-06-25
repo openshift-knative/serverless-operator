@@ -50,13 +50,13 @@ func TestNetworkPolicy(t *testing.T) {
 	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
 		_, inErr := http.Get(ksvc.Status.URL.String())
 		if inErr == nil {
-			t.Logf("Netowrk policy did not block the request to %s", ksvc.Status.URL.String())
+			t.Logf("Network policy did not block the request to %s", ksvc.Status.URL.String())
 			return false, nil
 		}
 		return true, nil
 	})
 	if err != nil {
-		t.Fatalf("Netowrk policy did not block the request: %v", err)
+		t.Fatalf("Network policy did not block the request: %v", err)
 	}
 
 	policyAllow := &networkingv1.NetworkPolicy{
@@ -87,12 +87,12 @@ func TestNetworkPolicy(t *testing.T) {
 	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
 		_, inErr := http.Get(ksvc.Status.URL.String())
 		if inErr != nil {
-			t.Logf("Netowrk policy did not allow the request to %s: %v", ksvc.Status.URL.String(), inErr)
+			t.Logf("Network policy did not allow the request to %s: %v", ksvc.Status.URL.String(), inErr)
 			return false, nil
 		}
 		return true, nil
 	})
 	if err != nil {
-		t.Fatalf("Netowrk policy did not allow the request: %v", err)
+		t.Fatalf("Network policy did not allow the request: %v", err)
 	}
 }
