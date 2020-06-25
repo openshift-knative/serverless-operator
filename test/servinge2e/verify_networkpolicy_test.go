@@ -50,7 +50,7 @@ func TestNetworkPolicy(t *testing.T) {
 	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
 		_, inErr := http.Get(ksvc.Status.URL.String())
 		if inErr == nil {
-			t.Logf("Netowrk policy did not block the request to %s. Retrying", ksvc.Status.URL.String())
+			t.Logf("Netowrk policy did not block the request to %s", ksvc.Status.URL.String())
 			return false, nil
 		}
 		return true, nil
@@ -82,8 +82,17 @@ func TestNetworkPolicy(t *testing.T) {
 		t.Fatalf("Failed to create networkpolicy %v: %v", policyAllow, err)
 	}
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameAllow, &metav1.DeleteOptions{})
-	_, err = http.Get(ksvc.Status.URL.String())
+
+	// Poll until network policy became active. It takes a few seconds.
+	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
+		_, inErr := http.Get(ksvc.Status.URL.String())
+		if inErr != nil {
+			t.Logf("Netowrk policy did not allow the request to %s: %v", ksvc.Status.URL.String(), inErr)
+			return false, nil
+		}
+		return true, nil
+	})
 	if err != nil {
-		t.Fatalf("Failed sending request to %s: %v", ksvc.Status.URL.String(), err)
+		t.Fatalf("Netowrk policy did not allow the request: %v", err)
 	}
 }
