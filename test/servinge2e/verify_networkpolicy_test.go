@@ -3,11 +3,13 @@ package servinge2e
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -44,9 +46,17 @@ func TestNetworkPolicy(t *testing.T) {
 	}
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameDeny, &metav1.DeleteOptions{})
 
-	_, err = http.Get(ksvc.Status.URL.String())
-	if err == nil {
-		t.Fatalf("Netowrk policy did not block the request to %s", ksvc.Status.URL.String())
+	// Poll until network policy became active. It takes a few seconds.
+	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
+		_, inErr := http.Get(ksvc.Status.URL.String())
+		if inErr == nil {
+			t.Logf("Netowrk policy did not block the request to %s. Retrying", ksvc.Status.URL.String())
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatalf("Netowrk policy did not block the request: %v", err)
 	}
 
 	policyAllow := &networkingv1.NetworkPolicy{
