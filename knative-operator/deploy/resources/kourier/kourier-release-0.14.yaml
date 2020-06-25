@@ -92,6 +92,12 @@ spec:
   selector:
     matchLabels:
       app: 3scale-kourier-gateway
+  minReadySeconds: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0%
+    type: RollingUpdate
   template:
     metadata:
       labels:
