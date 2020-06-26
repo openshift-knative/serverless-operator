@@ -2,7 +2,7 @@ packageName: serverless-operator
 defaultChannel: "4.3"
 channels:
 - name: "candidate"
-  currentCSV: serverless-operator.v1.8.0-rc1
+  currentCSV: serverless-operator.v1.8.0rc1
 - name: "4.3"
   currentCSV: serverless-operator.v1.7.1
 - name: "4.4"
