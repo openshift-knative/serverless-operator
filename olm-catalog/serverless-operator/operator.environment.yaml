@@ -1,0 +1,24 @@
+---
+openshift:
+  knative:
+    serving:
+      branch: release-v0.13.3
+      ci-promotion-name: knative-v0.13.3
+    eventing:
+      branch: release-v0.13.0
+      ci-promotion-name: knative-v0.13.0
+    eventing-contrib:
+      branch: release-v0.15.0
+      ci-promotion-name: knative-v0.15.0
+    kafka:
+      branch: v0.15.0
+    camel:
+      branch: master
+    client:
+      branch: openshift-v0.13.2
+      url: https://mirror.openshift.com/pub/openshift-v4/clients/serverless/latest/
+  pipelines:
+    channel: preview
+knative:
+  operator:
+    branch: master
