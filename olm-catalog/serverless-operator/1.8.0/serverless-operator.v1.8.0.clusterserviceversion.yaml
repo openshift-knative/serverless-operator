@@ -2,6 +2,8 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
+    operatorframework.io/suggested-namespace: "openshift-serverless"
+    operatorframework.io/cluster-monitoring: "true"
     alm-examples: |-
       [
         {
@@ -332,9 +334,9 @@ spec:
                     - name: MIN_OPENSHIFT_VERSION
                       value: "4.3.0-0"
                     - name: REQUIRED_SERVING_NAMESPACE
-                      value: "knative-serving"
+                      value: "openshift-serverless"
                     - name: REQUIRED_EVENTING_NAMESPACE
-                      value: "knative-eventing"
+                      value: "openshift-serverless"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
                     - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH

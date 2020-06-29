@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	knativeEventing = "knative-eventing"
+	eventingName      = "knative-eventing"
+	eventingNamespace = "openshift-serverless"
 )
 
 var knativeControlPlaneDeploymentNames = []string{
@@ -34,7 +35,7 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("deploy knativeeventing cr and wait for it to be ready", func(t *testing.T) {
-		if _, err := v1a1test.WithKnativeEventingReady(caCtx, knativeEventing, knativeEventing); err != nil {
+		if _, err := v1a1test.WithKnativeEventingReady(caCtx, eventingName, eventingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeEventing", err)
 		}
 	})
@@ -42,34 +43,26 @@ func TestKnativeEventing(t *testing.T) {
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		for i := range knativeControlPlaneDeploymentNames {
 			deploymentName := knativeControlPlaneDeploymentNames[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeEventing); err != nil {
+			if _, err := test.WithDeploymentReady(caCtx, deploymentName, eventingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
-		}
-
-		if err := test.WithDeploymentCount(caCtx, knativeEventing, len(knativeControlPlaneDeploymentNames)); err != nil {
-			t.Fatalf("Deployment count in namespace %s is not the same as expected %d: %v", knativeEventing, len(knativeControlPlaneDeploymentNames), err)
 		}
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-		verifyNoDisallowedImageReference(t, caCtx, knativeEventing)
+		verifyNoDisallowedImageReference(t, caCtx, eventingNamespace)
 	})
 
 	t.Run("remove knativeeventing cr", func(t *testing.T) {
-		if err := v1a1test.DeleteKnativeEventing(caCtx, knativeEventing, knativeEventing); err != nil {
+		if err := v1a1test.DeleteKnativeEventing(caCtx, eventingName, eventingNamespace); err != nil {
 			t.Fatal("Failed to remove Knative Eventing", err)
 		}
 
 		for i := range knativeControlPlaneDeploymentNames {
 			deploymentName := knativeControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeEventing); err != nil {
+			if err := test.WithDeploymentGone(caCtx, deploymentName, eventingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
-		}
-
-		if err := test.WithDeploymentCount(caCtx, knativeEventing, 0); err != nil {
-			t.Fatalf("Some deployments were to be deleted but not in namespace %s. Err: %v", knativeEventing, err)
 		}
 	})
 

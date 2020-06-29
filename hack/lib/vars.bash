@@ -32,10 +32,10 @@ readonly OPERATOR="${OPERATOR:-serverless-operator}"
 readonly SCALE_UP="${SCALE_UP:-6}"
 
 readonly OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
-readonly OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-operators}"
+readonly OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
 readonly SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
-readonly SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
-readonly EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
+readonly SERVING_NAMESPACE="${SERVING_NAMESPACE:-${OPERATORS_NAMESPACE}}"
+readonly EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-${OPERATORS_NAMESPACE}}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
 readonly ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
 
