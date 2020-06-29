@@ -9,7 +9,7 @@ import (
 
 const (
 	eventingName      = "knative-eventing"
-	eventingNamespace = "openshift-serverless"
+	eventingNamespace = "knative-eventing"
 )
 
 var knativeControlPlaneDeploymentNames = []string{
