@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	knativeServing                = "knative-serving"
+	servingName                   = "knative-serving"
+	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
 	image                         = "gcr.io/knative-samples/helloworld-go"
 	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
@@ -37,7 +38,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		if _, err := v1a1test.WithKnativeServingReady(caCtx, knativeServing, knativeServing); err != nil {
+		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
 	})
@@ -49,19 +50,19 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatalf("Failed to fetch APIService: %v", err)
 		}
 
-		if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == knativeServing && api.Spec.Service.Name == "autoscaler" {
+		if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == servingNamespace && api.Spec.Service.Name == "autoscaler" {
 			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
 		}
 
 		// Check the status of deployments in the knative serving namespace
 		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
-			if err := test.CheckDeploymentScale(caCtx, knativeServing, deployment, haReplicas); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range []string{"3scale-kourier-control", "3scale-kourier-gateway"} {
-			if err := test.CheckDeploymentScale(caCtx, knativeServing+"-ingress", deployment, haReplicas); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
@@ -69,7 +70,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-		verifyNoDisallowedImageReference(t, caCtx, knativeServing)
+		verifyNoDisallowedImageReference(t, caCtx, servingNamespace)
 	})
 
 	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
@@ -78,11 +79,11 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
-		if err := v1a1test.DeleteKnativeServing(caCtx, knativeServing, knativeServing); err != nil {
+		if err := v1a1test.DeleteKnativeServing(caCtx, servingName, servingNamespace); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
-		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(knativeServing+"-ingress", metav1.GetOptions{})
+		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(servingNamespace+"-ingress", metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			// Namespace is already gone, all good!
 			return
@@ -110,7 +111,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 			t.Fatal("Failed to update proxy", err)
 		}
 		// In order to make sure state of the knative serving same like before
-		if _, err := v1a1test.WaitForKnativeServingState(caCtx, knativeServing, knativeServing, func(ks *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
+		if _, err := v1a1test.WaitForKnativeServingState(caCtx, servingName, servingNamespace, func(ks *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
 			if apierrs.IsUnauthorized(err) {
 				// Retry unauthorized errors, they sometimes happen when resetting the proxy.
 				return false, nil
@@ -140,7 +141,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	}
 
 	t.Log("wait for controller to be ready after update")
-	if err := test.WaitForControllerEnvironment(caCtx, knativeServing, httpProxy, "http://"+proxyIP); err != nil {
+	if err := test.WaitForControllerEnvironment(caCtx, servingNamespace, httpProxy, "http://"+proxyIP); err != nil {
 		t.Fatal(err)
 	}
 

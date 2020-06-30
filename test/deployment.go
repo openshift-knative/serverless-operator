@@ -45,21 +45,3 @@ func WithDeploymentGone(ctx *Context, name string, namespace string) error {
 	}
 	return nil
 }
-
-func WithDeploymentCount(ctx *Context, namespace string, count int) error {
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		deploymentList, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
-		if err != nil {
-			return false, err
-		}
-		if len(deploymentList.Items) != count {
-			return false, nil
-		}
-		return true, nil
-	})
-
-	if waitErr != nil {
-		return errors.Wrapf(waitErr, "Deployment count in namespace %s did not reach the expected count %d in time", namespace, count)
-	}
-	return nil
-}
