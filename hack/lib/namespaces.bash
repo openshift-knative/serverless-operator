@@ -7,6 +7,13 @@ function create_namespaces {
       oc create ns "${ns}"
     fi
   done
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: serverless
+  namespace: ${OPERATORS_NAMESPACE}
+EOF
   logger.success "Namespaces has bean created: ${NAMESPACES[*]}"
 }
 
