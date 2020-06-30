@@ -33,6 +33,8 @@ Use the appropriate make targets or scripts in `hack`:
   and Knative Serving.
 - `make install-previous`: same with `make install` but deploy previous serverless-operator
   version.
+- `make install-mesh`: Install service mesh operator and enable sidecar injections.
+- `make uninstall-mesh `: Uninstall service mesh operator and disable sidecar injection.
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
@@ -156,3 +158,76 @@ spec:
 ```
 
 After a few minutes, operators will be upgraded automatically.
+
+### Test serverless-operator with Istio sidecar injection
+
+To install service mesh operator, run `make install-mesh`
+
+```
+make install-mesh
+```
+
+Then, create Knative Service with `sidecar.istio.io/inject: "true"` annotation in `default` namespace,
+which is one of the namespaces in the `ServiceMeshMemberRoll`.
+
+```sh
+cat <<EOF | oc apply -n default -f -
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: hello-example
+spec:
+  template:
+    metadata:
+      name: hello-example-1
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - image: gcr.io/knative-samples/helloworld-go
+        name: user-container
+  traffic:
+  - latestRevision: true
+    percent: 100
+EOF
+```
+
+`make install-mesh` creates `ServiceMeshMemberRoll` with `default` namespaces.
+If you want to add more namespaces, please modify it.
+
+```
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+    - default
+    # Add namespace you want to include mesh.
+```
+
+And add `NetworkPolicy` in your namespace.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-serving-system-namespace
+  namespace: $NAMESPACE_YOU_WANT_TO_ADD
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          serving.knative.openshift.io/system-namespace: "true"
+  podSelector: {}
+  policyTypes:
+  - Ingress
+```
+
+To uninstall service mesh operator, run `make uninstall-mesh`.
+
+```
+make install-mesh 
+```
