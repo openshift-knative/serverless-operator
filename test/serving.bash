@@ -122,7 +122,8 @@ function run_knative_serving_rolling_upgrade_tests {
       [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
-      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+      # Check KnativeServing has the latest version with Ready status
+      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == ${KNATIVE_SERVING_VERSION} && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
 
       # Assert that the old image references eventually fade away
       # Ignore kn-cli-artifacts as it's not part of the Knative Serving deployment.
