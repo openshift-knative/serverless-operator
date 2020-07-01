@@ -107,7 +107,9 @@ function run_knative_serving_rolling_upgrade_tests {
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
     # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
-    latest_serving_version=$(cat knative-operator/vendor/knative.dev/operator/version/version.go | grep "ServingVersion =" |  awk '{print $NF}' | tr -d '"')
+    latest_serving_version=$(cat ${rootdir}/knative-operator/vendor/knative.dev/operator/version/version.go | grep "ServingVersion =" |  awk '{print $NF}' | tr -d '"')
+
+    logger.info "updating serving version from ${prev_serving_version} to ${latest_serving_version}"
 
     # Get latest CSV from the given channel
     upgrade_to=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_UPGRADE_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
@@ -125,7 +127,7 @@ function run_knative_serving_rolling_upgrade_tests {
     else
       approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
       # Check KnativeServing has the latest version with Ready status
-      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+      timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
     fi
     end_prober_test ${PROBER_PID} || return $?
   fi
