@@ -74,7 +74,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running Serving rolling upgrade tests"
   (
-  local failed upgrade_to latest_cluster_version cluster_version serving_version
+  local failed upgrade_to latest_cluster_version cluster_version prev_serving_version latest_serving_verssion
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -105,7 +105,9 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
+    latest_serving_version=v$(cat knative-operator/vendor/knative.dev/operator/version/version.go | grep "ServingVersion =" |  awk '{print $NF}' | tr -d '"')
 
     # Get latest CSV from the given channel
     upgrade_to=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_UPGRADE_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
@@ -119,15 +121,11 @@ function run_knative_serving_rolling_upgrade_tests {
       # Check we got RequirementsNotMet error
       [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
       # Check KnativeServing still has the old version
-      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
+      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$prev_serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
       # Check KnativeServing has the latest version with Ready status
-      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == ${KNATIVE_SERVING_VERSION} && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
-
-      # Assert that the old image references eventually fade away
-      # Ignore kn-cli-artifacts as it's not part of the Knative Serving deployment.
-      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep -v kn-cli-artifacts | grep $serving_version" || return 1
+      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
     fi
     end_prober_test ${PROBER_PID} || return $?
   fi
