@@ -74,7 +74,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running Serving rolling upgrade tests"
   (
-  local failed upgrade_to latest_cluster_version cluster_version prev_serving_version latest_serving_verssion
+  local failed upgrade_to latest_cluster_version cluster_version prev_serving_version latest_serving_version
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
