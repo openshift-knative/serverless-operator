@@ -223,8 +223,20 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.",
 			Links: []consolev1.CLIDownloadLink{
 				{
-					Text: "Download kn for Linux",
+					Text: "Download kn for Linux for x86_64",
 					Href: baseURL + "/amd64/linux/kn-linux-amd64.tar.gz",
+				},
+				{
+					Text: "Download kn for Linux for IBM Power little endian",
+					Href: baseURL + "/ppc64le/linux/kn-linux-ppc64le.tar.gz",
+				},
+				{
+					Text: "Download kn for Linux for IBM Z",
+					Href: baseURL + "/s390x/linux/kn-linux-s390x.tar.gz",
+				},
+				{
+					Text: "Download kn for Linux for ARM 64 (unsupported)",
+					Href: baseURL + "/arm64/linux/kn-linux-arm64.tar.gz",
 				},
 				{
 					Text: "Download kn for macOS",
