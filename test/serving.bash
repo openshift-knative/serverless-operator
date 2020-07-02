@@ -107,7 +107,7 @@ function run_knative_serving_rolling_upgrade_tests {
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
     # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
-    latest_serving_version=$(cat ${rootdir}/knative-operator/vendor/knative.dev/operator/version/version.go | grep "ServingVersion =" |  awk '{print $NF}' | tr -d '"')
+    latest_serving_version=$(sed -n 's/^.*ServingVersion.*"\(.*\)".*$/\1/p' ${rootdir}/knative-operator/vendor/knative.dev/operator/version/version.go)
 
     logger.info "updating serving version from ${prev_serving_version} to ${latest_serving_version}"
 
