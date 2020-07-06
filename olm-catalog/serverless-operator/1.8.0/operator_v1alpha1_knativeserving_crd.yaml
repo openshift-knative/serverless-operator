@@ -10,7 +10,7 @@ spec:
   - JSONPath: .status.conditions[?(@.type=="Ready")].status
     name: Ready
     type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+  - JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
     name: Reason
     type: string
   group: operator.knative.dev
@@ -45,15 +45,6 @@ spec:
         spec:
           description: Spec defines the desired state of KnativeServing
           properties:
-            cluster-local-gateway:
-              description: A means to override the cluster-local-gateway
-              properties:
-                selector:
-                  additionalProperties:
-                    type: string
-                  description: The selector for the ingress-gateway.
-                  type: object
-              type: object
             config:
               additionalProperties:
                 additionalProperties:
@@ -62,56 +53,62 @@ spec:
               description: A means to override the corresponding entries in the upstream
                 configmaps
               type: object
-            controller-custom-certs:
-              description: Enabling the controller to trust registries with self-signed
-                certificates
-              properties:
-                name:
-                  description: The name of the ConfigMap or Secret
-                  type: string
-                type:
-                  description: One of ConfigMap or Secret
-                  enum:
-                  - ConfigMap
-                  - Secret
-                  - ""
-                  type: string
-              type: object
             knative-ingress-gateway:
               description: A means to override the knative-ingress-gateway
+              type: object
               properties:
                 selector:
-                  additionalProperties:
-                    type: string
                   description: The selector for the ingress-gateway.
                   type: object
+                  additionalProperties:
+                    type: string
+            cluster-local-gateway:
+              description: A means to override the cluster-local-gateway
               type: object
+              properties:
+                selector:
+                  description: The selector for the ingress-gateway.
+                  type: object
+                  additionalProperties:
+                    type: string
             registry:
-              description: A means to override the corresponding deployment images
-                in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              description: A means to override the corresponding deployment images in the upstream.
+                This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              type: object
               properties:
                 default:
-                  description: The default image reference template to use for all
-                    knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                  description: The default image reference template to use for all knative images.
+                    Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
                   type: string
+                override:
+                  description: A map of a container name or image name to the full image location of the individual knative image.
+                  type: object
+                  additionalProperties:
+                    type: string
                 imagePullSecrets:
-                  description: A list of secrets to be used when pulling the knative
-                    images. The secret must be created in the same namespace as the
-                    knative-serving deployments, and not the namespace of this resource.
+                  description: A list of secrets to be used when pulling the knative images. The secret must be created in the
+                    same namespace as the knative-serving deployments, and not the namespace of this resource.
+                  type: array
                   items:
+                    type: object
                     properties:
                       name:
                         description: The name of the secret.
                         type: string
-                    type: object
-                  type: array
-                override:
-                  additionalProperties:
-                    type: string
-                  description: A map of a container name or image name to the full
-                    image location of the individual knative image.
-                  type: object
+            controller-custom-certs:
+              description: Enabling the controller to trust registries with self-signed certificates
               type: object
+              properties:
+                type:
+                  description: One of ConfigMap or Secret
+                  type: string
+                  enum:
+                  - ConfigMap
+                  - Secret
+                  - ""
+                name:
+                  description: The name of the ConfigMap or Secret
+                  type: string
             high-availability:
               description: Allows specification of HA control plane
               type: object
@@ -120,6 +117,45 @@ spec:
                   description: The number of replicas that HA parts of the control plane will be scaled to
                   type: integer
                   minimum: 1
+            resources:
+              description: A mapping of deployment name to resource requirements
+              type: array
+              items:
+                type: object
+                properties:
+                  container:
+                    description: The name of the container
+                    type: string
+                  requests:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                  limits:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
           type: object
         status:
           description: Status defines the observed state of KnativeServing
