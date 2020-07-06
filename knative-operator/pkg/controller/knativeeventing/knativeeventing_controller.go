@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -98,12 +99,12 @@ func (r *ReconcileKnativeEventing) configure(instance *eventingv1alpha1.KnativeE
 	if err := common.MutateEventing(instance, r.client); err != nil {
 		return err
 	}
-	if equality.Semantic.DeepEqual(before, instance) {
+	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
 		return nil
 	}
 
 	// Only apply the update if something changed.
-	log.Info("Updating KnativeEventing with mutated state for Openshift")
+	log.Info("Updating KnativeEventing with mutated state for Openshift", "diff", cmp.Diff(before.Spec, instance.Spec))
 	if err := r.client.Update(context.TODO(), instance); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with mutated state: %w", err)
 	}
