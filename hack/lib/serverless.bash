@@ -59,9 +59,9 @@ function deploy_serverless_operator_latest {
 }
 
 function deploy_serverless_operator {
-  logger.info 'Install the Serverless Operator'
   local csv
   csv="$1"
+  logger.info "Install the Serverless Operator ${csv}"
 
   cat <<EOF | oc apply -f - || return $?
 apiVersion: operators.coreos.com/v1alpha1
