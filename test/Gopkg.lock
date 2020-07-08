@@ -26,12 +26,12 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
-  digest = "1:45c41cd27a8d986998680bfc86da0bbff5fa4f90d0f446c00636c8b099028ffe"
+  digest = "1:08cc9df87ba2ac6a626c88cf321883c2750a49e534dbcda5346c2c03177de9c5"
   name = "github.com/blang/semver"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "ba2c2ddd89069b46a7011d4106f6868f17ee1705"
-  version = "v3.6.1"
+  revision = "dff411dc0692cbc4d8eef4fb799a291f2d248645"
+  version = "v3.8.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -1015,6 +1015,7 @@
     "github.com/pkg/errors",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/networking/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",

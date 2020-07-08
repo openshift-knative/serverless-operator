@@ -60,3 +60,8 @@ required = [
 [[constraint]]
   name = "github.com/openshift/client-go"
   branch = "release-4.3"
+
+[[override]]
+  name = "github.com/blang/semver"
+  version = "v3.8.0"
+
