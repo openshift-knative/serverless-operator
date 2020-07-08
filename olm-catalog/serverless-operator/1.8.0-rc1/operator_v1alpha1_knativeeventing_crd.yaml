@@ -4,15 +4,15 @@ metadata:
   name: knativeeventings.operator.knative.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.version
-    name: Version
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].status
-    name: Ready
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].reason
-    name: Reason
-    type: string
+    - JSONPath: .status.version
+      name: Version
+      type: string
+    - JSONPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Reason
+      type: string
   group: operator.knative.dev
   names:
     kind: KnativeEventing
@@ -72,7 +72,7 @@ spec:
                       name:
                         description: The name of the secret.
                         type: string
-            default-broker-class:
+            defaultBrokerClass:
               description: The default broker type to use for the brokers Knative creates.
                 If no value is provided, ChannelBasedBroker will be used.
               type: string
@@ -85,6 +85,6 @@ spec:
           type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true
