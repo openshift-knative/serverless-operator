@@ -403,22 +403,10 @@
   packages = [
     "config/v1",
     "console/v1",
-    "operator/v1",
     "route/v1",
   ]
   pruneopts = "NT"
   revision = "d4a64ec2cbd86f11ea74dfdcf6520d5833d0c6cd"
-
-[[projects]]
-  branch = "master"
-  digest = "1:f67f701e8553f7665488b3394e2d39f2aa1c58a2d35fe78d2691731d6f17a5ee"
-  name = "github.com/openshift/console-operator"
-  packages = [
-    "pkg/api",
-    "pkg/console/subresource/util",
-  ]
-  pruneopts = "NT"
-  revision = "6909082444d9743d9bd1f35d58b6443f65749d47"
 
 [[projects]]
   digest = "1:2f871701d245034b68d5f2d852191e9b96ef2d13c1d79296581e0a42a5bccc6b"
@@ -973,12 +961,13 @@
   revision = "884d50f09454909de6f343c165fdba5f59c5c19a"
 
 [[projects]]
-  digest = "1:6f7073a6e8de17891a44352ac2274b90288d0213505f66a245403de061a1f470"
+  digest = "1:1f58cf48062f0e285625acc74e610e887d45bff014d114e123efd8d35e9cebe2"
   name = "knative.dev/serving-operator"
   packages = ["pkg/apis/serving/v1alpha1"]
   pruneopts = "NT"
-  revision = "51c799b02b87cf44592119d9ea4ff32388200b27"
-  version = "v0.13.2"
+  revision = "2faaf48441843654078fb5e3c2d0a3731830c865"
+  source = "github.com/openshift-knative/serving-operator"
+  version = "openshift-v0.13.3"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1058,7 +1047,6 @@
     "github.com/openshift/api/config/v1",
     "github.com/openshift/api/console/v1",
     "github.com/openshift/api/route/v1",
-    "github.com/openshift/console-operator/pkg/console/subresource/util",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
     "github.com/operator-framework/operator-sdk/pkg/kube-metrics",
     "github.com/operator-framework/operator-sdk/pkg/leader",
@@ -1084,7 +1072,6 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/sets",
-    "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
