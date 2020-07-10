@@ -45,7 +45,8 @@ required = [
 
 [[constraint]]
   name = "knative.dev/serving-operator"
-  version = "=v0.13.2"
+  source = "github.com/openshift-knative/serving-operator"
+  version = "openshift-v0.13.3"
 
 [[constraint]]
   name = "knative.dev/eventing-operator"
