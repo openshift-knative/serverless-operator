@@ -395,7 +395,12 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.K
 // Install Kourier Ingress Gateway
 func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
 	// install Kourier
-	return kourier.Apply(instance, r.client, r.scheme)
+	instance.Status.MarkDependencyInstalling("Kourier")
+	if err := kourier.Apply(instance, r.client, r.scheme); err != nil {
+		return err
+	}
+	instance.Status.MarkDependenciesInstalled()
+	return nil
 }
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
