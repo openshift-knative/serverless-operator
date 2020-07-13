@@ -21,7 +21,11 @@ test-unit:
 	go test ./serving/ingress/...
 
 test-e2e:
-	./test/e2e-tests.sh
+	TEST_ALL=false ./test/e2e-tests.sh
+
+# Used by periodic CI runs
+test-all:
+	TEST_ALL=true ./test/e2e-tests.sh
 
 test-upgrade:
 	./test/upgrade-tests.sh
