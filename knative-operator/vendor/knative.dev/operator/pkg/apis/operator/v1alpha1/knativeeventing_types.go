@@ -13,20 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
+var (
+	_ KComponent     = (*KnativeEventing)(nil)
+	_ KComponentSpec = (*KnativeEventingSpec)(nil)
+)
+
+// KnativeEventing is the Schema for the eventings API
 // +genclient
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KnativeEventing is the Schema for the eventings API
-// +k8s:openapi-gen=true
 type KnativeEventing struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -35,17 +38,19 @@ type KnativeEventing struct {
 	Status KnativeEventingStatus `json:"status,omitempty"`
 }
 
-// KnativeEventingSpec defines the desired state of KnativeEventing
-// +k8s:openapi-gen=true
-type KnativeEventingSpec struct {
-	// A means to override the corresponding entries in the upstream configmaps
-	// +optional
-	Config map[string]map[string]string `json:"config,omitempty"`
+// GetSpec implements KComponent
+func (ke *KnativeEventing) GetSpec() KComponentSpec {
+	return &ke.Spec
+}
 
-	// A means to override the corresponding deployment images in the upstream.
-	// If no registry is provided, the knative release images will be used.
-	// +optional
-	Registry Registry `json:"registry,omitempty"`
+// GetStatus implements KComponent
+func (ke *KnativeEventing) GetStatus() KComponentStatus {
+	return &ke.Status
+}
+
+// KnativeEventingSpec defines the desired state of KnativeEventing
+type KnativeEventingSpec struct {
+	CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
 	// If no value is provided, ChannelBasedBroker will be used.
@@ -54,7 +59,6 @@ type KnativeEventingSpec struct {
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing
-// +k8s:openapi-gen=true
 type KnativeEventingStatus struct {
 	duckv1.Status `json:",inline"`
 
@@ -63,16 +67,10 @@ type KnativeEventingStatus struct {
 	Version string `json:"version,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // KnativeEventingList contains a list of KnativeEventing
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KnativeEventingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []KnativeEventing `json:"items"`
 }
-
-const (
-	// EventingConditionReady is set when the KnativeEventing Operator is installed, configured and ready.
-	EventingConditionReady = apis.ConditionReady
-)
