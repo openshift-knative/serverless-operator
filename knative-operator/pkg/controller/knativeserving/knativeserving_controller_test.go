@@ -9,7 +9,6 @@ import (
 
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
-	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -18,6 +17,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	apis "knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -45,24 +47,37 @@ var (
 		NamespacedName: types.NamespacedName{Namespace: "knative-serving", Name: "knative-serving"},
 	}
 
-	defaultKnRoute = routev1.Route{
+	defaultKnService = servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
-			Kind: "Route",
+			APIVersion: servingv1.SchemeGroupVersion.String(),
+			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kn-cli-downloads",
 			Namespace: "knative-serving",
 		},
-		Status: routev1.RouteStatus{
-			Ingress: []routev1.RouteIngress{
-				routev1.RouteIngress{
-					Host:       "knroute.example.com",
-					RouterName: "default",
-					Conditions: []routev1.RouteIngressCondition{
-						routev1.RouteIngressCondition{
-							Type:   routev1.RouteAdmitted,
-							Status: corev1.ConditionTrue,
+		Spec: servingv1.ServiceSpec{
+			ConfigurationSpec: servingv1.ConfigurationSpec{
+				Template: servingv1.RevisionTemplateSpec{
+					Spec: servingv1.RevisionSpec{
+						PodSpec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name:  "kn-download-server",
+									Image: "fake.example.com/openshift/kn-cli-artifacts:latest",
+								},
+							},
 						},
+					},
+				},
+			},
+		},
+		Status: servingv1.ServiceStatus{
+			Status: duckv1.Status{
+				Conditions: []apis.Condition{
+					{
+						Status: "True",
+						Type:   "Ready",
 					},
 				},
 			},
@@ -117,18 +132,18 @@ func TestKourierReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ks := &defaultKnativeServing
 			ingress := &defaultIngress
-			knRoute := &defaultKnRoute
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
+			knService := &defaultKnService
 
-			initObjs := []runtime.Object{ks, ingress, knRoute, ns}
+			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
 			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-			s.AddKnownTypes(routev1.GroupVersion, knRoute)
 			s.AddKnownTypes(consolev1.GroupVersion, ccd)
+			s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
@@ -318,15 +333,15 @@ func TestKnativeServingStatus(t *testing.T) {
 
 	ks := &defaultKnativeServing
 	ingress := &defaultIngress
-	knRoute := &defaultKnRoute
+	knService := &defaultKnService
 
-	initObjs := []runtime.Object{ks, ingress, knRoute}
+	initObjs := []runtime.Object{ks, ingress, knService}
 
 	// Register operator types with the runtime scheme.
 	s := scheme.Scheme
 	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
 	s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-	s.AddKnownTypes(routev1.GroupVersion, knRoute)
+	s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
 
 	cl := fake.NewFakeClient(initObjs...)
 	r := &ReconcileKnativeServing{client: cl, scheme: s}

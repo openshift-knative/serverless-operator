@@ -196,10 +196,10 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
-		r.installKnConsoleCLIDownload,
 		r.installKourier,
 		r.installDashboard,
 		r.ensureProxySettings,
+		r.installKnConsoleCLIDownload,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -395,14 +395,14 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	log.Info("Running cleanup logic")
-	log.Info("Deleting kourier")
-	if err := kourier.Delete(instance, r.client, r.scheme); err != nil {
-		return fmt.Errorf("failed to delete kourier: %w", err)
-	}
-
 	log.Info("Deleting kn ConsoleCLIDownload")
 	if err := consoleclidownload.Delete(instance, r.client, r.scheme); err != nil {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
+	}
+
+	log.Info("Deleting kourier")
+	if err := kourier.Delete(instance, r.client, r.scheme); err != nil {
+		return fmt.Errorf("failed to delete kourier: %w", err)
 	}
 
 	log.Info("Deleting dashboard")

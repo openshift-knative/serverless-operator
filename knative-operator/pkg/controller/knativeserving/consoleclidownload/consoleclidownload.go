@@ -12,24 +12,26 @@ import (
 	mf "github.com/manifestival/manifestival"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	knCLIDownload                   = "kn"
-	knDownloadServer                = "kn-download-server"
-	knConsoleCLIDownloadDeployRoute = "kn-cli-downloads"
+	knCLIDownload               = "kn"
+	knDownloadServer            = "kn-download-server"
+	knConsoleCLIDownloadService = "kn-cli-downloads"
 )
 
 var log = common.Log.WithName("consoleclidownload")
+var knServiceGVK = schema.GroupVersionKind{Group: "serving.knative.dev", Version: "v1", Kind: "Service"}
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
@@ -64,31 +66,24 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 	return nil
 }
 
-// Check for deployment and Route of kn ConsoleCLIDownload resources
+// Check for Knative Service and URL of kn ConsoleCLIDownload resources
 func checkResources(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Checking deployments")
-	for _, u := range manifest.Filter(mf.ByKind("Deployment"), mf.ByKind("Route")).Resources() {
-		switch u.GetKind() {
-		case "Deployment":
-			deployment := &appsv1.Deployment{}
-			err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
-			if err != nil {
+	for _, u := range manifest.Filter(mf.ByGVK(servingv1.SchemeGroupVersion.WithKind("Service"))).Resources() {
+		if u.GetKind() == "Service" {
+			service := &servingv1.Service{}
+			if err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, service); err != nil {
 				return err
 			}
-			for _, c := range deployment.Status.Conditions {
-				if c.Type == appsv1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-					return fmt.Errorf("deployment %q/%q not ready yet", u.GetName(), u.GetNamespace())
+			for _, c := range service.Status.Conditions {
+				if c.Type == servingv1.ServiceConditionReady && c.Status != corev1.ConditionTrue {
+					return fmt.Errorf("Knative Service %q/%q not ready yet", u.GetName(), u.GetNamespace())
 				}
 			}
-		case "Route":
-			route := &routev1.Route{}
-			if err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, route); err != nil {
-				return err
+			if service.Status.URL == nil || service.Status.URL.String() == "" {
+				return fmt.Errorf("Knative Service URL %q/%q not present yet", u.GetName(), u.GetNamespace())
 			}
-			host := getCanonicalHost(route)
-			if host == "" {
-				return fmt.Errorf("route %q/%q not ready yet", u.GetName(), u.GetNamespace())
-			}
+
 		}
 	}
 	return nil
@@ -99,21 +94,21 @@ func checkResources(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServ
 func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *servingv1alpha1.KnativeServing) error {
 
 	log.Info("Installing kn ConsoleCLIDownload")
-	route := &routev1.Route{}
 	ctx := context.TODO()
 
-	// find the route first
-	if err := apiclient.Get(ctx, client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadDeployRoute}, route); err != nil {
-		return fmt.Errorf("failed to find kn ConsoleCLIDownload deployment route")
+	// find the Knative Service first
+	knService := &servingv1.Service{}
+	if err := apiclient.Get(ctx, client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, knService); err != nil {
+		return fmt.Errorf("failed to find kn ConsoleCLIDownload Knative Service: %v", err)
 	}
-	knRoute := getCanonicalHost(route)
-	// re-verify if the route has a URL
-	if knRoute == "" {
-		return fmt.Errorf("found empty URL of route %q/%q", route.GetNamespace(), route.GetName())
+
+	knRouteURL := knService.Status.URL
+	if knRouteURL == nil || knRouteURL.String() == "" {
+		return fmt.Errorf("failed to get kn ConsoleCLIDownload Knative Service URL")
 	}
 
 	knCCDGet := &consolev1.ConsoleCLIDownload{}
-	knConsoleObj := populateKnConsoleCLIDownload(https(knRoute), instance)
+	knConsoleObj := populateKnConsoleCLIDownload(https(knRouteURL.Host), instance)
 
 	// Check if kn ConsoleCLIDownload exists
 	err := apiclient.Get(ctx, client.ObjectKey{Namespace: "", Name: knCLIDownload}, knCCDGet)
@@ -178,7 +173,7 @@ func manifest(instance *servingv1alpha1.KnativeServing, apiclient client.Client,
 	// 2. Set proper kn-cli-artifacts image
 	// 3. Set Owner annotations
 	transforms := []mf.Transformer{mf.InjectNamespace(instance.GetNamespace()),
-		replaceKnCLIArtifactsImage(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), scheme),
+		replaceKnCLIArtifactsImageKsvc(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), scheme),
 		common.SetOwnerAnnotations(instance),
 	}
 
@@ -200,15 +195,14 @@ func manifestPath() string {
 	return os.Getenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH")
 }
 
-func replaceKnCLIArtifactsImage(image string, scheme *runtime.Scheme) mf.Transformer {
+func replaceKnCLIArtifactsImageKsvc(image string, scheme *runtime.Scheme) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" {
-			deploy := &appsv1.Deployment{}
-			if err := scheme.Convert(u, deploy, nil); err != nil {
-				return fmt.Errorf("failed to convert unstructured obj to Deployment: %w", err)
+		if u.GetKind() == "Service" && u.GetAPIVersion() == servingv1.SchemeGroupVersion.String() {
+			service := &servingv1.Service{}
+			if err := scheme.Convert(u, service, nil); err != nil {
+				return fmt.Errorf("failed to convert unstructured obj to Knative Service: %w", err)
 			}
-
-			containers := deploy.Spec.Template.Spec.Containers
+			containers := service.Spec.Template.Spec.Containers
 			for i, container := range containers {
 				if container.Name == knDownloadServer && container.Image != image {
 					log.Info("Replacing", "deployment", container.Name, "image", image)
@@ -216,9 +210,8 @@ func replaceKnCLIArtifactsImage(image string, scheme *runtime.Scheme) mf.Transfo
 					break
 				}
 			}
-
-			if err := scheme.Convert(deploy, u, nil); err != nil {
-				return fmt.Errorf("failed to convert Deployment obj to unstructured: %w", err)
+			if err := scheme.Convert(service, u, nil); err != nil {
+				return fmt.Errorf("failed to convert Knative Service obj to unstructured: %w", err)
 			}
 		}
 		return nil
