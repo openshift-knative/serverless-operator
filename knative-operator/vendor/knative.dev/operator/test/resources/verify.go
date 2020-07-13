@@ -1,9 +1,12 @@
 /*
 Copyright 2020 The Knative Authors
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -211,7 +214,7 @@ func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 	}
 
 	// verify all but the CRD's and the Namespace are gone
-	for _, u := range m.Filter(mf.NoCRDs, mf.None(mf.ByKind("Namespace"))).Resources() {
+	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.Any(mf.ByKind("Namespace")))).Resources() {
 		if _, err := m.Client.Get(&u); !apierrs.IsNotFound(err) {
 			t.Fatalf("The %s %s failed to be deleted: %v", u.GetKind(), u.GetName(), err)
 		}
@@ -235,10 +238,10 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 	return nil
 }
 
-// AssertKSOperatorDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKSOperatorDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if _, err := WaitForKnativeServingDeploymentState(clients, namespace, expectedDeployments,
-		IsKnativeServingDeploymentReady); err != nil {
+// AssertKnativeDeploymentStatus verifies if the Knative deployments reach the READY status.
+func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
+	if err := WaitForKnativeDeploymentState(clients, namespace, expectedDeployments, t.Logf,
+		IsKnativeDeploymentReady); err != nil {
 		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
 	}
 }
@@ -316,7 +319,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 		t.Fatal(err)
 	}
 	// verify all but the CRD's and the Namespace are gone
-	for _, u := range m.Filter(mf.NoCRDs, mf.None(mf.ByKind("Namespace"))).Resources() {
+	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.Any(mf.ByKind("Namespace")))).Resources() {
 		if _, err := m.Client.Get(&u); !apierrs.IsNotFound(err) {
 			t.Fatalf("The %s %s failed to be deleted: %v", u.GetKind(), u.GetName(), err)
 		}
@@ -338,12 +341,4 @@ func verifyNoKnativeEventings(clients *test.Clients) error {
 		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeEventing exists")
 	}
 	return nil
-}
-
-// AssertKEOperatorDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKEOperatorDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if err := WaitForKnativeEventingDeploymentState(clients, namespace, expectedDeployments, t.Logf,
-		IsKnativeEventingDeploymentReady); err != nil {
-		t.Fatalf("Knative Eventing deployments failed to meet the expected deployments: %v", err)
-	}
 }

@@ -15,74 +15,69 @@ package knativeeventing
 
 import (
 	"context"
-	"flag"
-	"os"
-	"path/filepath"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing"
-	rbase "knative.dev/operator/pkg/reconciler"
+	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
+	"knative.dev/operator/pkg/reconciler"
+	"knative.dev/operator/pkg/reconciler/common"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/injection"
+	"knative.dev/pkg/logging"
 )
 
 const (
-	controllerAgentName = "knativeeventing-controller"
-	reconcilerName      = "KnativeEventing"
-)
-
-var (
-	recursive  = flag.Bool("recursive", false, "If filename is a directory, process all manifests recursively")
-	MasterURL  = flag.String("master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	Kubeconfig = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	kcomponent = "knative-eventing"
 )
 
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
-func NewController(
-	ctx context.Context,
-	cmw configmap.Watcher,
-) *controller.Impl {
+func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
 	knativeEventingInformer := knativeEventinginformer.Get(ctx)
 	deploymentInformer := deploymentinformer.Get(ctx)
+	kubeClient := kubeclient.Get(ctx)
+	logger := logging.FromContext(ctx)
+
+	// Clean up old non-unified operator resources before even starting the controller.
+	if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-eventing-operator"); err != nil {
+		logger.Fatalw("Failed to remove old resources", zap.Error(err))
+	}
+
+	version := common.GetLatestRelease(kcomponent)
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
+	manifest, err := mfc.NewManifest(manifestPath,
+		injection.GetConfig(ctx),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		logger.Fatalw("Error creating the Manifest for knative-eventing", zap.Error(err))
+	}
 
 	c := &Reconciler{
-		Base:                  rbase.NewBase(ctx, controllerAgentName, cmw),
-		knativeEventingLister: knativeEventingInformer.Lister(),
-		eventings:             sets.String{},
+		kubeClientSet:     kubeClient,
+		operatorClientSet: operatorclient.Get(ctx),
+		platform:          common.GetPlatforms(ctx),
+		config:            manifest,
+		targetVersion:     version,
 	}
+	impl := knereconciler.NewImpl(ctx, c)
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-
-	cfg, err := sharedmain.GetConfig(*MasterURL, *Kubeconfig)
-	if err != nil {
-		c.Logger.Error(err, "Error building kubeconfig")
-	}
-
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"), cfg,
-		mf.UseLogger(zapr.NewLogger(c.Logger.Desugar()).WithName("manifestival")))
-	if err != nil {
-		c.Logger.Error(err, "Error creating the Manifest for knative-eventing")
-		os.Exit(1)
-	}
-
-	c.config = config
-	impl := controller.NewImpl(c, c.Logger, reconcilerName)
-
-	c.Logger.Info("Setting up event handlers for %s", reconcilerName)
+	logger.Info("Setting up event handlers")
 
 	knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
+		FilterFunc: controller.FilterControllerGVK(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 

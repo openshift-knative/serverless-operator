@@ -19,17 +19,21 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
-var eventingCondSet = apis.NewLivingConditionSet(
-	EventingConditionReady,
-	InstallSucceeded,
+var (
+	_ KComponentStatus = (*KnativeEventingStatus)(nil)
+
+	eventingCondSet = apis.NewLivingConditionSet(
+		DependenciesInstalled,
+		DeploymentsAvailable,
+		InstallSucceeded,
+	)
 )
 
 // GroupVersionKind returns SchemeGroupVersion of an KnativeEventing
 func (e *KnativeEventing) GroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind(Kind)
+	return SchemeGroupVersion.WithKind(KindKnativeEventing)
 }
 
 // GetCondition returns the current condition of a given condition type
@@ -48,36 +52,67 @@ func (es *KnativeEventingStatus) IsReady() bool {
 	return eventingCondSet.Manage(es).IsHappy()
 }
 
-// MarkInstallationReady marks the InstallationSucceeded status as ready
-func (es *KnativeEventingStatus) MarkInstallationReady() {
+// MarkInstallSucceeded marks the InstallationSucceeded status as true.
+func (es *KnativeEventingStatus) MarkInstallSucceeded() {
 	eventingCondSet.Manage(es).MarkTrue(InstallSucceeded)
+	if es.GetCondition(DependenciesInstalled).IsUnknown() {
+		// Assume deps are installed if we're not sure
+		es.MarkDependenciesInstalled()
+	}
 }
 
-// MarkInstallationNotReady marks the InstallationSucceeded status as ready == Unknown
-func (es *KnativeEventingStatus) MarkInstallationNotReady(reason, message string) {
-	eventingCondSet.Manage(es).MarkUnknown(InstallSucceeded, reason, message)
+// MarkInstallFailed marks the InstallationSucceeded status as false with the given
+// message.
+func (es *KnativeEventingStatus) MarkInstallFailed(msg string) {
+	eventingCondSet.Manage(es).MarkFalse(
+		InstallSucceeded,
+		"Error",
+		"Install failed with message: %s", msg)
 }
 
-// MarkInstallationFailed marks the InstallationSucceeded status as failed
-func (es *KnativeEventingStatus) MarkInstallationFailed(reason, message string) {
-	eventingCondSet.Manage(es).MarkFalse(InstallSucceeded, reason, message)
+// MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
+func (es *KnativeEventingStatus) MarkDeploymentsAvailable() {
+	eventingCondSet.Manage(es).MarkTrue(DeploymentsAvailable)
 }
 
-// MarkEventingReady marks the KnativeEventing status as ready
-func (es *KnativeEventingStatus) MarkEventingReady() {
-	eventingCondSet.Manage(es).MarkTrue(EventingConditionReady)
+// MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
+// it's waiting for deployments.
+func (es *KnativeEventingStatus) MarkDeploymentsNotReady() {
+	eventingCondSet.Manage(es).MarkFalse(
+		DeploymentsAvailable,
+		"NotReady",
+		"Waiting on deployments")
 }
 
-// MarkEventingNotReady marks the KnativeEventing status as ready == Unknown
-func (es *KnativeEventingStatus) MarkEventingNotReady(reason, message string) {
-	eventingCondSet.Manage(es).MarkUnknown(EventingConditionReady, reason, message)
+// MarkDependenciesInstalled marks the DependenciesInstalled status as true.
+func (es *KnativeEventingStatus) MarkDependenciesInstalled() {
+	eventingCondSet.Manage(es).MarkTrue(DependenciesInstalled)
 }
 
-// MarkEventingFailed marks the KnativeEventing status as failed
-func (es *KnativeEventingStatus) MarkEventingFailed(reason, message string) {
-	eventingCondSet.Manage(es).MarkFalse(EventingConditionReady, reason, message)
+// MarkDependencyInstalling marks the DependenciesInstalled status as false with the
+// given message.
+func (es *KnativeEventingStatus) MarkDependencyInstalling(msg string) {
+	eventingCondSet.Manage(es).MarkFalse(
+		DependenciesInstalled,
+		"Installing",
+		"Dependency installing: %s", msg)
 }
 
-func (es *KnativeEventingStatus) duck() *duckv1.Status {
-	return &es.Status
+// MarkDependencyMissing marks the DependenciesInstalled status as false with the
+// given message.
+func (es *KnativeEventingStatus) MarkDependencyMissing(msg string) {
+	eventingCondSet.Manage(es).MarkFalse(
+		DependenciesInstalled,
+		"Error",
+		"Dependency missing: %s", msg)
+}
+
+// GetVersion gets the currently installed version of the component.
+func (es *KnativeEventingStatus) GetVersion() string {
+	return es.Version
+}
+
+// SetVersion sets the currently installed version of the component.
+func (es *KnativeEventingStatus) SetVersion(version string) {
+	es.Version = version
 }
