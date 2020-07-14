@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	knativeServing = "knative-serving"
+	knativeServingNamespace = "openshift-serverless"
 )
 
 func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
@@ -22,11 +22,11 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	// Check the status of Deployment for kn ConsoleCLIDownload
-	if err := test.CheckDeploymentScale(caCtx, knativeServing, "kn-cli-downloads", 1); err != nil {
+	if err := test.CheckDeploymentScale(caCtx, knativeServingNamespace, "kn-cli-downloads", 1); err != nil {
 		t.Fatalf("failed to verify kn ConcoleCLIDownload Deployment: %v", err)
 	}
 	// Verify that Route for kn ConsoleCLIDownload is ready and has a host
-	host, err := checkRouteIsReady(caCtx, knativeServing, "kn-cli-downloads")
+	host, err := checkRouteIsReady(caCtx, knativeServingNamespace, "kn-cli-downloads")
 	if err != nil {
 		t.Fatalf("failed to verify kn ConsoleCLIDownload Route is ready: %v", err)
 	}

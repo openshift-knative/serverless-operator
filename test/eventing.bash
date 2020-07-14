@@ -10,7 +10,7 @@ function knative_eventing_tests {
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
   oc patch KnativeEventing knative-eventing \
-    --namespace knative-eventing \
+    --namespace ${EVENTING_NAMESPACE} \
     --type merge \
     --patch '{"spec":{"defaultBrokerClass":"ChannelBasedBroker"}}' || failed=1
 
@@ -19,7 +19,7 @@ function knative_eventing_tests {
     --imagetemplate "$image_template" || failed=2
 
   oc patch KnativeEventing knative-eventing \
-    --namespace knative-eventing \
+    --namespace ${EVENTING_NAMESPACE} \
     --type merge \
     --patch '{"spec":{"defaultBrokerClass":"MTChannelBasedBroker"}}' || failed=3
 
