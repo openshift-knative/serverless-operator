@@ -15,7 +15,7 @@ import (
 
 const (
 	servingName                   = "knative-serving"
-	servingNamespace              = "knative-serving"
+	servingNamespace              = "openshift-serverless"
 	testNamespace                 = "serverless-tests"
 	image                         = "gcr.io/knative-samples/helloworld-go"
 	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"

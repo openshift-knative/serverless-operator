@@ -34,8 +34,11 @@ export SCALE_UP="${SCALE_UP:-6}"
 export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
 export SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
-export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
-export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
+export SERVING_NAMESPACE="${SERVING_NAMESPACE:-${OPERATORS_NAMESPACE}}"
+export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-${OPERATORS_NAMESPACE}}"
+# required by knative test-infra to override knative-* namespaces
+export SYSTEM_NAMESPACE="${OPERATORS_NAMESPACE}"
+export TEST_EVENTING_NAMESPACE="${OPERATORS_NAMESPACE}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
 export ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
 

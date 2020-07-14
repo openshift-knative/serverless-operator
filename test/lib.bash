@@ -198,8 +198,8 @@ function delete_users {
 }
 
 function add_systemnamespace_label {
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
+  oc label namespace ${SERVING_NAMESPACE} serving.knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace ${SERVING_NAMESPACE}-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function add_networkpolicy {

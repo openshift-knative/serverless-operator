@@ -3,6 +3,10 @@
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local prev=${1:-false}
+  if [[ $prev == "true" ]]; then
+    export SERVING_NAMESPACE="knative-serving"
+    export EVENTING_NAMESPACE="knative-eventing"
+  fi
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
      oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
   then
@@ -32,6 +36,10 @@ function install_serverless_previous {
 
   previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
   deploy_serverless_operator "$previous_csv"  || return $?
+  SERVING_NAMESPACE="knative-serving"
+  if ! oc get ns "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+    oc create ns "${SERVING_NAMESPACE}"
+  fi
   deploy_knativeserving_cr || return $?
 }
 
@@ -159,21 +167,12 @@ EOF
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
-  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeServing CR'
-    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" || return $?
-  fi
-  logger.info 'Ensure no knative serving pods running'
-  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
+  logger.info 'Removing KnativeServing CR'
+  oc get knativeserving --all-namespaces -oyaml | oc delete -f -
+  logger.info 'Removing KnativeEventing CR'
+  oc get knativeeventing --all-namespaces -oyaml | oc delete -f -
 
-  if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeEventing CR'
-    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
-  fi
-  logger.info 'Ensure no knative eventing pods running'
-  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
-
-  oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
+  oc delete subscription -n "${OPERATORS_NAMESPACE}" "${OPERATOR}"
   for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
     oc delete installplan -n "${OPERATORS_NAMESPACE}" $ip
   done
