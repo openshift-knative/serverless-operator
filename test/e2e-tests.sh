@@ -12,7 +12,6 @@ fi
 debugging.setup
 
 register_teardown || exit $?
-scale_up_workers || exit $?
 create_namespaces || exit $?
 create_htpasswd_users && add_roles || exit $?
 
@@ -21,7 +20,7 @@ failed=0
 (( !failed )) && install_catalogsource || failed=1
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
-if [[ $TEST_ALL == true ]]; then
+if [[ ${TEST_ALL:=false} == true ]]; then
   (( !failed )) && install_serverless_previous || failed=2
   (( !failed )) && run_knative_serving_rolling_upgrade_tests || failed=3
   (( !failed )) && teardown_serverless || failed=4
@@ -36,8 +35,10 @@ fi
 # Run knative serving additional e2e tests
 (( !failed )) && downstream_serving_e2e_tests || failed=7
 
-(( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
-(( !failed )) && knative_eventing_tests || failed=9
+if [[ $TEST_ALL == true ]]; then
+  (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
+  (( !failed )) && knative_eventing_tests || failed=9
+fi
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
