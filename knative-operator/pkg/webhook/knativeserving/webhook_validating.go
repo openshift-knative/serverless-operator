@@ -25,7 +25,7 @@ func ValidatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 	return builder.NewWebhookBuilder().
 		Name("validating.knativeserving.openshift.io").
 		Validating().
-		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
+		Operations(admissionregistrationv1beta1.Create).
 		WithManager(mgr).
 		ForType(&servingv1alpha1.KnativeServing{}).
 		Handlers(&KnativeServingValidator{}).
