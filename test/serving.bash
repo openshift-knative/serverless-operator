@@ -89,12 +89,11 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBE_FRACTION=1.0
   prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
-  prev_version=$(echo ${prev_serving_version} | awk -F. '{printf "%2d%02d%02d", $1,$2,$3}') # Format serving version e.g. 0.13.2 to 01302
-  if [ "$prev_version" -lt 01400 ]; then
+  if [[ ${prev_serving_version} < "0.14.0" ]]; then
     PROBE_FRACTION=0.95
   fi
   logger.info "Target success fraction is $PROBE_FRACTION"
- 
+
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     -probe.success_fraction=$PROBE_FRACTION \
     --imagetemplate "$image_template" \
