@@ -86,8 +86,17 @@ function run_knative_serving_rolling_upgrade_tests {
 
   failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  PROBE_FRACTION=1.0
+  prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
 
+  prev_version=$(echo ${prev_serving_version} | awk -F. '{printf "%2d%02d%02d", $1,$2,$3}') # Format serving version e.g. 0.13.2 to 01302
+  if [ "$prev_version" -lt 01400 ]; then
+    PROBE_FRACTION=0.95
+  fi
+  logger.info "Target success fraction is $PROBE_FRACTION"
+ 
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
+    -probe.success_fraction=$PROBE_FRACTION \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || return 1
@@ -106,7 +115,6 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
     # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
     latest_serving_version=$(sed -n 's/^.*ServingVersion.*"\(.*\)".*$/\1/p' ${rootdir}/knative-operator/vendor/knative.dev/operator/version/version.go)
 
