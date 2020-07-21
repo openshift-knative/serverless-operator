@@ -95,7 +95,6 @@ function run_knative_serving_rolling_upgrade_tests {
   logger.info "Target success fraction is $PROBE_FRACTION"
 
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
-    -probe.success_fraction=$PROBE_FRACTION \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain || return 1
@@ -104,6 +103,7 @@ function run_knative_serving_rolling_upgrade_tests {
 
   rm -f /tmp/prober-signal
   go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
+    -probe.success_fraction=$PROBE_FRACTION \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain &
