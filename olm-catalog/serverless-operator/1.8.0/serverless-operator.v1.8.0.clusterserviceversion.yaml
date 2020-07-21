@@ -32,7 +32,7 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat, Inc.
-  name: serverless-operator.v1.8.0-rc1
+  name: serverless-operator.v1.8.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -552,5 +552,5 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-eventing-channel-dispatcher
     - name: IMAGE_KN_CLI_ARTIFACTS
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts
-  replaces: serverless-operator.v1.7.1
-  version: "1.8.0-rc1"
+  replaces: serverless-operator.v1.7.2
+  version: 1.8.0
