@@ -15,15 +15,20 @@ install-previous:
 teardown:
 	./hack/teardown.sh
 
-# Test targets for CI operator
+# Test targets for CI operator.
 test-unit:
 	go test ./knative-operator/...
 	go test ./serving/ingress/...
 
+# Run only tests from the current repo.
+test-operator:
+	./test/operator-tests.sh
+
+# Run third-party E2E (Serving, Eventing).
 test-e2e:
 	TEST_ALL=false ./test/e2e-tests.sh
 
-# Used by periodic CI runs
+# Run all tests. Used by periodic CI jobs.
 test-all:
 	TEST_ALL=true ./test/e2e-tests.sh
 
