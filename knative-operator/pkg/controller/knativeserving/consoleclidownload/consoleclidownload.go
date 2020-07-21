@@ -8,17 +8,13 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
-	mfc "github.com/manifestival/controller-runtime-client"
-	mf "github.com/manifestival/manifestival"
 	consolev1 "github.com/openshift/api/console/v1"
-	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,7 +27,6 @@ const (
 )
 
 var log = common.Log.WithName("consoleclidownload")
-var knServiceGVK = schema.GroupVersionKind{Group: "serving.knative.dev", Version: "v1", Kind: "Service"}
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
@@ -46,20 +41,39 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 	return nil
 }
 
-// reconcileKnCCDResources reconciles required resources viz Deployment, Service, Route
+// reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	log.Info("Installing kn ConsoleCLIDownload resources")
-	manifest, err := manifest(instance, apiclient, scheme)
-	if err != nil {
+	serviceFromCluster := &servingv1.Service{}
+	service := populateKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, serviceFromCluster)
+	switch {
+	case apierrors.IsNotFound(err):
+		if err := apiclient.Create(context.TODO(), service); err != nil {
+			return err
+		}
+	case err == nil:
+		serviceFromClusterDC := serviceFromCluster.DeepCopy()
+		changed := false
+		if serviceFromCluster.Spec.Template.Spec.GetContainer().Image != service.Spec.Template.Spec.GetContainer().Image {
+			serviceFromClusterDC.Spec.Template.Spec.GetContainer().Image = service.Spec.Template.Spec.GetContainer().Image
+			changed = true
+		}
+		if !equality.Semantic.DeepEqual(serviceFromCluster.Spec.Template.Spec.GetContainer().Resources, service.Spec.Template.Spec.GetContainer().Resources) {
+			serviceFromClusterDC.Spec.Template.Spec.GetContainer().Resources = service.Spec.Template.Spec.GetContainer().Resources
+			changed = true
+		}
+		if changed {
+			if err := apiclient.Update(context.TODO(), serviceFromClusterDC); err != nil {
+				return err
+			}
+		}
+	default:
 		return err
 	}
 
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply kn ConsoleCLIDownload resources manifest: %w", err)
-	}
-
-	if err := checkResources(&manifest, instance, apiclient); err != nil {
+	if err := checkResources(instance, apiclient); err != nil {
 		return err
 	}
 
@@ -67,24 +81,17 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 }
 
 // Check for Knative Service and URL of kn ConsoleCLIDownload resources
-func checkResources(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func checkResources(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 	log.Info("Checking deployments")
-	for _, u := range manifest.Filter(mf.ByGVK(servingv1.SchemeGroupVersion.WithKind("Service"))).Resources() {
-		if u.GetKind() == "Service" {
-			service := &servingv1.Service{}
-			if err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, service); err != nil {
-				return err
-			}
-			for _, c := range service.Status.Conditions {
-				if c.Type == servingv1.ServiceConditionReady && c.Status != corev1.ConditionTrue {
-					return fmt.Errorf("Knative Service %q/%q not ready yet", u.GetName(), u.GetNamespace())
-				}
-			}
-			if service.Status.URL == nil || service.Status.URL.String() == "" {
-				return fmt.Errorf("Knative Service URL %q/%q not present yet", u.GetName(), u.GetNamespace())
-			}
-
-		}
+	service := &servingv1.Service{}
+	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service); err != nil {
+		return err
+	}
+	if !service.Status.IsReady() {
+		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
+	}
+	if service.Status.URL == nil || service.Status.URL.String() == "" {
+		return fmt.Errorf("Knative Service URL %q/%q not present yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
 	return nil
 }
@@ -149,73 +156,52 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
 	}
 
-	log.Info("Deleting kn ConsoleCLIDownload resources")
-	manifest, err := manifest(instance, apiclient, scheme)
-	if err != nil {
-		return err
-	}
-
-	if err := manifest.Delete(); err != nil && !apierrors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete kn ConsoleCLIDownload resources manifest: %w", err)
+	log.Info("Deleting kn ConsoleCLIDownload Service")
+	if err := apiclient.Delete(context.TODO(), populateKnService("", instance)); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
 	}
 
 	return nil
 }
 
-// manifest returns kn ConsoleCLIDownload deploymnet resources manifest after traformation
-func manifest(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) (mf.Manifest, error) {
-	manifest, err := RawManifest(apiclient)
-	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to read kn ConsoleCLIDownload deployment manifest: %w", err)
-	}
-
-	// 1. Use instance's namespace to deploy download resources into
-	// 2. Set proper kn-cli-artifacts image
-	// 3. Set Owner annotations
-	transforms := []mf.Transformer{mf.InjectNamespace(instance.GetNamespace()),
-		replaceKnCLIArtifactsImageKsvc(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), scheme),
-		common.SetOwnerAnnotations(instance),
-	}
-
-	manifest, err = manifest.Transform(transforms...)
-	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to transform kn ConsoleCLIDownload resources manifest: %w", err)
-	}
-
-	return manifest, nil
-}
-
-// manifest returns kn ConsoleCLIDownload deploymnet resources manifest without transformation
-func RawManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-// manifestPath returns kn ConsoleCLIDownload deployment resource manifest path
-func manifestPath() string {
-	return os.Getenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH")
-}
-
-func replaceKnCLIArtifactsImageKsvc(image string, scheme *runtime.Scheme) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Service" && u.GetAPIVersion() == servingv1.SchemeGroupVersion.String() {
-			service := &servingv1.Service{}
-			if err := scheme.Convert(u, service, nil); err != nil {
-				return fmt.Errorf("failed to convert unstructured obj to Knative Service: %w", err)
-			}
-			containers := service.Spec.Template.Spec.Containers
-			for i, container := range containers {
-				if container.Name == knDownloadServer && container.Image != image {
-					log.Info("Replacing", "deployment", container.Name, "image", image)
-					containers[i].Image = image
-					break
-				}
-			}
-			if err := scheme.Convert(service, u, nil); err != nil {
-				return fmt.Errorf("failed to convert Knative Service obj to unstructured: %w", err)
-			}
+// populateKnService populates Knatie Service object and its SPEC with provided image
+func populateKnService(image string, instance *servingv1alpha1.KnativeServing) *servingv1.Service {
+	anno := make(map[string]string)
+	if instance != nil {
+		anno = map[string]string{
+			common.ServingOwnerName:      instance.Name,
+			common.ServingOwnerNamespace: instance.Namespace,
 		}
-		return nil
 	}
+	service := &servingv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        knConsoleCLIDownloadService,
+			Namespace:   instance.Namespace,
+			Annotations: anno,
+		},
+		Spec: servingv1.ServiceSpec{
+			ConfigurationSpec: servingv1.ConfigurationSpec{
+				Template: servingv1.RevisionTemplateSpec{
+					Spec: servingv1.RevisionSpec{
+						PodSpec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Image: image,
+									Resources: corev1.ResourceRequirements{
+										Requests: corev1.ResourceList{
+											corev1.ResourceCPU:    resource.MustParse("10m"),
+											corev1.ResourceMemory: resource.MustParse("50Mi"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return service
 }
 
 // populateKnConsoleCLIDownload populates kn ConsoleCLIDownload object and its SPEC
@@ -252,28 +238,6 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 			},
 		},
 	}
-}
-
-// Function copied from github.com/openshift/console-operator/pkg/console/subresource/route/route.go and modified
-func getCanonicalHost(route *routev1.Route) string {
-	for _, ingress := range route.Status.Ingress {
-		// ingress must be admitted before it is useful to us
-		if !isIngressAdmitted(ingress) {
-			continue
-		}
-		return ingress.Host
-	}
-	return ""
-}
-
-// Function copied from github.com/openshift/console-operator/pkg/console/subresource/route/route.go
-func isIngressAdmitted(ingress routev1.RouteIngress) bool {
-	for _, condition := range ingress.Conditions {
-		if condition.Type == routev1.RouteAdmitted && condition.Status == corev1.ConditionTrue {
-			return true
-		}
-	}
-	return false
 }
 
 // copied from github.com/openshift/console-operator/pkg/console/subresource/util/util.go and modified

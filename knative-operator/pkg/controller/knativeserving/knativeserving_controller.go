@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -119,17 +120,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for kn ConsoleCLIDownload resources
-	knManifest, err := consoleclidownload.RawManifest(mgr.GetClient())
-	if err != nil {
-		return err
-	}
-
-	knResources := knManifest.Resources()
 	gvkToCCD := make(map[schema.GroupVersionKind]runtime.Object)
-	for i := range knResources {
-		resource := &knResources[i]
-		gvkToCCD[resource.GroupVersionKind()] = resource
-	}
+
+	// append Knative Service type
+	gvkToCCD[servingv1.SchemeGroupVersion.WithKind("Service")] = &servingv1.Service{}
 
 	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
 	gvkToCCD[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}

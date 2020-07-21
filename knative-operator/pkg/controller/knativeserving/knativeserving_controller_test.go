@@ -81,6 +81,9 @@ var (
 					},
 				},
 			},
+			RouteStatusFields: servingv1.RouteStatusFields{
+				URL: &apis.URL{Host: "kn-cli-downloads-knative-serving.example.com"},
+			},
 		},
 	}
 
@@ -94,7 +97,6 @@ var (
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
 	os.Setenv("DASHBOARD_MANIFEST_PATH", "dashboard/testdata/grafana-dash-knative.yaml")
 }
 
