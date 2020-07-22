@@ -12,7 +12,6 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   ${rootdir}/hack/catalog.sh |\
      sed -e "s|deploy/resources/kourier/kourier-latest.yaml|deploy/resources/kourier/kourier-latest-debug.yaml|g" |\

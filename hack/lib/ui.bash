@@ -27,7 +27,7 @@ function debugging.setup {
   logger.debug "Debug log (set -x) is written to: ${debuglog}"
   # ref: https://serverfault.com/a/579078
   # Use FD 19 to capture the debug stream caused by "set -x":
-  exec 19> "$debuglog"
+  exec 19>> "$debuglog" # Allow appending to the file if exists
   # Tell bash about it  (there's nothing special about 19, its arbitrary)
   export BASH_XTRACEFD=19
 
