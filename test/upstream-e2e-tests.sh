@@ -16,7 +16,7 @@ create_namespaces || exit $?
 
 failed=0
 
-(( !failed )) && teardown_serverless || failed=1
+teardown_serverless || failed=1
 (( !failed )) && install_catalogsource || failed=2
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
@@ -25,7 +25,10 @@ if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   (( !failed )) && install_serverless_previous || failed=3
   (( !failed )) && run_knative_serving_rolling_upgrade_tests || failed=4
   (( !failed )) && trigger_gc_and_print_knative || failed=5
-  (( !failed )) && teardown_serverless || failed=6
+  # Call teardown only if E2E tests follow.
+  if [[ $TEST_KNATIVE_E2E == true ]]; then
+    (( !failed )) && teardown_serverless || failed=6
+  fi
 fi
 
 # Run upstream knative serving & eventing tests

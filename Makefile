@@ -39,6 +39,9 @@ test-upstream-e2e-no-upgrade:
 test-upstream-upgrade:
 	TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
+# Alias.
+test-upgrade: test-upstream-upgrade
+
 # Run all E2E tests. Used by periodic CI jobs.
 test-all-e2e: test-e2e test-upstream-e2e
 
