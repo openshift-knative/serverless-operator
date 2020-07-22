@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
@@ -214,9 +212,6 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
 		return nil
 	}
-
-	// Only apply the update if something changed.
-	log.Info("Updating KnativeServing with mutated state for Openshift", "diff", cmp.Diff(before.Spec, instance.Spec))
 	if err := r.client.Update(context.TODO(), instance); err != nil {
 		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
 	}

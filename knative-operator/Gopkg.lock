@@ -1031,7 +1031,6 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
-    "github.com/google/go-cmp/cmp",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
