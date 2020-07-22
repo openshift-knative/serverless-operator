@@ -15,7 +15,6 @@ function install_catalogsource {
 
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   ${rootdir}/hack/catalog.sh |\
-     sed -e "s|deploy/resources/kourier/kourier-latest.yaml|deploy/resources/kourier/kourier-latest-debug.yaml|g" |\
      oc apply -n "$OLM_NAMESPACE" -f - || return 1
 
   logger.success "CatalogSource installed successfully"
