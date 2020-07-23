@@ -24,7 +24,7 @@ function debugging.setup {
   local debuglog debugdir
   debugdir="${ARTIFACTS:-/tmp}"
   debuglog="${debugdir}/debuglog-$(basename "$0").log"
-  logger.debug "Debug log (set -x) is written to: ${debuglog}"
+  logger.info "Debug log (set -x) is written to: ${debuglog}"
   # ref: https://serverfault.com/a/579078
   # Use FD 19 to capture the debug stream caused by "set -x":
   exec 19>> "$debuglog" # Allow appending to the file if exists
