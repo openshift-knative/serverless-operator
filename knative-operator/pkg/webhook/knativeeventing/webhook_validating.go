@@ -115,15 +115,15 @@ func (v *KnativeEventingValidator) validateNamespace(ctx context.Context, ke *ev
 	return true, "", nil
 }
 
-// validate this is the only KE in this namespace
+// validate this is the only KE in the cluster
 func (v *KnativeEventingValidator) validateLoneliness(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
 	list := &eventingv1alpha1.KnativeEventingList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ke.Namespace}, list); err != nil {
+	if err := v.client.List(ctx, &client.ListOptions{Namespace: ""}, list); err != nil {
 		return false, "Unable to list KnativeEventings", err
 	}
-	for _, v := range list.Items {
-		if ke.Name != v.Name {
-			return false, "Only one KnativeEventing allowed per namespace", nil
+	for _, item := range list.Items {
+		if ke.Name != item.Name || ke.Namespace != item.Namespace {
+			return false, fmt.Sprintf("Existing instance found: %s/%s", item.Namespace, item.Name), nil
 		}
 	}
 	return true, "", nil
