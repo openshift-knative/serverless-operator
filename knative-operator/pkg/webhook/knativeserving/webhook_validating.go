@@ -115,15 +115,15 @@ func (v *KnativeServingValidator) validateNamespace(ctx context.Context, ks *ser
 	return true, "", nil
 }
 
-// validate this is the only KS in this namespace
+// validate this is the only KS in the cluster
 func (v *KnativeServingValidator) validateLoneliness(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	list := &servingv1alpha1.KnativeServingList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ks.Namespace}, list); err != nil {
-		return false, "Unable to list KnativeServings", err
+	if err := v.client.List(ctx, &client.ListOptions{Namespace: ""}, list); err != nil {
+		return false, "Unable to list instances", err
 	}
-	for _, v := range list.Items {
-		if ks.Name != v.Name {
-			return false, "Only one KnativeServing allowed per namespace", nil
+	for _, item := range list.Items {
+		if ks.Name != item.Name || ks.Namespace != item.Namespace {
+			return false, fmt.Sprintf("Existing instance found: %s/%s", item.Namespace, item.Name), nil
 		}
 	}
 	return true, "", nil
