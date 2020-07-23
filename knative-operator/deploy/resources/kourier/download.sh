@@ -15,17 +15,8 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-cp kourier-${KOURIER_VERSION}.yaml kourier-${KOURIER_VERSION}-debug.yaml
-
 if [ -L "kourier-latest.yaml" ]; then
   unlink kourier-latest.yaml
 fi
-if [ -L "kourier-latest-debug.yaml" ]; then
-  unlink kourier-latest-debug.yaml
-fi
 
 ln -s kourier-${KOURIER_VERSION}.yaml       kourier-latest.yaml
-ln -s kourier-${KOURIER_VERSION}-debug.yaml kourier-latest-debug.yaml
-
-# Apply debug log enable path to -debug.yaml only
-patch kourier-${KOURIER_VERSION}-debug.yaml debug-log.patch
