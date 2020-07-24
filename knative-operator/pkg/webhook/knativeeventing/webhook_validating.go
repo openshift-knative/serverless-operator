@@ -2,12 +2,9 @@ package knativeeventing
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,35 +47,11 @@ func (v *KnativeEventingValidator) Handle(ctx context.Context, req types.Request
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	allowed, reason, err := v.validate(ctx, ke)
+	allowed, reason, err := common.Validate(ctx, v.client, ke)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}
 	return admission.ValidationResponse(allowed, reason)
-}
-
-// KnativeEventingValidator checks for a minimum OpenShift version
-func (v *KnativeEventingValidator) validate(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (allowed bool, reason string, err error) {
-	log := common.Log.WithName("validate")
-	stages := []func(context.Context, *eventingv1alpha1.KnativeEventing) (bool, string, error){
-		v.validateNamespace,
-		v.validateVersion,
-		v.validateLoneliness,
-	}
-	for _, stage := range stages {
-		allowed, reason, err = stage(ctx, ke)
-		if len(reason) > 0 {
-			if err != nil {
-				log.Error(err, reason)
-			} else {
-				log.Info(reason)
-			}
-		}
-		if !allowed {
-			return
-		}
-	}
-	return
 }
 
 // KnativeEventingValidator implements inject.Client.
@@ -99,32 +72,4 @@ var _ inject.Decoder = (*KnativeEventingValidator)(nil)
 func (v *KnativeEventingValidator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
-}
-
-// validate minimum openshift version
-func (v *KnativeEventingValidator) validateVersion(ctx context.Context, _ *eventingv1alpha1.KnativeEventing) (bool, string, error) {
-	return webhookutil.ValidateOpenShiftVersion(ctx, v.client)
-}
-
-// validate required namespace, if any
-func (v *KnativeEventingValidator) validateNamespace(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
-	ns, required := os.LookupEnv("REQUIRED_EVENTING_NAMESPACE")
-	if required && ns != ke.Namespace {
-		return false, fmt.Sprintf("KnativeEventing may only be created in %s namespace", ns), nil
-	}
-	return true, "", nil
-}
-
-// validate this is the only KE in the cluster
-func (v *KnativeEventingValidator) validateLoneliness(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
-	list := &eventingv1alpha1.KnativeEventingList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ""}, list); err != nil {
-		return false, "Unable to list KnativeEventings", err
-	}
-	for _, item := range list.Items {
-		if ke.Name != item.Name || ke.Namespace != item.Namespace {
-			return false, fmt.Sprintf("Existing instance found: %s/%s", item.Namespace, item.Name), nil
-		}
-	}
-	return true, "", nil
 }

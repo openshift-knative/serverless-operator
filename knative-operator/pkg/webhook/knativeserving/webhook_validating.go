@@ -2,12 +2,9 @@ package knativeserving
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,35 +47,12 @@ func (v *KnativeServingValidator) Handle(ctx context.Context, req types.Request)
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	allowed, reason, err := v.validate(ctx, ks)
+	allowed, reason, err := common.Validate(ctx, v.client, ks)
+
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}
 	return admission.ValidationResponse(allowed, reason)
-}
-
-// KnativeServingValidator checks for a minimum OpenShift version
-func (v *KnativeServingValidator) validate(ctx context.Context, ks *servingv1alpha1.KnativeServing) (allowed bool, reason string, err error) {
-	log := common.Log.WithName("validate")
-	stages := []func(context.Context, *servingv1alpha1.KnativeServing) (bool, string, error){
-		v.validateNamespace,
-		v.validateVersion,
-		v.validateLoneliness,
-	}
-	for _, stage := range stages {
-		allowed, reason, err = stage(ctx, ks)
-		if len(reason) > 0 {
-			if err != nil {
-				log.Error(err, reason)
-			} else {
-				log.Info(reason)
-			}
-		}
-		if !allowed {
-			return
-		}
-	}
-	return
 }
 
 // KnativeServingValidator implements inject.Client.
@@ -99,32 +73,4 @@ var _ inject.Decoder = (*KnativeServingValidator)(nil)
 func (v *KnativeServingValidator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
-}
-
-// validate minimum openshift version
-func (v *KnativeServingValidator) validateVersion(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
-	return webhookutil.ValidateOpenShiftVersion(ctx, v.client)
-}
-
-// validate required namespace, if any
-func (v *KnativeServingValidator) validateNamespace(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
-	ns, required := os.LookupEnv("REQUIRED_SERVING_NAMESPACE")
-	if required && ns != ks.Namespace {
-		return false, fmt.Sprintf("KnativeServing may only be created in %s namespace", ns), nil
-	}
-	return true, "", nil
-}
-
-// validate this is the only KS in the cluster
-func (v *KnativeServingValidator) validateLoneliness(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
-	list := &servingv1alpha1.KnativeServingList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ""}, list); err != nil {
-		return false, "Unable to list instances", err
-	}
-	for _, item := range list.Items {
-		if ks.Name != item.Name || ks.Namespace != item.Namespace {
-			return false, fmt.Sprintf("Existing instance found: %s/%s", item.Namespace, item.Name), nil
-		}
-	}
-	return true, "", nil
 }
