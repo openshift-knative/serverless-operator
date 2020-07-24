@@ -114,8 +114,7 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
-    latest_serving_version=$(sed -n 's/^.*ServingVersion.*"\(.*\)".*$/\1/p' ${rootdir}/knative-operator/vendor/knative.dev/operator/version/version.go)
+    latest_serving_version=$(echo $KNATIVE_SERVING_VERSION | sed "s/v//")
 
     logger.info "updating serving version from ${prev_serving_version} to ${latest_serving_version}"
 
