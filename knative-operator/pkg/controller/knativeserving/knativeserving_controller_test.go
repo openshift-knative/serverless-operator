@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/equality"
-
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"

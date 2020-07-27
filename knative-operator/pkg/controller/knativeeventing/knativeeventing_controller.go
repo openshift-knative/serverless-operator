@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/operator-framework/operator-sdk/pkg/predicate"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,7 +40,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeEventing
-	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{})
+	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
 }
 
 // blank assignment to verify that ReconcileKnativeEventing implements reconcile.Reconciler
@@ -77,6 +76,12 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
 			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
 		}
+	}
+
+	if instance.Status.IsReady() {
+		common.KnativeEventingReadyG.Set(1)
+	} else {
+		common.KnativeEventingReadyG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }

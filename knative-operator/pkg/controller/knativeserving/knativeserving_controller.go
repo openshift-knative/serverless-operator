@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
@@ -183,6 +182,12 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
 			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
 		}
+	}
+
+	if instance.Status.IsReady() {
+		common.KnativeServingReadyG.Set(1)
+	} else {
+		common.KnativeServingReadyG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }
