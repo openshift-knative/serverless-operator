@@ -935,12 +935,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:0dcdd37af6bad18955efca0788a439adfb0fb2a9ff0740acd1d5d3168ca4f079"
+  digest = "1:3ec41af218314746e8c73a46520f55bacd9b75405081ab9b8045e60508c43334"
   name = "knative.dev/operator"
   packages = ["pkg/apis/operator/v1alpha1"]
   pruneopts = "NT"
-  revision = "8a21397650377eb44015dc1fdc9fa769db6823ff"
-  version = "v0.14.2"
+  revision = "d1c018690cfeed594072dee6f38294c8f2565668"
+  version = "v0.15.2"
 
 [[projects]]
   branch = "release-0.14"
@@ -1031,6 +1031,7 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
+    "github.com/google/go-cmp/cmp",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1052,6 +1053,7 @@
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
+    "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/runtime",
@@ -1081,6 +1083,7 @@
     "sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder",
     "sigs.k8s.io/controller-runtime/pkg/webhook/admission/types",
     "sigs.k8s.io/controller-tools/pkg/crd/generator",
+    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

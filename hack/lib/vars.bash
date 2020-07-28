@@ -11,8 +11,8 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.14.1}"
-export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.14.2}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.15.2}"
+export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.15.2}"
 
 export KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
 export KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
