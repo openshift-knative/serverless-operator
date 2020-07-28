@@ -44,15 +44,15 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
-		// api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
-		// // We're good if no APIService exists at all
-		// if err != nil && !apierrs.IsNotFound(err) {
-		// 	t.Fatalf("Failed to fetch APIService: %v", err)
-		// }
+		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
+		// We're good if no APIService exists at all
+		if err != nil && !apierrs.IsNotFound(err) {
+			t.Fatalf("Failed to fetch APIService: %v", err)
+		}
 
-		// if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == servingNamespace && api.Spec.Service.Name == "autoscaler" {
-		// 	t.Fatalf("Found a custom-metrics API registered at the autoscaler")
-		// }
+		if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == servingNamespace && api.Spec.Service.Name == "autoscaler" {
+			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
+		}
 
 		// Check the status of deployments in the knative serving namespace
 		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
@@ -69,9 +69,9 @@ func TestKnativeServing(t *testing.T) {
 
 	})
 
-	// t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-	// 	verifyNoDisallowedImageReference(t, caCtx, servingNamespace)
-	// })
+	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
+		verifyNoDisallowedImageReference(t, caCtx, servingNamespace)
+	})
 
 	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
 		t.Skip("SRKVS-462: This test needs thorough hardening")
