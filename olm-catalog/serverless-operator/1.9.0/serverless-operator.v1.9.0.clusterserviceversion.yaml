@@ -343,7 +343,7 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-upgrade-v0-14-0
                     - name: IMAGE_PING_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-ping
-                    - name: IMAGE_MTPING_IMAGE
+                    - name: IMAGE_MT_PING_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtping
                     - name: IMAGE_JOB_RUNNER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-jobrunner
