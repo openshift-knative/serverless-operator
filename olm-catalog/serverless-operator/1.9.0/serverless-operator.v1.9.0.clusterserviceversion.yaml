@@ -331,13 +331,13 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-controller
                     - name: IMAGE_eventing-webhook__eventing-webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-webhook
-                    - name: IMAGE_broker-controller__eventing-controller
+                    - name: IMAGE_broker-controller__broker-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker
                     - name: IMAGE_broker-filter__filter
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtbroker-filter
                     - name: IMAGE_broker-ingress__ingress
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtbroker-ingress
-                    - name: IMAGE_mt-broker-controller__eventing-controller
+                    - name: IMAGE_mt-broker-controller__mt-broker-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtchannel-broker
                     - name: IMAGE_imc-controller__controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-controller
@@ -493,13 +493,13 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-controller
     - name: IMAGE_eventing-webhook__eventing-webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-webhook
-    - name: IMAGE_broker-controller__eventing-controller
+    - name: IMAGE_broker-controller__broker-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker
     - name: IMAGE_broker-filter__filter
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtbroker-filter
     - name: IMAGE_broker-ingress__ingress
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtbroker-ingress
-    - name: IMAGE_mt-broker-controller__eventing-controller
+    - name: IMAGE_mt-broker-controller__mt-broker-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-mtchannel-broker
     - name: IMAGE_imc-controller__controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-controller
