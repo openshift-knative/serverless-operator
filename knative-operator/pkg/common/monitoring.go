@@ -124,6 +124,8 @@ func getOperatorDeploymentName() (string, error) {
 	return ns, nil
 }
 
+// Use a custom transformation otherwise if mf.InjectNameSpace was used
+// it would wrongly update rolebinding subresource namespace as well
 func injectNameSpace(namespace string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := u.GetKind()
