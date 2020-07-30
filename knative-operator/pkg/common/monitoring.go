@@ -23,6 +23,7 @@ const (
 	// service monitor created successfully when monitoringLabel added to namespace
 	monitoringLabel = "openshift.io/cluster-monitoring"
 	rolePath        = "deploy/role_service_monitor.yaml"
+	testRolePath = "TEST_ROLE_PATH"
 )
 
 func SetUpMonitoringRequirements(api client.Client) error {
@@ -38,11 +39,21 @@ func SetUpMonitoringRequirements(api client.Client) error {
 	if err != nil {
 		return err
 	}
-	err = createRoleAndRoleBinding(d, ns, rolePath, api)
+	err = createRoleAndRoleBinding(d, ns, getRolePath(), api)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func getRolePath() string{
+	// meant for testing only
+	ns, found := os.LookupEnv(testRolePath)
+	if found {
+		return ns
+	} else {
+		return rolePath
+	}
 }
 
 func getOperatorNamespace() (string, error) {

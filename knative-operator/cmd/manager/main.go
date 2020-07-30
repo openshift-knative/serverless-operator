@@ -134,24 +134,24 @@ func main() {
 func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		return fmt.Errorf("failed to create cluster config", err)
+		return fmt.Errorf("failed to create cluster config: %w", err)
 	}
 	cl, err := client.New(config, client.Options{})
 
 	if err != nil {
-		return fmt.Errorf("failed to create a client", err)
+		return fmt.Errorf("failed to create a client: %w", err)
 	}
 
 	if err = common.SetUpMonitoringRequirements(cl); err != nil {
-		return fmt.Errorf("failed to setup monitoring resources", err)
+		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err = common.SetupServiceMonitor(ctx, cfg, cl, metricsPort, operatorMetricsPort); err != nil {
-		return fmt.Errorf("failed to setup the Service monitor", err)
+	if err := common.SetupServiceMonitor(ctx, cfg, cl, metricsPort, operatorMetricsPort); err != nil {
+		return fmt.Errorf("failed to setup the Service monitor: %w", err)
 	}
 
-	if err = common.InstallHealthDashboard(cl); err != nil {
-		return fmt.Errorf("failed to setup the Knative Health Status Dashboard", err)
+	if err := common.InstallHealthDashboard(cl); err != nil {
+		return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
 	}
 	return nil
 }
