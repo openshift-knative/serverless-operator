@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=release-0.14
+KOURIER_VERSION=release-0.15
 DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/net-kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
