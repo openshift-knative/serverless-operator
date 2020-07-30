@@ -33,10 +33,10 @@ func init() {
 	os.Setenv(testRolePath, "testdata/role_service_monitor.yaml")
 }
 
-func TestSetUpMonitoringRequirements(t *testing.T) {
+func TestSetupMonitoringRequirements(t *testing.T) {
 	initObjs := []runtime.Object{&operatorNamespace, &serverlessDeployment}
 	cl := fake.NewFakeClient(initObjs...)
-	err := SetUpMonitoringRequirements(cl)
+	err := SetupMonitoringRequirements(cl)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}

@@ -142,7 +142,7 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 		return fmt.Errorf("failed to create a client: %w", err)
 	}
 
-	if err = common.SetUpMonitoringRequirements(cl); err != nil {
+	if err = common.SetupMonitoringRequirements(cl); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 

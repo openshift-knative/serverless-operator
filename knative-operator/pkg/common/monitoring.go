@@ -26,7 +26,7 @@ const (
 	testRolePath = "TEST_ROLE_PATH"
 )
 
-func SetUpMonitoringRequirements(api client.Client) error {
+func SetupMonitoringRequirements(api client.Client) error {
 	ns, err := getOperatorNamespace()
 	if err != nil {
 		return err
