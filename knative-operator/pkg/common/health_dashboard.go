@@ -19,11 +19,11 @@ var logh = Log.WithName("health dashboard")
 const ConfigManagedNamespace = "openshift-config-managed"
 
 func InstallHealthDashboard(api client.Client) error {
-	namespace, err := GetOperatorNamespace()
+	namespace, err := getOperatorNamespace()
 	if err != nil {
 		return err
 	}
-	instance, err := GetServerlessOperatorDeployment(api, namespace)
+	instance, err := getServerlessOperatorDeployment(api, namespace)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,6 @@ func InstallHealthDashboard(api client.Client) error {
 		return fmt.Errorf("failed to load dashboard manifest: %w", err)
 	}
 	logh.Info("Installing dashboard")
-	logh.Info(fmt.Sprintf("Manifest before apply: %v in ns", manifest, namespace))
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply dashboard manifest: %w", err)
 	}
@@ -64,17 +63,15 @@ func manifest(instance *appsv1.Deployment, apiclient client.Client, namespace st
 	instance.SetNamespace(namespace)
 
 	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if len(ConfigManagedNamespace) > 0 {
+	if ConfigManagedNamespace != "" {
 		transforms = append(transforms, mf.InjectNamespace(ConfigManagedNamespace))
 	}
-
 	if manifest, err = manifest.Transform(transforms...); err != nil {
-		log.Error(err, "Unable to transform role and roleBinding serviceMonitor manifest")
-		return mf.Manifest{}, err
+		return mf.Manifest{}, fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest %w", err)
 	}
 	manifest, err = manifest.Transform(transforms...)
 	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to transform kn dashboard resources manifest: %w", err)
+		return mf.Manifest{}, fmt.Errorf("failed to transform kn dashboard resources manifest %w", err)
 	}
 	return manifest, nil
 }

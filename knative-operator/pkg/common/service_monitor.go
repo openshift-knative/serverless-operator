@@ -34,7 +34,7 @@ func SetupServiceMonitor(ctx context.Context, cfg *rest.Config, api client.Clien
 	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
 	// necessary to configure Prometheus to scrape metrics from this operator.
 	services := []*v1.Service{service}
-	metricsNamespace, err := GetOperatorNamespace()
+	metricsNamespace, err := getOperatorNamespace()
 	if err != nil {
 		log.Error(err, "failed to get metrics namespace")
 		return err

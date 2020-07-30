@@ -8,20 +8,18 @@ import (
 	"runtime"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook"
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
 	"k8s.io/client-go/rest"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -153,7 +151,7 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 	}
 
 	if err = common.InstallHealthDashboard(cl); err != nil {
-		return fmt.Errorf( "failed to setup the Knative Health Status Dashboard", err)
+		return fmt.Errorf("failed to setup the Knative Health Status Dashboard", err)
 	}
 	return nil
 }
