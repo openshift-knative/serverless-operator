@@ -69,9 +69,9 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("got %q, want %q", sub.Kind, "ServiceAccount")
 	}
 	if sub.Name != "prometheus-k8s" {
-		t.Errorf("got %q, want %q", sub.Kind, "prometheus-k8s")
+		t.Errorf("got %q, want %q", sub.Name, "prometheus-k8s")
 	}
 	if sub.Namespace != "openshift-monitoring" {
-		t.Errorf("got %q, want %q", sub.Kind, "openshift-monitoring")
+		t.Errorf("got %q, want %q", sub.Namespace, "openshift-monitoring")
 	}
 }
