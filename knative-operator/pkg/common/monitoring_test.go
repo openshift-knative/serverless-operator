@@ -17,11 +17,11 @@ const installedNS = "openshift-serverless"
 
 var (
 	operatorNamespace = corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{ Name: installedNS },
+		ObjectMeta: metav1.ObjectMeta{Name: installedNS},
 	}
 	serverlessDeployment = appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "knative-openshift",
+			Name:      "knative-openshift",
 			Namespace: installedNS,
 		},
 	}
@@ -75,4 +75,3 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("got %q, want %q", sub.Kind, "openshift-monitoring")
 	}
 }
-
