@@ -18,7 +18,7 @@ import (
 const (
 	// installedNamespaceEnvKey is the ns where Openshift serverless operator has been installed
 	installedNamespaceEnvKey = "NAMESPACE"
-	// installedNamespaceEnvKey is the ns where Openshift serverless operator has been installed
+	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
 	monitoringLabel = "openshift.io/cluster-monitoring"
