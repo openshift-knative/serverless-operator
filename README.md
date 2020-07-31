@@ -24,7 +24,7 @@ need to run `docker login` to be able to push images. Now run
 `make images` and all images in this repository will now be built and
 pushed to your docker repository.
 
-### Installing the system/running tests
+### Installing the system
 
 Use the appropriate make targets or scripts in `hack`:
 
@@ -33,10 +33,63 @@ Use the appropriate make targets or scripts in `hack`:
   and Knative Serving.
 - `make install-previous`: same with `make install` but deploy previous serverless-operator
   version.
-- `make test-e2e`: Scales, installs and runs all tests.
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
+
+### Running tests
+
+#### serverless-operator tests
+
+- `make test-unit`: Runs unit tests.
+- `make test-e2e`: Scales, installs and runs E2E tests.
+- `make test-operator`: Runs unit and E2E tests.
+
+#### knative-serving and knative-eventing E2E tests
+
+- `make test-upstream-upgrade`: Installs a `previous` version of Serverless and
+ runs Knative Serving upgrade tests. Requirements:
+     1) Running OCP cluster.
+     2) Knative Serving images that the current Serverless operator depends
+        on are published in CI registry. This requirement is automatically met
+        when the respective branch in
+        [Knative Serving](https://github.com/openshift/knative-serving) is created and its
+        pre-submit CI checks run at least once.
+     3) The path `${GOPATH}/src/knative.dev/serving` containing
+        [Knative Serving](https://github.com/openshift/knative-serving) sources from the
+        desired branch. This should be checked out before running tests.
+- `make test-upstream-e2e-no-upgrade`: Installs the latest version of Serverless and
+ runs Knative Serving and Knative Eventing E2E tests (without upgrades). Requirements:
+     1) Running OCP cluster.
+     2) Knative Serving and Knative Eventing images that the current Serverless operator depends
+        on are published in CI registry. This requirement is automatically met
+        when the respective branches in [Knative Serving](https://github.com/openshift/knative-serving) and
+        [Knative Eventing](https://github.com/openshift/knative-eventing) are created, and their
+        pre-submit CI checks run at least once.
+     3) The path `${GOPATH}/src/knative.dev/serving` containing
+        [Knative Serving](https://github.com/openshift/knative-serving) sources from the desired branch. 
+        The path `${GOPATH}/src/knative.dev/eventing` containing
+        [Knative Eventing](https://github.com/openshift/knative-eventing) sources from the desired branch. 
+        This should be checked out before running tests.
+
+#### Individual tests from knative-serving and knative-eventing
+
+There are targets for running individual tests in both
+[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/master/Makefile) and
+[Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/master/Makefile).
+
+Example targets that can be run from the respective repositories (these targets all requires a running OCP 
+cluster and pre-installed Serverless):
+
+- `make TEST=<name_of_test> BRANCH=<ci_promotion_name> test-e2e-local`: Runs the given test using the
+   latest test images that were published under the given promotion name. This doesn't require building
+   any images manually.
+   Example: `make BRANCH=knative-v0.15.2 TEST=TestDestroyPodInflight test-e2e-local`. 
+- `make IMAGE=<name_of_image> DOCKER_REPO_OVERRIDE=<dockerhub_registry> test-image-single`: Builds an 
+   image from `test/test_images/$(IMAGE)` and pushes it into the Dockerhub registry. This requires 
+   ko 0.2.0 or newer.
+- `make TEST=<name_of_test> DOCKER_REPO_OVERRIDE=<dockerhub_registry> test-e2e-local`: Runs the given test
+   using the previously built image.
 
 ## Operator Framework
 

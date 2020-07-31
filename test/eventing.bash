@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function knative_eventing_tests {
+function upstream_knative_eventing_e2e {
   (
   logger.info 'Running eventing tests'
 

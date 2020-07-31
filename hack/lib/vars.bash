@@ -52,3 +52,5 @@ export OLM_CHANNEL="${OLM_CHANNEL:-"preview-4.6"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
+export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
+export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"

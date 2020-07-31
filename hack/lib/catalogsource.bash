@@ -12,7 +12,6 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   ${rootdir}/hack/catalog.sh |\
      oc apply -n "$OLM_NAMESPACE" -f - || return 1
