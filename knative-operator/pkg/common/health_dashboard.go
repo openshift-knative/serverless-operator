@@ -23,10 +23,6 @@ func InstallHealthDashboard(api client.Client) error {
 	if err != nil {
 		return err
 	}
-	instance, err := getServerlessOperatorDeployment(api, namespace)
-	if err != nil {
-		return err
-	}
 	err = api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
 		logh.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
@@ -34,7 +30,10 @@ func InstallHealthDashboard(api client.Client) error {
 	} else if err != nil {
 		return fmt.Errorf("failed to get namepsace %q: %w", ConfigManagedNamespace, err)
 	}
-
+	instance, err := getServerlessOperatorDeployment(api, namespace)
+	if err != nil {
+		return err
+	}
 	manifest, err := manifest(instance, api, namespace)
 	if err != nil {
 		return fmt.Errorf("failed to load dashboard manifest: %w", err)
@@ -59,13 +58,8 @@ func manifest(instance *appsv1.Deployment, apiclient client.Client, namespace st
 		Version: "v1",
 		Kind:    "Deployment",
 	})
-
 	instance.SetNamespace(namespace)
-
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if ConfigManagedNamespace != "" {
-		transforms = append(transforms, mf.InjectNamespace(ConfigManagedNamespace))
-	}
+	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(ConfigManagedNamespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return mf.Manifest{}, fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest %w", err)
 	}

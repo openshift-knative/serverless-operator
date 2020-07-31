@@ -57,9 +57,9 @@ func getRolePath() string {
 }
 
 func getOperatorNamespace() (string, error) {
-	ns, found := os.LookupEnv(installedNamespaceEnvKey)
-	if !found {
-		return "", fmt.Errorf("%s must be set", installedNamespaceEnvKey)
+	ns := os.Getenv(installedNamespaceEnvKey)
+	if ns == "" {
+		return "", fmt.Errorf("the environment variable %q must be set", installedNamespaceEnvKey)
 	}
 	return ns, nil
 }
@@ -119,7 +119,7 @@ func createRoleAndRoleBinding(instance *appsv1.Deployment, namespace, path strin
 func getOperatorDeploymentName() (string, error) {
 	ns, found := os.LookupEnv(operatorDeploymentNameEnvKey)
 	if !found {
-		return "", fmt.Errorf("%s must be set", operatorDeploymentNameEnvKey)
+		return "", fmt.Errorf("the environment variable %q must be set", operatorDeploymentNameEnvKey)
 	}
 	return ns, nil
 }
