@@ -105,8 +105,7 @@ func createRoleAndRoleBinding(instance *appsv1.Deployment, namespace, path strin
 	})
 	// this is typical probably not needed as uid is enough for ownership
 	instance.SetNamespace(namespace)
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	transforms = append(transforms, injectNameSpace(namespace))
+	transforms := []mf.Transformer{mf.InjectOwner(instance), injectNameSpace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest: %w", err)
 	}
