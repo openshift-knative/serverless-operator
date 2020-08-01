@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
 
 	mfc "github.com/manifestival/controller-runtime-client"
@@ -59,7 +60,7 @@ func manifest(instance *appsv1.Deployment, apiclient client.Client, namespace st
 		Kind:    "Deployment",
 	})
 	instance.SetNamespace(namespace)
-	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(ConfigManagedNamespace)}
+	transforms := []mf.Transformer{setOwnerAnnotations(instance), mf.InjectNamespace(ConfigManagedNamespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return mf.Manifest{}, fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest %w", err)
 	}
@@ -77,4 +78,15 @@ func manifestPath() string {
 		return "deploy/resources/dashboards/grafana-dash-knative-health.yaml"
 	}
 	return path
+}
+
+// SetOwnerAnnotations is a transformer to set owner annotations on given object
+func setOwnerAnnotations(instance *appsv1.Deployment) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		u.SetAnnotations(map[string]string{
+			ServerlessOperatorName:      instance.Name,
+			ServerlessOperatorNamespace: instance.Namespace,
+		})
+		return nil
+	}
 }
