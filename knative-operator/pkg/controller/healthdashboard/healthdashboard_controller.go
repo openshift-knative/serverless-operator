@@ -1,19 +1,16 @@
 package healthdashboard
 
 import (
-	"context"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -73,20 +70,9 @@ type ReconcileHealthDashboard struct {
 func (r *ReconcileHealthDashboard) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling HealthDashboard")
-	original := &v1.ConfigMap{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, original)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			err = common.InstallHealthDashboard(r.client)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-		}
-		return reconcile.Result{}, err
-	}
 	// in any case restore the current health dashboard, since the configmap shouldnt
 	// be modified, if the configmap has not changed this will not trigger a real update
-	err = common.InstallHealthDashboard(r.client)
+	err := common.InstallHealthDashboard(r.client)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
