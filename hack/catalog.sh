@@ -39,26 +39,52 @@ CSV=$(cat $(find $OLM_DIR -name '*version.yaml' | sort -n) | envsubst '$IMAGE_KN
 PKG=$(cat $OLM_DIR/$NAME/*package.yaml | indent packageName)
 
 cat <<EOF | sed 's/^  *$//'
-kind: ConfigMap
-apiVersion: v1
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: $NAME
-
-data:
-  customResourceDefinitions: |-
-$CRD
-  clusterServiceVersions: |-
-$CSV
-  packages: |-
-$PKG
+  name: serverless-index
+spec:
+  selector:
+    matchLabels:
+      app: serverless-index
+  template:
+    metadata:
+      labels: app: serverless-index
+    spec:
+      containers:
+      - name: registry
+        image: quay.io/joelanford/example-operator-index:0.1.0
+        command:
+        - /bin/sh
+        - -c
+        - |-
+          mkdir -p /database && \
+          /bin/opm registry add   -d /database/index.db --mode=replaces -b quay.io/bbrowning/openshift-serverless-bundle:latest && \
+          /bin/opm registry serve -d /database/index.db -p 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serverless-index
+  labels:
+    app: serverless-index
+spec:
+  ports:
+  - name: grpc
+    port: 50051
+  selector:
+    app: serverless-index
+  type: ClusterIP
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: $NAME
+  annotations:
+    operators.operatorframework.io/injected-bundles: '["quay.io/bbrowning/openshift-serverless-bundle:latest"]'
 spec:
-  configMap: $NAME
+  address: serverless-bundle
   displayName: $DISPLAYNAME
   publisher: Red Hat
-  sourceType: internal
+  sourceType: grpc
 EOF
