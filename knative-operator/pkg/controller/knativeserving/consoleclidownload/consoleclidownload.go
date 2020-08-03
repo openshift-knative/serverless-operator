@@ -46,7 +46,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	log.Info("Installing kn ConsoleCLIDownload resources")
 	serviceFromCluster := &servingv1.Service{}
-	service := populateKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+	service := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, serviceFromCluster)
 	switch {
 	case apierrors.IsNotFound(err):
@@ -157,15 +157,15 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 	}
 
 	log.Info("Deleting kn ConsoleCLIDownload Service")
-	if err := apiclient.Delete(context.TODO(), populateKnService("", instance)); err != nil && !apierrors.IsNotFound(err) {
+	if err := apiclient.Delete(context.TODO(), makeKnService("", instance)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
 	}
 
 	return nil
 }
 
-// populateKnService populates Knatie Service object and its SPEC with provided image
-func populateKnService(image string, instance *servingv1alpha1.KnativeServing) *servingv1.Service {
+// makeKnService makes Knative Service object and its SPEC from provided image parameter
+func makeKnService(image string, instance *servingv1alpha1.KnativeServing) *servingv1.Service {
 	anno := make(map[string]string)
 	if instance != nil {
 		anno = map[string]string{
