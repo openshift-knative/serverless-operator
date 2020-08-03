@@ -56,6 +56,8 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
   
   # Prevent HPA from scaling to make HA tests more stable
+  local max_replicas
+  max_replicas=$(oc get hpa activator -n "$SERVING_NAMESPACE" -ojsonpath='{.spec.maxReplicas}')
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec":{"maxReplicas":2}}' || failed=3
 
   # Use sed as the -spoofinterval parameter is not available yet
@@ -65,6 +67,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --resolvabledomain \
     --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" || failed=4
+
+  # Restore the original maxReplicas for any tests running after this test suite
+  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec":{"maxReplicas":'${max_replicas}'}}' || failed=5
 
   print_test_result ${failed}
 
