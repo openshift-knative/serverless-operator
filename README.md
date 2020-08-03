@@ -11,7 +11,8 @@ If you want to quickly run the most relevant tests locally (those that are requi
 the CI environment), use these commands:
 
 ```
-crc start --cpus=6 --memory 16384
+$ crc start --cpus=6 --memory 16384
+$ SCALE_UP=-1 make images test-operator
 ```
 
 ### Requirements
@@ -29,8 +30,7 @@ If you want to use CRC to run tests locally, the following configuration has
 been tested to work with the operator E2E tests.
 
 ```
-$ crc start --cpus=6 --memory 16384
-$ SCALE_UP=-1 make images test-operator
+crc start --cpus=6 --memory 16384
 ```
 
 ### Creating the images
