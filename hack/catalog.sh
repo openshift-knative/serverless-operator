@@ -36,7 +36,7 @@ fi
 
 CRD=$(cat $(ls $CRD_DIR/*) | grep -v -- "---" | indent apiVersion)
 CSV=$(cat $(find $OLM_DIR -name '*version.yaml' | sort -n) | envsubst '$IMAGE_KNATIVE_OPERATOR $IMAGE_KNATIVE_OPENSHIFT_INGRESS' | indent apiVersion)
-PKG=$(cat $OLM_DIR/$NAME/*package.yaml | indent packageName)
+# PKG=$(cat $OLM_DIR/$NAME/*package.yaml | indent packageName)
 
 cat <<EOF | sed 's/^  *$//'
 apiVersion: apps/v1
@@ -49,7 +49,8 @@ spec:
       app: serverless-index
   template:
     metadata:
-      labels: app: serverless-index
+      labels:
+        app: serverless-index
     spec:
       containers:
       - name: registry
