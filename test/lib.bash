@@ -151,7 +151,9 @@ function create_htpasswd_users {
   logger.info "Creating htpasswd for ${num_users} users"
 
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
-    logger.info 'Secret htpass-secret already existsed, updating it.'
+    logger.info 'Secret htpass-secret already existed, updating it.'
+    # Add a newline to the end of the file if not already present (htpasswd will butcher it otherwise).
+    sed -i -e '$a\' users.htpasswd
   else
     touch users.htpasswd
   fi
@@ -164,13 +166,13 @@ function create_htpasswd_users {
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
   oc apply -f openshift/identity/htpasswd.yaml
 
   logger.info 'Generate kubeconfig for each user'
   for i in $(seq 1 $num_users); do
     cp "${KUBECONFIG}" "user${i}.kubeconfig"
-    occmd="bash -c '! oc login --config=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
+    occmd="bash -c '! oc login --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
     timeout 900 "${occmd}" || return 1
   done
 }

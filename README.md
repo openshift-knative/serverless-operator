@@ -5,6 +5,15 @@ applications and functions.
 
 ## Development and private cluster testing
 
+### tl;dr
+
+If you want to quickly run the most relevant tests locally (those that are required by
+the CI environment), use these commands:
+
+```
+crc start --cpus=6 --memory 16384
+```
+
 ### Requirements
 
 - `podman` aliased to `docker` or `docker` (17.05 or newer)
@@ -13,6 +22,16 @@ applications and functions.
 - `envsubst`
 - `bash` (4.0.0 or newer)
 - `make`
+
+### CRC-based cluster
+
+If you want to use CRC to run tests locally, the following configuration has
+been tested to work with the operator E2E tests.
+
+```
+$ crc start --cpus=6 --memory 16384
+$ SCALE_UP=-1 make images test-operator
+```
 
 ### Creating the images
 
@@ -28,14 +47,17 @@ pushed to your docker repository.
 
 Use the appropriate make targets or scripts in `hack`:
 
-- `make dev`: Deploys the serverless-operator without deploying Knative Serving.
-- `make install`: Scales the cluster appropriately, deploys serverless-operator
-  and Knative Serving.
-- `make install-previous`: same with `make install` but deploy previous serverless-operator
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
+- `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
+- `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
+
+**Note:** If you're using a system that cannot scale up dynamically (like CRC), remember
+to disable the scaleup logic using the `SCALE_UP=-1` environment variable, like
+`SCALE_UP=-1 make install`.
 
 ### Running tests
 
@@ -44,6 +66,10 @@ for example.
 - `make test-unit`: Runs unit tests.
 - `make test-e2e`: Scales, installs and runs E2E tests.
 - `make test-operator`: Runs unit and E2E tests.
+
+**Note:** If you're using a system that cannot scale up dynamically (like CRC), remember
+to disable the scaleup logic using the `SCALE_UP=-1` environment variable, like
+`SCALE_UP=-1 make test-operator`.
 
 #### knative-serving and knative-eventing E2E tests
 
