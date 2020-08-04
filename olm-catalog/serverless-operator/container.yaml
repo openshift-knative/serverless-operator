@@ -1,5 +1,0 @@
-operator_manifests:
-    manifests_dir: manifests
-    enable_digest_pinning: false
-    enable_repo_replacements: false
-    enable_registry_replacements: false

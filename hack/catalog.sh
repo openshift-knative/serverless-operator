@@ -17,50 +17,57 @@ cat <<EOF | sed 's/^  *$//'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: serverless-index
+  name: serverless-registry
 spec:
   selector:
     matchLabels:
-      app: serverless-index
+      app: serverless-registry
   template:
     metadata:
       labels:
-        app: serverless-index
+        app: serverless-registry
     spec:
       containers:
       - name: registry
-        image: quay.io/joelanford/example-operator-index:0.1.0
+        image: $IMAGE_SERVERLESS_INDEX
         command:
-        - /bin/sh
-        - -c
-        - |-
-          mkdir -p /database && \
-          /bin/opm registry add   -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-index:1.7.2 && \
-          /bin/opm registry add   -d /database/index.db --mode=replaces -b $IMAGE_SERVERLESS_INDEX && \
-          /bin/opm registry serve -d /database/index.db -p 50051
+        - /usr/bin/registry-server
+        - --database=/bundle/bundles.db
+        ports:
+        - containerPort: 50051
+          name: grpc
+          protocol: TCP
+        livenessProbe:
+          exec:
+            command:
+            - grpc_health_probe
+            - -addr=localhost:50051
+        readinessProbe:
+          exec:
+            command:
+            - grpc_health_probe
+            - -addr=localhost:50051
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: serverless-index
+  name: serverless-registry
   labels:
-    app: serverless-index
+    app: serverless-registry
 spec:
   ports:
   - name: grpc
     port: 50051
   selector:
-    app: serverless-index
+    app: serverless-registry
   type: ClusterIP
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: $NAME
-  annotations:
-    operators.operatorframework.io/injected-bundles: '["$IMAGE_SERVERLESS_INDEX"]'
 spec:
-  address: serverless-index.openshift-marketplace:50051
+  address: serverless-registry.openshift-marketplace:50051
   displayName: $DISPLAYNAME
   publisher: Red Hat
   sourceType: grpc

@@ -1,30 +1,19 @@
-FROM alpine
+FROM quay.io/operator-framework/upstream-registry-builder AS registry-builder
 
-COPY manifests /manifests
-COPY metadata/annotations.yaml /metadata/annotations.yaml
+FROM registry.svc.ci.openshift.org/openshift/release:golang-1.12
 
-# Substitute the to be deployed images based on the environment.
-COPY substitute.sh /substitute.sh
-ARG repo
-ENV DOCKER_REPO_OVERRIDE=$repo
-RUN apk add gettext jq
-RUN chmod +x /substitute.sh && ./substitute.sh
+WORKDIR /
+COPY manifests/ /manifests
 
-LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
-LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
-LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
-LABEL operators.operatorframework.io.bundle.package.v1=serverless-operator
-LABEL operators.operatorframework.io.bundle.channel.default.v1="4.5"
-LABEL operators.operatorframework.io.bundle.channels.v1="4.5"
+COPY scripts/registry-init.sh /scripts/
 
-LABEL \
-      com.redhat.component="openshift-serverless-1-serverless-rhel8-operator-container" \
-      name="openshift-serverless-1/serverless-rhel8-operator" \
-      version="1.8.0" \
-      summary="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      com.redhat.openshift.versions="v4.5" \
-      com.redhat.delivery.operator.bundle=true \
-      com.redhat.delivery.backport=true
+COPY --from=registry-builder /bin/initializer /usr/bin/initializer
+COPY --from=registry-builder /bin/registry-server /usr/bin/registry-server
+COPY --from=registry-builder /bin/grpc_health_probe /usr/bin/grpc_health_probe
+
+# Change working directory to enable registry migrations
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1843702
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1827612
+WORKDIR /bundle
+
+RUN /scripts/registry-init.sh
