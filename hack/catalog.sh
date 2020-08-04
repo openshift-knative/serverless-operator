@@ -35,6 +35,7 @@ spec:
         - -c
         - |-
           mkdir -p /database && \
+          /bin/opm registry add   -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-index:1.7.2 && \
           /bin/opm registry add   -d /database/index.db --mode=replaces -b $IMAGE_SERVERLESS_INDEX && \
           /bin/opm registry serve -d /database/index.db -p 50051
 ---
