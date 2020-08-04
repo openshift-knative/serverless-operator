@@ -22,16 +22,14 @@ function ensure_serverless_installed {
 }
 
 function install_serverless_previous {
-  local rootdir current_csv previous_csv
+  local rootdir
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Remove installplan from previous installations, leaving this would make the operator
   # upgrade to the latest version immediately
-  current_csv=$("${rootdir}/hack/catalog.sh" | grep currentCSV | awk '{ print $2 }')
-  remove_installplan "$current_csv"
+  remove_installplan "$CURRENT_CSV"
 
-  previous_csv=$("${rootdir}/hack/catalog.sh" | grep replaces: | tail -n1 | awk '{ print $2 }')
-  deploy_serverless_operator "$previous_csv"  || return $?
+  deploy_serverless_operator "$PREVIOUS_CSV"  || return $?
   deploy_knativeserving_cr || return $?
 }
 
@@ -50,12 +48,9 @@ function install_serverless_latest {
 }
 
 function deploy_serverless_operator_latest {
-  local rootdir csv
+  local rootdir
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  # Get CSV from the given channel
-  csv=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
-
-  deploy_serverless_operator "${csv}"
+  deploy_serverless_operator "$CURRENT_CSV"
 }
 
 function deploy_serverless_operator {
@@ -108,8 +103,7 @@ function approve_csv {
 function find_install_plan {
   local csv=$1
   for plan in `oc get installplan -n ${OPERATORS_NAMESPACE} --no-headers -o name`; do 
-    [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) -eq 1 && \
-       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.catalogSources}" | grep -c $OPERATOR) -eq 1 ]] && echo $plan && return 0
+    [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) ]] && echo $plan && return 0
   done
   echo ""
 }

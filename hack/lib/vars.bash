@@ -52,3 +52,6 @@ export OLM_CHANNEL="${OLM_CHANNEL:-"4.5"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
+
+export CURRENT_CSV="serverless-operator.v1.8.0"
+export PREVIOUS_CSV="serverless-operator.v1.7.2"

@@ -1,22 +1,17 @@
 #!/usr/bin/env bash
 
 function ensure_catalogsource_installed {
-  logger.info 'Check if CatalogSource is installed'
-  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
-    logger.success 'CatalogSource is already installed.'
-    return 0
-  fi
   install_catalogsource
 }
 
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
+  # HACK: Allow to run the image as root
+  oc adm policy add-scc-to-user anyuid -z default -n openshift-marketplace
 
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  ${rootdir}/hack/catalog.sh |\
-     sed -e "s|deploy/resources/kourier/kourier-latest.yaml|deploy/resources/kourier/kourier-latest-debug.yaml|g" |\
-     oc apply -n "$OLM_NAMESPACE" -f - || return 1
+  ${rootdir}/hack/catalog.sh | oc apply -n "$OLM_NAMESPACE" -f - || return 1
 
   logger.success "CatalogSource installed successfully"
 }
