@@ -35,7 +35,7 @@ test-unit:
 
 # Run only SERVING/EVENTING E2E tests from the current repo.
 test-e2e:
-	./test/e2e-tests.sh
+	./test/e2e-tests.sh $(ARGS)
 
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
 test-e2e-with-kafka:
