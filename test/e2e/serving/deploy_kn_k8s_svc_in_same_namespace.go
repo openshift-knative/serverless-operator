@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"context"
@@ -12,11 +12,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
+func KnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 
 	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
 
 	//Create deployment
 	err := test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)

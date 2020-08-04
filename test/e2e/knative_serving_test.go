@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/e2e/serving"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -29,8 +30,8 @@ const (
 
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
+	defer test.CleanupAll(t, caCtx)
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
 		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
@@ -78,6 +79,15 @@ func TestKnativeServing(t *testing.T) {
 	t.Run("update global proxy and verify calls goes through proxy server", func(t *testing.T) {
 		t.Skip("SRKVS-462: This test needs thorough hardening")
 		testKnativeServingForGlobalProxy(t, caCtx)
+	})
+
+	t.Run("downstream", func(t *testing.T) {
+		t.Run("user permissions", serving.UserPermissions)
+		t.Run("https", serving.KnativeServiceHTTPS)
+		t.Run("cli", serving.ConsoleCLIDownloadAndDeploymentResources)
+		t.Run("network policy", serving.NetworkPolicy)
+		t.Run("route conflicts", serving.RouteConflictBehavior)
+		t.Run("single namespace", serving.KnativeVersusKubeServicesInOneNamespace)
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {

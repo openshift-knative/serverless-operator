@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"context"
@@ -15,11 +15,9 @@ const (
 	knativeServing = "knative-serving"
 )
 
-func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
+func ConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 
 	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
 
 	// Check the status of Service for kn ConsoleCLIDownload
 	service, err := test.WaitForServiceState(caCtx, "kn-cli", knativeServing, test.IsServiceReady)

@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"context"
@@ -17,11 +17,9 @@ import (
 
 // This test creates two services: conflict-test/a and test/a-conflict. Due to the domain template,
 // those two will clash in the generated URL. The test then verifies that the "older" service "wins".
-func TestRouteConflictBehavior(t *testing.T) {
+func RouteConflictBehavior(t *testing.T) {
 
 	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
 
 	svcA := types.NamespacedName{Namespace: "conflict-test", Name: "a"}
 	svcB := types.NamespacedName{Namespace: "test", Name: "a-conflict"}

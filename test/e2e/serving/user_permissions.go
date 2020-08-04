@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"context"
@@ -20,14 +20,14 @@ const (
 	helloworldText        = "Hello World!"
 )
 
-func TestUserPermissions(t *testing.T) {
+func UserPermissions(t *testing.T) {
 
 	caCtx := test.SetupClusterAdmin(t)
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx) })
-	defer test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
 	if _, err := test.WithServiceReady(caCtx, helloworldService, testNamespace, image); err != nil {
 		t.Fatal("Knative Service not ready", err)

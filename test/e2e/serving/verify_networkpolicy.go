@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"context"
@@ -24,8 +24,6 @@ func TestNetworkPolicy(t *testing.T) {
 	t.Skip("SRVKS-628: This needs investigation")
 
 	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
 
 	ksvc, err := test.WithServiceReady(caCtx, "networkpolicy-test", testNamespace3, image)
 	if err != nil {

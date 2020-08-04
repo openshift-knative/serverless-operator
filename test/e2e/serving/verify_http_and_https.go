@@ -1,4 +1,4 @@
-package servinge2e
+package serving
 
 import (
 	"crypto/tls"
@@ -10,11 +10,8 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 )
 
-func TestKnativeServiceHTTPS(t *testing.T) {
-
+func KnativeServiceHTTPS(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
 
 	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image)
 	if err != nil {

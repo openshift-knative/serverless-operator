@@ -13,6 +13,7 @@ debugging.setup
 
 scale_up_workers || exit $?
 create_namespaces || exit $?
+add_systemnamespace_label || exit $?
 create_htpasswd_users && add_roles || exit $?
 
 failed=0
