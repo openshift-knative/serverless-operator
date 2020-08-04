@@ -1,4 +1,4 @@
-FROM centos
+FROM alpine
 
 COPY manifests /manifests
 COPY metadata/annotations.yaml /metadata/annotations.yaml
@@ -6,7 +6,7 @@ COPY metadata/annotations.yaml /metadata/annotations.yaml
 # Substitute the to be deployed images based on the environment.
 ARG repo
 ENV DOCKER_REPO_OVERRIDE=$repo
-RUN yum install -y gettext jq
+RUN apk add gettext jq
 RUN chmod +x /manifests/substitute.sh && /manifests/substitute.sh
 
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
