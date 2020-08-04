@@ -6,7 +6,7 @@ DISPLAYNAME="Serverless Operator"
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_CI" ]; then
   # HACK: Until this is built properly.
-  export IMAGE_SERVERLESS_INDEX="docker.io/markusthoemmes/openshift-serverless-bundle:latest"
+  export IMAGE_SERVERLESS_INDEX="${IMAGE_FORMAT//\$\{component\}/serverless-bundle}"
 elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
   export IMAGE_SERVERLESS_INDEX="${DOCKER_REPO_OVERRIDE}/openshift-serverless-bundle:latest"
 else
