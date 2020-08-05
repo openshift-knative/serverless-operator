@@ -28,11 +28,12 @@ function install_catalogsource {
   cp "${KUBECONFIG}" "puller.kubeconfig"
   occmd="bash -c '! oc login --config=puller.kubeconfig --username=puller --password=puller > /dev/null'"
   timeout 900 "${occmd}" || return 1
-  oc policy add-role-to-user registry-viewer puller
+
+  oc -n "$OLM_NAMESPACE" policy add-role-to-user registry-viewer puller
   token=$(oc --config=puller.kubeconfig whoami -t)
 
   # HACK: Allow to run the image as root
-  oc adm policy add-scc-to-user anyuid -z default -n "$OLM_NAMESPACE"
+  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
   mv "$csv" "${rootdir}/raw.yaml"
