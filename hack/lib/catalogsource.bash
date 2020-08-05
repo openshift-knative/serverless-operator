@@ -9,7 +9,7 @@ function install_catalogsource {
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # HACK: Allow to run the image as root
-  oc adm policy add-scc-to-user anyuid -z default -n openshift-marketplace
+  oc adm policy add-scc-to-user anyuid -z default -n "$OLM_NAMESPACE"
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
   mv "$csv" "${rootdir}/raw.yaml"
@@ -31,12 +31,69 @@ function install_catalogsource {
 
   cat "$csv"
 
-  oc -n openshift-marketplace new-build --binary --strategy=docker --name serverless-bundle
-  oc -n openshift-marketplace start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
+  oc -n "$OLM_NAMESPACE" new-build --binary --strategy=docker --name serverless-bundle
+  oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
 
   mv "${rootdir}/raw.yaml" "$csv"
 
-  ${rootdir}/hack/catalog.sh | oc apply -n "$OLM_NAMESPACE" -f - || return 1
+  # Install the index deployment
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serverless-index
+spec:
+  selector:
+    matchLabels:
+      app: serverless-index
+  template:
+    metadata:
+      labels:
+        app: serverless-index
+    spec:
+      containers:
+      - name: registry
+        image: docker.io/markusthoemmes/serverless-index:registry10
+        ports:
+        - containerPort: 50051
+          name: grpc
+          protocol: TCP
+        livenessProbe:
+          exec:
+            command:
+            - grpc_health_probe
+            - -addr=localhost:50051
+        readinessProbe:
+          exec:
+            command:
+            - grpc_health_probe
+            - -addr=localhost:50051
+        command:
+        - /bin/sh
+        - -c
+        - |-
+          podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false image-registry.openshift-image-registry.svc:5000
+          mkdir -p /database && \
+          /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2
+          /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry serve -d /database/index.db -p 50051
+EOF
+
+  wait_until_pods_running "$OLM_NAMESPACE"
+  indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
+
+  # Install the catalogsource
+  cat <<EOF | oc apply -f - || return $? 
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: serverless-operator
+spec:
+  address: $indexip:50051
+  displayName: "Serverless Operator"
+  publisher: Red Hat
+  sourceType: grpc
+EOF
 
   logger.success "CatalogSource installed successfully"
 }
