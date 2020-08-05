@@ -10,6 +10,9 @@ function install_catalogsource {
   # HACK: Allow to run the image as root
   oc adm policy add-scc-to-user anyuid -z default -n openshift-marketplace
 
+  oc -n openshift-marketplace new-build --binary --strategy=docker --name serverless-bundle
+  oc -n openshift-marketplace start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
+
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   ${rootdir}/hack/catalog.sh | oc apply -n "$OLM_NAMESPACE" -f - || return 1
 

@@ -3,16 +3,6 @@
 NAME="serverless-operator"
 DISPLAYNAME="Serverless Operator"
 
-# Determine if we're running locally or in CI.
-if [ -n "$OPENSHIFT_CI" ]; then
-  # HACK: Until this is built properly.
-  export IMAGE_SERVERLESS_INDEX="${IMAGE_FORMAT//\$\{component\}/serverless-bundle}"
-elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-  export IMAGE_SERVERLESS_INDEX="${DOCKER_REPO_OVERRIDE}/openshift-serverless-bundle:latest"
-else
-  export IMAGE_SERVERLESS_INDEX="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle"
-fi
-
 cat <<EOF | sed 's/^  *$//'
 apiVersion: apps/v1
 kind: Deployment
@@ -29,14 +19,14 @@ spec:
     spec:
       containers:
       - name: registry
-        image: quay.io/joelanford/example-operator-index:0.1.0
+        image: docker.io/markusthoemmes/serverless-index:registry10
         command:
         - /bin/sh
         - -c
         - |-
+          podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false image-registry.openshift-image-registry.svc:5000
           mkdir -p /database && \
-          /bin/opm registry add   -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-index:1.7.2 && \
-          /bin/opm registry add   -d /database/index.db --mode=replaces -b $IMAGE_SERVERLESS_INDEX && \
+          /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/openshift-marketplace/serverless-bundle && \
           /bin/opm registry serve -d /database/index.db -p 50051
 ---
 apiVersion: v1
@@ -57,8 +47,6 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: $NAME
-  annotations:
-    operators.operatorframework.io/injected-bundles: '["$IMAGE_SERVERLESS_INDEX"]'
 spec:
   address: serverless-index.openshift-marketplace:50051
   displayName: $DISPLAYNAME
