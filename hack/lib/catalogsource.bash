@@ -8,6 +8,29 @@ function install_catalogsource {
   logger.info "Installing CatalogSource"
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
+  logger.info "Creating imagepuller user"
+  if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
+    logger.info 'Secret htpass-secret already existsed, updating it.'
+    sed -i -e '$a\' users.htpasswd
+  else
+    touch users.htpasswd
+  fi
+
+  htpasswd -b users.htpasswd "puller" "puller"
+
+  kubectl create secret generic htpass-secret \
+    --from-file=htpasswd="$(pwd)/users.htpasswd" \
+    -n openshift-config \
+    --dry-run -o yaml | kubectl apply -f -
+  oc apply -f openshift/identity/htpasswd.yaml
+
+  logger.info 'Generate kubeconfig'
+  cp "${KUBECONFIG}" "puller.kubeconfig"
+  occmd="bash -c '! oc login --config=puller.kubeconfig --username=puller --password=puller > /dev/null'"
+  timeout 900 "${occmd}" || return 1
+  oc policy add-role-to-user registry-viewer puller
+  token=$(oc --config=puller.kubeconfig whoami -t)
+
   # HACK: Allow to run the image as root
   oc adm policy add-scc-to-user anyuid -z default -n "$OLM_NAMESPACE"
 
@@ -72,7 +95,7 @@ spec:
         - /bin/sh
         - -c
         - |-
-          podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false image-registry.openshift-image-registry.svc:5000
+          podman login -u puller -p $token --tls-verify=false image-registry.openshift-image-registry.svc:5000
           mkdir -p /database && \
           /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2
           /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
