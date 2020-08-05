@@ -37,7 +37,7 @@ function install_catalogsource {
   mv "${rootdir}/raw.yaml" "$csv"
 
   # Install the index deployment
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
 apiVersion: apps/v1
 kind: Deployment
 metadata:
