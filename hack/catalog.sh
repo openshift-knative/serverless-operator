@@ -26,6 +26,7 @@ spec:
         - |-
           podman login -u kubeadmin -p "$(oc whoami -t)" --tls-verify=false image-registry.openshift-image-registry.svc:5000
           mkdir -p /database && \
+          /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2
           /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/openshift-marketplace/serverless-bundle && \
           /bin/opm registry serve -d /database/index.db -p 50051
 ---
