@@ -14,6 +14,7 @@ COPY --from=registry-builder /bin/grpc_health_probe /usr/bin/grpc_health_probe
 # Change working directory to enable registry migrations
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1843702
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1827612
+RUN mkdir /bundle
 WORKDIR /bundle
 
 RUN /scripts/registry-init.sh
