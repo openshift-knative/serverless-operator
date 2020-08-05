@@ -83,7 +83,7 @@ EOF
   indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
 
   # Install the catalogsource
-  cat <<EOF | oc apply -f - || return $? 
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
