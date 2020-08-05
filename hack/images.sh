@@ -12,6 +12,3 @@ docker push "$repo/knative-operator"
 
 docker build -t "$repo/knative-openshift-ingress" serving/ingress
 docker push "$repo/knative-openshift-ingress"
-
-docker build --build-arg repo=$repo -t "$repo/openshift-serverless-bundle" olm-catalog/serverless-operator
-docker push "$repo/openshift-serverless-bundle"
