@@ -20,6 +20,20 @@ func KnativeServing(name, namespace string) *servingoperatorv1alpha1.KnativeServ
 	}
 }
 
+func EnsureKnativeServing(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
+	cr, err := ctx.Clients.Operator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
+	if err != nil && !apierrs.IsNotFound(err) {
+		return cr, err
+	}
+	if cr.Status.IsReady() {
+		return cr, err
+	}
+	if _, err := test.WithOperatorReady(ctx, "serverless-operator-subscription"); err != nil {
+		return nil, err
+	}
+	return WithKnativeServingReady(ctx, name, namespace)
+}
+
 func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
 	serving, err := CreateKnativeServing(ctx, name, namespace)
 	if err != nil {

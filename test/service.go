@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	routev1 "github.com/openshift/api/route/v1"

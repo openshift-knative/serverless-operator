@@ -28,24 +28,29 @@ const (
 	haReplicas                    = 2
 )
 
+func assertKnativeServingReady(t *testing.T, ctx *test.Context) {
+	if _, err := v1a1test.EnsureKnativeServing(ctx, servingName, servingNamespace); err != nil {
+		t.Fatal("Failed to deploy KnativeServing", err)
+	}
+}
+
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
-			t.Fatal("Failed", err)
-		}
-	})
-
-	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
-		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
-			t.Fatal("Failed to deploy KnativeServing", err)
-		}
-	})
-
 	t.Run("verify correct deployment shape", func(t *testing.T) {
+		assertKnativeServingReady(t, caCtx)
+		api, err := caCtx.Clients.KubeAggregator.ApiregistrationV1beta1().APIServices().Get("v1beta1.custom.metrics.k8s.io", metav1.GetOptions{})
+		// We're good if no APIService exists at all
+		if err != nil && !apierrs.IsNotFound(err) {
+			t.Fatalf("Failed to fetch APIService: %v", err)
+		}
+
+		if api != nil && api.Spec.Service != nil && api.Spec.Service.Namespace == servingNamespace && api.Spec.Service.Name == "autoscaler" {
+			t.Fatalf("Found a custom-metrics API registered at the autoscaler")
+		}
+
 		// Check the status of scaled deployments in the knative serving namespace
 		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
@@ -73,6 +78,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
+		assertKnativeServingReady(t, caCtx)
 		VerifyNoDisallowedImageReference(t, caCtx, servingNamespace)
 	})
 
@@ -82,6 +88,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("downstream", func(t *testing.T) {
+		assertKnativeServingReady(t, caCtx)
 		t.Run("user permissions", serving.UserPermissions)
 		t.Run("https", serving.KnativeServiceHTTPS)
 		t.Run("cli", serving.ConsoleCLIDownloadAndDeploymentResources)
@@ -91,6 +98,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("remove knativeserving cr", func(t *testing.T) {
+		assertKnativeServingReady(t, caCtx)
 		if err := v1a1test.DeleteKnativeServing(caCtx, servingName, servingNamespace); err != nil {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
@@ -106,13 +114,6 @@ func TestKnativeServing(t *testing.T) {
 		// If the namespace is not gone yet, check if it's terminating.
 		if ns.Status.Phase != corev1.NamespaceTerminating {
 			t.Fatalf("Ingress namespace phase = %v, want %v", ns.Status.Phase, corev1.NamespaceTerminating)
-		}
-	})
-
-	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-		caCtx.Cleanup(t)
-		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
-			t.Fatalf("Operators still running: %v", err)
 		}
 	})
 }
