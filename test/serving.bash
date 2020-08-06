@@ -124,7 +124,7 @@ function run_knative_serving_rolling_upgrade_tests {
     logger.info "updating serving version from ${prev_serving_version} to ${latest_serving_version}"
 
     # Get latest CSV from the given channel
-    upgrade_to=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_UPGRADE_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
+    upgrade_to="$CURRENT_CSV"
 
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
     if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* || \
