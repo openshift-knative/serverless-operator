@@ -11,8 +11,14 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
+# Adjust these when upgrading the knative versions.
 readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.14.1}"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.14.2}"
+
+# Adjust these when cutting a new CSV.
+# TODO: Read these from metadata.
+export CURRENT_CSV="serverless-operator.v1.8.0"
+export PREVIOUS_CSV="serverless-operator.v1.7.2"
 
 readonly KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
 readonly KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
@@ -48,7 +54,7 @@ readonly UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 readonly UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 
 readonly INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-export OLM_CHANNEL="${OLM_CHANNEL:-"candidate"}"
+export OLM_CHANNEL="${OLM_CHANNEL:-"4.5"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"

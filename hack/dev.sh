@@ -18,6 +18,6 @@ create_namespaces || exit $?
 
 exitcode=0
 
-(( !exitcode )) && ensure_catalogsource_installed || exitcode=3
+(( !exitcode )) && install_catalogsource || exitcode=3
 
 exit $exitcode
