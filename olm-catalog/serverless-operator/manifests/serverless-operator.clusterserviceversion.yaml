@@ -317,7 +317,7 @@ spec:
               serviceAccountName: knative-serving-operator
               containers:
                 - name: knative-openshift
-                  image: $IMAGE_KNATIVE_OPERATOR
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-operator
                   command:
                   - knative-openshift
                   imagePullPolicy: Always
@@ -402,7 +402,7 @@ spec:
               serviceAccountName: knative-openshift-ingress
               containers:
                 - name: knative-openshift-ingress
-                  image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-openshift-ingress
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -516,9 +516,9 @@ spec:
     - name: knative-serving-operator
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-serving-operator
     - name: knative-operator
-      image: $IMAGE_KNATIVE_OPERATOR
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-operator
     - name: knative-openshift-ingress
-      image: $IMAGE_KNATIVE_OPENSHIFT_INGRESS
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-openshift-ingress
     - name: knative-eventing-operator
       image: registry.svc.ci.openshift.org/openshift/knative-v0.14.2:knative-eventing-operator
     - name: IMAGE_eventing-controller__eventing-controller

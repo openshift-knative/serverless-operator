@@ -10,23 +10,17 @@ function install_catalogsource {
   oc -n "$OLM_NAMESPACE" policy add-role-to-user registry-viewer "$pull_user"
   token=$(oc --config=$pull_user.kubeconfig whoami -t)
 
-  # Determine if we're running locally or in CI.
-  if [ -n "$OPENSHIFT_CI" ]; then
-    export IMAGE_KNATIVE_OPERATOR="${IMAGE_FORMAT//\$\{component\}/knative-operator}"
-    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${IMAGE_FORMAT//\$\{component\}/knative-openshift-ingress}"
-  elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-    export IMAGE_KNATIVE_OPERATOR="${DOCKER_REPO_OVERRIDE}/knative-operator"
-    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress"
-  else
-    export IMAGE_KNATIVE_OPERATOR="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-operator"
-    export IMAGE_KNATIVE_OPENSHIFT_INGRESS="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:knative-openshift-ingress"
-  fi
-
-
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
   # Create a backup of the CSV so we don't pollute the repository.
-  mv "$csv" "${rootdir}/raw.yaml"
-  cat "${rootdir}/raw.yaml" | envsubst '$IMAGE_KNATIVE_OPERATOR $IMAGE_KNATIVE_OPENSHIFT_INGRESS' > "$csv"
+  cp "$csv" "${rootdir}/bkp.yaml"
+
+  if [ -n "$OPENSHIFT_CI" ]; then
+    sed -i "s,image: .*:knative-operator,image: ${IMAGE_FORMAT//\$\{component\}/knative-operator}," "$csv"
+    sed -i "s,image: .*:knative-openshift-ingress,image: ${IMAGE_FORMAT//\$\{component\}/knative-openshift-ingress}," "$csv"
+  elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+    sed -i "s,image: .*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
+    sed -i "s,image: .*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
+  fi
 
   cat "$csv"
 
@@ -35,7 +29,7 @@ function install_catalogsource {
   oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
 
   # Undo potential changes to the CSV to not pollute the repository.
-  mv "${rootdir}/raw.yaml" "$csv"
+  mv "${rootdir}/bkp.yaml" "$csv"
 
   # HACK: Allow to run the index pod as root so it can create the necessary directories.
   oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
