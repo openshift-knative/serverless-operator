@@ -16,6 +16,7 @@ readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.14.1}"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.14.2}"
 
 # Adjust these when cutting a new CSV.
+# TODO: Read these from metadata.
 export CURRENT_CSV="serverless-operator.v1.8.0"
 export PREVIOUS_CSV="serverless-operator.v1.7.2"
 

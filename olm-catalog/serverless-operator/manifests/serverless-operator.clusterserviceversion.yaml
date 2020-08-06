@@ -32,7 +32,7 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat, Inc.
-    olm.skipRange: '>1.7.2 <1.8.0'
+    olm.skipRange: '>=1.7.2 <1.8.0'
   name: serverless-operator.v1.8.0
   namespace: placeholder
 spec:
