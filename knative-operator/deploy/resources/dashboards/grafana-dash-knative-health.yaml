@@ -28,6 +28,164 @@ data:
       "links": [],
       "panels": [
         {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+           "rgba(245, 54, 54, 0.9)",
+           "rgba(237, 129, 40, 0.89)",
+           "rgba(50, 172, 45, 0.97)"
+          ],
+          "datasource": "prometheus",
+          "editable": false,
+          "error": false,
+           "format": "none",
+           "gauge": {
+             "maxValue": 100,
+             "minValue": 0,
+             "show": false,
+             "thresholdLabels": false,
+             "thresholdMarkers": true
+           },
+           "id": 28,
+           "interval": null,
+           "isNew": true,
+           "links": [],
+           "mappingType": 1,
+           "mappingTypes": [
+           {
+             "name": "value to text",
+             "value": 1
+           },
+           {
+             "name": "range to text",
+             "value": 2
+           }
+           ],
+           "maxDataPoints": 100,
+           "nullPointMode": "connected",
+           "nullText": null,
+           "postfix": "",
+           "postfixFontSize": "50%",
+           "prefix": "",
+           "prefixFontSize": "50%",
+           "rangeMaps": [
+           {
+             "from": "null",
+             "text": "N/A",
+             "to": "null"
+           }
+           ],
+           "span": 6,
+           "sparkline": {
+             "fillColor": "rgba(31, 118, 189, 0.18)",
+             "full": false,
+             "lineColor": "rgb(31, 120, 193)",
+             "show": false
+           },
+           "targets": [
+           {
+             "expr": "sum(count(kube_pod_status_ready{namespace=\"knative-serving\", pod=~\".*\", condition=\"true\"} == 1))",
+             "intervalFactor": 2,
+             "legendFormat": "",
+             "metric": "etcd_server_has_leader",
+             "refId": "A",
+             "step": 20
+           }
+           ],
+           "thresholds": "",
+           "title": "Up (Knative Serving)",
+           "type": "singlestat",
+           "valueFontSize": "200%",
+           "valueMaps": [
+           {
+             "op": "=",
+             "text": "N/A",
+             "value": "null"
+           }
+           ],
+           "valueName": "avg"
+         },
+         {
+           "cacheTimeout": null,
+           "colorBackground": false,
+           "colorValue": false,
+           "colors": [
+             "rgba(245, 54, 54, 0.9)",
+               "rgba(237, 129, 40, 0.89)",
+               "rgba(50, 172, 45, 0.97)"
+             ],
+           "datasource": "prometheus",
+           "editable": false,
+           "error": false,
+           "format": "none",
+           "gauge": {
+             "maxValue": 100,
+             "minValue": 0,
+             "show": false,
+             "thresholdLabels": false,
+             "thresholdMarkers": true
+           },
+           "id": 29,
+           "interval": null,
+           "isNew": true,
+           "links": [],
+               "mappingType": 1,
+               "mappingTypes": [
+               {
+                 "name": "value to text",
+                 "value": 1
+               },
+               {
+                 "name": "range to text",
+                 "value": 2
+               }
+               ],
+               "maxDataPoints": 100,
+               "nullPointMode": "connected",
+               "nullText": null,
+               "postfix": "",
+               "postfixFontSize": "50%",
+               "prefix": "",
+               "prefixFontSize": "50%",
+               "rangeMaps": [
+               {
+                 "from": "null",
+                 "text": "N/A",
+                 "to": "null"
+               }
+               ],
+               "span": 6,
+               "sparkline": {
+                 "fillColor": "rgba(31, 118, 189, 0.18)",
+                 "full": false,
+                 "lineColor": "rgb(31, 120, 193)",
+                 "show": false
+               },
+               "targets": [
+               {
+                 "expr": "sum(count(kube_pod_status_ready{namespace=\"knative-eventing\", pod=~\".*\", condition=\"true\"} == 1))",
+                 "intervalFactor": 2,
+                 "legendFormat": "",
+                 "metric": "etcd_server_has_leader",
+                 "refId": "A",
+                 "step": 20
+               }
+               ],
+               "thresholds": "",
+               "title": "Up (Knative Eventing)",
+               "type": "singlestat",
+               "valueFontSize": "200%",
+               "valueMaps": [
+               {
+                 "op": "=",
+                 "text": "N/A",
+                 "value": "null"
+               }
+               ],
+               "valueName": "avg"
+             },
+        {
           "aliasColors": {},
           "bars": false,
           "dashLength": 10,
@@ -60,6 +218,7 @@ data:
           },
           "lines": true,
           "linewidth": 1,
+          "span": 6,
           "nullPointMode": "null",
           "percentage": false,
           "pluginVersion": "7.1.0",
@@ -72,10 +231,10 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "knative_serving_ready{namespace=\"$namespace\", service=\"knative-openshift-metrics\"}",
+              "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"serving_status\"}",
               "format": "time_series",
               "interval": "",
-              "legendFormat": "Ready status - 1 is up, 0 is down",
+              "legendFormat": "Serving status - 1 is up, 0 is down",
               "refId": "A"
             }
           ],
@@ -161,16 +320,17 @@ data:
        "pointradius": 2,
        "points": false,
        "renderer": "flot",
+       "span": 6,
        "seriesOverrides": [],
        "spaceLength": 10,
        "stack": false,
        "steppedLine": false,
        "targets": [
          {
-           "expr": "knative_eventing_ready{namespace=\"$namespace\", service=\"knative-openshift-metrics\"}",
+           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"eventing_status\"}",
            "format": "time-series",
            "interval": "",
-           "legendFormat": "Ready status - 1 is up, 0 is down",
+           "legendFormat": "Eventing status - 1 is up, 0 is down",
            "refId": "B"
          }
        ],
@@ -231,7 +391,7 @@ data:
             "multi": false,
             "name": "namespace",
             "options": [],
-            "query": "label_values(knative_serving_ready{namespace!=\"unknown\"}, namespace)",
+            "query": "label_values(knative_up{namespace!=\"unknown\"}, namespace)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,

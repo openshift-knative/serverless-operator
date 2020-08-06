@@ -79,9 +79,9 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 	}
 
 	if instance.Status.IsReady() {
-		common.KnativeEventingReadyG.Set(1)
+		common.KnativeEventingUpG.Set(1)
 	} else {
-		common.KnativeEventingReadyG.Set(0)
+		common.KnativeEventingUpG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }

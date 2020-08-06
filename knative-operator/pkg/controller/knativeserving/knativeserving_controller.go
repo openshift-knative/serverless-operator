@@ -185,9 +185,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 	}
 
 	if instance.Status.IsReady() {
-		common.KnativeServingReadyG.Set(1)
+		common.KnativeServingUpG.Set(1)
 	} else {
-		common.KnativeServingReadyG.Set(0)
+		common.KnativeServingUpG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }
