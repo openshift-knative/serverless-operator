@@ -12,7 +12,7 @@ the CI environment), use these commands:
 
 ```
 $ crc start --cpus=6 --memory 16384
-$ SCALE_UP=-1 make images test-operator
+$ make images test-operator
 ```
 
 ### Requirements
@@ -55,10 +55,6 @@ Use the appropriate make targets or scripts in `hack`:
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
 
-**Note:** If you're using a system that cannot scale up dynamically (like CRC), remember
-to disable the scaleup logic using the `SCALE_UP=-1` environment variable, like
-`SCALE_UP=-1 make install`.
-
 ### Running tests
 
 #### serverless-operator tests
@@ -66,10 +62,6 @@ to disable the scaleup logic using the `SCALE_UP=-1` environment variable, like
 - `make test-unit`: Runs unit tests.
 - `make test-e2e`: Scales, installs and runs E2E tests.
 - `make test-operator`: Runs unit and E2E tests.
-
-**Note:** If you're using a system that cannot scale up dynamically (like CRC), remember
-to disable the scaleup logic using the `SCALE_UP=-1` environment variable, like
-`SCALE_UP=-1 make test-operator`.
 
 #### knative-serving and knative-eventing E2E tests
 
