@@ -15,6 +15,6 @@ RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
 # its config files. Also set that directory as a workdir to be able to create more files.
 ENV USER=nobody
 ENV HOME /home/$USER
-RUN mkdir -p $HOME && chgrp -R 0 $HOME && chmod -R g=u $HOME
+RUN addgroup $USER root && mkdir -p $HOME && chown -R $USER:root $HOME && chmod -R g=u $HOME
 USER $USER
 WORKDIR $HOME
