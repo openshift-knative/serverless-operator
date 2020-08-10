@@ -7,9 +7,9 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
 # Add internal registry to insecure registries.
 RUN printf "[registries.insecure]\nregistries = ['image-registry.openshift-image-registry.svc:5000']" > /etc/containers/registries.conf
 
-# Make /etc accessable by the entire root group.
+# Create a barebones /etc/nsswitch.conf file.
 # Required to avoid "Error: open /etc/nsswitch.conf: permission denied".
-RUN chgrp -R 0 /etc && chmod -R g=u /etc
+RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
 
 # Run as nobody and create a properly owned HOME directory for podman to be able to write
 # its config files. Also set that directory as a workdir to be able to create more files.
