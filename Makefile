@@ -29,7 +29,7 @@ test-operator: test-unit test-e2e
 
 # Run upstream E2E tests including upgrades (Serving, Eventing, ...).
 test-upstream-e2e:
-	./test/upstream-e2e-tests.sh
+	SCALE_UP=$${SCALE_UP:-6} ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
