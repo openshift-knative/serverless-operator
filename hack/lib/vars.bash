@@ -17,8 +17,8 @@ readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.13.0}"
 
 # Adjust these when cutting a new CSV.
 # TODO: Read these from metadata.
-export CURRENT_CSV="serverless-operator.v1.7.2"
-export PREVIOUS_CSV="serverless-operator.v1.7.3"
+export CURRENT_CSV="serverless-operator.v1.7.3"
+export PREVIOUS_CSV="serverless-operator.v1.7.2"
 
 readonly KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
 readonly KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
