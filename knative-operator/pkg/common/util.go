@@ -1,11 +1,13 @@
 package common
 
 import (
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -14,7 +16,7 @@ var Log = logf.Log.WithName("knative").WithName("openshift")
 const ImagePrefix = "IMAGE_"
 
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.
-func Configure(ks *servingv1alpha1.KnativeServing, cm, key, value string) bool {
+func Configure(ks *operatorv1alpha1.KnativeServing, cm, key, value string) bool {
 	if ks.Spec.Config == nil {
 		ks.Spec.Config = map[string]map[string]string{}
 	}
@@ -66,7 +68,7 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 }
 
 // SetOwnerAnnotations is a transformer to set owner annotations on given object
-func SetOwnerAnnotations(instance *servingv1alpha1.KnativeServing) mf.Transformer {
+func SetOwnerAnnotations(instance *operatorv1alpha1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		u.SetAnnotations(map[string]string{
 			ServingOwnerName:      instance.Name,
@@ -74,4 +76,29 @@ func SetOwnerAnnotations(instance *servingv1alpha1.KnativeServing) mf.Transforme
 		})
 		return nil
 	}
+}
+
+func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName string, memory resource.Quantity) error {
+	for i, v := range s.Resources {
+		if v.Container == containerName {
+			if v.Limits == nil {
+				v.Limits = corev1.ResourceList{}
+			}
+			if _, ok := v.Limits[corev1.ResourceMemory]; ok {
+				return nil
+			}
+			v.Limits[corev1.ResourceMemory] = memory
+			s.Resources[i] = v
+			return nil
+		}
+	}
+	s.Resources = append(s.Resources, operatorv1alpha1.ResourceRequirementsOverride{
+		Container: containerName,
+		ResourceRequirements: corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				corev1.ResourceMemory: memory,
+			},
+		},
+	})
+	return nil
 }
