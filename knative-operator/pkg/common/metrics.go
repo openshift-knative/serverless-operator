@@ -8,17 +8,16 @@ import (
 var (
 	knativeUp = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name:        "knative_up",
-			Help:        "Reports if a Knative component is up",
-			ConstLabels: map[string]string{"type": "serving_status"},
+			Name: "knative_up",
+			Help: "Reports if a Knative component is up",
 		},
 		[]string{"type"},
-		)
-	KnativeServingUpG = knativeUp.WithLabelValues("serving_status")
+	)
+	KnativeServingUpG  = knativeUp.WithLabelValues("serving_status")
 	KnativeEventingUpG = knativeUp.WithLabelValues("eventing_status")
 )
 
 func init() {
 	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(KnativeServingUpG, KnativeEventingUpG)
+	metrics.Registry.MustRegister(knativeUp)
 }
