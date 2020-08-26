@@ -6,20 +6,16 @@ import (
 )
 
 var (
-	KnativeServingUpG = prometheus.NewGauge(
+	knativeUp = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name:        "knative_up",
 			Help:        "Reports if a Knative component is up",
 			ConstLabels: map[string]string{"type": "serving_status"},
 		},
-	)
-	KnativeEventingUpG = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name:        "knative_up",
-			Help:        "Reports if a Knative component is up",
-			ConstLabels: map[string]string{"type": "eventing_status"},
-		},
-	)
+		[]string{"type"},
+		)
+	KnativeServingUpG = knativeUp.WithLabelValues("serving_status")
+	KnativeEventingUpG = knativeUp.WithLabelValues("eventing_status")
 )
 
 func init() {

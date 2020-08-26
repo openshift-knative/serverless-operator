@@ -29,7 +29,7 @@ func InstallHealthDashboard(api client.Client) error {
 		logh.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("failed to get namepsace %q: %w", ConfigManagedNamespace, err)
+		return fmt.Errorf("failed to get namespace %q: %w", ConfigManagedNamespace, err)
 	}
 	instance, err := getServerlessOperatorDeployment(api, namespace)
 	if err != nil {

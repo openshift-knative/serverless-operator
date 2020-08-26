@@ -25,7 +25,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client) error {
 		log.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("failed to get namepsace %q: %w", ConfigManagedNamespace, err)
+		return fmt.Errorf("failed to get namespace %q: %w", ConfigManagedNamespace, err)
 	}
 
 	manifest, err := manifest(instance, api)
