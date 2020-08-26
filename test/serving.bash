@@ -10,6 +10,21 @@ function wait_for_knative_serving_ingress_ns_deleted {
   timeout 180 '[[ $(oc get ns knative-serving-ingress --no-headers | wc -l) == 1 ]]' || return 1
 }
 
+function checkout_knative_serving {
+  checkout_repo 'knative.dev/serving' \
+    "${KNATIVE_SERVING_REPO}" \
+    "${KNATIVE_SERVING_VERSION}" \
+    "${KNATIVE_SERVING_BRANCH}"
+  export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
+}
+
+function checkout_knative_serving_operator {
+  checkout_repo 'knative.dev/serving-operator' \
+    "${KNATIVE_SERVING_OPERATOR_REPO}" \
+    "${KNATIVE_SERVING_OPERATOR_VERSION}" \
+    "${KNATIVE_SERVING_OPERATOR_BRANCH}"
+}
+
 function prepare_knative_serving_tests {
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
@@ -29,6 +44,10 @@ function prepare_knative_serving_tests {
 function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
   (
+
+  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
+    checkout_knative_serving
+  fi
   cd "$KNATIVE_SERVING_HOME" || return $?
 
   prepare_knative_serving_tests || return $?
@@ -67,6 +86,8 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   print_test_result ${failed}
 
+  remove_temporary_gopath
+
   return $failed
   )
 }
@@ -79,6 +100,9 @@ function run_knative_serving_rolling_upgrade_tests {
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
+  if [[ -z ${KNATIVE_SERVING_HOME+x} ]]; then
+    checkout_knative_serving
+  fi
   cd "$KNATIVE_SERVING_HOME" || return $?
 
   prepare_knative_serving_tests || return $?
@@ -167,4 +191,26 @@ function run_knative_serving_rolling_upgrade_tests {
 
   return 0
   )
+}
+
+function run_knative_serving_operator_tests {
+   logger.info 'Running Serving operator tests'
+   (
+   local exitstatus=0
+   checkout_knative_serving_operator
+
+   export TEST_NAMESPACE="${SERVING_NAMESPACE}"
+
+   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+     --kubeconfig "$KUBECONFIG" \
+     || exitstatus=5$? && true
+
+   print_test_result ${exitstatus}
+
+   wait_for_knative_serving_ingress_ns_deleted || return 1
+
+   remove_temporary_gopath
+
+   return $exitstatus
+   )
 }

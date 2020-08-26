@@ -13,7 +13,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/
 
 # Adjust these when upgrading the knative versions.
 readonly KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.13.3}"
+readonly KNATIVE_SERVING_OPERATOR_VERSION="${KNATIVE_SERVING_OPERATOR_VERSION:-v0.13.3}"
 readonly KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.13.0}"
+readonly KNATIVE_EVENTING_OPERATOR_VERSION="${KNATIVE_EVENTING_OPERATOR_VERSION:-v0.13.3}"
 
 # Adjust these when cutting a new CSV.
 # TODO: Read these from metadata.
@@ -21,13 +23,13 @@ export CURRENT_CSV="serverless-operator.v1.7.3"
 export PREVIOUS_CSV="serverless-operator.v1.7.2"
 
 readonly KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
+readonly KNATIVE_SERVING_OPERATOR_BRANCH="${KNATIVE_SERVING_OPERATOR_BRANCH:-openshift-${KNATIVE_SERVING_OPERATOR_VERSION}}"
 readonly KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
+readonly KNATIVE_SERVING_OPERATOR_REPO="${KNATIVE_SERVING_OPERATOR_REPO:-"https://github.com/openshift-knative/serving-operator.git"}"
 readonly KNATIVE_EVENTING_BRANCH="${KNATIVE_EVENTING_BRANCH:-release-${KNATIVE_EVENTING_VERSION}}"
+readonly KNATIVE_EVENTING_OPERATOR_BRANCH="${KNATIVE_EVENTING_OPERATOR_BRANCH:-openshift-${KNATIVE_EVENTING_OPERATOR_VERSION}}"
 readonly KNATIVE_EVENTING_REPO="${KNATIVE_EVENTING_REPO:-"https://github.com/openshift/knative-eventing.git"}"
-
-# Directories below are filled with source code by ci-operator
-readonly KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
-readonly KNATIVE_EVENTING_HOME="${GOPATH}/src/knative.dev/eventing"
+readonly KNATIVE_EVENTING_OPERATOR_REPO="${KNATIVE_EVENTING_OPERATOR_REPO:-"https://github.com/openshift-knative/eventing-operator.git"}"
 
 readonly CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.yaml}"
 readonly DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
