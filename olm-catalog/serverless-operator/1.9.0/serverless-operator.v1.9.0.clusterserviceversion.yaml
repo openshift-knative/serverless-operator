@@ -358,7 +358,7 @@ spec:
                     - name: IMAGE_DISPATCHER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-dispatcher
                     - name: IMAGE_KN_CLI_ARTIFACTS
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:kn-cli-artifacts
       - name: knative-openshift-ingress
         spec:
           replicas: 1
