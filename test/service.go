@@ -16,7 +16,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func Service(name, namespace, image string) *servingv1.Service {
+func Service(name, namespace, image string, annotations map[string]string) *servingv1.Service {
 	s := &servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -25,6 +25,9 @@ func Service(name, namespace, image string) *servingv1.Service {
 		Spec: servingv1.ServiceSpec{
 			ConfigurationSpec: servingv1.ConfigurationSpec{
 				Template: servingv1.RevisionTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: annotations,
+					},
 					Spec: servingv1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							Containers: []corev1.Container{{
@@ -57,7 +60,7 @@ func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.S
 }
 
 func CreateService(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
-	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(Service(name, namespace, image))
+	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(Service(name, namespace, image, nil))
 	if err != nil {
 		return nil, err
 	}
