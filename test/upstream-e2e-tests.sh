@@ -11,7 +11,6 @@ if [ -n "$OPENSHIFT_CI" ]; then
 fi
 debugging.setup
 
-scale_up_workers || exit $?
 create_namespaces || exit $?
 
 failed=0
@@ -34,7 +33,7 @@ fi
 # Run upstream knative serving & eventing tests
 if [[ $TEST_KNATIVE_E2E == true ]]; then
   # Need 6 worker nodes when running upstream.
-  SCALE_UP=6
+  SCALE_UP=6 scale_up_workers || failed=10
   (( !failed )) && ensure_serverless_installed || failed=7
   (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
   (( !failed )) && upstream_knative_eventing_e2e || failed=9
