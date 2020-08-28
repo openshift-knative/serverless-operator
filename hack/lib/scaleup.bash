@@ -8,6 +8,11 @@ function scale_up_workers {
     return 0
   fi
 
+  if ! cluster_scalable; then
+    logger.info 'Skipping scaling up, the cluster is not scalable.'
+    return 0
+  fi
+
   logger.debug 'Get the machineset with most replicas'
   current_total="$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')"
   az_total="$(oc get machineset -n openshift-machine-api --no-headers|wc -l)"
@@ -51,4 +56,10 @@ function wait_until_machineset_scales_up {
   echo -e "\n\n"
   logger.error "Timeout waiting for scale up to $1 replicas"
   return 1
+}
+
+function cluster_scalable {
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
+    return 1
+  fi
 }
