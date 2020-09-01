@@ -62,6 +62,11 @@ func TestKnativeServing(t *testing.T) {
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range []string{"3scale-kourier-control", "3scale-kourier-gateway"} {
+			// Workaround for https://issues.redhat.com/browse/SRVCOM-1008 - wait for Kourier deployments to
+			// be ready before checking their scales.
+			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace+"-ingress"); err != nil {
+				t.Fatal("Failed", err)
+			}
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
