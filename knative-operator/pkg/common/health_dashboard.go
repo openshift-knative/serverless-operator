@@ -3,15 +3,13 @@ package common
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"os"
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -31,11 +29,11 @@ func InstallHealthDashboard(api client.Client) error {
 	} else if err != nil {
 		return fmt.Errorf("failed to get namespace %q: %w", ConfigManagedNamespace, err)
 	}
-	instance, err := getServerlessOperatorDeployment(api, namespace)
+	deploymentName, err := getOperatorDeploymentName()
 	if err != nil {
 		return err
 	}
-	manifest, err := manifest(instance, api, namespace)
+	manifest, err := manifest(api, deploymentName, namespace)
 	if err != nil {
 		return fmt.Errorf("failed to load dashboard manifest: %w", err)
 	}
@@ -47,20 +45,13 @@ func InstallHealthDashboard(api client.Client) error {
 	return nil
 }
 
-// manifest returns dashboard deploymnet resources manifest
-func manifest(instance *appsv1.Deployment, apiclient client.Client, namespace string) (mf.Manifest, error) {
+// manifest returns dashboard deployment resources manifest
+func manifest(apiclient client.Client, deploymentName string, namespace string) (mf.Manifest, error) {
 	manifest, err := mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(logh.WithName("mf")))
 	if err != nil {
 		return mf.Manifest{}, fmt.Errorf("failed to read dashboard manifest: %w", err)
 	}
-
-	instance.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "apps",
-		Version: "v1",
-		Kind:    "Deployment",
-	})
-	instance.SetNamespace(namespace)
-	transforms := []mf.Transformer{setOwnerAnnotations(instance), mf.InjectNamespace(ConfigManagedNamespace)}
+	transforms := []mf.Transformer{setOwnerAnnotations(deploymentName, namespace), mf.InjectNamespace(ConfigManagedNamespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return mf.Manifest{}, fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest %w", err)
 	}
@@ -80,12 +71,12 @@ func manifestPath() string {
 	return path
 }
 
-// SetOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *appsv1.Deployment) mf.Transformer {
+// SetOwnerAnnotations is a transformer to set owner annotations on a given object
+func setOwnerAnnotations(name string, namespace string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		u.SetAnnotations(map[string]string{
-			ServerlessOperatorName:      instance.Name,
-			ServerlessOperatorNamespace: instance.Namespace,
+			ServerlessOperatorOwnerName:      name,
+			ServerlessOperatorOwnerNamespace: namespace,
 		})
 		return nil
 	}

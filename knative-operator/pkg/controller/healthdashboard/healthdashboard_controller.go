@@ -39,8 +39,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
 		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.ServerlessOperatorNamespace]
-		ownerName := annotations[common.ServerlessOperatorName]
+		ownerNamespace := annotations[common.ServerlessOperatorOwnerNamespace]
+		ownerName := annotations[common.ServerlessOperatorOwnerName]
 		if ownerNamespace != "" && ownerName != "" {
 			return []reconcile.Request{{
 				NamespacedName: types.NamespacedName{Namespace: obj.Meta.GetNamespace(), Name: obj.Meta.GetName()},
@@ -48,7 +48,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	err = c.Watch(&source.Kind{Type: &v1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests}, skipCreatePredicats{})
+	err = c.Watch(&source.Kind{Type: &v1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests}, skipCreatePredicate{})
 	if err != nil {
 		return err
 	}
@@ -79,11 +79,11 @@ func (r *ReconcileHealthDashboard) Reconcile(request reconcile.Request) (reconci
 	return reconcile.Result{}, nil
 }
 
-type skipCreatePredicats struct {
+type skipCreatePredicate struct {
 	predicate.Funcs
 }
 
 // since operator is responsible to create the dashboard no need to process it
-func (skipCreatePredicats) Create(e event.CreateEvent) bool {
+func (skipCreatePredicate) Create(e event.CreateEvent) bool {
 	return false
 }

@@ -1,7 +1,7 @@
 package common
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
