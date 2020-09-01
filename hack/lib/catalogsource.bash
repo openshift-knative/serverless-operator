@@ -75,7 +75,8 @@ spec:
         - |-
           podman login -u $pull_user -p $token --tls-verify=false image-registry.openshift-image-registry.svc:5000
           mkdir -p /database && \
-          /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2
+          /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2 && \
+          /bin/opm registry add                         -d /database/index.db --mode=replaces -b registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle && \
           /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d /database/index.db -p 50051
 EOF
