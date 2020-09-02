@@ -77,7 +77,7 @@ function downstream_serving_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  # Add system-namespace labels for TestNetworkPolicy.
+  # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
   add_systemnamespace_label
 
   local failed=0
