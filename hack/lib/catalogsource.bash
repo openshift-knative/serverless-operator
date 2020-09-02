@@ -45,10 +45,8 @@ function install_catalogsource {
   oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
 
   # Install the index deployment.
-  # TODO: Fix the --skip-tls bugs in operator-registry to not have to rely on a self-built
-  # image here. This has been built from
-  # https://github.com/markusthoemmes/operator-registry/tree/hack-ignore-tls.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
+  # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,7 +62,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: docker.io/markusthoemmes/serverless-index:registry10
+        image: quay.io/openshift-knative/index
         ports:
         - containerPort: 50051
           name: grpc
@@ -83,12 +81,11 @@ spec:
         - /bin/sh
         - -c
         - |-
-          podman login -u $pull_user -p $token --tls-verify=false image-registry.openshift-image-registry.svc:5000
-          mkdir -p /database && \
-          /bin/opm registry add                         -d /database/index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2 && \
-          /bin/opm registry add                         -d /database/index.db --mode=replaces -b registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle && \
-          /bin/opm registry add --container-tool=podman -d /database/index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
-          /bin/opm registry serve -d /database/index.db -p 50051
+          podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
+          /bin/opm registry add                         -d index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2 && \
+          /bin/opm registry add                         -d index.db --mode=replaces -b registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle && \
+          /bin/opm registry add --container-tool=podman -d index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry serve -d index.db -p 50051
 EOF
 
   # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
@@ -96,7 +93,7 @@ EOF
   indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
 
   # Install the catalogsource.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
