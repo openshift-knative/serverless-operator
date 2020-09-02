@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 
+function ensure_catalogsource_installed {
+  logger.info 'Check if CatalogSource is installed'
+  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
+    logger.success 'CatalogSource is already installed.'
+    return 0
+  fi
+  install_catalogsource
+}
+
 function install_catalogsource {
   logger.info "Installing CatalogSource"
+
   local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
