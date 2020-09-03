@@ -41,9 +41,6 @@ function install_catalogsource {
   # Undo potential changes to the CSV to not pollute the repository.
   mv "${rootdir}/bkp.yaml" "$csv"
 
-  # HACK: Allow to run the index pod as root so it can create the necessary directories.
-  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
-
   # Install the index deployment.
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
