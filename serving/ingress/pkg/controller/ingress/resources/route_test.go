@@ -91,11 +91,9 @@ func TestMakeRoute(t *testing.T) {
 			want: []*routev1.Route{},
 		},
 		{
-			name: "valid but cluster-local",
-			ingress: ingress(withLocalVisibility, withRules(
-				rule(withHosts([]string{localDomain, externalDomain}))),
-			),
-			want: []*routev1.Route{},
+			name:    "valid but cluster-local",
+			ingress: ingress(withRules(rule(withHosts([]string{localDomain, externalDomain}), withLocalVisibilityRule))),
+			want:    []*routev1.Route{},
 		},
 		{
 			name: "valid, with timeout",
@@ -271,9 +269,6 @@ func ingress(options ...ingressOption) *networkingv1alpha1.Ingress {
 			Name:      "ingress",
 			UID:       uid,
 		},
-		Spec: networkingv1alpha1.IngressSpec{
-			Visibility: networkingv1alpha1.IngressVisibilityExternalIP,
-		},
 		Status: networkingv1alpha1.IngressStatus{
 			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
 				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
@@ -319,10 +314,6 @@ func withDisabledAnnotation(ing *networkingv1alpha1.Ingress) {
 	}
 	annos[DisableRouteAnnotation] = ""
 	ing.SetAnnotations(annos)
-}
-
-func withLocalVisibility(ing *networkingv1alpha1.Ingress) {
-	ing.Spec.Visibility = networkingv1alpha1.IngressVisibilityClusterLocal
 }
 
 func withLBInternalDomain(domain string) ingressOption {
