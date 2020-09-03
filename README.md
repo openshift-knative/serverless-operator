@@ -63,6 +63,7 @@ for example.
 
 - `make test-unit`: Runs unit tests.
 - `make test-e2e`: Scales, installs and runs E2E tests.
+- `make install-mesh test-e2e`: Scales, installs and runs E2E tests, including ServiceMesh integration tests
 - `make test-operator`: Runs unit and E2E tests.
 
 #### knative-serving and knative-eventing E2E tests
@@ -247,5 +248,5 @@ spec:
 To uninstall service mesh operator, run `make uninstall-mesh`.
 
 ```
-make install-mesh 
+make uninstall-mesh
 ```

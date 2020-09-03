@@ -12,7 +12,7 @@ install:
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
-install-mesh: install
+install-mesh:
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 
 uninstall-mesh:
