@@ -117,19 +117,6 @@ cluster and pre-installed Serverless):
 This repository contains the metadata required by the
 [Operator Lifecycle Manager](https://github.com/operator-framework/operator-lifecycle-manager)
 
-### Create a CatalogSource
-
-The [catalog.sh](hack/catalog.sh) script should yield a valid `ConfigMap` and
-`CatalogSource` (given you have a setup as described in the development section
-above) comprised of the `ClusterServiceVersions`, `CustomResourceDefinitions`,
-and package manifest in the bundle beneath [olm-catalog/](olm-catalog/). You
-should apply its output in the namespace where the other `CatalogSources` live
-on your cluster, e.g. `openshift-marketplace`:
-
-```
-./hack/catalog.sh | oc apply -n openshift-marketplace -f -
-```
-
 ### Create a Subscription
 
 To install the operator, create a subscription:
