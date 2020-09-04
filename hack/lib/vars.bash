@@ -11,13 +11,14 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
+# Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.15.2}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.15.2}"
 
-export KNATIVE_SERVING_BRANCH="${KNATIVE_SERVING_BRANCH:-release-${KNATIVE_SERVING_VERSION}}"
-export KNATIVE_SERVING_REPO="${KNATIVE_SERVING_REPO:-"https://github.com/openshift/knative-serving.git"}"
-export KNATIVE_EVENTING_BRANCH="${KNATIVE_EVENTING_BRANCH:-release-${KNATIVE_EVENTING_VERSION}}"
-export KNATIVE_EVENTING_REPO="${KNATIVE_EVENTING_REPO:-"https://github.com/openshift/knative-eventing.git"}"
+# Adjust these when cutting a new CSV.
+# TODO: Read these from metadata.
+export CURRENT_CSV="serverless-operator.v1.9.0"
+export PREVIOUS_CSV="serverless-operator.v1.8.0"
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
@@ -48,7 +49,7 @@ export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 
 export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-export OLM_CHANNEL="${OLM_CHANNEL:-"preview-4.6"}"
+export OLM_CHANNEL="${OLM_CHANNEL:-"4.5"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
