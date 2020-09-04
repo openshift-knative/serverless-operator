@@ -29,6 +29,8 @@ import (
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/controller/ingress/resources"
 )
 
+const MultiCloudRoutingAnnotation = "serving.knative.openshift.io/multi-cloud-routing"
+
 var baseLogger *zap.SugaredLogger
 
 func init() {
@@ -154,6 +156,19 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 
 	if ing.GetDeletionTimestamp() != nil {
 		return r.reconcileDeletion(ctx, ing)
+	}
+
+	if ing.Annotations[MultiCloudRoutingAnnotation] != "" {
+		svc, routes := resources.MakeSkupperResources(ing)
+		if err := r.client.Create(ctx, svc); err != nil && !errors.IsAlreadyExists(err) {
+			return fmt.Errorf("failed to create skupper svc :%w", err)
+		}
+		for _, route := range routes {
+			if err := r.reconcileRoute(ctx, ing, route); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
