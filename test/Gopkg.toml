@@ -39,15 +39,15 @@ required = [
 
 [[constraint]]
   name = "knative.dev/test-infra"
-  branch = "release-0.14"
+  branch = "release-0.15"
 
 [[constraint]]
   name = "knative.dev/serving"
-  branch = "release-0.14"
+  branch = "release-0.15"
 
 [[constraint]]
   name = "knative.dev/pkg"
-  branch = "release-0.14"
+  branch = "release-0.15"
 
 [[constraint]]
   name = "github.com/operator-framework/operator-lifecycle-manager"
