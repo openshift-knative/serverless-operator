@@ -931,7 +931,7 @@
 
 [[projects]]
   branch = "release-0.15"
-  digest = "1:a3b2b70b1fbda6e4fe6ade1a73b9e7594e06cbca9b61eab3a5d7e73b3f282eac"
+  digest = "1:c59d2b2973dfcd9870b6dc0884cc9650cd81198656e67fdb2e5c14490b2869c6"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -946,6 +946,7 @@
     "profiling",
     "ptr",
     "test",
+    "test/helpers",
     "test/ingress",
     "test/logging",
     "test/monitoring",
@@ -1019,6 +1020,7 @@
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
@@ -1034,6 +1036,8 @@
     "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/test",
+    "knative.dev/pkg/test/helpers",
+    "knative.dev/pkg/test/spoof",
     "knative.dev/serving/pkg/apis/autoscaling",
     "knative.dev/serving/pkg/apis/serving",
     "knative.dev/serving/pkg/apis/serving/v1",

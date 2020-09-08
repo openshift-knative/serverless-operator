@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	pkgTest "knative.dev/pkg/test"
+	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	"knative.dev/serving/pkg/apis/serving"
@@ -383,7 +384,11 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 	// Istio 1.1 and earlier lack "jwks" option, only "jwksUri", so we need to host it on some URL
 	// We'll misuse the "hello-openshift" image with the JWKS file defined as the RESPONSE env, and deploy this as a ksvc
-	jwksKsvc := test.Service("jwks", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
+
+	// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
+	// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
+	// hence the random suffix for the jwks ksvc.
+	jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, core.EnvVar{
 		Name:  "RESPONSE",
 		Value: jwks,
