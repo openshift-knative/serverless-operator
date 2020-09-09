@@ -773,8 +773,8 @@
   revision = "581e00157fb1a0435d4fac54a52d1ca1e481d60e"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:b5fc33a7242f3d7677e8aadda24a459f2bec2954c1178b1e32e020eb3f6ef993"
+  branch = "release-0.15"
+  digest = "1:273c011694d401aab3920105d73ce884fb2bea27ffc467c9b4c397a9811f4f22"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -791,11 +791,11 @@
     "tracker",
   ]
   pruneopts = "NT"
-  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
+  revision = "dfb81cf04a7c0343c02bd9e7f543eb4c07285439"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:34859eab9b3146186546f6dde687467d82feb7f06d96863be853a5a90aa09f4d"
+  branch = "release-0.15"
+  digest = "1:39f6c05e83b3f1dea80619262975b157eb5c1d8662b7e97be06c6a9e8f14e381"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -807,7 +807,7 @@
     "pkg/network",
   ]
   pruneopts = "NT"
-  revision = "8c65d713bb9e69d9f48df1348217e41bb26c6afe"
+  revision = "f95f38bc0dfc8fe52eff76aad5f123dd1e8461d8"
 
 [[projects]]
   digest = "1:fdf6c6bbb39a27ec36f40aefa6dd3be37475210bbac2a808ddd7cc84715664f8"

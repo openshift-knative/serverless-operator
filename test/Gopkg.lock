@@ -930,8 +930,8 @@
   revision = "43fce8e820eda5dc1c15fbff2afb500d03886c0b"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:d5b530238d820e67563f8c6e3ca2bccfe8bcdbe168545cbac81b9ad691bb9c5b"
+  branch = "release-0.15"
+  digest = "1:a3b2b70b1fbda6e4fe6ade1a73b9e7594e06cbca9b61eab3a5d7e73b3f282eac"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -954,11 +954,11 @@
     "tracker",
   ]
   pruneopts = "NUT"
-  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
+  revision = "dfb81cf04a7c0343c02bd9e7f543eb4c07285439"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:6b7c92118e70948390a751d134cbcdb34dde745cdff54a68b2e27b5cf23bbb04"
+  branch = "release-0.15"
+  digest = "1:8dc4fab31b16c3d3569cfdf7ee7e13ac0a7e32f3bb3f28c37b11104292342208"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -980,18 +980,18 @@
     "pkg/client/clientset/versioned/typed/serving/v1beta1",
   ]
   pruneopts = "NUT"
-  revision = "4f12c1fec52f6aaa3a383fa0164c3cfa7c4faa8d"
+  revision = "f95f38bc0dfc8fe52eff76aad5f123dd1e8461d8"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:50482e6fd500cf50c4a29d640cda026206145c6716dff72e4368a5e57fdb7095"
+  branch = "release-0.15"
+  digest = "1:5b6f7bfb020127ddf61b50eeead0fc65e5884d133fff08314ebb964617c6ce69"
   name = "knative.dev/test-infra"
   packages = [
     "scripts",
     "tools/dep-collector",
   ]
   pruneopts = "UT"
-  revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
+  revision = "554a95a37986be595fa4ecadfd05cef7e9fb0fd1"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
@@ -1015,6 +1015,7 @@
     "github.com/pkg/errors",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/networking/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
@@ -1033,6 +1034,8 @@
     "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/test",
+    "knative.dev/serving/pkg/apis/autoscaling",
+    "knative.dev/serving/pkg/apis/serving",
     "knative.dev/serving/pkg/apis/serving/v1",
     "knative.dev/serving/pkg/client/clientset/versioned",
     "knative.dev/test-infra/scripts",
