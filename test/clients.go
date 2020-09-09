@@ -48,56 +48,56 @@ type Clients struct {
 // and register with the Context
 type CleanupFunc func() error
 
-var contexts []*Context
+var clients []*Clients
 
-// setupContextsOnce creates context objects for all kubeconfigs passed from the command line
-func setupContextsOnce(t *testing.T) {
-	if len(contexts) == 0 {
+// setupClientsOnce creates Clients for all kubeconfigs passed from the command line
+func setupClientsOnce(t *testing.T) {
+	if len(clients) == 0 {
 		kubeconfigs := strings.Split(Flags.Kubeconfigs, ",")
 		for _, cfg := range kubeconfigs {
-			clients, err := NewClients(cfg)
+			clientset, err := NewClients(cfg)
 			if err != nil {
 				t.Fatalf("Couldn't initialize clients for config %s: %v", cfg, err)
 			}
-			ctx := &Context{
-				T:       t,
-				Clients: clients,
-			}
-			contexts = append(contexts, ctx)
+			clients = append(clients, clientset)
 		}
 	}
 }
 
 // SetupClusterAdmin returns context for Cluster Admin user
 func SetupClusterAdmin(t *testing.T) *Context {
-	setupContextsOnce(t)
+	setupClientsOnce(t)
 	return contextAtIndex(0, "ClusterAdmin", t)
 }
 
 // SetupProjectAdmin returns context for Project Admin user
 func SetupProjectAdmin(t *testing.T) *Context {
-	setupContextsOnce(t)
+	setupClientsOnce(t)
 	return contextAtIndex(1, "ProjectAdmin", t)
 }
 
 // SetupEdit returns context for user with Edit role
 func SetupEdit(t *testing.T) *Context {
-	setupContextsOnce(t)
+	setupClientsOnce(t)
 	return contextAtIndex(2, "Edit", t)
 }
 
 // SetupView returns context for user with View role
 func SetupView(t *testing.T) *Context {
-	setupContextsOnce(t)
+	setupClientsOnce(t)
 	return contextAtIndex(3, "View", t)
 }
 
 func contextAtIndex(i int, role string, t *testing.T) *Context {
-	if len(contexts) < i+1 {
+	if len(clients) < i+1 {
 		t.Fatalf("kubeconfig for user with %s role not present", role)
 	}
-	contexts[i].Name = role
-	return contexts[i]
+
+	return &Context{
+		Name:    role,
+		T:       t,
+		Clients: clients[i],
+	}
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
