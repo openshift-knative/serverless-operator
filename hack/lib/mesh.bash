@@ -5,6 +5,8 @@ mesh_deployments="elasticsearch-operator istio-operator jaeger-operator kiali-op
 
 function install_mesh {
   deploy_servicemesh_operators
+  deploy_servicemesh_namespace
+  deploy_servicemesh_example_certificates
   deploy_smcp
   add_smmr
 }
@@ -13,6 +15,7 @@ function uninstall_mesh {
   remove_smmr
 
   undeploy_smcp
+  undeploy_servicemesh_example_certificates
   undeploy_servicemesh_operators
 }
 
@@ -74,9 +77,24 @@ EOF
 }
 
 
-function deploy_smcp {
+function deploy_servicemesh_namespace {
+  oc create namespace istio-system -o yaml --dry-run | oc apply -f -
+}
+
+# This is used to showcase custom domains with TLS, and by TestKsvcWithServiceMeshCustomTlsDomain
+function deploy_servicemesh_example_certificates {
   oc create namespace istio-system -o yaml --dry-run | oc apply -f -
 
+  openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=Example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+  openssl req -out custom.example.com.csr -newkey rsa:2048 -nodes -keyout custom.example.com.key -subj "/CN=custom-ksvc-domain.example.com/O=Example Inc."
+  openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in custom.example.com.csr -out custom.example.com.crt
+
+  oc create -n istio-system secret tls custom.example.com --key=custom.example.com.key --cert=custom.example.com.crt -o yaml --dry-run | oc apply -f -
+  oc create -n istio-system secret tls example.com --key=example.com.key --cert=example.com.crt -o yaml --dry-run | oc apply -f -
+}
+
+
+function deploy_smcp {
   cat <<EOF | oc apply -f - || return $?
 apiVersion: maistra.io/v1
 kind: ServiceMeshControlPlane
@@ -100,7 +118,10 @@ spec:
       istio-egressgateway:
         enabled: false
       istio-ingressgateway:
-        enabled: false
+        secretVolumes:
+        - mountPath: /custom.example.com
+          name: custom-example-com
+          secretName: custom.example.com
 
     mixer:
       policy:
@@ -187,4 +208,9 @@ function undeploy_smcp {
 function undeploy_servicemesh_operators {
   logger.info "Deleting subscriptions"
   oc delete subscription -n openshift-operators servicemeshoperator kiali-ossm jaeger-product elasticsearch-operator --ignore-not-found
+}
+
+function undeploy_servicemesh_example_certificates {
+  oc delete -n istio-system secret example.com --ignore-not-found
+  oc delete -n istio-system secret custom.example.com --ignore-not-found
 }
