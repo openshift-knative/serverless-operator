@@ -292,6 +292,12 @@ spec:
                   env:
                     - name: WATCH_NAMESPACE
                       value: ""
+                    - name: NAMESPACE
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.namespace
+                    - name: DEPLOYMENT_NAME
+                      value: "knative-openshift"
                     - name: POD_NAME
                       valueFrom:
                         fieldRef:
