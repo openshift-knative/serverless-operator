@@ -156,37 +156,30 @@ func (r *ReconcileIngress) ReconcileIngress(ctx context.Context, ing *networking
 		return r.reconcileDeletion(ctx, ing)
 	}
 
-	exposed := ing.Spec.Visibility == networkingv1alpha1.IngressVisibilityExternalIP
-	if exposed {
-		existing, err := r.routeList(ctx, ing)
-		if err != nil {
-			return fmt.Errorf("failed to list routes: %w", err)
-		}
-		existingMap := make(map[string]routev1.Route, len(existing.Items))
-		for _, route := range existing.Items {
-			existingMap[route.Name] = route
-		}
+	existing, err := r.routeList(ctx, ing)
+	if err != nil {
+		return fmt.Errorf("failed to list routes: %w", err)
+	}
+	existingMap := make(map[string]routev1.Route, len(existing.Items))
+	for _, route := range existing.Items {
+		existingMap[route.Name] = route
+	}
 
-		routes, err := resources.MakeRoutes(ing)
-		if err != nil {
-			logger.Warnf("Failed to generate routes from ingress %v", err)
-			// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
-			return nil
+	routes, err := resources.MakeRoutes(ing)
+	if err != nil {
+		logger.Warnf("Failed to generate routes from ingress %v", err)
+		// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
+		return nil
+	}
+	for _, route := range routes {
+		if err := r.reconcileRoute(ctx, ing, route); err != nil {
+			return err
 		}
-		for _, route := range routes {
-			if err := r.reconcileRoute(ctx, ing, route); err != nil {
-				return err
-			}
-			delete(existingMap, route.Name)
-		}
-		// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
-		for _, rt := range existingMap {
-			if err := r.deleteRoute(ctx, &rt); err != nil {
-				return err
-			}
-		}
-	} else {
-		if err := r.deleteRoutes(ctx, ing); err != nil {
+		delete(existingMap, route.Name)
+	}
+	// If routes remains in existingMap, it must be obsoleted routes. Clean them up.
+	for _, rt := range existingMap {
+		if err := r.deleteRoute(ctx, &rt); err != nil {
 			return err
 		}
 	}

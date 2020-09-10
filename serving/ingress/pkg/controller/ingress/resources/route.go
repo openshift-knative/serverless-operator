@@ -29,12 +29,11 @@ var ErrNoValidLoadbalancerDomain = errors.New("unable to find Ingress LoadBalanc
 func MakeRoutes(ci *networkingv1alpha1.Ingress) ([]*routev1.Route, error) {
 	routes := []*routev1.Route{}
 
-	// Skip all route creation for cluster-local ingresses.
-	if ci.Spec.Visibility == networkingv1alpha1.IngressVisibilityClusterLocal {
-		return routes, nil
-	}
-
 	for _, rule := range ci.Spec.Rules {
+		// Skip route creation for cluster-local visibility.
+		if rule.Visibility == networkingv1alpha1.IngressVisibilityClusterLocal {
+			continue
+		}
 		for _, host := range rule.Hosts {
 			// Ignore domains like myksvc.myproject.svc.cluster.local
 			// TODO: This also ignores any top-level vanity domains
