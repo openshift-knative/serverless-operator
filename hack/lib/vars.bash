@@ -17,8 +17,8 @@ export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.15.2}"
 
 # Adjust these when cutting a new CSV.
 # TODO: Read these from metadata.
-export CURRENT_CSV="serverless-operator.v1.9.0"
-export PREVIOUS_CSV="serverless-operator.v1.8.0"
+export CURRENT_CSV="serverless-operator.v1.10.0"
+export PREVIOUS_CSV="serverless-operator.v1.9.0"
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"

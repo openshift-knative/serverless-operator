@@ -535,5 +535,5 @@ spec:
       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-storage-version-migration
     - name: IMAGE_storage-version-migration-eventing__migrate
       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-storage-version-migration
-  replaces: serverless-operator.v1.8.0
-  version: 1.9.0
+  replaces: serverless-operator.v1.9.0
+  version: 1.10.0
