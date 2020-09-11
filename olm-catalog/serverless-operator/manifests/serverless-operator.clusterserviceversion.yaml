@@ -33,8 +33,8 @@ metadata:
       Provides a collection of API's based on Knative to support deploying and serving
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
-    support: Red Hat
-  name: serverless-operator.v1.9.0
+    support: Red Hat, Inc.
+  name: serverless-operator.v1.10.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
