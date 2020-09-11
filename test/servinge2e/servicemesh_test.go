@@ -604,7 +604,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 	}
 }
 
-func lookupOpenShiftRouterIP(ctx *test.Context) []net.IP {
+func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
 	aux := test.Service("aux", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	aux = withServiceReadyOrFail(ctx, aux)
@@ -617,7 +617,8 @@ func lookupOpenShiftRouterIP(ctx *test.Context) []net.IP {
 		ctx.T.Fatalf("No IP address found for %s", aux.Status.URL.Host)
 	}
 
-	return ips
+	ctx.T.Logf("Resolved the following IPs %v as the OpenShift Router address and use %v for test", ips, ips[0])
+	return ips[0]
 }
 
 func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
@@ -683,8 +684,8 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 
 	// Do a spoofed HTTP request via the OpenShiftRouter
 	// Note, here we go via the OpenShift Router IP address, not kourier, as usual with the "spoof" client.
-	ips := lookupOpenShiftRouterIP(caCtx)
-	sc, err := spoof.New(caCtx.Clients.Kube, t.Logf, customDomain, false, ips[0].String(), time.Second, time.Minute)
+	routerIp := lookupOpenShiftRouterIP(caCtx)
+	sc, err := spoof.New(caCtx.Clients.Kube, t.Logf, customDomain, false, routerIp.String(), time.Second, time.Minute)
 	if err != nil {
 		t.Fatalf("Error creating a Spoofing Client: %v", err)
 	}
@@ -764,7 +765,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 		t.Skipf("Secret %q in %q doesn't exist. Use \"make install-mesh\" for ServiceMesh setup.", caSecretName, serviceMeshNamespace)
 	}
 	if err != nil {
-		t.Fatalf("Error reading Secret %s from %s: %v", caSecretName, serviceMeshNamespace, err)
+		t.Fatalf("Error reading Secret %s in %s: %v", caSecretName, serviceMeshNamespace, err)
 	}
 
 	// Extract the certificate from the secret and create a CertPool
@@ -837,18 +838,15 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 
 	// Do a spoofed HTTP request.
 	// Note, here we go via the OpenShift Router IP address, not kourier as usual with the "spoof" client.
-	ips := lookupOpenShiftRouterIP(caCtx)
-	ip := ips[0].String()
-	t.Logf("Using the following IP address as the OpenShift Router address: %s", ips[0].String())
-
-	sc, err := newSpoofClientWithTls(caCtx, customDomain, ip, certPool)
+	routerIp := lookupOpenShiftRouterIP(caCtx)
+	sc, err := newSpoofClientWithTls(caCtx, customDomain, routerIp.String(), certPool)
 	if err != nil {
 		t.Fatalf("Error creating a Spoofing Client: %v", err)
 	}
 
 	req, err := http.NewRequest(http.MethodGet, "https://"+customDomain, nil)
 	if err != nil {
-		t.Fatalf("Error creating an HTTP GET request: %v", err)
+		t.Fatalf("Error creating an HTTPS GET request: %v", err)
 	}
 
 	// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
@@ -859,6 +857,24 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 
 	const expectedResponse = "Hello OpenShift!"
 	if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
-		t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
+		t.Fatalf("Expecting an HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
+	}
+
+	// Verify we cannot connect via plain HTTP (as the Route has InsecureEdgeTerminationPolicyNone)
+	// In this case we expect a 503 response from the OpenShift Router.
+
+	// As the router already returned an OK response for the HTTPS request, we assume the route is already
+	// reconciled and its 503 response really means it won't serve insecure HTTP ever.
+	req, err = http.NewRequest(http.MethodGet, "http://"+customDomain, nil)
+	if err != nil {
+		t.Fatalf("Error creating an HTTP GET request: %v", err)
+	}
+	resp, err = sc.Do(req)
+	if err != nil {
+		t.Fatalf("Error doing HTTP request: %v", err)
+	}
+
+	if resp.StatusCode != 503 {
+		t.Fatalf("Expecting an HTTP 503 response for an insecure HTTP request, got %d: %s", resp.StatusCode, string(resp.Body))
 	}
 }
