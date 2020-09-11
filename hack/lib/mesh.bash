@@ -16,6 +16,7 @@ function uninstall_mesh {
 
   undeploy_smcp
   undeploy_servicemesh_example_certificates
+  undeploy_servicemesh_namespace
   undeploy_servicemesh_operators
 }
 
@@ -83,8 +84,6 @@ function deploy_servicemesh_namespace {
 
 # This is used to showcase custom domains with TLS, and by TestKsvcWithServiceMeshCustomTlsDomain
 function deploy_servicemesh_example_certificates {
-  oc create namespace istio-system -o yaml --dry-run | oc apply -f -
-
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=Example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
   openssl req -out custom.example.com.csr -newkey rsa:2048 -nodes -keyout custom.example.com.key -subj "/CN=custom-ksvc-domain.example.com/O=Example Inc."
   openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in custom.example.com.csr -out custom.example.com.crt
@@ -213,4 +212,8 @@ function undeploy_servicemesh_operators {
 function undeploy_servicemesh_example_certificates {
   oc delete -n istio-system secret example.com --ignore-not-found
   oc delete -n istio-system secret custom.example.com --ignore-not-found
+}
+
+function undeploy_servicemesh_namespace {
+  oc delete namespace istio-system --ignore-not-found
 }
