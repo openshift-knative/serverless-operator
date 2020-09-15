@@ -73,20 +73,24 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 	return overrideMap
 }
 
-// SetAnnotations is a transformer to set annotations on given object
-// The existing annotations are kept as is, except they are overridden with the
-// annotations given as the argument.
-func SetAnnotations(annotations map[string]string) mf.Transformer {
+// SetOwnerAnnotationsServing is a transformer to set owner annotations on given object
+func SetOwnerAnnotationsServing(instance *operatorv1alpha1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetAnnotations() == nil {
-			u.SetAnnotations(annotations)
-		} else {
-			res := u.GetAnnotations()
-			for key, value := range annotations {
-				res[key] = value
-			}
-			u.SetAnnotations(res)
-		}
+		u.SetAnnotations(map[string]string{
+			ServingOwnerName:      instance.Name,
+			ServingOwnerNamespace: instance.Namespace,
+		})
+		return nil
+	}
+}
+
+// SetOwnerAnnotationsEventing is a transformer to set owner annotations on given object
+func SetOwnerAnnotationsEventing(instance *operatorv1alpha1.KnativeEventing) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		u.SetAnnotations(map[string]string{
+			EventingOwnerName:      instance.Name,
+			EventingOwnerNamespace: instance.Namespace,
+		})
 		return nil
 	}
 }

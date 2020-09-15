@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 )
 
 var (
@@ -113,6 +113,8 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv("DASHBOARD_MANIFEST_PATH", "dashboard/testdata/grafana-dash-knative.yaml")
+	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
+	os.Setenv("DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative.yaml")
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
@@ -166,7 +168,7 @@ func TestKourierReconcile(t *testing.T) {
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
 
-			// Reconcile to intialize
+			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
@@ -184,6 +186,13 @@ func TestKourierReconcile(t *testing.T) {
 				t.Fatalf("get: (%v)", err)
 			}
 
+			// Check if Serving dashboard configmap is available
+			dashboardCM := &corev1.ConfigMap{}
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative", Namespace: ns.Name}, dashboardCM)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
+
 			// Delete Kourier deployment.
 			err = cl.Delete(context.TODO(), deploy)
 			if err != nil {
@@ -196,6 +205,12 @@ func TestKourierReconcile(t *testing.T) {
 				t.Fatalf("delete: (%v)", err)
 			}
 
+			// Delete Dashboard configmap.
+			err = cl.Delete(context.TODO(), dashboardCM)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
+
 			// Reconcile again with test requests.
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{Namespace: test.ownerNamespace, Name: test.ownerName},
@@ -204,18 +219,26 @@ func TestKourierReconcile(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
+			var checkError = func(t *testing.T, err error) {
+				if test.deleted {
+					if err != nil {
+						t.Fatalf("get: (%v)", err)
+					}
+				}
+				if !test.deleted {
+					if !errors.IsNotFound(err) {
+						t.Fatalf("get: (%v)", err)
+					}
+				}
+			}
+
 			// Check again if Kourier deployment is created after reconcile.
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
-			if test.deleted {
-				if err != nil {
-					t.Fatalf("get: (%v)", err)
-				}
-			}
-			if !test.deleted {
-				if !errors.IsNotFound(err) {
-					t.Fatalf("get: (%v)", err)
-				}
-			}
+			checkError(t, err)
+
+			// Check again if Serving dashboard configmap is available.
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative", Namespace: ns.Name}, dashboardCM)
+			checkError(t, err)
 		})
 	}
 }
