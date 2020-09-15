@@ -18,9 +18,6 @@ COPY --from=builder /usr/bin/manager ${OPERATOR}
 COPY build/bin /usr/local/bin
 RUN /usr/local/bin/user_setup
 
-# install manifest[s]
-COPY deploy /deploy
-
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
 USER ${USER_UID}

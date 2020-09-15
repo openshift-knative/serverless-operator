@@ -166,52 +166,14 @@ spec:
         serviceAccountName: knative-operator
       - rules:
         - apiGroups:
-          - ""
-          resources:
-          - pods
-          - services
-          - events
-          - configmaps
-          verbs:
-          - "*"
-        - apiGroups:
-          - ""
-          resources:
-          - namespaces
-          verbs:
-          - get
-        - apiGroups:
-          - apps
-          resources:
-          - deployments
-          - replicasets
-          verbs:
-          - "*"
-        - apiGroups:
           - apiextensions.k8s.io
           resources:
           - customresourcedefinitions
           verbs:
           - "*"
         - apiGroups:
-          - networking.k8s.io
-          resources:
-          - networkpolicies
-          verbs:
-          - "*"
-        - apiGroups:
-          - monitoring.coreos.com
-          resources:
-          - servicemonitors
-          verbs:
-          - get
-          - create
-        - apiGroups:
           - networking.internal.knative.dev
           resources:
-          - clusteringresses
-          - clusteringresses/status
-          - clusteringresses/finalizers
           - ingresses
           - ingresses/status
           - ingresses/finalizers
@@ -226,13 +188,6 @@ spec:
           - routes/finalizers
           verbs:
           - "*"
-        - apiGroups:
-          - operator.knative.dev
-          resources:
-          - knativeservings
-          - knativeservings/finalizers
-          verbs:
-          - '*'
         serviceAccountName: knative-openshift-ingress
       deployments:
       - name: knative-operator
@@ -382,7 +337,7 @@ spec:
                 - name: knative-openshift-ingress
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                   image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-                  commangd:
+                  command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
                   env:
