@@ -417,7 +417,6 @@
     "pkg/leader",
     "pkg/log/zap",
     "pkg/metrics",
-    "pkg/predicate",
     "pkg/restmapper",
     "version",
   ]
@@ -1025,8 +1024,8 @@
   version = "v0.15.2"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:b5fc33a7242f3d7677e8aadda24a459f2bec2954c1178b1e32e020eb3f6ef993"
+  branch = "release-0.16"
+  digest = "1:4a80a6983e004025f3de7444027f2259d4a944768e94cf031173592cf8998434"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -1041,11 +1040,11 @@
     "tracker",
   ]
   pruneopts = "NT"
-  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
+  revision = "ea4d6e985ba0e9268425a2801ce13af5e6d8c836"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:34859eab9b3146186546f6dde687467d82feb7f06d96863be853a5a90aa09f4d"
+  branch = "release-0.15"
+  digest = "1:39f6c05e83b3f1dea80619262975b157eb5c1d8662b7e97be06c6a9e8f14e381"
   name = "knative.dev/serving"
   packages = [
     "pkg/apis/autoscaling",
@@ -1058,7 +1057,7 @@
     "pkg/autoscaler/config",
   ]
   pruneopts = "NT"
-  revision = "8c65d713bb9e69d9f48df1348217e41bb26c6afe"
+  revision = "f95f38bc0dfc8fe52eff76aad5f123dd1e8461d8"
 
 [[projects]]
   digest = "1:21c23272171c749230b32cf3d797db213414dc4bed6abcd457946230d002418f"
@@ -1144,21 +1143,22 @@
     "github.com/operator-framework/operator-sdk/pkg/leader",
     "github.com/operator-framework/operator-sdk/pkg/log/zap",
     "github.com/operator-framework/operator-sdk/pkg/metrics",
-    "github.com/operator-framework/operator-sdk/pkg/predicate",
     "github.com/operator-framework/operator-sdk/pkg/restmapper",
     "github.com/operator-framework/operator-sdk/version",
+    "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/pflag",
+    "golang.org/x/net/context",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/rbac/v1",
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
-    "k8s.io/apimachinery/pkg/conversion",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
@@ -1168,6 +1168,7 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/operator/pkg/apis/operator/v1alpha1",
+    "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/ptr",
     "knative.dev/serving/pkg/apis/serving/v1",
@@ -1176,8 +1177,11 @@
     "sigs.k8s.io/controller-runtime/pkg/client/fake",
     "sigs.k8s.io/controller-runtime/pkg/controller",
     "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil",
+    "sigs.k8s.io/controller-runtime/pkg/event",
     "sigs.k8s.io/controller-runtime/pkg/handler",
     "sigs.k8s.io/controller-runtime/pkg/manager",
+    "sigs.k8s.io/controller-runtime/pkg/metrics",
+    "sigs.k8s.io/controller-runtime/pkg/predicate",
     "sigs.k8s.io/controller-runtime/pkg/reconcile",
     "sigs.k8s.io/controller-runtime/pkg/runtime/inject",
     "sigs.k8s.io/controller-runtime/pkg/runtime/log",

@@ -22,7 +22,6 @@ import (
 
 const (
 	knCLIDownload               = "kn"
-	knDownloadServer            = "kn-download-server"
 	knConsoleCLIDownloadService = "kn-cli-downloads"
 )
 
@@ -45,23 +44,20 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 // which will serve kn cross platform binaries within cluster
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	log.Info("Installing kn ConsoleCLIDownload resources")
-	serviceFromCluster := &servingv1.Service{}
-	service := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
-	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, serviceFromCluster)
+	service := &servingv1.Service{}
+	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
 	switch {
 	case apierrors.IsNotFound(err):
-		if err := apiclient.Create(context.TODO(), service); err != nil {
+		tmpService := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+		if err := apiclient.Create(context.TODO(), tmpService); err != nil {
 			return err
 		}
 	case err == nil:
-		serviceFromClusterDC := serviceFromCluster.DeepCopy()
+		tmpService := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+		serviceFromClusterDC := service.DeepCopy()
 		changed := false
-		if serviceFromCluster.Spec.Template.Spec.GetContainer().Image != service.Spec.Template.Spec.GetContainer().Image {
-			serviceFromClusterDC.Spec.Template.Spec.GetContainer().Image = service.Spec.Template.Spec.GetContainer().Image
-			changed = true
-		}
-		if !equality.Semantic.DeepEqual(serviceFromCluster.Spec.Template.Spec.GetContainer().Resources, service.Spec.Template.Spec.GetContainer().Resources) {
-			serviceFromClusterDC.Spec.Template.Spec.GetContainer().Resources = service.Spec.Template.Spec.GetContainer().Resources
+		if !equality.Semantic.DeepEqual(service.Spec, tmpService.Spec.Template.Spec) {
+			serviceFromClusterDC.Spec = tmpService.Spec
 			changed = true
 		}
 		if changed {
@@ -72,21 +68,15 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 	default:
 		return err
 	}
-
-	if err := checkResources(instance, apiclient); err != nil {
+	if err := checkResources(instance, service); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // Check for Knative Service and URL of kn ConsoleCLIDownload resources
-func checkResources(instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func checkResources(instance *servingv1alpha1.KnativeServing, service *servingv1.Service) error {
 	log.Info("Checking deployments")
-	service := &servingv1.Service{}
-	if err := api.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service); err != nil {
-		return err
-	}
 	if !service.Status.IsReady() {
 		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
