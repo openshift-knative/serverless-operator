@@ -19,7 +19,7 @@ import (
 
 const kourierIngressClassName = "kourier.ingress.networking.knative.dev"
 
-// NewController returns a new Ingress controller for Project Contour.
+// NewController returns a new Ingress controller for Ingress on Openshift.
 func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
