@@ -101,8 +101,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
 	namespace := ""
-	if ci.Status.LoadBalancer != nil {
-		for _, lbIngress := range ci.Status.LoadBalancer.Ingress {
+	if ci.Status.PrivateLoadBalancer != nil {
+		for _, lbIngress := range ci.Status.PrivateLoadBalancer.Ingress {
 			if lbIngress.DomainInternal != "" {
 				// DomainInternal should look something like:
 				// kourier.knative-serving-ingress.svc.cluster.local
