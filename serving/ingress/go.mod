@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/google/go-cmp v0.5.2
 	github.com/openshift/api v0.0.0-20200901182017-7ac89ba6b971
+	k8s.io/api v0.19.0
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/networking v0.0.0-20200831172815-5f2e0ad6215f

@@ -33,8 +33,15 @@ var _ ingressreconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind finalizes ingress resource.
 func (r *Reconciler) FinalizeKind(ctx context.Context, ing *v1alpha1.Ingress) reconciler.Event {
-	if err := r.deleteRoutes(ctx, ing); err != nil {
-		return err
+	routes, err := r.routeList(ctx, ing)
+	if err != nil {
+		return fmt.Errorf("failed to list routes for deletion: %w", err)
+	}
+
+	for _, route := range routes {
+		if err := r.deleteRoute(ctx, route); err != nil {
+			return fmt.Errorf("failed to delete routes: %w", err)
+		}
 	}
 	return nil
 }
@@ -79,20 +86,6 @@ func (r *Reconciler) deleteRoute(ctx context.Context, route *routev1.Route) erro
 	logger.Infof("Deleting route %s(%s)", route.Name, route.Spec.Host)
 	if err := r.routeClient.Routes(route.Namespace).Delete(route.Name, &metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("failed to delete route: %w", err)
-	}
-	return nil
-}
-
-func (r *Reconciler) deleteRoutes(ctx context.Context, ing *v1alpha1.Ingress) error {
-	routes, err := r.routeList(ctx, ing)
-	if err != nil {
-		return fmt.Errorf("failed to list routes for deletion: %w", err)
-	}
-
-	for _, route := range routes {
-		if err := r.deleteRoute(ctx, route); err != nil {
-			return fmt.Errorf("failed to delete routes: %w", err)
-		}
 	}
 	return nil
 }
