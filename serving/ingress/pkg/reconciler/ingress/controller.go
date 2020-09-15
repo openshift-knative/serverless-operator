@@ -43,19 +43,18 @@ func NewController(
 
 	logger.Info("Setting up event handlers")
 
-	classFilter := reconciler.AnnotationFilterFunc(
-		networking.IngressClassAnnotationKey, kourierIngressClassName, false,
-	)
-
 	ingressInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: classFilter,
+		FilterFunc: reconciler.AnnotationFilterFunc(networking.IngressClassAnnotationKey, kourierIngressClassName, false),
 		Handler:    controller.HandleAll(impl.Enqueue),
 	})
 
-	routeInformer.Informer().AddEventHandler(controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
-		serving.RouteNamespaceLabelKey,
-		networking.IngressLabelKey,
-	)))
+	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: reconciler.LabelExistsFilterFunc(networking.IngressLabelKey),
+		Handler: controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
+			serving.RouteNamespaceLabelKey,
+			networking.IngressLabelKey,
+		)),
+	})
 
 	return impl
 }
