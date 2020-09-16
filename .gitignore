@@ -4,3 +4,6 @@ catalogsource-ci.yaml
 user*.kubeconfig
 users.htpasswd
 puller.kubeconfig
+# certs created by hack/lib/mesh.bash
+example.com.*
+custom.example.com.*
