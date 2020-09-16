@@ -33,6 +33,20 @@ var (
 			Name:      "knative-serving",
 			Namespace: "knative-serving",
 		},
+		Status: v1alpha1.KnativeServingStatus{
+			Status:  duckv1.Status{
+				Conditions: []apis.Condition{
+					{
+						Status: "True",
+						Type:   "DeploymentsAvailable",
+					},
+					{
+						Status: "True",
+						Type:   "InstallSucceeded",
+					},
+				},
+			},
+		},
 	}
 	defaultIngress = configv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{

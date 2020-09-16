@@ -43,6 +43,13 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 // reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+	if !instance.Status.IsReady() {
+		return fmt.Errorf("Knative instance %q/%q not ready yet", instance.Name, instance.GetNamespace())
+	}
+	if	err := servingv1.AddToScheme(scheme); err != nil {
+		return err
+	}
+
 	log.Info("Installing kn ConsoleCLIDownload resources")
 	service := &servingv1.Service{}
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
