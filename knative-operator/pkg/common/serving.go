@@ -25,46 +25,41 @@ const (
 )
 
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	stages := []func(*servingv1alpha1.KnativeServing, client.Client) error{
-		domainTemplate,
-		ingressClass,
-		ingress,
-		configureLogURLTemplate,
-		ensureCustomCerts,
-		imagesFromEnviron,
-		defaultToHa,
-		ensureServingWebhookMemoryLimit,
+	if err := ingress(ks, c); err != nil {
+		return fmt.Errorf("failed to configure ingress: %w", err)
 	}
-	for _, stage := range stages {
-		if err := stage(ks, c); err != nil {
-			return fmt.Errorf("failed to mutate KnativeServing: %w", err)
-		}
+
+	if err := configureLogURLTemplate(ks, c); err != nil {
+		return fmt.Errorf("failed to configure log URL: %w", err)
 	}
+
+	domainTemplate(ks)
+	ingressClass(ks)
+	ensureCustomCerts(ks)
+	imagesFromEnviron(ks)
+	ensureServingWebhookMemoryLimit(ks)
+	defaultToHa(ks)
 	return nil
 }
 
-func defaultToHa(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func defaultToHa(ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.HighAvailability == nil {
 		ks.Spec.HighAvailability = &servingv1alpha1.HighAvailability{
 			Replicas: 2,
 		}
 	}
-
-	return nil
 }
 
-func ensureServingWebhookMemoryLimit(ks *servingv1alpha1.KnativeServing, c client.Client) error {
-	return EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "webhook", resource.MustParse("1024Mi"))
+func ensureServingWebhookMemoryLimit(ks *servingv1alpha1.KnativeServing) {
+	EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "webhook", resource.MustParse("1024Mi"))
 }
 
-func domainTemplate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func domainTemplate(ks *servingv1alpha1.KnativeServing) {
 	Configure(ks, "network", "domainTemplate", DefaultDomainTemplate)
-	return nil
 }
 
-func ingressClass(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func ingressClass(ks *servingv1alpha1.KnativeServing) {
 	Configure(ks, "network", "ingress.class", DefaultIngressClass)
-	return nil
 }
 
 // configure ingress
@@ -111,7 +106,7 @@ func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client
 
 // configure controller with custom certs for openshift registry if
 // not already set
-func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
+func ensureCustomCerts(ks *servingv1alpha1.KnativeServing) {
 	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
 		ks.Spec.ControllerCustomCerts = servingv1alpha1.CustomCerts{
 			Name: "config-service-ca",
@@ -119,11 +114,10 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 		}
 	}
 	log.Info("ControllerCustomCerts", "certs", ks.Spec.ControllerCustomCerts)
-	return nil
 }
 
 // imagesFromEnviron overrides registry images
-func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) error {
+func imagesFromEnviron(ks *servingv1alpha1.KnativeServing) {
 	ks.Spec.Registry.Override = BuildImageOverrideMapFromEnviron(os.Environ())
 
 	if defaultVal, ok := ks.Spec.Registry.Override["default"]; ok {
@@ -135,5 +129,4 @@ func imagesFromEnviron(ks *servingv1alpha1.KnativeServing, _ client.Client) erro
 		Configure(ks, "deployment", "queueSidecarImage", qpVal)
 	}
 	log.Info("Setting", "registry", ks.Spec.Registry)
-	return nil
 }

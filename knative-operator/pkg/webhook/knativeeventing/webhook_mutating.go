@@ -50,26 +50,13 @@ func (a *KnativeEventingConfigurator) Handle(ctx context.Context, req types.Requ
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	err = common.MutateEventing(ke, a.client)
-	if err != nil {
-		return admission.ErrorResponse(http.StatusInternalServerError, err)
-	}
+	common.MutateEventing(ke)
 
 	marshaled, err := json.Marshal(ke)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}
 	return util.PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
-}
-
-// KnativeEventingConfigurator implements inject.Client.
-// A client will be automatically injected.
-var _ inject.Client = (*KnativeEventingConfigurator)(nil)
-
-// InjectClient injects the client.
-func (v *KnativeEventingConfigurator) InjectClient(c client.Client) error {
-	v.client = c
-	return nil
 }
 
 // KnativeEventingConfigurator implements inject.Decoder.

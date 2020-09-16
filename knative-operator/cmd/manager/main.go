@@ -17,6 +17,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
@@ -146,7 +147,7 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.SetupServiceMonitor(ctx, cfg, cl, metricsPort, operatorMetricsPort); err != nil {
+	if err := common.SetupServiceMonitor(ctx, cfg, metricsPort, operatorMetricsPort); err != nil {
 		return fmt.Errorf("failed to setup the Service monitor: %w", err)
 	}
 

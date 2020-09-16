@@ -101,9 +101,7 @@ func (r *ReconcileKnativeEventing) reconcileKnativeEventing(instance *eventingv1
 // configure default settings for OpenShift
 func (r *ReconcileKnativeEventing) configure(instance *eventingv1alpha1.KnativeEventing) error {
 	before := instance.DeepCopy()
-	if err := common.MutateEventing(instance, r.client); err != nil {
-		return err
-	}
+	common.MutateEventing(instance)
 	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
 		return nil
 	}
