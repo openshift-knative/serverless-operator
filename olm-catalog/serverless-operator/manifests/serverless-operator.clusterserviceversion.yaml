@@ -382,7 +382,7 @@ spec:
                 - name: knative-openshift-ingress
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                   image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-                  commangd:
+                  command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
                   env:
