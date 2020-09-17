@@ -13,7 +13,7 @@ LABEL operators.operatorframework.io.bundle.channels.v1="4.5"
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-rhel8-operator-container" \
       name="openshift-serverless-1/serverless-rhel8-operator" \
-      version="1.9.0" \
+      version="1.10.0" \
       summary="Red Hat OpenShift Serverless 1 Serverless Operator" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Serverless Operator" \
