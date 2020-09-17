@@ -7,13 +7,16 @@ function create_namespaces {
       oc create ns "${ns}"
     fi
   done
-  cat <<EOF | oc apply -f - || return $?
+  # Create an OperatorGroup if there are no other ones in the namespace.
+  if [[ $(oc get operatorgroups -oname -n "${OPERATORS_NAMESPACE}" | wc -l) -eq 0 ]]; then
+    cat <<EOF | oc apply -f - || return $?
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: serverless
   namespace: ${OPERATORS_NAMESPACE}
 EOF
+  fi
   logger.success "Namespaces has bean created: ${NAMESPACES[*]}"
 }
 
