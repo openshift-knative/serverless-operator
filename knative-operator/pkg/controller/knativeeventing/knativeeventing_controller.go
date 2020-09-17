@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -109,7 +108,7 @@ func (r *ReconcileKnativeEventing) configure(instance *eventingv1alpha1.KnativeE
 	}
 
 	// Only apply the update if something changed.
-	log.Info("Updating KnativeEventing with mutated state for Openshift", "diff", cmp.Diff(before.Spec, instance.Spec))
+	log.Info("Updating KnativeEventing with mutated state for Openshift")
 	if err := r.client.Update(context.TODO(), instance); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with mutated state: %w", err)
 	}
