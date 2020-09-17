@@ -137,17 +137,27 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to create cluster config: %w", err)
 	}
-	cl, err := client.New(config, client.Options{})
 
+	cl, err := client.New(config, client.Options{})
 	if err != nil {
 		return fmt.Errorf("failed to create a client: %w", err)
 	}
 
-	if err = common.SetupMonitoringRequirements(cl); err != nil {
+	namespace, err := k8sutil.GetOperatorNamespace()
+	if err != nil {
+		return fmt.Errorf("failed to get operator namesapce: %w", err)
+	}
+
+	operatorDeployment, err := common.GetServerlessOperatorDeployment(cl, namespace)
+	if err != nil {
+		return err
+	}
+
+	if err = common.SetupMonitoringRequirements(namespace, cl, operatorDeployment); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.SetupServiceMonitor(ctx, cfg, metricsPort, operatorMetricsPort); err != nil {
+	if err := common.SetupServerlessOperatorServiceMonitor(ctx, cfg, cl, metricsPort, metricsHost, operatorMetricsPort); err != nil {
 		return fmt.Errorf("failed to setup the Service monitor: %w", err)
 	}
 

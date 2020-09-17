@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"golang.org/x/net/context"
 	"os"
 
@@ -16,8 +17,6 @@ import (
 )
 
 const (
-	// installedNamespaceEnvKey is the ns where Openshift serverless operator has been installed
-	installedNamespaceEnvKey = "NAMESPACE"
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
@@ -26,20 +25,20 @@ const (
 	testRolePath    = "TEST_ROLE_PATH"
 )
 
-func SetupMonitoringRequirements(api client.Client) error {
-	ns, err := getOperatorNamespace()
+func SetupMonitoringRequirements(monitoredNamespace string, api client.Client) error {
+	err := addMonitoringLabelToNamespace(monitoredNamespace, api)
 	if err != nil {
 		return err
 	}
-	err = addMonitoringLabelToNamespace(ns, api)
+	operatorDeploymentNamespace, err := k8sutil.GetOperatorNamespace()
 	if err != nil {
 		return err
 	}
-	d, err := getServerlessOperatorDeployment(api, ns)
+	d, err := getServerlessOperatorDeployment(api, operatorDeploymentNamespace)
 	if err != nil {
 		return err
 	}
-	err = createRoleAndRoleBinding(d, ns, getRolePath(), api)
+	err = createRoleAndRoleBinding(d, monitoredNamespace, getRolePath(), api)
 	if err != nil {
 		return err
 	}
@@ -54,14 +53,6 @@ func getRolePath() string {
 	} else {
 		return rolePath
 	}
-}
-
-func getOperatorNamespace() (string, error) {
-	ns := os.Getenv(installedNamespaceEnvKey)
-	if ns == "" {
-		return "", fmt.Errorf("the environment variable %q must be set", installedNamespaceEnvKey)
-	}
-	return ns, nil
 }
 
 func addMonitoringLabelToNamespace(namespace string, api client.Client) error {

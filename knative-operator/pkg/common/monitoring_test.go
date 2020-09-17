@@ -28,7 +28,6 @@ var (
 )
 
 func init() {
-	os.Setenv(installedNamespaceEnvKey, installedNS)
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
 	os.Setenv(testRolePath, "testdata/role_service_monitor.yaml")
 }
@@ -36,7 +35,7 @@ func init() {
 func TestSetupMonitoringRequirements(t *testing.T) {
 	initObjs := []runtime.Object{&operatorNamespace, &serverlessDeployment}
 	cl := fake.NewFakeClient(initObjs...)
-	err := SetupMonitoringRequirements(cl)
+	err := SetupMonitoringRequirements(installedNS, cl)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}

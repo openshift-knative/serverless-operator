@@ -3,12 +3,13 @@ package knativeeventing
 import (
 	"context"
 	"fmt"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -73,6 +74,10 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 		return reconcile.Result{}, err
 	}
 
+	if original.GetDeletionTimestamp() != nil {
+		return reconcile.Result{}, r.delete(original)
+	}
+
 	instance := original.DeepCopy()
 	reconcileErr := r.reconcileKnativeEventing(instance)
 
@@ -94,6 +99,8 @@ func (r *ReconcileKnativeEventing) reconcileKnativeEventing(instance *eventingv1
 	stages := []func(*eventingv1alpha1.KnativeEventing) error{
 		r.configure,
 		r.ensureFinalizers,
+		r.installServiceMonitors,
+		r.installDashboards,
 	}
 	for _, stage := range stages {
 		if err := stage(instance); err != nil {
@@ -131,8 +138,21 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 	return r.client.Update(context.TODO(), instance)
 }
 
+// installServiceMonitors installs service monitors for eventing dashboards
+func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1alpha1.KnativeEventing) error {
+	log.Info("Installing Eventing Service Monitors")
+	if err := common.SetupMonitoringRequirements("knative-eventing", r.client); err != nil {
+		return err
+	}
+	if err := common.SetupEventingServiceMonitors("knative-eventing", instance); err != nil {
+		return err
+	}
+	return nil
+}
+
 // installDashboard installs dashboard for OpenShift webconsole
-func (r *ReconcileKnativeEventing) installDashboard(instance *eventingv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.KnativeEventing) error {
+	log.Info("Installing Eventing Dashboards")
 	if err := dashboard.Apply(dashboard.EventingBrokerDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return err
 	}
@@ -157,6 +177,20 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	}
 	if err := dashboard.Delete(dashboard.EventingFilterDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard filter configmap: %w", err)
+	}
+	// The above might take a while, so we refetch the resource again in case it has changed.
+	refetched := &eventingv1alpha1.KnativeEventing{}
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
+		return fmt.Errorf("failed to refetch KnativeEventing: %w", err)
+	}
+
+	// Update the refetched finalizer list.
+	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers.Delete(finalizerName)
+	refetched.SetFinalizers(finalizers.List())
+
+	if err := r.client.Update(context.TODO(), refetched); err != nil {
+		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
 	}
 	return nil
 }
