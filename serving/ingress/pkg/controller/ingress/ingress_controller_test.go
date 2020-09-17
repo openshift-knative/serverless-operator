@@ -54,7 +54,7 @@ var (
 			}},
 		},
 		Status: networkingv1alpha1.IngressStatus{
-			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
+			PublicLoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
 				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
 					DomainInternal: "istio-ingressgateway." + serviceMeshNamespace + ".svc.cluster.local",
 				}},
