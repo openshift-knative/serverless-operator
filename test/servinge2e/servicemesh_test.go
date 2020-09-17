@@ -11,9 +11,16 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"net"
+	"net/http"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	routev1 "github.com/openshift/api/route/v1"
-	"io/ioutil"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,19 +33,13 @@ import (
 	"knative.dev/serving/pkg/apis/autoscaling"
 	"knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	"math/big"
-	"net"
-	"net/http"
-	"strings"
-	"testing"
-	"time"
 )
 
 const (
 	// A test namespace that is part of the ServiceMesh (setup by "make install-mesh")
 	serviceMeshTestNamespaceName = "default"
 	serviceMeshTestImage         = "gcr.io/knative-samples/helloworld-go"
-	serviceMeshTestProxyImage    = "registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-test-httpproxy"
+	serviceMeshTestProxyImage    = "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-test-httpproxy"
 )
 
 func getServiceMeshNamespace(ctx *test.Context) string {

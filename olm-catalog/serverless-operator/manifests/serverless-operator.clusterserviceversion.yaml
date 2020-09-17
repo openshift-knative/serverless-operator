@@ -262,7 +262,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-operator
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
                 ports:
@@ -315,17 +315,17 @@ spec:
                     - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
                       value: deploy/resources/console_cli_download_kn_resources.yaml
                     - name: IMAGE_queue-proxy
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-queue
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-queue
                     - name: IMAGE_activator
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-activator
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-activator
                     - name: IMAGE_autoscaler
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-autoscaler
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler
                     - name: IMAGE_autoscaler-hpa
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-autoscaler-hpa
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler-hpa
                     - name: IMAGE_controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-controller
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-controller
                     - name: IMAGE_webhook
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-webhook
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-webhook
                     - name: IMAGE_3scale-kourier-gateway
                       value: docker.io/maistra/proxyv2-ubi8:1.1.0
                     - name: IMAGE_3scale-kourier-control
@@ -476,23 +476,23 @@ spec:
     name: Red Hat
   relatedImages:
     - name: IMAGE_QUEUE
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-queue
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-queue
     - name: IMAGE_activator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-activator
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-activator
     - name: IMAGE_autoscaler
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-autoscaler
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler
     - name: IMAGE_autoscaler-hpa
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-autoscaler-hpa
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler-hpa
     - name: IMAGE_controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-controller
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-controller
     - name: IMAGE_webhook
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-webhook
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-webhook
     - name: IMAGE_3scale-kourier-control
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.0:kourier
     - name: IMAGE_3scale-kourier-gateway
       image: docker.io/maistra/proxyv2-ubi8:1.1.0
     - name: knative-operator
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-operator
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
@@ -532,7 +532,7 @@ spec:
     - name: IMAGE_KN_CLI_ARTIFACTS
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:kn-cli-artifacts
     - name: IMAGE_storage-version-migration__migrate
-      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-storage-version-migration
+      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-storage-version-migration
     - name: IMAGE_storage-version-migration-eventing__migrate
       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-storage-version-migration
   replaces: serverless-operator.v1.9.0
