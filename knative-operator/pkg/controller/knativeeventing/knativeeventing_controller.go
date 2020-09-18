@@ -144,7 +144,7 @@ func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1al
 	if err := common.SetupMonitoringRequirements("knative-eventing", r.client); err != nil {
 		return err
 	}
-	if err := common.SetupEventingServiceMonitors("knative-eventing", instance); err != nil {
+	if err := common.SetupEventingServiceMonitors(r.client, "knative-eventing", instance); err != nil {
 		return err
 	}
 	return nil
