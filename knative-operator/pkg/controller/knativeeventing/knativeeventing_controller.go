@@ -141,7 +141,7 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 // installServiceMonitors installs service monitors for eventing dashboards
 func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Service Monitors")
-	if err := common.SetupMonitoringRequirements("knative-eventing", r.client); err != nil {
+	if err := common.SetupMonitoringRequirements("knative-eventing", r.client, instance); err != nil {
 		return err
 	}
 	if err := common.SetupEventingServiceMonitors(r.client, "knative-eventing", instance); err != nil {
@@ -156,7 +156,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 	if err := dashboard.Apply(dashboard.EventingBrokerDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return err
 	}
-	if err := dashboard.Apply(dashboard.EventingFilterDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
+	if err := dashboard.Apply(dashboard.EventingSourceDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return err
 	}
 	return nil
@@ -175,7 +175,7 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	if err := dashboard.Delete(dashboard.EventingBrokerDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard broker configmap: %w", err)
 	}
-	if err := dashboard.Delete(dashboard.EventingFilterDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
+	if err := dashboard.Delete(dashboard.EventingSourceDashboardPath, common.SetOwnerAnnotationsEventing(instance), r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard filter configmap: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.

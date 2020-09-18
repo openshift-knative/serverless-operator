@@ -114,7 +114,7 @@ func init() {
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv("DASHBOARD_MANIFEST_PATH", "dashboard/testdata/grafana-dash-knative.yaml")
 	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
-	os.Setenv("DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative.yaml")
+	os.Setenv("TEST_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative.yaml")
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.

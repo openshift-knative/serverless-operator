@@ -35,7 +35,7 @@ func init() {
 func TestSetupMonitoringRequirements(t *testing.T) {
 	initObjs := []runtime.Object{&operatorNamespace, &serverlessDeployment}
 	cl := fake.NewFakeClient(initObjs...)
-	err := SetupMonitoringRequirements(installedNS, cl)
+	err := SetupMonitoringRequirements(installedNS, cl, &serverlessDeployment)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}

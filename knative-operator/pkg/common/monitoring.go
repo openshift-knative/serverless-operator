@@ -2,17 +2,16 @@ package common
 
 import (
 	"fmt"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"golang.org/x/net/context"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"os"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -25,24 +24,39 @@ const (
 	testRolePath    = "TEST_ROLE_PATH"
 )
 
-func SetupMonitoringRequirements(monitoredNamespace string, api client.Client) error {
+func SetupMonitoringRequirements(monitoredNamespace string, api client.Client, instance mf.Owner) error {
 	err := addMonitoringLabelToNamespace(monitoredNamespace, api)
 	if err != nil {
 		return err
 	}
-	operatorDeploymentNamespace, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		return err
-	}
-	d, err := getServerlessOperatorDeployment(api, operatorDeploymentNamespace)
-	if err != nil {
-		return err
-	}
-	err = createRoleAndRoleBinding(d, monitoredNamespace, getRolePath(), api)
+	err = createRoleAndRoleBinding(instance, monitoredNamespace, getRolePath(), api)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetServerlessOperatorDeployment(api client.Client, namespace string) (*appsv1.Deployment, error) {
+	deployment := &appsv1.Deployment{}
+	deploymentName, err := getOperatorDeploymentName()
+	if err != nil {
+		return nil, err
+	}
+	key := types.NamespacedName{Name: deploymentName, Namespace: namespace}
+	err = api.Get(context.TODO(), key, deployment)
+	if err != nil {
+		return nil, err
+	}
+	// Set version and kind here because it is required for the owner references
+	// used by the role creation later on
+	// currently k8s api returns no value for these fields, for more check:
+	// https://github.com/kubernetes/client-go/issues/861
+	deployment.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "Deployment",
+	})
+	return deployment, nil
 }
 
 func getRolePath() string {
@@ -70,32 +84,11 @@ func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
 	return nil
 }
 
-func getServerlessOperatorDeployment(api client.Client, namespace string) (*appsv1.Deployment, error) {
-	deployment := &appsv1.Deployment{}
-	deploymentName, err := getOperatorDeploymentName()
-	if err != nil {
-		return nil, err
-	}
-	key := types.NamespacedName{Name: deploymentName, Namespace: namespace}
-	err = api.Get(context.TODO(), key, deployment)
-	if err != nil {
-		return nil, err
-	}
-	return deployment, nil
-}
-
-func createRoleAndRoleBinding(instance *appsv1.Deployment, namespace, path string, client client.Client) error {
+func createRoleAndRoleBinding(instance mf.Owner, namespace, path string, client client.Client) error {
 	manifest, err := mf.NewManifest(path, mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to create role and roleBinding ServiceMonitor install manifest: %w", err)
 	}
-	instance.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "apps",
-		Version: "v1",
-		Kind:    "Deployment",
-	})
-	// this is typical probably not needed as uid is enough for ownership
-	instance.SetNamespace(namespace)
 	transforms := []mf.Transformer{mf.InjectOwner(instance), injectNameSpace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest: %w", err)
