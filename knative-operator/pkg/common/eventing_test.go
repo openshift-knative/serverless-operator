@@ -3,27 +3,20 @@ package common_test
 import (
 	"os"
 	"reflect"
-	"sigs.k8s.io/yaml"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	configv1 "github.com/openshift/api/config/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-)
+	"sigs.k8s.io/yaml"
 
-func init() {
-	configv1.AddToScheme(scheme.Scheme)
-}
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+)
 
 func TestMutateEventing(t *testing.T) {
 	const (
 		image1 = "docker.io/foo:tag"
 		image2 = "docker.io/baz:tag"
 	)
-	client := fake.NewFakeClient()
 	ke := &operatorv1alpha1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-eventing",
@@ -36,9 +29,7 @@ func TestMutateEventing(t *testing.T) {
 	os.Setenv("IMAGE_bar__baz", image2)
 
 	// Mutate for OpenShift
-	if err := common.MutateEventing(ke, client); err != nil {
-		t.Error(err)
-	}
+	common.MutateEventing(ke)
 	verifyImageOverride(t, &ke.Spec.Registry, "foo", image1)
 	verifyImageOverride(t, &ke.Spec.Registry, "bar/baz", image2)
 }
@@ -62,13 +53,9 @@ func TestEventingWebhookMemoryLimit(t *testing.T) {
 	if err := yaml.Unmarshal(testdata, &tests); err != nil {
 		t.Fatalf("Failed to unmarshal tests: %v", err)
 	}
-	client := fake.NewFakeClient(mockIngressConfig("whatever"))
 	for _, test := range tests {
 		t.Run(test.Input.Name, func(t *testing.T) {
-			err := common.MutateEventing(&test.Input, client)
-			if err != nil {
-				t.Error(err)
-			}
+			common.MutateEventing(&test.Input)
 			if !reflect.DeepEqual(test.Input.Spec.Resources, test.Expected) {
 				t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", test.Input.Name, test.Expected, test.Input.Spec.Resources)
 			}

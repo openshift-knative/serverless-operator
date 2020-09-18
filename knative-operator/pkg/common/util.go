@@ -1,9 +1,10 @@
 package common
 
 import (
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -78,18 +79,18 @@ func SetOwnerAnnotations(instance *operatorv1alpha1.KnativeServing) mf.Transform
 	}
 }
 
-func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName string, memory resource.Quantity) error {
+func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName string, memory resource.Quantity) {
 	for i, v := range s.Resources {
 		if v.Container == containerName {
 			if v.Limits == nil {
 				v.Limits = corev1.ResourceList{}
 			}
 			if _, ok := v.Limits[corev1.ResourceMemory]; ok {
-				return nil
+				return
 			}
 			v.Limits[corev1.ResourceMemory] = memory
 			s.Resources[i] = v
-			return nil
+			return
 		}
 	}
 	s.Resources = append(s.Resources, operatorv1alpha1.ResourceRequirementsOverride{
@@ -100,5 +101,5 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 			},
 		},
 	})
-	return nil
+	return
 }

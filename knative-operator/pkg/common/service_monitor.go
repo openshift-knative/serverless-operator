@@ -10,10 +10,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SetupServiceMonitor(ctx context.Context, cfg *rest.Config, api client.Client, metricsPort int32, operatorMetricsPort int32) error {
+func SetupServiceMonitor(ctx context.Context, cfg *rest.Config, metricsPort int32, operatorMetricsPort int32) error {
 	// Commented below to avoid a stream of these errors at startup:
 	// E1021 22:50:03.372487       1 reflector.go:134] github.com/operator-framework/operator-sdk/pkg/kube-metrics/collector.go:67: Failed to list *unstructured.Unstructured: the server could not find the requested resource
 	// if err = serveCRMetrics(cfg); err != nil {
