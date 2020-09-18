@@ -365,7 +365,7 @@ spec:
                     - name: IMAGE_DISPATCHER_IMAGE
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher
                     - name: IMAGE_KN_CLI_ARTIFACTS
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:kn-cli-artifacts
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.1:kn-cli-artifacts
       - name: knative-openshift-ingress
         spec:
           replicas: 1
@@ -530,7 +530,7 @@ spec:
     - name: IMAGE_DISPATCHER_IMAGE
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher
     - name: IMAGE_KN_CLI_ARTIFACTS
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:kn-cli-artifacts
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.1:kn-cli-artifacts
     - name: IMAGE_storage-version-migration__migrate
       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-storage-version-migration
     - name: IMAGE_storage-version-migration-eventing__migrate
