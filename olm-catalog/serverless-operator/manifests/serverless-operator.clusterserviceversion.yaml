@@ -338,14 +338,21 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller
                     - name: IMAGE_eventing-webhook__eventing-webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook
+                    # the next three images have 0 replicas, they got removed, and point to 0.15 release images
+                    # to migrate their deployments to 0
                     - name: IMAGE_broker-controller__broker-controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-broker                      
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker
+                    - name: IMAGE_broker-filter__filter
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-filter
+                    - name: IMAGE_broker-ingress__ingress
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-ingress
+                    # the mt broker replaces the removed broker
+                    - name: IMAGE_mt-broker-controller__mt-broker-controller
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker
                     - name: IMAGE_mt-broker-filter__filter
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-filter
                     - name: IMAGE_mt-broker-ingress__ingress
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-ingress
-                    - name: IMAGE_mt-broker-controller__mt-broker-controller
-                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker
                     - name: IMAGE_imc-controller__controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-controller
                     - name: IMAGE_imc-dispatcher__dispatcher
@@ -503,14 +510,21 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller
     - name: IMAGE_eventing-webhook__eventing-webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook
+    # the next three images have 0 replicas, they got removed, and point to 0.15 release images
+    # to migrate their deployments to 0
     - name: IMAGE_broker-controller__broker-controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-broker
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker
+    - name: IMAGE_broker-filter__filter
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-filter
+    - name: IMAGE_broker-ingress__ingress
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-ingress
+    # the mt broker replaces the removed broker
+    - name: IMAGE_mt-broker-controller__mt-broker-controller
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker
     - name: IMAGE_mt-broker-filter__filter
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-filter
     - name: IMAGE_mt-broker-ingress__ingress
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-ingress
-    - name: IMAGE_mt-broker-controller__mt-broker-controller
-      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker
     - name: IMAGE_imc-controller__controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-controller
     - name: IMAGE_imc-dispatcher__dispatcher
