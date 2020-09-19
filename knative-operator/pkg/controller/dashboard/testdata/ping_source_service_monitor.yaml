@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    name: knative-metrics-eventing-ps
-  name: knative-metrics-eventing-ps
+    name: knative-eventing-metrics-ps
+  name: knative-eventing-metrics-ps
 spec:
   ports:
     - name: http-metrics
@@ -27,4 +27,4 @@ spec:
   namespaceSelector: {}
   selector:
     matchLabels:
-      name: knative-metrics-eventing-ps
+      name: knative-eventing-metrics-ps
