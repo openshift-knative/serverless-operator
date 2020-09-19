@@ -2,13 +2,13 @@ package knativeeventing
 
 import (
 	"context"
-	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"os"
 	"testing"
 
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -119,6 +119,17 @@ func TestEventingReconcile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
+			smPingsource := &monitoringv1.ServiceMonitor{}
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-mn-ps", Namespace: ns.Namespace}, smPingsource)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
+			// Check if Ping source service is installed
+			pingsourceService := &corev1.Service{}
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-ps", Namespace: ns.Namespace}, pingsourceService)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
 			// Delete Dashboard configmaps.
 			err = cl.Delete(context.TODO(), brokerCM)
 			if err != nil {
@@ -134,6 +145,15 @@ func TestEventingReconcile(t *testing.T) {
 				t.Fatalf("delete: (%v)", err)
 			}
 			err = cl.Delete(context.TODO(), smIngress)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
+			err = cl.Delete(context.TODO(), smPingsource)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
+			// Delete pingsource service
+			err = cl.Delete(context.TODO(), pingsourceService)
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
 			}
@@ -156,16 +176,21 @@ func TestEventingReconcile(t *testing.T) {
 					}
 				}
 			}
-			// Check again if Eventing dashboard configmaps iare available.
+			// Check again if Eventing dashboard configmaps are available
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: ns.Name}, brokerCM)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-source", Namespace: ns.Name}, sourceCM)
 			checkError(t, err)
 
-			// Check again if the eventing service monitors are installed
+			// Check again if the eventing service monitors are available
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-filter", Namespace: ns.Namespace}, smFilter)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-ingress", Namespace: ns.Namespace}, smIngress)
+			checkError(t, err)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-mn-ps", Namespace: ns.Namespace}, smPingsource)
+			checkError(t, err)
+			// Check again if pingsource service is available
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-ps", Namespace: ns.Namespace}, pingsourceService)
 			checkError(t, err)
 		})
 	}

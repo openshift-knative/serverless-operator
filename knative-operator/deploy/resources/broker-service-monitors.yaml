@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    name: knative-eventing-metrics-broker-ingr
+    name: knative-eventing
   name: knative-eventing-metrics-broker-ingr
 spec:
   endpoints:
@@ -16,7 +16,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    name: knative-eventing-metrics-broker-filter
+    name: knative-eventing
   name: knative-eventing-metrics-broker-filter
 spec:
   endpoints:
