@@ -109,7 +109,7 @@ func SetupEventingServiceMonitors(client client.Client, namespace string, instan
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform broker service monitors manifest: %w", err)
 	}
-	// this is required because Apply will fail with not know resource later on
+	// this is required because Apply will fail with not known resource later on
 	monitor := &monitoringv1.ServiceMonitor{}
 	var SchemeGroupVersion = schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
 	scheme.Scheme.AddKnownTypes(SchemeGroupVersion, monitor)
