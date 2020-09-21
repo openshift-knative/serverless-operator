@@ -330,7 +330,7 @@ spec:
                       value: docker.io/maistra/proxyv2-ubi8:1.1.0
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.15.0:kourier
-                    - name: IMAGE_storage-version-migration__migrate
+                    - name: IMAGE_storage-version-migration-serving-0.16.0__migrate
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-storage-version-migration
                     - name: IMAGE_storage-version-migration-eventing__migrate
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-storage-version-migration
