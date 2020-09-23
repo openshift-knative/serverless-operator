@@ -336,6 +336,8 @@ spec:
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-storage-version-migration
                     - name: IMAGE_eventing-controller__eventing-controller
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller
+                    - name: IMAGE_sugar-controller__controller
+                      value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller
                     - name: IMAGE_eventing-webhook__eventing-webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook
                     # the next three images have 0 replicas, they got removed, and point to 0.15 release images
@@ -508,6 +510,8 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
     - name: IMAGE_eventing-controller__eventing-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller
+    - name: IMAGE_sugar-controller__controller
+      image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller
     - name: IMAGE_eventing-webhook__eventing-webhook
       image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook
     # the next three images have 0 replicas, they got removed, and point to 0.15 release images
