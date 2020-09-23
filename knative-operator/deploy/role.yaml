@@ -52,6 +52,13 @@ rules:
   - replicasets
   verbs:
   - get
+- apiGroups:
+  - operator.serverless.openshift.io
+  resources:
+  - '*'
+  - knativekafkas
+  verbs:
+  - '*'
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1

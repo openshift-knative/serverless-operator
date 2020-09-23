@@ -1,0 +1,7 @@
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: example-knativekafka
+spec:
+  # Add fields here
+  size: 3
