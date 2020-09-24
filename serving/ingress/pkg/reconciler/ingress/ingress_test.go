@@ -204,7 +204,7 @@ func ing(ns, name string, opts ...ingressOption) *v1alpha1.Ingress {
 			}},
 		},
 		Status: v1alpha1.IngressStatus{
-			LoadBalancer: &v1alpha1.LoadBalancerStatus{
+			PublicLoadBalancer: &v1alpha1.LoadBalancerStatus{
 				Ingress: []v1alpha1.LoadBalancerIngressStatus{{
 					DomainInternal: svcName + "." + ingressNamespace + ".svc.cluster.local",
 				}},

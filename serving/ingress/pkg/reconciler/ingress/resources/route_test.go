@@ -11,8 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/networking/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving"
 	"knative.dev/pkg/ptr"
+	"knative.dev/serving/pkg/apis/serving"
 )
 
 const (
@@ -270,7 +270,7 @@ func ingress(options ...ingressOption) *networkingv1alpha1.Ingress {
 			UID:       uid,
 		},
 		Status: networkingv1alpha1.IngressStatus{
-			LoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
+			PublicLoadBalancer: &networkingv1alpha1.LoadBalancerStatus{
 				Ingress: []networkingv1alpha1.LoadBalancerIngressStatus{{
 					DomainInternal: fmt.Sprintf("%s.%s.svc.cluster.local", lbService, lbNamespace),
 				}},
@@ -318,7 +318,7 @@ func withDisabledAnnotation(ing *networkingv1alpha1.Ingress) {
 
 func withLBInternalDomain(domain string) ingressOption {
 	return func(ing *networkingv1alpha1.Ingress) {
-		ing.Status.LoadBalancer.Ingress[0].DomainInternal = domain
+		ing.Status.PublicLoadBalancer.Ingress[0].DomainInternal = domain
 	}
 }
 

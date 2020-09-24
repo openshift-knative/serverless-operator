@@ -11,8 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/networking/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving"
 	"knative.dev/pkg/ptr"
+	"knative.dev/serving/pkg/apis/serving"
 )
 
 const (
@@ -101,8 +101,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
 	namespace := ""
-	if ci.Status.LoadBalancer != nil {
-		for _, lbIngress := range ci.Status.LoadBalancer.Ingress {
+	if ci.Status.PublicLoadBalancer != nil {
+		for _, lbIngress := range ci.Status.PublicLoadBalancer.Ingress {
 			if lbIngress.DomainInternal != "" {
 				// DomainInternal should look something like:
 				// kourier.knative-serving-ingress.svc.cluster.local
