@@ -1,3 +1,8 @@
+# Force dep to vendor the code generators, which aren't imported just used at dev time.
+required = [
+  "knative.dev/test-infra/scripts",
+]
+
 [prune]
   go-tests = true
   non-go = true
@@ -26,6 +31,14 @@
 [[constraint]]
   name = "knative.dev/pkg"
   branch = "release-0.15"
+
+[[constraint]]
+  name = "knative.dev/test-infra"
+  branch = "release-0.15"
+
+[[prune.project]]
+  name = "knative.dev/test-infra"
+  non-go = false
 
 [[constraint]]
   name = "github.com/operator-framework/operator-lifecycle-manager"

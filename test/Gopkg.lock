@@ -944,6 +944,14 @@
   revision = "f95f38bc0dfc8fe52eff76aad5f123dd1e8461d8"
 
 [[projects]]
+  branch = "release-0.15"
+  digest = "1:ead5b2c91b09224ba8af0df64d5a0437e91bd6b7478d0b81e59450a22f56cfb6"
+  name = "knative.dev/test-infra"
+  packages = ["scripts"]
+  pruneopts = "UT"
+  revision = "554a95a37986be595fa4ecadfd05cef7e9fb0fd1"
+
+[[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
   name = "sigs.k8s.io/yaml"
   packages = ["."]
@@ -990,6 +998,7 @@
     "knative.dev/serving/pkg/apis/serving",
     "knative.dev/serving/pkg/apis/serving/v1",
     "knative.dev/serving/pkg/client/clientset/versioned",
+    "knative.dev/test-infra/scripts",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
