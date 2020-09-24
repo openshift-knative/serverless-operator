@@ -15,10 +15,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.16.0}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.16.0}"
 
-# Adjust these when cutting a new CSV.
-# TODO: Read these from metadata.
-export CURRENT_CSV="serverless-operator.v1.10.0"
-export PREVIOUS_CSV="serverless-operator.v1.9.0"
+csv_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
+export CURRENT_CSV="$(yq r "$csv_file" metadata.name)"
+export PREVIOUS_CSV="$(yq r "$csv_file" spec.replaces)"
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
@@ -49,7 +48,16 @@ export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 
 export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-export OLM_CHANNEL="${OLM_CHANNEL:-"4.5"}"
+
+function latest_channel_from_metadata {
+  local annotations_file channels
+  annotations_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/metadata/annotations.yaml"
+  channels="$(yq r "$annotations_file" 'annotations."operators.operatorframework.io.bundle.channels.v1"')"
+  # Return the last channel.
+  echo "$channels" | awk -F"," '{ print $NF }'
+}
+
+export OLM_CHANNEL="${OLM_CHANNEL:-"$(latest_channel_from_metadata)"}"
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
