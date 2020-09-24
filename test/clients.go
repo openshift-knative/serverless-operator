@@ -15,7 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	aggregator "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
@@ -32,7 +31,6 @@ type Context struct {
 // Clients holds instances of interfaces for making requests to various APIs
 type Clients struct {
 	Kube               *kubernetes.Clientset
-	KubeAggregator     *aggregator.Clientset
 	Operator           operatorv1alpha1.OperatorV1alpha1Interface
 	Serving            *servingversioned.Clientset
 	OLM                olmversioned.Interface
@@ -114,93 +112,25 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	cfg.QPS = 100
 	cfg.Burst = 200
 
-	clients.Kube, err = kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.KubeAggregator, err = aggregator.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.Dynamic, err = dynamic.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.Operator, err = newKnativeOperatorClients(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.Serving, err = servingversioned.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.OLM, err = newOLMClient(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.Route, err = newOpenShiftRoutes(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.ProxyConfig, err = newOpenShiftProxyClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	clients.ConsoleCLIDownload, err = newConsoleCLIDownloadClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	clients.Config = cfg
+	clients.Kube = kubernetes.NewForConfigOrDie(cfg)
+	clients.Dynamic = dynamic.NewForConfigOrDie(cfg)
+	clients.Operator = operatorversioned.NewForConfigOrDie(cfg).OperatorV1alpha1()
+	clients.Serving = servingversioned.NewForConfigOrDie(cfg)
+	clients.Route = routev1.NewForConfigOrDie(cfg)
+	clients.ProxyConfig = configV1.NewForConfigOrDie(cfg)
+
+	clients.OLM, err = client.NewClient(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	clients.ConsoleCLIDownload = consolev1.NewForConfigOrDie(cfg).ConsoleCLIDownloads()
+	if err != nil {
+		return nil, err
+	}
+
 	return clients, nil
-}
-
-func newOLMClient(configPath string) (olmversioned.Interface, error) {
-	olmclient, err := client.NewClient(configPath)
-	if err != nil {
-		return nil, err
-	}
-	return olmclient, nil
-}
-
-func newKnativeOperatorClients(cfg *rest.Config) (operatorv1alpha1.OperatorV1alpha1Interface, error) {
-	cs, err := operatorversioned.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return cs.OperatorV1alpha1(), nil
-}
-
-func newOpenShiftRoutes(cfg *rest.Config) (routev1.RouteV1Interface, error) {
-	routeClient, err := routev1.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return routeClient, nil
-}
-
-func newOpenShiftProxyClient(cfg *rest.Config) (configV1.ConfigV1Interface, error) {
-	proxyClient, err := configV1.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return proxyClient, nil
-}
-
-func newConsoleCLIDownloadClient(cfg *rest.Config) (consolev1.ConsoleCLIDownloadInterface, error) {
-	consolev1, err := consolev1.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return consolev1.ConsoleCLIDownloads(), nil
 }
 
 // Cleanup for all contexts
