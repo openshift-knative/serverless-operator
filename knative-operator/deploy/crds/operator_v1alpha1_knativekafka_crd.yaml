@@ -14,6 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
+      description: KnativeKafka is the Schema for the knativekafkas API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
