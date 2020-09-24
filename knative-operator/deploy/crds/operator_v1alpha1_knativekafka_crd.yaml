@@ -40,11 +40,6 @@ spec:
                   description: Enabled defines if the KafkaChannel installation is
                     enabled
                   type: boolean
-                setAsDefaultChannelProvisioner:
-                  description: SetAsDefaultChannelProvisioner defines if KafkaChannel
-                    should be used as the default channel implementation when using
-                    generic Channels.
-                  type: boolean
               required:
               - enabled
               - bootstrapServers

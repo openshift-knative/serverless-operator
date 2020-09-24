@@ -64,11 +64,6 @@ type Channel struct {
 	// KafkaChannels will use
 	// +optional
 	BootstrapServers string `json:"bootstrapServers"`
-
-	// SetAsDefaultChannelProvisioner defines if KafkaChannel should be used
-	// as the default channel implementation when using generic Channels.
-	// +optional
-	SetAsDefaultChannelProvisioner bool `json:"setAsDefaultChannelProvisioner,omitempty"`
 }
 
 func init() {
