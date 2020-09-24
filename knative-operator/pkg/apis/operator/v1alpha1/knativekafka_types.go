@@ -5,16 +5,9 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // KnativeKafkaSpec defines the desired state of KnativeKafka
 // +k8s:openapi-gen=true
 type KnativeKafkaSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-
 	// Allows configuration for KafkaSource installation
 	// +optional
 	Source Source `json:"source,omitempty"`
@@ -27,10 +20,6 @@ type KnativeKafkaSpec struct {
 // KnativeKafkaStatus defines the observed state of KnativeKafka
 // +k8s:openapi-gen=true
 type KnativeKafkaStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-
 	duckv1.Status `json:",inline"`
 
 	// The version of the installed release
