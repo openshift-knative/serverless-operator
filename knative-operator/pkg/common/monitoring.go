@@ -24,7 +24,7 @@ const (
 	testRolePath    = "TEST_ROLE_PATH"
 )
 
-func SetupMonitoringRequirements(monitoredNamespace string, api client.Client, instance mf.Owner) error {
+func SetupMonitoringRequirements(api client.Client, monitoredNamespace string, instance mf.Owner) error {
 	err := addMonitoringLabelToNamespace(monitoredNamespace, api)
 	if err != nil {
 		return err

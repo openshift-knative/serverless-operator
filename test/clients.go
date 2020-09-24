@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	monclientv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	configV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	consolev1 "github.com/openshift/client-go/console/clientset/versioned/typed/console/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
@@ -42,6 +43,7 @@ type Clients struct {
 	Route              routev1.RouteV1Interface
 	ProxyConfig        configV1.ConfigV1Interface
 	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
+	MonitoringClient   monclientv1.MonitoringV1Interface
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -133,6 +135,8 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	clients.MonitoringClient = newMonitoringClient(cfg)
 
 	return clients, nil
 }

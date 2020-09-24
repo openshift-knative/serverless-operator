@@ -47,10 +47,9 @@ func init() {
 	os.Setenv("TEST_BROKER_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv("TEST_ROLE_PATH", "../dashboard/testdata/role_service_monitor.yaml")
 	os.Setenv("TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH", "../dashboard/testdata/broker-service-monitors.yaml")
-	os.Setenv("TEST_PING_SOURCE_SERVICE_MONITOR_PATH", "../dashboard/testdata/ping_source_service_monitor.yaml")
 }
 
-// TestEventingReconcile runs Reconcile to verify if expected Kourier resources are deleted.
+// TestEventingReconcile runs Reconcile to verify if eventing resources are created/deleted.
 func TestEventingReconcile(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
@@ -119,17 +118,6 @@ func TestEventingReconcile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
-			smPingsource := &monitoringv1.ServiceMonitor{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-mn-ps", Namespace: ns.Namespace}, smPingsource)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
-			// Check if Ping source service is installed
-			pingsourceService := &corev1.Service{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-ps", Namespace: ns.Namespace}, pingsourceService)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
 			// Delete Dashboard configmaps.
 			err = cl.Delete(context.TODO(), brokerCM)
 			if err != nil {
@@ -145,15 +133,6 @@ func TestEventingReconcile(t *testing.T) {
 				t.Fatalf("delete: (%v)", err)
 			}
 			err = cl.Delete(context.TODO(), smIngress)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
-			}
-			err = cl.Delete(context.TODO(), smPingsource)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
-			}
-			// Delete pingsource service
-			err = cl.Delete(context.TODO(), pingsourceService)
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
 			}
@@ -186,11 +165,6 @@ func TestEventingReconcile(t *testing.T) {
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-filter", Namespace: ns.Namespace}, smFilter)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-ingress", Namespace: ns.Namespace}, smIngress)
-			checkError(t, err)
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-mn-ps", Namespace: ns.Namespace}, smPingsource)
-			checkError(t, err)
-			// Check again if pingsource service is available
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-ps", Namespace: ns.Namespace}, pingsourceService)
 			checkError(t, err)
 		})
 	}

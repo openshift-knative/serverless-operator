@@ -141,10 +141,10 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 // installServiceMonitors installs service monitors for eventing dashboards
 func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Service Monitors")
-	if err := common.SetupMonitoringRequirements("knative-eventing", r.client, instance); err != nil {
+	if err := common.SetupMonitoringRequirements(r.client, "knative-eventing", instance); err != nil {
 		return err
 	}
-	if err := common.SetupEventingServiceMonitors(r.client, "knative-eventing", instance); err != nil {
+	if err := common.SetupEventingBrokerServiceMonitors(r.client, "knative-eventing", instance); err != nil {
 		return err
 	}
 	return nil

@@ -11,8 +11,12 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -22,9 +26,14 @@ import (
 
 const (
 	EventingBrokerServiceMonitorPath     = "deploy/resources/broker-service-monitors.yaml"
-	EventingPingSourceMonitorPath        = "deploy/resources/ping_source_service_monitor.yaml"
+	EventingSourceMonitorPath            = "deploy/resources/source-service-monitor.yaml"
+	EventingSourcePath                   = "deploy/resources/source-service.yaml"
 	testEventingBrokerServiceMonitorPath = "TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH"
-	testPingSourceServiceMonitorPath     = "TEST_PING_SOURCE_SERVICE_MONITOR_PATH"
+	testSourceServiceMonitorPath         = "TEST_SOURCE_SERVICE_MONITOR_PATH"
+	testSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
+	sourceLabel                          = "eventing.knative.dev/source"
+	sourceNameLabel                      = "eventing.knative.dev/sourceName"
+	sourceRoleLabel                      = "sources.knative.dev/role"
 )
 
 func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config, api client.Client, metricsPort int32, metricsHost string, operatorMetricsPort int32) error {
@@ -100,7 +109,7 @@ func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort in
 	return nil
 }
 
-func SetupEventingServiceMonitors(client client.Client, namespace string, instance *eventingv1alpha1.KnativeEventing) error {
+func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, instance *eventingv1alpha1.KnativeEventing) error {
 	manifest, err := mf.NewManifest(getMonitorPath(testEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to parse broker service monitors: %w", err)
@@ -116,12 +125,55 @@ func SetupEventingServiceMonitors(client client.Client, namespace string, instan
 	if err := manifest.Apply(); err != nil {
 		return err
 	}
-	manifest, err = mf.NewManifest(getMonitorPath(testPingSourceServiceMonitorPath, EventingPingSourceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
-	if err != nil {
-		return fmt.Errorf("unable to parse ping source service monitor: %w", err)
+	return nil
+}
+
+func SetupSourceServiceMonitor(client client.Client, namespace string, instance *appsv1.Deployment) error {
+	var sLabel, sNameLabel, sRoleLabel string
+	monitor := &monitoringv1.ServiceMonitor{}
+	var SchemeGroupVersion = schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
+	scheme.Scheme.AddKnownTypes(SchemeGroupVersion, monitor)
+	labels := instance.Spec.Selector.MatchLabels
+
+	if l, ok := labels[sourceLabel]; ok {
+		sLabel = l
 	}
+
+	if l, ok := labels[sourceNameLabel]; ok {
+		sNameLabel = l
+	}
+
+	if l, ok := labels[sourceRoleLabel]; ok {
+		sRoleLabel = l
+	}
+
+	clientOptions := mf.UseClient(mfclient.NewClient(client))
+	// create service for the deployment
+	manifest, err := mf.NewManifest(getMonitorPath(testSourceServicePath, EventingSourcePath), clientOptions)
+	if err != nil {
+		return fmt.Errorf("unable to parse source service manifest: %w", err)
+	}
+	transforms := []mf.Transformer{updateService(sLabel, sNameLabel, sRoleLabel, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
-		return fmt.Errorf("unable to transform ping source service monitor manifest: %w", err)
+		return fmt.Errorf("unable to transform source service manifest: %w", err)
+	}
+	if err := manifest.Apply(); err != nil {
+		return err
+	}
+
+	// get service back, needed for the UID and setting owner refs
+	srv := &v1.Service{}
+	if err := client.Get(context.TODO(), types.NamespacedName{Name: instance.Name, Namespace: instance.Namespace}, srv); err != nil {
+		return err
+	}
+	// create service monitor for source
+	manifest, err = mf.NewManifest(getMonitorPath(testSourceServiceMonitorPath, EventingSourceMonitorPath), clientOptions)
+	if err != nil {
+		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
+	}
+	transforms = []mf.Transformer{updateServiceMonitor(sLabel, sNameLabel, sRoleLabel, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(namespace)}
+	if manifest, err = manifest.Transform(transforms...); err != nil {
+		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
 	if err := manifest.Apply(); err != nil {
 		return err
@@ -135,4 +187,62 @@ func getMonitorPath(envVar string, defaultVal string) string {
 		return defaultVal
 	}
 	return path
+}
+
+func updateService(source string, sourceName string, role string, depName string) mf.Transformer {
+	return func(resource *unstructured.Unstructured) error {
+		if resource.GetKind() != "Service" {
+			return nil
+		}
+		var svc = &v1.Service{}
+		if err := scheme.Scheme.Convert(resource, svc, nil); err != nil {
+			return err
+		}
+
+		svc.Name = depName
+		svc.Labels = map[string]string{}
+		svc.Spec.Selector = map[string]string{}
+		svc.Labels[sourceLabel] = source
+		if sourceName != "" {
+			svc.Labels[sourceNameLabel] = sourceName
+		}
+		if role != "" {
+			svc.Labels[sourceRoleLabel] = role
+		}
+		svc.Spec.Selector[sourceLabel] = source
+		if sourceName != "" {
+			svc.Spec.Selector[sourceNameLabel] = sourceName
+		}
+		if role != "" {
+			svc.Spec.Selector[sourceRoleLabel] = role
+		}
+		svc.Labels["name"] = svc.Name
+		return scheme.Scheme.Convert(svc, resource, nil)
+	}
+}
+
+func updateServiceMonitor(source string, sourceName string, role string, depName string) mf.Transformer {
+	return func(resource *unstructured.Unstructured) error {
+		if resource.GetKind() != "ServiceMonitor" {
+			return nil
+		}
+		var sm = &monitoringv1.ServiceMonitor{}
+		if err := scheme.Scheme.Convert(resource, sm, nil); err != nil {
+			return err
+		}
+		sm.Name = depName
+		sm.Labels = map[string]string{}
+		sm.Labels[source] = source
+		if sourceName != "" {
+			sm.Labels[sourceNameLabel] = sourceName
+		}
+		if role != "" {
+			sm.Labels[sourceRoleLabel] = role
+		}
+		sm.Spec.Selector = metav1.LabelSelector{
+			MatchLabels: map[string]string{"name": sm.Name},
+		}
+		sm.Labels["name"] = sm.Name
+		return scheme.Scheme.Convert(sm, resource, nil)
+	}
 }
