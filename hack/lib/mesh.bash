@@ -206,7 +206,7 @@ function undeploy_smcp {
 
 function undeploy_servicemesh_operators {
   logger.info "Deleting subscriptions"
-  oc delete subscription -n openshift-operators servicemeshoperator kiali-ossm jaeger-product elasticsearch-operator --ignore-not-found
+  oc delete subscriptions.operators.coreos.com -n openshift-operators servicemeshoperator kiali-ossm jaeger-product elasticsearch-operator --ignore-not-found
 }
 
 function undeploy_servicemesh_example_certificates {
