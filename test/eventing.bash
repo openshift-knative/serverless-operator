@@ -8,7 +8,15 @@ function upstream_knative_eventing_e2e {
 
   TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
+  logger.info 'File system permissions'
+
+  pwd
+
+  ls -al
+
   cd "$KNATIVE_EVENTING_HOME" || return $?
+
+  ls -al
 
   source "${KNATIVE_EVENTING_HOME}/openshift/e2e-common.sh"
 
