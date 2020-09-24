@@ -54,7 +54,7 @@ function serverless_operator_e2e_tests {
 
   local failed=0
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e -run ^TestServerlessOperator$ \
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
@@ -81,7 +81,6 @@ function downstream_serving_e2e_tests {
   add_systemnamespace_label
 
   local failed=0
-  go test -v -count=1 ./e2e/ -run ^TestServerlessOperator$
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
