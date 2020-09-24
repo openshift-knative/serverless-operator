@@ -1,24 +1,10 @@
-# Force dep to vendor the code generators, which aren't imported just used at dev time.
-required = [
-  "knative.dev/test-infra/scripts",
-  "knative.dev/test-infra/tools/dep-collector",
-]
-
 [prune]
   go-tests = true
   non-go = true
   unused-packages = true
 
-[[prune.project]]
-  name = "knative.dev/test-infra"
-  non-go = false
-
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.16.4"
-
-[[override]]
-  name = "k8s.io/apiextensions-apiserver"
   version = "kubernetes-1.16.4"
 
 [[override]]
@@ -29,17 +15,9 @@ required = [
   name = "k8s.io/client-go"
   version = "kubernetes-1.16.4"
 
-[[override]]
-  name = "k8s.io/kube-aggregator"
-  version = "kubernetes-1.16.4"
-
 [[constraint]]
   name = "knative.dev/operator"
   branch = "release-0.14"
-
-[[constraint]]
-  name = "knative.dev/test-infra"
-  branch = "release-0.15"
 
 [[constraint]]
   name = "knative.dev/serving"

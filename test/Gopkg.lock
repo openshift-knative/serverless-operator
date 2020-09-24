@@ -163,21 +163,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a8674ea5ceb0c2a72a9b9518415b73d26d6c77aec49fe7fee78f15d6d137fc3a"
-  name = "github.com/google/licenseclassifier"
-  packages = [
-    ".",
-    "internal/sets",
-    "stringclassifier",
-    "stringclassifier/internal/pq",
-    "stringclassifier/searchset",
-    "stringclassifier/searchset/tokenizer",
-  ]
-  pruneopts = "NUT"
-  revision = "c3068f13fcc3961fd05f96f13c8250e350db4209"
-
-[[projects]]
   digest = "1:ab3ec1fe3e39bac4b3ab63390767766622be35b7cab03f47f787f9ec60522a53"
   name = "github.com/google/uuid"
   packages = ["."]
@@ -324,14 +309,6 @@
   pruneopts = "NUT"
   revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
   version = "v0.8.1"
-
-[[projects]]
-  digest = "1:d917313f309bda80d27274d53985bc65651f81a5b66b820749ac7f8ef061fd04"
-  name = "github.com/sergi/go-diff"
-  packages = ["diffmatchpatch"]
-  pruneopts = "NUT"
-  revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
-  version = "v1.0.0"
 
 [[projects]]
   digest = "1:f4aaa07a6c33f2b354726d0571acbc8ca118837c75709f6353203ae1a3f8eeab"
@@ -877,22 +854,6 @@
   version = "v0.4.0"
 
 [[projects]]
-  digest = "1:ffa4fe13971f21065fd9f609b2ca7044eba63199b92a64300a57dd32c896af78"
-  name = "k8s.io/kube-aggregator"
-  packages = [
-    "pkg/apis/apiregistration",
-    "pkg/apis/apiregistration/v1",
-    "pkg/apis/apiregistration/v1beta1",
-    "pkg/client/clientset_generated/clientset",
-    "pkg/client/clientset_generated/clientset/scheme",
-    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1",
-    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1",
-  ]
-  pruneopts = "NUT"
-  revision = "d1ab452532b6e7739c0add796421f4553fc1dcc6"
-  version = "kubernetes-1.16.4"
-
-[[projects]]
   branch = "master"
   digest = "1:5808bb1694e8727155e7c023499195cd0f9931b56545fe37795985f87f024696"
   name = "k8s.io/kube-openapi"
@@ -905,12 +866,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:99dbf7ef753ca02399778c93a4ed4b689b28668317134ecd1fabeb07be70f354"
+  digest = "1:2d3f59daa4b479ff4e100a2e1d8fea6780040fdadc177869531fe4cc29407f55"
   name = "k8s.io/utils"
   packages = [
     "buffer",
     "integer",
-    "pointer",
     "trace",
   ]
   pruneopts = "NUT"
@@ -984,17 +944,6 @@
   revision = "f95f38bc0dfc8fe52eff76aad5f123dd1e8461d8"
 
 [[projects]]
-  branch = "release-0.15"
-  digest = "1:5b6f7bfb020127ddf61b50eeead0fc65e5884d133fff08314ebb964617c6ce69"
-  name = "knative.dev/test-infra"
-  packages = [
-    "scripts",
-    "tools/dep-collector",
-  ]
-  pruneopts = "UT"
-  revision = "554a95a37986be595fa4ecadfd05cef7e9fb0fd1"
-
-[[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
   name = "sigs.k8s.io/yaml"
   packages = ["."]
@@ -1030,7 +979,6 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
-    "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
     "knative.dev/operator/pkg/apis/operator/v1alpha1",
     "knative.dev/operator/pkg/client/clientset/versioned",
     "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1",
@@ -1042,8 +990,6 @@
     "knative.dev/serving/pkg/apis/serving",
     "knative.dev/serving/pkg/apis/serving/v1",
     "knative.dev/serving/pkg/client/clientset/versioned",
-    "knative.dev/test-infra/scripts",
-    "knative.dev/test-infra/tools/dep-collector",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
