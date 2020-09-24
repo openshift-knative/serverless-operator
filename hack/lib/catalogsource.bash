@@ -64,11 +64,6 @@ spec:
         - containerPort: 50051
           name: grpc
           protocol: TCP
-        livenessProbe:
-          exec:
-            command:
-            - grpc_health_probe
-            - -addr=localhost:50051
         readinessProbe:
           exec:
             command:
