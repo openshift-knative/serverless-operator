@@ -25,8 +25,9 @@ function install_catalogsource {
   cp "$csv" "${rootdir}/bkp.yaml"
 
   if [ -n "$OPENSHIFT_CI" ]; then
-    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${IMAGE_FORMAT//\$\{component\}/knative-operator}," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${IMAGE_FORMAT//\$\{component\}/knative-openshift-ingress}," "$csv"
+    # Image variables supplied by ci-operator.
+    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
