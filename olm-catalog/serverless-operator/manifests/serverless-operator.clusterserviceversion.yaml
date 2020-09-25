@@ -263,64 +263,65 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                - name: IMAGE_queue-proxy
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-queue
-                - name: IMAGE_activator
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-activator
-                - name: IMAGE_autoscaler
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler
-                - name: IMAGE_autoscaler-hpa
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler-hpa
-                - name: IMAGE_controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-controller
-                - name: IMAGE_webhook
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-webhook
-                - name: IMAGE_storage-version-migration-serving-0.16.0__migrate
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-storage-version-migration
-                - name: IMAGE_storage-version-migration-eventing__migrate
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-storage-version-migration
-                - name: IMAGE_eventing-controller__eventing-controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller
-                - name: IMAGE_sugar-controller__controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller
-                - name: IMAGE_eventing-webhook__eventing-webhook
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook
-                # the next three images have 0 replicas, they got removed, and point to 0.15 release images
-                # to migrate their deployments to 0
-                - name: IMAGE_broker-controller__broker-controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker
-                - name: IMAGE_broker-filter__filter
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-filter
-                - name: IMAGE_broker-ingress__ingress
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-ingress
-                # the mt broker replaces the removed broker
-                - name: IMAGE_mt-broker-controller__mt-broker-controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker
-                - name: IMAGE_mt-broker-filter__filter
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-filter
-                - name: IMAGE_mt-broker-ingress__ingress
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-ingress
-                - name: IMAGE_imc-controller__controller
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-controller
-                - name: IMAGE_imc-dispatcher__dispatcher
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher
-                - name: IMAGE_v0.16.0-broker-cleanup__brokers
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-cleanup
-                - name: IMAGE_PING_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-ping
-                - name: IMAGE_MT_PING_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtping
-                - name: IMAGE_APISERVER_RA_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-apiserver-receive-adapter
-                - name: IMAGE_BROKER_INGRESS_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-ingress
-                - name: IMAGE_BROKER_FILTER_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-filter
-                - name: IMAGE_DISPATCHER_IMAGE
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher
-                - name: IMAGE_KN_CLI_ARTIFACTS
-                  value: registry.svc.ci.openshift.org/openshift/knative-v0.16.1:kn-cli-artifacts
-                image: docker.io/markusthoemmes/knative-operator:test-images
+                - name: "IMAGE_DISPATCHER_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher"
+                - name: "IMAGE_KN_CLI_ARTIFACTS"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.1:kn-cli-artifacts"
+                - name: "IMAGE_autoscaler"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler"
+                - name: "IMAGE_imc-dispatcher__dispatcher"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher"
+                - name: "IMAGE_3scale-kourier-gateway"
+                  value: "docker.io/maistra/proxyv2-ubi8:1.1.0"
+                - name: "IMAGE_PING_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-ping"
+                - name: "IMAGE_APISERVER_RA_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-apiserver-receive-adapter"
+                - name: "IMAGE_BROKER_FILTER_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-filter"
+                - name: "IMAGE_imc-controller__controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-controller"
+                - name: "IMAGE_mt-broker-filter__filter"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-filter"
+                - name: "IMAGE_eventing-webhook__eventing-webhook"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-webhook"
+                - name: "IMAGE_queue-proxy"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-queue"
+                - name: "IMAGE_activator"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-activator"
+                - name: "IMAGE_eventing-controller__eventing-controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-controller"
+                - name: "IMAGE_controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-controller"
+                - name: "IMAGE_mt-broker-controller__mt-broker-controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtchannel-broker"
+                - name: "IMAGE_broker-controller__broker-controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-channel-broker"
+                - name: "IMAGE_mt-broker-ingress__ingress"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtbroker-ingress"
+                - name: "IMAGE_storage-version-migration-eventing__migrate"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-storage-version-migration"
+                - name: "IMAGE_3scale-kourier-control"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:kourier"
+                - name: "IMAGE_broker-filter__filter"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-filter"
+                - name: "IMAGE_webhook"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-webhook"
+                - name: "IMAGE_MT_PING_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-mtping"
+                - name: "IMAGE_broker-ingress__ingress"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-broker-ingress"
+                - name: "IMAGE_BROKER_INGRESS_IMAGE"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-ingress"
+                - name: "IMAGE_storage-version-migration-serving-0.16.0__migrate"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-storage-version-migration"
+                - name: "IMAGE_autoscaler-hpa"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler-hpa"
+                - name: "IMAGE_v0.16.0-broker-cleanup__brokers"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-cleanup"
+                - name: "IMAGE_sugar-controller__controller"
+                  value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller"
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
                 ports:
