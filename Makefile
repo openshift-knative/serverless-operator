@@ -56,4 +56,6 @@ generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
 csv:
-	./olm-catalog/serverless-operator/generate_csv.sh olm-catalog/serverless-operator/csv.template.yaml olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+	./olm-catalog/serverless-operator/generate_csv.sh \
+		olm-catalog/serverless-operator/csv.template.yaml \
+		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml

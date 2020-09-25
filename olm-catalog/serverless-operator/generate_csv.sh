@@ -1,7 +1,9 @@
-# !/bin/bash
+#!/bin/bash
 
-template=$1
-target=$2
+set -Eeuo pipefail
+
+template="${1:?Provide template file as arg[1]}"
+target="${2:?Provide a target CSV file as arg[2]}"
 
 declare -A images
 images=(
@@ -62,10 +64,8 @@ EOF
 EOF
 }
 
-echo $template $target
-
 # Start fresh
-cp $template $target
+cp "$template" "$target"
 
 for name in "${!images[@]}"; do
   add_image "$target" "$name" "${images[$name]}"
