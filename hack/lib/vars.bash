@@ -15,6 +15,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.16.0}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.16.0}"
 
+# Make sure yq is on PATH.
+yq > /dev/null || exit 127
 csv_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
 export CURRENT_CSV="$(yq r "$csv_file" metadata.name)"
 export PREVIOUS_CSV="$(yq r "$csv_file" spec.replaces)"
