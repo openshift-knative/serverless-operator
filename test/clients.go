@@ -136,7 +136,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
-	clients.MonitoringClient = newMonitoringClient(cfg)
+	clients.MonitoringClient = monclientv1.NewForConfigOrDie(cfg)
 
 	return clients, nil
 }
