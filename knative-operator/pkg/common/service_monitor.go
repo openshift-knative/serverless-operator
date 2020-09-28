@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	mfclient "github.com/manifestival/controller-runtime-client"
@@ -18,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -28,12 +30,13 @@ const (
 	EventingBrokerServiceMonitorPath     = "deploy/resources/broker-service-monitors.yaml"
 	EventingSourceMonitorPath            = "deploy/resources/source-service-monitor.yaml"
 	EventingSourcePath                   = "deploy/resources/source-service.yaml"
-	testEventingBrokerServiceMonitorPath = "TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH"
-	testSourceServiceMonitorPath         = "TEST_SOURCE_SERVICE_MONITOR_PATH"
-	testSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
-	sourceLabel                          = "eventing.knative.dev/source"
-	sourceNameLabel                      = "eventing.knative.dev/sourceName"
-	sourceRoleLabel                      = "sources.knative.dev/role"
+	SourceLabel                          = "eventing.knative.dev/source"
+	SourceNameLabel                      = "eventing.knative.dev/sourceName"
+	SourceRoleLabel                      = "sources.knative.dev/role"
+	TestEventingBrokerServiceMonitorPath = "TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH"
+	TestMonitor                          = "TEST_MONITOR"
+	TestSourceServiceMonitorPath         = "TEST_SOURCE_SERVICE_MONITOR_PATH"
+	TestSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
 )
 
 func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config, api client.Client, metricsPort int32, metricsHost string, operatorMetricsPort int32) error {
@@ -110,7 +113,10 @@ func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort in
 }
 
 func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, instance *eventingv1alpha1.KnativeEventing) error {
-	manifest, err := mf.NewManifest(getMonitorPath(testEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
+	if err := isServiceMonitorAvailable(); err != nil {
+		return err
+	}
+	manifest, err := mf.NewManifest(getMonitorPath(TestEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to parse broker service monitors: %w", err)
 	}
@@ -130,26 +136,31 @@ func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, 
 
 func SetupSourceServiceMonitor(client client.Client, namespace string, instance *appsv1.Deployment) error {
 	var sLabel, sNameLabel, sRoleLabel string
+
+	if err := isServiceMonitorAvailable(); err != nil {
+		return err
+	}
+
 	monitor := &monitoringv1.ServiceMonitor{}
 	var SchemeGroupVersion = schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
 	scheme.Scheme.AddKnownTypes(SchemeGroupVersion, monitor)
 	labels := instance.Spec.Selector.MatchLabels
 
-	if l, ok := labels[sourceLabel]; ok {
+	if l, ok := labels[SourceLabel]; ok {
 		sLabel = l
 	}
 
-	if l, ok := labels[sourceNameLabel]; ok {
+	if l, ok := labels[SourceNameLabel]; ok {
 		sNameLabel = l
 	}
 
-	if l, ok := labels[sourceRoleLabel]; ok {
+	if l, ok := labels[SourceRoleLabel]; ok {
 		sRoleLabel = l
 	}
 
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
 	// create service for the deployment
-	manifest, err := mf.NewManifest(getMonitorPath(testSourceServicePath, EventingSourcePath), clientOptions)
+	manifest, err := mf.NewManifest(getMonitorPath(TestSourceServicePath, EventingSourcePath), clientOptions)
 	if err != nil {
 		return fmt.Errorf("unable to parse source service manifest: %w", err)
 	}
@@ -167,7 +178,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 		return err
 	}
 	// create service monitor for source
-	manifest, err = mf.NewManifest(getMonitorPath(testSourceServiceMonitorPath, EventingSourceMonitorPath), clientOptions)
+	manifest, err = mf.NewManifest(getMonitorPath(TestSourceServiceMonitorPath, EventingSourceMonitorPath), clientOptions)
 	if err != nil {
 		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
 	}
@@ -202,19 +213,19 @@ func updateService(source string, sourceName string, role string, depName string
 		svc.Name = depName
 		svc.Labels = map[string]string{}
 		svc.Spec.Selector = map[string]string{}
-		svc.Labels[sourceLabel] = source
+		svc.Labels[SourceLabel] = source
 		if sourceName != "" {
-			svc.Labels[sourceNameLabel] = sourceName
+			svc.Labels[SourceNameLabel] = sourceName
 		}
 		if role != "" {
-			svc.Labels[sourceRoleLabel] = role
+			svc.Labels[SourceRoleLabel] = role
 		}
-		svc.Spec.Selector[sourceLabel] = source
+		svc.Spec.Selector[SourceLabel] = source
 		if sourceName != "" {
-			svc.Spec.Selector[sourceNameLabel] = sourceName
+			svc.Spec.Selector[SourceNameLabel] = sourceName
 		}
 		if role != "" {
-			svc.Spec.Selector[sourceRoleLabel] = role
+			svc.Spec.Selector[SourceRoleLabel] = role
 		}
 		svc.Labels["name"] = svc.Name
 		return scheme.Scheme.Convert(svc, resource, nil)
@@ -234,10 +245,10 @@ func updateServiceMonitor(source string, sourceName string, role string, depName
 		sm.Labels = map[string]string{}
 		sm.Labels[source] = source
 		if sourceName != "" {
-			sm.Labels[sourceNameLabel] = sourceName
+			sm.Labels[SourceNameLabel] = sourceName
 		}
 		if role != "" {
-			sm.Labels[sourceRoleLabel] = role
+			sm.Labels[SourceRoleLabel] = role
 		}
 		sm.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: map[string]string{"name": sm.Name},
@@ -245,4 +256,35 @@ func updateServiceMonitor(source string, sourceName string, role string, depName
 		sm.Labels["name"] = sm.Name
 		return scheme.Scheme.Convert(sm, resource, nil)
 	}
+}
+
+func isServiceMonitorAvailable() error {
+	// in unit test mode just return, assume the required
+	// env is setup
+	if checkIfTesting() {
+		return nil
+	}
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		return err
+	}
+	dc := discovery.NewDiscoveryClientForConfigOrDie(cfg)
+	apiVersion := "monitoring.coreos.com/v1"
+	kind := "ServiceMonitor"
+	exists, err := k8sutil.ResourceExists(dc, apiVersion, kind)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return metrics.ErrServiceMonitorNotPresent
+	}
+	return nil
+}
+
+func checkIfTesting() bool {
+	if testVar := os.Getenv("TEST_MONITOR"); testVar != "" {
+		ret, _ := strconv.ParseBool(testVar)
+		return ret
+	}
+	return false
 }

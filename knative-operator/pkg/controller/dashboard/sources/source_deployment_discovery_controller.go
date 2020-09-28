@@ -2,7 +2,6 @@ package sources
 
 import (
 	"context"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,12 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-)
-
-const (
-	SourceLabel     = "eventing.knative.dev/source"
-	SourceNameLabel = "eventing.knative.dev/sourceName"
-	SourceRoleLabel = "sources.knative.dev/role"
 )
 
 var log = common.Log.WithName("source-deployment-discovery-controller")
@@ -47,9 +40,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
 		dep := obj.Object.(*v1.Deployment)
-		sourceLabel := dep.Spec.Selector.MatchLabels[SourceLabel]
-		sourceNameLabel := dep.Spec.Selector.MatchLabels[SourceNameLabel]
-		sourceRoleLabel := dep.Spec.Selector.MatchLabels[SourceRoleLabel]
+		sourceLabel := dep.Spec.Selector.MatchLabels[common.SourceLabel]
+		sourceNameLabel := dep.Spec.Selector.MatchLabels[common.SourceNameLabel]
+		sourceRoleLabel := dep.Spec.Selector.MatchLabels[common.SourceRoleLabel]
 
 		if (sourceLabel != "" && sourceNameLabel != "") || (sourceLabel != "" && sourceRoleLabel != "") {
 			return []reconcile.Request{{

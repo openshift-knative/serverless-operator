@@ -133,7 +133,7 @@ function add_user {
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
     --dry-run -o yaml | kubectl apply -f -
-  oc apply -f openshift/identity/htpasswd.yaml
+  oc replace -f openshift/identity/htpasswd.yaml
 
   logger.info 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"

@@ -2,6 +2,7 @@ package knativeeventing
 
 import (
 	"context"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"os"
 	"testing"
 
@@ -45,8 +46,9 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("TEST_SOURCE_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
 	os.Setenv("TEST_BROKER_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
-	os.Setenv("TEST_ROLE_PATH", "../dashboard/testdata/role_service_monitor.yaml")
-	os.Setenv("TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH", "../dashboard/testdata/broker-service-monitors.yaml")
+	os.Setenv(common.TestRolePath, "../dashboard/testdata/role_service_monitor.yaml")
+	os.Setenv(common.TestEventingBrokerServiceMonitorPath, "../dashboard/testdata/broker-service-monitors.yaml")
+	os.Setenv(common.TestMonitor, "true")
 }
 
 // TestEventingReconcile runs Reconcile to verify if eventing resources are created/deleted.
