@@ -54,7 +54,7 @@ function serverless_operator_e2e_tests {
 
   local failed=0
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e -run ^TestServerlessOperator$ \
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
