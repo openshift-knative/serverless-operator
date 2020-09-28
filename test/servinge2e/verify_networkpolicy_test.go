@@ -31,7 +31,7 @@ func TestNetworkPolicy(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
-	policy := &networkingv1.NetworkPolicy{
+	policyDeny := &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: policyNameDeny,
 		},
@@ -41,9 +41,9 @@ func TestNetworkPolicy(t *testing.T) {
 		},
 	}
 
-	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policy)
+	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policyDeny)
 	if err != nil && !apierrs.IsAlreadyExists(err) {
-		t.Fatalf("Failed to create networkpolicy %v: %v", policy, err)
+		t.Fatalf("Failed to create networkpolicy %v: %v", policyDeny, err)
 	}
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameDeny, &metav1.DeleteOptions{})
 
