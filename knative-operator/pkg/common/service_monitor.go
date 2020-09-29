@@ -28,7 +28,7 @@ import (
 
 const (
 	EventingBrokerServiceMonitorPath     = "deploy/resources/broker-service-monitors.yaml"
-	EventingSourceMonitorPath            = "deploy/resources/source-service-monitor.yaml"
+	EventingSourceServiceMonitorPath     = "deploy/resources/source-service-monitor.yaml"
 	EventingSourcePath                   = "deploy/resources/source-service.yaml"
 	SourceLabel                          = "eventing.knative.dev/source"
 	SourceNameLabel                      = "eventing.knative.dev/sourceName"
@@ -178,7 +178,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 		return err
 	}
 	// create service monitor for source
-	manifest, err = mf.NewManifest(getMonitorPath(TestSourceServiceMonitorPath, EventingSourceMonitorPath), clientOptions)
+	manifest, err = mf.NewManifest(getMonitorPath(TestSourceServiceMonitorPath, EventingSourceServiceMonitorPath), clientOptions)
 	if err != nil {
 		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
 	}
