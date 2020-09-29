@@ -20,9 +20,9 @@ $ make images test-operator
 - `podman` aliased to `docker` or `docker` (17.05 or newer)
 - `podman` or `docker` is logged into a repository you can push to
 - `DOCKER_REPO_OVERRIDE` points to that repository
-- `envsubst`
 - `bash` (4.0.0 or newer)
 - `make`
+- `yq`
 
 ### CRC-based cluster
 
