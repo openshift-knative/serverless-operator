@@ -373,6 +373,10 @@ spec:
                   value: deploy/resources/kourier/kourier-latest.yaml
                 - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
                   value: deploy/resources/console_cli_download_kn_resources.yaml
+                - name: KAFKACHANNEL_MANIFEST_PATH
+                  value: deploy/resources/knativekafka/kafkachannel-latest.yaml
+                - name: KAFKASOURCE_MANIFEST_PATH
+                  value: deploy/resources/knativekafka/kafkasource-latest.yaml
                 - name: "IMAGE_DISPATCHER_IMAGE"
                   value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher"
                 - name: "IMAGE_KN_CLI_ARTIFACTS"
