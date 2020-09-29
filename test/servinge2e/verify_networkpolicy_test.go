@@ -20,6 +20,8 @@ const (
 // 1. creates the deny-all policy and verify if access does not work.
 // 2. create the allow-from-serving-system-ns and verify if access works.
 func TestNetworkPolicy(t *testing.T) {
+	t.Skip("SRVKS-628: This needs investigation")
+
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
