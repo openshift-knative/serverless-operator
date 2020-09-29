@@ -5,6 +5,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/pkg/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -41,26 +42,45 @@ func TestServerlessOperator(t *testing.T) {
 
 	t.Run("undeploy serverless operator and check dependent monitoring resources removed", func(t *testing.T) {
 		caCtx.Cleanup(t)
-		if err := waitForOperatorMonitoringDepsDeleted(caCtx); err != nil {
+		if err := waitForOperatorMonitoringServiceDeleted(caCtx); err != nil {
+			t.Fatalf("Monitoring service is still available: %v", err)
+		}
+		if err := waitForOperatorServiceMonitorDeleted(caCtx); err != nil {
 			t.Fatalf("Service monitor is still available: %v", err)
 		}
 	})
 }
 
-func waitForOperatorMonitoringDepsDeleted(ctx *test.Context) error {
+func waitForOperatorMonitoringServiceDeleted(ctx *test.Context) error {
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		_, err := ctx.Clients.Kube.CoreV1().Services(test.OperatorsNamespace).Get(serviceName, metav1.GetOptions{})
-		if err != nil {
+		s, err := ctx.Clients.Kube.CoreV1().Services(test.OperatorsNamespace).Get(serviceName, metav1.GetOptions{})
+		if err == nil && s != nil {
 			return false, err
 		}
-		_, err = ctx.Clients.MonitoringClient.ServiceMonitors(test.OperatorsNamespace).Get(serviceMonitorName, metav1.GetOptions{})
-		if err != nil {
-			return false, err
+		if apierrors.IsNotFound(err) {
+			return true, nil
 		}
 		return true, err
 	})
 	if waitErr != nil {
-		return errors.Wrapf(waitErr, "serverless operator dependencies not deleted in time")
+		return errors.Wrapf(waitErr, "serverless operator monitoring dependencies not deleted in time")
+	}
+	return nil
+}
+
+func waitForOperatorServiceMonitorDeleted(ctx *test.Context) error {
+	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		sm, err := ctx.Clients.MonitoringClient.ServiceMonitors(test.OperatorsNamespace).Get(serviceMonitorName, metav1.GetOptions{})
+		if err == nil && sm != nil {
+			return false, err
+		}
+		if apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		return true, err
+	})
+	if waitErr != nil {
+		return errors.Wrapf(waitErr, "serverless operator monitoring dependencies not deleted in time")
 	}
 	return nil
 }
