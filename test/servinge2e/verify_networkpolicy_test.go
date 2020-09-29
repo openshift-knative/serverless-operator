@@ -3,7 +3,6 @@ package servinge2e
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -46,9 +45,21 @@ func TestNetworkPolicy(t *testing.T) {
 	}
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameDeny, &metav1.DeleteOptions{})
 
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	// We don't want connections to be kept alive.
+	tr.DisableKeepAlives = true
+	client := http.Client{
+		Transport: http.DefaultTransport.(*http.Transport).Clone(),
+	}
+
+	req, err := http.NewRequest(http.MethodGet, ksvc.Status.URL.String(), nil)
+	if err != nil {
+		t.Fatal("Failed to construct request", err)
+	}
+
 	// Poll until network policy became active. It takes a few seconds.
-	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
-		resp, inErr := http.Get(ksvc.Status.URL.String())
+	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		resp, inErr := client.Do(req)
 		if inErr == nil && resp.StatusCode == http.StatusOK {
 			t.Logf("Network policy did not block the request to %s", ksvc.Status.URL.String())
 			return false, nil
@@ -84,8 +95,8 @@ func TestNetworkPolicy(t *testing.T) {
 	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameAllow, &metav1.DeleteOptions{})
 
 	// Poll until network policy became active. It takes a few seconds.
-	err = wait.PollImmediate(test.Interval, 1*time.Minute, func() (bool, error) {
-		resp, inErr := http.Get(ksvc.Status.URL.String())
+	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		resp, inErr := client.Do(req)
 		if inErr != nil || resp.StatusCode != http.StatusOK {
 			t.Logf("Network policy did not allow the request to %s: %v", ksvc.Status.URL.String(), inErr)
 			return false, nil
