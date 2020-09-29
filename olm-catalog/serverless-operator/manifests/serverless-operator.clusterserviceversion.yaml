@@ -353,7 +353,7 @@ spec:
                     - name: IMAGE_webhook
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-webhook
                     - name: IMAGE_3scale-kourier-gateway
-                      value: docker.io/maistra/proxyv2-ubi8:1.0.8
+                      value: docker.io/maistra/proxyv2-ubi8:1.1.1
                     - name: IMAGE_3scale-kourier-control
                       value: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:kourier
                     - name: IMAGE_eventing-controller
@@ -505,7 +505,7 @@ spec:
     - name: IMAGE_3scale-kourier-control
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:kourier
     - name: IMAGE_3scale-kourier-gateway
-      image: docker.io/maistra/proxyv2-ubi8:1.0.8
+      image: docker.io/maistra/proxyv2-ubi8:1.1.1
     - name: knative-serving-operator
       image: registry.svc.ci.openshift.org/openshift/knative-v0.13.3:knative-serving-operator
     - name: knative-operator
