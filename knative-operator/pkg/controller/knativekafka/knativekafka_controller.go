@@ -13,7 +13,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -377,7 +376,7 @@ func deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clie
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := deleteKnativeKafkaSource(api); err != nil {
+		if err := deleteKnativeKafkaSource(instance, api); err != nil {
 			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
 		}
 	}
@@ -400,8 +399,8 @@ func deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclien
 	return nil
 }
 
-func deleteKnativeKafkaSource(apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(apiclient)
+func deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := kafkaSourceManifest(instance, apiclient)
 	if err != nil {
 		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
 	}
