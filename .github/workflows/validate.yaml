@@ -1,0 +1,31 @@
+---
+name: Validate
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+  pull_request:
+
+jobs:
+  generated-files-commited:
+    name: Generated files are commited
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install prerequisites
+        run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+          add-apt-repository ppa:rmescandon/yq
+          apt update
+          apt install yq -y
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate release files
+        run: make release-files
+
+      - name: Check if everything is consistent
+        run: git diff --exit-code
