@@ -290,11 +290,6 @@ spec:
                   command:
                   - knative-openshift
                   imagePullPolicy: Always
-                  readinessProbe:
-                    httpGet:
-                      scheme: HTTPS
-                      port: 9876
-                      path: "/mutate-knativeservings"
                   env:
                     - name: WATCH_NAMESPACE
                       value: ""
