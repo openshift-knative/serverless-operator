@@ -44,10 +44,16 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
-		// Check the status of deployments in the knative serving namespace
+		// Check the status of scaled deployments in the knative serving namespace
 		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
+			}
+		}
+		// Check the status of deployments in the knative serving namespace
+		for _, deployment := range []string{"autoscaler", "webhook"} {
+			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
 		// Check the status of deployments in the ingress namespace.
