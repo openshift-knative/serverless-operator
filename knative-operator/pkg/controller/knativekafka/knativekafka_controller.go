@@ -8,11 +8,14 @@ import (
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,7 +59,59 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// NOT IMPLEMENTED YET
+	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
+		OwnerType:    &operatorv1alpha1.KnativeKafka{},
+		IsController: true,
+	})
+	if err != nil {
+		return err
+	}
+
+	// common function to enqueue reconcile requests for resources
+	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
+		annotations := obj.Meta.GetAnnotations()
+		ownerNamespace := annotations[common.KafkaOwnerNamespace]
+		ownerName := annotations[common.KafkaOwnerName]
+		if ownerNamespace != "" && ownerName != "" {
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+			}}
+		}
+		return nil
+	})
+
+	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
+
+	// Watch for Knative KafkaChannel resources.
+	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	kafkaChannelResources := kafkaChannelManifest.Resources()
+
+	for i := range kafkaChannelResources {
+		resource := &kafkaChannelResources[i]
+		gvkToResource[resource.GroupVersionKind()] = resource
+	}
+
+	// Watch for Knative KafkaSource resources.
+	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	kafkaSourceResources := kafkaSourceManifest.Resources()
+
+	for i := range kafkaSourceResources {
+		resource := &kafkaSourceResources[i]
+		gvkToResource[resource.GroupVersionKind()] = resource
+	}
+
+	for _, t := range gvkToResource {
+		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -163,7 +218,7 @@ func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clien
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := installKnativeKafkaSource(api); err != nil {
+		if err := installKnativeKafkaSource(instance, api); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
 		}
 	} else {
@@ -190,14 +245,20 @@ func installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclie
 	return nil
 }
 
+// rawKafkaChannelManifest returns KafkaChannel manifest without transformations
+func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
+	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
+}
+
 func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
-	manifest, err := mfc.NewManifest(kafkaChannelManifestPath(), apiClient, mf.UseLogger(log.WithName("mf")))
+	manifest, err := rawKafkaChannelManifest(apiClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
 	transformers := []mf.Transformer{
 		mf.InjectOwner(instance),
+		setOwnerAnnotations(instance),
 	}
 
 	manifest, err = manifest.Transform(transformers...)
@@ -208,8 +269,8 @@ func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient cli
 	return &manifest, nil
 }
 
-func installKnativeKafkaSource(apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(apiclient)
+func installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := kafkaSourceManifest(instance, apiclient)
 	if err != nil {
 		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
 	}
@@ -218,19 +279,34 @@ func installKnativeKafkaSource(apiclient client.Client) error {
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply KafkaSource manifest: %w", err)
 	}
-	if err := checkDeployments(&manifest, apiclient); err != nil {
+	if err := checkDeployments(manifest, apiclient); err != nil {
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Knative KafkaSource installation is ready")
 	return nil
 }
 
-func kafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
-	manifest, err := mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
+// rawKafkaSourceManifest returns KafkaSource manifest without transformations
+func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
+	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
+}
+
+func kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) (*mf.Manifest, error) {
+	manifest, err := rawKafkaSourceManifest(apiclient)
 	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
+		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
-	return manifest, nil
+
+	transformers := []mf.Transformer{
+		setOwnerAnnotations(instance),
+	}
+
+	manifest, err = manifest.Transform(transformers...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
+	}
+
+	return &manifest, nil
 }
 
 func kafkaChannelManifestPath() string {
@@ -335,4 +411,15 @@ func deleteKnativeKafkaSource(apiclient client.Client) error {
 		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
+}
+
+// setOwnerAnnotations is a transformer to set owner annotations on given object
+func setOwnerAnnotations(instance *operatorv1alpha1.KnativeKafka) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		u.SetAnnotations(map[string]string{
+			common.KafkaOwnerName:      instance.Name,
+			common.KafkaOwnerNamespace: instance.Namespace,
+		})
+		return nil
+	}
 }
