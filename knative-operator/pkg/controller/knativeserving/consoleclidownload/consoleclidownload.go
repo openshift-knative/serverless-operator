@@ -29,6 +29,10 @@ var log = common.Log.WithName("consoleclidownload")
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+	if !instance.Status.IsReady() {
+		// Don't return error, wait silently until Serving instance is ready
+		return nil
+	}
 	service := &servingv1.Service{}
 	if err := reconcileKnCCDResources(instance, apiclient, scheme, service); err != nil {
 		return err
@@ -45,10 +49,6 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 // reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme, service *servingv1.Service) error {
-	if !instance.Status.IsReady() {
-		// Don't return error, wait silently until Serving instance is ready
-		return nil
-	}
 	if err := servingv1.AddToScheme(scheme); err != nil {
 		return err
 	}
