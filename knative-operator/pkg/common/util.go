@@ -6,6 +6,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -103,4 +106,19 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 		},
 	})
 	return
+}
+
+// common function to enqueue reconcile requests for resources
+func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.ToRequestsFunc {
+	return func(obj handler.MapObject) []reconcile.Request {
+		annotations := obj.Meta.GetAnnotations()
+		ownerNamespace := annotations[ownerNamespaceAnnotationKey]
+		ownerName := annotations[ownerNameAnnotationKey]
+		if ownerNamespace != "" && ownerName != "" {
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+			}}
+		}
+		return nil
+	}
 }

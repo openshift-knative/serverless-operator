@@ -85,19 +85,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.ServingOwnerNamespace]
-		ownerName := annotations[common.ServingOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
-
 	// Watch for Kourier resources.
 	manifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
@@ -111,6 +98,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		gvkToKourier[resource.GroupVersionKind()] = resource
 	}
 
+	// common function to enqueue reconcile requests for resources
+	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace)
 	for _, t := range gvkToKourier {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
 		if err != nil {

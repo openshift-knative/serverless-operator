@@ -4,7 +4,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -36,18 +35,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.ServerlessOperatorOwnerNamespace]
-		ownerName := annotations[common.ServerlessOperatorOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: obj.Meta.GetNamespace(), Name: obj.Meta.GetName()},
-			}}
-		}
-		return nil
-	})
+	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace)
 	err = c.Watch(&source.Kind{Type: &v1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests}, skipCreatePredicate{})
 	if err != nil {
 		return err
