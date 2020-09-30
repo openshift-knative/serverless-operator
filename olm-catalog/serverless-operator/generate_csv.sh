@@ -68,6 +68,14 @@ EOF
     name: "IMAGE_${2}"
     value: "${3}"
 EOF
+
+  cat << EOF | yq w -i -s - "$1"
+- command: update 
+  path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
+  value:
+    name: "IMAGE_${2}"
+    value: "${3}"
+EOF
 }
 
 # Start fresh
