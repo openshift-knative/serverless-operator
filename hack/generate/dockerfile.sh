@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+template="${1:?Provide template file as arg[1]}"
+target="${2:?Provide a target Dockerfile file as arg[2]}"
+
+# shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
+
+declare -A values
+values[NAME]="$(metadata.get project.name)"
+values[CHANNEL_LIST]="$(yq read metadata.yaml 'olm.channels.list.*' | paste -sd ',' -)"
+values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
+values[VERSION]="$(metadata.get project.version)"
+values[SERVING_VERSION]="$(metadata.get components.serving)"
+values[EVENTING_VERSION]="$(metadata.get components.eventing)"
+values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
+
+# Start fresh
+cp "$template" "$target"
+
+for before in "${!values[@]}"; do
+  sed --in-place "s/__${before}__/${values[${before}]}/" "$target"
+done
