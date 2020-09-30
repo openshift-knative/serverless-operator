@@ -86,34 +86,25 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for Kourier resources.
-	manifest, err := kourier.RawManifest(mgr.GetClient())
+	kourierManifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
 		return err
 	}
-	resources := manifest.Resources()
+	kourierResources := kourierManifest.Resources()
 
-	gvkToKourier := make(map[schema.GroupVersionKind]runtime.Object)
-	for i := range resources {
-		resource := &resources[i]
-		gvkToKourier[resource.GroupVersionKind()] = resource
-	}
-
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace)
-	for _, t := range gvkToKourier {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
-		if err != nil {
-			return err
-		}
+	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
+	for i := range kourierResources {
+		resource := &kourierResources[i]
+		gvkToResource[resource.GroupVersionKind()] = resource
 	}
 
 	// Watch for kn ConsoleCLIDownload resources
-	gvkToCCD := make(map[schema.GroupVersionKind]runtime.Object)
+	gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
 
-	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
-	gvkToCCD[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
+	// common function to enqueue reconcile requests for resources
+	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace)
 
-	for _, t := range gvkToCCD {
+	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
 		if err != nil {
 			return err
