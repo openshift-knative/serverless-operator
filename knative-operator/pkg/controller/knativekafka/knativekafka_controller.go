@@ -66,19 +66,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.KafkaOwnerNamespace]
-		ownerName := annotations[common.KafkaOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
-
 	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
 
 	// Watch for Knative KafkaChannel resources.
@@ -105,6 +92,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		gvkToResource[resource.GroupVersionKind()] = resource
 	}
 
+	// common function to enqueue reconcile requests for resources
+	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace)
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
 		if err != nil {
