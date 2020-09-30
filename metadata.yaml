@@ -19,6 +19,7 @@ requirements:
 dependencies:
   serving: 0.16.0
   eventing: 0.16.0
+  kourier: 0.16.0
   cli: 0.16.1
   maistra: 1.1.0
 

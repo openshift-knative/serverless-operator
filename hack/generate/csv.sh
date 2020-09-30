@@ -22,7 +22,7 @@ images["webhook"]="${serving}-webhook"
 images["storage-version-migration-serving-$(metadata.get dependencies.serving)__migrate"]="${serving}-storage-version-migration"
 
 images["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-images["3scale-kourier-control"]="${registry}/knative-v$(metadata.get dependencies.serving):kourier"
+images["3scale-kourier-control"]="${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
 images["eventing-controller__eventing-controller"]="${eventing}-controller"
 images["sugar-controller__controller"]="${eventing}-sugar-controller"
