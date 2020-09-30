@@ -3,13 +3,14 @@ package knativekafka
 import (
 	"context"
 	"fmt"
+	"os"
+
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"os"
 
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -125,10 +126,10 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 // Install Knative Kafka components
 func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	if err := applyKnativeKafka(instance, r.client); err != nil {
-		instance.Status.MarkDependencyInstalling("KnativeKafka")
+		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}
-	instance.Status.MarkDependenciesInstalled()
+	instance.Status.MarkInstallSucceeded()
 	return nil
 }
 
