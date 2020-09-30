@@ -101,11 +101,12 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	if instance.Status.IsReady() {
-		common.KnativeKafkaUpG.Set(1)
-	} else {
-		common.KnativeKafkaUpG.Set(0)
-	}
+	//TODO: to be enabled
+	//if instance.Status.IsReady() {
+	//	common.KnativeKafkaUpG.Set(1)
+	//} else {
+	//	common.KnativeKafkaUpG.Set(0)
+	//}
 	return reconcile.Result{}, reconcileErr
 }
 
