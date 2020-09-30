@@ -29,29 +29,28 @@ var log = common.Log.WithName("consoleclidownload")
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
-	if err := reconcileKnCCDResources(instance, apiclient, scheme); err != nil {
+	service := &servingv1.Service{}
+	if err := reconcileKnCCDResources(instance, apiclient, scheme, service); err != nil {
 		return err
 	}
-
-	if err := reconcileKnConsoleCLIDownload(apiclient, instance); err != nil {
+	if err := reconcileKnConsoleCLIDownload(apiclient, instance, service); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
-func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme, service *servingv1.Service) error {
 	if !instance.Status.IsReady() {
-		return fmt.Errorf("Knative instance %q/%q not ready yet", instance.Name, instance.GetNamespace())
+		// Don't return error, wait silently until Serving instance is ready
+		return nil
 	}
-	if	err := servingv1.AddToScheme(scheme); err != nil {
+	if err := servingv1.AddToScheme(scheme); err != nil {
 		return err
 	}
 
 	log.Info("Installing kn ConsoleCLIDownload resources")
-	service := &servingv1.Service{}
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
 	switch {
 	case apierrors.IsNotFound(err):
@@ -62,12 +61,8 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 	case err == nil:
 		tmpService := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
 		serviceFromClusterDC := service.DeepCopy()
-		changed := false
-		if !equality.Semantic.DeepEqual(service.Spec, tmpService.Spec.Template.Spec) {
+		if !equality.Semantic.DeepEqual(service.Spec, tmpService.Spec) {
 			serviceFromClusterDC.Spec = tmpService.Spec
-			changed = true
-		}
-		if changed {
 			if err := apiclient.Update(context.TODO(), serviceFromClusterDC); err != nil {
 				return err
 			}
@@ -75,37 +70,19 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 	default:
 		return err
 	}
-	if err := checkResources(instance, service); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Check for Knative Service and URL of kn ConsoleCLIDownload resources
-func checkResources(instance *servingv1alpha1.KnativeServing, service *servingv1.Service) error {
-	log.Info("Checking deployments")
-	if !service.Status.IsReady() {
-		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
-	}
-	if service.Status.URL == nil || service.Status.URL.String() == "" {
-		return fmt.Errorf("Knative Service URL %q/%q not present yet", knConsoleCLIDownloadService, instance.GetNamespace())
-	}
 	return nil
 }
 
 // reconcileKnConsoleCLIDownload reconciles kn ConsoleCLIDownload by finding
 // kn download resource route URL and populating spec accordingly
-func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *servingv1alpha1.KnativeServing) error {
+func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *servingv1alpha1.KnativeServing, knService *servingv1.Service) error {
 
 	log.Info("Installing kn ConsoleCLIDownload")
 	ctx := context.TODO()
 
-	// find the Knative Service first
-	knService := &servingv1.Service{}
-	if err := apiclient.Get(ctx, client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, knService); err != nil {
-		return fmt.Errorf("failed to find kn ConsoleCLIDownload Knative Service: %v", err)
+	if !knService.Status.IsReady() {
+		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
-
 	knRouteURL := knService.Status.URL
 	if knRouteURL == nil || knRouteURL.String() == "" {
 		return fmt.Errorf("failed to get kn ConsoleCLIDownload Knative Service URL")
@@ -163,6 +140,8 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 
 // makeKnService makes Knative Service object and its SPEC from provided image parameter
 func makeKnService(image string, instance *servingv1alpha1.KnativeServing) *servingv1.Service {
+	// OwnerReference is not used to handle ksvc cleanup due to race condition with control-plane deletion.
+	// In such a case route's finalizer blocks clean removal of resources.
 	anno := make(map[string]string)
 	if instance != nil {
 		anno = map[string]string{
