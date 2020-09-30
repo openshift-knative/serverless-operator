@@ -5,6 +5,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -69,11 +70,11 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 }
 
 // SetOwnerAnnotations is a transformer to set owner annotations on given object
-func SetOwnerAnnotations(instance *operatorv1alpha1.KnativeServing) mf.Transformer {
+func SetOwnerAnnotations(instance metav1.ObjectMeta, ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		u.SetAnnotations(map[string]string{
-			ServingOwnerName:      instance.Name,
-			ServingOwnerNamespace: instance.Namespace,
+			ownerNameAnnotationKey:      instance.Name,
+			ownerNamespaceAnnotationKey: instance.Namespace,
 		})
 		return nil
 	}

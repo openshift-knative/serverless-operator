@@ -258,7 +258,7 @@ func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient cli
 
 	transformers := []mf.Transformer{
 		mf.InjectOwner(instance),
-		setOwnerAnnotations(instance),
+		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
 	}
 
 	manifest, err = manifest.Transform(transformers...)
@@ -298,7 +298,7 @@ func kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient clie
 	}
 
 	transformers := []mf.Transformer{
-		setOwnerAnnotations(instance),
+		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
 	}
 
 	manifest, err = manifest.Transform(transformers...)
@@ -411,15 +411,4 @@ func deleteKnativeKafkaSource(apiclient client.Client) error {
 		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
-}
-
-// setOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *operatorv1alpha1.KnativeKafka) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		})
-		return nil
-	}
 }
