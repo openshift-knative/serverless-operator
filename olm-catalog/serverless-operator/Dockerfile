@@ -8,16 +8,16 @@ LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=serverless-operator
 LABEL operators.operatorframework.io.bundle.channel.default.v1="4.3"
-LABEL operators.operatorframework.io.bundle.channels.v1="4.5"
+LABEL operators.operatorframework.io.bundle.channels.v1="4.5,4.6"
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-serverless-rhel8-operator-container" \
-      name="openshift-serverless-1/serverless-rhel8-operator" \
+      com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
+      name="openshift-serverless-1/serverless-operator-bundle" \
       version="1.10.0" \
-      summary="Red Hat OpenShift Serverless 1 Serverless Operator" \
+      summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      com.redhat.openshift.versions="v4.5" \
+      description="Red Hat OpenShift Serverless Bundle" \
+      io.k8s.display-name="Red Hat OpenShift Serverless Bundle" \
+      com.redhat.openshift.versions="v4.5,v4.6" \
       com.redhat.delivery.operator.bundle=true \
       com.redhat.delivery.backport=true
