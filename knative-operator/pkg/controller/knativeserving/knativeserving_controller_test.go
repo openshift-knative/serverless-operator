@@ -9,6 +9,7 @@ import (
 
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -160,6 +161,7 @@ func TestKourierReconcile(t *testing.T) {
 			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
 			s.AddKnownTypes(consolev1.GroupVersion, ccd)
 			s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
+			s.AddKnownTypes(routev1.GroupVersion, &routev1.Route{})
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
