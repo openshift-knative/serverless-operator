@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,31 +65,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
-
-	// Watch for Knative KafkaChannel resources.
+	// Load Knative KafkaChannel resources to watch them
 	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
 	if err != nil {
 		return err
 	}
-	kafkaChannelResources := kafkaChannelManifest.Resources()
 
-	for i := range kafkaChannelResources {
-		resource := &kafkaChannelResources[i]
-		gvkToResource[resource.GroupVersionKind()] = resource
-	}
-
-	// Watch for Knative KafkaSource resources.
+	// Load Knative KafkaSource resources to watch them
 	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
 	if err != nil {
 		return err
 	}
-	kafkaSourceResources := kafkaSourceManifest.Resources()
 
-	for i := range kafkaSourceResources {
-		resource := &kafkaSourceResources[i]
-		gvkToResource[resource.GroupVersionKind()] = resource
-	}
+	gvkToResource := common.BuildGVKToResourceMap(kafkaChannelManifest, kafkaSourceManifest)
 
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace)
