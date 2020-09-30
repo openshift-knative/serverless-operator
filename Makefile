@@ -55,7 +55,7 @@ test-all-e2e: test-e2e test-upstream-e2e
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
-metadata:
+release-files:
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
