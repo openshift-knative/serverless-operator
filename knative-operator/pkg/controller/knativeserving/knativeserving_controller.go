@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -85,20 +84,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for Kourier resources.
+	// Load Kourier resources to watch them
 	kourierManifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
 		return err
 	}
-	kourierResources := kourierManifest.Resources()
 
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
-	for i := range kourierResources {
-		resource := &kourierResources[i]
-		gvkToResource[resource.GroupVersionKind()] = resource
-	}
+	gvkToResource := common.BuildGVKToResourceMap(kourierManifest)
 
-	// Watch for kn ConsoleCLIDownload resources
+	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
 	gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
 
 	// common function to enqueue reconcile requests for resources
