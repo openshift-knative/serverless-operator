@@ -137,7 +137,7 @@ func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.K
 
 func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
 	if instance.Spec.Channel.Enabled {
-		if err := installKnativeKafkaChannel(api); err != nil {
+		if err := installKnativeKafkaChannel(instance, api); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
 		}
 	} else {
@@ -155,21 +155,39 @@ func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clien
 	return nil
 }
 
-func installKnativeKafkaChannel(apiclient client.Client) error {
-	manifest, err := mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
+func installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := kafkaChannelManifest(instance, apiclient)
 	if err != nil {
-		return fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+		return fmt.Errorf("failed to load or transform KafkaChannel manifest: %w", err)
 	}
 
 	log.Info("Installing Knative KafkaChannel")
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply KafkaChannel manifest: %w", err)
 	}
-	if err := checkDeployments(&manifest, apiclient); err != nil {
+	if err := checkDeployments(manifest, apiclient); err != nil {
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Knative KafkaChannel installation is ready")
 	return nil
+}
+
+func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
+	manifest, err := mfc.NewManifest(kafkaChannelManifestPath(), apiClient, mf.UseLogger(log.WithName("mf")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+	}
+
+	transformers := []mf.Transformer{
+		mf.InjectOwner(instance),
+	}
+
+	manifest, err = manifest.Transform(transformers...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+	}
+
+	return &manifest, nil
 }
 
 func installKnativeKafkaSource(apiclient client.Client) error {
