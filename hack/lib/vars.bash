@@ -12,8 +12,8 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
 # Adjust these when upgrading the knative versions.
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get components.serving)}"
-export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get components.eventing)}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
+export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
 
 CURRENT_CSV="$(metadata.get project.name).v$(metadata.get project.version)"
 PREVIOUS_CSV="$(metadata.get project.name).v$(metadata.get olm.replaces)"

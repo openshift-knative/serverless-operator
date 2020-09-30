@@ -16,11 +16,11 @@ requirements:
     minVersion: 1.15.0
   golang: 1.14
 
-components:
+dependencies:
   serving: 0.16.0
   eventing: 0.16.0
   cli: 0.16.1
-  kourier: 1.1.0
+  maistra: 1.1.0
 
 deprecated:
   eventing-images: 0.15.2

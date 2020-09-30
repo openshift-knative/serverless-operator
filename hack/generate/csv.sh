@@ -9,8 +9,8 @@ target="${2:?Provide a target CSV file as arg[2]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 registry="registry.svc.ci.openshift.org/openshift"
-serving="${registry}/knative-v$(metadata.get components.serving):knative-serving"
-eventing="${registry}/knative-v$(metadata.get components.eventing):knative-eventing"
+serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
+eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 
 declare -A images
 images["queue-proxy"]="${serving}-queue"
@@ -19,10 +19,10 @@ images["autoscaler"]="${serving}-autoscaler"
 images["autoscaler-hpa"]="${serving}-autoscaler-hpa"
 images["controller"]="${serving}-controller"
 images["webhook"]="${serving}-webhook"
-images["storage-version-migration-serving-$(metadata.get components.serving)__migrate"]="${serving}-storage-version-migration"
+images["storage-version-migration-serving-$(metadata.get dependencies.serving)__migrate"]="${serving}-storage-version-migration"
 
-images["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:$(metadata.get components.kourier)"
-images["3scale-kourier-control"]="${registry}/knative-v$(metadata.get components.serving):kourier"
+images["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
+images["3scale-kourier-control"]="${registry}/knative-v$(metadata.get dependencies.serving):kourier"
 
 images["eventing-controller__eventing-controller"]="${eventing}-controller"
 images["sugar-controller__controller"]="${eventing}-sugar-controller"
@@ -42,7 +42,7 @@ images["mt-broker-ingress__ingress"]="${eventing}-mtbroker-ingress"
 images["imc-controller__controller"]="${eventing}-channel-controller"
 images["imc-dispatcher__dispatcher"]="${eventing}-channel-dispatcher"
 
-images["v$(metadata.get components.eventing)-broker-cleanup__brokers"]="${eventing}-broker-cleanup"
+images["v$(metadata.get dependencies.eventing)-broker-cleanup__brokers"]="${eventing}-broker-cleanup"
 images["PING_IMAGE"]="${eventing}-ping"
 images["MT_PING_IMAGE"]="${eventing}-mtping"
 images["APISERVER_RA_IMAGE"]="${eventing}-apiserver-receive-adapter"
@@ -50,7 +50,7 @@ images["BROKER_INGRESS_IMAGE"]="${eventing}-broker-ingress"
 images["BROKER_FILTER_IMAGE"]="${eventing}-broker-filter"
 images["DISPATCHER_IMAGE"]="${eventing}-channel-dispatcher"
 
-images["KN_CLI_ARTIFACTS"]="${registry}/knative-v$(metadata.get components.cli):kn-cli-artifacts"
+images["KN_CLI_ARTIFACTS"]="${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 declare -A values
 values[spec.version]="$(metadata.get project.version)"

@@ -13,8 +13,8 @@ values[NAME]="$(metadata.get project.name)"
 values[CHANNEL_LIST]="$(metadata.get 'olm.channels.list.*' | paste -sd ',' -)"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
 values[VERSION]="$(metadata.get project.version)"
-values[SERVING_VERSION]="$(metadata.get components.serving)"
-values[EVENTING_VERSION]="$(metadata.get components.eventing)"
+values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
+values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"
 values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
 
 # Start fresh
