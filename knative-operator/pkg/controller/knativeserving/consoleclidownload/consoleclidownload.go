@@ -3,6 +3,8 @@ package consoleclidownload
 import (
 	"context"
 	"fmt"
+	v1 "github.com/openshift/api/route/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"os"
 	"strings"
 
@@ -23,6 +25,7 @@ import (
 const (
 	knCLIDownload               = "kn"
 	knConsoleCLIDownloadService = "kn-cli-downloads"
+	deprecatedResourceName = "kn-cli-downloads"
 )
 
 var log = common.Log.WithName("consoleclidownload")
@@ -32,6 +35,10 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 	if !instance.Status.IsReady() {
 		// Don't return error, wait silently until Serving instance is ready
 		return nil
+	}
+	// Remove deprecated resources from previous version
+	if err := deleteDeprecatedResources(instance, apiclient); err != nil {
+		return err
 	}
 	service := &servingv1.Service{}
 	if err := reconcileKnCCDResources(instance, apiclient, scheme, service); err != nil {
@@ -135,6 +142,25 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
 	}
 
+	return nil
+}
+
+// deleteDeprecatedResources removes deprecated resources created by previous versions
+func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client) error {
+	metaName := metav1.ObjectMeta{
+		Name:      deprecatedResourceName,
+		Namespace: instance.Namespace,
+	}
+	toDelete := []runtime.Object{
+		&appsv1.Deployment{ObjectMeta: metaName},
+		&corev1.Service{ObjectMeta:	metaName},
+		&v1.Route{ObjectMeta:	metaName},
+	}
+	for _, obj := range toDelete {
+		if err := apiclient.Delete(context.TODO(), obj); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete deprecated kn ConsoleCLIDownload %s: %w", obj.GetObjectKind().GroupVersionKind().Kind, err)
+		}
+	}
 	return nil
 }
 
