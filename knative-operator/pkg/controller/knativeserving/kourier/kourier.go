@@ -143,13 +143,7 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 	transforms := []mf.Transformer{
 		mf.InjectNamespace(namespace),
 		replaceImageFromEnvironment("IMAGE_", scheme),
-		func(u *unstructured.Unstructured) error {
-			u.SetAnnotations(map[string]string{
-				common.ServingOwnerName:      instance.Name,
-				common.ServingOwnerNamespace: instance.Namespace,
-			})
-			return nil
-		},
+		common.SetOwnerAnnotations(instance.ObjectMeta, common.ServingOwnerName, common.ServingOwnerNamespace),
 		replaceDeploymentInstanceCount(instance.Spec.HighAvailability, scheme),
 	}
 	return manifest.Transform(transforms...)
