@@ -110,6 +110,8 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 }
 
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+	instance.Status.InitializeConditions()
+
 	stages := []func(*operatorv1alpha1.KnativeKafka) error{
 		// TODO r.configure,
 		// TODO r.ensureFinalizers,

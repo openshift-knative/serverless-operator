@@ -11,6 +11,11 @@ var (
 	)
 )
 
+// InitializeConditions initializes conditions of an KnativeKafkaStatus
+func (is *KnativeKafkaStatus) InitializeConditions() {
+	kafkaCondSet.Manage(is).InitializeConditions()
+}
+
 // IsReady looks at the conditions returns true if they are all true.
 func (is *KnativeKafkaStatus) IsReady() bool {
 	return kafkaCondSet.Manage(is).IsHappy()
