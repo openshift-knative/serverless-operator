@@ -33,6 +33,9 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 	if err := reconcileKnCCDResources(instance, apiclient, scheme, service); err != nil {
 		return err
 	}
+	if !service.Status.IsReady() {
+		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
+	}
 	if err := reconcileKnConsoleCLIDownload(apiclient, instance, service); err != nil {
 		return err
 	}
@@ -80,9 +83,6 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *servingv1a
 	log.Info("Installing kn ConsoleCLIDownload")
 	ctx := context.TODO()
 
-	if !knService.Status.IsReady() {
-		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
-	}
 	knRouteURL := knService.Status.URL
 	if knRouteURL == nil || knRouteURL.String() == "" {
 		return fmt.Errorf("failed to get kn ConsoleCLIDownload Knative Service URL")
