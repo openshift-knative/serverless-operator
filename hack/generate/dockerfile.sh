@@ -10,7 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 declare -A values
 values[NAME]="$(metadata.get project.name)"
-values[CHANNEL_LIST]="$(yq read metadata.yaml 'olm.channels.list.*' | paste -sd ',' -)"
+values[CHANNEL_LIST]="$(metadata.get 'olm.channels.list.*' | paste -sd ',' -)"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get components.serving)"

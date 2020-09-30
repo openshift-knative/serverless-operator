@@ -8,11 +8,9 @@ target="${2:?Provide a target annotations file as arg[2]}"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
-channel_list=$(yq read metadata.yaml 'olm.channels.list.*' | paste -sd ',' -)
-
 declare -A values
 values[operators.operatorframework.io.bundle.channel.default.v1]="$(metadata.get olm.channels.default)"
-values[operators.operatorframework.io.bundle.channels.v1]="$channel_list"
+values[operators.operatorframework.io.bundle.channels.v1]="$(metadata.get 'olm.channels.list.*' | paste -sd ',' -)"
 values[operators.operatorframework.io.bundle.package.v1]="$(metadata.get project.name)"
 
 # Start fresh
