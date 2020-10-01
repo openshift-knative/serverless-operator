@@ -206,6 +206,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
 	}
 
+	log.Info("Transforming manifest")
 	m, err := manifest.Transform(transformers...)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
@@ -263,46 +264,9 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
-	manifest, err := rawKafkaChannelManifest(apiClient)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
-	}
-
-	transformers := []mf.Transformer{
-		mf.InjectOwner(instance),
-		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
-	}
-
-	manifest, err = manifest.Transform(transformers...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
 // rawKafkaSourceManifest returns KafkaSource manifest without transformations
 func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) (*mf.Manifest, error) {
-	manifest, err := rawKafkaSourceManifest(apiclient)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-	}
-
-	transformers := []mf.Transformer{
-		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
-	}
-
-	manifest, err = manifest.Transform(transformers...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-	}
-
-	return &manifest, nil
 }
 
 func kafkaChannelManifestPath() string {
@@ -323,9 +287,9 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	}
 
 	log.Info("Running cleanup logic")
-	log.Info("Deleting kourier")
-	if err := deleteKnativeKafka(instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete kourier: %w", err)
+	log.Info("Deleting Knative Kafka")
+	if err := r.deleteKnativeKafka(instance); err != nil {
+		return fmt.Errorf("failed to delete Knative Kafka: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.
@@ -345,46 +309,32 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	return nil
 }
 
-func deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
+func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+	combinedManifest := &mf.Manifest{}
+
 	if instance.Spec.Channel.Enabled {
-		if err := deleteKnativeKafkaChannel(instance, api); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaChannel: %w", err)
+		manifest, err := rawKafkaSourceManifest(r.client)
+		if err != nil {
+			return fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 		}
+		combinedManifest.Append(manifest)
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := deleteKnativeKafkaSource(instance, api); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
+		manifest, err := rawKafkaSourceManifest(r.client)
+		if err != nil {
+			return fmt.Errorf("failed to load manifest: %w", err)
 		}
+		combinedManifest.Append(manifest)
 	}
 
-	return nil
-}
-
-func deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaChannelManifest(instance, apiclient)
+	err := r.transform(combinedManifest, instance)
 	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaChannel manifest: %w", err)
+		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
 
-	log.Info("Deleting Knative KafkaChannel")
-
-	if err := manifest.Delete(); err != nil {
+	if err := combinedManifest.Delete(); err != nil {
 		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
-	}
-
-	return nil
-}
-
-func deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(instance, apiclient)
-	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
-	}
-
-	log.Info("Deleting Knative KafkaSource")
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
 }
