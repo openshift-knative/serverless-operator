@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	mfclient "github.com/manifestival/controller-runtime-client"
@@ -19,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	kmeta "knative.dev/pkg/kmeta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -113,9 +112,6 @@ func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort in
 }
 
 func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, instance *eventingv1alpha1.KnativeEventing) error {
-	if err := isServiceMonitorAvailable(); err != nil {
-		return err
-	}
 	manifest, err := mf.NewManifest(getMonitorPath(TestEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to parse broker service monitors: %w", err)
@@ -135,28 +131,11 @@ func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, 
 }
 
 func SetupSourceServiceMonitor(client client.Client, namespace string, instance *appsv1.Deployment) error {
-	var sLabel, sNameLabel, sRoleLabel string
-
-	if err := isServiceMonitorAvailable(); err != nil {
-		return err
-	}
 
 	monitor := &monitoringv1.ServiceMonitor{}
-	var SchemeGroupVersion = schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
-	scheme.Scheme.AddKnownTypes(SchemeGroupVersion, monitor)
+	gv := schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
+	scheme.Scheme.AddKnownTypes(gv, monitor)
 	labels := instance.Spec.Selector.MatchLabels
-
-	if l, ok := labels[SourceLabel]; ok {
-		sLabel = l
-	}
-
-	if l, ok := labels[SourceNameLabel]; ok {
-		sNameLabel = l
-	}
-
-	if l, ok := labels[SourceRoleLabel]; ok {
-		sRoleLabel = l
-	}
 
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
 	// create service for the deployment
@@ -164,7 +143,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 	if err != nil {
 		return fmt.Errorf("unable to parse source service manifest: %w", err)
 	}
-	transforms := []mf.Transformer{updateService(sLabel, sNameLabel, sRoleLabel, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
+	transforms := []mf.Transformer{updateService(labels, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform source service manifest: %w", err)
 	}
@@ -182,7 +161,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 	if err != nil {
 		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
 	}
-	transforms = []mf.Transformer{updateServiceMonitor(sLabel, sNameLabel, sRoleLabel, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(namespace)}
+	transforms = []mf.Transformer{updateServiceMonitor(labels, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
@@ -200,7 +179,7 @@ func getMonitorPath(envVar string, defaultVal string) string {
 	return path
 }
 
-func updateService(source string, sourceName string, role string, depName string) mf.Transformer {
+func updateService(labels map[string]string, depName string) mf.Transformer {
 	return func(resource *unstructured.Unstructured) error {
 		if resource.GetKind() != "Service" {
 			return nil
@@ -209,30 +188,15 @@ func updateService(source string, sourceName string, role string, depName string
 		if err := scheme.Scheme.Convert(resource, svc, nil); err != nil {
 			return err
 		}
-
 		svc.Name = depName
-		svc.Labels = map[string]string{}
-		svc.Spec.Selector = map[string]string{}
-		svc.Labels[SourceLabel] = source
-		if sourceName != "" {
-			svc.Labels[SourceNameLabel] = sourceName
-		}
-		if role != "" {
-			svc.Labels[SourceRoleLabel] = role
-		}
-		svc.Spec.Selector[SourceLabel] = source
-		if sourceName != "" {
-			svc.Spec.Selector[SourceNameLabel] = sourceName
-		}
-		if role != "" {
-			svc.Spec.Selector[SourceRoleLabel] = role
-		}
+		svc.Labels = kmeta.CopyMap(labels)
+		svc.Spec.Selector = kmeta.CopyMap(labels)
 		svc.Labels["name"] = svc.Name
 		return scheme.Scheme.Convert(svc, resource, nil)
 	}
 }
 
-func updateServiceMonitor(source string, sourceName string, role string, depName string) mf.Transformer {
+func updateServiceMonitor(labels map[string]string, depName string) mf.Transformer {
 	return func(resource *unstructured.Unstructured) error {
 		if resource.GetKind() != "ServiceMonitor" {
 			return nil
@@ -242,49 +206,11 @@ func updateServiceMonitor(source string, sourceName string, role string, depName
 			return err
 		}
 		sm.Name = depName
-		sm.Labels = map[string]string{}
-		sm.Labels[source] = source
-		if sourceName != "" {
-			sm.Labels[SourceNameLabel] = sourceName
-		}
-		if role != "" {
-			sm.Labels[SourceRoleLabel] = role
-		}
+		sm.Labels = kmeta.CopyMap(labels)
 		sm.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: map[string]string{"name": sm.Name},
 		}
 		sm.Labels["name"] = sm.Name
 		return scheme.Scheme.Convert(sm, resource, nil)
 	}
-}
-
-func isServiceMonitorAvailable() error {
-	// in unit test mode just return, assume the required
-	// env is setup
-	if checkIfTesting() {
-		return nil
-	}
-	cfg, err := rest.InClusterConfig()
-	if err != nil {
-		return err
-	}
-	dc := discovery.NewDiscoveryClientForConfigOrDie(cfg)
-	apiVersion := "monitoring.coreos.com/v1"
-	kind := "ServiceMonitor"
-	exists, err := k8sutil.ResourceExists(dc, apiVersion, kind)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return metrics.ErrServiceMonitorNotPresent
-	}
-	return nil
-}
-
-func checkIfTesting() bool {
-	if testVar := os.Getenv("TEST_MONITOR"); testVar != "" {
-		ret, _ := strconv.ParseBool(testVar)
-		return ret
-	}
-	return false
 }

@@ -72,7 +72,6 @@ func init() {
 	os.Setenv(common.TestRolePath, "../testdata/role_service_monitor.yaml")
 	os.Setenv(common.TestSourceServiceMonitorPath, "../testdata/source-service-monitor.yaml")
 	os.Setenv(common.TestSourceServicePath, "../testdata/source-service.yaml")
-	os.Setenv(common.TestMonitor, "true")
 }
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
