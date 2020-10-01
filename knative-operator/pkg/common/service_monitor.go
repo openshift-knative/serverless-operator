@@ -111,12 +111,12 @@ func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort in
 	return nil
 }
 
-func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, instance *eventingv1alpha1.KnativeEventing) error {
+func SetupEventingBrokerServiceMonitors(client client.Client, instance *eventingv1alpha1.KnativeEventing) error {
 	manifest, err := mf.NewManifest(getMonitorPath(TestEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to parse broker service monitors: %w", err)
 	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
+	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(instance.Namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform broker service monitors manifest: %w", err)
 	}
@@ -130,8 +130,7 @@ func SetupEventingBrokerServiceMonitors(client client.Client, namespace string, 
 	return nil
 }
 
-func SetupSourceServiceMonitor(client client.Client, namespace string, instance *appsv1.Deployment) error {
-
+func SetupSourceServiceMonitor(client client.Client, instance *appsv1.Deployment) error {
 	monitor := &monitoringv1.ServiceMonitor{}
 	gv := schema.GroupVersion{Group: "monitoring.coreos.com", Version: "v1"}
 	scheme.Scheme.AddKnownTypes(gv, monitor)
@@ -143,7 +142,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 	if err != nil {
 		return fmt.Errorf("unable to parse source service manifest: %w", err)
 	}
-	transforms := []mf.Transformer{updateService(labels, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(namespace)}
+	transforms := []mf.Transformer{updateService(labels, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(instance.Namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform source service manifest: %w", err)
 	}
@@ -161,7 +160,7 @@ func SetupSourceServiceMonitor(client client.Client, namespace string, instance 
 	if err != nil {
 		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
 	}
-	transforms = []mf.Transformer{updateServiceMonitor(labels, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(namespace)}
+	transforms = []mf.Transformer{updateServiceMonitor(labels, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(instance.Namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}

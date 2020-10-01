@@ -24,12 +24,12 @@ const (
 	TestRolePath    = "TEST_ROLE_PATH"
 )
 
-func SetupMonitoringRequirements(api client.Client, monitoredNamespace string, instance mf.Owner) error {
-	err := addMonitoringLabelToNamespace(monitoredNamespace, api)
+func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
+	err := addMonitoringLabelToNamespace(instance.GetNamespace(), api)
 	if err != nil {
 		return err
 	}
-	err = createRoleAndRoleBinding(instance, monitoredNamespace, getRolePath(), api)
+	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), getRolePath(), api)
 	if err != nil {
 		return err
 	}

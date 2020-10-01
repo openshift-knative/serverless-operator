@@ -78,10 +78,10 @@ func (r *ReconcileSourceDeployment) Reconcile(request reconcile.Request) (reconc
 		// the deployment does not exist anymore do nothing
 		return reconcile.Result{}, nil
 	}
-	if err := common.SetupMonitoringRequirements(r.client, request.Namespace, dep); err != nil {
+	if err := common.SetupMonitoringRequirements(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
-	if err := common.SetupSourceServiceMonitor(r.client, request.Namespace, dep); err != nil {
+	if err := common.SetupSourceServiceMonitor(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
 	return reconcile.Result{}, nil

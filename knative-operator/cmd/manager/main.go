@@ -153,7 +153,7 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 		return err
 	}
 
-	if err = common.SetupMonitoringRequirements(cl, namespace, operatorDeployment); err != nil {
+	if err = common.SetupMonitoringRequirements(cl, operatorDeployment); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
