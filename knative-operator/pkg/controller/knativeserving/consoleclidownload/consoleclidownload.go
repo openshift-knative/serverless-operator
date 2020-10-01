@@ -24,7 +24,7 @@ import (
 
 const (
 	knCLIDownload               = "kn"
-	knConsoleCLIDownloadService = "kn-cli-downloads"
+	knConsoleCLIDownloadService = "kn-cli"
 	deprecatedResourceName = "kn-cli-downloads"
 )
 

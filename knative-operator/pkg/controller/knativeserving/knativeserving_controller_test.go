@@ -68,7 +68,7 @@ var (
 			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kn-cli-downloads",
+			Name:      "kn-cli",
 			Namespace: "knative-serving",
 		},
 		Spec: servingv1.ServiceSpec{
@@ -97,7 +97,7 @@ var (
 				},
 			},
 			RouteStatusFields: servingv1.RouteStatusFields{
-				URL: &apis.URL{Host: "kn-cli-downloads-knative-serving.example.com"},
+				URL: &apis.URL{Host: "kn-cli-knative-serving.example.com"},
 			},
 		},
 	}
