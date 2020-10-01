@@ -136,7 +136,10 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", nil)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
 	}
-
+	// make sure there's Knative Service registered
+	if err := servingv1.AddToScheme(scheme); err != nil {
+		return err
+	}
 	log.Info("Deleting kn ConsoleCLIDownload Service")
 	if err := apiclient.Delete(context.TODO(), makeKnService("", instance)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
