@@ -13,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -187,7 +188,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	transformers := []mf.Transformer{
-		mf.InjectOwner(instance),
+		InjectOwner(instance),
 		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
 	}
 
@@ -345,4 +346,21 @@ func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error)
 	}
 	result.Client = client
 	return &result, nil
+}
+
+// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
+// `owner` to namespace-scoped objects.
+//
+// The difference from Manifestival's Inject owner is, it only does it for
+// resources that are in the same namespace as the owner.
+// For the resources that are in the same namespace, it fallbacks to
+// Manifestival's InjectOwner
+func InjectOwner(owner mf.Owner) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetNamespace() == owner.GetNamespace() {
+			return mf.InjectOwner(owner)(u)
+		} else {
+			return nil
+		}
+	}
 }
