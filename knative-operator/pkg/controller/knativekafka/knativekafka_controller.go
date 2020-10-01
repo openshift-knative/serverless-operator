@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -148,13 +149,39 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	stages := []func(*operatorv1alpha1.KnativeKafka) error{
+	combinedManifest := &mf.Manifest{}
+
+	if instance.Spec.Channel.Enabled {
+		manifest, err := rawKafkaSourceManifest(r.client)
+		if err != nil {
+			return fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+		}
+		combinedManifest.Append(manifest)
+	} else {
+		// TODO: ensure Channel components don't exist
+	}
+
+	if instance.Spec.Source.Enabled {
+		manifest, err := rawKafkaSourceManifest(r.client)
+		if err != nil {
+			return fmt.Errorf("failed to load KafkaSource manifest: %w", err)
+		}
+		combinedManifest.Append(manifest)
+	} else {
+		// TODO: ensure they don't exist
+	}
+
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
 		// TODO r.configure,
 		r.ensureFinalizers,
-		r.installKnativeKafka,
+		r.transform,
+		r.apply,
+		r.checkDeployments,
 	}
+
+	// Execute each stage in sequence until one returns an error
 	for _, stage := range stages {
-		if err := stage(instance); err != nil {
+		if err := stage(combinedManifest, instance); err != nil {
 			return err
 		}
 	}
@@ -162,7 +189,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -173,51 +200,62 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.Knat
 	return r.client.Update(context.TODO(), instance)
 }
 
+func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	transformers := []mf.Transformer{
+		mf.InjectOwner(instance),
+		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
+	}
+
+	m, err := manifest.Transform(transformers...)
+	if err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
+	}
+	*manifest = m
+	return nil
+}
+
 // Install Knative Kafka components
-func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if err := applyKnativeKafka(instance, r.client); err != nil {
+func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Installing manifest")
+	if err := manifest.Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
-		return err
+		return fmt.Errorf("failed to apply manifest: %w", err)
 	}
 	instance.Status.MarkInstallSucceeded()
 	return nil
 }
 
-func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
-	if instance.Spec.Channel.Enabled {
-		if err := installKnativeKafkaChannel(instance, api); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
+func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Checking deployments")
+	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		resource, err := manifest.Client.Get(&u)
+		if err != nil {
+			instance.Status.MarkDeploymentsNotReady()
+			if errors.IsNotFound(err) {
+				return nil
+			}
+			return err
 		}
-	} else {
-		// TODO: ensure they don't exist
-	}
-
-	if instance.Spec.Source.Enabled {
-		if err := installKnativeKafkaSource(instance, api); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
+			return err
 		}
-	} else {
-		// TODO: ensure they don't exist
+		if !isDeploymentAvailable(deployment) {
+			instance.Status.MarkDeploymentsNotReady()
+			return nil
+		}
 	}
-
+	instance.Status.MarkDeploymentsAvailable()
 	return nil
 }
 
-func installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaChannelManifest(instance, apiclient)
-	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaChannel manifest: %w", err)
+func isDeploymentAvailable(d *appsv1.Deployment) bool {
+	for _, c := range d.Status.Conditions {
+		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+			return true
+		}
 	}
-
-	log.Info("Installing Knative KafkaChannel")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaChannel manifest: %w", err)
-	}
-	if err := checkDeployments(manifest, apiclient); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaChannel installation is ready")
-	return nil
+	return false
 }
 
 // rawKafkaChannelManifest returns KafkaChannel manifest without transformations
@@ -242,23 +280,6 @@ func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient cli
 	}
 
 	return &manifest, nil
-}
-
-func installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(instance, apiclient)
-	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
-	}
-
-	log.Info("Installing Knative KafkaSource")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaSource manifest: %w", err)
-	}
-	if err := checkDeployments(manifest, apiclient); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaSource installation is ready")
-	return nil
 }
 
 // rawKafkaSourceManifest returns KafkaSource manifest without transformations
@@ -290,26 +311,6 @@ func kafkaChannelManifestPath() string {
 
 func kafkaSourceManifestPath() string {
 	return os.Getenv("KAFKASOURCE_MANIFEST_PATH")
-}
-
-// TODO: move to a common place. copied from kourier.go
-// Check for deployments
-// This function is copied from knativeserving_controller.go in serving-operator
-func checkDeployments(manifest *mf.Manifest, api client.Client) error {
-	log.Info("Checking deployments")
-	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment := &appsv1.Deployment{}
-		err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
-		if err != nil {
-			return err
-		}
-		for _, c := range deployment.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-				return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
-			}
-		}
-	}
-	return nil
 }
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
