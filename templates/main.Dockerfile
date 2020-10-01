@@ -18,6 +18,6 @@ LABEL \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Serverless Operator" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      com.redhat.openshift.versions="v4.5" \
+      com.redhat.openshift.versions="__OCP_TARGET_VLIST__" \
       com.redhat.delivery.operator.bundle=true \
       com.redhat.delivery.backport=true
