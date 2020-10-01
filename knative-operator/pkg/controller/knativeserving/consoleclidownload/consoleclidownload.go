@@ -56,10 +56,6 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 // reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
 func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme, service *servingv1.Service) error {
-	if err := servingv1.AddToScheme(scheme); err != nil {
-		return err
-	}
-
 	log.Info("Installing kn ConsoleCLIDownload resources")
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
 	switch {
@@ -136,10 +132,7 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", nil)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
 	}
-	// make sure there's Knative Service registered
-	if err := servingv1.AddToScheme(scheme); err != nil {
-		return err
-	}
+
 	log.Info("Deleting kn ConsoleCLIDownload Service")
 	if err := apiclient.Delete(context.TODO(), makeKnService("", instance)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
