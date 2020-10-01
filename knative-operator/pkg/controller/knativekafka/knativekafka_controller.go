@@ -149,27 +149,12 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	combinedManifest := &mf.Manifest{}
-
-	if instance.Spec.Channel.Enabled {
-		manifest, err := rawKafkaSourceManifest(r.client)
-		if err != nil {
-			return fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
-		}
-		combinedManifest.Append(manifest)
-	} else {
-		// TODO: ensure Channel components don't exist
+	manifest, err := buildManifest(instance, r.client)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	if instance.Spec.Source.Enabled {
-		manifest, err := rawKafkaSourceManifest(r.client)
-		if err != nil {
-			return fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-		}
-		combinedManifest.Append(manifest)
-	} else {
-		// TODO: ensure they don't exist
-	}
+	// TODO: ensure components get removed when enabled=true is changed to enabled=false
 
 	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
 		// TODO r.configure,
@@ -181,7 +166,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 
 	// Execute each stage in sequence until one returns an error
 	for _, stage := range stages {
-		if err := stage(combinedManifest, instance); err != nil {
+		if err := stage(manifest, instance); err != nil {
 			return err
 		}
 	}
@@ -310,31 +295,38 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := buildManifest(instance, r.client)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	if err := r.transform(manifest, instance); err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
+	}
+
+	if err := manifest.Delete(); err != nil {
+		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
+	}
+	return nil
+}
+
+func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
 	combinedManifest := &mf.Manifest{}
 
 	if instance.Spec.Channel.Enabled {
-		manifest, err := rawKafkaSourceManifest(r.client)
+		manifest, err := rawKafkaSourceManifest(apiClient)
 		if err != nil {
-			return fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+			return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 		}
 		combinedManifest.Append(manifest)
 	}
 
 	if instance.Spec.Source.Enabled {
-		manifest, err := rawKafkaSourceManifest(r.client)
+		manifest, err := rawKafkaSourceManifest(apiClient)
 		if err != nil {
-			return fmt.Errorf("failed to load manifest: %w", err)
+			return nil, fmt.Errorf("failed to load manifest: %w", err)
 		}
 		combinedManifest.Append(manifest)
 	}
-
-	err := r.transform(combinedManifest, instance)
-	if err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
-	}
-
-	if err := combinedManifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
-	}
-	return nil
+	return combinedManifest, nil
 }
