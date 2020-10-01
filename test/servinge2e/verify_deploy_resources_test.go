@@ -21,7 +21,7 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	// Check the status of Service for kn ConsoleCLIDownload
-	service, err := test.WaitForServiceState(caCtx, "kn-cli-downloads", knativeServing, test.IsServiceReady)
+	service, err := test.WaitForServiceState(caCtx, "kn-cli", knativeServing, test.IsServiceReady)
 	if err != nil {
 		t.Fatalf("failed to verify kn ConcoleCLIDownload Deployment: %v", err)
 	}
