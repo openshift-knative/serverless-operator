@@ -318,7 +318,7 @@ func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Cli
 		if err != nil {
 			return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 		}
-		combinedManifest, err = mergeManifests(combinedManifest, &manifest)
+		combinedManifest, err = mergeManifests(manifest.Client, combinedManifest, &manifest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to merge KafkaChannel manifest: %w", err)
 		}
@@ -329,7 +329,7 @@ func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Cli
 		if err != nil {
 			return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 		}
-		combinedManifest, err = mergeManifests(combinedManifest, &manifest)
+		combinedManifest, err = mergeManifests(manifest.Client, combinedManifest, &manifest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to merge KafkaSource manifest: %w", err)
 		}
@@ -338,11 +338,11 @@ func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Cli
 }
 
 // Merges the given manifests into a new single manifest
-func mergeManifests(m1, m2 *mf.Manifest) (*mf.Manifest, error) {
+func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error) {
 	result, err := mf.ManifestFrom(mf.Slice(append(m1.Resources(), m2.Resources()...)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to merge manifests: %w", err)
 	}
-	result.Client = m1.Client
+	result.Client = client
 	return &result, nil
 }
