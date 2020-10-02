@@ -248,20 +248,13 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
-	certs := instance.Spec.ControllerCustomCerts
+	certName := "config-service-ca"
 
-	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
-	// cause us to automatically pull in the relevant ConfigMaps from the cluster. The user needs
-	// to specifically opt-out of this today by specifying an empty Name and ConfigMap explicitly.
-	if certs.Type != "ConfigMap" || certs.Name == "" {
-		return nil
-	}
-
-	serviceCACM, err := r.reconcileConfigMap(instance, certs.Name+"-service-ca", map[string]string{serviceCAKey: "true"}, nil, nil)
+	serviceCACM, err := r.reconcileConfigMap(instance, certName+"-service-ca", map[string]string{serviceCAKey: "true"}, nil, nil)
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}
-	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca", nil, map[string]string{trustedCAKey: "true"}, nil)
+	trustedCACM, err := r.reconcileConfigMap(instance, certName+"-trusted-ca", nil, map[string]string{trustedCAKey: "true"}, nil)
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}
@@ -274,7 +267,7 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 		combinedContents[key] = value
 	}
 
-	combinedCM, err := r.reconcileConfigMap(instance, certs.Name, nil, nil, combinedContents)
+	combinedCM, err := r.reconcileConfigMap(instance, certName, nil, nil, combinedContents)
 	if err != nil {
 		return fmt.Errorf("error reconciling custom certs CM: %w", err)
 	}
