@@ -43,7 +43,7 @@ func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Cli
 	combinedManifest := &mf.Manifest{}
 
 	if build == ManifestBuildAll || (instance.Spec.Channel.Enabled && build == ManifestBuildEnabledOnly) || (!instance.Spec.Channel.Enabled && build == ManifestBuildDisabledOnly) {
-		manifest, err := rawKafkaSourceManifest(apiClient)
+		manifest, err := rawKafkaChannelManifest(apiClient)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 		}
@@ -100,4 +100,14 @@ func isDeploymentAvailable(d *appsv1.Deployment) bool {
 		}
 	}
 	return false
+}
+
+func executeStages(instance *operatorv1alpha1.KnativeKafka, stages []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error, manifest *mf.Manifest) error {
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
 }
