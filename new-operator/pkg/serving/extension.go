@@ -44,6 +44,13 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		configure(ks, "domain", domain, "")
 	}
 
+	// Attempt to locate kibana route which is available if openshift-logging has been configured
+	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get(ctx, "kibana", metav1.GetOptions{})
+	if err == nil && len(route.Status.Ingress) > 0 && route.Status.Ingress[0].Host != "" {
+		url := "https://" + route.Status.Ingress[0].Host + "/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%5C%2FrevisionUID:${REVISION_UID}')"
+		configure(ks, "observability", "logging.revision-url-template", url)
+	}
+
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
 		ks.Spec.HighAvailability = &v1alpha1.HighAvailability{
