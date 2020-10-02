@@ -206,13 +206,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 		r.checkDeployments,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, stages, manifest)
 }
 
 // deletes the resources for the disabled components
@@ -230,13 +224,7 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.K
 		r.deleteResources,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, stages, manifest)
 }
 
 // deletes all KnativeKafka resources.
@@ -251,13 +239,7 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 		r.deleteResources,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, stages, manifest)
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
@@ -324,7 +306,7 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 
 // Delete Knative Kafka resources
 func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
-	log.Info("Deleting resources in manifest")
+	log.Info("Deleting disabled resources in manifest")
 	if err := manifest.Delete(); err != nil {
 		// TODO: any conditions?
 		return fmt.Errorf("failed to apply manifest: %w", err)
