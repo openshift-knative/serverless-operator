@@ -256,8 +256,9 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	transformers := []mf.Transformer{
-		InjectOwner(instance),
+		injectOwner(instance),
 		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
+		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
 	}
 
 	log.Info("Transforming manifest")

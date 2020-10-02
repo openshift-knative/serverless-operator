@@ -83,13 +83,25 @@ func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error)
 // resources that are in the same namespace as the owner.
 // For the resources that are in the same namespace, it fallbacks to
 // Manifestival's InjectOwner
-func InjectOwner(owner mf.Owner) mf.Transformer {
+func injectOwner(owner mf.Owner) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetNamespace() == owner.GetNamespace() {
 			return mf.InjectOwner(owner)(u)
 		} else {
 			return nil
 		}
+	}
+}
+
+func setBootstrapServers(bootstrapServers string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
+			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 }
 
