@@ -2,7 +2,6 @@ package servinge2e
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -21,14 +20,15 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	// Check the status of Deployment for kn ConsoleCLIDownload
-	if err := test.CheckDeploymentScale(caCtx, knativeServing, "kn-cli-downloads", 1); err != nil {
+	// Check the status of Service for kn ConsoleCLIDownload
+	service, err := test.WaitForServiceState(caCtx, "kn-cli", knativeServing, test.IsServiceReady)
+	if err != nil {
 		t.Fatalf("failed to verify kn ConcoleCLIDownload Deployment: %v", err)
 	}
-	// Verify that Route for kn ConsoleCLIDownload is ready and has a host
-	host, err := checkRouteIsReady(caCtx, knativeServing, "kn-cli-downloads")
-	if err != nil {
-		t.Fatalf("failed to verify kn ConsoleCLIDownload Route is ready: %v", err)
+	// Verify that Service URL for kn ConsoleCLIDownload is present and has a host
+	host := service.Status.URL.Host
+	if host == "" {
+		t.Fatalf("failed to verify kn ConsoleCLIDownload Service URL is present: %v", err)
 	}
 	// Verify kn ConsoleCLIDownload CO and if download links are cluster local
 	ccd, err := caCtx.Clients.ConsoleCLIDownload.Get("kn", metav1.GetOptions{})
@@ -61,16 +61,4 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 			t.Fatalf("failed to verify kn CCD, kn artifact %s size less than 10MB", link.Href)
 		}
 	}
-}
-
-func checkRouteIsReady(ctx *test.Context, ns, name string) (string, error) {
-	r, err := ctx.Clients.Route.Routes(ns).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	ready, _ := routeHasHost(r, nil)
-	if !ready {
-		return "", fmt.Errorf("route %s/%s is not ready yet", ns, name)
-	}
-	return r.Status.Ingress[0].Host, nil
 }

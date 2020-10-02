@@ -129,12 +129,12 @@ func NewDurableConnection(target string, messageChan chan []byte, logger *zap.Su
 		for {
 			select {
 			default:
-				logger.Infof("Connecting to %s", target)
+				logger.Info("Connecting to ", target)
 				if err := c.connect(); err != nil {
-					logger.With(zap.Error(err)).Errorf("Connecting to %s failed", target)
+					logger.Errorw("Failed connecting to "+target, zap.Error(err))
 					continue
 				}
-				logger.Debugf("Connected to %s", target)
+				logger.Debug("Connected to ", target)
 				if err := c.keepalive(); err != nil {
 					logger.With(zap.Error(err)).Errorf("Connection to %s broke down, reconnecting...", target)
 				}
@@ -310,6 +310,11 @@ func (c *ManagedConnection) Send(msg interface{}) error {
 	}
 
 	return c.write(websocket.BinaryMessage, b.Bytes())
+}
+
+// SendRaw sends a message over the websocket connection without performing any encoding.
+func (c *ManagedConnection) SendRaw(messageType int, msg []byte) error {
+	return c.write(messageType, msg)
 }
 
 // Shutdown closes the websocket connection.

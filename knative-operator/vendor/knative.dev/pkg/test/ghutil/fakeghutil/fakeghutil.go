@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v27/github"
 	"knative.dev/pkg/test/ghutil"
 )
 
@@ -36,6 +36,7 @@ type FakeGithubClient struct {
 	PullRequests map[string]map[int]*github.PullRequest // map of repo: map of PullRequest Number: pullrequests
 	PRCommits    map[int][]*github.RepositoryCommit     // map of PR number: slice of commits
 	CommitFiles  map[string][]*github.CommitFile        // map of commit SHA: slice of files
+	Branches     map[string][]*github.Branch            // map of repo: branches
 
 	NextNumber int    // number to be assigned to next newly created issue/comment
 	BaseURL    string // base URL of Github
@@ -118,8 +119,9 @@ func (fgc *FakeGithubClient) ReopenIssue(org, repo string, issueNumber int) erro
 
 // ListComments gets all comments from issue
 func (fgc *FakeGithubClient) ListComments(org, repo string, issueNumber int) ([]*github.IssueComment, error) {
-	var comments []*github.IssueComment
-	for _, comment := range fgc.Comments[issueNumber] {
+	ghComments := fgc.Comments[issueNumber]
+	comments := make([]*github.IssueComment, 0, len(ghComments))
+	for _, comment := range ghComments {
 		comments = append(comments, comment)
 	}
 	return comments, nil
@@ -240,7 +242,7 @@ func (fgc *FakeGithubClient) ListFiles(org, repo string, ID int) ([]*github.Comm
 	var res []*github.CommitFile
 	commits, err := fgc.ListCommits(org, repo, ID)
 	if nil != err {
-		return res, err
+		return nil, err
 	}
 	for _, commit := range commits {
 		files, ok := fgc.CommitFiles[*commit.SHA]
@@ -327,6 +329,15 @@ func (fgc *FakeGithubClient) CreatePullRequest(org, repo, head, base, title, bod
 	}
 	fgc.PullRequests[repo][PRNumber] = PR
 	return PR, nil
+}
+
+// ListBranches lists branchs for given repo
+func (fgc *FakeGithubClient) ListBranches(org, repo string) ([]*github.Branch, error) {
+	branches := make([]*github.Branch, 0, len(fgc.Branches))
+	for _, b := range fgc.Branches {
+		branches = append(branches, b...)
+	}
+	return branches, nil
 }
 
 // AddFileToCommit adds file to commit

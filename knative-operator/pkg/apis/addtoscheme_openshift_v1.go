@@ -9,5 +9,5 @@ import (
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	// Adds schema for openshift apis
-	AddToSchemes = append(AddToSchemes, configv1.Install, routev1.Install, consolev1.Install)
+	AddToSchemes = append(AddToSchemes, configv1.Install, consolev1.Install, routev1.Install)
 }

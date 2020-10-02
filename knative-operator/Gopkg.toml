@@ -51,6 +51,10 @@ required = [
 #   name = "knative.dev/pkg"
 #   branch = "release-0.14"
 
+[[override]]
+  name = "knative.dev/serving"
+  branch = "release-0.15"
+
 [[constraint]]
   name = "github.com/openshift/api"
   branch = "release-4.2"
