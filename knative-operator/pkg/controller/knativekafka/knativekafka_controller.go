@@ -150,12 +150,22 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	manifest, err := buildManifest(instance, r.client)
+	// install the components that are enabled
+	if err := r.executeInstallStages(instance); err != nil {
+		return err
+	}
+	// delete the components that are disabled
+	if err := r.executeDeleteStages(instance); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := buildManifest(instance, r.client, ManifestBuildEnabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
-
-	// TODO: ensure components get removed when enabled=true is changed to enabled=false
 
 	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
 		// TODO r.configure,
@@ -163,6 +173,26 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 		r.transform,
 		r.apply,
 		r.checkDeployments,
+	}
+
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := buildManifest(instance, r.client, ManifestBuildDisabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+		r.transform,
+		r.deleteResources,
 	}
 
 	// Execute each stage in sequence until one returns an error
@@ -236,6 +266,17 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 	return nil
 }
 
+// Delete Knative Kafka resources
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Deleting resources in manifest")
+	if err := manifest.Delete(); err != nil {
+		// TODO: any conditions?
+		return fmt.Errorf("failed to apply manifest: %w", err)
+	}
+	// TODO: any conditions?
+	return nil
+}
+
 func isDeploymentAvailable(d *appsv1.Deployment) bool {
 	for _, c := range d.Status.Conditions {
 		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
@@ -296,25 +337,37 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := buildManifest(instance, r.client)
+	manifest, err := buildManifest(instance, r.client, ManifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	if err := r.transform(manifest, instance); err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+		r.transform,
+		r.deleteResources,
 	}
 
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
+type manifestBuild int
+
+const (
+	ManifestBuildEnabledOnly manifestBuild = iota
+	ManifestBuildDisabledOnly
+	ManifestBuildAll
+)
+
+func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client, build manifestBuild) (*mf.Manifest, error) {
 	combinedManifest := &mf.Manifest{}
 
-	if instance.Spec.Channel.Enabled {
+	if build == ManifestBuildAll || (instance.Spec.Channel.Enabled && build == ManifestBuildEnabledOnly) || (!instance.Spec.Channel.Enabled && build == ManifestBuildDisabledOnly) {
 		manifest, err := rawKafkaSourceManifest(apiClient)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
@@ -325,7 +378,7 @@ func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Cli
 		}
 	}
 
-	if instance.Spec.Source.Enabled {
+	if build == ManifestBuildAll || (instance.Spec.Source.Enabled && build == ManifestBuildEnabledOnly) || (!instance.Spec.Source.Enabled && build == ManifestBuildDisabledOnly) {
 		manifest, err := rawKafkaSourceManifest(apiClient)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
