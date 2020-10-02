@@ -321,7 +321,7 @@ spec:
                   value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-cleanup"
                 - name: "IMAGE_sugar-controller__controller"
                   value: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller"
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
+                image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:new-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
                 ports:

@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	AddToManagerFuncs = append(AddToManagerFuncs, ks.MutatingWebhook, ks.ValidatingWebhook)
+	AddToManagerFuncs = append(AddToManagerFuncs, ks.ValidatingWebhook)
 }

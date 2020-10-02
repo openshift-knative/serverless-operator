@@ -212,9 +212,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 // configure default settings for OpenShift
 func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
 	before := instance.DeepCopy()
-	if err := common.Mutate(instance, r.client); err != nil {
-		return err
-	}
 	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
 		return nil
 	}

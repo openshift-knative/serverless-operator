@@ -27,9 +27,11 @@ function install_catalogsource {
   if [ -n "$OPENSHIFT_CI" ]; then
     # Image variables supplied by ci-operator.
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:new-operator,image: ${NEW_OPERATOR}," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:new-operator,image: ${DOCKER_REPO_OVERRIDE}/new-operator," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
   fi
 
