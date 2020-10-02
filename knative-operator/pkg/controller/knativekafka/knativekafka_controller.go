@@ -3,9 +3,7 @@ package knativekafka
 import (
 	"context"
 	"fmt"
-	"os"
 
-	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -13,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -147,16 +144,50 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 	return reconcile.Result{}, reconcileErr
 }
 
+// reconcile: ensure resources exist for enabled components, delete resources for the disabled components
+// component here means Channel or Source
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	// install the components that are enabled
+	// ensure the resources exist for the components that are enabled
 	if err := r.executeInstallStages(instance); err != nil {
 		return err
 	}
-	// delete the components that are disabled
+	// delete the resources for the components that are disabled
 	if err := r.executeDeleteStages(instance); err != nil {
 		return err
+	}
+	return nil
+}
+
+// general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
+func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) error {
+	finalizers := sets.NewString(instance.GetFinalizers()...)
+
+	if !finalizers.Has(finalizerName) {
+		log.Info("Finalizer has already been removed, nothing to do")
+		return nil
+	}
+
+	log.Info("Running cleanup logic")
+	log.Info("Deleting Knative Kafka")
+	if err := r.deleteKnativeKafka(instance); err != nil {
+		return fmt.Errorf("failed to delete Knative Kafka: %w", err)
+	}
+
+	// The above might take a while, so we refetch the resource again in case it has changed.
+	refetched := &operatorv1alpha1.KnativeKafka{}
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
+		return fmt.Errorf("failed to refetch KnativeKafka: %w", err)
+	}
+
+	// Update the refetched finalizer list.
+	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers.Delete(finalizerName)
+	refetched.SetFinalizers(finalizers.List())
+
+	if err := r.client.Update(context.TODO(), refetched); err != nil {
+		return fmt.Errorf("failed to update KnativeKafka with removed finalizer: %w", err)
 	}
 	return nil
 }
@@ -184,8 +215,33 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 	return nil
 }
 
+// deletes the resources for the disabled components
+// this is separate from the entire KnativeKafka CR deletion because
+// we don't care about the finalizers etc.
+// only actually deletes resources when e.g. spec.channel.enabled=true becomes false
 func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := buildManifest(instance, r.client, ManifestBuildDisabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+		r.transform,
+		r.deleteResources,
+	}
+
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// deletes all KnativeKafka resources.
+func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := buildManifest(instance, r.client, ManifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
@@ -275,145 +331,4 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance 
 	}
 	// TODO: any conditions?
 	return nil
-}
-
-func isDeploymentAvailable(d *appsv1.Deployment) bool {
-	for _, c := range d.Status.Conditions {
-		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-			return true
-		}
-	}
-	return false
-}
-
-// rawKafkaChannelManifest returns KafkaChannel manifest without transformations
-func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-// rawKafkaSourceManifest returns KafkaSource manifest without transformations
-func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func kafkaChannelManifestPath() string {
-	return os.Getenv("KAFKACHANNEL_MANIFEST_PATH")
-}
-
-func kafkaSourceManifestPath() string {
-	return os.Getenv("KAFKASOURCE_MANIFEST_PATH")
-}
-
-// general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
-func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) error {
-	finalizers := sets.NewString(instance.GetFinalizers()...)
-
-	if !finalizers.Has(finalizerName) {
-		log.Info("Finalizer has already been removed, nothing to do")
-		return nil
-	}
-
-	log.Info("Running cleanup logic")
-	log.Info("Deleting Knative Kafka")
-	if err := r.deleteKnativeKafka(instance); err != nil {
-		return fmt.Errorf("failed to delete Knative Kafka: %w", err)
-	}
-
-	// The above might take a while, so we refetch the resource again in case it has changed.
-	refetched := &operatorv1alpha1.KnativeKafka{}
-	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
-		return fmt.Errorf("failed to refetch KnativeKafka: %w", err)
-	}
-
-	// Update the refetched finalizer list.
-	finalizers = sets.NewString(refetched.GetFinalizers()...)
-	finalizers.Delete(finalizerName)
-	refetched.SetFinalizers(finalizers.List())
-
-	if err := r.client.Update(context.TODO(), refetched); err != nil {
-		return fmt.Errorf("failed to update KnativeKafka with removed finalizer: %w", err)
-	}
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := buildManifest(instance, r.client, ManifestBuildAll)
-	if err != nil {
-		return fmt.Errorf("failed to load and build manifest: %w", err)
-	}
-
-	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
-		r.transform,
-		r.deleteResources,
-	}
-
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-type manifestBuild int
-
-const (
-	ManifestBuildEnabledOnly manifestBuild = iota
-	ManifestBuildDisabledOnly
-	ManifestBuildAll
-)
-
-func buildManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client, build manifestBuild) (*mf.Manifest, error) {
-	combinedManifest := &mf.Manifest{}
-
-	if build == ManifestBuildAll || (instance.Spec.Channel.Enabled && build == ManifestBuildEnabledOnly) || (!instance.Spec.Channel.Enabled && build == ManifestBuildDisabledOnly) {
-		manifest, err := rawKafkaSourceManifest(apiClient)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
-		}
-		combinedManifest, err = mergeManifests(manifest.Client, combinedManifest, &manifest)
-		if err != nil {
-			return nil, fmt.Errorf("failed to merge KafkaChannel manifest: %w", err)
-		}
-	}
-
-	if build == ManifestBuildAll || (instance.Spec.Source.Enabled && build == ManifestBuildEnabledOnly) || (!instance.Spec.Source.Enabled && build == ManifestBuildDisabledOnly) {
-		manifest, err := rawKafkaSourceManifest(apiClient)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-		}
-		combinedManifest, err = mergeManifests(manifest.Client, combinedManifest, &manifest)
-		if err != nil {
-			return nil, fmt.Errorf("failed to merge KafkaSource manifest: %w", err)
-		}
-	}
-	return combinedManifest, nil
-}
-
-// Merges the given manifests into a new single manifest
-func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error) {
-	result, err := mf.ManifestFrom(mf.Slice(append(m1.Resources(), m2.Resources()...)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to merge manifests: %w", err)
-	}
-	result.Client = client
-	return &result, nil
-}
-
-// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
-// `owner` to namespace-scoped objects.
-//
-// The difference from Manifestival's Inject owner is, it only does it for
-// resources that are in the same namespace as the owner.
-// For the resources that are in the same namespace, it fallbacks to
-// Manifestival's InjectOwner
-func InjectOwner(owner mf.Owner) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetNamespace() == owner.GetNamespace() {
-			return mf.InjectOwner(owner)(u)
-		} else {
-			return nil
-		}
-	}
 }
