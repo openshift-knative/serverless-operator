@@ -69,3 +69,19 @@ type Channel struct {
 func init() {
 	SchemeBuilder.Register(&KnativeKafka{}, &KnativeKafkaList{})
 }
+
+// Used in s-o e2e tests. can't instantiate there because vendor dirs
+// of s-o and s-o/knative-operator are different
+func NewKnativeKafka(name, namespace string, spec KnativeKafkaSpec) *KnativeKafka {
+	return &KnativeKafka{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "KnativeKafka",
+			APIVersion: "operator.serverless.openshift.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: spec,
+	}
+}

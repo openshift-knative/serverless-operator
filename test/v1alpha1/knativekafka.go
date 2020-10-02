@@ -13,12 +13,24 @@ import (
 )
 
 func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
-	return &kafkav1alpha1.KnativeKafka{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+	// results in compile error.
+	//
+	//return &kafkav1alpha1.KnativeKafka{
+	//	ObjectMeta: metav1.ObjectMeta{
+	//		Name:      name,
+	//		Namespace: namespace,
+	//	},
+	//}
+	spec := kafkav1alpha1.KnativeKafkaSpec{
+		Source: kafkav1alpha1.Source{
+			Enabled: true,
+		},
+		Channel: kafkav1alpha1.Channel{
+			Enabled:          true,
+			BootstrapServers: "foo.example.com:1234",
 		},
 	}
+	return kafkav1alpha1.NewKnativeKafka(name, namespace, spec)
 }
 
 func WithKnativeKafkaReady(ctx *test.Context, name, namespace string) (*kafkav1alpha1.KnativeKafka, error) {
@@ -38,7 +50,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 		return nil, err
 	}
 	u := &unstructured.Unstructured{Object: uo}
-	ru, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(name).Create(u, metav1.CreateOptions{})
+	ru, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Create(u, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +67,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 }
 
 func DeleteKnativeKafka(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(name).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -77,7 +89,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		lastState := &kafkav1alpha1.KnativeKafka{}
-		u := unstructured.Unstructured{}
+		u := &unstructured.Unstructured{}
 		u, err = ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Get(name, metav1.GetOptions{})
 		if err != nil {
 			return inState(nil, err)
