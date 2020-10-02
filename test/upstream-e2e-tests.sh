@@ -11,6 +11,7 @@ if [ -n "$OPENSHIFT_CI" ]; then
 fi
 debugging.setup
 
+enable_access_log || exit $?
 create_namespaces || exit $?
 
 failed=0

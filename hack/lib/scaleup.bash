@@ -63,3 +63,17 @@ function cluster_scalable {
     return 1
   fi
 }
+
+# Enable
+function enable_access_log {
+  logger.debug "Enable access log on OpenShift Ingress Router"
+  oc patch \
+     --namespace=openshift-ingress-operator \
+     --patch='{"spec": {"logging": {"access": {"destination": {"type": "Container"}}}}}' \
+     --type=merge \
+     ingresscontroller/default
+  [[ $? -eq 0 ]] || logger.error "Failed to enable access log"
+
+  # TODO: Access log is only available after OCP 4.5. Add error handling once 4.4 was not supported.
+  return 0
+}

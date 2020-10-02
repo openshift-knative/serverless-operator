@@ -11,6 +11,7 @@ if [ -n "$OPENSHIFT_CI" ]; then
 fi
 debugging.setup
 
+enable_access_log || exit $?
 scale_up_workers || exit $?
 create_namespaces || exit $?
 create_htpasswd_users && add_roles || exit $?
