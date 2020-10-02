@@ -409,6 +409,14 @@
   revision = "d4a64ec2cbd86f11ea74dfdcf6520d5833d0c6cd"
 
 [[projects]]
+  digest = "1:b598d93d007e96c9ed686acb9237cee1da98709f3905bdb9b106e37c9b6d9cce"
+  name = "github.com/openzipkin/zipkin-go"
+  packages = ["model"]
+  pruneopts = "NT"
+  revision = "b98d75699e013868e73c146266a28bc8c9e2c372"
+  version = "v0.2.5"
+
+[[projects]]
   digest = "1:2f871701d245034b68d5f2d852191e9b96ef2d13c1d79296581e0a42a5bccc6b"
   name = "github.com/operator-framework/operator-sdk"
   packages = [
@@ -530,6 +538,32 @@
   pruneopts = "NT"
   revision = "2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab"
   version = "v1.0.5"
+
+[[projects]]
+  digest = "1:5ea5af39779ba2f27f4550fe3e36c6cbe0db2840a33746fa05a7894fd4805e27"
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "internal",
+    "internal/tagencoding",
+    "metric/metricdata",
+    "metric/metricproducer",
+    "plugin/ochttp",
+    "plugin/ochttp/propagation/b3",
+    "plugin/ochttp/propagation/tracecontext",
+    "resource",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/propagation",
+    "trace/tracestate",
+  ]
+  pruneopts = "NT"
+  revision = "5fa069b99bc903d713add0295c7e0a55d34ae573"
+  version = "v0.22.4"
 
 [[projects]]
   digest = "1:cc9d86ec4e6e3bdf87e3a421273bfeed003cf8e21351c0302fe8b0eb7b10efe6"
@@ -1031,12 +1065,22 @@
     "apis",
     "apis/duck",
     "apis/duck/v1",
+    "apis/testing",
     "apis/testing/fuzzer",
     "configmap",
     "kmeta",
     "kmp",
     "profiling",
     "ptr",
+    "test",
+    "test/ingress",
+    "test/logging",
+    "test/monitoring",
+    "test/spoof",
+    "test/zipkin",
+    "tracing/config",
+    "tracing/propagation",
+    "tracing/propagation/tracecontextb3",
     "tracker",
   ]
   pruneopts = "NT"
@@ -1086,6 +1130,7 @@
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
+    "pkg/runtime/scheme",
     "pkg/runtime/signals",
     "pkg/source",
     "pkg/source/internal",
@@ -1132,7 +1177,6 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
-    "github.com/google/go-cmp/cmp",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1170,6 +1214,7 @@
     "knative.dev/operator/pkg/apis/operator/v1alpha1",
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/duck/v1",
+    "knative.dev/pkg/apis/testing",
     "knative.dev/pkg/ptr",
     "knative.dev/serving/pkg/apis/serving/v1",
     "sigs.k8s.io/controller-runtime/pkg/client",
@@ -1185,6 +1230,7 @@
     "sigs.k8s.io/controller-runtime/pkg/reconcile",
     "sigs.k8s.io/controller-runtime/pkg/runtime/inject",
     "sigs.k8s.io/controller-runtime/pkg/runtime/log",
+    "sigs.k8s.io/controller-runtime/pkg/runtime/scheme",
     "sigs.k8s.io/controller-runtime/pkg/runtime/signals",
     "sigs.k8s.io/controller-runtime/pkg/source",
     "sigs.k8s.io/controller-runtime/pkg/webhook",
