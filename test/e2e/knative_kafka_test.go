@@ -33,6 +33,12 @@ func TestKnativeKafka(t *testing.T) {
 		}
 	})
 
+	t.Run("deploy knativeeventing cr and wait for it to be ready", func(t *testing.T) {
+		if _, err := v1a1test.WithKnativeEventingReady(caCtx, eventingName, eventingNamespace); err != nil {
+			t.Fatal("Failed to deploy KnativeEventing", err)
+		}
+	})
+
 	t.Run("deploy knativekafka cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := v1a1test.WithKnativeKafkaReady(caCtx, knativeKafkaName, eventingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeKafka", err)
@@ -78,6 +84,19 @@ func TestKnativeKafka(t *testing.T) {
 		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
 			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaSourceNamespace); err != nil {
+				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
+			}
+		}
+	})
+
+	t.Run("remove knativeeventing cr", func(t *testing.T) {
+		if err := v1a1test.DeleteKnativeEventing(caCtx, eventingName, eventingNamespace); err != nil {
+			t.Fatal("Failed to remove Knative Eventing", err)
+		}
+
+		for i := range knativeControlPlaneDeploymentNames {
+			deploymentName := knativeControlPlaneDeploymentNames[i]
+			if err := test.WithDeploymentGone(caCtx, deploymentName, eventingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
 		}
