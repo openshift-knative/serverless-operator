@@ -22,9 +22,9 @@ failed=0
 
 # Run serverless-operator specific tests.
 (( !failed )) && serverless_operator_e2e_tests || failed=2
-(( !failed )) && ensure_serverless_installed || failed=3
+#(( !failed )) && ensure_serverless_installed || failed=3
 # Run Knative Serving downstream E2E tests.
-(( !failed )) && downstream_serving_e2e_tests || failed=4
+#(( !failed )) && downstream_serving_e2e_tests || failed=4
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
