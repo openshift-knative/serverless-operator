@@ -27,7 +27,7 @@ func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
 		},
 		Channel: kafkav1alpha1.Channel{
 			Enabled:          true,
-			BootstrapServers: "foo.example.com:1234",
+			BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
 		},
 	}
 	return kafkav1alpha1.NewKnativeKafka(name, namespace, spec)
