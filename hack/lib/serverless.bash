@@ -168,9 +168,9 @@ metadata:
   namespace: ${EVENTING_NAMESPACE}
 spec:
   source:
-    enable: true
+    enabled: true
   channel:
-    enable: true
+    enabled: true
     bootstrapServers: foo.bar.example.com:1234
 EOF
 
