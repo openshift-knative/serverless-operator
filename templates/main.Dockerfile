@@ -11,13 +11,13 @@ LABEL operators.operatorframework.io.bundle.channel.default.v1="__DEFAULT_CHANNE
 LABEL operators.operatorframework.io.bundle.channels.v1="__CHANNEL_LIST__"
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-serverless-rhel8-operator-container" \
-      name="openshift-serverless-1/serverless-rhel8-operator" \
+      com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
+      name="openshift-serverless-1/serverless-operator-bundle" \
       version="__VERSION__" \
-      summary="Red Hat OpenShift Serverless 1 Serverless Operator" \
+      summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1 Serverless Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Serverless Operator" \
+      description="Red Hat OpenShift Serverless Bundle" \
+      io.k8s.display-name="Red Hat OpenShift Serverless Bundle" \
       com.redhat.openshift.versions="__OCP_TARGET_VLIST__" \
       com.redhat.delivery.operator.bundle=true \
       com.redhat.delivery.backport=true

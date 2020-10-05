@@ -10,6 +10,7 @@ olm:
     default: '4.3'
     list:
       - '4.5'
+      - '4.6'
 
 requirements:
   kube:
@@ -17,6 +18,7 @@ requirements:
   golang: '1.14'
   ocp:
     - '4.5'
+    - '4.6'
 
 dependencies:
   serving: 0.16.0
