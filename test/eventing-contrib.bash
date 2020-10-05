@@ -14,7 +14,7 @@ function upstream_knative_eventing_contrib_e2e {
 
   cd "$KNATIVE_EVENTING_CONTRIB_HOME" || return $?
 
-  source "${KNATIVE_EVENTING_CONTRIB_HOME}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
+  source "${KNATIVE_EVENTING_CONTRIB_HOME}/vendor/knative.dev/eventing/test/e2e-common.sh"
   source "${KNATIVE_EVENTING_CONTRIB_HOME}/openshift/e2e-common.sh"
 
   failed=0
