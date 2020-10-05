@@ -5,6 +5,11 @@
 
 set -e
 
+if [[ "$#" -ne 1 ]]; then
+    echo "Please ensure DOCKER_REPO_OVERRIDE envvar is set"
+    exit 1
+fi
+
 repo=$1
 
 docker build -t "$repo/knative-operator" knative-operator
