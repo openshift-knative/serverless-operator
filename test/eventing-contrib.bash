@@ -14,7 +14,11 @@ function upstream_knative_eventing_contrib_e2e {
 
   cd "$KNATIVE_EVENTING_CONTRIB_HOME" || return $?
 
-  source "${KNATIVE_EVENTING_CONTRIB_HOME}/vendor/knative.dev/eventing/test/e2e-common.sh"
+  # This the namespace used to install and test Knative Eventing-Contrib.
+  export TEST_EVENTING_NAMESPACE
+  TEST_EVENTING_NAMESPACE="${TEST_EVENTING_NAMESPACE:-"knative-eventing-"$(cat /dev/urandom \
+    | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+
   source "${KNATIVE_EVENTING_CONTRIB_HOME}/openshift/e2e-common.sh"
 
   failed=0
