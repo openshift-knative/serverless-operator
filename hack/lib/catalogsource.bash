@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: markusthoemmes/serverless-index:test6
+        image: markusthoemmes/serverless-index:test-for-real
         ports:
         - containerPort: 50051
           name: grpc
