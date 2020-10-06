@@ -19,6 +19,13 @@ function upstream_knative_eventing_contrib_e2e {
   TEST_EVENTING_NAMESPACE="${TEST_EVENTING_NAMESPACE:-"knative-eventing-"$(cat /dev/urandom \
     | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
 
+  export KNATIVE_DEFAULT_NAMESPACE
+  KNATIVE_DEFAULT_NAMESPACE="knative-eventing"
+
+  # Config tracing config.
+  export CONFIG_TRACING_CONFIG
+  CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
+
   source "${KNATIVE_EVENTING_CONTRIB_HOME}/openshift/e2e-common.sh"
 
   failed=0
