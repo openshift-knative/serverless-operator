@@ -171,7 +171,7 @@ spec:
     enabled: true
   channel:
     enabled: true
-    bootstrapServers: foo.bar.example.com:1234
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
