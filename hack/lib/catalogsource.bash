@@ -42,6 +42,9 @@ function install_catalogsource {
   # Undo potential changes to the CSV to not pollute the repository.
   mv "${rootdir}/bkp.yaml" "$csv"
 
+  # HACK: Allow to run the index pod as root so it has necessary access.
+  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
+
   # Install the index deployment.
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
@@ -60,7 +63,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: quay.io/openshift-knative/index
+        image: quay.io/openshift-knative/serverless-index:v1.14.3
         ports:
         - containerPort: 50051
           name: grpc
@@ -75,10 +78,7 @@ spec:
         - -c
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add                         -d index.db --mode=replaces -b docker.io/markusthoemmes/serverless-bundle:1.7.2 && \
-          /bin/opm registry add                         -d index.db --mode=replaces -b registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle && \
-          /bin/opm registry add                         -d index.db --mode=replaces -b registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle && \
-          /bin/opm registry add --container-tool=podman -d index.db --mode=replaces -b image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
 EOF
 
