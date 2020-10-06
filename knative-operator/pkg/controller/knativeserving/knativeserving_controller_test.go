@@ -35,7 +35,7 @@ var (
 			Namespace: "knative-serving",
 		},
 		Status: v1alpha1.KnativeServingStatus{
-			Status:  duckv1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{
 					{
 						Status: "True",
