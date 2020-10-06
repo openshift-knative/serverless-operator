@@ -26,6 +26,13 @@ function upstream_knative_eventing_contrib_e2e {
   export CONFIG_TRACING_CONFIG
   CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
 
+  pwd
+
+  ls -laht
+    
+  touch test.yaml
+  touch tmp.tracing.config.yaml
+
   source "${KNATIVE_EVENTING_CONTRIB_HOME}/openshift/e2e-common.sh"
 
   failed=0
