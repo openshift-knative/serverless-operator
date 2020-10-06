@@ -60,7 +60,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: quay.io/openshift-knative/index:v1.14.3
+        image: quay.io/openshift-knative/serverless-index:v1.14.3
         ports:
         - containerPort: 50051
           name: grpc
