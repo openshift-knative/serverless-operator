@@ -79,7 +79,7 @@ spec:
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
           /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
-          /bin/opm registry serve -d database/index.db -p 50051
+          /bin/opm registry serve -d index.db -p 50051
 EOF
 
   # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
