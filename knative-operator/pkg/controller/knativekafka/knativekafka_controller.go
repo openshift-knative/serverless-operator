@@ -25,7 +25,8 @@ import (
 )
 
 const (
-	// This needs to remain "knative-kafka-openshift" to be compatible with earlier versions.
+	// DO NOT change to something else in the future!
+	// This needs to remain "knative-kafka-openshift" to be compatible with earlier versions in the future versions.
 	finalizerName = "knative-kafka-openshift"
 )
 
