@@ -197,11 +197,7 @@ func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient cli
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
-	transformers := []mf.Transformer{
-		mf.InjectOwner(instance),
-	}
-
-	manifest, err = manifest.Transform(transformers...)
+	manifest, err = manifest.Transform(mf.InjectOwner(instance))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
@@ -272,9 +268,9 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	}
 
 	log.Info("Running cleanup logic")
-	log.Info("Deleting kourier")
+	log.Info("Deleting KnativeKafka")
 	if err := deleteKnativeKafka(instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete kourier: %w", err)
+		return fmt.Errorf("failed to delete KnativeKafka: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.
