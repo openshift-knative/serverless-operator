@@ -1,4 +1,4 @@
-FROM quay.io/operator-framework/upstream-opm-builder
+FROM quay.io/operator-framework/upstream-opm-builder:v1.14.3
 
 RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     echo "http://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
