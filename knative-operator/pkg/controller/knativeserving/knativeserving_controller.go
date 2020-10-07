@@ -95,11 +95,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
 	gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace)
-
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}

@@ -117,18 +117,21 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 }
 
 // common function to enqueue reconcile requests for resources
-func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.ToRequestsFunc {
-	return func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[ownerNamespaceAnnotationKey]
-		ownerName := annotations[ownerNameAnnotationKey]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
+func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
+	enqueueRequests := func() handler.ToRequestsFunc {
+		return func(obj handler.MapObject) []reconcile.Request {
+			annotations := obj.Meta.GetAnnotations()
+			ownerNamespace := annotations[ownerNamespaceAnnotationKey]
+			ownerName := annotations[ownerNameAnnotationKey]
+			if ownerNamespace != "" && ownerName != "" {
+				return []reconcile.Request{{
+					NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+				}}
+			}
+			return nil
 		}
-		return nil
 	}
+	return &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests()}
 }
 
 func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind]runtime.Object {

@@ -7,7 +7,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -35,8 +34,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace)
-	err = c.Watch(&source.Kind{Type: &v1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests}, skipCreatePredicate{})
+	err = c.Watch(&source.Kind{Type: &v1.ConfigMap{}}, common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace), skipCreatePredicate{})
 	if err != nil {
 		return err
 	}
