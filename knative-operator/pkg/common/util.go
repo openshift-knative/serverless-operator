@@ -5,7 +5,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -74,13 +73,20 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 	return overrideMap
 }
 
-// SetOwnerAnnotations is a transformer to set owner annotations on given object
-func SetOwnerAnnotations(meta metav1.ObjectMeta, ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) mf.Transformer {
+// SetAnnotations is a transformer to set annotations on given object
+// The existing annotations are kept as is, except they are overridden with the
+// annotations given as the argument.
+func SetAnnotations(annotations map[string]string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			ownerNameAnnotationKey:      meta.Name,
-			ownerNamespaceAnnotationKey: meta.Namespace,
-		})
+		if u.GetAnnotations() == nil {
+			u.SetAnnotations(annotations)
+		} else {
+			res := u.GetAnnotations()
+			for key, value := range annotations {
+				res[key] = value
+			}
+			u.SetAnnotations(res)
+		}
 		return nil
 	}
 }

@@ -9,7 +9,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -52,7 +51,10 @@ func manifest(apiclient client.Client, deploymentName string, namespace string) 
 		return mf.Manifest{}, fmt.Errorf("failed to read dashboard manifest: %w", err)
 	}
 	transforms := []mf.Transformer{
-		SetOwnerAnnotations(metav1.ObjectMeta{Namespace: namespace, Name: deploymentName}, ServerlessOperatorOwnerName, ServerlessOperatorOwnerNamespace),
+		SetAnnotations(map[string]string{
+			ServerlessOperatorOwnerName:      deploymentName,
+			ServerlessOperatorOwnerNamespace: namespace,
+		}),
 		mf.InjectNamespace(ConfigManagedNamespace),
 	}
 	if manifest, err = manifest.Transform(transforms...); err != nil {

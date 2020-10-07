@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -106,4 +107,67 @@ func environFromMap(envMap map[string]string) []string {
 	}
 
 	return e
+}
+
+func TestSetAnnotations(t *testing.T) {
+	cases := []struct {
+		name     string
+		existing map[string]string
+		toSet    map[string]string
+		expected map[string]string
+	}{
+		{
+			name:     "No existing annotations",
+			existing: map[string]string{},
+			toSet: map[string]string{
+				"foo": "bar",
+			},
+			expected: map[string]string{
+				"foo": "bar",
+			},
+		},
+		{
+			name: "Overwrite existing",
+			existing: map[string]string{
+				"foo":   "bar",
+				"hello": "there",
+			},
+			toSet: map[string]string{
+				"foo": "OVERRIDDEN",
+				"baz": "NEW",
+			},
+			expected: map[string]string{
+				"foo":   "OVERRIDDEN",
+				"baz":   "NEW",
+				"hello": "there",
+			},
+		},
+		{
+			name: "Do not do anything",
+			existing: map[string]string{
+				"foo":   "bar",
+				"hello": "there",
+			},
+			toSet: map[string]string{},
+			expected: map[string]string{
+				"foo":   "bar",
+				"hello": "there",
+			},
+		},
+	}
+
+	for i := range cases {
+		tc := cases[i]
+
+		u := &unstructured.Unstructured{}
+		u.SetAnnotations(tc.existing)
+
+		if err := common.SetAnnotations(tc.toSet)(u); err != nil {
+			t.Errorf("Error when setting annotations. Case name: %q. Error: %s", tc.name, err.Error())
+		}
+
+		if !reflect.DeepEqual(u.GetAnnotations(), tc.expected) {
+			t.Errorf("Annotations are not equal. Case name: %q. Expected: %v, actual: %v", tc.name, tc.expected, u.GetAnnotations())
+		}
+	}
 }
