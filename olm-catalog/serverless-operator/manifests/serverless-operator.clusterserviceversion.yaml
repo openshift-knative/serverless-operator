@@ -286,7 +286,7 @@ spec:
               containers:
                 - name: knative-openshift
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:knative-operator
                   command:
                   - knative-openshift
                   imagePullPolicy: Always
@@ -382,7 +382,7 @@ spec:
               containers:
                 - name: knative-openshift-ingress
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:knative-openshift-ingress
                   commangd:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -496,10 +496,10 @@ spec:
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:knative-operator
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:knative-openshift-ingress
     - name: IMAGE_eventing-controller__eventing-controller
       image: registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-eventing-controller
     - name: IMAGE_eventing-webhook__eventing-webhook
