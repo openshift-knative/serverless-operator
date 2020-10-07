@@ -104,7 +104,7 @@ function find_install_plan {
   local csv=$1
   for plan in `oc get installplan -n ${OPERATORS_NAMESPACE} --no-headers -o name`; do 
     [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) -eq 1 && \
-       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c $OPERATOR) -eq 1 ]] && echo $plan && return 0
+       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c $OLM_SOURCE) -eq 1 ]] && echo $plan && return 0
   done
   echo ""
 }
