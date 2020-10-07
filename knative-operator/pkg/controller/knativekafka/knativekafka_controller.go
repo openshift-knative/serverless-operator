@@ -13,9 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -80,35 +78,10 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.KafkaOwnerNamespace]
-		ownerName := annotations[common.KafkaOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
-
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
-
-	// Watch for Knative KafkaChannel resources.
-	kafkaChannelResources := r.rawKafkaChannelManifest.Resources()
-	for i := range kafkaChannelResources {
-		gvkToResource[kafkaChannelResources[i].GroupVersionKind()] = &kafkaChannelResources[i]
-	}
-
-	// Watch for Knative KafkaSource resources.
-	kafkaSourceResources := r.rawKafkaSourceManifest.Resources()
-	for i := range kafkaSourceResources {
-		gvkToResource[kafkaSourceResources[i].GroupVersionKind()] = &kafkaSourceResources[i]
-	}
+	gvkToResource := common.BuildGVKToResourceMap(r.rawKafkaChannelManifest, r.rawKafkaSourceManifest)
 
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -256,7 +229,10 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
 	manifest, err := r.rawKafkaChannelManifest.Transform(
 		mf.InjectOwner(instance),
-		setOwnerAnnotations(instance),
+		common.SetAnnotations(map[string]string{
+			common.KafkaOwnerName:      instance.Name,
+			common.KafkaOwnerNamespace: instance.Namespace,
+		}),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to transform KafkaChannel manifest: %w", err)
@@ -288,7 +264,12 @@ func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 }
 
 func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaSourceManifest.Transform(setOwnerAnnotations(instance))
+	manifest, err := r.rawKafkaSourceManifest.Transform(
+		common.SetAnnotations(map[string]string{
+			common.KafkaOwnerName:      instance.Name,
+			common.KafkaOwnerNamespace: instance.Namespace,
+		}),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
@@ -398,15 +379,4 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alp
 		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
-}
-
-// setOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *operatorv1alpha1.KnativeKafka) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		})
-		return nil
-	}
 }
