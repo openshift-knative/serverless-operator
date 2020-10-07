@@ -23,9 +23,10 @@ function install_catalogsource {
   # Create a backup of the CSV so we don't pollute the repository.
   cp "$csv" "${rootdir}/bkp.yaml"
 
-  if [ -n "$OPENSHIFT_CI" ]; then
-    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${IMAGE_FORMAT//\$\{component\}/knative-operator}," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${IMAGE_FORMAT//\$\{component\}/knative-openshift-ingress}," "$csv"
+  if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+    # HACK: Try with hardcoded registry host
+    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: registry.build01.ci.openshift.org/\$\{component\}/stable:knative-operator," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: registry.build01.ci.openshift.org/\$\{component\}/stable:knative-openshift-ingress," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
