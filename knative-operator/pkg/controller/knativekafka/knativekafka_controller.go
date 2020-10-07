@@ -308,7 +308,7 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 	}
 
 	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
+		return fmt.Errorf("failed to delete KnativeKafka manifest: %w", err)
 	}
 	return nil
 }
