@@ -6,4 +6,6 @@ const (
 	ServingOwnerNamespace            = "serving.knative.openshift.io/ownerNamespace"
 	ServerlessOperatorOwnerName      = "operator.knative.openshift.io/ownerName"
 	ServerlessOperatorOwnerNamespace = "operator.knative.openshift.io/ownerNamespace"
+	KafkaOwnerName                   = "knativekafkas.operator.serverless.openshift.io/ownerName"
+	KafkaOwnerNamespace              = "knativekafkas.operator.serverless.openshift.io/ownerNamespace"
 )
