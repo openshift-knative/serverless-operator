@@ -60,14 +60,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
-		OwnerType:    &operatorv1alpha1.KnativeKafka{},
-		IsController: true,
-	})
-	if err != nil {
-		return err
-	}
-
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
 		annotations := obj.Meta.GetAnnotations()
@@ -91,8 +83,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	kafkaChannelResources := kafkaChannelManifest.Resources()
 
 	for i := range kafkaChannelResources {
-		resource := &kafkaChannelResources[i]
-		gvkToResource[resource.GroupVersionKind()] = resource
+		gvkToResource[kafkaChannelResources[i].GroupVersionKind()] = &kafkaChannelResources[i]
 	}
 
 	// Watch for Knative KafkaSource resources.
@@ -103,8 +94,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	kafkaSourceResources := kafkaSourceManifest.Resources()
 
 	for i := range kafkaSourceResources {
-		resource := &kafkaSourceResources[i]
-		gvkToResource[resource.GroupVersionKind()] = resource
+		gvkToResource[kafkaSourceResources[i].GroupVersionKind()] = &kafkaSourceResources[i]
 	}
 
 	for _, t := range gvkToResource {
@@ -257,12 +247,10 @@ func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient cli
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
-	transformers := []mf.Transformer{
+	manifest, err = manifest.Transform(
 		mf.InjectOwner(instance),
 		setOwnerAnnotations(instance),
-	}
-
-	manifest, err = manifest.Transform(transformers...)
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
@@ -298,11 +286,7 @@ func kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient clie
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
-	transformers := []mf.Transformer{
-		setOwnerAnnotations(instance),
-	}
-
-	manifest, err = manifest.Transform(transformers...)
+	manifest, err = manifest.Transform(setOwnerAnnotations(instance))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
