@@ -13,7 +13,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -256,7 +255,7 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
 	manifest, err := r.rawKafkaChannelManifest.Transform(
 		mf.InjectOwner(instance),
-		setOwnerAnnotations(instance),
+		common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to transform KafkaChannel manifest: %w", err)
@@ -288,7 +287,7 @@ func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 }
 
 func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaSourceManifest.Transform(setOwnerAnnotations(instance))
+	manifest, err := r.rawKafkaSourceManifest.Transform(common.SetOwnerAnnotations(instance.ObjectMeta, common.KafkaOwnerName, common.KafkaOwnerNamespace))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
@@ -398,15 +397,4 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alp
 		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
-}
-
-// setOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *operatorv1alpha1.KnativeKafka) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		})
-		return nil
-	}
 }
