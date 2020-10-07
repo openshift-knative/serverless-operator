@@ -290,7 +290,7 @@ spec:
               containers:
                 - name: knative-openshift
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-operator
                   command:
                   - knative-openshift
                   imagePullPolicy: Always
@@ -338,7 +338,7 @@ spec:
               containers:
                 - name: knative-openshift-ingress
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-openshift-ingress
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
