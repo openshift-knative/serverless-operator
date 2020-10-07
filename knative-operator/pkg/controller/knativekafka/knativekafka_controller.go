@@ -149,13 +149,23 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	stages := []func(*operatorv1alpha1.KnativeKafka) error{
+	manifest, err := r.buildManifest(instance)
+	if err != nil {
+		return fmt.Errorf("failed to build manifest: %w", err)
+	}
+
+	// TODO: ensure components get removed when enabled=true is changed to enabled=false
+
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
 		// TODO r.configure,
 		r.ensureFinalizers,
-		r.installKnativeKafka,
+		r.transform,
+		r.apply,
 	}
+
+	// Execute each stage in sequence until one returns an error
 	for _, stage := range stages {
-		if err := stage(instance); err != nil {
+		if err := stage(manifest, instance); err != nil {
 			return err
 		}
 	}
@@ -163,7 +173,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -174,11 +184,28 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.Knat
 	return r.client.Update(context.TODO(), instance)
 }
 
+func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Transforming manifest")
+	m, err := manifest.Transform(
+		mf.InjectOwner(instance),
+		common.SetAnnotations(map[string]string{
+			common.KafkaOwnerName:      instance.Name,
+			common.KafkaOwnerNamespace: instance.Namespace,
+		}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
+	}
+	*manifest = m
+	return nil
+}
+
 // Install Knative Kafka components
-func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if err := r.applyKnativeKafka(instance); err != nil {
+func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Installing manifest")
+	if err := manifest.Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
-		return err
+		return fmt.Errorf("failed to apply manifest: %w", err)
 	}
 	instance.Status.MarkInstallSucceeded()
 	return nil
@@ -379,4 +406,34 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alp
 		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
+}
+
+func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
+	combinedManifest := &mf.Manifest{}
+	var err error
+
+	if instance.Spec.Channel.Enabled {
+		combinedManifest, err = mergeManifests(r.rawKafkaChannelManifest.Client, combinedManifest, &r.rawKafkaChannelManifest)
+		if err != nil {
+			return nil, fmt.Errorf("failed to merge KafkaChannel manifest: %w", err)
+		}
+	}
+
+	if instance.Spec.Source.Enabled {
+		combinedManifest, err = mergeManifests(r.rawKafkaSourceManifest.Client, combinedManifest, &r.rawKafkaSourceManifest)
+		if err != nil {
+			return nil, fmt.Errorf("failed to merge KafkaSource manifest: %w", err)
+		}
+	}
+	return combinedManifest, nil
+}
+
+// Merges the given manifests into a new single manifest
+func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error) {
+	result, err := mf.ManifestFrom(mf.Slice(append(m1.Resources(), m2.Resources()...)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to merge manifests: %w", err)
+	}
+	result.Client = client
+	return &result, nil
 }
