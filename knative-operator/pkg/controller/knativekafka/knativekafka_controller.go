@@ -219,38 +219,9 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaChannelManifest.Transform(
-		mf.InjectOwner(instance),
-		common.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		}),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to transform KafkaChannel manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
 // rawKafkaSourceManifest returns KafkaSource manifest without transformations
 func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaSourceManifest.Transform(
-		common.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		}),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-	}
-
-	return &manifest, nil
 }
 
 func kafkaChannelManifestPath() string {
