@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -162,6 +163,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 		r.ensureFinalizers,
 		r.transform,
 		r.apply,
+		r.checkDeployments,
 	}
 
 	// Execute each stage in sequence until one returns an error
@@ -259,24 +261,37 @@ func kafkaSourceManifestPath() string {
 	return os.Getenv("KAFKASOURCE_MANIFEST_PATH")
 }
 
-// TODO: move to a common place. copied from kourier.go
-// Check for deployments
-// This function is copied from knativeserving_controller.go in serving-operator
-func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest) error {
+func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment := &appsv1.Deployment{}
-		err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
+		resource, err := manifest.Client.Get(&u)
 		if err != nil {
+			instance.Status.MarkDeploymentsNotReady()
+			if errors.IsNotFound(err) {
+				return nil
+			}
 			return err
 		}
-		for _, c := range deployment.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-				return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
-			}
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
+			return err
+		}
+		if !isDeploymentAvailable(deployment) {
+			instance.Status.MarkDeploymentsNotReady()
+			return nil
 		}
 	}
+	instance.Status.MarkDeploymentsAvailable()
 	return nil
+}
+
+func isDeploymentAvailable(d *appsv1.Deployment) bool {
+	for _, c := range d.Status.Conditions {
+		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
