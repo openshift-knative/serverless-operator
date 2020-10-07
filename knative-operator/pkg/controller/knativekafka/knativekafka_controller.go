@@ -80,17 +80,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.KafkaOwnerNamespace]
-		ownerName := annotations[common.KafkaOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
+	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace)
 
 	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
 
