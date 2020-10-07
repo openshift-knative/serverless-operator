@@ -314,33 +314,21 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 }
 
 func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	combinedManifest := &mf.Manifest{}
-	var err error
+	var resources []unstructured.Unstructured
 
 	if instance.Spec.Channel.Enabled {
-		combinedManifest, err = mergeManifests(r.rawKafkaChannelManifest.Client, combinedManifest, &r.rawKafkaChannelManifest)
-		if err != nil {
-			return nil, fmt.Errorf("failed to merge KafkaChannel manifest: %w", err)
-		}
+		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
 
 	if instance.Spec.Source.Enabled {
-		combinedManifest, err = mergeManifests(r.rawKafkaSourceManifest.Client, combinedManifest, &r.rawKafkaSourceManifest)
-		if err != nil {
-			return nil, fmt.Errorf("failed to merge KafkaSource manifest: %w", err)
-		}
+		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
-	return combinedManifest, nil
-}
 
-// Merges the given manifests into a new single manifest
-func mergeManifests(client mf.Client, m1, m2 *mf.Manifest) (*mf.Manifest, error) {
-	result, err := mf.ManifestFrom(mf.Slice(append(m1.Resources(), m2.Resources()...)))
+	manifest, err := mf.ManifestFrom(mf.Slice(resources), mf.UseClient(mfc.NewClient(r.client)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to merge manifests: %w", err)
+		return nil, fmt.Errorf("failed to build Kafka manifest: %w", err)
 	}
-	result.Client = client
-	return &result, nil
+	return &manifest, nil
 }
 
 // InjectOwner creates a Tranformer which adds an OwnerReference pointing to
