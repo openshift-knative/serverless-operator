@@ -38,16 +38,36 @@ var log = logf.Log.WithName("controller_knativekafka")
 // Add creates a new KnativeKafka Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+	reconciler, err := newReconciler(mgr)
+	if err != nil {
+		return err
+	}
+	return add(mgr, reconciler)
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileKnativeKafka{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
+	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+	}
+
+	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
+	}
+
+	reconcileKnativeKafka := ReconcileKnativeKafka{
+		client:                  mgr.GetClient(),
+		scheme:                  mgr.GetScheme(),
+		rawKafkaChannelManifest: kafkaChannelManifest,
+		rawKafkaSourceManifest:  kafkaSourceManifest,
+	}
+	return &reconcileKnativeKafka, nil
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
+func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	// Create a new controller
 	c, err := controller.New("knativekafka-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -76,23 +96,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
 
 	// Watch for Knative KafkaChannel resources.
-	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
-	if err != nil {
-		return err
-	}
-	kafkaChannelResources := kafkaChannelManifest.Resources()
-
+	kafkaChannelResources := r.rawKafkaChannelManifest.Resources()
 	for i := range kafkaChannelResources {
 		gvkToResource[kafkaChannelResources[i].GroupVersionKind()] = &kafkaChannelResources[i]
 	}
 
 	// Watch for Knative KafkaSource resources.
-	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
-	if err != nil {
-		return err
-	}
-	kafkaSourceResources := kafkaSourceManifest.Resources()
-
+	kafkaSourceResources := r.rawKafkaSourceManifest.Resources()
 	for i := range kafkaSourceResources {
 		gvkToResource[kafkaSourceResources[i].GroupVersionKind()] = &kafkaSourceResources[i]
 	}
@@ -114,8 +124,10 @@ var _ reconcile.Reconciler = &ReconcileKnativeKafka{}
 type ReconcileKnativeKafka struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client                  client.Client
+	scheme                  *runtime.Scheme
+	rawKafkaChannelManifest mf.Manifest
+	rawKafkaSourceManifest  mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -191,7 +203,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.Knat
 
 // Install Knative Kafka components
 func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if err := applyKnativeKafka(instance, r.client); err != nil {
+	if err := r.applyKnativeKafka(instance, r.client); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}
@@ -199,9 +211,9 @@ func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.K
 	return nil
 }
 
-func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
+func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
 	if instance.Spec.Channel.Enabled {
-		if err := installKnativeKafkaChannel(instance, api); err != nil {
+		if err := r.installKnativeKafkaChannel(instance, api); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
 		}
 	} else {
@@ -209,7 +221,7 @@ func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clien
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := installKnativeKafkaSource(instance, api); err != nil {
+		if err := r.installKnativeKafkaSource(instance, api); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
 		}
 	} else {
@@ -219,10 +231,10 @@ func applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clien
 	return nil
 }
 
-func installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaChannelManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := r.kafkaChannelManifest(instance, apiclient)
 	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaChannel manifest: %w", err)
+		return err
 	}
 
 	log.Info("Installing Knative KafkaChannel")
@@ -241,27 +253,22 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
-	manifest, err := rawKafkaChannelManifest(apiClient)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
-	}
-
-	manifest, err = manifest.Transform(
+func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
+	manifest, err := r.rawKafkaChannelManifest.Transform(
 		mf.InjectOwner(instance),
 		setOwnerAnnotations(instance),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
+		return nil, fmt.Errorf("failed to transform KafkaChannel manifest: %w", err)
 	}
 
 	return &manifest, nil
 }
 
-func installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := r.kafkaSourceManifest(instance, apiclient)
 	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
+		return err
 	}
 
 	log.Info("Installing Knative KafkaSource")
@@ -280,13 +287,8 @@ func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) (*mf.Manifest, error) {
-	manifest, err := rawKafkaSourceManifest(apiclient)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-	}
-
-	manifest, err = manifest.Transform(setOwnerAnnotations(instance))
+func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) (*mf.Manifest, error) {
+	manifest, err := r.rawKafkaSourceManifest.Transform(setOwnerAnnotations(instance))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
@@ -333,7 +335,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 
 	log.Info("Running cleanup logic")
 	log.Info("Deleting KnativeKafka")
-	if err := deleteKnativeKafka(instance, r.client); err != nil {
+	if err := r.deleteKnativeKafka(instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete KnativeKafka: %w", err)
 	}
 
@@ -354,15 +356,15 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	return nil
 }
 
-func deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
+func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
 	if instance.Spec.Channel.Enabled {
-		if err := deleteKnativeKafkaChannel(instance, api); err != nil {
+		if err := r.deleteKnativeKafkaChannel(instance, api); err != nil {
 			return fmt.Errorf("unable to delete Knative KafkaChannel: %w", err)
 		}
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := deleteKnativeKafkaSource(instance, api); err != nil {
+		if err := r.deleteKnativeKafkaSource(instance, api); err != nil {
 			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
 		}
 	}
@@ -370,10 +372,10 @@ func deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Clie
 	return nil
 }
 
-func deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaChannelManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := r.kafkaChannelManifest(instance, apiclient)
 	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaChannel manifest: %w", err)
+		return err
 	}
 
 	log.Info("Deleting Knative KafkaChannel")
@@ -385,10 +387,10 @@ func deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclien
 	return nil
 }
 
-func deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := kafkaSourceManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+	manifest, err := r.kafkaSourceManifest(instance, apiclient)
 	if err != nil {
-		return fmt.Errorf("failed to load or transform KafkaSource manifest: %w", err)
+		return err
 	}
 
 	log.Info("Deleting Knative KafkaSource")
