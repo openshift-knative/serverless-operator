@@ -232,7 +232,7 @@ func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.Kna
 }
 
 func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := r.kafkaChannelManifest(instance, apiclient)
+	manifest, err := r.kafkaChannelManifest(instance)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka, apiClient client.Client) (*mf.Manifest, error) {
+func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
 	manifest, err := r.rawKafkaChannelManifest.Transform(
 		mf.InjectOwner(instance),
 		setOwnerAnnotations(instance),
@@ -266,7 +266,7 @@ func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.
 }
 
 func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := r.kafkaSourceManifest(instance, apiclient)
+	manifest, err := r.kafkaSourceManifest(instance)
 	if err != nil {
 		return err
 	}
@@ -287,7 +287,7 @@ func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
 }
 
-func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) (*mf.Manifest, error) {
+func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
 	manifest, err := r.rawKafkaSourceManifest.Transform(setOwnerAnnotations(instance))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
@@ -335,7 +335,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 
 	log.Info("Running cleanup logic")
 	log.Info("Deleting KnativeKafka")
-	if err := r.deleteKnativeKafka(instance, r.client); err != nil {
+	if err := r.deleteKnativeKafka(instance); err != nil {
 		return fmt.Errorf("failed to delete KnativeKafka: %w", err)
 	}
 
@@ -356,15 +356,15 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
+func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	if instance.Spec.Channel.Enabled {
-		if err := r.deleteKnativeKafkaChannel(instance, api); err != nil {
+		if err := r.deleteKnativeKafkaChannel(instance); err != nil {
 			return fmt.Errorf("unable to delete Knative KafkaChannel: %w", err)
 		}
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := r.deleteKnativeKafkaSource(instance, api); err != nil {
+		if err := r.deleteKnativeKafkaSource(instance); err != nil {
 			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
 		}
 	}
@@ -372,8 +372,8 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := r.kafkaChannelManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.kafkaChannelManifest(instance)
 	if err != nil {
 		return err
 	}
@@ -387,8 +387,8 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1al
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
-	manifest, err := r.kafkaSourceManifest(instance, apiclient)
+func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.kafkaSourceManifest(instance)
 	if err != nil {
 		return err
 	}
