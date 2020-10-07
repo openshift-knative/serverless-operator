@@ -203,7 +203,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.Knat
 
 // Install Knative Kafka components
 func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if err := r.applyKnativeKafka(instance, r.client); err != nil {
+	if err := r.applyKnativeKafka(instance); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}
@@ -211,9 +211,9 @@ func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.K
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka, api client.Client) error {
+func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	if instance.Spec.Channel.Enabled {
-		if err := r.installKnativeKafkaChannel(instance, api); err != nil {
+		if err := r.installKnativeKafkaChannel(instance); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
 		}
 	} else {
@@ -221,7 +221,7 @@ func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.Kna
 	}
 
 	if instance.Spec.Source.Enabled {
-		if err := r.installKnativeKafkaSource(instance, api); err != nil {
+		if err := r.installKnativeKafkaSource(instance); err != nil {
 			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
 		}
 	} else {
@@ -231,7 +231,7 @@ func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.Kna
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.kafkaChannelManifest(instance)
 	if err != nil {
 		return err
@@ -241,7 +241,7 @@ func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1a
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply KafkaChannel manifest: %w", err)
 	}
-	if err := checkDeployments(manifest, apiclient); err != nil {
+	if err := r.checkDeployments(manifest); err != nil {
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Knative KafkaChannel installation is ready")
@@ -265,7 +265,7 @@ func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.
 	return &manifest, nil
 }
 
-func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka, apiclient client.Client) error {
+func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.kafkaSourceManifest(instance)
 	if err != nil {
 		return err
@@ -275,7 +275,7 @@ func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1al
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply KafkaSource manifest: %w", err)
 	}
-	if err := checkDeployments(manifest, apiclient); err != nil {
+	if err := r.checkDeployments(manifest); err != nil {
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Knative KafkaSource installation is ready")
@@ -307,11 +307,11 @@ func kafkaSourceManifestPath() string {
 // TODO: move to a common place. copied from kourier.go
 // Check for deployments
 // This function is copied from knativeserving_controller.go in serving-operator
-func checkDeployments(manifest *mf.Manifest, api client.Client) error {
+func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployment := &appsv1.Deployment{}
-		err := api.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
+		err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
 		if err != nil {
 			return err
 		}
