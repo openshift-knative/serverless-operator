@@ -211,43 +211,6 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if instance.Spec.Channel.Enabled {
-		if err := r.installKnativeKafkaChannel(instance); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
-		}
-	} else {
-		// TODO: ensure they don't exist
-	}
-
-	if instance.Spec.Source.Enabled {
-		if err := r.installKnativeKafkaSource(instance); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
-		}
-	} else {
-		// TODO: ensure they don't exist
-	}
-
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaChannelManifest(instance)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Installing Knative KafkaChannel")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaChannel manifest: %w", err)
-	}
-	if err := r.checkDeployments(manifest); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaChannel installation is ready")
-	return nil
-}
-
 // rawKafkaChannelManifest returns KafkaChannel manifest without transformations
 func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
@@ -266,23 +229,6 @@ func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.
 	}
 
 	return &manifest, nil
-}
-
-func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaSourceManifest(instance)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Installing Knative KafkaSource")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaSource manifest: %w", err)
-	}
-	if err := r.checkDeployments(manifest); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaSource installation is ready")
-	return nil
 }
 
 // rawKafkaSourceManifest returns KafkaSource manifest without transformations
