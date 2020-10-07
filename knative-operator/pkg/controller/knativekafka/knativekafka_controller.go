@@ -327,45 +327,17 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if instance.Spec.Channel.Enabled {
-		if err := r.deleteKnativeKafkaChannel(instance); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaChannel: %w", err)
-		}
-	}
-
-	if instance.Spec.Source.Enabled {
-		if err := r.deleteKnativeKafkaSource(instance); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaChannelManifest(instance)
+	manifest, err := r.buildManifest(instance)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to build manifest: %w", err)
 	}
 
-	log.Info("Deleting Knative KafkaChannel")
+	if err := r.transform(manifest, instance); err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
+	}
 
 	if err := manifest.Delete(); err != nil {
 		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
-	}
-
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaSourceManifest(instance)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Deleting Knative KafkaSource")
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
 	}
 	return nil
 }
