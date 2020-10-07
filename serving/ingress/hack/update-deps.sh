@@ -10,7 +10,7 @@ set -o pipefail
 cd ${ROOT_DIR}
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.16" # This is for controlling the knative related release version.
+KN_VERSION="release-0.17" # This is for controlling the knative related release version.
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
