@@ -6,6 +6,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -121,4 +123,20 @@ func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnno
 		}
 		return nil
 	}
+}
+
+func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind]runtime.Object {
+	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
+
+	for _, manifest := range manifests {
+		resources := manifest.Resources()
+
+		for i := range resources {
+			// it is ok to overwrite existing since we are only interested
+			// in the types of the resources, not the instances
+			gvkToResource[resources[i].GroupVersionKind()] = &resources[i]
+		}
+	}
+
+	return gvkToResource
 }

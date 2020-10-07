@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -82,19 +81,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace)
 
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
-
-	// Watch for Knative KafkaChannel resources.
-	kafkaChannelResources := r.rawKafkaChannelManifest.Resources()
-	for i := range kafkaChannelResources {
-		gvkToResource[kafkaChannelResources[i].GroupVersionKind()] = &kafkaChannelResources[i]
-	}
-
-	// Watch for Knative KafkaSource resources.
-	kafkaSourceResources := r.rawKafkaSourceManifest.Resources()
-	for i := range kafkaSourceResources {
-		gvkToResource[kafkaSourceResources[i].GroupVersionKind()] = &kafkaSourceResources[i]
-	}
+	gvkToResource := common.BuildGVKToResourceMap(r.rawKafkaChannelManifest, r.rawKafkaSourceManifest)
 
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
