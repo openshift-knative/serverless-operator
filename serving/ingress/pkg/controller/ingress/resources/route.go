@@ -13,7 +13,6 @@ import (
 	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
-	"knative.dev/serving/pkg/apis/serving"
 )
 
 const (
@@ -92,11 +91,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		}
 	}
 
-	ingressLabels := ci.GetLabels()
 	labels := kmeta.UnionMaps(ci.Labels, map[string]string{
-		networking.IngressLabelKey:     ci.GetName(),
-		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
-		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
+		networking.IngressLabelKey: ci.GetName(),
 	})
 
 	name := routeName(string(ci.GetUID()), host)
