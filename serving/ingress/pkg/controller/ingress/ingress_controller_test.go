@@ -190,7 +190,9 @@ func TestIngressController(t *testing.T) {
 	tests := []struct {
 		name              string
 		annotations       map[string]string
-		want              map[string]string
+		labels            map[string]string
+		wantAnnotations   map[string]string
+		wantLabels        map[string]string
 		wantRouteErr      func(err error) bool
 		wantNetworkPolicy bool // ServiceMesh required NetworkPolicy but it is no longer necessary. Now we confirm that NetworkPolicy knative-serving-allow-all is always deleted.
 		deleted           bool
@@ -199,7 +201,8 @@ func TestIngressController(t *testing.T) {
 		{
 			name:              "reconcile route with timeout annotation",
 			annotations:       map[string]string{},
-			want:              map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantAnnotations:   map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
 			wantRouteErr:      func(err error) bool { return err == nil },
 			wantNetworkPolicy: false,
 			deleted:           false,
@@ -207,7 +210,18 @@ func TestIngressController(t *testing.T) {
 		{
 			name:              "reconcile route with taking over annotations",
 			annotations:       map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB"},
-			want:              map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantAnnotations:   map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
+			wantRouteErr:      func(err error) bool { return err == nil },
+			wantNetworkPolicy: false,
+			deleted:           false,
+		},
+		{
+			name:              "reconcile route with taking over labels",
+			annotations:       map[string]string{},
+			labels:            map[string]string{"somekey": "someval"},
+			wantAnnotations:   map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name, "somekey": "someval"},
 			wantRouteErr:      func(err error) bool { return err == nil },
 			wantNetworkPolicy: false,
 			deleted:           false,
@@ -215,7 +229,8 @@ func TestIngressController(t *testing.T) {
 		{
 			name:              "do not reconcile with disable route annotation",
 			annotations:       map[string]string{resources.DisableRouteAnnotation: ""},
-			want:              nil,
+			wantAnnotations:   nil,
+			wantLabels:        nil,
 			wantRouteErr:      errors.IsNotFound,
 			wantNetworkPolicy: false,
 			deleted:           false,
@@ -223,7 +238,8 @@ func TestIngressController(t *testing.T) {
 		{
 			name:              "reconcile route with different ingress annotation",
 			annotations:       map[string]string{networking.IngressClassAnnotationKey: "kourier"},
-			want:              map[string]string{networking.IngressClassAnnotationKey: "kourier", resources.TimeoutAnnotation: "5s"},
+			wantAnnotations:   map[string]string{networking.IngressClassAnnotationKey: "kourier", resources.TimeoutAnnotation: "5s"},
+			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
 			wantRouteErr:      func(err error) bool { return err == nil },
 			wantNetworkPolicy: false,
 			deleted:           false,
@@ -240,6 +256,13 @@ func TestIngressController(t *testing.T) {
 				annotations[k] = v
 			}
 			ingress.SetAnnotations(annotations)
+
+			// Set test labels
+			labels := ingress.GetLabels()
+			for k, v := range test.labels {
+				labels[k] = v
+			}
+			ingress.SetLabels(labels)
 
 			if test.deleted {
 				deletedTime := metav1.Now()
@@ -279,7 +302,8 @@ func TestIngressController(t *testing.T) {
 			err := cl.Get(context.TODO(), types.NamespacedName{Name: routeName0, Namespace: serviceMeshNamespace}, routes)
 
 			assert.True(t, test.wantRouteErr(err))
-			assert.Equal(t, test.want, routes.ObjectMeta.Annotations)
+			assert.Equal(t, test.wantAnnotations, routes.ObjectMeta.Annotations)
+			assert.Equal(t, test.wantLabels, routes.ObjectMeta.Labels)
 		})
 	}
 }
