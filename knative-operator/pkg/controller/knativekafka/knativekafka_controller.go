@@ -35,6 +35,8 @@ const (
 
 var log = logf.Log.WithName("controller_knativekafka")
 
+type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
+
 // Add creates a new KnativeKafka Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -151,28 +153,45 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	manifest, err := r.buildManifest(instance)
+	// install the components that are enabled
+	if err := r.executeInstallStages(instance); err != nil {
+		return err
+	}
+	// delete the components that are disabled
+	if err := r.executeDeleteStages(instance); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, manifestBuildEnabledOnly)
 	if err != nil {
-		return fmt.Errorf("failed to build manifest: %w", err)
+		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	// TODO: ensure components get removed when enabled=true is changed to enabled=false
-
-	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
-		// TODO r.configure,
+	stages := []stage{
 		r.ensureFinalizers,
 		r.transform,
 		r.apply,
 		r.checkDeployments,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
+	return executeStages(instance, manifest, stages)
+}
+
+func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, manifestBuildDisabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
-	return nil
+
+	stages := []stage{
+		r.transform,
+		r.deleteResources,
+	}
+
+	return executeStages(instance, manifest, stages)
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
@@ -238,6 +257,17 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 	return nil
 }
 
+// Delete Knative Kafka resources
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Deleting resources in manifest")
+	if err := manifest.Delete(); err != nil {
+		// TODO: any conditions?
+		return fmt.Errorf("failed to apply manifest: %w", err)
+	}
+	// TODO: any conditions?
+	return nil
+}
+
 func isDeploymentAvailable(d *appsv1.Deployment) bool {
 	for _, c := range d.Status.Conditions {
 		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
@@ -280,29 +310,35 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.buildManifest(instance)
+	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}
 
-	if err := r.transform(manifest, instance); err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
+	stages := []stage{
+		r.transform,
+		r.deleteResources,
 	}
 
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete KnativeKafka manifest: %w", err)
-	}
-	return nil
+	return executeStages(instance, manifest, stages)
 }
 
-func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
+type manifestBuild int
+
+const (
+	manifestBuildEnabledOnly manifestBuild = iota
+	manifestBuildDisabledOnly
+	manifestBuildAll
+)
+
+func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
 	var resources []unstructured.Unstructured
 
-	if instance.Spec.Channel.Enabled {
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
 
-	if instance.Spec.Source.Enabled {
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
@@ -331,4 +367,14 @@ func InjectOwner(owner mf.Owner) mf.Transformer {
 			return nil
 		}
 	}
+}
+
+func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
 }
