@@ -47,12 +47,12 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
-	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
+	kafkaChannelManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACHANNEL_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
-	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
+	kafkaSourceManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASOURCE_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
@@ -214,24 +214,6 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 	return nil
 }
 
-// rawKafkaChannelManifest returns KafkaChannel manifest without transformations
-func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-// rawKafkaSourceManifest returns KafkaSource manifest without transformations
-func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func kafkaChannelManifestPath() string {
-	return os.Getenv("KAFKACHANNEL_MANIFEST_PATH")
-}
-
-func kafkaSourceManifestPath() string {
-	return os.Getenv("KAFKASOURCE_MANIFEST_PATH")
-}
-
 func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
@@ -324,7 +306,10 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
-	manifest, err := mf.ManifestFrom(mf.Slice(resources), mf.UseClient(mfc.NewClient(r.client)))
+	manifest, err := mf.ManifestFrom(
+		mf.Slice(resources),
+		mf.UseClient(mfc.NewClient(r.client)),
+		mf.UseLogger(log.WithName("mf")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to build Kafka manifest: %w", err)
 	}
