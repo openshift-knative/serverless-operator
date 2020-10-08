@@ -35,6 +35,8 @@ const (
 
 var log = logf.Log.WithName("controller_knativekafka")
 
+type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
+
 // Add creates a new KnativeKafka Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -168,20 +170,14 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+	stages := []stage{
 		r.ensureFinalizers,
 		r.transform,
 		r.apply,
 		r.checkDeployments,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, manifest, stages)
 }
 
 func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
@@ -190,18 +186,12 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.K
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+	stages := []stage{
 		r.transform,
 		r.deleteResources,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, manifest, stages)
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
@@ -325,18 +315,12 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}
 
-	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+	stages := []stage{
 		r.transform,
 		r.deleteResources,
 	}
 
-	// Execute each stage in sequence until one returns an error
-	for _, stage := range stages {
-		if err := stage(manifest, instance); err != nil {
-			return err
-		}
-	}
-	return nil
+	return executeStages(instance, manifest, stages)
 }
 
 type manifestBuild int
@@ -383,4 +367,14 @@ func InjectOwner(owner mf.Owner) mf.Transformer {
 			return nil
 		}
 	}
+}
+
+func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
 }
