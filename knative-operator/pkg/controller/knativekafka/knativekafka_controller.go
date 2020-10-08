@@ -260,6 +260,9 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 
 // Delete Knative Kafka resources
 func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	if len(manifest.Resources()) <= 0 {
+		return nil
+	}
 	log.Info("Deleting resources in manifest")
 	if err := manifest.Delete(); err != nil {
 		// TODO: any conditions?
