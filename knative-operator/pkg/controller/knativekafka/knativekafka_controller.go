@@ -214,6 +214,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
+		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
@@ -350,6 +351,19 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 		return nil, fmt.Errorf("failed to build Kafka manifest: %w", err)
 	}
 	return &manifest, nil
+}
+
+// setBootstrapServers sets Kafka bootstrapServers value in config-kafka
+func setBootstrapServers(bootstrapServers string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
+			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 }
 
 // InjectOwner creates a Tranformer which adds an OwnerReference pointing to
