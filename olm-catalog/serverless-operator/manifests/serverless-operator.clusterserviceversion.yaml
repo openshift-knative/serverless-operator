@@ -548,6 +548,12 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
+  - name: knative-openshift
+    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+    image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+  - name: knative-openshift-ingress
+    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+    image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
   - name: "IMAGE_DISPATCHER_IMAGE"
     image: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-channel-dispatcher"
   - name: "IMAGE_KN_CLI_ARTIFACTS"
