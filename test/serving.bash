@@ -32,16 +32,12 @@ function prepare_knative_serving_tests {
   oc adm policy add-scc-to-user privileged -z default -n serving-tests-alt
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
-  # Add networkpolicy to test namespace and label to serving namespaces for testing under the strict networkpolicy.
-  add_networkpolicy "serving-tests"
-  add_networkpolicy "serving-tests-alt"
-  add_systemnamespace_label
 
   export GATEWAY_OVERRIDE="kourier"
   export GATEWAY_NAMESPACE_OVERRIDE="knative-serving-ingress"
 }
 
-function upstream_knative_serving_e2e_and_conformance_tests {
+function run_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
   (
 
@@ -95,7 +91,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running Serving rolling upgrade tests"
   (
-  local failed upgrade_to latest_cluster_version cluster_version serving_version
+  local failed upgrade_to latest_cluster_version cluster_version prev_serving_version latest_serving_version
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -129,7 +125,7 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
+    logger.info "updating serving version from ${PREVIOUS_CSV} to ${CURRENT_CSV}"
 
     # Get latest CSV from the given channel
     upgrade_to="$CURRENT_CSV"
@@ -143,14 +139,11 @@ function run_knative_serving_rolling_upgrade_tests {
       # Check we got RequirementsNotMet error
       [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
       # Check KnativeServing still has the old version
-      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$serving_version" ]] || return 1
+      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$prev_serving_version" ]] || return 1
     else
       approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
-      timeout 900 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") != $serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
-
-      # Assert that the old image references eventually fade away
-      # Ignore kn-cli-artifacts as it's not part of the Knative Serving deployment.
-      timeout 900 "oc get pod -n $SERVING_NAMESPACE -o yaml | grep image: | uniq | grep -v kn-cli-artifacts | grep $serving_version" || return 1
+      # Check KnativeServing has the latest version with Ready status
+      timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
     fi
     end_prober_test ${PROBER_PID} || return $?
   fi
@@ -189,28 +182,30 @@ function run_knative_serving_rolling_upgrade_tests {
 
   oc delete --ignore-not-found=true ksvc pizzaplanet-upgrade-service scale-to-zero-upgrade-service upgrade-probe -n serving-tests
 
+  remove_temporary_gopath
+
   return 0
   )
 }
 
 function run_knative_serving_operator_tests {
-   logger.info 'Running Serving operator tests'
-   (
-   local exitstatus=0
-   checkout_knative_serving_operator
+  logger.info 'Running Serving operator tests'
+  (
+  local exitstatus=0
+  checkout_knative_serving_operator
 
-   export TEST_NAMESPACE="${SERVING_NAMESPACE}"
+  export TEST_NAMESPACE="${SERVING_NAMESPACE}"
 
-   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
-     --kubeconfig "$KUBECONFIG" \
-     || exitstatus=5$? && true
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+    --kubeconfig "$KUBECONFIG" \
+    || exitstatus=5$? && true
 
-   print_test_result ${exitstatus}
+  print_test_result ${exitstatus}
 
-   wait_for_knative_serving_ingress_ns_deleted || return 1
+  wait_for_knative_serving_ingress_ns_deleted || return 1
 
-   remove_temporary_gopath
+  remove_temporary_gopath
 
-   return $exitstatus
-   )
+  return $exitstatus
+  )
 }
