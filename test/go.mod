@@ -3,27 +3,20 @@ module github.com/openshift-knative/serverless-operator/test
 go 1.14
 
 require (
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.1 // indirect
 	github.com/emicklei/go-restful v2.10.0+incompatible // indirect
 	github.com/google/go-cmp v0.4.1 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/mailru/easyjson v0.7.1-0.20191009090205-6c0755d89d1e // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/openshift/api v3.9.1-0.20190924102528-32369d4db2ad+incompatible
 	github.com/openshift/client-go v0.0.0-20191125132246-f6563a70e19a
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20200326003131-5ff376fd8c14
 	github.com/pkg/errors v0.9.1
-	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
 	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
+	knative.dev/eventing v0.15.3
 	knative.dev/operator v0.14.3-0.20200605190218-43fce8e820ed
 	knative.dev/pkg v0.0.0-20200625173728-dfb81cf04a7c
 	knative.dev/serving v0.15.3
 	knative.dev/test-infra v0.0.0-20200519161858-554a95a37986
-	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
 replace (
