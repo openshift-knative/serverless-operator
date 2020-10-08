@@ -15,7 +15,6 @@ import (
 	"knative.dev/pkg/reconciler"
 	"knative.dev/serving/pkg/apis/serving"
 
-	"github.com/google/go-cmp/cmp"
 	routev1client "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/clientset/versioned/typed/route/v1"
 	routev1lister "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/listers/route/v1"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
@@ -102,12 +101,14 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, ci *v1alpha1.Ingress, d
 		}
 	} else if err != nil {
 		return fmt.Errorf("failed to get route: %w", err)
-	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) {
-		logger.Infof("Updating route %s(%s) diff: %s", desired.Name, desired.Spec.Host, cmp.Diff(route.Spec, desired.Spec))
+	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) ||
+		!equality.Semantic.DeepEqual(route.Annotations, desired.Annotations) ||
+		!equality.Semantic.DeepEqual(route.Labels, desired.Labels) {
 		// Don't modify the informers copy
 		existing := route.DeepCopy()
 		existing.Spec = desired.Spec
 		existing.Annotations = desired.Annotations
+		existing.Labels = desired.Labels
 
 		if _, err := r.routeClient.Routes(existing.Namespace).Update(existing); err != nil {
 			return fmt.Errorf("failed to update route :%w", err)

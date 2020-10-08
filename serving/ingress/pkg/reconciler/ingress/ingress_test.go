@@ -78,19 +78,38 @@ func TestReconcile(t *testing.T) {
 			Name: "foo",
 		}},
 	}, {
-		Name:                    "copy annotations",
+		Name:                    "copy annotations and labels",
 		SkipNamespaceValidation: true,
 		Key:                     key,
 		Objects: []runtime.Object{
 			ing(ingNamespace, ingName, func(i *v1alpha1.Ingress) {
 				i.Annotations["foo.bar/baz"] = "baz"
+				i.Labels["foo.bar/baz"] = "baz"
 			}),
 		},
 		WantCreates: []runtime.Object{
 			route(ingressNamespace, routeName, func(r *routev1.Route) {
 				r.Annotations["foo.bar/baz"] = "baz"
+				r.Labels["foo.bar/baz"] = "baz"
 			}),
 		},
+	}, {
+		Name:                    "copy annotations and labels on update too",
+		SkipNamespaceValidation: true,
+		Key:                     key,
+		Objects: []runtime.Object{
+			ing(ingNamespace, ingName, func(i *v1alpha1.Ingress) {
+				i.Annotations["foo.bar/baz"] = "baz"
+				i.Labels["foo.bar/baz"] = "baz"
+			}),
+			route(ingressNamespace, routeName),
+		},
+		WantUpdates: []clientgotesting.UpdateActionImpl{{
+			Object: route(ingressNamespace, routeName, func(r *routev1.Route) {
+				r.Annotations["foo.bar/baz"] = "baz"
+				r.Labels["foo.bar/baz"] = "baz"
+			}),
+		}},
 	}, {
 		Name:                    "fix spec",
 		SkipNamespaceValidation: true,
