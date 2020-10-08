@@ -188,61 +188,47 @@ func TestIngressController(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
 	tests := []struct {
-		name              string
-		annotations       map[string]string
-		labels            map[string]string
-		wantAnnotations   map[string]string
-		wantLabels        map[string]string
-		wantRouteErr      func(err error) bool
-		wantNetworkPolicy bool // ServiceMesh required NetworkPolicy but it is no longer necessary. Now we confirm that NetworkPolicy knative-serving-allow-all is always deleted.
-		deleted           bool
-		extraObjs         []runtime.Object
+		name            string
+		annotations     map[string]string
+		labels          map[string]string
+		wantAnnotations map[string]string
+		wantLabels      map[string]string
+		wantRouteErr    func(err error) bool
+		extraObjs       []runtime.Object
 	}{
 		{
-			name:              "reconcile route with timeout annotation",
-			annotations:       map[string]string{},
-			wantAnnotations:   map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
+			name:            "reconcile route with timeout annotation",
+			wantAnnotations: map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:      map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
+			wantRouteErr:    func(err error) bool { return err == nil },
 		},
 		{
-			name:              "reconcile route with taking over annotations",
-			annotations:       map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB"},
-			wantAnnotations:   map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
+			name:            "reconcile route with taking over annotations",
+			annotations:     map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB"},
+			wantAnnotations: map[string]string{serving.CreatorAnnotation: "userA", serving.UpdaterAnnotation: "userB", resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:      map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
+			wantRouteErr:    func(err error) bool { return err == nil },
 		},
 		{
-			name:              "reconcile route with taking over labels",
-			annotations:       map[string]string{},
-			labels:            map[string]string{"somekey": "someval"},
-			wantAnnotations:   map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
-			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name, "somekey": "someval"},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
+			name:            "reconcile route with taking over labels",
+			labels:          map[string]string{"somekey": "someval"},
+			wantAnnotations: map[string]string{resources.TimeoutAnnotation: "5s", networking.IngressClassAnnotationKey: network.IstioIngressClassName},
+			wantLabels:      map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name, "somekey": "someval"},
+			wantRouteErr:    func(err error) bool { return err == nil },
 		},
 		{
-			name:              "do not reconcile with disable route annotation",
-			annotations:       map[string]string{resources.DisableRouteAnnotation: ""},
-			wantAnnotations:   nil,
-			wantLabels:        nil,
-			wantRouteErr:      errors.IsNotFound,
-			wantNetworkPolicy: false,
-			deleted:           false,
+			name:            "do not reconcile with disable route annotation",
+			annotations:     map[string]string{resources.DisableRouteAnnotation: ""},
+			wantAnnotations: nil,
+			wantLabels:      nil,
+			wantRouteErr:    errors.IsNotFound,
 		},
 		{
-			name:              "reconcile route with different ingress annotation",
-			annotations:       map[string]string{networking.IngressClassAnnotationKey: "kourier"},
-			wantAnnotations:   map[string]string{networking.IngressClassAnnotationKey: "kourier", resources.TimeoutAnnotation: "5s"},
-			wantLabels:        map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
-			wantRouteErr:      func(err error) bool { return err == nil },
-			wantNetworkPolicy: false,
-			deleted:           false,
+			name:            "reconcile route with different ingress annotation",
+			annotations:     map[string]string{networking.IngressClassAnnotationKey: "kourier"},
+			wantAnnotations: map[string]string{networking.IngressClassAnnotationKey: "kourier", resources.TimeoutAnnotation: "5s"},
+			wantLabels:      map[string]string{serving.RouteNamespaceLabelKey: namespace, serving.RouteLabelKey: name, networking.IngressLabelKey: name},
+			wantRouteErr:    func(err error) bool { return err == nil },
 		},
 	}
 
@@ -263,11 +249,6 @@ func TestIngressController(t *testing.T) {
 				labels[k] = v
 			}
 			ingress.SetLabels(labels)
-
-			if test.deleted {
-				deletedTime := metav1.Now()
-				ingress.SetDeletionTimestamp(&deletedTime)
-			}
 
 			// route object
 			route := &routev1.Route{}
