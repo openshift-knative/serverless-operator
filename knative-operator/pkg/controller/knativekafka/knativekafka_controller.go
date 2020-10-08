@@ -165,7 +165,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 }
 
 func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.buildManifest(instance, ManifestBuildEnabledOnly)
+	manifest, err := r.buildManifest(instance, manifestBuildEnabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
@@ -181,7 +181,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 }
 
 func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.buildManifest(instance, ManifestBuildDisabledOnly)
+	manifest, err := r.buildManifest(instance, manifestBuildDisabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
@@ -310,7 +310,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.buildManifest(instance, ManifestBuildAll)
+	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}
@@ -326,19 +326,19 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 type manifestBuild int
 
 const (
-	ManifestBuildEnabledOnly manifestBuild = iota
-	ManifestBuildDisabledOnly
-	ManifestBuildAll
+	manifestBuildEnabledOnly manifestBuild = iota
+	manifestBuildDisabledOnly
+	manifestBuildAll
 )
 
 func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
 	var resources []unstructured.Unstructured
 
-	if build == ManifestBuildAll || (build == ManifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == ManifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
 
-	if build == ManifestBuildAll || (build == ManifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == ManifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
