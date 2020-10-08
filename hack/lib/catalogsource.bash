@@ -24,7 +24,7 @@ function install_catalogsource {
   cp "$csv" "${rootdir}/bkp.yaml"
 
   if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
-    # HACK: Try with hardcoded registry host
+    # TODO: Remove hardcoded registry host
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: registry.build01.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-operator," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: registry.build01.ci.openshift.org/${OPENSHIFT_BUILD_NAMESPACE}/stable:knative-openshift-ingress," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
