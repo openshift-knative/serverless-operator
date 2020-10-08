@@ -18,6 +18,8 @@ const (
 	image             = "gcr.io/knative-samples/helloworld-go"
 	helloWorldService = "helloworld-go"
 	helloWorldText    = "Hello World!"
+	ksvcAPIVersion    = "serving.knative.dev/v1"
+	ksvcKind          = "Service"
 )
 
 func TestKnativeSourceToKnativeService(t *testing.T) {
@@ -41,8 +43,8 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
-						APIVersion: "serving.knative.dev/v1",
-						Kind:       "Service",
+						APIVersion: ksvcAPIVersion,
+						Kind:       ksvcKind,
 						Name:       ksvc.Name,
 					},
 				},
