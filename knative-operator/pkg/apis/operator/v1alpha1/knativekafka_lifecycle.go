@@ -7,6 +7,7 @@ import (
 
 var (
 	kafkaCondSet = apis.NewLivingConditionSet(
+		knativeoperatorv1alpha1.DeploymentsAvailable,
 		knativeoperatorv1alpha1.InstallSucceeded,
 	)
 )
@@ -33,4 +34,18 @@ func (is *KnativeKafkaStatus) MarkInstallFailed(msg string) {
 		knativeoperatorv1alpha1.InstallSucceeded,
 		"Error",
 		"Install failed with message: %s", msg)
+}
+
+// MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
+func (is *KnativeKafkaStatus) MarkDeploymentsAvailable() {
+	kafkaCondSet.Manage(is).MarkTrue(knativeoperatorv1alpha1.DeploymentsAvailable)
+}
+
+// MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
+// it's waiting for deployments.
+func (is *KnativeKafkaStatus) MarkDeploymentsNotReady() {
+	kafkaCondSet.Manage(is).MarkFalse(
+		knativeoperatorv1alpha1.DeploymentsAvailable,
+		"NotReady",
+		"Waiting on deployments")
 }
