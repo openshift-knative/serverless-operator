@@ -8,6 +8,7 @@ import (
 
 	v1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,8 +16,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	apis "knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -30,7 +29,6 @@ var (
 	defaultRequest = reconcile.Request{
 		NamespacedName: types.NamespacedName{Namespace: "knative-eventing", Name: "knative-kafka"},
 	}
-	deleteTime = metav1.NewTime(time.Now())
 )
 
 type fakeManager struct {
@@ -94,150 +92,67 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
 	tests := []struct {
-		name     string
-		instance v1alpha1.KnativeKafka
+		name         string
+		instance     *v1alpha1.KnativeKafka
+		exists       []types.NamespacedName
+		doesNotExist []types.NamespacedName
 	}{
 		{
-			name: "Create CR with channel and source enabled",
-			instance: v1alpha1.KnativeKafka{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:              "knative-kafka",
-					Namespace:         "knative-eventing",
-					DeletionTimestamp: nil,
-				},
-				Spec: v1alpha1.KnativeKafkaSpec{
-					Source: v1alpha1.Source{
-						Enabled: true,
-					},
-					Channel: v1alpha1.Channel{
-						Enabled:          true,
-						BootstrapServers: "foo.bar.com",
-					},
-				},
-				Status: v1alpha1.KnativeKafkaStatus{
-					Status: duckv1.Status{
-						Conditions: []apis.Condition{
-							{
-								Status: "True",
-								Type:   "DeploymentsAvailable",
-							},
-							{
-								Status: "True",
-								Type:   "InstallSucceeded",
-							},
-						},
-					},
-				},
+			name:     "Create CR with channel and source enabled",
+			instance: makeCr(true, true, false),
+			exists: []types.NamespacedName{
+				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			},
+			doesNotExist: []types.NamespacedName{},
+		},
+		{
+			name:     "Create CR with channel enabled and source disabled",
+			instance: makeCr(true, false, false),
+			exists: []types.NamespacedName{
+				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			},
+			doesNotExist: []types.NamespacedName{
+				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
 			},
 		},
-		//{
-		//	name: "Create CR with channel enabled and source disabled",
-		//	instance: v1alpha1.KnativeKafka{
-		//		ObjectMeta: metav1.ObjectMeta{
-		//			Name:      "knative-kafka",
-		//			Namespace: "knative-eventing",
-		//			DeletionTimestamp: nil,
-		//		},
-		//		Spec: v1alpha1.KnativeKafkaSpec{
-		//			Source: v1alpha1.Source{
-		//				Enabled: true,
-		//			},
-		//			Channel: v1alpha1.Channel{
-		//				Enabled:          true,
-		//				BootstrapServers: "foo.bar.com",
-		//			},
-		//		},
-		//		Status: v1alpha1.KnativeKafkaStatus{
-		//			Status: duckv1.Status{
-		//				Conditions: []apis.Condition{
-		//					{
-		//						Status: "True",
-		//						Type:   "DeploymentsAvailable",
-		//					},
-		//					{
-		//						Status: "True",
-		//						Type:   "InstallSucceeded",
-		//					},
-		//				},
-		//			},
-		//		},
-		//	},
-		//},
-		//{
-		//	name: "Create CR with channel disabled and source enabled",
-		//	instance: v1alpha1.KnativeKafka{
-		//		ObjectMeta: metav1.ObjectMeta{
-		//			Name:      "knative-kafka",
-		//			Namespace: "knative-eventing",
-		//			DeletionTimestamp: nil,
-		//		},
-		//		Spec: v1alpha1.KnativeKafkaSpec{
-		//			Source: v1alpha1.Source{
-		//				Enabled: true,
-		//			},
-		//			Channel: v1alpha1.Channel{
-		//				Enabled:          true,
-		//				BootstrapServers: "foo.bar.com",
-		//			},
-		//		},
-		//		Status: v1alpha1.KnativeKafkaStatus{
-		//			Status: duckv1.Status{
-		//				Conditions: []apis.Condition{
-		//					{
-		//						Status: "True",
-		//						Type:   "DeploymentsAvailable",
-		//					},
-		//					{
-		//						Status: "True",
-		//						Type:   "InstallSucceeded",
-		//					},
-		//				},
-		//			},
-		//		},
-		//	},
-		//},
-		//{
-		//	name: "Delete CR",
-		//	instance: v1alpha1.KnativeKafka{
-		//		ObjectMeta: metav1.ObjectMeta{
-		//			Name:      "knative-kafka",
-		//			Namespace: "knative-eventing",
-		//			DeletionTimestamp: &deleteTime,
-		//		},
-		//		Spec: v1alpha1.KnativeKafkaSpec{
-		//			Source: v1alpha1.Source{
-		//				Enabled: true,
-		//			},
-		//			Channel: v1alpha1.Channel{
-		//				Enabled:          true,
-		//				BootstrapServers: "foo.bar.com",
-		//			},
-		//		},
-		//		Status: v1alpha1.KnativeKafkaStatus{
-		//			Status: duckv1.Status{
-		//				Conditions: []apis.Condition{
-		//					{
-		//						Status: "True",
-		//						Type:   "DeploymentsAvailable",
-		//					},
-		//					{
-		//						Status: "True",
-		//						Type:   "InstallSucceeded",
-		//					},
-		//				},
-		//			},
-		//		},
-		//	},
-		//},
+		{
+			name:     "Create CR with channel disabled and source enabled",
+			instance: makeCr(false, true, false),
+			exists: []types.NamespacedName{
+				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			},
+			doesNotExist: []types.NamespacedName{
+				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			},
+		},
+		{
+			name:     "Create CR with channel and source disabled",
+			instance: makeCr(false, false, false),
+			exists:   []types.NamespacedName{},
+			doesNotExist: []types.NamespacedName{
+				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			},
+		},
+		{
+			name:     "Delete CR",
+			instance: makeCr(true, true, true),
+			exists:   []types.NamespacedName{},
+			doesNotExist: []types.NamespacedName{
+				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, &test.instance)
+			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, test.instance)
 
-			initObjs := []runtime.Object{&test.instance}
+			initObjs := []runtime.Object{test.instance}
 
 			cl := fake.NewFakeClient(initObjs...)
 			mgr := &fakeManager{
@@ -251,30 +166,35 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
-			// check if KafkaChannel controller deployment is created
-			chDeploy := &appsv1.Deployment{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kafka-ch-controller", Namespace: "knative-eventing"}, chDeploy)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
+			// check if things that should exist is created
+			for _, d := range test.exists {
+				deployment := &appsv1.Deployment{}
+				err = cl.Get(context.TODO(), d, deployment)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
 			}
 
-			// check if KafkaSource controller deployment is created
-			srcDeploy := &appsv1.Deployment{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kafka-controller-manager", Namespace: "knative-sources"}, srcDeploy)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
+			// check if things that shouldnot exist is deleted
+			for _, d := range test.doesNotExist {
+				deployment := &appsv1.Deployment{}
+				err = cl.Get(context.TODO(), d, deployment)
+				if err == nil || !errors.IsNotFound(err) {
+					t.Fatalf("exists: (%v)", err)
+				}
 			}
 
-			// Delete KafkaChannel controller deployment.
-			err = cl.Delete(context.TODO(), chDeploy)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
-			}
-
-			// Delete KafkaSource controller deployment.
-			err = cl.Delete(context.TODO(), srcDeploy)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
+			// delete deployments to see if they're recreated
+			for _, d := range test.exists {
+				deployment := &appsv1.Deployment{}
+				err = cl.Get(context.TODO(), d, deployment)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
+				err = cl.Delete(context.TODO(), deployment)
+				if err != nil {
+					t.Fatalf("delete: (%v)", err)
+				}
 			}
 
 			// Reconcile again
@@ -282,19 +202,41 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
-			// Check again if KafkaChannel deployment is created after reconcile.
-			chDeploy = &appsv1.Deployment{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kafka-ch-controller", Namespace: "knative-eventing"}, chDeploy)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
-
-			// Check again if KafkaSource controller deployment is created after reconcile.
-			srcDeploy = &appsv1.Deployment{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kafka-controller-manager", Namespace: "knative-sources"}, srcDeploy)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
+			// check if things that should exist is created
+			for _, d := range test.exists {
+				deployment := &appsv1.Deployment{}
+				err = cl.Get(context.TODO(), d, deployment)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
 			}
 		})
 	}
+}
+
+func makeCr(channel bool, source bool, deleted bool) *v1alpha1.KnativeKafka {
+	var deleteTime *metav1.Time
+	if deleted {
+		t := metav1.NewTime(time.Now())
+		deleteTime = &t
+	}
+
+	instance := v1alpha1.KnativeKafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "knative-kafka",
+			Namespace:         "knative-eventing",
+			DeletionTimestamp: deleteTime,
+		},
+		Spec: v1alpha1.KnativeKafkaSpec{
+			Source: v1alpha1.Source{
+				Enabled: source,
+			},
+			Channel: v1alpha1.Channel{
+				Enabled:          channel,
+				BootstrapServers: "foo.bar.com",
+			},
+		},
+	}
+
+	return &instance
 }
