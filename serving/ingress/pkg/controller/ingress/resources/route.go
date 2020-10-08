@@ -9,6 +9,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/serving/pkg/apis/networking/v1alpha1"
@@ -91,12 +92,12 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		}
 	}
 
-	labels := make(map[string]string)
-	labels[networking.IngressLabelKey] = ci.GetName()
-
 	ingressLabels := ci.GetLabels()
-	labels[serving.RouteLabelKey] = ingressLabels[serving.RouteLabelKey]
-	labels[serving.RouteNamespaceLabelKey] = ingressLabels[serving.RouteNamespaceLabelKey]
+	labels := kmeta.UnionMaps(ci.Labels, map[string]string{
+		networking.IngressLabelKey:     ci.GetName(),
+		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
+		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
+	})
 
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""

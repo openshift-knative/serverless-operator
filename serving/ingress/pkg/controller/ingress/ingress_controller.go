@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/google/go-cmp/cmp"
 	routev1 "github.com/openshift/api/route/v1"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -225,12 +224,15 @@ func (r *ReconcileIngress) reconcileRoute(ctx context.Context, ci *networkingv1a
 		}
 	} else if err != nil {
 		return fmt.Errorf("failed to get route: %w", err)
-	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) {
-		logger.Infof("Updating route %s(%s) diff: %s", desired.Name, desired.Spec.Host, cmp.Diff(route.Spec, desired.Spec))
+	} else if !equality.Semantic.DeepEqual(route.Spec, desired.Spec) ||
+		!equality.Semantic.DeepEqual(route.Annotations, desired.Annotations) ||
+		!equality.Semantic.DeepEqual(route.Labels, desired.Labels) {
+
 		// Don't modify the informers copy
 		existing := route.DeepCopy()
 		existing.Spec = desired.Spec
 		existing.Annotations = desired.Annotations
+		existing.Labels = desired.Labels
 		err = r.client.Update(ctx, existing)
 		if err != nil {
 			return fmt.Errorf("failed to update route: %w", err)
