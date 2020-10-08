@@ -1,0 +1,16 @@
+package common
+
+import "knative.dev/operator/pkg/apis/operator/v1alpha1"
+
+// Configure sets a value in the given ConfigMap under the given key.
+func Configure(s *v1alpha1.CommonSpec, cm, key, value string) {
+	if s.Config == nil {
+		s.Config = make(map[string]map[string]string, 1)
+	}
+
+	if s.Config[cm] == nil {
+		s.Config[cm] = make(map[string]string, 1)
+	}
+
+	s.Config[cm][key] = value
+}

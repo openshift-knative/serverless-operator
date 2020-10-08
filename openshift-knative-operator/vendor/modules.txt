@@ -114,6 +114,7 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
 # github.com/google/go-cmp v0.5.2
+## explicit
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -155,6 +156,7 @@ github.com/mailru/easyjson/jwriter
 github.com/manifestival/client-go-client
 github.com/manifestival/client-go-client/pkg/dynamic
 # github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356
+## explicit
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/internal/overlay
 github.com/manifestival/manifestival/internal/patch
@@ -527,6 +529,7 @@ k8s.io/api/storage/v1beta1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 # k8s.io/apimachinery v0.19.1 => k8s.io/apimachinery v0.17.6
+## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
