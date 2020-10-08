@@ -151,19 +151,48 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	manifest, err := r.buildManifest(instance)
+	// install the components that are enabled
+	if err := r.executeInstallStages(instance); err != nil {
+		return err
+	}
+	// delete the components that are disabled
+	if err := r.executeDeleteStages(instance); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, ManifestBuildEnabledOnly)
 	if err != nil {
-		return fmt.Errorf("failed to build manifest: %w", err)
+		return fmt.Errorf("failed to load and build manifest: %w", err)
 	}
 
-	// TODO: ensure components get removed when enabled=true is changed to enabled=false
-
 	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
-		// TODO r.configure,
 		r.ensureFinalizers,
 		r.transform,
 		r.apply,
 		r.checkDeployments,
+	}
+
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, ManifestBuildDisabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+		r.transform,
+		r.deleteResources,
 	}
 
 	// Execute each stage in sequence until one returns an error
@@ -238,6 +267,17 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 	return nil
 }
 
+// Delete Knative Kafka resources
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Deleting resources in manifest")
+	if err := manifest.Delete(); err != nil {
+		// TODO: any conditions?
+		return fmt.Errorf("failed to apply manifest: %w", err)
+	}
+	// TODO: any conditions?
+	return nil
+}
+
 func isDeploymentAvailable(d *appsv1.Deployment) bool {
 	for _, c := range d.Status.Conditions {
 		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
@@ -280,29 +320,41 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.buildManifest(instance)
+	manifest, err := r.buildManifest(instance, ManifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}
 
-	if err := r.transform(manifest, instance); err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
+	stages := []func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error{
+		r.transform,
+		r.deleteResources,
 	}
 
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete KnativeKafka manifest: %w", err)
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
+type manifestBuild int
+
+const (
+	ManifestBuildEnabledOnly manifestBuild = iota
+	ManifestBuildDisabledOnly
+	ManifestBuildAll
+)
+
+func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
 	var resources []unstructured.Unstructured
 
-	if instance.Spec.Channel.Enabled {
+	if build == ManifestBuildAll || (build == ManifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == ManifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
 
-	if instance.Spec.Source.Enabled {
+	if build == ManifestBuildAll || (build == ManifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == ManifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
