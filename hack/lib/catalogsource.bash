@@ -129,7 +129,7 @@ function add_user {
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run -o yaml | kubectl apply -f -
   oc apply -f openshift/identity/htpasswd.yaml
 
   logger.info 'Generate kubeconfig'
