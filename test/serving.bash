@@ -96,7 +96,7 @@ function run_serving_preupgrade_test {
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain || return $?
+    --resolvabledomain
 
   logger.success 'Serving pre upgrade tests passed'
 }
@@ -138,7 +138,7 @@ function wait_for_serving_prober_ready {
   # Wait for the upgrade-probe kservice to be ready before proceeding
   timeout 900 "[[ \$(oc get services.serving.knative.dev upgrade-probe \
     -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
-    != True ]]" || return $?
+    != True ]]"
 
   logger.success 'Serving prober is ready'
 }
@@ -152,21 +152,21 @@ function check_serving_upgraded {
     knative-serving -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') \
     == ${latest_serving_version} && \$(oc get knativeserving.operator.knative.dev \
     knative-serving -n ${SERVING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]" || return 1
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
 }
 
 function end_serving_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  end_prober_test 'Serving' "${prober_pid}" || return $?
+  end_prober_test 'Serving' "${prober_pid}"
 }
 
 function wait_for_serving_test_services_settle {
   # Wait for all services to become ready again. Exclude the upgrade-probe as
   # that'll be removed by the prober test above.
   for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v 'upgrade-probe'); do
-    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]" || return 1
+    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
   done
 
   # Give time to settle things down
