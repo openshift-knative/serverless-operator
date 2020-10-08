@@ -24,8 +24,13 @@ const (
 
 func TestKnativeSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, client) })
+	cleanup := func() {
+		test.CleanupAll(t, client)
+		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+	}
+	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
+	defer cleanup()
 
 	// Setup a knative service
 	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)

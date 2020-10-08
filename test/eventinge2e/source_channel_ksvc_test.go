@@ -21,8 +21,15 @@ const (
 
 func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, client) })
+	cleanup := func() {
+		test.CleanupAll(t, client)
+		client.Clients.Eventing.MessagingV1beta1().Subscriptions(testNamespace).Delete(subscriptionName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1beta1().Channels(testNamespace).Delete(channelName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+	}
+	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
+	defer cleanup()
 
 	// Setup a knative service
 	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
@@ -87,10 +94,5 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
 	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-
-	// Delete resources
-	client.Clients.Eventing.MessagingV1beta1().Subscriptions(testNamespace).Delete(subscription.Name, &metav1.DeleteOptions{})
-	client.Clients.Eventing.MessagingV1beta1().Channels(testNamespace).Delete(channel.Name, &metav1.DeleteOptions{})
-	client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(ps.Name, &metav1.DeleteOptions{})
 
 }

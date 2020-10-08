@@ -25,8 +25,16 @@ const (
 
 func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, client) })
+	cleanup := func() {
+		test.CleanupAll(t, client)
+		client.Clients.Eventing.EventingV1beta1().Brokers(testNamespace).Delete(brokerName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Delete(triggerName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(cmName, &metav1.DeleteOptions{})
+	}
+	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
+	defer cleanup()
 
 	// Setup a knative service
 	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
@@ -81,7 +89,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	trigger, err := client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Create(tr)
+	_, err = client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Create(tr)
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
@@ -110,9 +118,4 @@ kind: %q`, channelAPIVersion, channelKind),
 	}
 	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 
-	// Delete resources
-	client.Clients.Eventing.EventingV1beta1().Brokers(testNamespace).Delete(broker.Name, &metav1.DeleteOptions{})
-	client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Delete(trigger.Name, &metav1.DeleteOptions{})
-	client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(ps.Name, &metav1.DeleteOptions{})
-	client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(configMap.Name, &metav1.DeleteOptions{})
 }
