@@ -376,3 +376,125 @@ func TestInjectOwner(t *testing.T) {
 		})
 	}
 }
+
+func TestSetBootstrapServers(t *testing.T) {
+	logf.SetLogger(logf.ZapLogger(true))
+
+	tests := []struct {
+		name             string
+		obj              *unstructured.Unstructured
+		bootstrapServers string
+		expect           *unstructured.Unstructured
+	}{
+		{
+			name: "Update config-kafka",
+			obj: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+				},
+			},
+			bootstrapServers: "example.com:1234",
+			expect: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+					"data": map[string]interface{}{
+						"bootstrapServers": "example.com:1234",
+					},
+				},
+			},
+		},
+		{
+			name: "Update config-kafka - overwrite",
+			obj: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+					"data": map[string]interface{}{
+						"bootstrapServers": "TO_BE_OVERWRITTEN",
+					},
+				},
+			},
+			bootstrapServers: "example.com:1234",
+			expect: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+					"data": map[string]interface{}{
+						"bootstrapServers": "example.com:1234",
+					},
+				},
+			},
+		},
+		{
+			name: "Do not update other configmaps",
+			obj: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-foo",
+					},
+				},
+			},
+			bootstrapServers: "example.com:1234",
+			expect: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "ConfigMap",
+					"metadata": map[string]interface{}{
+						"name": "config-foo",
+					},
+				},
+			},
+		},
+		{
+			name: "Do not update other resources",
+			obj: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "Secret",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+				},
+			},
+			bootstrapServers: "example.com:1234",
+			expect: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "v1",
+					"kind":       "Secret",
+					"metadata": map[string]interface{}{
+						"name": "config-kafka",
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := setBootstrapServers(test.bootstrapServers)(test.obj)
+			if err != nil {
+				t.Fatalf("setBootstrapServers: (%v)", err)
+			}
+
+			if !equality.Semantic.DeepEqual(test.expect, test.obj) {
+				t.Fatalf("Resource wasn't what we expected: %#v, want %#v", test.obj, test.expect)
+			}
+		})
+	}
+}
