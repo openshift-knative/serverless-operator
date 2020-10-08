@@ -26,6 +26,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	ks := comp.(*v1alpha1.KnativeServing)
 
 	// Override images.
+	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	images := common.ImageMapFromEnvironment(os.Environ())
 	ks.Spec.Registry.Override = common.ImageMapFromEnvironment(os.Environ())
 	ks.Spec.Registry.Default = images["default"]
@@ -39,9 +40,11 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	}
 
 	// Use Kourier.
+	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
+	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	common.Configure(&ks.Spec.CommonSpec, "network", "domainTemplate", "{{.Name}}-{{.Namespace}}.{{.Domain}}")
 
 	// Ensure webhook has 1G of memory.

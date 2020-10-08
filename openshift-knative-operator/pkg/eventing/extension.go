@@ -26,6 +26,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	ke := comp.(*v1alpha1.KnativeEventing)
 
 	// Override images.
+	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	images := common.ImageMapFromEnvironment(os.Environ())
 	ke.Spec.Registry.Override = images
 	ke.Spec.Registry.Default = images["default"]
