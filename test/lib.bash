@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# == Overrides & test releated
+# == Overrides & test related
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
@@ -115,12 +115,131 @@ function downstream_eventing_e2e_tests {
   return $failed
 }
 
+# == Upgrade testing
+
+function run_rolling_upgrade_tests {
+  logger.info "Running rolling upgrade tests"
+  (
+  local latest_cluster_version latest_serving_version latest_eventing_version \
+    rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
+    eventing_prober_pid prev_serving_version prev_eventing_version \
+    ocp_target_version
+
+  scope="${1:?Provide an upgrade scope as arg[1]}"
+  serving_in_scope="$(echo "${scope}" | grep -vq serving ; echo "$?")"
+  eventing_in_scope="$(echo "${scope}" | grep -vq eventing ; echo "$?")"
+
+  prev_serving_version="$(actual_serving_version)"
+  prev_eventing_version="$(actual_eventing_version)"
+
+  # Save the rootdir before changing dir
+  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+
+  (( serving_in_scope )) && prepare_knative_serving_tests || return $?
+
+  logger.info 'Testing with pre upgrade tests'
+
+  (( serving_in_scope )) && run_serving_preupgrade_test || return $?
+  (( eventing_in_scope )) && run_eventing_preupgrade_test || return $?
+
+  logger.info 'Starting prober tests'
+
+  if (( serving_in_scope )); then
+    start_serving_prober "${prev_serving_version}" /tmp/prober-pid || return $?
+    serving_prober_pid=$(cat /tmp/prober-pid)
+  fi
+  if (( eventing_in_scope )); then
+    start_eventing_prober /tmp/prober-pid || return $?
+    eventing_prober_pid=$(cat /tmp/prober-pid)
+  fi
+
+  (( serving_in_scope )) && wait_for_serving_prober_ready || return $?
+  (( eventing_in_scope )) && wait_for_eventing_prober_ready || return $?
+
+  if [[ $UPGRADE_SERVERLESS == true ]]; then
+    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
+    latest_eventing_version="${KNATIVE_EVENTING_VERSION/v/}"
+
+    logger.info "Updating Serverless to ${CURRENT_CSV}"
+    logger.debug "Serving version: ${prev_serving_version} -> ${latest_serving_version}"
+    logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
+
+    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL" || return $?
+    (( serving_in_scope )) && check_serving_upgraded "${latest_serving_version}" || return $?
+    (( eventing_in_scope )) && check_eventing_upgraded "${latest_eventing_version}" || return $?
+  fi
+
+  # Might not work in OpenShift CI but we want it here so that we can consume
+  # this script later and re-use
+  if [[ $UPGRADE_CLUSTER == true ]]; then
+    # End the prober test now before we start cluster upgrade, up until now we
+    # should have zero failed requests. Cluster upgrade will fail probers as
+    # stuff is moved around.
+    (( serving_in_scope )) && end_serving_prober "${serving_prober_pid}" || return $?
+    (( eventing_in_scope )) && end_eventing_prober "${eventing_prober_pid}" || return $?
+
+    upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}" || return $?
+  fi
+
+  (( serving_in_scope )) && wait_for_serving_test_services_settle || return $?
+
+  logger.info "Running postupgrade tests"
+
+  (( serving_in_scope )) && run_serving_postupgrade_test || return $?
+  (( eventing_in_scope )) && run_eventing_postupgrade_test || return $?
+
+  (( serving_in_scope )) && end_serving_prober "${serving_prober_pid}" || return $?
+  (( eventing_in_scope )) && end_eventing_prober "${eventing_prober_pid}" || return $?
+
+  cleanup_serving_test_servinces || return $?
+
+  cd "$rootdir" || return $?
+  return 0
+  )
+}
+
 function end_prober_test {
-  local PROBER_PID=$1
-  echo "done" > /tmp/prober-signal
-  logger.info "Waiting for prober test to finish"
-  wait "${PROBER_PID}"
-  return $?
+  local prober_pid prober_signal retcode title
+  title=${1:?Pass a title as arg[1]}
+  prober_pid=${2:?Pass a pid as a arg[2]}
+  prober_signal=${3:-/tmp/prober-signal}
+
+  if kill -0 "${prober_pid}" 2>/dev/null; then
+    logger.debug "${title} prober of PID ${prober_pid} isn't running..."
+    return 0
+  fi
+
+  echo 'done' > "${prober_signal}"
+  logger.info "Waiting for ${title} prober test to finish"
+  wait "${prober_pid}"
+  retcode=$?
+  if ! (( retcode )); then
+    logger.success "${title} prober passed"
+  else
+    logger.error "${title} prober failed"
+  fi
+  return $retcode
+}
+
+function upgrade_ocp_cluster {
+  local ocp_target_version upgrade_ocp_image latest_cluster_version
+  upgrade_ocp_image="${1:-}"
+
+  if [[ -n "$upgrade_ocp_image" ]]; then
+    ocp_target_version="$upgrade_ocp_image"
+    oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
+      --force=true --allow-explicit-upgrade
+  else
+    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
+      | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
+    [[ $latest_cluster_version != "" ]] || return 1
+    ocp_target_version="$latest_cluster_version"
+    oc adm upgrade --to-latest=true --force=true
+  fi
+  timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${ocp_target_version}\")].state}') != Completed ]]" || return 1
+
+  logger.success "New cluster version: $(oc get clusterversion \
+    version -o jsonpath='{.status.desired.version}')"
 }
 
 function teardown {

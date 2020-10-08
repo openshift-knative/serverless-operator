@@ -18,8 +18,9 @@ export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.16.0}"
 # Make sure yq is on PATH.
 yq > /dev/null || exit 127
 csv_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-export CURRENT_CSV="$(yq r "$csv_file" metadata.name)"
-export PREVIOUS_CSV="$(yq r "$csv_file" spec.replaces)"
+CURRENT_CSV="$(yq r "$csv_file" metadata.name)"
+PREVIOUS_CSV="$(yq r "$csv_file" spec.replaces)"
+export CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
@@ -59,7 +60,8 @@ function latest_channel_from_metadata {
   echo "$channels" | awk -F"," '{ print $NF }'
 }
 
-export OLM_CHANNEL="${OLM_CHANNEL:-"$(latest_channel_from_metadata)"}"
+OLM_CHANNEL="${OLM_CHANNEL:-"$(latest_channel_from_metadata)"}"
+export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"

@@ -22,8 +22,7 @@ function ensure_serverless_installed {
 }
 
 function install_serverless_previous {
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  logger.info "Installing previous version of Serverless..."
 
   # Remove installplan from previous installations, leaving this would make the operator
   # upgrade to the latest version immediately
@@ -31,34 +30,40 @@ function install_serverless_previous {
 
   deploy_serverless_operator "$PREVIOUS_CSV"  || return $?
   deploy_knativeserving_cr || return $?
-}
-
-function remove_installplan {
-  local install_plan
-  install_plan=$(find_install_plan $1)
-  if [[ -n $install_plan ]]; then
-    oc delete "$install_plan" -n "${OPERATORS_NAMESPACE}"
-  fi
+  deploy_knativeeventing_cr || return $?
+  logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
 }
 
 function install_serverless_latest {
+  logger.info "Installing latest version of Serverless..."
   deploy_serverless_operator_latest || return $?
   deploy_knativeserving_cr || return $?
   deploy_knativeeventing_cr || return $?
+  logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
+}
+
+function remove_installplan {
+  local install_plan csv
+  csv="${1:?Pass a CSV as arg[1]}"
+  logger.info "Removing installplan for $csv"
+  install_plan=$(find_install_plan "$csv")
+  if [[ -n $install_plan ]]; then
+    oc delete "$install_plan" -n "${OPERATORS_NAMESPACE}"
+  else
+    logger.debug "No install plan for $csv"
+  fi
 }
 
 function deploy_serverless_operator_latest {
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   deploy_serverless_operator "$CURRENT_CSV"
 }
 
 function deploy_serverless_operator {
-  local csv
-  csv="$1"
-  logger.info "Install the Serverless Operator ${csv}"
-
-  cat <<EOF | oc apply -f - || return $?
+  local csv tmpfile
+  csv="${1:?Pass as CSV as arg[1]}"
+  logger.info "Install the Serverless Operator: ${csv}"
+  tmpfile=$(mktemp /tmp/subscription.XXXXXX.yaml)
+  cat > "$tmpfile" <<EOF
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -72,6 +77,8 @@ spec:
   installPlanApproval: Manual
   startingCSV: "${csv}"
 EOF
+  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
+  oc apply -f "$tmpfile" || return $?
 
   # Approve the initial installplan automatically
   approve_csv "$csv" "$OLM_CHANNEL" || return 5
@@ -79,16 +86,16 @@ EOF
 
 function approve_csv {
   local csv_version install_plan channel
-  csv_version=$1
-  channel=$2
+  csv_version=${1:?Pass a CSV as arg[1]}
+  channel=${2:?Pass channel as arg[2]}
 
-  # Ensure channel and source is set properly
+  logger.info 'Ensure channel and source is set properly'
   oc patch subscriptions.operators.coreos.com "$OPERATOR" -n "${OPERATORS_NAMESPACE}" \
     --type 'merge' \
     --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}' \
     || return $?
 
-  # Wait for the installplan to be available
+  logger.info 'Wait for the installplan to be available'
   timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]" || return 1
 
   install_plan=$(find_install_plan $csv_version)

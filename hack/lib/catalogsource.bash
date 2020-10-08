@@ -12,7 +12,9 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  local rootdir
+
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
   pull_user="puller"
@@ -33,9 +35,9 @@ function install_catalogsource {
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
   fi
 
-  cat "$csv"
+  [ -n "$OPENSHIFT_CI" ] && cat "$csv"
 
-  # Build the bundle image in the cluster-internal registry.
+  logger.info 'Build the bundle image in the cluster-internal registry.'
   oc -n "$OLM_NAMESPACE" new-build --binary --strategy=docker --name serverless-bundle
   oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
 
@@ -45,7 +47,7 @@ function install_catalogsource {
   # HACK: Allow to run the index pod as root so it has necessary access.
   oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
 
-  # Install the index deployment.
+  logger.info 'Install the index deployment.'
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
 apiVersion: apps/v1
@@ -82,11 +84,11 @@ spec:
           /bin/opm registry serve -d index.db -p 50051
 EOF
 
-  # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
+  logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
   wait_until_pods_running "$OLM_NAMESPACE"
   indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
 
-  # Install the catalogsource.
+  logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -134,6 +136,6 @@ function add_user {
 
   logger.info 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
-  occmd="bash -c '! oc login --config=$name.kubeconfig --username=$name --password=$pass > /dev/null'"
+  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} > /dev/null'"
   timeout 900 "${occmd}" || return 1
 }

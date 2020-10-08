@@ -22,7 +22,7 @@ teardown_serverless || failed=1
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   (( !failed )) && install_serverless_previous || failed=3
-  (( !failed )) && run_knative_serving_rolling_upgrade_tests || failed=4
+  (( !failed )) && run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving}" || failed=4
   (( !failed )) && trigger_gc_and_print_knative || failed=5
   # Call teardown only if E2E tests follow.
   if [[ $TEST_KNATIVE_E2E == true ]]; then
