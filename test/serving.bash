@@ -33,7 +33,7 @@ function prepare_knative_serving_tests {
 
 function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
-  (
+
   prepare_knative_serving_tests || return $?
 
   local failed=0
@@ -76,7 +76,6 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   print_test_result ${failed}
 
   return $failed
-  )
 }
 
 function actual_serving_version {

@@ -13,7 +13,7 @@ debugging.setup
 
 failed=0
 
-teardown || failed=1
+teardown_serverless || failed=1
 (( !failed )) && create_namespaces || failed=2
 (( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'

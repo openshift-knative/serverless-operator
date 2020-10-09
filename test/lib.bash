@@ -119,7 +119,7 @@ function downstream_eventing_e2e_tests {
 
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
-  (
+
   local latest_cluster_version latest_serving_version latest_eventing_version \
     rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
     eventing_prober_pid prev_serving_version prev_eventing_version \
@@ -135,12 +135,21 @@ function run_rolling_upgrade_tests {
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-  (( serving_in_scope )) && prepare_knative_serving_tests
+  if (( eventing_in_scope )); then
+    prepare_knative_eventing_tests
+  fi
+  if (( serving_in_scope )); then
+    prepare_knative_serving_tests
+  fi
 
   logger.info 'Testing with pre upgrade tests'
 
-  (( serving_in_scope )) && run_serving_preupgrade_test
-  (( eventing_in_scope )) && run_eventing_preupgrade_test
+  if (( serving_in_scope )); then
+    run_serving_preupgrade_test
+  fi
+  if (( eventing_in_scope )); then
+    run_eventing_preupgrade_test
+  fi
 
   logger.info 'Starting prober tests'
 
@@ -153,8 +162,12 @@ function run_rolling_upgrade_tests {
     eventing_prober_pid=$(cat /tmp/prober-pid)
   fi
 
-  (( serving_in_scope )) && wait_for_serving_prober_ready
-  (( eventing_in_scope )) && wait_for_eventing_prober_ready
+  if (( serving_in_scope )); then
+    wait_for_serving_prober_ready
+  fi
+  if (( eventing_in_scope )); then
+    wait_for_eventing_prober_ready
+  fi
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
@@ -165,8 +178,12 @@ function run_rolling_upgrade_tests {
     logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
 
     approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
-    (( serving_in_scope )) && check_serving_upgraded "${latest_serving_version}"
-    (( eventing_in_scope )) && check_eventing_upgraded "${latest_eventing_version}"
+    if (( serving_in_scope )); then
+      check_serving_upgraded "${latest_serving_version}"
+    fi
+    if (( eventing_in_scope )); then
+      check_eventing_upgraded "${latest_eventing_version}"
+    fi
   fi
 
   # Might not work in OpenShift CI but we want it here so that we can consume
@@ -175,27 +192,40 @@ function run_rolling_upgrade_tests {
     # End the prober test now before we start cluster upgrade, up until now we
     # should have zero failed requests. Cluster upgrade will fail probers as
     # stuff is moved around.
-    (( serving_in_scope )) && end_serving_prober "${serving_prober_pid}"
-    (( eventing_in_scope )) && end_eventing_prober "${eventing_prober_pid}"
+    if (( serving_in_scope )); then
+      end_serving_prober "${serving_prober_pid}"
+    fi
+    if (( eventing_in_scope )); then
+      end_eventing_prober "${eventing_prober_pid}"
+    fi
 
     upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}"
   fi
 
-  (( serving_in_scope )) && wait_for_serving_test_services_settle
+  if (( serving_in_scope )); then
+    wait_for_serving_test_services_settle
+  fi
 
   logger.info "Running postupgrade tests"
 
-  (( serving_in_scope )) && run_serving_postupgrade_test
-  (( eventing_in_scope )) && run_eventing_postupgrade_test
+  if (( serving_in_scope )); then
+    run_serving_postupgrade_test
+  fi
+  if (( eventing_in_scope )); then
+    run_eventing_postupgrade_test
+  fi
 
-  (( serving_in_scope )) && end_serving_prober "${serving_prober_pid}"
-  (( eventing_in_scope )) && end_eventing_prober "${eventing_prober_pid}"
+  if (( serving_in_scope )); then
+    end_serving_prober "${serving_prober_pid}"
+  fi
+  if (( eventing_in_scope )); then
+    end_eventing_prober "${eventing_prober_pid}"
+  fi
 
   cleanup_serving_test_services
 
   cd "$rootdir" || return $?
   return 0
-  )
 }
 
 function end_prober_test {

@@ -4,7 +4,6 @@ readonly EVENTING_READY_FILE="/tmp/eventing-prober-ready"
 readonly EVENTING_PROBER_FILE="/tmp/eventing-prober-signal"
 
 function upstream_knative_eventing_e2e {
-  (
   logger.info 'Running eventing tests'
 
   local failed=0
@@ -22,7 +21,6 @@ function upstream_knative_eventing_e2e {
   print_test_result ${failed}
 
   return $failed
-  )
 }
 
 function actual_eventing_version {
