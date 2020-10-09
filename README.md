@@ -22,7 +22,7 @@ $ make images test-operator
 - `DOCKER_REPO_OVERRIDE` points to that repository
 - `bash` (4.0.0 or newer)
 - `make`
-- `yq`
+- `yq` (3.4.0)
 
 ### CRC-based cluster
 
