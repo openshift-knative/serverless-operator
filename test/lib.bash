@@ -191,7 +191,7 @@ function run_rolling_upgrade_tests {
   (( serving_in_scope )) && end_serving_prober "${serving_prober_pid}"
   (( eventing_in_scope )) && end_eventing_prober "${eventing_prober_pid}"
 
-  cleanup_serving_test_servinces
+  cleanup_serving_test_services
 
   cd "$rootdir" || return $?
   return 0
@@ -206,11 +206,11 @@ function end_prober_test {
 
   if kill -0 "${prober_pid}" 2>/dev/null; then
     logger.debug "${title} prober of PID ${prober_pid} isn't running..."
-    return 0
+  else
+    echo 'done' > "${prober_signal}"
+    logger.info "Waiting for ${title} prober test to finish"
   fi
 
-  echo 'done' > "${prober_signal}"
-  logger.info "Waiting for ${title} prober test to finish"
   wait "${prober_pid}"
   retcode=$?
   if ! (( retcode )); then

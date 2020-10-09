@@ -191,7 +191,7 @@ function run_serving_postupgrade_test {
   logger.success 'Serving post upgrade tests passed'
 }
 
-function cleanup_serving_test_servinces {
+function cleanup_serving_test_services {
   oc delete --ignore-not-found=true ksvc \
     pizzaplanet-upgrade-service \
     scale-to-zero-upgrade-service \

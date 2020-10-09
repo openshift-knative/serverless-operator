@@ -11,32 +11,31 @@ if [ -n "$OPENSHIFT_CI" ]; then
 fi
 debugging.setup
 
-create_namespaces || exit $?
-
 failed=0
 
-teardown_serverless || failed=1
-(( !failed )) && install_catalogsource || failed=2
+teardown || failed=1
+(( !failed )) && create_namespaces || failed=2
+(( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
-  (( !failed )) && install_serverless_previous || failed=3
-  (( !failed )) && run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving}" || failed=4
-  (( !failed )) && trigger_gc_and_print_knative || failed=5
+  (( !failed )) && install_serverless_previous || failed=4
+  (( !failed )) && run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving,eventing}" || failed=5
+  (( !failed )) && trigger_gc_and_print_knative || failed=6
   # Call teardown only if E2E tests follow.
   if [[ $TEST_KNATIVE_E2E == true ]]; then
-    (( !failed )) && teardown_serverless || failed=6
+    (( !failed )) && teardown_serverless || failed=7
   fi
 fi
 
 # Run upstream knative serving & eventing tests
 if [[ $TEST_KNATIVE_E2E == true ]]; then
   # Need 6 worker nodes when running upstream.
-  SCALE_UP=6 scale_up_workers || failed=10
-  (( !failed )) && ensure_serverless_installed || failed=7
-  (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
-  (( !failed )) && upstream_knative_eventing_e2e || failed=9
+  SCALE_UP=6 scale_up_workers || failed=8
+  (( !failed )) && ensure_serverless_installed || failed=9
+  (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=10
+  (( !failed )) && upstream_knative_eventing_e2e || failed=11
 fi
 
 (( failed )) && dump_state

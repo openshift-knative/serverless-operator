@@ -61,21 +61,6 @@ function wait_for_file {
   local file timeout waits
   file="${1:?Pass a filepath as arg[1]}"
   waits="${2:-300}"
-  timeout=$waits
 
-  logger.debug "Waiting for existence of file: ${file}"
-
-  while [ ! -f "${file}" ]; do
-    # When the timeout is equal to zero, show an error and leave the loop.
-    if [ "${timeout}" == 0 ]; then
-      logger.error "Timeout (${waits}s) while waiting for the file ${file}."
-      return 78
-    fi
-
-    sleep 1
-
-    # Decrease the timeout of one
-    ((timeout--))
-  done
-  return 0
+  timeout "${waits}" "[[ ! -f '${file}' ]]" || return $?
 }
