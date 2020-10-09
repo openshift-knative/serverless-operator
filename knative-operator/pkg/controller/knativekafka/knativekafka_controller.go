@@ -209,11 +209,12 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	m, err := manifest.Transform(
-		InjectOwner(instance),
+		injectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
+		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
@@ -259,6 +260,9 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 
 // Delete Knative Kafka resources
 func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	if len(manifest.Resources()) <= 0 {
+		return nil
+	}
 	log.Info("Deleting resources in manifest")
 	if err := manifest.Delete(); err != nil {
 		// TODO: any conditions?
@@ -352,6 +356,19 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 	return &manifest, nil
 }
 
+// setBootstrapServers sets Kafka bootstrapServers value in config-kafka
+func setBootstrapServers(bootstrapServers string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
+			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
 // InjectOwner creates a Tranformer which adds an OwnerReference pointing to
 // `owner` to namespace-scoped objects.
 //
@@ -359,7 +376,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 // resources that are in the same namespace as the owner.
 // For the resources that are in the same namespace, it fallbacks to
 // Manifestival's InjectOwner
-func InjectOwner(owner mf.Owner) mf.Transformer {
+func injectOwner(owner mf.Owner) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetNamespace() == owner.GetNamespace() {
 			return mf.InjectOwner(owner)(u)
