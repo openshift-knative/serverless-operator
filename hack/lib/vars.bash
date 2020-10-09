@@ -12,7 +12,7 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
 # Adjust these when upgrading the knative versions.
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.16.0}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v0.17.3}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v0.17.2}"
 
 # Make sure yq is on PATH.
