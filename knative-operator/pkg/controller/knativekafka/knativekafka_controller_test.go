@@ -2,7 +2,6 @@ package knativekafka
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -26,12 +25,6 @@ var (
 		NamespacedName: types.NamespacedName{Namespace: "knative-eventing", Name: "knative-kafka"},
 	}
 )
-
-func init() {
-	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv("KAFKACHANNEL_MANIFEST_PATH", "testdata/kafkachannel-latest.yaml")
-	os.Setenv("KAFKASOURCE_MANIFEST_PATH", "testdata/kafkasource-latest.yaml")
-}
 
 func TestKnativeKafkaReconcile(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
@@ -95,12 +88,12 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 			cl := fake.NewFakeClient(initObjs...)
 
-			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACHANNEL_MANIFEST_PATH")))
+			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkachannel-latest.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaChannel manifest: %v", err)
 			}
 
-			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASOURCE_MANIFEST_PATH")))
+			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkasource-latest.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaSource manifest: %v", err)
 			}
