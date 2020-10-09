@@ -43,7 +43,6 @@ spec:
                   type: boolean
               required:
               - enabled
-              - bootstrapServers
               type: object
             source:
               description: Allows configuration for KafkaSource installation
@@ -55,6 +54,9 @@ spec:
               required:
               - enabled
               type: object
+          required:
+          - channel
+          - source
           type: object
         status:
           properties:

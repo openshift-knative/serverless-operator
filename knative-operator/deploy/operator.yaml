@@ -35,5 +35,11 @@ spec:
               value: "knative-serving"
             - name: REQUIRED_EVENTING_NAMESPACE
               value: "knative-eventing"
+            - name: REQUIRED_KAFKA_NAMESPACE
+              value: "knative-eventing"
             - name: KOURIER_MANIFEST_PATH
               value: deploy/resources/kourier/kourier-latest.yaml
+            - name: KAFKACHANNEL_MANIFEST_PATH
+              value: deploy/resources/knativekafka/kafkachannel-latest.yaml
+            - name: KAFKASOURCE_MANIFEST_PATH
+              value: deploy/resources/knativekafka/kafkasource-latest.yaml
