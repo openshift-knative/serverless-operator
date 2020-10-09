@@ -101,7 +101,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		doesNotExist []types.NamespacedName
 	}{{
 		name:     "Create CR with channel and source enabled",
-		instance: makeCr(true, true, false),
+		instance: makeCr(withChannelEnabled, withSourceEnabled),
 		exists: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
@@ -109,7 +109,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		doesNotExist: []types.NamespacedName{},
 	}, {
 		name:     "Create CR with channel enabled and source disabled",
-		instance: makeCr(true, false, false),
+		instance: makeCr(withChannelEnabled),
 		exists: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 		},
@@ -118,7 +118,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		},
 	}, {
 		name:     "Create CR with channel disabled and source enabled",
-		instance: makeCr(false, true, false),
+		instance: makeCr(withSourceEnabled),
 		exists: []types.NamespacedName{
 			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
 		},
@@ -127,7 +127,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		},
 	}, {
 		name:     "Create CR with channel and source disabled",
-		instance: makeCr(false, false, false),
+		instance: makeCr(),
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
@@ -135,7 +135,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		},
 	}, {
 		name:     "Delete CR",
-		instance: makeCr(true, true, true),
+		instance: makeCr(withChannelEnabled, withSourceEnabled, withDeleted),
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
@@ -457,29 +457,38 @@ func TestSetBootstrapServers(t *testing.T) {
 	}
 }
 
-func makeCr(channel bool, source bool, deleted bool) *v1alpha1.KnativeKafka {
-	var deleteTime *metav1.Time
-	if deleted {
-		t := metav1.NewTime(time.Now())
-		deleteTime = &t
-	}
-
-	instance := v1alpha1.KnativeKafka{
+func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
+	base := &v1alpha1.KnativeKafka{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "knative-kafka",
 			Namespace:         "knative-eventing",
-			DeletionTimestamp: deleteTime,
+			DeletionTimestamp: nil,
 		},
 		Spec: v1alpha1.KnativeKafkaSpec{
 			Source: v1alpha1.Source{
-				Enabled: source,
+				Enabled: false,
 			},
 			Channel: v1alpha1.Channel{
-				Enabled:          channel,
+				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
 			},
 		},
 	}
+	for _, mod := range mods {
+		mod(base)
+	}
+	return base
+}
 
-	return &instance
+func withSourceEnabled(kk *v1alpha1.KnativeKafka) {
+	kk.Spec.Source.Enabled = true
+}
+
+func withChannelEnabled(kk *v1alpha1.KnativeKafka) {
+	kk.Spec.Channel.Enabled = true
+}
+
+func withDeleted(kk *v1alpha1.KnativeKafka) {
+	t := metav1.NewTime(time.Now())
+	kk.ObjectMeta.DeletionTimestamp = &t
 }
