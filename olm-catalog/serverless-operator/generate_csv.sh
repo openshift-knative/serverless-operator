@@ -21,8 +21,8 @@ images=(
   ["webhook"]="${serving}-webhook"
   ["storage-version-migration-serving-0.17.3__migrate"]="${serving}-storage-version-migration"
 
-  ["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:1.1.5"
-  ["3scale-kourier-control"]="${registry}/knative-v0.17.2:kourier"
+  ["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:1.1.0"
+  ["3scale-kourier-control"]="${registry}/knative-v0.16.0:kourier"
 
   ["eventing-controller__eventing-controller"]="${eventing}-controller"
   ["sugar-controller__controller"]="${eventing}-sugar-controller"
