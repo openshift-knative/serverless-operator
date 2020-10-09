@@ -99,55 +99,49 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		instance     *v1alpha1.KnativeKafka
 		exists       []types.NamespacedName
 		doesNotExist []types.NamespacedName
-	}{
-		{
-			name:     "Create CR with channel and source enabled",
-			instance: makeCr(true, true, false),
-			exists: []types.NamespacedName{
-				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
-			},
-			doesNotExist: []types.NamespacedName{},
+	}{{
+		name:     "Create CR with channel and source enabled",
+		instance: makeCr(true, true, false),
+		exists: []types.NamespacedName{
+			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
 		},
-		{
-			name:     "Create CR with channel enabled and source disabled",
-			instance: makeCr(true, false, false),
-			exists: []types.NamespacedName{
-				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			},
-			doesNotExist: []types.NamespacedName{
-				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
-			},
+		doesNotExist: []types.NamespacedName{},
+	}, {
+		name:     "Create CR with channel enabled and source disabled",
+		instance: makeCr(true, false, false),
+		exists: []types.NamespacedName{
+			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 		},
-		{
-			name:     "Create CR with channel disabled and source enabled",
-			instance: makeCr(false, true, false),
-			exists: []types.NamespacedName{
-				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
-			},
-			doesNotExist: []types.NamespacedName{
-				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			},
+		doesNotExist: []types.NamespacedName{
+			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
 		},
-		{
-			name:     "Create CR with channel and source disabled",
-			instance: makeCr(false, false, false),
-			exists:   []types.NamespacedName{},
-			doesNotExist: []types.NamespacedName{
-				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
-			},
+	}, {
+		name:     "Create CR with channel disabled and source enabled",
+		instance: makeCr(false, true, false),
+		exists: []types.NamespacedName{
+			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
 		},
-		{
-			name:     "Delete CR",
-			instance: makeCr(true, true, true),
-			exists:   []types.NamespacedName{},
-			doesNotExist: []types.NamespacedName{
-				{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-				{Name: "kafka-controller-manager", Namespace: "knative-sources"},
-			},
+		doesNotExist: []types.NamespacedName{
+			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 		},
-	}
+	}, {
+		name:     "Create CR with channel and source disabled",
+		instance: makeCr(false, false, false),
+		exists:   []types.NamespacedName{},
+		doesNotExist: []types.NamespacedName{
+			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+		},
+	}, {
+		name:     "Delete CR",
+		instance: makeCr(true, true, true),
+		exists:   []types.NamespacedName{},
+		doesNotExist: []types.NamespacedName{
+			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+		},
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -252,116 +246,112 @@ func TestInjectOwner(t *testing.T) {
 		obj    *unstructured.Unstructured
 		owner  mf.Owner
 		expect *unstructured.Unstructured
-	}{
-		{
-			name: "namespaced resource in same namespace",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Service",
-					"metadata": map[string]interface{}{
-						"name":      "default",
-						"namespace": "knative-eventing",
-					},
-				},
-			},
-			owner: &v1alpha1.KnativeKafka{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "KnativeKafka",
-					APIVersion: "operator.serverless.openshift.io/v1alpha1",
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "knative-kafka",
-					Namespace: "knative-eventing",
-					UID:       types.UID("deadbeef"),
-				},
-			},
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Service",
-					"metadata": map[string]interface{}{
-						"name":      "default",
-						"namespace": "knative-eventing",
-						"ownerReferences": []interface{}{map[string]interface{}{
-							"apiVersion":         "operator.serverless.openshift.io/v1alpha1",
-							"kind":               "KnativeKafka",
-							"name":               "knative-kafka",
-							"uid":                "deadbeef",
-							"blockOwnerDeletion": true,
-							"controller":         true,
-						}},
-					},
+	}{{
+		name: "namespaced resource in same namespace",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Service",
+				"metadata": map[string]interface{}{
+					"name":      "default",
+					"namespace": "knative-eventing",
 				},
 			},
 		},
-		{
-			name: "namespaced resource in different namespace",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Service",
-					"metadata": map[string]interface{}{
-						"name":      "default",
-						"namespace": "knative-sources",
-					},
-				},
+		owner: &v1alpha1.KnativeKafka{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "KnativeKafka",
+				APIVersion: "operator.serverless.openshift.io/v1alpha1",
 			},
-			owner: &v1alpha1.KnativeKafka{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "KnativeKafka",
-					APIVersion: "operator.serverless.openshift.io/v1alpha1",
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "knative-kafka",
-					Namespace: "knative-eventing",
-					UID:       types.UID("deadbeef"),
-				},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "knative-kafka",
+				Namespace: "knative-eventing",
+				UID:       types.UID("deadbeef"),
 			},
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Service",
-					"metadata": map[string]interface{}{
-						"name":      "default",
-						"namespace": "knative-sources",
-					},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Service",
+				"metadata": map[string]interface{}{
+					"name":      "default",
+					"namespace": "knative-eventing",
+					"ownerReferences": []interface{}{map[string]interface{}{
+						"apiVersion":         "operator.serverless.openshift.io/v1alpha1",
+						"kind":               "KnativeKafka",
+						"name":               "knative-kafka",
+						"uid":                "deadbeef",
+						"blockOwnerDeletion": true,
+						"controller":         true,
+					}},
 				},
 			},
 		},
-		{
-			name: "cluster-scoped resource",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "rbac.authorization.k8s.io/v1",
-					"kind":       "ClusterRole",
-					"metadata": map[string]interface{}{
-						"name": "default",
-					},
-				},
-			},
-			owner: &v1alpha1.KnativeKafka{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "KnativeKafka",
-					APIVersion: "operator.serverless.openshift.io/v1alpha1",
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "knative-kafka",
-					Namespace: "knative-eventing",
-					UID:       types.UID("deadbeef"),
-				},
-			},
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "rbac.authorization.k8s.io/v1",
-					"kind":       "ClusterRole",
-					"metadata": map[string]interface{}{
-						"name": "default",
-					},
+	}, {
+		name: "namespaced resource in different namespace",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Service",
+				"metadata": map[string]interface{}{
+					"name":      "default",
+					"namespace": "knative-sources",
 				},
 			},
 		},
-	}
+		owner: &v1alpha1.KnativeKafka{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "KnativeKafka",
+				APIVersion: "operator.serverless.openshift.io/v1alpha1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "knative-kafka",
+				Namespace: "knative-eventing",
+				UID:       types.UID("deadbeef"),
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Service",
+				"metadata": map[string]interface{}{
+					"name":      "default",
+					"namespace": "knative-sources",
+				},
+			},
+		},
+	}, {
+		name: "cluster-scoped resource",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "rbac.authorization.k8s.io/v1",
+				"kind":       "ClusterRole",
+				"metadata": map[string]interface{}{
+					"name": "default",
+				},
+			},
+		},
+		owner: &v1alpha1.KnativeKafka{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "KnativeKafka",
+				APIVersion: "operator.serverless.openshift.io/v1alpha1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "knative-kafka",
+				Namespace: "knative-eventing",
+				UID:       types.UID("deadbeef"),
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "rbac.authorization.k8s.io/v1",
+				"kind":       "ClusterRole",
+				"metadata": map[string]interface{}{
+					"name": "default",
+				},
+			},
+		},
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -385,105 +375,100 @@ func TestSetBootstrapServers(t *testing.T) {
 		obj              *unstructured.Unstructured
 		bootstrapServers string
 		expect           *unstructured.Unstructured
-	}{
-		{
-			name: "Update config-kafka",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
-				},
-			},
-			bootstrapServers: "example.com:1234",
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
-					"data": map[string]interface{}{
-						"bootstrapServers": "example.com:1234",
-					},
+	}{{
+		name: "Update config-kafka",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
 				},
 			},
 		},
-		{
-			name: "Update config-kafka - overwrite",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
-					"data": map[string]interface{}{
-						"bootstrapServers": "TO_BE_OVERWRITTEN",
-					},
+		bootstrapServers: "example.com:1234",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
 				},
-			},
-			bootstrapServers: "example.com:1234",
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
-					"data": map[string]interface{}{
-						"bootstrapServers": "example.com:1234",
-					},
+				"data": map[string]interface{}{
+					"bootstrapServers": "example.com:1234",
 				},
 			},
 		},
-		{
-			name: "Do not update other configmaps",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-foo",
-					},
+	}, {
+		name: "Update config-kafka - overwrite",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
 				},
-			},
-			bootstrapServers: "example.com:1234",
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "ConfigMap",
-					"metadata": map[string]interface{}{
-						"name": "config-foo",
-					},
+				"data": map[string]interface{}{
+					"bootstrapServers": "TO_BE_OVERWRITTEN",
 				},
 			},
 		},
-		{
-			name: "Do not update other resources",
-			obj: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Secret",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
+		bootstrapServers: "example.com:1234",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
 				},
-			},
-			bootstrapServers: "example.com:1234",
-			expect: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "v1",
-					"kind":       "Secret",
-					"metadata": map[string]interface{}{
-						"name": "config-kafka",
-					},
+				"data": map[string]interface{}{
+					"bootstrapServers": "example.com:1234",
 				},
 			},
 		},
-	}
+	}, {
+		name: "Do not update other configmaps",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+		bootstrapServers: "example.com:1234",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other resources",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+		bootstrapServers: "example.com:1234",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
