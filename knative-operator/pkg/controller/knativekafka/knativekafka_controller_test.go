@@ -211,33 +211,6 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	}
 }
 
-func makeCr(channel bool, source bool, deleted bool) *v1alpha1.KnativeKafka {
-	var deleteTime *metav1.Time
-	if deleted {
-		t := metav1.NewTime(time.Now())
-		deleteTime = &t
-	}
-
-	instance := v1alpha1.KnativeKafka{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              "knative-kafka",
-			Namespace:         "knative-eventing",
-			DeletionTimestamp: deleteTime,
-		},
-		Spec: v1alpha1.KnativeKafkaSpec{
-			Source: v1alpha1.Source{
-				Enabled: source,
-			},
-			Channel: v1alpha1.Channel{
-				Enabled:          channel,
-				BootstrapServers: "foo.bar.com",
-			},
-		},
-	}
-
-	return &instance
-}
-
 func TestInjectOwner(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
@@ -482,4 +455,31 @@ func TestSetBootstrapServers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func makeCr(channel bool, source bool, deleted bool) *v1alpha1.KnativeKafka {
+	var deleteTime *metav1.Time
+	if deleted {
+		t := metav1.NewTime(time.Now())
+		deleteTime = &t
+	}
+
+	instance := v1alpha1.KnativeKafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "knative-kafka",
+			Namespace:         "knative-eventing",
+			DeletionTimestamp: deleteTime,
+		},
+		Spec: v1alpha1.KnativeKafkaSpec{
+			Source: v1alpha1.Source{
+				Enabled: source,
+			},
+			Channel: v1alpha1.Channel{
+				Enabled:          channel,
+				BootstrapServers: "foo.bar.com",
+			},
+		},
+	}
+
+	return &instance
 }
