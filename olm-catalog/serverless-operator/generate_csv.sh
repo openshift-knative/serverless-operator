@@ -43,7 +43,7 @@ images=(
   ["BROKER_FILTER_IMAGE"]="${eventing}-broker-filter"
   ["DISPATCHER_IMAGE"]="${eventing}-channel-dispatcher"
 
-  ["KN_CLI_ARTIFACTS"]="${registry}/knative-v0.16.1:kn-cli-artifacts"
+  ["KN_CLI_ARTIFACTS"]="${registry}/knative-v0.17.1:kn-cli-artifacts"
 )
 
 function add_image {
