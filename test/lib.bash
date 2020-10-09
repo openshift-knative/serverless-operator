@@ -70,7 +70,7 @@ function downstream_serving_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
-  logger.info "Running tests"
+  logger.info "Running Serving tests"
   kubeconfigs+=("${KUBECONFIG}")
   for cfg in user*.kubeconfig; do
     kubeconfigs+=("$(pwd)/${cfg}")
@@ -83,6 +83,29 @@ function downstream_serving_e2e_tests {
   local failed=0
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+}
+
+function downstream_eventing_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Eventing tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
