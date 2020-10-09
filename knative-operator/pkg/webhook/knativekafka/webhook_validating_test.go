@@ -7,7 +7,6 @@ import (
 
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	. "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/testutil"
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -69,18 +68,6 @@ func TestInvalidNamespace(t *testing.T) {
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Error("The required namespace is wrong, but the request is allowed")
-	}
-}
-
-func TestInvalidVersion(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("MIN_OPENSHIFT_VERSION", "4.1.13")
-	validator := KnativeKafkaValidator{}
-	validator.InjectDecoder(&mockDecoder{ke1})
-	validator.InjectClient(fake.NewFakeClient(testutil.MockClusterVersion("3.2.0")))
-	result := validator.Handle(context.TODO(), types.Request{})
-	if result.Response.Allowed {
-		t.Error("The version is too low, but the request is allowed")
 	}
 }
 

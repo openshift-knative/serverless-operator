@@ -8,7 +8,6 @@ import (
 
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -62,7 +61,6 @@ func (v *KnativeKafkaValidator) validate(ctx context.Context, ke *operatorv1alph
 	log := common.Log.WithName("validate")
 	stages := []func(context.Context, *operatorv1alpha1.KnativeKafka) (bool, string, error){
 		v.validateNamespace,
-		v.validateVersion,
 		v.validateLoneliness,
 		v.validateShape,
 	}
@@ -100,11 +98,6 @@ var _ inject.Decoder = (*KnativeKafkaValidator)(nil)
 func (v *KnativeKafkaValidator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
-}
-
-// validate minimum openshift version
-func (v *KnativeKafkaValidator) validateVersion(ctx context.Context, _ *operatorv1alpha1.KnativeKafka) (bool, string, error) {
-	return webhookutil.ValidateOpenShiftVersion(ctx, v.client)
 }
 
 // validate required namespace, if any
