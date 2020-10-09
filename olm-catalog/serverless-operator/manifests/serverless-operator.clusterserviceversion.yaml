@@ -325,7 +325,7 @@ spec:
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa"
                       - name: "IMAGE_sugar-controller__controller"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-sugar-controller"
-                    image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
+                    image: registry.svc.ci.openshift.org/openshift/knative-v0.17.0:knative-operator
                     imagePullPolicy: IfNotPresent
                     name: knative-operator
                     ports:
