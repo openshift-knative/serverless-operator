@@ -19,7 +19,7 @@ images=(
   ["autoscaler-hpa"]="${serving}-autoscaler-hpa"
   ["controller"]="${serving}-controller"
   ["webhook"]="${serving}-webhook"
-  ["storage-version-migration-serving-0.16.0__migrate"]="${serving}-storage-version-migration"
+  ["storage-version-migration-serving-0.17.3__migrate"]="${serving}-storage-version-migration"
 
   ["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:1.1.0"
   ["3scale-kourier-control"]="${registry}/knative-v0.16.0:kourier"
