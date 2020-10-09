@@ -7,25 +7,18 @@ import (
 	"time"
 
 	mf "github.com/manifestival/manifestival"
-	v1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	admissiontypes "sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
 var (
@@ -33,57 +26,6 @@ var (
 		NamespacedName: types.NamespacedName{Namespace: "knative-eventing", Name: "knative-kafka"},
 	}
 )
-
-type fakeManager struct {
-	client client.Client
-	scheme *runtime.Scheme
-}
-
-func (*fakeManager) Add(manager.Runnable) error {
-	return nil
-}
-
-func (*fakeManager) SetFields(interface{}) error {
-	return nil
-}
-
-func (*fakeManager) Start(<-chan struct{}) error {
-	return nil
-}
-
-func (*fakeManager) GetConfig() *rest.Config {
-	return nil
-}
-
-func (f *fakeManager) GetScheme() *runtime.Scheme {
-	return f.scheme
-}
-
-func (*fakeManager) GetAdmissionDecoder() admissiontypes.Decoder {
-	return nil
-}
-
-func (f *fakeManager) GetClient() client.Client {
-	return f.client
-}
-
-func (*fakeManager) GetFieldIndexer() client.FieldIndexer {
-	return nil
-}
-
-func (*fakeManager) GetCache() cache.Cache {
-	return nil
-}
-
-func (*fakeManager) GetRecorder(name string) record.EventRecorder {
-	return nil
-}
-
-func (*fakeManager) GetRESTMapper() meta.RESTMapper {
-	return nil
-}
-
-var _ manager.Manager = &fakeManager{}
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
@@ -152,11 +94,23 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			initObjs := []runtime.Object{test.instance}
 
 			cl := fake.NewFakeClient(initObjs...)
-			mgr := &fakeManager{
-				client: cl,
-				scheme: s,
+
+			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACHANNEL_MANIFEST_PATH")))
+			if err != nil {
+				t.Fatalf("failed to load KafkaChannel manifest: %v", err)
 			}
-			r, err := newReconciler(mgr)
+
+			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASOURCE_MANIFEST_PATH")))
+			if err != nil {
+				t.Fatalf("failed to load KafkaSource manifest: %v", err)
+			}
+
+			r := &ReconcileKnativeKafka{
+				client:                  cl,
+				scheme:                  s,
+				rawKafkaChannelManifest: kafkaChannelManifest,
+				rawKafkaSourceManifest:  kafkaSourceManifest,
+			}
 
 			// Reconcile to intialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {
@@ -166,7 +120,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			// check if things that should exist is created
 			for _, d := range test.exists {
 				deployment := &appsv1.Deployment{}
-				err = cl.Get(context.TODO(), d, deployment)
+				err := cl.Get(context.TODO(), d, deployment)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
