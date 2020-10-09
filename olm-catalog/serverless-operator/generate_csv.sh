@@ -29,12 +29,6 @@ images=(
   ["eventing-webhook__eventing-webhook"]="${eventing}-webhook"
   ["storage-version-migration-eventing__migrate"]="${eventing}-storage-version-migration"
 
-  # the next three images have 0 replicas, they got removed, and point to 0.15 release images to migrate their deployments to 0
-  ["broker-controller__broker-controller"]="${registry}/knative-v0.15.2:knative-eventing-channel-broker"
-  ["broker-filter__filter"]="${registry}/knative-v0.15.2:knative-eventing-broker-filter"
-  ["broker-ingress__ingress"]="${registry}/knative-v0.15.2:knative-eventing-broker-ingress"
-
-  # the mt broker replaces the removed broker
   ["mt-broker-controller__mt-broker-controller"]="${eventing}-mtchannel-broker"
   ["mt-broker-filter__filter"]="${eventing}-mtbroker-filter"
   ["mt-broker-ingress__ingress"]="${eventing}-mtbroker-ingress"
