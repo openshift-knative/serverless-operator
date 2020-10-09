@@ -20,9 +20,10 @@ func init() {
 	operatorv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
 }
 
-var ke1 = &operatorv1alpha1.KnativeKafka{
+var defaultCR = &operatorv1alpha1.KnativeKafka{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "ke1",
+		Name:      "defaultCR",
+		Namespace: "knative-eventing",
 	},
 	Spec: operatorv1alpha1.KnativeKafkaSpec{
 		Source: operatorv1alpha1.Source{
@@ -33,9 +34,10 @@ var ke1 = &operatorv1alpha1.KnativeKafka{
 		},
 	},
 }
-var ke2 = &operatorv1alpha1.KnativeKafka{
+var duplicateCR = &operatorv1alpha1.KnativeKafka{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "ke2",
+		Name:      "duplicateCR",
+		Namespace: "knative-eventing",
 	},
 	Spec: operatorv1alpha1.KnativeKafkaSpec{
 		Source: operatorv1alpha1.Source{
@@ -46,9 +48,25 @@ var ke2 = &operatorv1alpha1.KnativeKafka{
 		},
 	},
 }
-var ke3 = &operatorv1alpha1.KnativeKafka{
+
+var invalidNamespaceCR = &operatorv1alpha1.KnativeKafka{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "ke3",
+		Name:      "invalidNamespaceCR",
+		Namespace: "FOO",
+	},
+	Spec: operatorv1alpha1.KnativeKafkaSpec{
+		Source: operatorv1alpha1.Source{
+			Enabled: false,
+		},
+		Channel: operatorv1alpha1.Channel{
+			Enabled: false,
+		},
+	},
+}
+var invalidShapeCR = &operatorv1alpha1.KnativeKafka{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "invalidShapeCR",
+		Namespace: "knative-eventing",
 	},
 	Spec: operatorv1alpha1.KnativeKafkaSpec{
 		Source: operatorv1alpha1.Source{
@@ -56,15 +74,28 @@ var ke3 = &operatorv1alpha1.KnativeKafka{
 		},
 		Channel: operatorv1alpha1.Channel{
 			Enabled: true,
+			// need to have bootstrapServers defined here!
 		},
 	},
+}
+
+func TestHappy(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
+	validator := KnativeKafkaValidator{}
+	validator.InjectDecoder(&mockDecoder{defaultCR})
+	validator.InjectClient(fake.NewFakeClient())
+	result := validator.Handle(context.TODO(), types.Request{})
+	if !result.Response.Allowed {
+		t.Error("The request is not allowed but should be")
+	}
 }
 
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 	validator := KnativeKafkaValidator{}
-	validator.InjectDecoder(&mockDecoder{ke1})
+	validator.InjectDecoder(&mockDecoder{invalidNamespaceCR})
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Error("The required namespace is wrong, but the request is allowed")
@@ -73,19 +104,21 @@ func TestInvalidNamespace(t *testing.T) {
 
 func TestLoneliness(t *testing.T) {
 	os.Clearenv()
+	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 	validator := KnativeKafkaValidator{}
-	validator.InjectDecoder(&mockDecoder{ke1})
-	validator.InjectClient(fake.NewFakeClient(ke2))
+	validator.InjectDecoder(&mockDecoder{defaultCR})
+	validator.InjectClient(fake.NewFakeClient(duplicateCR))
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
 		t.Errorf("Too many KnativeKafkas: %v", result.Response)
 	}
 }
 
-func TestShape(t *testing.T) {
+func TestInvalidShape(t *testing.T) {
 	os.Clearenv()
+	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 	validator := KnativeKafkaValidator{}
-	validator.InjectDecoder(&mockDecoder{ke3})
+	validator.InjectDecoder(&mockDecoder{invalidShapeCR})
 	validator.InjectClient(fake.NewFakeClient())
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
