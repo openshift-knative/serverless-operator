@@ -34,6 +34,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   prepare_knative_serving_tests || return $?
 
+  # Enable allow-zero-initial-scale before running e2e tests (for test/e2e/initial_scale_test.go)
+  oc -n ${KNATIVE_SERVING_VERSION} patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
+
   local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
@@ -56,20 +59,40 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
   
   # Prevent HPA from scaling to make HA tests more stable
-  local max_replicas
+  local max_replicas min_replicas
   max_replicas=$(oc get hpa activator -n "$SERVING_NAMESPACE" -ojsonpath='{.spec.maxReplicas}')
-  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec":{"maxReplicas":2}}' || failed=3
+  min_replicas=$(oc get hpa activator -n "$SERVING_NAMESPACE" -ojsonpath='{.spec.minReplicas}')
 
-  # Use sed as the -spoofinterval parameter is not available yet
-  sed "s/\(.*requestInterval =\).*/\1 10 * time.Millisecond/" -i test/vendor/knative.dev/pkg/test/spoof/spoof.go
+  # Keep this in sync with test/ha/ha.go
+  readonly REPLICAS=2
+  # TODO: Increase BUCKETS size more than 1 when operator supports configmap/config-leader-election setting.
+  readonly BUCKETS=1
 
+  # Changing the bucket count and cycling the controllers will leave around stale
+  # lease resources at the old sharding factor, so clean these up.
+  oc -n ${SERVING_NAMESPACE} delete leases --all
+
+  # Wait for a new leader Controller to prevent race conditions during service reconciliation
+  wait_for_leader_controller || failed=3
+
+  # Dump the leases post-setup.
+  oc get lease -n "${SERVING_NAMESPACE}"
+
+  # Give the controller time to sync with the rest of the system components.
+  sleep 30
+
+  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec": {"maxReplicas": '${REPLICAS}', "minReplicas": '${REPLICAS}'}}' || failed=4
+
+  # Run HA tests separately as they're stopping core Knative Serving pods
+  # Define short -spoofinterval to ensure frequent probing while stopping pods
   go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
+    -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     --resolvabledomain \
     --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" || failed=4
+    --imagetemplate "$image_template" || failed=5
 
   # Restore the original maxReplicas for any tests running after this test suite
-  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec":{"maxReplicas":'${max_replicas}'}}' || failed=5
+  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec": {"maxReplicas": '${max_replicas}', "minReplicas": '${min_replicas}'}}' || failed=6
 
   print_test_result ${failed}
 
