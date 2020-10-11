@@ -35,7 +35,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   prepare_knative_serving_tests || return $?
 
   # Enable allow-zero-initial-scale before running e2e tests (for test/e2e/initial_scale_test.go)
-  oc -n ${KNATIVE_SERVING_VERSION} patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
+  oc -n ${SERVING_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}' || return $?
 
   local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
