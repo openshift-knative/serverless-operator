@@ -34,8 +34,8 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: ">=1.9.0 <1.10.0"
-  name: serverless-operator.v1.10.0
+    olm.skipRange: ">=1.10.0 <1.11.0"
+  name: serverless-operator.v1.11.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -448,5 +448,5 @@ spec:
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-  replaces: serverless-operator.v1.9.0
-  version: 1.10.0
+  replaces: serverless-operator.v1.10.0
+  version: 1.11.0
