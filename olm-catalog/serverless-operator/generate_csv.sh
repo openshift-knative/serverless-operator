@@ -19,7 +19,7 @@ images=(
   ["autoscaler-hpa"]="${serving}-autoscaler-hpa"
   ["controller"]="${serving}-controller"
   ["webhook"]="${serving}-webhook"
-  ["storage-version-migration-serving-0.16.0__migrate"]="${serving}-storage-version-migration"
+  ["storage-version-migration-serving-0.17.3__migrate"]="${serving}-storage-version-migration"
 
   ["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:1.1.0"
   ["3scale-kourier-control"]="${registry}/knative-v0.16.0:kourier"
@@ -29,19 +29,13 @@ images=(
   ["eventing-webhook__eventing-webhook"]="${eventing}-webhook"
   ["storage-version-migration-eventing__migrate"]="${eventing}-storage-version-migration"
 
-  # the next three images have 0 replicas, they got removed, and point to 0.15 release images to migrate their deployments to 0
-  ["broker-controller__broker-controller"]="${registry}/knative-v0.15.2:knative-eventing-channel-broker"
-  ["broker-filter__filter"]="${registry}/knative-v0.15.2:knative-eventing-broker-filter"
-  ["broker-ingress__ingress"]="${registry}/knative-v0.15.2:knative-eventing-broker-ingress"
-
-  # the mt broker replaces the removed broker
   ["mt-broker-controller__mt-broker-controller"]="${eventing}-mtchannel-broker"
   ["mt-broker-filter__filter"]="${eventing}-mtbroker-filter"
   ["mt-broker-ingress__ingress"]="${eventing}-mtbroker-ingress"
   ["imc-controller__controller"]="${eventing}-channel-controller"
   ["imc-dispatcher__dispatcher"]="${eventing}-channel-dispatcher"
 
-  ["v0.16.0-broker-cleanup__brokers"]="${eventing}-broker-cleanup"
+  ["v0.17.0-pingsource-cleanup__pingsource"]="${eventing}-pingsource-cleanup"
   ["PING_IMAGE"]="${eventing}-ping"
   ["MT_PING_IMAGE"]="${eventing}-mtping"
   ["APISERVER_RA_IMAGE"]="${eventing}-apiserver-receive-adapter"
@@ -49,7 +43,7 @@ images=(
   ["BROKER_FILTER_IMAGE"]="${eventing}-broker-filter"
   ["DISPATCHER_IMAGE"]="${eventing}-channel-dispatcher"
 
-  ["KN_CLI_ARTIFACTS"]="${registry}/knative-v0.16.1:kn-cli-artifacts"
+  ["KN_CLI_ARTIFACTS"]="${registry}/knative-v0.17.1:kn-cli-artifacts"
 )
 
 function add_image {
