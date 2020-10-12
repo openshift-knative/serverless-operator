@@ -604,5 +604,5 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa"
     - name: "IMAGE_sugar-controller__controller"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-sugar-controller"
-  replaces: serverless-operator.v1.9.0
-  version: 1.10.0
+  replaces: serverless-operator.v1.10.0
+  version: 1.11.0
