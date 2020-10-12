@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	serviceName        = "knative-openshift-metrics"
-	serviceMonitorName = serviceName
+	serviceName                   = "knative-openshift-metrics"
+	serviceMonitorName            = serviceName
 	servingName                   = "knative-serving"
 	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
