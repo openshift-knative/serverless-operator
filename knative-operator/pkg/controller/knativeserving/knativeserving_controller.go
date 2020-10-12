@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -58,7 +59,17 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileKnativeServing{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	client := mgr.GetClient()
+
+	// Create required namespace first.
+	client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
+		Name: "knative-serving",
+	}})
+
+	return &ReconcileKnativeServing{
+		client: client,
+		scheme: mgr.GetScheme(),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler

@@ -4,6 +4,17 @@ metadata:
   annotations:
     operatorframework.io/suggested-namespace: "openshift-serverless"
     operatorframework.io/cluster-monitoring: "true"
+    operatorframework.io/initialization-resource: |-
+      {
+        "apiVersion": "operator.knative.dev/v1alpha1",
+        "kind": "KnativeServing",
+        "metadata": {
+          "namespace": "knative-serving",
+          "name": "knative-serving"
+        },
+        "spec": {
+        }
+      }
     alm-examples: |-
       [
         {
@@ -75,8 +86,8 @@ spec:
 
     # Prerequisites
     Knative Serving (and Knative Eventing respectively) can only be installed into the
-    `knative-serving` (`knative-eventing`) namespace. These namespaces must be created
-    before you create the `KnativeServing` (`KnativeEventing`) resource.
+    `knative-serving` (`knative-eventing`) namespace. These namespaces will be
+    automatically created when installing the operator.
 
     The components provided with the OpenShift Serverless operator require minimum cluster sizes on
     OpenShift Container Platform. For more information, see the documentation on [Getting started
