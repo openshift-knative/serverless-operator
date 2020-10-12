@@ -221,8 +221,8 @@ function delete_users {
 }
 
 function add_systemnamespace_label {
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
+  oc label namespace knative-serving knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function add_networkpolicy {
@@ -248,7 +248,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress

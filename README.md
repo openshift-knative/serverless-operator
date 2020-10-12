@@ -226,7 +226,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress
