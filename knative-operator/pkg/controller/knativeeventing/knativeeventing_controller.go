@@ -3,6 +3,7 @@ package knativeeventing
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
@@ -153,16 +154,10 @@ func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1al
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Dashboards")
-	if err := dashboard.Apply(dashboard.EventingBrokerDashboardPath, common.SetAnnotations(map[string]string{
-		common.EventingOwnerName:      instance.Name,
-		common.EventingOwnerNamespace: instance.Namespace,
-	}), r.client); err != nil {
+	if err := dashboard.Apply(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
 		return err
 	}
-	if err := dashboard.Apply(dashboard.EventingSourceDashboardPath, common.SetAnnotations(map[string]string{
-		common.EventingOwnerName:      instance.Name,
-		common.EventingOwnerNamespace: instance.Namespace,
-	}), r.client); err != nil {
+	if err := dashboard.Apply(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
 		return err
 	}
 	return nil
@@ -178,16 +173,10 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	}
 	log.Info("Running cleanup logic")
 	log.Info("Deleting eventing dashboards")
-	if err := dashboard.Delete(dashboard.EventingBrokerDashboardPath, common.SetAnnotations(map[string]string{
-		common.EventingOwnerName:      instance.Name,
-		common.EventingOwnerNamespace: instance.Namespace,
-	}), r.client); err != nil {
+	if err := dashboard.Delete(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard broker configmap: %w", err)
 	}
-	if err := dashboard.Delete(dashboard.EventingSourceDashboardPath, common.SetAnnotations(map[string]string{
-		common.EventingOwnerName:      instance.Name,
-		common.EventingOwnerNamespace: instance.Namespace,
-	}), r.client); err != nil {
+	if err := dashboard.Delete(dashboard.EventingSourceDashboardPathEnvVar, instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard filter configmap: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.

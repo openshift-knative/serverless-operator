@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard/sources"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/sources"
 )
 
 func init() {

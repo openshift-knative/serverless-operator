@@ -2,6 +2,7 @@ package knativeserving
 
 import (
 	"context"
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"os"
 	"testing"
 
@@ -112,9 +113,8 @@ var (
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv("DASHBOARD_MANIFEST_PATH", "dashboard/testdata/grafana-dash-knative.yaml")
+	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
 	os.Setenv("CONSOLECLIDOWNLOAD_MANIFEST_PATH", "consoleclidownload/testdata/console_cli_download_kn_resources.yaml")
-	os.Setenv("TEST_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative.yaml")
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
@@ -154,7 +154,7 @@ func TestKourierReconcile(t *testing.T) {
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
 			knService := &defaultKnService
-
+			monitor := &monitoringv1.ServiceMonitor{}
 			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
 			// Register operator types with the runtime scheme.
@@ -164,7 +164,7 @@ func TestKourierReconcile(t *testing.T) {
 			s.AddKnownTypes(consolev1.GroupVersion, ccd)
 			s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
 			s.AddKnownTypes(routev1.GroupVersion, &routev1.Route{})
-
+			scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: s}
 

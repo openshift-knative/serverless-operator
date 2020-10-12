@@ -375,6 +375,12 @@ spec:
                         value: "knative-eventing"
                       - name: REQUIRED_KAFKA_NAMESPACE
                         value: "knative-eventing"
+                      - name: SERVING_DASHBOARD_MANIFEST_PATH
+                        value: "deploy/resources/dashboards/grafana-dash-knative.yaml"
+                      - name: EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH
+                        value: "deploy/resources/dashboards/grafana-dash-knative-eventing-source.yaml"
+                      - name: EVENTING_BROKER_DASHBOARD_MANIFEST_PATH
+                        value: "deploy/resources/dashboards/grafana-dash-knative-eventing-broker.yaml"
                       - name: KOURIER_MANIFEST_PATH
                         value: deploy/resources/kourier/kourier-latest.yaml
                       - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH

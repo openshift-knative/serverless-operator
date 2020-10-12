@@ -44,8 +44,8 @@ var (
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv("TEST_SOURCE_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
-	os.Setenv("TEST_BROKER_DASHBOARD_MANIFEST_PATH", "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
+	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
+	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv(common.TestRolePath, "../dashboard/testdata/role_service_monitor.yaml")
 	os.Setenv(common.TestEventingBrokerServiceMonitorPath, "../dashboard/testdata/broker-service-monitors.yaml")
 	os.Setenv(common.TestMonitor, "true")
@@ -85,11 +85,13 @@ func TestEventingReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ke := &defaultKnativeEventing
 			ns := &dashboardNamespace
+			monitor := &monitoringv1.ServiceMonitor{}
 			initObjs := []runtime.Object{ke, ns, &eventingNamespace}
 
 			// Register operator types with the runtime scheme.
 			s := scheme.Scheme
 			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ke)
+			scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeEventing{client: cl, scheme: s}

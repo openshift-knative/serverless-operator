@@ -2,11 +2,11 @@ package sources
 
 import (
 	"context"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"os"
 	"testing"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -81,6 +81,8 @@ func TestSourceReconcile(t *testing.T) {
 	cl := fake.NewFakeClient(initObjs...)
 	// Register operator types with the runtime scheme.
 	s := scheme.Scheme
+	monitor := &monitoringv1.ServiceMonitor{}
+	scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
 	r := &ReconcileSourceDeployment{client: cl, scheme: s}
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(apiserverRequest); err != nil {

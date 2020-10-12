@@ -343,10 +343,7 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
-	return dashboard.Apply(dashboard.ServingDashboardPath, common.SetAnnotations(map[string]string{
-		common.ServingOwnerName:      instance.Name,
-		common.ServingOwnerNamespace: instance.Namespace,
-	}), r.client)
+	return dashboard.Apply(os.Getenv("SERVING_DASHBOARD_MANIFEST_PATH"), instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
@@ -370,10 +367,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	log.Info("Deleting dashboard")
-	if err := dashboard.Delete(dashboard.ServingDashboardPath, common.SetAnnotations(map[string]string{
-		common.ServingOwnerName:      instance.Name,
-		common.ServingOwnerNamespace: instance.Namespace,
-	}), r.client); err != nil {
+	if err := dashboard.Delete(os.Getenv(dashboard.ServingDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 
