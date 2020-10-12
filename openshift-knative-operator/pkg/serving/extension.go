@@ -2,21 +2,32 @@ package serving
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/clientset/versioned"
+	ocpclient "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client"
 	operator "knative.dev/operator/pkg/reconciler/common"
 )
 
+const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context) operator.Extension {
-	return &extension{}
+	return &extension{
+		ocpclient: ocpclient.Get(ctx),
+	}
 }
 
-type extension struct{}
+type extension struct {
+	ocpclient versioned.Interface
+}
 
 func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 	return nil
@@ -24,6 +35,23 @@ func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
+
+	// Fetch the proper domain.
+	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get("cluster", metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to fetch cluster config: %w", err)
+	}
+	domain := ingress.Spec.Domain
+	if domain != "" {
+		common.Configure(&ks.Spec.CommonSpec, "domain", domain, "")
+	}
+
+	// Attempt to locate kibana route which is available if openshift-logging has been configured
+	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get("kibana", metav1.GetOptions{})
+	if err == nil && len(route.Status.Ingress) > 0 && route.Status.Ingress[0].Host != "" {
+		common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+			fmt.Sprintf(loggingURLTemplate, route.Status.Ingress[0].Host))
+	}
 
 	// Override images.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
