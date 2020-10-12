@@ -57,6 +57,14 @@ Use the appropriate make targets or scripts in `hack`:
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
 
+### Updating the CSV
+
+To update images or version on the [CSV](./olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml), we use a [script](./olm-catalog/serverless-operator/generate_csv.sh) and a [template](./olm-catalog/serverless-operator/csv.template.yaml). Update those based on your needs, and generate the updated CSV like:
+
+```
+make csv
+```
+
 ### Running tests
 
 #### serverless-operator tests
