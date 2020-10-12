@@ -36,21 +36,17 @@ func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
 
-	// Fetch the proper domain.
-	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get("cluster", metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to fetch cluster config: %w", err)
-	}
-	domain := ingress.Spec.Domain
-	if domain != "" {
+	// Set the default host to the cluster's host.
+	if domain, err := e.fetchClusterHost(); err != nil {
+		return fmt.Errorf("failed to fetch cluster host: %w", err)
+	} else if domain != "" {
 		common.Configure(&ks.Spec.CommonSpec, "domain", domain, "")
 	}
 
 	// Attempt to locate kibana route which is available if openshift-logging has been configured
-	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get("kibana", metav1.GetOptions{})
-	if err == nil && len(route.Status.Ingress) > 0 && route.Status.Ingress[0].Host != "" {
+	if loggingHost := e.fetchLoggingHost(); loggingHost != "" {
 		common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
-			fmt.Sprintf(loggingURLTemplate, route.Status.Ingress[0].Host))
+			fmt.Sprintf(loggingURLTemplate, loggingHost))
 	}
 
 	// Override images.
@@ -92,4 +88,23 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {
 	return nil
+}
+
+// fetchClusterHost fetches the cluster's hostname from the cluster's ingress config.
+func (e *extension) fetchClusterHost() (string, error) {
+	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get("cluster", metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch cluster config: %w", err)
+	}
+	return ingress.Spec.Domain, nil
+}
+
+// fetchLoggingHost fetches the hostname of the Kibana installed by Openshift Logging,
+// if present.
+func (e *extension) fetchLoggingHost() string {
+	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get("kibana", metav1.GetOptions{})
+	if err != nil || len(route.Status.Ingress) == 0 {
+		return ""
+	}
+	return route.Status.Ingress[0].Host
 }
