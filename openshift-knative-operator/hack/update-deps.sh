@@ -10,12 +10,18 @@ set -o pipefail
 cd ${ROOT_DIR}
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.17" # This is for controlling the knative related release version.
+KN_VERSION="release-0.17"
+
+# Controls the version of OCP related dependencies.
+OCP_VERSION="release-4.5"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
+  "github.com/openshift/api@${OCP_VERSION}"
+
   "knative.dev/operator@${KN_VERSION}"
+  "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/test-infra@${KN_VERSION}"
 )
 
