@@ -42,8 +42,9 @@ function install_catalogsource {
   # Undo potential changes to the CSV to not pollute the repository.
   mv "${rootdir}/bkp.yaml" "$csv"
 
-  # HACK: Allow to run the index pod as root so it has necessary access.
-  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
+  # HACK: Allow to run the index pod as privileged so it has necessary access to run the
+  # podman commands.
+  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user privileged -z default
 
   # Install the index deployment.
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
@@ -64,6 +65,8 @@ spec:
       containers:
       - name: registry
         image: quay.io/openshift-knative/serverless-index:v1.14.3
+        securityContext:
+          privileged: true
         ports:
         - containerPort: 50051
           name: grpc
