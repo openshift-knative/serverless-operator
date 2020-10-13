@@ -116,7 +116,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: KOURIER_GATEWAY_NAMESPACE
-              value: "knative-serving-ingress"
+              value: "kourier-system"
           ports:
           - name: http2-xds
             containerPort: 18000

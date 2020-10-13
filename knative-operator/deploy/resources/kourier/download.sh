@@ -16,7 +16,6 @@ if [ $? != 0 ]; then
 fi
 
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
-sed -i -e 's/value: "kourier-system"/value: "knative-serving-ingress"/g'                 kourier-${KOURIER_VERSION}.yaml
 sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g'  kourier-${KOURIER_VERSION}.yaml
 
 if [ -L "kourier-latest.yaml" ]; then
