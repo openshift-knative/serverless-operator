@@ -129,6 +129,29 @@ func replaceDeploymentInstanceCount(availability *servingv1alpha1.HighAvailabili
 	}
 }
 
+// replaceEnvValue replaces KOURIER_GATEWAY_NAMESPACE value in Kourier controller.
+func replaceEnvValue(namespace string, scheme *runtime.Scheme) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" && u.GetName() == "3scale-kourier-control" {
+			deploy := &appsv1.Deployment{}
+			if err := scheme.Convert(u, deploy, nil); err != nil {
+				return err
+			}
+			containers := deploy.Spec.Template.Spec.Containers
+			for _, container := range containers {
+				if "3scale-"+container.Name == u.GetName() {
+					container.Env = common.AppendUnique(container.Env, "KOURIER_GATEWAY_NAMESPACE", namespace)
+					break
+				}
+			}
+			if err := scheme.Convert(deploy, u, nil); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
 // RawManifest returns kourier raw manifest without transformations
 func RawManifest(apiclient client.Client) (mf.Manifest, error) {
 	return mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
@@ -148,6 +171,7 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 			common.ServingOwnerNamespace: instance.Namespace,
 		}),
 		replaceDeploymentInstanceCount(instance.Spec.HighAvailability, scheme),
+		replaceEnvValue(namespace, scheme),
 	}
 	return manifest.Transform(transforms...)
 }
