@@ -1,0 +1,116 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: knativekafkas.operator.serverless.openshift.io
+spec:
+  group: operator.serverless.openshift.io
+  names:
+    kind: KnativeKafka
+    listKind: KnativeKafkaList
+    plural: knativekafkas
+    singular: knativekafka
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: KnativeKafka is the Schema for the knativekafkas API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            channel:
+              description: Allows configuration for KafkaChannel installation
+              properties:
+                bootstrapServers:
+                  description: BootstrapServers is comma separated string of bootstrapservers
+                    that the KafkaChannels will use
+                  type: string
+                enabled:
+                  description: Enabled defines if the KafkaChannel installation is
+                    enabled
+                  type: boolean
+              required:
+              - enabled
+              - bootstrapServers
+              type: object
+            source:
+              description: Allows configuration for KafkaSource installation
+              properties:
+                enabled:
+                  description: Enabled defines if the KafkaSource installation is
+                    enabled
+                  type: boolean
+              required:
+              - enabled
+              type: object
+          type: object
+        status:
+          properties:
+            annotations:
+              additionalProperties:
+                type: string
+              description: Annotations is additional Status fields for the Resource
+                to save some additional State as well as convey more information to
+                the user. This is roughly akin to Annotations on any k8s resource,
+                just the reconciler conveying richer information outwards.
+              type: object
+            conditions:
+              description: Conditions the latest available observations of a resource's
+                current state. +patchMergeKey=type +patchStrategy=merge
+              items:
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time the condition
+                      transitioned from one status to another. We use VolatileTime
+                      in place of metav1.Time to exclude this from creating equality.Semantic
+                      differences (all other things held constant).
+                    type: string
+                  message:
+                    description: A human readable message indicating details about
+                      the transition.
+                    type: string
+                  reason:
+                    description: The reason for the condition's last transition.
+                    type: string
+                  severity:
+                    description: Severity with which to treat failures of this type
+                      of condition. When this is not specified, it defaults to Error.
+                    type: string
+                  status:
+                    description: Status of the condition, one of True, False, Unknown.
+                      +required
+                    type: string
+                  type:
+                    description: Type of condition. +required
+                    type: string
+                required:
+                - type
+                - status
+                type: object
+              type: array
+            observedGeneration:
+              description: ObservedGeneration is the 'Generation' of the Service that
+                was last processed by the controller.
+              format: int64
+              type: integer
+            version:
+              description: The version of the installed release
+              type: string
+          type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
