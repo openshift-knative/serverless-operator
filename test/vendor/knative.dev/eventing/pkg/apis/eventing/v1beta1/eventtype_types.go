@@ -26,8 +26,10 @@ import (
 )
 
 // +genclient
+// +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// EventType represents a type of event that can be consumed from a Broker.
 type EventType struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -56,6 +58,7 @@ var (
 	// Check that we can create OwnerReferences to an EventType.
 	_ kmeta.OwnerRefable = (*EventType)(nil)
 
+	// Check that the type conforms to the duck Knative Resource shape.
 	_ duckv1.KRShaped = (*EventType)(nil)
 )
 
