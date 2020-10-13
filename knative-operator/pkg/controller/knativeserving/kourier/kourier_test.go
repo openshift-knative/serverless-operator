@@ -16,6 +16,7 @@ func TestReplaceImageFromEnvironment(t *testing.T) {
 
 	wantControlImage := "foo/bar:control"
 	wantGatewayImage := "foo/bar:gateway"
+	wantControlEnv := "knative-serving-ingress"
 	os.Setenv("IMAGE_3scale-kourier-control", wantControlImage)
 	os.Setenv("IMAGE_3scale-kourier-gateway", wantGatewayImage)
 
@@ -29,6 +30,11 @@ func TestReplaceImageFromEnvironment(t *testing.T) {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 
+	manifest, err = manifest.Transform(replaceEnvValue("knative-serving-ingress", scheme))
+	if err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+
 	for _, resource := range manifest.Resources() {
 
 		if resource.GetKind() == "Deployment" {
@@ -37,9 +43,19 @@ func TestReplaceImageFromEnvironment(t *testing.T) {
 				t.Fatalf("Failed to convert resource to deployment: %v", err)
 			}
 			image := deploy.Spec.Template.Spec.Containers[0].Image
+			envs := deploy.Spec.Template.Spec.Containers[0].Env
+			env := ""
+			for i := range envs {
+				if envs[i].Name == "KOURIER_GATEWAY_NAMESPACE" {
+					env = envs[i].Value
+				}
+			}
 
 			if deploy.Name == "3scale-kourier-control" && image != wantControlImage {
 				t.Errorf("Image = %s, want %s", image, wantControlImage)
+			}
+			if deploy.Name == "3scale-kourier-control" && env != wantControlEnv {
+				t.Errorf("KOURIER_GATEWAY_NAMESPACE = %s, want %s", env, wantControlEnv)
 			}
 
 			if deploy.Name == "3scale-kourier-gateway" && image != wantGatewayImage {
