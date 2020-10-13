@@ -15,9 +15,9 @@ declare -A images
 images=(
   ["queue-proxy"]="${serving}-queue"
   ["activator"]="${serving}-activator"
-  ["autoscaler"]="${serving}-autoscaler"
+  ["autoscaler"]="docker.io/markusthoemmes/autoscaler-12c0fa24db31956a7cfa673210e4fa13:srvks-644"
   ["autoscaler-hpa"]="${serving}-autoscaler-hpa"
-  ["controller"]="${serving}-controller"
+  ["controller"]="docker.io/markusthoemmes/controller-f6fdb41c6acbc726e29a3104ff2ef720:srvks-644"
   ["webhook"]="${serving}-webhook"
   ["storage-version-migration-serving-0.17.3__migrate"]="${serving}-storage-version-migration"
 
