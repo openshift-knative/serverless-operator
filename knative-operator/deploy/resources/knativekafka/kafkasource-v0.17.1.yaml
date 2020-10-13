@@ -445,20 +445,3 @@ metadata:
   namespace: knative-sources
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-leader-election-kafka
-  namespace: knative-sources
-data:
-  resourceLock: "leases"
-  leaseDuration: "15s"
-  renewDeadline: "10s"
-  retryPeriod: "2s"
-  _example: |
-    resourceLock: "leases"
-    leaseDuration: "15s"
-    renewDeadline: "10s"
-    retryPeriod: "2s"
-    enabledComponents: "kafka-controller"

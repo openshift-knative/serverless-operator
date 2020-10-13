@@ -10,6 +10,7 @@ var notAllowed = mf.Any(
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-tracing")),
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-observability")),
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-logging")),
+	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-leader-election-kafka")),
 )
 
 func TestUnallowedResourcesInManifest(t *testing.T) {
