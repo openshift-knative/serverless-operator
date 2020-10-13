@@ -47,10 +47,15 @@ pushed to your docker repository.
 
 Use the appropriate make targets or scripts in `hack`:
 
+<<<<<<< HEAD
 - `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
+=======
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing and Eventing-Contrib components.
+- `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving, Eventing and Eventing-Contrib components.
+>>>>>>> 7bf1c3f2... Enable Knative Kafka
 - `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
 - `make install-mesh`: Install service mesh operator and enable sidecar injections.
@@ -76,7 +81,7 @@ make csv
 - `make install-mesh test-e2e`: Scales, installs and runs E2E tests, including ServiceMesh integration tests
 - `make test-operator`: Runs unit and E2E tests.
 
-#### knative-serving and knative-eventing E2E tests
+#### knative-serving, knative-eventing and knative-eventing-contrib E2E tests
 
 - `make test-upstream-upgrade`: Installs a `previous` version of Serverless and
  runs Knative Serving upgrade tests. Requirements:
@@ -90,24 +95,28 @@ make csv
         [Knative Serving](https://github.com/openshift/knative-serving) sources from the
         desired branch. This should be checked out before running tests.
 - `make test-upstream-e2e-no-upgrade`: Installs the latest version of Serverless and
- runs Knative Serving and Knative Eventing E2E tests (without upgrades). Requirements:
+ runs Knative Serving, Knative Eventing and Knative Eventing-Contrib E2E tests (without upgrades). Requirements:
      1) Running OCP cluster.
-     2) Knative Serving and Knative Eventing images that the current Serverless operator depends
+     2) Knative Serving, Knative Eventing and Knative Eventing-Contrib images that the current Serverless operator depends
         on are published in CI registry. This requirement is automatically met
-        when the respective branches in [Knative Serving](https://github.com/openshift/knative-serving) and
-        [Knative Eventing](https://github.com/openshift/knative-eventing) are created, and their
+        when the respective branches in [Knative Serving](https://github.com/openshift/knative-serving),
+        [Knative Eventing](https://github.com/openshift/knative-eventing) and 
+        [Knative Eventing-Contrib](https://github.com/openshift/knative-eventing-contrib) are created, and their
         pre-submit CI checks run at least once.
      3) The path `${GOPATH}/src/knative.dev/serving` containing
         [Knative Serving](https://github.com/openshift/knative-serving) sources from the desired branch. 
         The path `${GOPATH}/src/knative.dev/eventing` containing
         [Knative Eventing](https://github.com/openshift/knative-eventing) sources from the desired branch. 
-        This should be checked out before running tests.
+        The path `${GOPATH}/src/knative.dev/eventing-contrib` containing
+        [Knative Eventing-Contrib](https://github.com/openshift/knative-eventing-contrib) sources from the desired branch.
+        These should be checked out before running tests.
 
-#### Individual tests from knative-serving and knative-eventing
+#### Individual tests from knative-serving, knative-eventing and knative-eventing-contrib
 
 There are targets for running individual tests in both
-[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/master/Makefile) and
-[Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/master/Makefile).
+[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/master/Makefile),
+[Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/master/Makefile) and
+[Knative Eventing-Contrib Makefile](https://github.com/openshift/knative-eventing-contrib/blob/master/Makefile).
 
 Example targets that can be run from the respective repositories (these targets all requires a running OCP 
 cluster and pre-installed Serverless):

@@ -22,6 +22,20 @@ metadata:
             "name": "knative-eventing"
           },
           "spec": {
+          },
+        },
+        {
+          "apiVersion": "operator.serverless.openshift.io/v1alpha1",
+          "kind": "KnativeKafka",
+          "metadata": {
+            "name": "knative-kafka"
+          },
+          "spec": {
+            source:
+              enabled: true
+            channel:
+              enabled: true
+              bootstrapServers: REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS
           }
         }
       ]
@@ -63,6 +77,15 @@ spec:
           - description: The version of Knative Eventing installed
             displayName: Version
             path: version
+        version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Kafka components
+        displayName: Knative Kafka
+        kind: KnativeKafka
+        name: knativekafkas.operator.serverless.openshift.io
+        statusDescriptors:
+        - description: The version of Knative Kafka installed
+          displayName: Version
+          path: version
         version: v1alpha1
   minKubeVersion: 1.15.0
   description: |-
@@ -242,6 +265,13 @@ spec:
               resources:
                 - knativeservings
                 - knativeservings/finalizers
+              verbs:
+                - '*'
+            - apiGroups:
+                - operator.serverless.openshift.io
+              resources:
+                - knativekafkas
+                - knativekafkas/finalizers
               verbs:
                 - '*'
           serviceAccountName: knative-openshift-ingress
@@ -538,6 +568,7 @@ spec:
     - knative
     - serving
     - eventing
+    - kafka
   links:
     - name: Documentation
       url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.5/html/serverless_applications/index
