@@ -176,7 +176,7 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	if err := dashboard.Delete(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard broker configmap: %w", err)
 	}
-	if err := dashboard.Delete(dashboard.EventingSourceDashboardPathEnvVar, instance, r.client); err != nil {
+	if err := dashboard.Delete(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard filter configmap: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
