@@ -2,14 +2,21 @@ package serving
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	configv1 "github.com/openshift/api/config/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+
+	ocpfake "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client/fake"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 )
 
 func TestReconcile(t *testing.T) {
@@ -17,9 +24,19 @@ func TestReconcile(t *testing.T) {
 	os.Setenv("IMAGE_default", "bar2")
 	os.Setenv("IMAGE_queue-proxy", "baz")
 
+	defaultIngress := &configv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cluster",
+		},
+		Spec: configv1.IngressSpec{
+			Domain: "routing.example.com",
+		},
+	}
+
 	cases := []struct {
 		name     string
 		in       *v1alpha1.KnativeServing
+		objs     []runtime.Object
 		expected *v1alpha1.KnativeServing
 	}{{
 		name:     "all nil",
@@ -52,6 +69,27 @@ func TestReconcile(t *testing.T) {
 			ks.Spec.ControllerCustomCerts.Name = "foo"
 		}),
 	}, {
+		name: "existing logging route",
+		in:   &v1alpha1.KnativeServing{},
+		objs: []runtime.Object{
+			defaultIngress,
+			&routev1.Route{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "openshift-logging",
+					Name:      "kibana",
+				},
+				Status: routev1.RouteStatus{
+					Ingress: []routev1.RouteIngress{{
+						Host: "logging.example.com",
+					}},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+				fmt.Sprintf(loggingURLTemplate, "logging.example.com"))
+		}),
+	}, {
 		name: "override image settings",
 		in: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
@@ -70,8 +108,14 @@ func TestReconcile(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			objs := c.objs
+			if objs == nil {
+				objs = []runtime.Object{defaultIngress}
+			}
+			ctx, _ := ocpfake.With(context.Background(), objs...)
+
 			ks := c.in.DeepCopy()
-			ext := NewExtension(context.Background())
+			ext := NewExtension(ctx)
 			ext.Reconcile(context.Background(), ks)
 
 			if !cmp.Equal(ks, c.expected) {
@@ -88,6 +132,9 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 				Config: v1alpha1.ConfigMapData{
 					"deployment": map[string]string{
 						"queueSidecarImage": "baz",
+					},
+					"domain": map[string]string{
+						"routing.example.com": "",
 					},
 					"network": map[string]string{
 						"domainTemplate": "{{.Name}}-{{.Namespace}}.{{.Domain}}",
