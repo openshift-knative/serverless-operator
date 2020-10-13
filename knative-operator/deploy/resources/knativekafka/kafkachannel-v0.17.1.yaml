@@ -500,7 +500,7 @@ metadata:
   name: kafka-ch-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: "v0.17.1"
 spec:
   replicas: 0
   selector:
@@ -512,7 +512,7 @@ spec:
       labels:
         messaging.knative.dev/channel: kafka-channel
         messaging.knative.dev/role: dispatcher
-        eventing.knative.dev/release: devel
+        contrib.eventing.knative.dev/release: "v0.17.1"
     spec:
       containers:
       - name: dispatcher

@@ -125,7 +125,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-contrib-kafka-source-observer
   labels:
-    eventing.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: "v0.17.1"
     duck.knative.dev/source: "true"
 rules:
 - apiGroups:
@@ -391,7 +391,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: kafkabindings.webhook.kafka.sources.knative.dev
   labels:
-    samples.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: "v0.17.1"
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -423,7 +423,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.kafka.sources.knative.dev
   labels:
-    serving.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: "v0.17.1"
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -555,7 +555,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: "v0.17.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
 data:
