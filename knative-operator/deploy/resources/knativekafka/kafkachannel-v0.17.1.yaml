@@ -502,7 +502,7 @@ metadata:
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       messaging.knative.dev/channel: kafka-channel
