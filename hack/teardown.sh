@@ -10,6 +10,7 @@ exitcode=0
 (( !exitcode )) && teardown_serverless || exitcode=2
 (( !exitcode )) && teardown_tracing || exitcode=3
 (( !exitcode )) && delete_catalog_source || exitcode=4
-(( !exitcode )) && delete_namespaces || exitcode=5
+(( !exitcode )) && uninstall_strimzi || exitcode=5
+(( !exitcode )) && delete_namespaces || exitcode=6
 
 exit $exitcode
