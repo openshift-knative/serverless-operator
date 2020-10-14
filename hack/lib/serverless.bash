@@ -126,7 +126,7 @@ function deploy_knativeserving_cr {
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Serving has been installed sucessfully.'
+  logger.success 'Knative Serving has been installed successfully.'
 }
 
 function deploy_knativeeventing_cr {
@@ -148,7 +148,7 @@ EOF
 
   timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Eventing has been installed sucessfully.'
+  logger.success 'Knative Eventing has been installed successfully.'
 }
 
 function teardown_serverless {
