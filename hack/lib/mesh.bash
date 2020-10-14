@@ -179,22 +179,22 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress
 EOF
 
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
+  oc label namespace knative-serving knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function remove_smmr {
   oc delete servicemeshmemberroll default                             -n istio-system  --ignore-not-found
   oc delete networkpolicy         allow-from-serving-system-namespace -n default       --ignore-not-found
 
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace- --overwrite         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace- --overwrite || true
+  oc label namespace knative-serving knative.openshift.io/system-namespace- --overwrite         || true
+  oc label namespace knative-serving-ingress knative.openshift.io/system-namespace- --overwrite || true
 }
 
 

@@ -82,7 +82,7 @@ func TestNetworkPolicy(t *testing.T) {
 				From: []networkingv1.NetworkPolicyPeer{{
 					NamespaceSelector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"serving.knative.openshift.io/system-namespace": "true",
+							"knative.openshift.io/system-namespace": "true",
 						},
 					},
 				}},
