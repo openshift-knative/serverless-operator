@@ -111,7 +111,7 @@ func TestEventingWebhookInclusionMode(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			common.MutateEventing(tc.ke)
 			if tc.ke.Spec.SinkBindingSelectionMode != tc.wanted {
-				t.Errorf(`Name: %s\n Expected "inclusion", Got: "%s"`, tc.name, tc.ke.Spec.SinkBindingSelectionMode)
+				t.Errorf(`Name: %s\n Expected "%s", Got: "%s"`, tc.name, tc.wanted, tc.ke.Spec.SinkBindingSelectionMode)
 			}
 		})
 	}
