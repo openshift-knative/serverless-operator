@@ -18,7 +18,14 @@ install-mesh:
 uninstall-mesh:
 	UNINSTALL_MESH="true" ./hack/mesh.sh
 
+install-strimzi:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+
+uninstall-strimzi:
+	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
+
 teardown:
+	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
 	./hack/teardown.sh
 
 # Test targets for CI operator.
@@ -28,6 +35,7 @@ test-unit:
 
 # Run only E2E tests from the current repo.
 test-e2e:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
@@ -35,14 +43,17 @@ test-operator: test-unit test-e2e
 
 # Run upstream E2E tests including upgrades (Serving, Eventing, ...).
 test-upstream-e2e:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.

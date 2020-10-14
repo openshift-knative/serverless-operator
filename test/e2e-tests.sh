@@ -21,12 +21,11 @@ failed=0
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-(( !failed )) && install_strimzi || failed=3
-(( !failed )) && serverless_operator_e2e_tests || failed=4
-(( !failed )) && ensure_serverless_installed || failed=5
+(( !failed )) && serverless_operator_e2e_tests || failed=2
+(( !failed )) && ensure_serverless_installed || failed=3
 # Run Knative Serving & Eventing downstream E2E tests.
-(( !failed )) && downstream_serving_e2e_tests || failed=6
-(( !failed )) && downstream_eventing_e2e_tests || failed=7
+(( !failed )) && downstream_serving_e2e_tests || failed=4
+(( !failed )) && downstream_eventing_e2e_tests || failed=5
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
