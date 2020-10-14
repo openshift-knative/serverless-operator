@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
+set -Eeuo pipefail
+
 root="$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Source the main vars file to get the serving/eventing version to be used.
 source "$root/hack/lib/vars.bash"
 
+# These files could in theory change from release to release, though their names should
+# be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
 eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-post-install-jobs)
 
