@@ -452,7 +452,7 @@ spec:
       serviceAccountName: kafka-ch-controller
       containers:
       - name: controller
-        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/channel/cmd/channel_controller@sha256:5fe9375f42e6353582acb5b70ae4470aef78f55d482d7809714085fc2e5b9782
+        image: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-channel-controller
         env:
         - name: CONFIG_LOGGING_NAME
           value: config-logging
@@ -465,7 +465,7 @@ spec:
         - name: CONFIG_LEADERELECTION_NAME
           value: config-leader-election-kafka
         - name: DISPATCHER_IMAGE
-          value: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/channel/cmd/channel_dispatcher@sha256:ce72feaed552343d67d55f3a0d47f77c220f4d02df8ad40261863ef1fe8b0fb2
+          value: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-channel-dispatcher
         ports:
         - containerPort: 9090
           name: metrics
@@ -499,7 +499,7 @@ spec:
     spec:
       containers:
       - name: dispatcher
-        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/channel/cmd/channel_dispatcher@sha256:ce72feaed552343d67d55f3a0d47f77c220f4d02df8ad40261863ef1fe8b0fb2
+        image: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-channel-dispatcher
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
@@ -606,7 +606,7 @@ spec:
       containers:
       - name: kafka-webhook
         terminationMessagePolicy: FallbackToLogsOnError
-        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/channel/cmd/webhook@sha256:bcaa442b69619c073e4e6b71a5a14a07e2b652bc8ba59002de4aff8d4b21472a
+        image: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-channel-webhook
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
