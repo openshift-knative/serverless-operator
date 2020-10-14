@@ -16,7 +16,7 @@ func MutateEventing(ke *eventingv1alpha1.KnativeEventing) {
 
 // eventingImagesFromEnviron overrides registry images
 func eventingImagesFromEnviron(ke *eventingv1alpha1.KnativeEventing) {
-	ke.Spec.Registry.Override = BuildImageOverrideMapFromEnviron(os.Environ())
+	ke.Spec.Registry.Override = BuildImageOverrideMapFromEnviron(os.Environ(), "EVENTING")
 
 	if defaultVal, ok := ke.Spec.Registry.Override["default"]; ok {
 		ke.Spec.Registry.Default = defaultVal

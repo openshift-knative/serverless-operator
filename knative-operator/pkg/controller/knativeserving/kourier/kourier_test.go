@@ -17,15 +17,15 @@ func TestReplaceImageFromEnvironment(t *testing.T) {
 	wantControlImage := "foo/bar:control"
 	wantGatewayImage := "foo/bar:gateway"
 	wantControlEnv := "knative-serving-ingress"
-	os.Setenv("IMAGE_3scale-kourier-control", wantControlImage)
-	os.Setenv("IMAGE_3scale-kourier-gateway", wantGatewayImage)
+	os.Setenv("IMAGE_SERVING_3scale-kourier-control", wantControlImage)
+	os.Setenv("IMAGE_SERVING_3scale-kourier-gateway", wantGatewayImage)
 
 	manifest, err := mfc.NewManifest("testdata/kourier-latest.yaml", api)
 	if err != nil {
 		t.Fatalf("Failed to read manifest: %v", err)
 	}
 
-	manifest, err = manifest.Transform(replaceImageFromEnvironment("IMAGE_", scheme))
+	manifest, err = manifest.Transform(replaceImageFromEnvironment("IMAGE_SERVING_", scheme))
 	if err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
