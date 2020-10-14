@@ -2,6 +2,12 @@
 cloud.google.com/go/compute/metadata
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
+# github.com/coreos/prometheus-operator v0.38.1
+## explicit
+github.com/coreos/prometheus-operator/pkg/apis/monitoring
+github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1
+github.com/coreos/prometheus-operator/pkg/client/versioned/scheme
+github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/evanphx/json-patch v4.9.0+incompatible
@@ -282,7 +288,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.17.6
+# k8s.io/client-go v12.0.0+incompatible => k8s.io/client-go v0.17.6
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/dynamic

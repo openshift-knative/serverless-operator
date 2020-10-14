@@ -1,4 +1,4 @@
-package healthdashboard
+package health
 
 import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = common.Log.WithName("healthdashboard-controller")
+var log = common.Log.WithName("health-controller")
 
 // Add creates a new Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -29,7 +29,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("healthdashboard-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("health-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}

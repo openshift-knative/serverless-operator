@@ -25,7 +25,7 @@ import (
 const (
 	knCLIDownload               = "kn"
 	knConsoleCLIDownloadService = "kn-cli"
-	deprecatedResourceName = "kn-cli-downloads"
+	deprecatedResourceName      = "kn-cli-downloads"
 )
 
 var log = common.Log.WithName("consoleclidownload")
@@ -149,8 +149,8 @@ func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclie
 	}
 	toDelete := []runtime.Object{
 		&appsv1.Deployment{ObjectMeta: metaName},
-		&corev1.Service{ObjectMeta:	metaName},
-		&v1.Route{ObjectMeta:	metaName},
+		&corev1.Service{ObjectMeta: metaName},
+		&v1.Route{ObjectMeta: metaName},
 	}
 	for _, obj := range toDelete {
 		if err := apiclient.Delete(context.TODO(), obj); err != nil && !apierrors.IsNotFound(err) {

@@ -128,7 +128,6 @@ func IstioVirtualServiceForKnativeServiceWithCustomDomain(service *servingv1.Ser
 	}
 }
 
-
 // IstioServiceEntryForKnativeServiceTowardsKourier creates an Istio ServiceEntry
 // for ksvc's svc hostname routing towards the knative kourier-internal gateway
 func IstioServiceEntryForKnativeServiceTowardsKourier(service *servingv1.Service) *unstructured.Unstructured {

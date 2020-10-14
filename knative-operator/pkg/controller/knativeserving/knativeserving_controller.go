@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -341,9 +341,9 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
-// installDashboard installs daashboard for OpenShift webconsole
+// installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
-	return dashboard.Apply(instance, r.client)
+	return dashboard.Apply(os.Getenv("SERVING_DASHBOARD_MANIFEST_PATH"), instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
@@ -367,7 +367,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	log.Info("Deleting dashboard")
-	if err := dashboard.Delete(instance, r.client); err != nil {
+	if err := dashboard.Delete(os.Getenv(dashboard.ServingDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 
