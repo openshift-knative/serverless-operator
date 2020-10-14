@@ -417,23 +417,6 @@ data:
   bootstrapServers: REPLACE_WITH_CLUSTER_URL
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-leader-election-kafka
-  namespace: knative-eventing
-data:
-  resourceLock: "leases"
-  leaseDuration: "15s"
-  renewDeadline: "10s"
-  retryPeriod: "2s"
-  _example: |
-    resourceLock: "leases"
-    leaseDuration: "15s"
-    renewDeadline: "10s"
-    retryPeriod: "2s"
-    enabledComponents: "kafkachannel-dispatcher,kafkachannel-controller"
----
-apiVersion: v1
 kind: Service
 metadata:
   name: kafka-webhook
