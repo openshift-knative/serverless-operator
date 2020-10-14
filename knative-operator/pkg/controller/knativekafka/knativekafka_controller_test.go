@@ -119,7 +119,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				}
 			}
 
-			// check if things that shouldnot exist is deleted
+			// check if things that shouldnt exist is deleted
 			for _, d := range test.doesNotExist {
 				deployment := &appsv1.Deployment{}
 				err = cl.Get(context.TODO(), d, deployment)

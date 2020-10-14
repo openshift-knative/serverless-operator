@@ -13,7 +13,7 @@ cd ${ROOT_DIR}
 KN_VERSION="release-0.17"
 
 # Controls the version of OCP related dependencies.
-# We currenctly stick to 4.4 as 4.5 needs 0.18 K8s clients, which will come via the 0.18
+# We currency stick to 4.4 as 4.5 needs 0.18 K8s clients, which will come via the 0.18
 # Knative release.
 OCP_VERSION="release-4.4"
 

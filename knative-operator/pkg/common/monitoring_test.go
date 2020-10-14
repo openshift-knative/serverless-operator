@@ -54,7 +54,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("Failed to get created role: %w", err)
 	}
 	if len(role.Rules) == 0 {
-		t.Error("Rules should be non emtpy")
+		t.Error("Rules should be non empty")
 	}
 	rb := v1.RoleBinding{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: "knative-serving-prometheus-k8s", Namespace: installedNS}, &rb)
@@ -62,7 +62,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("Failed to get created rolebinding: %w", err)
 	}
 	if len(rb.Subjects) == 0 {
-		t.Error("Subjects should be non emtpy")
+		t.Error("Subjects should be non empty")
 	}
 	sub := rb.Subjects[0]
 	if sub.Kind != "ServiceAccount" {
