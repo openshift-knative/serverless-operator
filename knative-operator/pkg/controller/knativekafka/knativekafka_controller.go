@@ -215,6 +215,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
+		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ()), log),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
