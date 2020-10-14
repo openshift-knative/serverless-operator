@@ -10,6 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../hack/lib/vars.bash"
 registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-$KNATIVE_SERVING_VERSION:knative-serving"
 eventing="${registry}/knative-$KNATIVE_EVENTING_VERSION:knative-eventing"
+eventing_contrib="${registry}/knative-$KNATIVE_EVENTING_CONTRIB_VERSION:knative-eventing-sources"
 
 declare -A images
 images=(
@@ -44,6 +45,17 @@ images=(
   ["DISPATCHER_IMAGE"]="${eventing}-channel-dispatcher"
 
   ["KN_CLI_ARTIFACTS"]="${registry}/knative-v0.17.2:kn-cli-artifacts"
+
+  ["kafka-controller-manager__manager"]="${eventing_contrib}-kafka-source-controller"
+  ["KAFKA_RA_IMAGE"]="${eventing_contrib}-kafka-source-adapter"
+
+  ["kafka-ch-controller__controller"]="${eventing_contrib}-kafka-channel-controller"
+  # TODO: clash!
+  # TODO: we have a separate Kafka dispatcher deployment for the global dispatcher
+  # TODO: following image will only be used in a namespaced dispatcher
+  # ["DISPATCHER_IMAGE"]="${eventing_contrib}-kafka-channel-dispatcher"
+  ["kafka-ch-dispatcher__dispatcher"]="${eventing_contrib}-kafka-channel-dispatcher"
+  ["kafka-webhook__kafka-webhook"]="${eventing_contrib}-kafka-channel-webhook"
 )
 
 function add_image {
