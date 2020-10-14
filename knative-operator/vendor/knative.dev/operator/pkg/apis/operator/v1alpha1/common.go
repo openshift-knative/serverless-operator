@@ -33,6 +33,9 @@ const (
 	// DeploymentsAvailable is a Condition indicating whether or not the Deployments of
 	// the respective component have come up successfully.
 	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
+	// VersionMigrationEligible is a Condition indicating whether or not the current version of
+	// Knative component is eligible to upgrade or downgrade to the specified version.
+	VersionMigrationEligible apis.ConditionType = "VersionMigrationEligible"
 )
 
 // KComponent is a common interface for accessing meta, spec and status of all known types.
@@ -54,6 +57,10 @@ type KComponentSpec interface {
 	GetRegistry() *Registry
 	// GetResources returns a list of container resource overrides.
 	GetResources() []ResourceRequirementsOverride
+	// GetVersion gets the version to be installed
+	GetVersion() string
+	// GetManifests gets the list of manifests, which should ultimately be installed
+	GetManifests() []Manifest
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -70,6 +77,12 @@ type KComponentStatus interface {
 	// it's waiting for deployments.
 	MarkDeploymentsNotReady()
 
+	// MarkVersionMigrationEligible marks the VersionMigrationEligible status as true.
+	MarkVersionMigrationEligible()
+	// MarkVersionMigrationNotEligible marks the VersionMigrationEligible status as false with
+	// the given message.
+	MarkVersionMigrationNotEligible(msg string)
+
 	// MarkDependenciesInstalled marks the DependenciesInstalled status as true.
 	MarkDependenciesInstalled()
 	// MarkDependencyInstalling marks the DependenciesInstalled status as false with the
@@ -83,6 +96,14 @@ type KComponentStatus interface {
 	GetVersion() string
 	// SetVersion sets the currently installed version of the component.
 	SetVersion(version string)
+
+	// GetManifests gets the url links of the manifests
+	GetManifests() []string
+	// SetManifests sets the url links of the manifests
+	SetManifests(manifests []string)
+
+	// IsReady return true if all conditions are satisfied
+	IsReady() bool
 }
 
 // CommonSpec unifies common fields and functions on the Spec.
@@ -99,6 +120,14 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// Override containers' resource requirements
+	// +optional
+	Version string `json:"version,omitempty"`
+
+	// A means to specify the manifests to install
+	// +optional
+	Manifests []Manifest `json:"manifests,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -114,6 +143,16 @@ func (c *CommonSpec) GetRegistry() *Registry {
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 	return c.Resources
+}
+
+// GetVersion implements KComponentSpec.
+func (c *CommonSpec) GetVersion() string {
+	return c.Version
+}
+
+// GetManifests implements KComponentSpec.
+func (c *CommonSpec) GetManifests() []Manifest {
+	return c.Manifests
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -149,4 +188,10 @@ type ResourceRequirementsOverride struct {
 	Container string `json:"container"`
 	// The desired ResourceRequirements
 	corev1.ResourceRequirements
+}
+
+// Manifest enables the user to specify the links to the manifests' URLs
+type Manifest struct {
+	// The link of the manifest URL
+	Url string `json:"URL"`
 }

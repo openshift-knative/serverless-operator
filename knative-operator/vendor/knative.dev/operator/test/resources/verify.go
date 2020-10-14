@@ -27,6 +27,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -55,27 +56,27 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 	ks.Spec = getTestKSOperatorCRSpec()
 
 	// verify the default config map
-	ks = verifyDefaultConfig(t, ks, defaultsConfigMapName, clients, names)
+	verifyDefaultConfig(t, ks, defaultsConfigMapName, clients, names)
 
 	// verify the logging config map
-	verifyLoggingConfig(t, ks, loggingConfigMapName, clients, names)
+	verifyLoggingConfig(t, loggingConfigMapName, clients, names)
 
 	// Delete a single key/value pair
-	ks = verifySingleKeyDeletion(t, ks, LoggingConfigKey, loggingConfigMapName, clients, names)
+	verifySingleKeyDeletion(t, LoggingConfigKey, loggingConfigMapName, clients, names)
 
 	// Use an empty map as the value
-	ks = verifyEmptyKey(t, ks, DefaultsConfigKey, defaultsConfigMapName, clients, names)
+	verifyEmptyKey(t, DefaultsConfigKey, defaultsConfigMapName, clients, names)
 
 	// Now remove the config from the spec and update
-	verifyEmptySpec(t, ks, loggingConfigMapName, clients, names)
+	verifyEmptySpec(t, loggingConfigMapName, clients, names)
 }
 
-func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients,
-	names test.ResourceNames) *v1alpha1.KnativeServing {
-	ks, err := clients.KnativeServing().Update(ks)
+func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
+	_, err := clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmaps have been updated
 	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		return m["revision-timeout-seconds"] == "200"
@@ -83,11 +84,9 @@ func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConf
 	if err != nil {
 		t.Fatalf("The operator failed to update %s configmap", defaultsConfigMapName)
 	}
-	return ks
 }
 
-func verifyLoggingConfig(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfigMapName string, clients *test.Clients,
-	names test.ResourceNames) {
+func verifyLoggingConfig(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
 	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		return m["loglevel.controller"] == "debug" && m["loglevel.autoscaler"] == "debug"
 	})
@@ -96,13 +95,18 @@ func verifyLoggingConfig(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfi
 	}
 }
 
-func verifySingleKeyDeletion(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfigKey string,
-	loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) *v1alpha1.KnativeServing {
+func verifySingleKeyDeletion(t *testing.T, loggingConfigKey string, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
+	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	if err != nil || ks.Spec.Config[loggingConfigKey]["loglevel.autoscaler"] == "" {
+		t.Fatalf("Existing KS operator CR lacks proper key: %v", ks.Spec.Config)
+	}
+
 	delete(ks.Spec.Config[loggingConfigKey], "loglevel.autoscaler")
-	ks, err := clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmap has been updated
 	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, autoscalerKeyExists := m["loglevel.autoscaler"]
@@ -112,16 +116,20 @@ func verifySingleKeyDeletion(t *testing.T, ks *v1alpha1.KnativeServing, loggingC
 	if err != nil {
 		t.Fatalf("The operator failed to update %s configmap", loggingConfigMapName)
 	}
-	return ks
 }
 
-func verifyEmptyKey(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigKey string,
-	defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) *v1alpha1.KnativeServing {
+func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
+	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+	}
+
 	ks.Spec.Config[defaultsConfigKey] = map[string]string{}
-	ks, err := clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmap has been updated and does not contain any keys except "_example"
 	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, exampleExists := m["_example"]
@@ -130,16 +138,18 @@ func verifyEmptyKey(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigKey
 	if err != nil {
 		t.Fatalf("The operator failed to update %s configmap", defaultsConfigMapName)
 	}
-	return ks
 }
 
-func verifyEmptySpec(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfigMapName string, clients *test.Clients,
-	names test.ResourceNames) {
+func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
+	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+	}
 	ks.Spec = v1alpha1.KnativeServingSpec{}
 	if _, err := clients.KnativeServing().Update(ks); err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
-	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, exists := m["loglevel.controller"]
 		return !exists
 	})
@@ -214,7 +224,7 @@ func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 	}
 
 	// verify all but the CRD's and the Namespace are gone
-	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.Any(mf.ByKind("Namespace")))).Resources() {
+	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.ByKind("Namespace"))).Resources() {
 		if _, err := m.Client.Get(&u); !apierrs.IsNotFound(err) {
 			t.Fatalf("The %s %s failed to be deleted: %v", u.GetKind(), u.GetName(), err)
 		}
@@ -238,9 +248,17 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 	return nil
 }
 
+// AssertKnativeObsoleteResource verifies if all obsolete resources disappear in the cluster
+func AssertKnativeObsoleteResource(t *testing.T, clients *test.Clients, namespace string, obsResources []unstructured.Unstructured) {
+	if err := WaitForKnativeResourceState(clients, namespace, obsResources, t.Logf,
+		IsKnativeObsoleteResourceGone); err != nil {
+		t.Fatalf("Knative obsolete resources failed to be removed: %v", err)
+	}
+}
+
 // AssertKnativeDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if err := WaitForKnativeDeploymentState(clients, namespace, expectedDeployments, t.Logf,
+func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, version string, expectedDeployments []string) {
+	if err := WaitForKnativeDeploymentState(clients, namespace, version, expectedDeployments, t.Logf,
 		IsKnativeDeploymentReady); err != nil {
 		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
 	}
@@ -319,7 +337,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 		t.Fatal(err)
 	}
 	// verify all but the CRD's and the Namespace are gone
-	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.Any(mf.ByKind("Namespace")))).Resources() {
+	for _, u := range m.Filter(mf.NoCRDs, mf.Not(mf.ByKind("Namespace"))).Resources() {
 		if _, err := m.Client.Get(&u); !apierrs.IsNotFound(err) {
 			t.Fatalf("The %s %s failed to be deleted: %v", u.GetKind(), u.GetName(), err)
 		}
