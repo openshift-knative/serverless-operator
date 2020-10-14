@@ -165,7 +165,7 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 	}
 	transforms := []mf.Transformer{
 		mf.InjectNamespace(namespace),
-		replaceImageFromEnvironment("IMAGE_", scheme),
+		replaceImageFromEnvironment("IMAGE_SERVING_", scheme),
 		common.SetAnnotations(map[string]string{
 			common.ServingOwnerName:      instance.Name,
 			common.ServingOwnerNamespace: instance.Namespace,
