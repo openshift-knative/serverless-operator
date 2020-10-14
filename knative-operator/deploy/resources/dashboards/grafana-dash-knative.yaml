@@ -1136,12 +1136,12 @@ data:
                 "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$deployment.*\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
-                "legendFormat": "{{received bytes}}",
+                "legendFormat": "received bytes",
                 "refId": "A"
               },
               {
                 "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$deployment.*\"}[1m]))",
-                "legendFormat": "{{transmitted bytes}}",
+                "legendFormat": "transmitted bytes",
                 "refId": "B"
               }
             ],
@@ -1231,14 +1231,14 @@ data:
                 "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$deployment.*\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
-                "legendFormat": "{{receive errors}}",
+                "legendFormat":  "receive errors",
                 "refId": "A"
               },
               {
                 "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$deployment.*\"}[1m]))",
                 "format": "time_series",
                 "instant": false,
-                "legendFormat": "{{transmit errors}}",
+                "legendFormat": "transmit errors",
                 "refId": "B"
               }
             ],
