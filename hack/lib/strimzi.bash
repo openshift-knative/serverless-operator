@@ -13,7 +13,7 @@ function install_strimzi {
   oc -n kafka apply -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/${strimzi_version}/examples/kafka/kafka-persistent.yaml"
 
   header "Waiting for Strimzi to become ready"
-  kubectl wait deployment --all --timeout=-1s --for=condition=Available -n kafka
+  oc wait deployment --all --timeout=-1s --for=condition=Available -n kafka
 }
 
 function uninstall_strimzi {

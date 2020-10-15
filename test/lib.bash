@@ -93,6 +93,9 @@ function downstream_serving_e2e_tests {
   return $failed
 }
 
+function downstream_knative_kafka_e2e_tests {
+}
+
 function downstream_eventing_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
