@@ -331,8 +331,6 @@ spec:
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-broker.yaml"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
-                    - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
-                      value: deploy/resources/console_cli_download_kn_resources.yaml
                     - name: KAFKACHANNEL_MANIFEST_PATH
                       value: deploy/resources/knativekafka/kafkachannel-latest.yaml
                     - name: KAFKASOURCE_MANIFEST_PATH
