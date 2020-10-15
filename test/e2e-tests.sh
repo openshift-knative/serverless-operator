@@ -21,15 +21,19 @@ failed=0
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-(( !failed )) && install_strimzi || failed=2
-(( !failed )) && serverless_operator_e2e_tests || failed=3
-(( !failed )) && ensure_serverless_installed || failed=4
+(( !failed )) && serverless_operator_e2e_tests || failed=4
+(( !failed )) && ensure_serverless_installed || failed=5
+if [[ $TEST_KNATIVE_KAFKA == true ]]; then
+  (( !failed )) && install_strimzi || failed=2
+  (( !failed )) && serverless_operator_kafka_e2e_tests || failed=3
+ fi
+
 # Run Knative Serving & Eventing downstream E2E tests.
-(( !failed )) && downstream_serving_e2e_tests || failed=5
-(( !failed )) && downstream_eventing_e2e_tests || failed=6
+(( !failed )) && downstream_serving_e2e_tests || failed=6
+(( !failed )) && downstream_eventing_e2e_tests || failed=7
 
 # if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-#  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=7
+#  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=8
 # fi
 
 (( failed )) && dump_state
