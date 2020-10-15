@@ -19,40 +19,32 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
-	"go.uber.org/zap"
-	"k8s.io/client-go/kubernetes"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-type Platforms []func(kubernetes.Interface, *zap.SugaredLogger) (mf.Transformer, error)
-
-// pfKey is used as the key for associating Platforms with the context.
-type pfKey struct{}
-
-func (platforms Platforms) Transformers(kubeClientSet kubernetes.Interface, slog *zap.SugaredLogger) ([]mf.Transformer, error) {
-	log := slog.Named("extensions")
-	result := make([]mf.Transformer, 0, len(platforms))
-	for _, fn := range platforms {
-		transformer, err := fn(kubeClientSet, log)
-		if err != nil {
-			return result, err
-		}
-		if transformer != nil {
-			result = append(result, transformer)
-		}
-	}
-	return result, nil
+// Extension enables platform-specific features
+type Extension interface {
+	Transformers(v1alpha1.KComponent) []mf.Transformer
+	Reconcile(context.Context, v1alpha1.KComponent) error
+	Finalize(context.Context, v1alpha1.KComponent) error
 }
 
-// WithPlatforms attaches the given Platforms to the provided context.
-func WithPlatforms(ctx context.Context, pf Platforms) context.Context {
-	return context.WithValue(ctx, pfKey{}, pf)
+// ExtensionGenerator creates an Extension from a Context
+type ExtensionGenerator func(context.Context) Extension
+
+// NoPlatform "generates" a NilExtension
+func NoExtension(context.Context) Extension {
+	return nilExtension{}
 }
 
-// GetPlatforms extracts the Platforms from the context.
-func GetPlatforms(ctx context.Context) Platforms {
-	untyped := ctx.Value(pfKey{})
-	if untyped == nil {
-		return nil
-	}
-	return untyped.(Platforms)
+type nilExtension struct{}
+
+func (nilExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
+	return nil
+}
+func (nilExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
+	return nil
+}
+func (nilExtension) Finalize(context.Context, v1alpha1.KComponent) error {
+	return nil
 }

@@ -24,6 +24,36 @@ func TestReconcile(t *testing.T) {
 		name:     "all nil",
 		in:       &v1alpha1.KnativeEventing{},
 		expected: ke(),
+	}, {
+		name: "With inclusion sinkbinding setting",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				SinkBindingSelectionMode: "inclusion",
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Spec.SinkBindingSelectionMode = "inclusion"
+		}),
+	}, {
+		name: "With exclusion sinkbinding setting",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				SinkBindingSelectionMode: "exclusion",
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Spec.SinkBindingSelectionMode = "exclusion"
+		}),
+	}, {
+		name: "With empty sinkbinding setting",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				SinkBindingSelectionMode: "",
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Spec.SinkBindingSelectionMode = "inclusion"
+		}),
 	}}
 
 	for _, c := range cases {
@@ -42,6 +72,7 @@ func TestReconcile(t *testing.T) {
 func ke(mods ...func(*v1alpha1.KnativeEventing)) *v1alpha1.KnativeEventing {
 	base := &v1alpha1.KnativeEventing{
 		Spec: v1alpha1.KnativeEventingSpec{
+			SinkBindingSelectionMode: "inclusion",
 			CommonSpec: v1alpha1.CommonSpec{
 				Registry: v1alpha1.Registry{
 					Default: "bar2",
