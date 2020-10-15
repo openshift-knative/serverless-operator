@@ -2,15 +2,16 @@ package common
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 const installedNS = "openshift-serverless"
@@ -28,15 +29,14 @@ var (
 )
 
 func init() {
-	os.Setenv(installedNamespaceEnvKey, installedNS)
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
-	os.Setenv(testRolePath, "testdata/role_service_monitor.yaml")
+	os.Setenv(TestRolePath, "testdata/role_service_monitor.yaml")
 }
 
 func TestSetupMonitoringRequirements(t *testing.T) {
 	initObjs := []runtime.Object{&operatorNamespace, &serverlessDeployment}
 	cl := fake.NewFakeClient(initObjs...)
-	err := SetupMonitoringRequirements(cl)
+	err := SetupMonitoringRequirements(cl, &serverlessDeployment)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}
@@ -54,7 +54,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("Failed to get created role: %w", err)
 	}
 	if len(role.Rules) == 0 {
-		t.Error("Rules should be non emtpy")
+		t.Error("Rules should be non empty")
 	}
 	rb := v1.RoleBinding{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: "knative-serving-prometheus-k8s", Namespace: installedNS}, &rb)
@@ -62,7 +62,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("Failed to get created rolebinding: %w", err)
 	}
 	if len(rb.Subjects) == 0 {
-		t.Error("Subjects should be non emtpy")
+		t.Error("Subjects should be non empty")
 	}
 	sub := rb.Subjects[0]
 	if sub.Kind != "ServiceAccount" {

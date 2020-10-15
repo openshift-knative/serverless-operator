@@ -1,11 +1,11 @@
 ---
 project:
   name: serverless-operator
-  version: 1.10.0
+  version: 1.11.0
 
 olm:
-  replaces: 1.9.0
-  skipRange: '>=1.9.0 <1.10.0'
+  replaces: 1.10.0
+  skipRange: '>=1.10.0 <1.11.0'
   channels:
     default: '4.3'
     list:
@@ -21,10 +21,10 @@ requirements:
     - '4.6'
 
 dependencies:
-  serving: 0.16.0
-  eventing: 0.16.0
+  serving: 0.17.3
+  eventing: 0.17.2
   kourier: 0.16.0
-  cli: 0.16.1
+  cli: 0.17.2
   maistra: 1.1.0
 
 deprecated:

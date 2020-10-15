@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	monclientv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	configV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	consolev1 "github.com/openshift/client-go/console/clientset/versioned/typed/console/v1"
 	routev1 "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
@@ -15,6 +16,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	eventingversioned "knative.dev/eventing/pkg/client/clientset/versioned"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
@@ -33,12 +36,14 @@ type Clients struct {
 	Kube               *kubernetes.Clientset
 	Operator           operatorv1alpha1.OperatorV1alpha1Interface
 	Serving            *servingversioned.Clientset
+	Eventing           *eventingversioned.Clientset
 	OLM                olmversioned.Interface
 	Dynamic            dynamic.Interface
 	Config             *rest.Config
 	Route              routev1.RouteV1Interface
 	ProxyConfig        configV1.ConfigV1Interface
 	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
+	MonitoringClient   monclientv1.MonitoringV1Interface
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -117,6 +122,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Dynamic = dynamic.NewForConfigOrDie(cfg)
 	clients.Operator = operatorversioned.NewForConfigOrDie(cfg).OperatorV1alpha1()
 	clients.Serving = servingversioned.NewForConfigOrDie(cfg)
+	clients.Eventing = eventingversioned.NewForConfigOrDie(cfg)
 	clients.Route = routev1.NewForConfigOrDie(cfg)
 	clients.ProxyConfig = configV1.NewForConfigOrDie(cfg)
 
@@ -129,6 +135,8 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	clients.MonitoringClient = monclientv1.NewForConfigOrDie(cfg)
 
 	return clients, nil
 }

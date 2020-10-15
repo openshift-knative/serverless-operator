@@ -30,7 +30,7 @@ func ApplyEnvironmentToDeployment(namespace, name string, env map[string]string,
 		for k, v := range env {
 			// If value is not empty then update deployment controller with env
 			if v != "" {
-				deploy.Spec.Template.Spec.Containers[c].Env = appendUnique(deploy.Spec.Template.Spec.Containers[c].Env, k, v)
+				deploy.Spec.Template.Spec.Containers[c].Env = AppendUnique(deploy.Spec.Template.Spec.Containers[c].Env, k, v)
 			} else {
 				// If value is empty then remove those keys from deployment controller
 				deploy.Spec.Template.Spec.Containers[c].Env = remove(deploy.Spec.Template.Spec.Containers[c].Env, k)
@@ -58,7 +58,7 @@ func remove(env []v1.EnvVar, key string) []v1.EnvVar {
 	return env
 }
 
-func appendUnique(orgEnv []v1.EnvVar, key, value string) []v1.EnvVar {
+func AppendUnique(orgEnv []v1.EnvVar, key, value string) []v1.EnvVar {
 	// Set the value if the key is already present.
 	for i := range orgEnv {
 		if orgEnv[i].Name == key {

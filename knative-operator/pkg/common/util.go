@@ -5,6 +5,11 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -68,13 +73,20 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 	return overrideMap
 }
 
-// SetOwnerAnnotations is a transformer to set owner annotations on given object
-func SetOwnerAnnotations(instance *operatorv1alpha1.KnativeServing) mf.Transformer {
+// SetAnnotations is a transformer to set annotations on given object
+// The existing annotations are kept as is, except they are overridden with the
+// annotations given as the argument.
+func SetAnnotations(annotations map[string]string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			ServingOwnerName:      instance.Name,
-			ServingOwnerNamespace: instance.Namespace,
-		})
+		if u.GetAnnotations() == nil {
+			u.SetAnnotations(annotations)
+		} else {
+			res := u.GetAnnotations()
+			for key, value := range annotations {
+				res[key] = value
+			}
+			u.SetAnnotations(res)
+		}
 		return nil
 	}
 }
@@ -102,4 +114,38 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 		},
 	})
 	return
+}
+
+// common function to enqueue reconcile requests for resources
+func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
+	enqueueRequests := func() handler.ToRequestsFunc {
+		return func(obj handler.MapObject) []reconcile.Request {
+			annotations := obj.Meta.GetAnnotations()
+			ownerNamespace := annotations[ownerNamespaceAnnotationKey]
+			ownerName := annotations[ownerNameAnnotationKey]
+			if ownerNamespace != "" && ownerName != "" {
+				return []reconcile.Request{{
+					NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+				}}
+			}
+			return nil
+		}
+	}
+	return &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests()}
+}
+
+func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind]runtime.Object {
+	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
+
+	for _, manifest := range manifests {
+		resources := manifest.Resources()
+
+		for i := range resources {
+			// it is ok to overwrite existing since we are only interested
+			// in the types of the resources, not the instances
+			gvkToResource[resources[i].GroupVersionKind()] = &resources[i]
+		}
+	}
+
+	return gvkToResource
 }

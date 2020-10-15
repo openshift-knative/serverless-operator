@@ -15,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -35,6 +35,8 @@ const (
 
 var log = logf.Log.WithName("controller_knativekafka")
 
+type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
+
 // Add creates a new KnativeKafka Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -47,12 +49,12 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
-	kafkaChannelManifest, err := rawKafkaChannelManifest(mgr.GetClient())
+	kafkaChannelManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACHANNEL_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
-	kafkaSourceManifest, err := rawKafkaSourceManifest(mgr.GetClient())
+	kafkaSourceManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASOURCE_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
@@ -80,35 +82,10 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.KafkaOwnerNamespace]
-		ownerName := annotations[common.KafkaOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
-
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
-
-	// Watch for Knative KafkaChannel resources.
-	kafkaChannelResources := r.rawKafkaChannelManifest.Resources()
-	for i := range kafkaChannelResources {
-		gvkToResource[kafkaChannelResources[i].GroupVersionKind()] = &kafkaChannelResources[i]
-	}
-
-	// Watch for Knative KafkaSource resources.
-	kafkaSourceResources := r.rawKafkaSourceManifest.Resources()
-	for i := range kafkaSourceResources {
-		gvkToResource[kafkaSourceResources[i].GroupVersionKind()] = &kafkaSourceResources[i]
-	}
+	gvkToResource := common.BuildGVKToResourceMap(r.rawKafkaChannelManifest, r.rawKafkaSourceManifest)
 
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -176,21 +153,49 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
-	stages := []func(*operatorv1alpha1.KnativeKafka) error{
-		// TODO r.configure,
-		r.ensureFinalizers,
-		r.installKnativeKafka,
+	// install the components that are enabled
+	if err := r.executeInstallStages(instance); err != nil {
+		return err
 	}
-	for _, stage := range stages {
-		if err := stage(instance); err != nil {
-			return err
-		}
+	// delete the components that are disabled
+	if err := r.executeDeleteStages(instance); err != nil {
+		return err
 	}
 	return nil
 }
 
+func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, manifestBuildEnabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	stages := []stage{
+		r.ensureFinalizers,
+		r.transform,
+		r.apply,
+		r.checkDeployments,
+	}
+
+	return executeStages(instance, manifest, stages)
+}
+
+func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
+	manifest, err := r.buildManifest(instance, manifestBuildDisabledOnly)
+	if err != nil {
+		return fmt.Errorf("failed to load and build manifest: %w", err)
+	}
+
+	stages := []stage{
+		r.transform,
+		r.deleteResources,
+	}
+
+	return executeStages(instance, manifest, stages)
+}
+
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -201,127 +206,79 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(instance *operatorv1alpha1.Knat
 	return r.client.Update(context.TODO(), instance)
 }
 
+func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Transforming manifest")
+	m, err := manifest.Transform(
+		injectOwner(instance),
+		common.SetAnnotations(map[string]string{
+			common.KafkaOwnerName:      instance.Name,
+			common.KafkaOwnerNamespace: instance.Namespace,
+		}),
+		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
+	}
+	*manifest = m
+	return nil
+}
+
 // Install Knative Kafka components
-func (r *ReconcileKnativeKafka) installKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if err := r.applyKnativeKafka(instance); err != nil {
+func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	log.Info("Installing manifest")
+	if err := manifest.Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
-		return err
+		return fmt.Errorf("failed to apply manifest: %w", err)
 	}
 	instance.Status.MarkInstallSucceeded()
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) applyKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if instance.Spec.Channel.Enabled {
-		if err := r.installKnativeKafkaChannel(instance); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaChannel: %w", err)
-		}
-	} else {
-		// TODO: ensure they don't exist
-	}
-
-	if instance.Spec.Source.Enabled {
-		if err := r.installKnativeKafkaSource(instance); err != nil {
-			return fmt.Errorf("unable to install Knative KafkaSource: %w", err)
-		}
-	} else {
-		// TODO: ensure they don't exist
-	}
-
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) installKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaChannelManifest(instance)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Installing Knative KafkaChannel")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaChannel manifest: %w", err)
-	}
-	if err := r.checkDeployments(manifest); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaChannel installation is ready")
-	return nil
-}
-
-// rawKafkaChannelManifest returns KafkaChannel manifest without transformations
-func rawKafkaChannelManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaChannelManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func (r *ReconcileKnativeKafka) kafkaChannelManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaChannelManifest.Transform(
-		mf.InjectOwner(instance),
-		setOwnerAnnotations(instance),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to transform KafkaChannel manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
-func (r *ReconcileKnativeKafka) installKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaSourceManifest(instance)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Installing Knative KafkaSource")
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply KafkaSource manifest: %w", err)
-	}
-	if err := r.checkDeployments(manifest); err != nil {
-		return fmt.Errorf("failed to check deployments: %w", err)
-	}
-	log.Info("Knative KafkaSource installation is ready")
-	return nil
-}
-
-// rawKafkaSourceManifest returns KafkaSource manifest without transformations
-func rawKafkaSourceManifest(apiclient client.Client) (mf.Manifest, error) {
-	return mfc.NewManifest(kafkaSourceManifestPath(), apiclient, mf.UseLogger(log.WithName("mf")))
-}
-
-func (r *ReconcileKnativeKafka) kafkaSourceManifest(instance *operatorv1alpha1.KnativeKafka) (*mf.Manifest, error) {
-	manifest, err := r.rawKafkaSourceManifest.Transform(setOwnerAnnotations(instance))
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
-func kafkaChannelManifestPath() string {
-	return os.Getenv("KAFKACHANNEL_MANIFEST_PATH")
-}
-
-func kafkaSourceManifestPath() string {
-	return os.Getenv("KAFKASOURCE_MANIFEST_PATH")
-}
-
-// TODO: move to a common place. copied from kourier.go
-// Check for deployments
-// This function is copied from knativeserving_controller.go in serving-operator
-func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest) error {
+func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment := &appsv1.Deployment{}
-		err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, deployment)
+		resource, err := manifest.Client.Get(&u)
 		if err != nil {
+			instance.Status.MarkDeploymentsNotReady()
+			if errors.IsNotFound(err) {
+				return nil
+			}
 			return err
 		}
-		for _, c := range deployment.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-				return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
-			}
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
+			return err
+		}
+		if !isDeploymentAvailable(deployment) {
+			instance.Status.MarkDeploymentsNotReady()
+			return nil
 		}
 	}
+	instance.Status.MarkDeploymentsAvailable()
 	return nil
+}
+
+// Delete Knative Kafka resources
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	if len(manifest.Resources()) <= 0 {
+		return nil
+	}
+	log.Info("Deleting resources in manifest")
+	if err := manifest.Delete(); err != nil {
+		// TODO: any conditions?
+		return fmt.Errorf("failed to apply manifest: %w", err)
+	}
+	// TODO: any conditions?
+	return nil
+}
+
+func isDeploymentAvailable(d *appsv1.Deployment) bool {
+	for _, c := range d.Status.Conditions {
+		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
@@ -357,56 +314,84 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 }
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
-	if instance.Spec.Channel.Enabled {
-		if err := r.deleteKnativeKafkaChannel(instance); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaChannel: %w", err)
-		}
-	}
-
-	if instance.Spec.Source.Enabled {
-		if err := r.deleteKnativeKafkaSource(instance); err != nil {
-			return fmt.Errorf("unable to delete Knative KafkaSource: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaChannel(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaChannelManifest(instance)
+	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to build manifest: %w", err)
 	}
 
-	log.Info("Deleting Knative KafkaChannel")
-
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete Knative KafkaChannel manifest: %w", err)
+	stages := []stage{
+		r.transform,
+		r.deleteResources,
 	}
 
-	return nil
+	return executeStages(instance, manifest, stages)
 }
 
-func (r *ReconcileKnativeKafka) deleteKnativeKafkaSource(instance *operatorv1alpha1.KnativeKafka) error {
-	manifest, err := r.kafkaSourceManifest(instance)
+type manifestBuild int
+
+const (
+	manifestBuildEnabledOnly manifestBuild = iota
+	manifestBuildDisabledOnly
+	manifestBuildAll
+)
+
+func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
+	var resources []unstructured.Unstructured
+
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
+		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
+	}
+
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
+		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
+	}
+
+	manifest, err := mf.ManifestFrom(
+		mf.Slice(resources),
+		mf.UseClient(mfc.NewClient(r.client)),
+		mf.UseLogger(log.WithName("mf")))
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to build Kafka manifest: %w", err)
 	}
-
-	log.Info("Deleting Knative KafkaSource")
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete KafkaSource manifest: %w", err)
-	}
-	return nil
+	return &manifest, nil
 }
 
-// setOwnerAnnotations is a transformer to set owner annotations on given object
-func setOwnerAnnotations(instance *operatorv1alpha1.KnativeKafka) mf.Transformer {
+// setBootstrapServers sets Kafka bootstrapServers value in config-kafka
+func setBootstrapServers(bootstrapServers string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		u.SetAnnotations(map[string]string{
-			common.KafkaOwnerName:      instance.Name,
-			common.KafkaOwnerNamespace: instance.Namespace,
-		})
+		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
+			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
+}
+
+// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
+// `owner` to namespace-scoped objects.
+//
+// The difference from Manifestival's Inject owner is, it only does it for
+// resources that are in the same namespace as the owner.
+// For the resources that are in the same namespace, it fallbacks to
+// Manifestival's InjectOwner
+func injectOwner(owner mf.Owner) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetNamespace() == owner.GetNamespace() {
+			return mf.InjectOwner(owner)(u)
+		} else {
+			return nil
+		}
+	}
+}
+
+func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
+	// Execute each stage in sequence until one returns an error
+	for _, stage := range stages {
+		if err := stage(manifest, instance); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -161,7 +161,7 @@ func WaitForOperatorDepsDeleted(ctx *Context) error {
 }
 
 func IsServiceReady(s *servingv1.Service, err error) (bool, error) {
-	return s.Generation == s.Status.ObservedGeneration && s.Status.IsReady() && s.Status.URL != nil && s.Status.URL.Host != "", err
+	return s.IsReady() && s.Status.URL != nil && s.Status.URL.Host != "", err
 }
 
 func CreateDeployment(ctx *Context, name, namespace, image string) error {

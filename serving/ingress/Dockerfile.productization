@@ -1,11 +1,11 @@
-FROM registry-proxy.engineering.redhat.com/rh-osbs/rhel8-go-toolset:1.13.4 AS builder
+FROM registry-proxy.engineering.redhat.com/rh-osbs/rhel8-go-toolset:1.14.7 AS builder
 
 WORKDIR /opt/app-root/src/go/src/github.com/openshift-knative/serverless-operator/serving/ingress
 
 COPY . .
 
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/knative-openshift-ingress ./cmd/manager
+RUN go build -o /tmp/knative-openshift-ingress ./cmd/controller
 
 FROM registry-proxy.engineering.redhat.com/rh-osbs/ubi8-minimal:8-released
 

@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"strings"
 	"testing"
 
@@ -14,6 +16,8 @@ import (
 )
 
 const (
+	serviceName                   = "knative-openshift-metrics"
+	serviceMonitorName            = serviceName
 	servingName                   = "knative-serving"
 	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
@@ -36,6 +40,20 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatal("Failed", err)
 		}
 	})
+
+	// Check the status of the serverless operator deployment
+	if err := test.CheckDeploymentScale(caCtx, test.OperatorsNamespace, "knative-openshift", 1); err != nil {
+		t.Fatalf("Failed to verify the operator deployment: %v", err)
+	}
+
+	// Check if service monitors for the serverless operator are installed
+	if _, err := caCtx.Clients.Kube.CoreV1().Services(test.OperatorsNamespace).Get(serviceName, metav1.GetOptions{}); err != nil {
+		t.Fatalf("Failed to get the operator monitoring service : %v", err)
+	}
+
+	if _, err := caCtx.Clients.MonitoringClient.ServiceMonitors(test.OperatorsNamespace).Get(serviceMonitorName, metav1.GetOptions{}); err != nil {
+		t.Fatalf("Failed to verify the operator service monitor: %v", err)
+	}
 
 	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
@@ -100,6 +118,12 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
 		caCtx.Cleanup(t)
+		if err := waitForOperatorMonitoringServiceDeleted(caCtx); err != nil {
+			t.Fatalf("Monitoring service is still available: %v", err)
+		}
+		if err := waitForOperatorServiceMonitorDeleted(caCtx); err != nil {
+			t.Fatalf("Service monitor is still available: %v", err)
+		}
 		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
 			t.Fatalf("Operators still running: %v", err)
 		}
@@ -171,4 +195,38 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	// Currently when we update cluster proxy by removing httpProxy, noProxy etc... OLM will not update controller
 	// once bugzilla issue https://bugzilla.redhat.com/show_bug.cgi?id=1751903#c11 fixes need to add test case related to
 	// verifying success of proxy update and successfully deploying knative service
+}
+
+func waitForOperatorMonitoringServiceDeleted(ctx *test.Context) error {
+	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		s, err := ctx.Clients.Kube.CoreV1().Services(test.OperatorsNamespace).Get(serviceName, metav1.GetOptions{})
+		if err == nil && s != nil {
+			return false, err
+		}
+		if apierrs.IsNotFound(err) {
+			return true, nil
+		}
+		return true, err
+	})
+	if waitErr != nil {
+		return errors.Wrapf(waitErr, "serverless operator monitoring dependencies not deleted in time")
+	}
+	return nil
+}
+
+func waitForOperatorServiceMonitorDeleted(ctx *test.Context) error {
+	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		sm, err := ctx.Clients.MonitoringClient.ServiceMonitors(test.OperatorsNamespace).Get(serviceMonitorName, metav1.GetOptions{})
+		if err == nil && sm != nil {
+			return false, err
+		}
+		if apierrs.IsNotFound(err) {
+			return true, nil
+		}
+		return true, err
+	})
+	if waitErr != nil {
+		return errors.Wrapf(waitErr, "serverless operator monitoring dependencies not deleted in time")
+	}
+	return nil
 }

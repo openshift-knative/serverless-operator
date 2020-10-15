@@ -22,7 +22,7 @@ $ make images test-operator
 - `DOCKER_REPO_OVERRIDE` points to that repository
 - `bash` (4.0.0 or newer)
 - `make`
-- `yq`
+- `yq` (3.4.0)
 
 ### CRC-based cluster
 
@@ -56,6 +56,16 @@ Use the appropriate make targets or scripts in `hack`:
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
+
+### Updating the release files
+
+To update release files with variables stored in [project.yaml](./olm-catalog/serverless-operator/project.yaml) 
+we use [generate scripts](./hack/generate) and a [templates](./templates). Update
+those based on your needs, and generate the files with:
+
+```
+make release-files
+```
 
 ### Running tests
 
@@ -226,7 +236,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress

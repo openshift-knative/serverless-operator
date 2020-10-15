@@ -29,20 +29,13 @@ images["sugar-controller__controller"]="${eventing}-sugar-controller"
 images["eventing-webhook__eventing-webhook"]="${eventing}-webhook"
 images["storage-version-migration-eventing__migrate"]="${eventing}-storage-version-migration"
 
-# the next three images have 0 replicas, they got removed, and point to 0.15
-# release images to migrate their deployments to 0
-images["broker-controller__broker-controller"]="${registry}/knative-v$(metadata.get deprecated.eventing-images):knative-eventing-channel-broker"
-images["broker-filter__filter"]="${registry}/knative-v$(metadata.get deprecated.eventing-images):knative-eventing-broker-filter"
-images["broker-ingress__ingress"]="${registry}/knative-v$(metadata.get deprecated.eventing-images):knative-eventing-broker-ingress"
-
-# the mt broker replaces the removed broker
 images["mt-broker-controller__mt-broker-controller"]="${eventing}-mtchannel-broker"
 images["mt-broker-filter__filter"]="${eventing}-mtbroker-filter"
 images["mt-broker-ingress__ingress"]="${eventing}-mtbroker-ingress"
 images["imc-controller__controller"]="${eventing}-channel-controller"
 images["imc-dispatcher__dispatcher"]="${eventing}-channel-dispatcher"
 
-images["v$(metadata.get dependencies.eventing)-broker-cleanup__brokers"]="${eventing}-broker-cleanup"
+images["v$(metadata.get dependencies.eventing)-pingsource-cleanup__pingsource"]="${eventing}-pingsource-cleanup"
 images["PING_IMAGE"]="${eventing}-ping"
 images["MT_PING_IMAGE"]="${eventing}-mtping"
 images["APISERVER_RA_IMAGE"]="${eventing}-apiserver-receive-adapter"

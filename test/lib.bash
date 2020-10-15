@@ -70,7 +70,7 @@ function downstream_serving_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
-  logger.info "Running tests"
+  logger.info "Running Serving tests"
   kubeconfigs+=("${KUBECONFIG}")
   for cfg in user*.kubeconfig; do
     kubeconfigs+=("$(pwd)/${cfg}")
@@ -83,6 +83,29 @@ function downstream_serving_e2e_tests {
   local failed=0
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+}
+
+function downstream_eventing_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Eventing tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=1
@@ -198,8 +221,8 @@ function delete_users {
 }
 
 function add_systemnamespace_label {
-  oc label namespace knative-serving serving.knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace knative-serving-ingress serving.knative.openshift.io/system-namespace=true --overwrite || true
+  oc label namespace knative-serving knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function add_networkpolicy {
@@ -225,7 +248,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress
@@ -254,4 +277,20 @@ function trigger_gc_and_print_knative {
 
   echo ">>> Knative Services"
   oc get ksvc --all-namespaces
+}
+
+function wait_for_leader_controller() {
+  echo -n "Waiting for a leader Controller"
+  for i in {1..150}; do  # timeout after 5 minutes
+    local leader=$(oc get lease -n "${SERVING_NAMESPACE}" -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' | cut -d"_" -f1 | grep "^controller-" | head -1)
+    # Make sure the leader pod exists.
+    if [ -n "${leader}" ] && oc get pod "${leader}" -n "${SERVING_NAMESPACE}"  >/dev/null 2>&1; then
+      echo -e "\nNew leader Controller has been elected"
+      return 0
+    fi
+    echo -n "."
+    sleep 2
+  done
+  echo -e "\n\nERROR: timeout waiting for leader controller"
+  return 1
 }

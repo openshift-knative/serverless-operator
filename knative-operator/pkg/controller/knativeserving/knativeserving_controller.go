@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -85,47 +84,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		annotations := obj.Meta.GetAnnotations()
-		ownerNamespace := annotations[common.ServingOwnerNamespace]
-		ownerName := annotations[common.ServingOwnerName]
-		if ownerNamespace != "" && ownerName != "" {
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-			}}
-		}
-		return nil
-	})
-
-	// Watch for Kourier resources.
-	manifest, err := kourier.RawManifest(mgr.GetClient())
+	// Load Kourier resources to watch them
+	kourierManifest, err := kourier.RawManifest(mgr.GetClient())
 	if err != nil {
 		return err
 	}
-	resources := manifest.Resources()
 
-	gvkToKourier := make(map[schema.GroupVersionKind]runtime.Object)
-	for i := range resources {
-		resource := &resources[i]
-		gvkToKourier[resource.GroupVersionKind()] = resource
-	}
-
-	for _, t := range gvkToKourier {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
-		if err != nil {
-			return err
-		}
-	}
-
-	// Watch for kn ConsoleCLIDownload resources
-	gvkToCCD := make(map[schema.GroupVersionKind]runtime.Object)
+	gvkToResource := common.BuildGVKToResourceMap(kourierManifest)
 
 	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
-	gvkToCCD[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
+	gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
 
-	for _, t := range gvkToCCD {
-		err = c.Watch(&source.Kind{Type: t}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests})
+	for _, t := range gvkToResource {
+		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -370,9 +341,9 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
-// installDashboard installs daashboard for OpenShift webconsole
+// installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
-	return dashboard.Apply(instance, r.client)
+	return dashboard.Apply(os.Getenv("SERVING_DASHBOARD_MANIFEST_PATH"), instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
@@ -396,7 +367,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	log.Info("Deleting dashboard")
-	if err := dashboard.Delete(instance, r.client); err != nil {
+	if err := dashboard.Delete(os.Getenv(dashboard.ServingDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 

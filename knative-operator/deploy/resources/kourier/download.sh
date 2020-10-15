@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KOURIER_VERSION=release-0.16
+KOURIER_VERSION=release-0.17
 DOWNLOAD_URL=https://raw.githubusercontent.com/openshift-knative/net-kourier/${KOURIER_VERSION}/deploy/kourier-knative.yaml
 
 if [ -f "kourier-${KOURIER_VERSION}.yaml" ]; then
@@ -14,6 +14,9 @@ if [ $? != 0 ]; then
   echo "Failed to download kourier yaml"
   exit 1
 fi
+
+# TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
+sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g'  kourier-${KOURIER_VERSION}.yaml
 
 if [ -L "kourier-latest.yaml" ]; then
   unlink kourier-latest.yaml

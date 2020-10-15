@@ -1,3 +1,4 @@
 knative-operator/vendor linguist-vendored
+openshift-knative-operator/vendor linguist-vendored
 serving/ingress/vendor linguist-vendored
 test/vendor linguist-vendored
