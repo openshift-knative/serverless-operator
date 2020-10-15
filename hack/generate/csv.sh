@@ -12,38 +12,46 @@ registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 
-declare -A images
-images["queue-proxy"]="${serving}-queue"
-images["activator"]="${serving}-activator"
-images["autoscaler"]="${serving}-autoscaler"
-images["autoscaler-hpa"]="${serving}-autoscaler-hpa"
-images["controller"]="${serving}-controller"
-images["webhook"]="${serving}-webhook"
-images["storage-version-migration-serving-$(metadata.get dependencies.serving)__migrate"]="${serving}-storage-version-migration"
+declare -a images
+declare -A images_addresses
 
-images["3scale-kourier-gateway"]="docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-images["3scale-kourier-control"]="${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+function image {
+  local name address
+  name="${1:?Pass a image name as arg[1]}"
+  address="${2:?Pass a image address as arg[2]}"
+  images+=("${name}")
+  images_addresses["${name}"]="${address}"
+}
 
-images["eventing-controller__eventing-controller"]="${eventing}-controller"
-images["sugar-controller__controller"]="${eventing}-sugar-controller"
-images["eventing-webhook__eventing-webhook"]="${eventing}-webhook"
-images["storage-version-migration-eventing__migrate"]="${eventing}-storage-version-migration"
+image "queue-proxy"    "${serving}-queue"
+image "activator"      "${serving}-activator"
+image "autoscaler"     "${serving}-autoscaler"
+image "autoscaler-hpa" "${serving}-autoscaler-hpa"
+image "controller"     "${serving}-controller"
+image "webhook"        "${serving}-webhook"
+image "storage-version-migration-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
-images["mt-broker-controller__mt-broker-controller"]="${eventing}-mtchannel-broker"
-images["mt-broker-filter__filter"]="${eventing}-mtbroker-filter"
-images["mt-broker-ingress__ingress"]="${eventing}-mtbroker-ingress"
-images["imc-controller__controller"]="${eventing}-channel-controller"
-images["imc-dispatcher__dispatcher"]="${eventing}-channel-dispatcher"
+image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
+image "3scale-kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
-images["v$(metadata.get dependencies.knative-release)-pingsource-cleanup__pingsource"]="${eventing}-pingsource-cleanup"
-images["PING_IMAGE"]="${eventing}-ping"
-images["MT_PING_IMAGE"]="${eventing}-mtping"
-images["APISERVER_RA_IMAGE"]="${eventing}-apiserver-receive-adapter"
-images["BROKER_INGRESS_IMAGE"]="${eventing}-broker-ingress"
-images["BROKER_FILTER_IMAGE"]="${eventing}-broker-filter"
-images["DISPATCHER_IMAGE"]="${eventing}-channel-dispatcher"
+image "eventing-controller__eventing-controller"    "${eventing}-controller"
+image "sugar-controller__controller"                "${eventing}-sugar-controller"
+image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
+image "storage-version-migration-eventing__migrate" "${eventing}-storage-version-migration"
+image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
+image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
+image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
+image "imc-controller__controller"                  "${eventing}-channel-controller"
+image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
 
-images["KN_CLI_ARTIFACTS"]="${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+image "v$(metadata.get dependencies.knative-release)-pingsource-cleanup__pingsource" "${eventing}-pingsource-cleanup"
+image "PING_IMAGE"           "${eventing}-ping"
+image "MT_PING_IMAGE"        "${eventing}-mtping"
+image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
+image "BROKER_INGRESS_IMAGE" "${eventing}-broker-ingress"
+image "BROKER_FILTER_IMAGE"  "${eventing}-broker-filter"
+image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
+image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 declare -A values
 values[spec.version]="$(metadata.get project.version)"
@@ -65,29 +73,25 @@ EOF
 - command: update 
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
   value:
-    name: IMAGE_${2}
-    value: ${3}
+    name: "IMAGE_${2}"
+    value: "${3}"
 EOF
 
   cat << EOF | yq write --inplace --script - "$1"
 - command: update 
   path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
   value:
-    name: IMAGE_${2}
-    value: ${3}
+    name: "IMAGE_${2}"
+    value: "${3}"
 EOF
 }
 
 # Start fresh
 cp "$template" "$target"
 
-# Sort images to always produce the same output
-keys=()
-while IFS='' read -r line; do keys+=("$line"); done < <(echo "${!images[@]}" | tr ' ' $'\n' | LANG=C sort)
-
-for name in "${keys[@]}"; do
-  echo "Image: ${name} -> ${images[$name]}"
-  add_image "$target" "$name" "${images[$name]}"
+for name in "${images[@]}"; do
+  echo "Image: ${name} -> ${images_addresses[$name]}"
+  add_image "$target" "$name" "${images_addresses[$name]}"
 done
 
 for name in "${!values[@]}"; do
