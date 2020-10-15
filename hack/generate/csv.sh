@@ -65,26 +65,32 @@ EOF
 - command: update 
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
-    value: "${3}"
+    name: IMAGE_${2}
+    value: ${3}
 EOF
 
   cat << EOF | yq write --inplace --script - "$1"
 - command: update 
   path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
-    value: "${3}"
+    name: IMAGE_${2}
+    value: ${3}
 EOF
 }
 
 # Start fresh
 cp "$template" "$target"
 
-for name in "${!images[@]}"; do
+# Sort images to always produce the same output
+keys=()
+while IFS='' read -r line; do keys+=("$line"); done < <(echo "${!images[@]}" | tr ' ' $'\n' | sort)
+
+for name in "${keys[@]}"; do
+  echo "Image: ${name} -> ${images[$name]}"
   add_image "$target" "$name" "${images[$name]}"
 done
 
 for name in "${!values[@]}"; do
+  echo "Value: ${name} -> ${values[$name]}"
   yq write --inplace "$target" "$name" "${values[$name]}"
 done

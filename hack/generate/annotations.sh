@@ -17,6 +17,7 @@ values[operators.operatorframework.io.bundle.package.v1]="$(metadata.get project
 cp "$template" "$target"
 
 for name in "${!values[@]}"; do
+  echo "Value: ${name} -> ${values[$name]}"
   yq write --inplace --tag '!!str' "$target" \
     "annotations[$name]" "${values[$name]}"
 done

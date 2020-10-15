@@ -22,5 +22,6 @@ values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocp.*' | sed 's/^/v/' | p
 cp "$template" "$target"
 
 for before in "${!values[@]}"; do
+  echo "Value: ${before} -> ${values[$before]}"
   sed --in-place "s/__${before}__/${values[${before}]}/" "$target"
 done
