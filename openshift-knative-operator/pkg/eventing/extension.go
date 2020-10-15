@@ -34,6 +34,11 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	// Ensure webhook has 1G of memory.
 	common.EnsureContainerMemoryLimit(&ke.Spec.CommonSpec, "eventing-webhook", resource.MustParse("1024Mi"))
 
+	// SRVKE-500: Ensure we set the SinkBindingSelectionMode to inclusion
+	if ke.Spec.SinkBindingSelectionMode == "" {
+		ke.Spec.SinkBindingSelectionMode = "inclusion"
+	}
+
 	return nil
 }
 
