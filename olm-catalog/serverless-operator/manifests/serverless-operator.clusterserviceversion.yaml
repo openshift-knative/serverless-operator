@@ -34,7 +34,7 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: ">=1.10.0 <1.11.0"
+    olm.skipRange: '>=1.10.0 <1.11.0'
   name: serverless-operator.v1.11.0
   namespace: placeholder
 spec:
@@ -279,6 +279,8 @@ spec:
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts"
                       - name: "IMAGE_autoscaler"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler"
+                      - name: "IMAGE_v0.17.2-pingsource-cleanup__pingsource"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
                       - name: "IMAGE_imc-dispatcher__dispatcher"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_3scale-kourier-gateway"
@@ -295,8 +297,6 @@ spec:
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-webhook"
-                      - name: "IMAGE_v0.17.0-pingsource-cleanup__pingsource"
-                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -395,6 +395,8 @@ spec:
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts"
                       - name: "IMAGE_autoscaler"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler"
+                      - name: "IMAGE_v0.17.2-pingsource-cleanup__pingsource"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
                       - name: "IMAGE_imc-dispatcher__dispatcher"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_3scale-kourier-gateway"
@@ -411,8 +413,6 @@ spec:
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-webhook"
-                      - name: "IMAGE_v0.17.0-pingsource-cleanup__pingsource"
-                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -566,6 +566,8 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts"
     - name: "IMAGE_autoscaler"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler"
+    - name: "IMAGE_v0.17.2-pingsource-cleanup__pingsource"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
     - name: "IMAGE_imc-dispatcher__dispatcher"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher"
     - name: "IMAGE_3scale-kourier-gateway"
@@ -582,8 +584,6 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter"
     - name: "IMAGE_eventing-webhook__eventing-webhook"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-webhook"
-    - name: "IMAGE_v0.17.0-pingsource-cleanup__pingsource"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-pingsource-cleanup"
     - name: "IMAGE_queue-proxy"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue"
     - name: "IMAGE_activator"
