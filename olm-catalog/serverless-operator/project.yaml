@@ -26,6 +26,3 @@ dependencies:
   kourier: 0.16.0
   cli: 0.17.2
   maistra: 1.1.0
-
-deprecated:
-  eventing-images: 0.15.2
