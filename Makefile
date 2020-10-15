@@ -15,6 +15,10 @@ install-serving:
 install-eventing:
 	INSTALL_SERVING="false" ./hack/install.sh
 
+install-kafka:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
+
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
@@ -23,9 +27,6 @@ install-mesh:
 
 uninstall-mesh:
 	UNINSTALL_MESH="true" ./hack/mesh.sh
-
-install-strimzi:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 
 uninstall-strimzi:
 	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh

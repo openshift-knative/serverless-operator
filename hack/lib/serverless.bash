@@ -50,7 +50,9 @@ function install_serverless_latest {
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr || return $?
   fi
-  deploy_knativekafka_cr || return $?
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    deploy_knativekafka_cr || return $?
+  fi
 }
 
 function deploy_serverless_operator_latest {
