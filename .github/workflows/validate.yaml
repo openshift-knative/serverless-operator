@@ -16,20 +16,12 @@ jobs:
     name: Generated files are commited
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.14'
-
-      - name: Install prerequisites
-        env:
-          GO111MODULE: on
-        run: go get github.com/mikefarah/yq/v3
-
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Generate release files
         run: make release-files
+        uses: mikefarah/yq@3.4.0
 
       - name: Check if everything is consistent
         run: git diff --exit-code
