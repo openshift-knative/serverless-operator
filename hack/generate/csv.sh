@@ -83,7 +83,7 @@ cp "$template" "$target"
 
 # Sort images to always produce the same output
 keys=()
-while IFS='' read -r line; do keys+=("$line"); done < <(echo "${!images[@]}" | tr ' ' $'\n' | sort)
+while IFS='' read -r line; do keys+=("$line"); done < <(echo "${!images[@]}" | tr ' ' $'\n' | LANG=C sort)
 
 for name in "${keys[@]}"; do
   echo "Image: ${name} -> ${images[$name]}"

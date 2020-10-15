@@ -277,22 +277,28 @@ spec:
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:kourier
                       - name: IMAGE_3scale-kourier-gateway
                         value: docker.io/maistra/proxyv2-ubi8:1.1.0
-                      - name: IMAGE_activator
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator
                       - name: IMAGE_APISERVER_RA_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-apiserver-receive-adapter
-                      - name: IMAGE_autoscaler
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler
-                      - name: IMAGE_autoscaler-hpa
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa
                       - name: IMAGE_BROKER_FILTER_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-filter
                       - name: IMAGE_BROKER_INGRESS_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-ingress
-                      - name: IMAGE_controller
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller
                       - name: IMAGE_DISPATCHER_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher
+                      - name: IMAGE_KN_CLI_ARTIFACTS
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts
+                      - name: IMAGE_MT_PING_IMAGE
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping
+                      - name: IMAGE_PING_IMAGE
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping
+                      - name: IMAGE_activator
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator
+                      - name: IMAGE_autoscaler
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler
+                      - name: IMAGE_autoscaler-hpa
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa
+                      - name: IMAGE_controller
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller
                       - name: IMAGE_eventing-controller__eventing-controller
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-controller
                       - name: IMAGE_eventing-webhook__eventing-webhook
@@ -301,18 +307,12 @@ spec:
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-controller
                       - name: IMAGE_imc-dispatcher__dispatcher
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher
-                      - name: IMAGE_KN_CLI_ARTIFACTS
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts
                       - name: IMAGE_mt-broker-controller__mt-broker-controller
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtchannel-broker
                       - name: IMAGE_mt-broker-filter__filter
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter
                       - name: IMAGE_mt-broker-ingress__ingress
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-ingress
-                      - name: IMAGE_MT_PING_IMAGE
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping
-                      - name: IMAGE_PING_IMAGE
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping
                       - name: IMAGE_queue-proxy
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue
                       - name: IMAGE_storage-version-migration-eventing__migrate
@@ -393,22 +393,28 @@ spec:
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:kourier
                       - name: IMAGE_3scale-kourier-gateway
                         value: docker.io/maistra/proxyv2-ubi8:1.1.0
-                      - name: IMAGE_activator
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator
                       - name: IMAGE_APISERVER_RA_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-apiserver-receive-adapter
-                      - name: IMAGE_autoscaler
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler
-                      - name: IMAGE_autoscaler-hpa
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa
                       - name: IMAGE_BROKER_FILTER_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-filter
                       - name: IMAGE_BROKER_INGRESS_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-ingress
-                      - name: IMAGE_controller
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller
                       - name: IMAGE_DISPATCHER_IMAGE
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher
+                      - name: IMAGE_KN_CLI_ARTIFACTS
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts
+                      - name: IMAGE_MT_PING_IMAGE
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping
+                      - name: IMAGE_PING_IMAGE
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping
+                      - name: IMAGE_activator
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator
+                      - name: IMAGE_autoscaler
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler
+                      - name: IMAGE_autoscaler-hpa
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa
+                      - name: IMAGE_controller
+                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller
                       - name: IMAGE_eventing-controller__eventing-controller
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-controller
                       - name: IMAGE_eventing-webhook__eventing-webhook
@@ -417,18 +423,12 @@ spec:
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-controller
                       - name: IMAGE_imc-dispatcher__dispatcher
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher
-                      - name: IMAGE_KN_CLI_ARTIFACTS
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts
                       - name: IMAGE_mt-broker-controller__mt-broker-controller
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtchannel-broker
                       - name: IMAGE_mt-broker-filter__filter
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter
                       - name: IMAGE_mt-broker-ingress__ingress
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-ingress
-                      - name: IMAGE_MT_PING_IMAGE
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping
-                      - name: IMAGE_PING_IMAGE
-                        value: registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping
                       - name: IMAGE_queue-proxy
                         value: registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue
                       - name: IMAGE_storage-version-migration-eventing__migrate
@@ -564,22 +564,28 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.16.0:kourier"
     - name: "IMAGE_3scale-kourier-gateway"
       image: "docker.io/maistra/proxyv2-ubi8:1.1.0"
-    - name: "IMAGE_activator"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator"
     - name: "IMAGE_APISERVER_RA_IMAGE"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-apiserver-receive-adapter"
-    - name: "IMAGE_autoscaler"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler"
-    - name: "IMAGE_autoscaler-hpa"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa"
     - name: "IMAGE_BROKER_FILTER_IMAGE"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-filter"
     - name: "IMAGE_BROKER_INGRESS_IMAGE"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-broker-ingress"
-    - name: "IMAGE_controller"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller"
     - name: "IMAGE_DISPATCHER_IMAGE"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher"
+    - name: "IMAGE_KN_CLI_ARTIFACTS"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts"
+    - name: "IMAGE_MT_PING_IMAGE"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping"
+    - name: "IMAGE_PING_IMAGE"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping"
+    - name: "IMAGE_activator"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator"
+    - name: "IMAGE_autoscaler"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler"
+    - name: "IMAGE_autoscaler-hpa"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa"
+    - name: "IMAGE_controller"
+      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller"
     - name: "IMAGE_eventing-controller__eventing-controller"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-controller"
     - name: "IMAGE_eventing-webhook__eventing-webhook"
@@ -588,18 +594,12 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-controller"
     - name: "IMAGE_imc-dispatcher__dispatcher"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher"
-    - name: "IMAGE_KN_CLI_ARTIFACTS"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:kn-cli-artifacts"
     - name: "IMAGE_mt-broker-controller__mt-broker-controller"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtchannel-broker"
     - name: "IMAGE_mt-broker-filter__filter"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter"
     - name: "IMAGE_mt-broker-ingress__ingress"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-ingress"
-    - name: "IMAGE_MT_PING_IMAGE"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping"
-    - name: "IMAGE_PING_IMAGE"
-      image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping"
     - name: "IMAGE_queue-proxy"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue"
     - name: "IMAGE_storage-version-migration-eventing__migrate"
