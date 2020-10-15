@@ -7,6 +7,7 @@ images:
 	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
 
 install:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/install.sh
 
 install-previous:
