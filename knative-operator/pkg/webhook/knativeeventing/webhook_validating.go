@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	webhookutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/util"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -62,7 +61,6 @@ func (v *KnativeEventingValidator) validate(ctx context.Context, ke *eventingv1a
 	log := common.Log.WithName("validate")
 	stages := []func(context.Context, *eventingv1alpha1.KnativeEventing) (bool, string, error){
 		v.validateNamespace,
-		v.validateVersion,
 		v.validateLoneliness,
 	}
 	for _, stage := range stages {
@@ -99,11 +97,6 @@ var _ inject.Decoder = (*KnativeEventingValidator)(nil)
 func (v *KnativeEventingValidator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
-}
-
-// validate minimum openshift version
-func (v *KnativeEventingValidator) validateVersion(ctx context.Context, _ *eventingv1alpha1.KnativeEventing) (bool, string, error) {
-	return webhookutil.ValidateOpenShiftVersion(ctx, v.client)
 }
 
 // validate required namespace, if any
