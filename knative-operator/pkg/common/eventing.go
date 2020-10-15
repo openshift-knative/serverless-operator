@@ -24,6 +24,6 @@ func eventingImagesFromEnviron(ke *eventingv1alpha1.KnativeEventing) {
 	log.Info("Setting", "registry", ke.Spec.Registry)
 }
 
-func ensureEventingWebhookMemoryLimit(ks *eventingv1alpha1.KnativeEventing) {
-	EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "eventing-webhook", resource.MustParse("1024Mi"))
+func ensureEventingWebhookMemoryLimit(ke *eventingv1alpha1.KnativeEventing) {
+	EnsureContainerMemoryLimit(&ke.Spec.CommonSpec, "eventing-webhook", resource.MustParse("1024Mi"))
 }
