@@ -50,22 +50,22 @@ test-operator: test-unit test-e2e
 # Run upstream E2E tests including upgrades (Serving, Eventing, Kafka,...).
 test-upstream-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Run only E2E tests from the current repo.
 test-e2e-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade
