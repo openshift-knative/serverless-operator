@@ -93,9 +93,9 @@ function downstream_serving_e2e_tests {
   return $failed
 }
 
-function downstream_knative_kafka_e2e_tests {
-  logger.info "Place holder"
-}
+# function downstream_knative_kafka_e2e_tests {
+#  logger.info "Place holder"
+# }
 
 function downstream_eventing_e2e_tests {
   declare -a kubeconfigs
