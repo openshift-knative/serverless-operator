@@ -39,6 +39,12 @@ func TestKnativeServing(t *testing.T) {
 		}
 	})
 
+	t.Run("deploy knativeserving cr and wait for it to be ready", func(t *testing.T) {
+		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
+			t.Fatal("Failed to deploy KnativeServing", err)
+		}
+	})
+
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		// Check the status of scaled deployments in the knative serving namespace
 		for _, deployment := range []string{"activator", "controller", "autoscaler-hpa"} {
