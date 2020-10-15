@@ -13,24 +13,21 @@ import (
 )
 
 func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
-	// results in compile error.
-	//
-	//return &kafkav1alpha1.KnativeKafka{
-	//	ObjectMeta: metav1.ObjectMeta{
-	//		Name:      name,
-	//		Namespace: namespace,
-	//	},
-	//}
-	spec := kafkav1alpha1.KnativeKafkaSpec{
-		Source: kafkav1alpha1.Source{
-			Enabled: true,
+	return &kafkav1alpha1.KnativeKafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
 		},
-		Channel: kafkav1alpha1.Channel{
-			Enabled:          true,
-			BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
+		Spec: kafkav1alpha1.KnativeKafkaSpec{
+			Source: kafkav1alpha1.Source{
+				Enabled: true,
+			},
+			Channel: kafkav1alpha1.Channel{
+				Enabled:          true,
+				BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
+			},
 		},
 	}
-	return kafkav1alpha1.NewKnativeKafka(name, namespace, spec)
 }
 
 func WithKnativeKafkaReady(ctx *test.Context, name, namespace string) (*kafkav1alpha1.KnativeKafka, error) {
