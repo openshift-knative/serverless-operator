@@ -37,7 +37,10 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   (( !failed )) && ensure_serverless_installed || failed=7
   (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
   (( !failed )) && upstream_knative_eventing_e2e || failed=9
-  (( !failed )) && upstream_knative_eventing_contrib_e2e || failed=10
+
+  if [[ $TEST_KNATIVE_KAFKA == true ]]; then
+    (( !failed )) && upstream_knative_eventing_contrib_e2e || failed=10
+  fi
 fi
 
 (( failed )) && dump_state
