@@ -1,13 +1,16 @@
-package e2e
+package e2ekafka
 
 import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/e2e"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 )
 
 const (
+	eventingName                 = "knative-eventing"
+	eventingNamespace            = "knative-eventing"
 	knativeKafkaName             = "knative-kafka"
 	knativeKafkaChannelNamespace = "knative-eventing"
 	knativeKafkaSourceNamespace  = "knative-sources"
@@ -64,8 +67,8 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-		verifyNoDisallowedImageReference(t, caCtx, knativeKafkaChannelNamespace)
-		verifyNoDisallowedImageReference(t, caCtx, knativeKafkaSourceNamespace)
+		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaChannelNamespace)
+		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaSourceNamespace)
 	})
 
 	t.Run("remove knativekafka cr", func(t *testing.T) {
@@ -91,13 +94,6 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("remove knativeeventing cr", func(t *testing.T) {
 		if err := v1a1test.DeleteKnativeEventing(caCtx, eventingName, eventingNamespace); err != nil {
 			t.Fatal("Failed to remove Knative Eventing", err)
-		}
-
-		for i := range knativeControlPlaneDeploymentNames {
-			deploymentName := knativeControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, eventingNamespace); err != nil {
-				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
-			}
 		}
 	})
 
