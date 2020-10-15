@@ -195,8 +195,8 @@ function create_htpasswd_users {
   logger.info 'Generate kubeconfig for each user'
   for i in $(seq 1 $num_users); do
     cp "${KUBECONFIG}" "user${i}.kubeconfig"
-    occmd="bash -c '! oc login --config=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
-    timeout 900 "${occmd}" || return 1
+    occmd="bash -c '! oc login --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
+    timeout 180 "${occmd}" || return 1
   done
 }
 
