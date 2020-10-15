@@ -27,9 +27,9 @@ failed=0
 (( !failed )) && downstream_serving_e2e_tests || failed=4
 (( !failed )) && downstream_eventing_e2e_tests || failed=5
 
-if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=6
-fi
+# if [[ $TEST_KNATIVE_KAFKA == true ]]; then
+#  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=6
+# fi
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
