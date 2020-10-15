@@ -115,19 +115,20 @@ func TestKnativeServing(t *testing.T) {
 		}
 	})
 
-	// TODO: enable again when readiness check is available for the serverless operator
-	//t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-	//	caCtx.Cleanup(t)
-	//	if err := waitForOperatorMonitoringServiceDeleted(caCtx); err != nil {
-	//		t.Fatalf("Monitoring service is still available: %v", err)
-	//	}
-	//	if err := waitForOperatorServiceMonitorDeleted(caCtx); err != nil {
-	//		t.Fatalf("Service monitor is still available: %v", err)
-	//	}
-	//	if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
-	//		t.Fatalf("Operators still running: %v", err)
-	//	}
-	//})
+
+	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
+		caCtx.Cleanup(t)
+		// TODO: enable again when readiness check is available for the serverless operator
+		//if err := waitForOperatorMonitoringServiceDeleted(caCtx); err != nil {
+		//	t.Fatalf("Monitoring service is still available: %v", err)
+		//}
+		//if err := waitForOperatorServiceMonitorDeleted(caCtx); err != nil {
+		//	t.Fatalf("Service monitor is still available: %v", err)
+		//}
+		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
+			t.Fatalf("Operators still running: %v", err)
+		}
+	})
 }
 
 func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
