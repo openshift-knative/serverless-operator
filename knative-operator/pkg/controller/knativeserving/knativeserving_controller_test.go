@@ -2,9 +2,10 @@ package knativeserving
 
 import (
 	"context"
-	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"os"
 	"testing"
+
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 
@@ -45,6 +46,10 @@ var (
 					{
 						Status: "True",
 						Type:   "InstallSucceeded",
+					},
+					{
+						Status: "True",
+						Type:   "VersionMigrationEligible",
 					},
 				},
 			},

@@ -1050,12 +1050,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:3ec41af218314746e8c73a46520f55bacd9b75405081ab9b8045e60508c43334"
+  digest = "1:cd2d7741393e4d7e190f83eb5382fe08a4b8b84cdcfa2a6951c0603465aa819f"
   name = "knative.dev/operator"
   packages = ["pkg/apis/operator/v1alpha1"]
   pruneopts = "NT"
-  revision = "d1c018690cfeed594072dee6f38294c8f2565668"
-  version = "v0.15.2"
+  revision = "249861a73322df307ddd2593bef13cb15c09f230"
+  version = "v0.17.2"
 
 [[projects]]
   branch = "release-0.16"
