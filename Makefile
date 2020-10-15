@@ -9,6 +9,12 @@ images:
 install:
 	./hack/install.sh
 
+install-serving:
+	INSTALL_EVENTING="false" ./hack/install.sh
+
+install-eventing:
+	INSTALL_SERVING="false" ./hack/install.sh
+
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
