@@ -24,6 +24,6 @@ dependencies:
   knative-release: 0.17.0
   serving: 0.17.3
   eventing: 0.17.2
-  kourier: 0.16.0
+  kourier: 0.17.2
   cli: 0.17.2
-  maistra: 1.1.0
+  maistra: 1.1.5
