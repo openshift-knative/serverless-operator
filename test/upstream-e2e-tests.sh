@@ -39,10 +39,10 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   SCALE_UP=6 scale_up_workers || failed=10
   (( !failed )) && ensure_serverless_installed || failed=7
   if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-    (( !failed )) && upstream_knative_eventing_contrib_e2e || failed=10
+    (( !failed )) && upstream_knative_eventing_contrib_e2e || failed=8
   fi
-  (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=8
   (( !failed )) && upstream_knative_eventing_e2e || failed=9
+  (( !failed )) && upstream_knative_serving_e2e_and_conformance_tests || failed=10
 fi
 
 (( failed )) && dump_state
