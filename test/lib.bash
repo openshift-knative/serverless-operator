@@ -115,6 +115,30 @@ function downstream_serving_e2e_tests {
   return $failed
 }
 
+function downstream_knative_kafka_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Eventing tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+
+}
+
 function downstream_eventing_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
