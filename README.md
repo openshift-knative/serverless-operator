@@ -49,6 +49,8 @@ Use the appropriate make targets or scripts in `hack`:
 
 - `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
+- `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
+- `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
 - `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
 - `make install-mesh`: Install service mesh operator and enable sidecar injections.
