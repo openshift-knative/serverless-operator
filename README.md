@@ -47,17 +47,12 @@ pushed to your docker repository.
 
 Use the appropriate make targets or scripts in `hack`:
 
-<<<<<<< HEAD
-- `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
-=======
-- `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing and Eventing-Contrib components.
-- `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving, Eventing and Eventing-Contrib components.
->>>>>>> 7bf1c3f2... Enable Knative Kafka
-- `make install-previous`: same as `make install` but deploy previous serverless-operator
-  version.
+- `make install-kafka`: Scales the cluster appropriately, deploys serverless-operator, Knative Kafka components, Strimzi and a Kafka instance.
+- `make install-previous`: same as `make install` but deploy previous serverless-operator version.
 - `make install-mesh`: Install service mesh operator and enable sidecar injections.
 - `make uninstall-mesh `: Uninstall service mesh operator and disable sidecar injection.
 
