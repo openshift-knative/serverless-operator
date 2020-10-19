@@ -39,7 +39,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		instance: makeCr(withChannelEnabled, withSourceEnabled),
 		exists: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{},
 	}, {
@@ -49,13 +49,13 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}, {
 		name:     "Create CR with channel disabled and source enabled",
 		instance: makeCr(withSourceEnabled),
 		exists: []types.NamespacedName{
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
@@ -66,7 +66,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}, {
 		name:     "Delete CR",
@@ -74,7 +74,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}}
 
@@ -215,7 +215,7 @@ func TestInjectOwner(t *testing.T) {
 				"kind":       "Service",
 				"metadata": map[string]interface{}{
 					"name":      "default",
-					"namespace": "knative-sources",
+					"namespace": "knative-eventing",
 				},
 			},
 		},
@@ -236,7 +236,7 @@ func TestInjectOwner(t *testing.T) {
 				"kind":       "Service",
 				"metadata": map[string]interface{}{
 					"name":      "default",
-					"namespace": "knative-sources",
+					"namespace": "knative-eventing",
 				},
 			},
 		},
