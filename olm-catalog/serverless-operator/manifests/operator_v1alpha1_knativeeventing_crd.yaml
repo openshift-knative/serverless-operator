@@ -79,6 +79,14 @@ spec:
               description: The default broker type to use for the brokers Knative creates.
                 If no value is provided, ChannelBasedBroker will be used.
               type: string
+            sinkBindingSelectionMode:
+              description: Specifies the NamespaceSelector and ObjectSelector for the sinkbinding webhook.
+                If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
+                will be considered by the sinkbinding webhook;
+                If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
+                will NOT be considered by the sinkbinding webhook.
+                The default is `exclusion`.
+              type: string
             resources:
               description: A mapping of deployment name to resource requirements
               type: array

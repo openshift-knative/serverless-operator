@@ -105,12 +105,12 @@
   version = "v2.11.0"
 
 [[projects]]
-  digest = "1:ed5a8df9a9f0d237764c25da704f095cbd108271c1168cb7866e3e78577110c4"
+  digest = "1:cba892ef8059cc5ee02f6f147fc40ecd5c2a3fc346b89cd06d4c689a9c30a987"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
   pruneopts = "NT"
-  revision = "bf22ed9311622d93e213ba31e4ae7a5771e5d379"
-  version = "v4.6.0"
+  revision = "162e5629780b286cc21cd80f1114a71f5917951f"
+  version = "v5.1.0"
 
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
@@ -1050,12 +1050,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:3ec41af218314746e8c73a46520f55bacd9b75405081ab9b8045e60508c43334"
+  digest = "1:cd2d7741393e4d7e190f83eb5382fe08a4b8b84cdcfa2a6951c0603465aa819f"
   name = "knative.dev/operator"
   packages = ["pkg/apis/operator/v1alpha1"]
   pruneopts = "NT"
-  revision = "d1c018690cfeed594072dee6f38294c8f2565668"
-  version = "v0.15.2"
+  revision = "249861a73322df307ddd2593bef13cb15c09f230"
+  version = "v0.17.2"
 
 [[projects]]
   branch = "release-0.16"
@@ -1177,6 +1177,7 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/go-semver/semver",
+    "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1191,7 +1192,6 @@
     "github.com/operator-framework/operator-sdk/version",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/pflag",
-    "golang.org/x/net/context",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
@@ -1215,6 +1215,7 @@
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/apis/testing",
+    "knative.dev/pkg/kmeta",
     "knative.dev/pkg/ptr",
     "knative.dev/serving/pkg/apis/serving/v1",
     "sigs.k8s.io/controller-runtime/pkg/client",

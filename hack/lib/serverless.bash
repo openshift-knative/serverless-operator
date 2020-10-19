@@ -37,8 +37,14 @@ function install_serverless_previous {
 function install_serverless_latest {
   logger.info "Installing latest version of Serverless..."
   deploy_serverless_operator_latest || return $?
-  deploy_knativeserving_cr || return $?
-  deploy_knativeeventing_cr || return $?
+
+  if [[ $INSTALL_SERVING == "true" ]]; then
+    deploy_knativeserving_cr || return $?
+  fi
+  if [[ $INSTALL_EVENTING == "true" ]]; then
+    deploy_knativeeventing_cr || return $?
+  fi
+
   logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
 }
 
@@ -133,7 +139,7 @@ function deploy_knativeserving_cr {
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Serving has been installed sucessfully.'
+  logger.success 'Knative Serving has been installed successfully.'
 }
 
 function deploy_knativeeventing_cr {
@@ -155,7 +161,7 @@ EOF
 
   timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Eventing has been installed sucessfully.'
+  logger.success 'Knative Eventing has been installed successfully.'
 }
 
 function teardown_serverless {

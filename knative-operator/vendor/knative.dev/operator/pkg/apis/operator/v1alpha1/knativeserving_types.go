@@ -28,7 +28,7 @@ var (
 
 // KnativeServing is the Schema for the knativeservings API
 // +genclient
-// +genreconciler
+// +genreconciler:krshapedlogic=false
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KnativeServing struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -73,6 +73,10 @@ type KnativeServingStatus struct {
 	// The version of the installed release
 	// +optional
 	Version string `json:"version,omitempty"`
+
+	// The url links of the manifests, separated by comma
+	// +optional
+	Manifests []string `json:"manifests,omitempty"`
 }
 
 // KnativeServingList contains a list of KnativeServing

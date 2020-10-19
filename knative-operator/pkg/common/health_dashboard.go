@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"os"
 
 	mfc "github.com/manifestival/controller-runtime-client"
@@ -17,7 +18,7 @@ var logh = Log.WithName("health dashboard")
 const ConfigManagedNamespace = "openshift-config-managed"
 
 func InstallHealthDashboard(api client.Client) error {
-	namespace, err := getOperatorNamespace()
+	namespace, err := k8sutil.GetOperatorNamespace()
 	if err != nil {
 		return err
 	}

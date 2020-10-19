@@ -1,8 +1,8 @@
 package common
 
 import (
+	"context"
 	"fmt"
-	"golang.org/x/net/context"
 	"os"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
@@ -16,52 +16,57 @@ import (
 )
 
 const (
-	// installedNamespaceEnvKey is the ns where Openshift serverless operator has been installed
-	installedNamespaceEnvKey = "NAMESPACE"
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
 	monitoringLabel = "openshift.io/cluster-monitoring"
 	rolePath        = "deploy/role_service_monitor.yaml"
-	testRolePath    = "TEST_ROLE_PATH"
+	TestRolePath    = "TEST_ROLE_PATH"
 )
 
-func SetupMonitoringRequirements(api client.Client) error {
-	ns, err := getOperatorNamespace()
+func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
+	err := addMonitoringLabelToNamespace(instance.GetNamespace(), api)
 	if err != nil {
 		return err
 	}
-	err = addMonitoringLabelToNamespace(ns, api)
-	if err != nil {
-		return err
-	}
-	d, err := getServerlessOperatorDeployment(api, ns)
-	if err != nil {
-		return err
-	}
-	err = createRoleAndRoleBinding(d, ns, getRolePath(), api)
+	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), getRolePath(), api)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+func GetServerlessOperatorDeployment(api client.Client, namespace string) (*appsv1.Deployment, error) {
+	deployment := &appsv1.Deployment{}
+	deploymentName, err := getOperatorDeploymentName()
+	if err != nil {
+		return nil, err
+	}
+	key := types.NamespacedName{Name: deploymentName, Namespace: namespace}
+	err = api.Get(context.TODO(), key, deployment)
+	if err != nil {
+		return nil, err
+	}
+	// Set version and kind here because it is required for the owner references
+	// used by the role creation later on
+	// currently k8s api returns no value for these fields, for more check:
+	// https://github.com/kubernetes/client-go/issues/861
+	deployment.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "Deployment",
+	})
+	return deployment, nil
+}
+
 func getRolePath() string {
 	// meant for testing only
-	ns, found := os.LookupEnv(testRolePath)
+	ns, found := os.LookupEnv(TestRolePath)
 	if found {
 		return ns
 	} else {
 		return rolePath
 	}
-}
-
-func getOperatorNamespace() (string, error) {
-	ns := os.Getenv(installedNamespaceEnvKey)
-	if ns == "" {
-		return "", fmt.Errorf("the environment variable %q must be set", installedNamespaceEnvKey)
-	}
-	return ns, nil
 }
 
 func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
@@ -79,32 +84,11 @@ func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
 	return nil
 }
 
-func getServerlessOperatorDeployment(api client.Client, namespace string) (*appsv1.Deployment, error) {
-	deployment := &appsv1.Deployment{}
-	deploymentName, err := getOperatorDeploymentName()
-	if err != nil {
-		return nil, err
-	}
-	key := types.NamespacedName{Name: deploymentName, Namespace: namespace}
-	err = api.Get(context.TODO(), key, deployment)
-	if err != nil {
-		return nil, err
-	}
-	return deployment, nil
-}
-
-func createRoleAndRoleBinding(instance *appsv1.Deployment, namespace, path string, client client.Client) error {
+func createRoleAndRoleBinding(instance mf.Owner, namespace, path string, client client.Client) error {
 	manifest, err := mf.NewManifest(path, mf.UseClient(mfclient.NewClient(client)))
 	if err != nil {
 		return fmt.Errorf("unable to create role and roleBinding ServiceMonitor install manifest: %w", err)
 	}
-	instance.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "apps",
-		Version: "v1",
-		Kind:    "Deployment",
-	})
-	// this is typical probably not needed as uid is enough for ownership
-	instance.SetNamespace(namespace)
 	transforms := []mf.Transformer{mf.InjectOwner(instance), injectNameSpace(namespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest: %w", err)

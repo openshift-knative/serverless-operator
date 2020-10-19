@@ -28,7 +28,7 @@ var (
 
 // KnativeEventing is the Schema for the eventings API
 // +genclient
-// +genreconciler
+// +genreconciler:krshapedlogic=false
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KnativeEventing struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -53,9 +53,19 @@ type KnativeEventingSpec struct {
 	CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
-	// If no value is provided, ChannelBasedBroker will be used.
+	// If no value is provided, MTChannelBasedBroker will be used.
 	// +optional
 	DefaultBrokerClass string `json:"defaultBrokerClass,omitempty"`
+
+	// SinkBindingSelectionMode specifies the NamespaceSelector and ObjectSelector
+	// for the sinkbinding webhook.
+	// If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
+	// will be considered by the sinkbinding webhook;
+	// If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
+	// will NOT be considered by the sinkbinding webhook.
+	// The default is `exclusion`.
+	// +optional
+	SinkBindingSelectionMode string `json:"sinkBindingSelectionMode,omitempty"`
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing
@@ -65,6 +75,10 @@ type KnativeEventingStatus struct {
 	// The version of the installed release
 	// +optional
 	Version string `json:"version,omitempty"`
+
+	// The url links of the manifests, separated by comma
+	// +optional
+	Manifests []string `json:"manifests,omitempty"`
 }
 
 // KnativeEventingList contains a list of KnativeEventing

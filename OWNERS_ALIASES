@@ -1,15 +1,23 @@
 aliases:
   serverless-approvers:
   - alanfx
-  - mgencur
+  - aliok
   - jcrossley3
   - markusthoemmes
-  - vdemeester
+  - matzew
+  - mgencur
   - warrenvw
   serverless-reviewers:
   - alanfx
-  - mgencur
+  - aliok
+  - devguyio
+  - dsimansk
   - jcrossley3
+  - lberk
   - markusthoemmes
-  - vdemeester
+  - matzew
+  - mgencur
+  - navidshaikh
+  - rhuss
+  - skonto
   - warrenvw

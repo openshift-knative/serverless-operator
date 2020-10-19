@@ -61,7 +61,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ing *v1alpha1.Ingress) r
 	routes, err := resources.MakeRoutes(ing)
 	if err != nil {
 		logger.Warnf("Failed to generate routes from ingress %v", err)
-		// Returning nil aborts the reconcilation. It will be retriggered once the status of the ingress changes.
+		// Returning nil aborts the reconciliation. It will be retriggered once the status of the ingress changes.
 		return nil
 	}
 	for _, route := range routes {

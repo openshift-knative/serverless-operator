@@ -22,7 +22,7 @@ $ make images test-operator
 - `DOCKER_REPO_OVERRIDE` points to that repository
 - `bash` (4.0.0 or newer)
 - `make`
-- `yq`
+- `yq` (3.4.0)
 
 ### CRC-based cluster
 
@@ -49,6 +49,8 @@ Use the appropriate make targets or scripts in `hack`:
 
 - `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
+- `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
+- `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
 - `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
 - `make install-mesh`: Install service mesh operator and enable sidecar injections.
@@ -56,6 +58,14 @@ Use the appropriate make targets or scripts in `hack`:
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
+
+### Updating the CSV
+
+To update images or version on the [CSV](./olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml), we use a [script](./olm-catalog/serverless-operator/generate_csv.sh) and a [template](./olm-catalog/serverless-operator/csv.template.yaml). Update those based on your needs, and generate the updated CSV like:
+
+```
+make csv
+```
 
 ### Running tests
 
@@ -226,7 +236,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          serving.knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/system-namespace: "true"
   podSelector: {}
   policyTypes:
   - Ingress

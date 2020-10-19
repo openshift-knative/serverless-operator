@@ -62,3 +62,57 @@ func TestEventingWebhookMemoryLimit(t *testing.T) {
 		})
 	}
 }
+
+func TestEventingWebhookInclusionMode(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		ke     *operatorv1alpha1.KnativeEventing
+		wanted string
+	}{
+		{
+			name: "No mode specified",
+			ke: &operatorv1alpha1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "no-mode-specified",
+					Namespace: namespace,
+				},
+			},
+			wanted: "inclusion",
+		},
+		{
+			name: "Inclusion Mode Specified",
+			ke: &operatorv1alpha1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "inclusion-specified",
+					Namespace: namespace,
+				},
+				Spec: operatorv1alpha1.KnativeEventingSpec{
+					SinkBindingSelectionMode: "inclusion",
+				},
+			},
+			wanted: "inclusion",
+		},
+		{
+			name: "Exclusion Mode Specified",
+			ke: &operatorv1alpha1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "exclusion-specified",
+					Namespace: namespace,
+				},
+				Spec: operatorv1alpha1.KnativeEventingSpec{
+					SinkBindingSelectionMode: "exclusion",
+				},
+			},
+			wanted: "exclusion",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			common.MutateEventing(tc.ke)
+			if tc.ke.Spec.SinkBindingSelectionMode != tc.wanted {
+				t.Errorf(`Name: %s\n Expected "%s", Got: "%s"`, tc.name, tc.wanted, tc.ke.Spec.SinkBindingSelectionMode)
+			}
+		})
+	}
+}

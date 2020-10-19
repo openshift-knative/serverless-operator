@@ -62,9 +62,20 @@ func (r *Revision) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("Revision")
 }
 
-// IsReady returns if the revision is ready to serve the requested configuration.
-func (rs *RevisionStatus) IsReady() bool {
-	return revisionCondSet.Manage(rs).IsHappy()
+// IsReady returns true if the Status condition RevisionConditionReady
+// is true and the latest spec has been observed.
+func (r *Revision) IsReady() bool {
+	rs := r.Status
+	return rs.ObservedGeneration == r.Generation &&
+		rs.GetCondition(RevisionConditionReady).IsTrue()
+}
+
+// IsFailed returns true if the resource has observed the latest generation
+// and ready is false.
+func (r *Revision) IsFailed() bool {
+	rs := r.Status
+	return rs.ObservedGeneration == r.Generation &&
+		rs.GetCondition(RevisionConditionReady).IsFalse()
 }
 
 // GetContainerConcurrency returns the container concurrency. If
@@ -160,16 +171,43 @@ func (rs *RevisionStatus) PropagateAutoscalerStatus(ps *av1alpha1.PodAutoscalerS
 		return
 	}
 
+	// Don't mark the resources available, if deployment status already determined
+	// it isn't so.
+	resUnavailable := !rs.GetCondition(RevisionConditionResourcesAvailable).IsFalse()
+	if ps.IsScaleTargetInitialized() && resUnavailable {
+		// Precondition for PA being initialized is SKS being active and
+		// that implies that |service.endpoints| > 0.
+		rs.MarkResourcesAvailableTrue()
+		rs.MarkContainerHealthyTrue()
+	}
+
 	switch cond.Status {
 	case corev1.ConditionUnknown:
 		rs.MarkActiveUnknown(cond.Reason, cond.Message)
 	case corev1.ConditionFalse:
+		// Here we have 2 things coming together at the same time:
+		// 1. The ready is False, meaning the revision is scaled to 0
+		// 2. Initial scale was never achieved, which means we failed to progress
+		//    towards initial scale during the progress deadline period and scaled to 0
+		//		failing to activate.
+		// So mark the revision as failed at that point.
+		// See #8922 for details. When we try to scale to 0, we force the Deployment's
+		// Progress status to become `true`, since successful scale down means
+		// progress has been achieved.
+		// If the ResourcesAvailable is already false, don't override the message.
+		if !ps.IsScaleTargetInitialized() && resUnavailable {
+			rs.MarkResourcesAvailableFalse(ReasonProgressDeadlineExceeded,
+				"Initial scale was never achieved")
+		}
 		rs.MarkActiveFalse(cond.Reason, cond.Message)
 	case corev1.ConditionTrue:
 		rs.MarkActiveTrue()
 
 		// Precondition for PA being active is SKS being active and
-		// that entices that |service.endpoints| > 0.
+		// that implies that |service.endpoints| > 0.
+		//
+		// Note: This is needed for backwards compatibility as we're adding the new
+		// ScaleTargetInitialized condition to gate readiness.
 		rs.MarkResourcesAvailableTrue()
 		rs.MarkContainerHealthyTrue()
 	}

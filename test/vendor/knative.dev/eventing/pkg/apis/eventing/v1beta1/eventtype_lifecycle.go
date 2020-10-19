@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+
 	"knative.dev/pkg/apis"
 )
 
@@ -84,7 +85,7 @@ func (et *EventTypeStatus) MarkBrokerNotConfigured() {
 }
 
 func (et *EventTypeStatus) PropagateBrokerStatus(bs *BrokerStatus) {
-	bc := brokerCondSet.Manage(bs).GetTopLevelCondition()
+	bc := bs.GetConditionSet().Manage(bs).GetTopLevelCondition()
 	if bc == nil {
 		et.MarkBrokerNotConfigured()
 		return

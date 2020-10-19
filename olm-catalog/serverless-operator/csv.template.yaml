@@ -34,8 +34,8 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: ">=1.9.0 <1.10.0"
-  name: serverless-operator.v1.10.0
+    olm.skipRange: ">=1.10.0 <1.11.0"
+  name: serverless-operator.v1.11.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -75,8 +75,8 @@ spec:
 
     # Prerequisites
     Knative Serving (and Knative Eventing respectively) can only be installed into the
-    `knative-serving` (`knative-eventing`) namespace. These namespaces must be created
-    before you create the `KnativeServing` (`KnativeEventing`) resource.
+    `knative-serving` (`knative-eventing`) namespace. These namespaces will be
+    automatically created when installing the operator.
 
     The components provided with the OpenShift Serverless operator require minimum cluster sizes on
     OpenShift Container Platform. For more information, see the documentation on [Getting started
@@ -273,7 +273,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
+                image: registry.svc.ci.openshift.org/openshift/knative-v0.17.0:knative-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
                 ports:
@@ -315,16 +315,20 @@ spec:
                           fieldPath: metadata.name
                     - name: OPERATOR_NAME
                       value: "knative-openshift"
-                    - name: MIN_OPENSHIFT_VERSION
-                      value: "4.3.0-0"
                     - name: REQUIRED_SERVING_NAMESPACE
                       value: "knative-serving"
                     - name: REQUIRED_EVENTING_NAMESPACE
                       value: "knative-eventing"
+                    - name: REQUIRED_KAFKA_NAMESPACE
+                      value: "knative-eventing"
+                    - name: SERVING_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative.yaml"
+                    - name: EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative-eventing-source.yaml"
+                    - name: EVENTING_BROKER_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative-eventing-broker.yaml"
                     - name: KOURIER_MANIFEST_PATH
                       value: deploy/resources/kourier/kourier-latest.yaml
-                    - name: CONSOLECLIDOWNLOAD_MANIFEST_PATH
-                      value: deploy/resources/console_cli_download_kn_resources.yaml
                     - name: KAFKACHANNEL_MANIFEST_PATH
                       value: deploy/resources/knativekafka/kafkachannel-latest.yaml
                     - name: KAFKASOURCE_MANIFEST_PATH
@@ -448,5 +452,5 @@ spec:
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-  replaces: serverless-operator.v1.9.0
-  version: 1.10.0
+  replaces: serverless-operator.v1.10.0
+  version: 1.11.0

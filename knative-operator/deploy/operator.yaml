@@ -29,11 +29,15 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "knative-openshift"
-            - name: MIN_OPENSHIFT_VERSION
-              value: "4.3.0-0"
             - name: REQUIRED_SERVING_NAMESPACE
               value: "knative-serving"
             - name: REQUIRED_EVENTING_NAMESPACE
               value: "knative-eventing"
+            - name: REQUIRED_KAFKA_NAMESPACE
+              value: "knative-eventing"
             - name: KOURIER_MANIFEST_PATH
               value: deploy/resources/kourier/kourier-latest.yaml
+            - name: KAFKACHANNEL_MANIFEST_PATH
+              value: deploy/resources/knativekafka/kafkachannel-latest.yaml
+            - name: KAFKASOURCE_MANIFEST_PATH
+              value: deploy/resources/knativekafka/kafkasource-latest.yaml

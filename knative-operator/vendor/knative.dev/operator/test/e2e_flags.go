@@ -19,15 +19,19 @@ limitations under the License.
 
 package test
 
-import "os"
+import (
+	"flag"
+	"os"
+)
 
 var (
 	// ServingOperatorNamespace is the default namespace for serving operator e2e tests
-	ServingOperatorNamespace = getenv("TEST_NAMESPACE", "knative-serving")
-	// EventingOperatorNamespace is the default namespace for serving operator e2e tests
-	EventingOperatorNamespace = getenv("TEST_NAMESPACE", "knative-eventing")
+	ServingOperatorNamespace  = getenv("TEST_NAMESPACE", "knative-operator-testing")
+	EventingOperatorNamespace = getenv("TEST_EVENTING_NAMESPACE", ServingOperatorNamespace)
 	// OperatorName is the default operator name for serving operator e2e tests
 	OperatorName = getenv("TEST_RESOURCE", "knative")
+	// OperatorFlags holds the flags or defaults for knative/operator settings in the user's environment.
+	OperatorFlags = initializeOperatorFlags()
 )
 
 func getenv(name, defaultValue string) string {
@@ -36,4 +40,21 @@ func getenv(name, defaultValue string) string {
 		value = defaultValue
 	}
 	return value
+}
+
+// OperatorEnvironmentFlags holds the e2e flags needed only by the operator repo.
+type OperatorEnvironmentFlags struct {
+	PreviousServingVersion  string // Indicates the previous version of Knative Serving.
+	PreviousEventingVersion string // Indicates the previous version of Knative Eventing.
+}
+
+func initializeOperatorFlags() *OperatorEnvironmentFlags {
+	var f OperatorEnvironmentFlags
+
+	flag.StringVar(&f.PreviousServingVersion, "preservingversion", "",
+		"Set this flag to the previous version of Knative Serving.")
+	flag.StringVar(&f.PreviousEventingVersion, "preeventingversion", "",
+		"Set this flag to the previous version of Knative Eventing.")
+
+	return &f
 }
