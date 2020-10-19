@@ -35,7 +35,7 @@ images=(
   ["imc-controller__controller"]="${eventing}-channel-controller"
   ["imc-dispatcher__dispatcher"]="${eventing}-channel-dispatcher"
 
-  ["v0.17.0-pingsource-cleanup__pingsource"]="${eventing}-pingsource-cleanup"
+  ["v0.17-pingsource-cleanup__pingsource"]="${eventing}-pingsource-cleanup"
   ["PING_IMAGE"]="${eventing}-ping"
   ["MT_PING_IMAGE"]="${eventing}-mtping"
   ["APISERVER_RA_IMAGE"]="${eventing}-apiserver-receive-adapter"
