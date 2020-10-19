@@ -21,7 +21,6 @@ requirements:
     - '4.6'
 
 dependencies:
-  knative-release: 0.17.0
   serving: 0.17.3
   eventing: 0.17.2
   kourier: 0.17.2

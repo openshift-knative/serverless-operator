@@ -44,7 +44,7 @@ image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingres
 image "imc-controller__controller"                  "${eventing}-channel-controller"
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
 
-image "v$(metadata.get dependencies.knative-release)-pingsource-cleanup__pingsource" "${eventing}-pingsource-cleanup"
+image "v0.17.0-pingsource-cleanup__pingsource" "${eventing}-pingsource-cleanup"
 image "PING_IMAGE"           "${eventing}-ping"
 image "MT_PING_IMAGE"        "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
