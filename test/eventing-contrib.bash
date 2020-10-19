@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# TO BE REMOVED
-function header_text {
-  header $1
-}
 function upstream_knative_eventing_contrib_e2e {
   (
   logger.info 'Running eventing-contrib tests'
@@ -37,31 +33,10 @@ function upstream_knative_eventing_contrib_e2e {
 
   # run_e2e_tests defined in eventing-contrib
   logger.info 'Starting eventing-contrib tests'
-  (( !failed )) && run_e2e_tests_workaround || failed=$?
+  (( !failed )) && run_e2e_tests || failed=$?
 
   print_test_result ${failed}
 
   return $failed
   )
-}
-
-function run_e2e_tests_workaround(){
-
-  oc get ns ${TEST_EVENTING_NAMESPACE} 2>/dev/null || TEST_EVENTING_NAMESPACE="knative-eventing"
-  sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${TEST_EVENTING_NAMESPACE}/g" ${CONFIG_TRACING_CONFIG} | oc replace -f -
-  local test_name="${1:-}"
-  local run_command=""
-  local failed=0
-  local channels=messaging.knative.dev/v1alpha1:KafkaChannel,messaging.knative.dev/v1beta1:KafkaChannel
-
-  local common_opts=" -channels=$channels --kubeconfig $KUBECONFIG" ## --imagetemplate $TEST_IMAGE_TEMPLATE"
-  if [ -n "$test_name" ]; then
-      local run_command="-run ^(${test_name})$"
-  fi
-
-  go_test_e2e -timeout=90m -parallel=12 ./test/e2e \
-    "$run_command" \
-    $common_opts --dockerrepo "quay.io/openshift-knative" --tag "v0.17" || failed=$?
-
-  return $failed
 }
