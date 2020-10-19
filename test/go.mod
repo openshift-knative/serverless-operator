@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/coreos/prometheus-operator v0.38.1
 	github.com/evanphx/json-patch v4.9.0+incompatible // indirect
+	github.com/openshift-knative/serverless-operator v1.3.1-0.20201015133617-f1541b896646
 	github.com/openshift/api v3.9.1-0.20190924102528-32369d4db2ad+incompatible
 	github.com/openshift/client-go v0.0.0-20200116152001-92a2713fa240
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20200911191357-6307c54ea472
@@ -21,6 +22,8 @@ require (
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
+	// Pick our local version of knative-operator to be able to change both codebases at once.
+	github.com/openshift-knative/serverless-operator/knative-operator => ../knative-operator
 
 	// Hardcoded for now, see comment int hack/update-deps.sh.
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20200618202633-7192180f496a
