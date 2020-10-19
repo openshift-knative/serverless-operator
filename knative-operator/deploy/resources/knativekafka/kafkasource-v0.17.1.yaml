@@ -21,7 +21,7 @@ rules:
   verbs: &everything
   - get
   - list
-  - watchals
+  - watch
   - create
   - update
   - patch
