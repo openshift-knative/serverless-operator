@@ -13,7 +13,7 @@ const (
 	eventingNamespace            = "knative-eventing"
 	knativeKafkaName             = "knative-kafka"
 	knativeKafkaChannelNamespace = "knative-eventing"
-	knativeKafkaSourceNamespace  = "knative-sources"
+	knativeKafkaSourceNamespace  = "knative-eventing"
 )
 
 var knativeKafkaChannelControlPlaneDeploymentNames = []string{
