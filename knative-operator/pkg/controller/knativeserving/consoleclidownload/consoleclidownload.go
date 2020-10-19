@@ -60,12 +60,12 @@ func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
 	switch {
 	case apierrors.IsNotFound(err):
-		tmpService := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+		tmpService := makeKnService(os.Getenv("IMAGE_SERVING_KN_CLI_ARTIFACTS"), instance)
 		if err := apiclient.Create(context.TODO(), tmpService); err != nil {
 			return err
 		}
 	case err == nil:
-		tmpService := makeKnService(os.Getenv("IMAGE_KN_CLI_ARTIFACTS"), instance)
+		tmpService := makeKnService(os.Getenv("IMAGE_SERVING_KN_CLI_ARTIFACTS"), instance)
 		serviceFromClusterDC := service.DeepCopy()
 		if !equality.Semantic.DeepEqual(service.Spec, tmpService.Spec) {
 			serviceFromClusterDC.Spec = tmpService.Spec

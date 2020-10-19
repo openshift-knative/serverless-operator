@@ -321,7 +321,7 @@ spec:
       serviceAccountName: kafka-controller-manager
       containers:
       - name: manager
-        image: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-source-controller
+        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/controller@sha256:d7306e7b01f61172919bd7bfd304c4892388b675e48e16fa71063c51ef440c1a
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
@@ -334,7 +334,7 @@ spec:
         - name: CONFIG_LEADERELECTION_NAME
           value: config-leader-election-kafka
         - name: KAFKA_RA_IMAGE
-          value: registry.svc.ci.openshift.org/openshift/knative-v0.17.1:knative-eventing-sources-kafka-source-adapter
+          value: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/receive_adapter@sha256:2bb36e62f1b4bd33eda26257371bc4f19db38da2062ebc712fce0fc42151f3ea
         volumeMounts:
         resources:
           requests:

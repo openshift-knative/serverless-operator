@@ -24,9 +24,9 @@ func TestMutateEventing(t *testing.T) {
 		},
 	}
 	// Setup image override
-	os.Setenv("IMAGE_foo", image1)
+	os.Setenv("IMAGE_EVENTING_foo", image1)
 	// Setup image override with deployment name
-	os.Setenv("IMAGE_bar__baz", image2)
+	os.Setenv("IMAGE_EVENTING_bar__baz", image2)
 
 	// Mutate for OpenShift
 	common.MutateEventing(ke)

@@ -35,7 +35,7 @@ func TestMutate(t *testing.T) {
 		domain   = "fubar"
 		image    = "docker.io/queue:tag"
 	)
-	os.Setenv("IMAGE_queue-proxy", image)
+	os.Setenv("IMAGE_SERVING_queue-proxy", image)
 	type check func(*testing.T, *servingv1alpha1.KnativeServing)
 
 	cases := []struct {
