@@ -205,7 +205,6 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
   timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 10
-  timeout 600 "[[ \$(oc get pods -n ${EVENTING_SOURCES_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 11
 
   oc delete subscriptions.operators.coreos.com -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
   for ip in $(oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do

@@ -209,7 +209,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	m, err := manifest.Transform(
-		injectOwner(instance),
+		mf.InjectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
@@ -367,23 +367,6 @@ func setBootstrapServers(bootstrapServers string) mf.Transformer {
 			}
 		}
 		return nil
-	}
-}
-
-// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
-// `owner` to namespace-scoped objects.
-//
-// The difference from Manifestival's Inject owner is, it only does it for
-// resources that are in the same namespace as the owner.
-// For the resources that are in the same namespace, it fallbacks to
-// Manifestival's InjectOwner
-func injectOwner(owner mf.Owner) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetNamespace() == owner.GetNamespace() {
-			return mf.InjectOwner(owner)(u)
-		} else {
-			return nil
-		}
 	}
 }
 
