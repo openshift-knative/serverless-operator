@@ -18,7 +18,7 @@ function install_catalogsource {
   pull_user="puller"
   add_user "$pull_user" "puller"
   oc -n "$OLM_NAMESPACE" policy add-role-to-user registry-viewer "$pull_user"
-  token=$(oc --config=$pull_user.kubeconfig whoami -t)
+  token=$(oc --kubeconfig=$pull_user.kubeconfig whoami -t)
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
   # Create a backup of the CSV so we don't pollute the repository.
@@ -110,7 +110,7 @@ function delete_catalog_source {
   oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR" || return 10
   [ -f "$CATALOG_SOURCE_FILENAME" ] && rm -v "$CATALOG_SOURCE_FILENAME"
   logger.info "Wait for the ${OPERATOR} pod to disappear"
-  timeout 900 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]" || return 11
+  timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]" || return 11
   logger.success 'CatalogSource deleted'
 }
 
@@ -137,6 +137,6 @@ function add_user {
 
   logger.info 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
-  occmd="bash -c '! oc login --config=$name.kubeconfig --username=$name --password=$pass > /dev/null'"
-  timeout 900 "${occmd}" || return 1
+  occmd="bash -c '! oc login --kubeconfig=$name.kubeconfig --username=$name --password=$pass > /dev/null'"
+  timeout 180 "${occmd}" || return 1
 }
