@@ -36,6 +36,10 @@ test-unit:
 test-e2e:
 	./test/e2e-tests.sh
 
+# TODO: that will - soon... run the Kafka operator e2e hook
+test-e2e-kafka:
+	echo "Noop for now"
+
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
@@ -61,7 +65,25 @@ test-all-e2e: test-e2e test-upstream-e2e
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
-csv:
-	./olm-catalog/serverless-operator/generate_csv.sh \
-		olm-catalog/serverless-operator/csv.template.yaml \
+release-files:
+	./hack/generate/csv.sh \
+		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+	./hack/generate/annotations.sh \
+		templates/annotations.yaml \
+		olm-catalog/serverless-operator/metadata/annotations.yaml
+	./hack/generate/dockerfile.sh \
+		templates/main.Dockerfile \
+		olm-catalog/serverless-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/test-source-image.Dockerfile \
+		openshift/ci-operator/source-image/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/build-image.Dockerfile \
+		openshift/ci-operator/build-image/Dockerfile
+
+generated-files: release-files
+	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
+	(cd serving/ingress; ./hack/update-deps.sh)
+	(cd test; ./hack/update-deps.sh)
+	(cd knative-operator; dep ensure -v)

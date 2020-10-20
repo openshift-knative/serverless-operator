@@ -1,0 +1,28 @@
+---
+project:
+  name: serverless-operator
+  version: 1.11.0
+
+olm:
+  replaces: 1.10.0
+  skipRange: '>=1.10.0 <1.11.0'
+  channels:
+    default: '4.3'
+    list:
+      - '4.5'
+      - '4.6'
+
+requirements:
+  kube:
+    minVersion: 1.15.0
+  golang: '1.14'
+  ocp:
+    - '4.5'
+    - '4.6'
+
+dependencies:
+  serving: 0.17.3
+  eventing: 0.17.2
+  kourier: 0.17.2
+  cli: 0.17.2
+  maistra: 1.1.5

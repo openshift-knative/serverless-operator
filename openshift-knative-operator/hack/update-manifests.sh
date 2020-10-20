@@ -5,7 +5,7 @@ set -Eeuo pipefail
 root="$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Source the main vars file to get the serving/eventing version to be used.
-source "$root/hack/lib/vars.bash"
+source "$root/hack/lib/__sources__.bash"
 
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
