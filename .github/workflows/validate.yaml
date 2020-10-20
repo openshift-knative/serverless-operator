@@ -16,6 +16,11 @@ jobs:
     name: Generated files are commited
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
+
       - name: Install prerequisites
         env:
           YQ_VERSION: 3.4.0
@@ -26,8 +31,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Generate release files
-        run: make release-files
+      - name: Regenerate all generated files
+        run: make generated-files
 
       - name: Check if everything is consistent
         run: git diff --exit-code

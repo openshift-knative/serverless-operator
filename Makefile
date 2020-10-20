@@ -77,3 +77,8 @@ release-files:
 	./hack/generate/dockerfile.sh \
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
+
+generated-files: release-files
+	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
+	(cd serving/ingress; ./hack/update-deps.sh)
+	(cd knative-operator; dep ensure -v)
