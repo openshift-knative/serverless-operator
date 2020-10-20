@@ -941,9 +941,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:933a80f0d8fdf426758af5a1cd099522c5dcf764f2dfc14534d6521ce6ecb2de"
+  digest = "1:3ddafff9b0a34cb9ad816c103f226fad7aeac004268dad7b525a07b41862b7b3"
   name = "knative.dev/operator"
-  packages = ["pkg/apis/operator/v1alpha1"]
+  packages = [
+    "pkg/apis/operator/v1alpha1",
+    "pkg/reconciler/common/testing",
+  ]
   pruneopts = "NUT"
   revision = "249861a73322df307ddd2593bef13cb15c09f230"
   version = "v0.17.2"
@@ -1054,6 +1057,7 @@
   input-imports = [
     "github.com/appscode/jsonpatch",
     "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1",
+    "github.com/go-logr/logr",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
     "github.com/openshift/api/config/v1",
@@ -1071,6 +1075,7 @@
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
+    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/rbac/v1",
     "k8s.io/apimachinery/pkg/api/equality",
@@ -1088,6 +1093,7 @@
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "knative.dev/operator/pkg/apis/operator/v1alpha1",
+    "knative.dev/operator/pkg/reconciler/common/testing",
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/apis/testing",
