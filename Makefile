@@ -37,7 +37,7 @@ test-e2e:
 	./test/e2e-tests.sh
 
 # Run the Kafka operator e2e hook
-test-e2e-kafka:
+test-e2e-with-kafka:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
