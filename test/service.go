@@ -6,7 +6,6 @@ import (
 	"time"
 
 	routev1 "github.com/openshift/api/route/v1"
-	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -133,7 +132,7 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "knative service %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("knative service %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }
@@ -155,7 +154,7 @@ func WaitForOperatorDepsDeleted(ctx *Context) error {
 	})
 
 	if waitErr != nil {
-		return errors.Wrapf(waitErr, "serverless operator dependencies not deleted in time")
+		return fmt.Errorf("serverless operator dependencies not deleted in time: %w", waitErr)
 	}
 	return nil
 }
@@ -223,7 +222,7 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "OpenShift Route %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("openShift route %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }

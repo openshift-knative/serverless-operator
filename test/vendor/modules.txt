@@ -87,7 +87,6 @@ github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientse
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1
 github.com/operator-framework/operator-lifecycle-manager/pkg/lib/version
 # github.com/pkg/errors v0.9.1
-## explicit
 github.com/pkg/errors
 # github.com/rickb777/date v1.13.0
 github.com/rickb777/date/period
