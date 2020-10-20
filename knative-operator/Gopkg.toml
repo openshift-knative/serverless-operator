@@ -3,10 +3,6 @@
   branch = "master"
 
 [[override]]
-  name = "sigs.k8s.io/controller-tools"
-  revision = "9d55346c2bde73fb3326ac22eac2e5210a730207"
-
-[[override]]
   name = "k8s.io/api"
   # revision for tag "kubernetes-1.13.4"
   revision = "5cb15d34447165a97c76ed5a60e4e99c8a01ecfe"
