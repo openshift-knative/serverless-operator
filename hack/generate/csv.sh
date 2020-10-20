@@ -11,6 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
+eventing_contrib="${registry}/knative-v$(metadata.get dependencies.eventing_contrib):knative-eventing-sources"
 
 declare -a images
 declare -A images_addresses
@@ -53,6 +54,16 @@ image "BROKER_FILTER_IMAGE"  "${eventing}-broker-filter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
+image "kafka-controller-manager__manager"    "${eventing_contrib}-kafka-source-controller"
+image "KAFKA_RA_IMAGE"                       "${eventing_contrib}-kafka-source-adapter"
+image "kafka-ch-controller__controller"      "${eventing_contrib}-kafka-channel-controller"
+# TODO: clash!
+# TODO: we have a separate Kafka dispatcher deployment for the global dispatcher
+# TODO: following image will only be used in a namespaced dispatcher
+image "DISPATCHER_IMAGE"                     "${eventing_contrib}-kafka-channel-dispatcher"
+image "kafka-ch-dispatcher__dispatcher"      "${eventing_contrib}-kafka-channel-dispatcher"
+image "kafka-webhook__kafka-webhook"         "${eventing_contrib}-kafka-channel-webhook"
+
 declare -A values
 values[spec.version]="$(metadata.get project.version)"
 values[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
@@ -62,7 +73,7 @@ values[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces
 
 function add_image {
   cat << EOF | yq write --inplace --script - "$1"
-- command: update 
+- command: update
   path: spec.relatedImages[+]
   value:
     name: "IMAGE_${2}"
