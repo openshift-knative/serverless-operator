@@ -84,7 +84,7 @@ function add_related_image {
 - command: update
   path: spec.relatedImages[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     image: "${3}"
 EOF
 }
@@ -94,7 +94,7 @@ function add_downstream_operator_deployment_image {
 - command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     value: "${3}"
 EOF
 }
@@ -108,7 +108,7 @@ function add_upstream_operator_deployment_image {
 - command: update
   path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     value: "${3}"
 EOF
 }
@@ -118,16 +118,16 @@ cp "$template" "$target"
 
 for name in "${images[@]}"; do
   echo "Image: ${name} -> ${images_addresses[$name]}"
-  add_related_image "$target" "$name" "${images_addresses[$name]}"
-  add_downstream_operator_deployment_image "$target" "$name" "${images_addresses[$name]}"
-  add_upstream_operator_deployment_image "$target" "$name" "${images_addresses[$name]}"
+  add_related_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_downstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_upstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
 done
 
 # don't add Kafka image overrides to upstream operator
 for name in "${kafka_images[@]}"; do
   echo "kafka Image: ${name} -> ${kafka_images_addresses[$name]}"
-  add_related_image "$target" "KAFKA_${name}" "${kafka_images_addresses[$name]}"
-  add_downstream_operator_deployment_image "$target" "KAFKA_${name}" "${kafka_images_addresses[$name]}"
+  add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
+  add_downstream_operator_deployment_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
 for name in "${!values[@]}"; do
