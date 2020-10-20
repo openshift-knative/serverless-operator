@@ -16,6 +16,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 	cases := []struct {
 		name     string
 		envMap   map[string]string
+		scope    string
 		expected map[string]string
 	}{
 		{
@@ -23,6 +24,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_foo": "quay.io/myimage",
 			},
+			scope: "",
 			expected: map[string]string{
 				"foo": "quay.io/myimage",
 			},
@@ -32,6 +34,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
+			scope: "",
 			expected: map[string]string{
 				"CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
@@ -41,6 +44,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_eventing-controller__CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
+			scope: "",
 			expected: map[string]string{
 				"eventing-controller/CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
@@ -50,6 +54,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_foo__bar": "quay.io/myimage",
 			},
+			scope: "",
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage",
 			},
@@ -60,6 +65,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 				"IMAGE_foo__bar": "quay.io/myimage1",
 				"IMAGE_bar":      "quay.io/myimage2",
 			},
+			scope: "",
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage1",
 				"bar":     "quay.io/myimage2",
@@ -70,6 +76,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"X_foo": "quay.io/myimage",
 			},
+			scope:    "",
 			expected: map[string]string{},
 		},
 		{
@@ -77,6 +84,95 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_foo": "",
 			},
+			scope:    "",
+			expected: map[string]string{},
+		},
+		{
+			name: "Simple container name w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_foo": "quay.io/myimage",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"foo": "quay.io/myimage",
+			},
+		},
+		{
+			name: "Simple env var w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+		},
+		{
+			name: "Simple env var with deployment name w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_eventing-controller__CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"eventing-controller/CRONJOB_RA_IMAGE": "quay.io/myimage",
+			},
+		},
+		{
+			name: "Deployment+container name w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_foo__bar": "quay.io/myimage",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"foo/bar": "quay.io/myimage",
+			},
+		},
+		{
+			name: "Deployment+container and container name w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_foo__bar": "quay.io/myimage1",
+				"IMAGE_EVENTING_bar":      "quay.io/myimage2",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"foo/bar": "quay.io/myimage1",
+				"bar":     "quay.io/myimage2",
+			},
+		},
+		{
+			name: "Nothing in scope",
+			envMap: map[string]string{
+				"IMAGE_foo__bar": "quay.io/myimage1",
+				"IMAGE_bar":      "quay.io/myimage2",
+			},
+			scope:    "EVENTING",
+			expected: map[string]string{},
+		},
+		{
+			name: "Ignore overrides not in the scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_foo": "quay.io/myimage1",
+				"IMAGE_SERVING_bar":  "quay.io/myimage2",
+			},
+			scope: "EVENTING",
+			expected: map[string]string{
+				"foo": "quay.io/myimage1",
+			},
+		},
+		{
+			name: "Different prefix w/ scope",
+			envMap: map[string]string{
+				"X_EVENTING_foo": "quay.io/myimage",
+			},
+			scope:    "EVENTING",
+			expected: map[string]string{},
+		},
+		{
+			name: "No env var value w/ scope",
+			envMap: map[string]string{
+				"IMAGE_EVENTING_foo": "",
+			},
+			scope:    "EVENTING",
 			expected: map[string]string{},
 		},
 	}
@@ -84,7 +180,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 		environ := environFromMap(tc.envMap)
-		overrideMap := common.BuildImageOverrideMapFromEnviron(environ)
+		overrideMap := common.BuildImageOverrideMapFromEnviron(environ, tc.scope)
 
 		if !reflect.DeepEqual(overrideMap, tc.expected) {
 			t.Errorf("Image override map is not equal. Case name: %q. Expected: %v, actual: %v", tc.name, tc.expected, overrideMap)

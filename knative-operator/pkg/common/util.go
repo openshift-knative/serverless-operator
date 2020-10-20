@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -47,13 +48,18 @@ func IngressNamespace(servingNamespace string) string {
 }
 
 // BuildImageOverrideMapFromEnviron creates a map to overrides registry images
-func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
+func BuildImageOverrideMapFromEnviron(environ []string, scope string) map[string]string {
 	overrideMap := map[string]string{}
+
+	prefix := ImagePrefix
+	if scope != "" {
+		prefix = fmt.Sprintf("%s%s_", ImagePrefix, scope)
+	}
 
 	for _, e := range environ {
 		pair := strings.SplitN(e, "=", 2)
-		if strings.HasPrefix(pair[0], ImagePrefix) {
-			// convert
+		if strings.HasPrefix(pair[0], prefix) {
+			// when scope doesn't exist, convert
 			// "IMAGE_container=docker.io/foo"
 			// "IMAGE_deployment__container=docker.io/foo2"
 			// "IMAGE_env_var=docker.io/foo3"
@@ -63,7 +69,19 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 			// deployment/container: docker.io/foo2
 			// env_var: docker.io/foo3
 			// deployment/env_var: docker.io/foo4
-			name := strings.TrimPrefix(pair[0], ImagePrefix)
+			//
+			//
+			// when scope=EVENTING, convert
+			// "IMAGE_EVENTING_container=docker.io/foo"
+			// "IMAGE_EVENTING_deployment__container=docker.io/foo2"
+			// "IMAGE_EVENTING_env_var=docker.io/foo3"
+			// "IMAGE_EVENTING_deployment__env_var=docker.io/foo4"
+			// to
+			// container: docker.io/foo
+			// deployment/container: docker.io/foo2
+			// env_var: docker.io/foo3
+			// deployment/env_var: docker.io/foo4
+			name := strings.TrimPrefix(pair[0], prefix)
 			name = strings.Replace(name, "__", "/", 1)
 			if pair[1] != "" {
 				overrideMap[name] = pair[1]
