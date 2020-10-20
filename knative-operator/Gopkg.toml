@@ -1,6 +1,11 @@
-[[override]]
-  name = "github.com/go-openapi/spec"
-  branch = "master"
+[prune]
+  go-tests = true
+  non-go = true
+  unused-packages = true
+
+#
+# KUBERNETES AND OPENSHIFT
+#
 
 [[override]]
   name = "k8s.io/api"
@@ -22,33 +27,49 @@
   # revision for tag "kubernetes-1.13.4"
   revision = "b40b2a5939e43f7ffe0028ad67586b7ce50bb675"
 
-[[override]]
-  name = "github.com/coreos/prometheus-operator"
-  version = "=v0.29.0"
+[[constraint]]
+  name = "github.com/openshift/api"
+  branch = "release-4.2"
 
-[[override]]
-  name = "k8s.io/kube-state-metrics"
-  version = "v1.6.0"
-
-[[override]]
-  name = "sigs.k8s.io/controller-runtime"
-  version = "=v0.1.12"
+#
+# KNATIVE
+#
 
 [[constraint]]
   name = "knative.dev/operator"
   version = "=v0.17.2"
 
-# [[override]]
-#   name = "knative.dev/pkg"
-#   branch = "release-0.14"
-
 [[override]]
   name = "knative.dev/serving"
   branch = "release-0.15"
 
+# [[override]]
+#   name = "knative.dev/pkg"
+#   branch = "release-0.14"
+
+#
+# OPERATOR SDK
+#
+
 [[constraint]]
-  name = "github.com/openshift/api"
-  branch = "release-4.2"
+  name = "github.com/operator-framework/operator-sdk"
+  version = "=v0.10.1"
+
+[[override]]
+  name = "sigs.k8s.io/controller-runtime"
+  version = "=v0.1.12"
+
+[[override]]
+  name = "github.com/coreos/prometheus-operator"
+  version = "=v0.29.0"
+
+[[override]]
+  name = "github.com/go-openapi/spec"
+  branch = "master"
+
+[[override]]
+  name = "k8s.io/kube-state-metrics"
+  version = "v1.6.0"
 
 [[constraint]]
   name = "github.com/manifestival/manifestival"
@@ -57,14 +78,3 @@
 [[constraint]]
   name = "github.com/manifestival/controller-runtime-client"
   version = "=v0.2.0-0.1.12"
-
-[[constraint]]
-  name = "github.com/operator-framework/operator-sdk"
-  # The version rule is used for a specific release and the master branch for in between releases.
-  # branch = "v0.10.x" #osdk_branch_annotation
-  version = "=v0.10.1" #osdk_version_annotation
-
-[prune]
-  go-tests = true
-  non-go = true
-  unused-packages = true
