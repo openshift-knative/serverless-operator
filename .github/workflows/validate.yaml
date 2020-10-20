@@ -15,19 +15,31 @@ jobs:
   generated-files-commited:
     name: Generated files are commited
     runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}
     steps:
+      - name: Setup Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
+
       - name: Install prerequisites
         env:
           YQ_VERSION: 3.4.0
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
+          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: ./src/github.com/${{ github.repository }}
 
-      - name: Generate release files
-        run: make release-files
+      - name: Regenerate all generated files
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: make generated-files
 
       - name: Check if everything is consistent
+        working-directory: ./src/github.com/${{ github.repository }}
         run: git diff --exit-code
