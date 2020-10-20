@@ -91,7 +91,7 @@ var validKnativeEventingCR = &eventingv1alpha1.KnativeEventing{
 func TestHappy(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
-	validator := KnativeKafkaValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{defaultCR})
 	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
 	result := validator.Handle(context.TODO(), types.Request{})
@@ -103,7 +103,7 @@ func TestHappy(t *testing.T) {
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
-	validator := KnativeKafkaValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{invalidNamespaceCR})
 	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
 	result := validator.Handle(context.TODO(), types.Request{})
@@ -115,7 +115,7 @@ func TestInvalidNamespace(t *testing.T) {
 func TestLoneliness(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
-	validator := KnativeKafkaValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{defaultCR})
 	validator.InjectClient(fake.NewFakeClient(duplicateCR, validKnativeEventingCR))
 	result := validator.Handle(context.TODO(), types.Request{})
@@ -127,7 +127,7 @@ func TestLoneliness(t *testing.T) {
 func TestInvalidShape(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
-	validator := KnativeKafkaValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{invalidShapeCR})
 	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
 	result := validator.Handle(context.TODO(), types.Request{})
@@ -139,7 +139,7 @@ func TestInvalidShape(t *testing.T) {
 func TestValidateDeps(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
-	validator := KnativeKafkaValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{defaultCR})
 	validator.InjectClient(fake.NewFakeClient())
 	result := validator.Handle(context.TODO(), types.Request{})

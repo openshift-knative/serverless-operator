@@ -14,13 +14,11 @@ import (
 )
 
 const (
-	brokerName        = "smoke-test-broker"
-	triggerName       = "smoke-test-trigger"
-	cmName            = "smoke-test-br-cm"
-	brokerAPIVersion  = "eventing.knative.dev/v1"
-	brokerKind        = "Broker"
-	triggerAPIVersion = "eventing.knative.dev/v1"
-	triggerKind       = "trigger"
+	brokerName       = "smoke-test-broker"
+	triggerName      = "smoke-test-trigger"
+	cmName           = "smoke-test-br-cm"
+	brokerAPIVersion = "eventing.knative.dev/v1beta1"
+	brokerKind       = "Broker"
 )
 
 func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {

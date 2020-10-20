@@ -29,10 +29,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 		return fmt.Errorf("failed to configure ingress: %w", err)
 	}
 
-	if err := configureLogURLTemplate(ks, c); err != nil {
-		return fmt.Errorf("failed to configure log URL: %w", err)
-	}
-
+	configureLogURLTemplate(ks, c)
 	domainTemplate(ks)
 	ingressClass(ks)
 	ensureCustomCerts(ks)
@@ -80,7 +77,7 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 }
 
 // configure observability if ClusterLogging is installed
-func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client) {
 	const (
 		configmap = "observability"
 		key       = "logging.revision-url-template"
@@ -91,7 +88,7 @@ func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client
 	route := &routev1.Route{}
 	if err := c.Get(context.TODO(), client.ObjectKey{Name: name, Namespace: namespace}, route); err != nil {
 		log.Info(fmt.Sprintf("No revision-url-template; no route for %s/%s found", namespace, name))
-		return nil
+		return
 	}
 	// retrieve host from kibana route, construct a concrete logUrl template with actual host name, update observability
 	if len(route.Status.Ingress) > 0 {
@@ -101,7 +98,6 @@ func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client
 			Configure(ks, configmap, key, url)
 		}
 	}
-	return nil
 }
 
 // configure controller with custom certs for openshift registry if

@@ -85,12 +85,12 @@ func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort in
 	// will end up with resources the Operator does not have access to eg. `Kind=LimitRange`
 	// The list of resources returned is unrelated to our purposes here, thus the customization.
 	gvkFilterList := []schema.GroupVersionKind{
-		schema.GroupVersionKind{
+		{
 			Group:   "operator.knative.dev",
 			Version: "v1alpha1",
 			Kind:    "KnativeServing",
 		},
-		schema.GroupVersionKind{
+		{
 			Group:   "operator.knative.dev",
 			Version: "v1alpha1",
 			Kind:    "KnativeEventing",

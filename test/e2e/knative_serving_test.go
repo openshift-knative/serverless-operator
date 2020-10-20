@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	serviceName                   = "knative-openshift-metrics"
-	serviceMonitorName            = serviceName
 	servingName                   = "knative-serving"
 	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
@@ -108,6 +106,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 }
 
+//nolint // TODO(SRVKS-480): Reenable the test for this
 func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 	cleanup := func() {
 		if err := test.UpdateGlobalProxy(caCtx, ""); err != nil {

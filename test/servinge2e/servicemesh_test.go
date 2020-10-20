@@ -244,10 +244,10 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 }
 
 // formats an RSA public key as JWKS
-func rsaPublicKeyAsJwks(key rsa.PublicKey, keyId string) (string, error) {
+func rsaPublicKeyAsJwks(key rsa.PublicKey, keyID string) (string, error) {
 	eString := base64.RawURLEncoding.EncodeToString(big.NewInt(int64(key.E)).Bytes())
 	nString := base64.RawURLEncoding.EncodeToString(key.N.Bytes())
-	keyIdString := base64.RawURLEncoding.EncodeToString([]byte(keyId))
+	keyIDString := base64.RawURLEncoding.EncodeToString([]byte(keyID))
 
 	// Generate JWKS
 	jwks := map[string]interface{}{
@@ -256,7 +256,7 @@ func rsaPublicKeyAsJwks(key rsa.PublicKey, keyId string) (string, error) {
 				"e":   eString,
 				"n":   nString,
 				"kty": "RSA",
-				"kid": keyIdString,
+				"kid": keyIDString,
 			},
 		},
 	}
@@ -329,7 +329,7 @@ func jwtUnsignedToken(payload map[string]interface{}) (string, error) {
 
 // Convenience method to test requests with tokens, reads the response and returns a closed response and the body bits
 // token can be nil, in which case no Authorization header will be sent
-func jwtHttpGetRequestBytes(url string, token *string) (*http.Response, []byte, error) {
+func jwtHTTPGetRequestBytes(url string, token *string) (*http.Response, []byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating HTTP GET request: %v", err)
@@ -368,6 +368,9 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 	// print out the public key for debugging purposes
 	publicPksvc1, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		t.Fatalf("Error marshalling public key: %v", err)
+	}
 	publicPem := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PUBLIC KEY",
 		Bytes: publicPksvc1,
@@ -375,7 +378,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 	t.Logf("%s", string(publicPem))
 
 	// Used as "kid" in JWKS
-	const keyId = "test"
+	const keyID = "test"
 	const issuer = "testing-issuer@secure.serverless.openshift.io"
 	const subject = "testing-subject@secure.serverless.openshift.io"
 	// For testing an invalid token (with a different issuer)
@@ -387,7 +390,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		t.Fatalf("Error generating private key: %v", err)
 	}
 
-	jwks, err := rsaPublicKeyAsJwks(privateKey.PublicKey, keyId)
+	jwks, err := rsaPublicKeyAsJwks(privateKey.PublicKey, keyID)
 	if err != nil {
 		t.Fatalf("Error encoding RSA public key as JWKS: %v", err)
 	}
@@ -585,7 +588,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			}
 
 			// Do a request, optionally with a token
-			resp, body, err := jwtHttpGetRequestBytes(testKsvc.Status.URL.String(), tokenRef)
+			resp, body, err := jwtHTTPGetRequestBytes(testKsvc.Status.URL.String(), tokenRef)
 			if err != nil {
 				t.Fatalf("Error doing HTTP GET request: %v", err)
 			}
@@ -645,15 +648,15 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 
 	// Create the Istio Gateway for traffic via istio-ingressgateway
 	defaultGateway := test.IstioGateway("default-gateway", serviceMeshTestNamespaceName)
-	defaultGateway = test.CreateIstioGateway(caCtx, defaultGateway)
+	test.CreateIstioGateway(caCtx, defaultGateway)
 
 	// Create the Istio VirtualService to rewrite the host header of a custom domain with the ksvc's svc hostname
 	virtualService := test.IstioVirtualServiceForKnativeServiceWithCustomDomain(ksvc, defaultGateway.GetName(), customDomain)
-	virtualService = test.CreateIstioVirtualService(caCtx, virtualService)
+	test.CreateIstioVirtualService(caCtx, virtualService)
 
 	// Create the Istio ServiceEntry for ksvc's svc hostname routing towards the knative kourier-internal gateway
 	serviceEntry := test.IstioServiceEntryForKnativeServiceTowardsKourier(ksvc)
-	serviceEntry = test.CreateIstioServiceEntry(caCtx, serviceEntry)
+	test.CreateIstioServiceEntry(caCtx, serviceEntry)
 
 	// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
 	// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
@@ -685,8 +688,8 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 
 	// Do a spoofed HTTP request via the OpenShiftRouter
 	// Note, here we go via the OpenShift Router IP address, not kourier, as usual with the "spoof" client.
-	routerIp := lookupOpenShiftRouterIP(caCtx)
-	sc, err := spoof.New(caCtx.Clients.Kube, t.Logf, customDomain, false, routerIp.String(), time.Second, time.Minute)
+	routerIP := lookupOpenShiftRouterIP(caCtx)
+	sc, err := spoof.New(caCtx.Clients.Kube, t.Logf, customDomain, false, routerIP.String(), time.Second, time.Minute)
 	if err != nil {
 		t.Fatalf("Error creating a Spoofing Client: %v", err)
 	}
@@ -708,8 +711,8 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 	}
 }
 
-// newSpoofClientWithTls returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
-func newSpoofClientWithTls(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
+// newSpoofClientWithTLS returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
+func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
 	return spoof.New(ctx.Clients.Kube, ctx.T.Logf, customDomain, false, ip, time.Second, time.Minute, func(transport *http.Transport) *http.Transport {
 		// Custom DialTLSContext to specify the ingress IP address, our certPool and the SNI header for the custom domain
 		transport.DialTLSContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -789,7 +792,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 	//          name: custom-example-com
 	//          secretName: custom.example.com
 	//
-	defaultGateway := test.IstioGatewayWithTls("default-gateway",
+	defaultGateway := test.IstioGatewayWithTLS("default-gateway",
 		serviceMeshTestNamespaceName,
 		customDomain,
 		"/custom.example.com/tls.key",
@@ -799,11 +802,11 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 
 	// Create the Istio VirtualService to rewrite the host header of a custom domain with the ksvc's svc hostname
 	virtualService := test.IstioVirtualServiceForKnativeServiceWithCustomDomain(ksvc, defaultGateway.GetName(), customDomain)
-	virtualService = test.CreateIstioVirtualService(caCtx, virtualService)
+	test.CreateIstioVirtualService(caCtx, virtualService)
 
 	// Create the Istio ServiceEntry for ksvc's svc hostname routing towards the knative kourier-internal gateway
 	serviceEntry := test.IstioServiceEntryForKnativeServiceTowardsKourier(ksvc)
-	serviceEntry = test.CreateIstioServiceEntry(caCtx, serviceEntry)
+	test.CreateIstioServiceEntry(caCtx, serviceEntry)
 
 	// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
 	// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
@@ -839,8 +842,8 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 
 	// Do a spoofed HTTP request.
 	// Note, here we go via the OpenShift Router IP address, not kourier as usual with the "spoof" client.
-	routerIp := lookupOpenShiftRouterIP(caCtx)
-	sc, err := newSpoofClientWithTls(caCtx, customDomain, routerIp.String(), certPool)
+	routerIP := lookupOpenShiftRouterIP(caCtx)
+	sc, err := newSpoofClientWithTLS(caCtx, customDomain, routerIP.String(), certPool)
 	if err != nil {
 		t.Fatalf("Error creating a Spoofing Client: %v", err)
 	}

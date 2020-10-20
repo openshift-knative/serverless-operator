@@ -34,7 +34,7 @@ var ke2 = &eventingv1alpha1.KnativeEventing{
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_EVENTING_NAMESPACE", "knative-eventing")
-	validator := KnativeEventingValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{ke1})
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
@@ -44,7 +44,7 @@ func TestInvalidNamespace(t *testing.T) {
 
 func TestLoneliness(t *testing.T) {
 	os.Clearenv()
-	validator := KnativeEventingValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{ke1})
 	validator.InjectClient(fake.NewFakeClient(ke2))
 	result := validator.Handle(context.TODO(), types.Request{})

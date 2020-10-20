@@ -73,7 +73,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHTTPPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -121,7 +121,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHTTPPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -158,7 +158,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHTTPPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -187,7 +187,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHTTPPort),
 					},
 
 					TLS: &routev1.TLSConfig{
@@ -225,7 +225,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHttpPort),
+						TargetPort: intstr.FromString(KourierHTTPPort),
 					},
 
 					TLS: &routev1.TLSConfig{
