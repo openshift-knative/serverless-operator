@@ -61,7 +61,19 @@ test-all-e2e: test-e2e test-upstream-e2e
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
-csv:
-	./olm-catalog/serverless-operator/generate_csv.sh \
-		olm-catalog/serverless-operator/csv.template.yaml \
+release-files:
+	./hack/generate/csv.sh \
+		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+	./hack/generate/annotations.sh \
+		templates/annotations.yaml \
+		olm-catalog/serverless-operator/metadata/annotations.yaml
+	./hack/generate/dockerfile.sh \
+		templates/main.Dockerfile \
+		olm-catalog/serverless-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/test-source-image.Dockerfile \
+		openshift/ci-operator/source-image/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/build-image.Dockerfile \
+		openshift/ci-operator/build-image/Dockerfile

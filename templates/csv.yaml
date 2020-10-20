@@ -34,8 +34,8 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: ">=1.10.0 <1.11.0"
-  name: serverless-operator.v1.11.0
+    olm.skipRange:
+  name:
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -64,7 +64,7 @@ spec:
         displayName: Version
         path: version
       version: v1alpha1
-  minKubeVersion: 1.15.0
+  minKubeVersion:
   description: |-
     The Red Hat OpenShift Serverless operator provides a collection of APIs that
     enables containers, microservices and functions to run "serverless".
@@ -452,5 +452,5 @@ spec:
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-  replaces: serverless-operator.v1.10.0
-  version: 1.11.0
+  replaces:
+  version:
