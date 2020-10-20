@@ -85,9 +85,20 @@ spec:
           /bin/opm registry serve -d index.db -p 50051
 EOF
 
-  # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
-  wait_until_pods_running "$OLM_NAMESPACE"
-  indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
+  # Install the k8s svc pointing to the index pod.
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
+apiVersion: v1
+kind: Service
+metadata:
+  name: serverless-index
+spec:
+  selector:
+    app: serverless-index
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+EOF
 
   # Install the catalogsource.
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
@@ -96,7 +107,7 @@ kind: CatalogSource
 metadata:
   name: serverless-operator
 spec:
-  address: $indexip:50051
+  address: serverless-index.$OLM_NAMESPACE.svc:50051
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc
