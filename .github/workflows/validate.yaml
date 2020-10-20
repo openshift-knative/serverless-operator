@@ -37,7 +37,9 @@ jobs:
           path: ./src/github.com/${{ github.repository }}
 
       - name: Regenerate all generated files
+        working-directory: ./src/github.com/${{ github.repository }}
         run: make generated-files
 
       - name: Check if everything is consistent
+        working-directory: ./src/github.com/${{ github.repository }}
         run: git diff --exit-code
