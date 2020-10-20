@@ -6,13 +6,14 @@ require (
 	github.com/coreos/prometheus-operator v0.38.1
 	github.com/evanphx/json-patch v4.9.0+incompatible // indirect
 	github.com/openshift-knative/serverless-operator v1.3.1-0.20201015133617-f1541b896646
-	github.com/openshift/api v3.9.1-0.20190924102528-32369d4db2ad+incompatible
+	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
 	github.com/openshift/client-go v0.0.0-20200116152001-92a2713fa240
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20200911191357-6307c54ea472
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.19.1
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.17.6-0.20201006114020-60caedca1325
+	knative.dev/eventing-contrib v0.17.5
 	knative.dev/operator v0.17.2
 	knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
 	knative.dev/serving v0.17.3
@@ -20,6 +21,7 @@ require (
 )
 
 replace (
+	github.com/apache/camel-k => github.com/apache/camel-k v1.1.0 // Required for eventing-contrib to resolve
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
 	// Pick our local version of knative-operator to be able to change both codebases at once.
 	github.com/openshift-knative/serverless-operator/knative-operator => ../knative-operator

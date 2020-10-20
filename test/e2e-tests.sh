@@ -35,7 +35,6 @@ fi
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=8
 fi
->>>>>>> 782bc293... Add smoke tests for knative kafka
 
 (( failed )) && dump_state
 (( failed )) && exit $failed
