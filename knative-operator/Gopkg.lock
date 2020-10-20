@@ -57,14 +57,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:e29f05b742d9ccbfb65faca82ec43da7742cb7b039469640823c64b639b91b92"
-  name = "github.com/coreos/go-semver"
-  packages = ["semver"]
-  pruneopts = "NT"
-  revision = "e214231b295a8ea9479f11b70b35d5acf3556d9b"
-  version = "v0.3.0"
-
-[[projects]]
   digest = "1:0c4193043b1a33c7f9ba4ea42b8af2c09bb3d51970212d42e4dac8aa217b4ca5"
   name = "github.com/coreos/prometheus-operator"
   packages = [
@@ -1176,7 +1168,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/appscode/jsonpatch",
-    "github.com/coreos/go-semver/semver",
     "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1",
     "github.com/manifestival/controller-runtime-client",
     "github.com/manifestival/manifestival",
