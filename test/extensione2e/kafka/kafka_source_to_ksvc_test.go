@@ -1,9 +1,13 @@
 package knativekafkae2e
 
 import (
+	"fmt"
 	"net/url"
 	"testing"
 
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -29,11 +33,13 @@ const (
 	kafkaAPIVersion     = "kafka.strimzi.io/v1beta1"
 	clusterName         = "my-cluster" // there should be a way to get this from test setup
 	strimziClusterLabel = "strimzi.io/cluster"
+	cronJobName         = "smoke-cronjob"
 )
 
 var (
 	bootstrapServer = clusterName + "-kafka-bootstrap.kafka:9092"
-	kafkaGVR, _     = schema.ParseResourceArg(kafkaTopicKind + "." + kafkaAPIVersion)
+	kafkaGVR        = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
+
 	// We use unstructured to avoid having a hard dep on any specific kafka implementation
 	kafkaTopicObj = unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -76,15 +82,41 @@ var (
 			},
 		},
 	}
+
+	cj = &batchv1beta1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cronJobName,
+			Namespace: testNamespace,
+		},
+		Spec: batchv1beta1.CronJobSpec{
+			Schedule: "* * * * *",
+			JobTemplate: batchv1beta1.JobTemplateSpec{
+				Spec: batchv1.JobSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name:    "kafka-message-test",
+									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo "%s" | bin/kafka-console-producer.sh --broker-list %s --topic %s`, helloWorldText, bootstrapServer, kafkaTopicName)},
+								},
+							},
+							RestartPolicy: corev1.RestartPolicyOnFailure,
+						},
+					},
+				},
+			},
+		},
+	}
 )
 
 func TestKafkaSourceToKnativeService(t *testing.T) {
-	t.Skip("need to setup sending event to kafka topic")
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Dynamic.Resource(*kafkaGVR).Namespace(testNamespace).Delete(kafkaTopicName, &metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(kafkaTopicName, &metav1.DeleteOptions{})
 		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(kafkaSourceName, &metav1.DeleteOptions{})
+		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(cronJobName, &metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -97,7 +129,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	}
 
 	// Create kafkatopic
-	_, err = client.Clients.Dynamic.Resource(*kafkaGVR).Namespace(testNamespace).Create(&kafkaTopicObj, metav1.CreateOptions{})
+	_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Create(&kafkaTopicObj, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create KafkaTopic: ", err)
 	}
@@ -109,6 +141,10 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	}
 
 	// send event to kafka topic
+	_, err = client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Create(cj)
+	if err != nil {
+		t.Fatal("Unable to create batch cronjob: ", err)
+	}
 
 	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 	// cleanup if everything ends smoothly
