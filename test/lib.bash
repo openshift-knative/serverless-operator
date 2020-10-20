@@ -119,7 +119,7 @@ function downstream_knative_kafka_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
-  logger.info "Running Eventing tests"
+  logger.info "Running Knative Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
   for cfg in user*.kubeconfig; do
     kubeconfigs+=("$(pwd)/${cfg}")
