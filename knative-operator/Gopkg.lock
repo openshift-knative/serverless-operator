@@ -105,14 +105,6 @@
   version = "v5.1.0"
 
 [[projects]]
-  digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
-  name = "github.com/ghodss/yaml"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:b49dd34bdf52d28b69e41181bed939bdf48e1152ef54d21db643e3c50b3b33c0"
   name = "github.com/go-logr/logr"
   packages = [
@@ -162,14 +154,6 @@
   pruneopts = "NUT"
   revision = "c3d0f7896d589f3babb99eea24bbc7de98108e72"
   version = "v0.19.5"
-
-[[projects]]
-  digest = "1:fcd8ddc48ce648d5fbb36029fe3dd98f29c03377eea5c4a3c436701b0e3f2774"
-  name = "github.com/gobuffalo/envy"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "909ea676d4c90832fefbf55a5a4fb04d8bef8931"
-  version = "v1.7.1"
 
 [[projects]]
   digest = "1:2b0e6c0bea11257c646616ebd6a62be0ef2b6a0fd8210ac3caeaf57ee136123b"
@@ -308,14 +292,6 @@
   version = "v0.3.8"
 
 [[projects]]
-  digest = "1:da62aa6632d04e080b8a8b85a59ed9ed1550842a0099a55f3ae3a20d02a3745a"
-  name = "github.com/joho/godotenv"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "23d116af351c84513e1946b527c88823e476be13"
-  version = "v1.3.0"
-
-[[projects]]
   digest = "1:996dd5b4e2def9c256d4aa732db9a2d16d00a5eaf264139fa4bce5a4d2dc5fde"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -355,14 +331,6 @@
   pruneopts = "NUT"
   revision = "1922f5c7b1398ce037fb80405e4ecee9f6fe6bd0"
   version = "v0.5.0"
-
-[[projects]]
-  digest = "1:56dbf15e091bf7926cb33a57cb6bdfc658fc6d3498d2f76f10a97ce7856f1fde"
-  name = "github.com/markbates/inflect"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "24b83195037b3bc61fcda2d28b7b0518bce293b6"
-  version = "v1.0.4"
 
 [[projects]]
   digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
@@ -499,29 +467,6 @@
   pruneopts = "NUT"
   revision = "499c85531f756d1129edd26485a5f73871eeb308"
   version = "v0.0.5"
-
-[[projects]]
-  digest = "1:e09ada96a5a41deda4748b1659cc8953961799e798aea557257b56baee4ecaf3"
-  name = "github.com/rogpeppe/go-internal"
-  packages = [
-    "modfile",
-    "module",
-    "semver",
-  ]
-  pruneopts = "NUT"
-  revision = "d89504fbbf2c313df24867a5ffafcc9b847961ff"
-  version = "v1.5.0"
-
-[[projects]]
-  digest = "1:6792bb72ea0e7112157d02e4e175cd421b43d004a853f56316a19beca6e0c074"
-  name = "github.com/spf13/afero"
-  packages = [
-    ".",
-    "mem",
-  ]
-  pruneopts = "NUT"
-  revision = "588a75ec4f32903aa5e39a2619ba6a4631e28424"
-  version = "v1.2.2"
 
 [[projects]]
   digest = "1:d115708a27806831d1babbc6f28a7478ddf8e32a7095507c816e2515fb03a810"
@@ -671,28 +616,6 @@
   revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
 
 [[projects]]
-  branch = "master"
-  digest = "1:652982a5f8ecd4d5b2628668df8fee776d1fd416b3c24cbdf3a97b786c5bf7e8"
-  name = "golang.org/x/tools"
-  packages = [
-    "go/ast/astutil",
-    "go/gcexportdata",
-    "go/internal/gcimporter",
-    "go/internal/packagesdriver",
-    "go/packages",
-    "go/types/typeutil",
-    "imports",
-    "internal/fastwalk",
-    "internal/gopathwalk",
-    "internal/imports",
-    "internal/module",
-    "internal/semver",
-    "internal/span",
-  ]
-  pruneopts = "NUT"
-  revision = "ed542cd5b28ad1b474f8ff7ca112cad2c3ac2dc8"
-
-[[projects]]
   digest = "1:79c5b7c79609e7e2d0c5a6509cc5894bb8ee9c2ca6e741214f8aa4317beeea59"
   name = "gomodules.xyz/jsonpatch"
   packages = ["v2"]
@@ -775,16 +698,6 @@
   ]
   pruneopts = "NUT"
   revision = "5cb15d34447165a97c76ed5a60e4e99c8a01ecfe"
-
-[[projects]]
-  digest = "1:8b06dd9f107e7f50eb439698af99f40028a85ae334060f3de0171f70fde86009"
-  name = "k8s.io/apiextensions-apiserver"
-  packages = [
-    "pkg/apis/apiextensions",
-    "pkg/apis/apiextensions/v1beta1",
-  ]
-  pruneopts = "NUT"
-  revision = "d002e88f6236312f0289d9d1deab106751718ff0"
 
 [[projects]]
   digest = "1:d6a8328e07f39a9acdd5ec01db9629d56c62454363952042fc520926ace0cf50"
@@ -998,20 +911,6 @@
   revision = "b40b2a5939e43f7ffe0028ad67586b7ce50bb675"
 
 [[projects]]
-  branch = "master"
-  digest = "1:51c41f6a990e0d3a71e61739009d3a1718ad77d49da43e9c63ed428bb25c198a"
-  name = "k8s.io/gengo"
-  packages = [
-    "args",
-    "generator",
-    "namer",
-    "parser",
-    "types",
-  ]
-  pruneopts = "NUT"
-  revision = "7fa3014cb28f99ce2d9e803bcd3efa7edd4effa9"
-
-[[projects]]
   digest = "1:c0693cb981f43d82a767a3217b7640a4bdb341731d3814b38602f4e5dc4f01b3"
   name = "k8s.io/klog"
   packages = ["."]
@@ -1142,20 +1041,6 @@
   version = "v0.1.12"
 
 [[projects]]
-  digest = "1:024781b25f1d15e78be60cc44842c092d3cda8d494f6c972e6f35707ac35419a"
-  name = "sigs.k8s.io/controller-tools"
-  packages = [
-    "pkg/crd/generator",
-    "pkg/crd/util",
-    "pkg/internal/codegen",
-    "pkg/internal/codegen/parse",
-    "pkg/internal/general",
-    "pkg/util",
-  ]
-  pruneopts = "NUT"
-  revision = "9d55346c2bde73fb3326ac22eac2e5210a730207"
-
-[[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
   name = "sigs.k8s.io/yaml"
   packages = ["."]
@@ -1229,7 +1114,6 @@
     "sigs.k8s.io/controller-runtime/pkg/webhook/admission",
     "sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder",
     "sigs.k8s.io/controller-runtime/pkg/webhook/admission/types",
-    "sigs.k8s.io/controller-tools/pkg/crd/generator",
     "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
