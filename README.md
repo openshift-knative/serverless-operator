@@ -249,3 +249,12 @@ To uninstall service mesh operator, run `make uninstall-mesh`.
 ```
 make uninstall-mesh
 ```
+
+## Contributing
+
+### Linting
+
+To run the linters that CI is running, you can use `make lint`.
+The required linters for that are:
+
+- [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language

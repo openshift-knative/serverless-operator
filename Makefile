@@ -65,6 +65,7 @@ test-all-e2e: test-e2e test-upstream-e2e
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
+# Generates all files that are templated with release metadata.
 release-files:
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
@@ -82,8 +83,14 @@ release-files:
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
 
+# Generates all files that can be generated, includes release files, code generation
+# and updates vendoring.
 generated-files: release-files
 	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
 	(cd serving/ingress; ./hack/update-deps.sh)
 	(cd test; ./hack/update-deps.sh)
 	(cd knative-operator; dep ensure -v)
+
+# Runs the lints Github Actions do too.
+lint:
+	woke
