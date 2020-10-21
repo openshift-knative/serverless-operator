@@ -19,8 +19,6 @@ import (
 
 var Log = logf.Log.WithName("knative").WithName("openshift")
 
-const ImagePrefix = "IMAGE_"
-
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.
 func Configure(ks *operatorv1alpha1.KnativeServing, cm, key, value string) bool {
 	if ks.Spec.Config == nil {
@@ -47,12 +45,12 @@ func IngressNamespace(servingNamespace string) string {
 }
 
 // BuildImageOverrideMapFromEnviron creates a map to overrides registry images
-func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
+func BuildImageOverrideMapFromEnviron(environ []string, prefix string) map[string]string {
 	overrideMap := map[string]string{}
 
 	for _, e := range environ {
 		pair := strings.SplitN(e, "=", 2)
-		if strings.HasPrefix(pair[0], ImagePrefix) {
+		if strings.HasPrefix(pair[0], prefix) {
 			// convert
 			// "IMAGE_container=docker.io/foo"
 			// "IMAGE_deployment__container=docker.io/foo2"
@@ -63,7 +61,7 @@ func BuildImageOverrideMapFromEnviron(environ []string) map[string]string {
 			// deployment/container: docker.io/foo2
 			// env_var: docker.io/foo3
 			// deployment/env_var: docker.io/foo4
-			name := strings.TrimPrefix(pair[0], ImagePrefix)
+			name := strings.TrimPrefix(pair[0], prefix)
 			name = strings.Replace(name, "__", "/", 1)
 			if pair[1] != "" {
 				overrideMap[name] = pair[1]

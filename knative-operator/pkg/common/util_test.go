@@ -16,6 +16,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 	cases := []struct {
 		name     string
 		envMap   map[string]string
+		prefix   string
 		expected map[string]string
 	}{
 		{
@@ -23,6 +24,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_foo": "quay.io/myimage",
 			},
+			prefix: "IMAGE_",
 			expected: map[string]string{
 				"foo": "quay.io/myimage",
 			},
@@ -32,6 +34,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
+			prefix: "IMAGE_",
 			expected: map[string]string{
 				"CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
@@ -41,6 +44,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_eventing-controller__CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
+			prefix: "IMAGE_",
 			expected: map[string]string{
 				"eventing-controller/CRONJOB_RA_IMAGE": "quay.io/myimage",
 			},
@@ -50,6 +54,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 			envMap: map[string]string{
 				"IMAGE_foo__bar": "quay.io/myimage",
 			},
+			prefix: "IMAGE_",
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage",
 			},
@@ -60,23 +65,38 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 				"IMAGE_foo__bar": "quay.io/myimage1",
 				"IMAGE_bar":      "quay.io/myimage2",
 			},
+			prefix: "IMAGE_",
 			expected: map[string]string{
 				"foo/bar": "quay.io/myimage1",
 				"bar":     "quay.io/myimage2",
 			},
 		},
 		{
-			name: "Different prefix",
+			name: "Nothing in prefix",
 			envMap: map[string]string{
-				"X_foo": "quay.io/myimage",
+				"IMAGE_foo__bar": "quay.io/myimage1",
+				"IMAGE_bar":      "quay.io/myimage2",
 			},
+			prefix:   "HELLO",
 			expected: map[string]string{},
+		},
+		{
+			name: "Ignore overrides not in the prefix",
+			envMap: map[string]string{
+				"IMAGE_foo": "quay.io/myimage1",
+				"HELLO_bar": "quay.io/myimage2",
+			},
+			prefix: "IMAGE_",
+			expected: map[string]string{
+				"foo": "quay.io/myimage1",
+			},
 		},
 		{
 			name: "No env var value",
 			envMap: map[string]string{
 				"IMAGE_foo": "",
 			},
+			prefix:   "IMAGE_",
 			expected: map[string]string{},
 		},
 	}
@@ -84,7 +104,7 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 		environ := environFromMap(tc.envMap)
-		overrideMap := common.BuildImageOverrideMapFromEnviron(environ)
+		overrideMap := common.BuildImageOverrideMapFromEnviron(environ, tc.prefix)
 
 		if !reflect.DeepEqual(overrideMap, tc.expected) {
 			t.Errorf("Image override map is not equal. Case name: %q. Expected: %v, actual: %v", tc.name, tc.expected, overrideMap)

@@ -11,9 +11,13 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
+eventing_contrib="${registry}/knative-v$(metadata.get dependencies.eventing_contrib):knative-eventing-sources"
 
 declare -a images
 declare -A images_addresses
+
+declare -a kafka_images
+declare -A kafka_images_addresses
 
 function image {
   local name address
@@ -21,6 +25,14 @@ function image {
   address="${2:?Pass a image address as arg[2]}"
   images+=("${name}")
   images_addresses["${name}"]="${address}"
+}
+
+function kafka_image {
+  local name address
+  name="${1:?Pass a image name as arg[1]}"
+  address="${2:?Pass a image address as arg[2]}"
+  kafka_images+=("${name}")
+  kafka_images_addresses["${name}"]="${address}"
 }
 
 image "queue-proxy"    "${serving}-queue"
@@ -53,6 +65,13 @@ image "BROKER_FILTER_IMAGE"  "${eventing}-broker-filter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
+kafka_image "kafka-controller-manager__manager"    "${eventing_contrib}-kafka-source-controller"
+kafka_image "KAFKA_RA_IMAGE"                       "${eventing_contrib}-kafka-source-adapter"
+kafka_image "kafka-ch-controller__controller"      "${eventing_contrib}-kafka-channel-controller"
+kafka_image "DISPATCHER_IMAGE"                     "${eventing_contrib}-kafka-channel-dispatcher"
+kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_contrib}-kafka-channel-dispatcher"
+kafka_image "kafka-webhook__kafka-webhook"         "${eventing_contrib}-kafka-channel-webhook"
+
 declare -A values
 values[spec.version]="$(metadata.get project.version)"
 values[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
@@ -60,28 +79,36 @@ values['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
 values[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
 values[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
 
-function add_image {
+function add_related_image {
   cat << EOF | yq write --inplace --script - "$1"
-- command: update 
+- command: update
   path: spec.relatedImages[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     image: "${3}"
 EOF
+}
 
+function add_downstream_operator_deployment_image {
   cat << EOF | yq write --inplace --script - "$1"
-- command: update 
+- command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     value: "${3}"
 EOF
+}
 
+# since we also parse the environment variables in the upstream (actually midstream) operator,
+# we don't add scope prefixes to image overrides here. We don't have a clash anyway without any scope prefixes!
+# there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
+# midstream operator.
+function add_upstream_operator_deployment_image {
   cat << EOF | yq write --inplace --script - "$1"
-- command: update 
+- command: update
   path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
   value:
-    name: "IMAGE_${2}"
+    name: "${2}"
     value: "${3}"
 EOF
 }
@@ -91,7 +118,16 @@ cp "$template" "$target"
 
 for name in "${images[@]}"; do
   echo "Image: ${name} -> ${images_addresses[$name]}"
-  add_image "$target" "$name" "${images_addresses[$name]}"
+  add_related_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_downstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_upstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+done
+
+# don't add Kafka image overrides to upstream operator
+for name in "${kafka_images[@]}"; do
+  echo "kafka Image: ${name} -> ${kafka_images_addresses[$name]}"
+  add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
+  add_downstream_operator_deployment_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
 for name in "${!values[@]}"; do
