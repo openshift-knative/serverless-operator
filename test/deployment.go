@@ -1,7 +1,8 @@
 package test
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +24,7 @@ func WithDeploymentReady(ctx *Context, name string, namespace string) (*appsv1.D
 	})
 
 	if waitErr != nil {
-		return nil, errors.Wrapf(waitErr, "Deployment %s in namespace %s not ready in time.", name, namespace)
+		return nil, fmt.Errorf("deployment %s in namespace %s not ready in time: %w", name, namespace, waitErr)
 	}
 	return deployment, nil
 }
@@ -41,7 +42,7 @@ func WithDeploymentGone(ctx *Context, name string, namespace string) error {
 	})
 
 	if waitErr != nil {
-		return errors.Wrapf(waitErr, "Deployment %s in namespace %s not gone in time.", name, namespace)
+		return fmt.Errorf("deployment %s in namespace %s not gone in time: %w", name, namespace, waitErr)
 	}
 	return nil
 }
