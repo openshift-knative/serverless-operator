@@ -82,10 +82,6 @@ spec:
         displayName: Knative Kafka
         kind: KnativeKafka
         name: knativekafkas.operator.serverless.openshift.io
-        statusDescriptors:
-          - description: The version of Knative Kafka installed
-            displayName: Version
-            path: version
         version: v1alpha1
   minKubeVersion: 1.15.0
   description: |-
