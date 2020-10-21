@@ -1,10 +1,11 @@
-FROM openshift/origin-release:golang-1.13 AS builder
+FROM openshift/origin-release:golang-1.14 AS builder
 
 ENV SRC=${GOPATH}/src/github.com/openshift-knative/serverless-operator/knative-operator
 
 WORKDIR ${SRC}
 COPY . .
 
+ENV GOFLAGS="-mod=vendor"
 RUN go build -o /usr/bin/manager ./cmd/manager
 
 FROM openshift/origin-base
