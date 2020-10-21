@@ -249,3 +249,12 @@ To uninstall service mesh operator, run `make uninstall-mesh`.
 ```
 make uninstall-mesh
 ```
+
+## Contributing
+
+### Code style checks
+
+To run the code style checks that CI is running, you can use `make checks`.
+The required tools are:
+
+- [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language
