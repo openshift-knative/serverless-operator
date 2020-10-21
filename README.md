@@ -252,9 +252,9 @@ make uninstall-mesh
 
 ## Contributing
 
-### Code style checks
+### Linting
 
-To run the code style checks that CI is running, you can use `make checks`.
-The required tools are:
+To run the linters that CI is running, you can use `make lint`.
+The required linters for that are:
 
 - [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language

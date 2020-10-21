@@ -91,6 +91,6 @@ generated-files: release-files
 	(cd test; ./hack/update-deps.sh)
 	(cd knative-operator; dep ensure -v)
 
-# Runs the checks that our Github Actions do.
-checks:
+# Runs the lints Github Actions do too.
+lint:
 	woke
