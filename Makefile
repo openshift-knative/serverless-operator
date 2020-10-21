@@ -38,7 +38,7 @@ test-e2e:
 
 # TODO: that will - soon... run the e2e tests with Kafka
 test-e2e-with-kafka:
-	echo "Noop for now"
+	./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
