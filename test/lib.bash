@@ -66,6 +66,29 @@ function serverless_operator_e2e_tests {
   return $failed
 }
 
+function serverless_operator_kafka_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Kafka tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
+    --channel "$OLM_CHANNEL" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+}
+
 function downstream_serving_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
