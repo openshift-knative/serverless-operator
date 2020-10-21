@@ -283,7 +283,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil, "1"), // TODO: maybe we shouldn't stomp, retaining behavior from master though.
+			cm("test-cm", nil, nil, nil, "1"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
 		},
