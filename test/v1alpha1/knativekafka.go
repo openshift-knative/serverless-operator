@@ -15,6 +15,10 @@ import (
 
 func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
 	return &kafkav1alpha1.KnativeKafka{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "KnativeKafka",
+			APIVersion: "operator.serverless.openshift.io/v1alpha1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
