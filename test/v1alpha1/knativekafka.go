@@ -1,9 +1,10 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/pkg/errors"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -96,7 +97,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "knativekafka %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("knativekafka %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }
