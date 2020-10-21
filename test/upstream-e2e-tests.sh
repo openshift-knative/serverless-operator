@@ -22,6 +22,7 @@ teardown_serverless || failed=1
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   # TODO(markusthoemmes): Remove after 1.11 is cut.
   (( !failed )) && oc create namespace "${SERVING_NAMESPACE}"
+  (( !failed )) && oc create namespace "${EVENTING_NAMESPACE}"
 
   (( !failed )) && install_serverless_previous || failed=4
   (( !failed )) && run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving,eventing}" || failed=5
