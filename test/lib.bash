@@ -30,40 +30,32 @@ function register_teardown {
   return 2
 }
 
-function print_test_result {
-  local test_status
-  test_status="${1:?status is required}"
+function test_success {
+  local testsuite
+  testsuite="${1:?Pass test suite as arg[1]}"
 
-  if ! (( test_status )); then
-    logger.success '🌟 Tests have passed 🌟'
-  else
-    logger.error '🚨 Tests have failures! 🚨'
-  fi
+  logger.success "🌟 ${testsuite} tests have passed 🌟"
 }
 
 function serverless_operator_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
 
-  logger.info "Running tests"
+  logger.info "Running operator e2e tests"
   kubeconfigs+=("${KUBECONFIG}")
   for cfg in user*.kubeconfig; do
     kubeconfigs+=("$(pwd)/${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  local failed=0
-
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@"
 
-  print_test_result ${failed}
+  test_success 'operator e2e'
 
-  wait_for_knative_serving_ingress_ns_deleted || return 1
-
-  return $failed
+  wait_for_knative_serving_ingress_ns_deleted
 }
 
 function serverless_operator_kafka_e2e_tests {
@@ -77,65 +69,12 @@ function serverless_operator_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  local failed=0
-
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@"
 
-  print_test_result ${failed}
-
-  return $failed
-}
-
-function downstream_serving_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Serving tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
-  add_systemnamespace_label
-
-  local failed=0
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
-
-  print_test_result ${failed}
-
-  return $failed
-}
-
-function downstream_eventing_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Eventing tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  local failed=0
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
-
-  print_test_result ${failed}
-
-  return $failed
+  test_success 'Kafka'
 }
 
 function end_prober_test {
@@ -161,12 +100,18 @@ function teardown {
 
 # == State dumps
 
-function dump_state {
+function dump_state.setup {
   if (( INTERACTIVE )); then
     logger.info 'Skipping dump because running as interactive user'
     return 0
   fi
-  logger.info 'Environment'
+
+  register.error_handler dump_state
+}
+
+function dump_state {
+  logger.info 'Dumping state...'
+  logger.debug 'Environment variables:'
   env
 
   dump_subscriptions
@@ -212,14 +157,14 @@ function create_htpasswd_users {
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
   oc apply -f openshift/identity/htpasswd.yaml
 
   logger.info 'Generate kubeconfig for each user'
   for i in $(seq 1 $num_users); do
     cp "${KUBECONFIG}" "user${i}.kubeconfig"
     occmd="bash -c '! oc login --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
-    timeout 180 "${occmd}" || return 1
+    timeout 180 "${occmd}"
   done
 }
 
@@ -249,23 +194,22 @@ function add_systemnamespace_label {
 }
 
 function add_networkpolicy {
-  local NAMESPACE=$1
+  local NAMESPACE=${1:?Pass a namespace as arg[1]}
   cat <<EOF | oc apply -f -
+---
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: deny-by-default
-  namespace: "$1"
+  namespace: "$NAMESPACE"
 spec:
   podSelector:
-EOF
-
-  cat <<EOF | oc apply -f -
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-from-serving-system-namespace
-  namespace: "$1"
+  namespace: "$NAMESPACE"
 spec:
   ingress:
   - from:
@@ -303,11 +247,14 @@ function trigger_gc_and_print_knative {
 }
 
 function wait_for_leader_controller() {
+  local leader
   echo -n "Waiting for a leader Controller"
   for i in {1..150}; do  # timeout after 5 minutes
-    local leader=$(oc get lease -n "${SERVING_NAMESPACE}" -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' | cut -d"_" -f1 | grep "^controller-" | head -1)
+    leader=$(set +o pipefail && oc get lease -n "${SERVING_NAMESPACE}" \
+      -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' \
+      | cut -d'_' -f1 | grep "^controller-" | head -1)
     # Make sure the leader pod exists.
-    if [ -n "${leader}" ] && oc get pod "${leader}" -n "${SERVING_NAMESPACE}"  >/dev/null 2>&1; then
+    if [ -n "${leader}" ] && oc get pod "${leader}" -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
       echo -e "\nNew leader Controller has been elected"
       return 0
     fi

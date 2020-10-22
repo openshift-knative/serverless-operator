@@ -3,7 +3,7 @@
 # This script can be used to publish all images built by
 # this repository to the specified docker repository.
 
-set -e
+set -Eeuo pipefail
 
 if [[ "$#" -ne 1 ]]; then
     echo "Please ensure DOCKER_REPO_OVERRIDE envvar is set"

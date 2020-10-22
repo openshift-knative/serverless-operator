@@ -20,16 +20,51 @@ readonly COLOR_CYAN='\e[0;36m'
 readonly COLOR_LIGHT_RED='\e[1;31m'
 readonly COLOR_LIGHT_YELLOW='\e[1;33m'
 
+declare -a ERROR_HANDLERS
+trap 'invoke.error_handlers' ERR
+
+function register.error_handler {
+  local handlerfunc
+  handlerfunc="${1:?Pass an error handler as arg[1]}"
+  logger.debug "Registering a error handler: ${handlerfunc}"
+  ERROR_HANDLERS+=("${handlerfunc}")
+}
+
+function invoke.error_handlers {
+  local code="${1:-${?}}"
+  local handlerfunc
+
+  logger.error "🚨 Error (code: ${code}) occurred at ${BASH_SOURCE[1]}:${BASH_LINENO[0]}, with command: ${BASH_COMMAND}"
+  # Reverse call error handlers
+  for (( idx=${#ERROR_HANDLERS[@]}-1 ; idx>=0 ; idx-- )) ; do
+    handlerfunc="${ERROR_HANDLERS[idx]}"
+    (${handlerfunc} || true)
+  done
+
+  exit "${code}"
+}
+
+function stacktrace {
+  if [ ${#FUNCNAME[@]} -gt 2 ]; then
+    logger.error 'Stack trace:'
+    for ((i=1;i<${#FUNCNAME[@]}-2;i++)); do
+      logger.error " $i: ${BASH_SOURCE[$i+2]}:${BASH_LINENO[$i+1]} ${FUNCNAME[$i+1]}(...)"
+    done
+  fi
+}
+
 function debugging.setup {
   local debuglog debugdir
   debugdir="${ARTIFACTS:-/tmp}"
   debuglog="${debugdir}/debuglog-$(basename "$0").log"
-  logger.info "Debug log (set -x) is written to: ${debuglog}"
+  logger.debug "Debug log (set -x) is written to: ${debuglog}"
   # ref: https://serverfault.com/a/579078
   # Use FD 19 to capture the debug stream caused by "set -x":
   exec 19>> "$debuglog" # Allow appending to the file if exists
   # Tell bash about it  (there's nothing special about 19, its arbitrary)
   export BASH_XTRACEFD=19
+
+  register.error_handler stacktrace
 
   # Register finish of debugging at exit
   trap debugging.finish EXIT
@@ -63,33 +98,34 @@ function logger.error {
 }
 
 function logger.__log {
-  local message level now color
+  local message level now color ln
   level="$1"
   color="$2"
   message="$3"
   now="$(date '+%H:%M:%S.%3N')"
+  ln="${ln:-\n}"
   
-  printf "${color}%7s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}\n" "${level}" "${now}" "${message}" 1>&2
+  printf "${color}️%-7s ${COLOR_CYAN}%s ${color}%s${ln}${COLOR_NC}" "${level}" "${now}" "${message}" 1>&2
 }
 
 if [[ "${SHOULD_COLOR}" == "false" ]]; then
   function logger.debug {
-    echo 'DEBUG' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "DEBUG   $(date '+%H:%M:%S.%3N') $*"
   }
 
   function logger.info {
-    echo 'INFO' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "INFO    $(date '+%H:%M:%S.%3N') $*"
   }
 
   function logger.success {
-    echo 'SUCCESS' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "SUCCESS $(date '+%H:%M:%S.%3N') $*"
   }
 
   function logger.warn {
-    echo 'WARNING' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "WARNING $(date '+%H:%M:%S.%3N') $*"
   }
 
   function logger.error {
-    echo 'ERROR' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "ERROR   $(date '+%H:%M:%S.%3N') $*"
   }
 fi

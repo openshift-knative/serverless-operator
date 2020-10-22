@@ -10,29 +10,25 @@ if [ -n "$OPENSHIFT_CI" ]; then
   env
 fi
 debugging.setup
+dump_state.setup
 
-scale_up_workers || exit $?
-create_namespaces || exit $?
-create_htpasswd_users && add_roles || exit $?
+scale_up_workers
+create_namespaces
+create_htpasswd_users
+add_roles
 
-failed=0
-
-(( !failed )) && install_catalogsource || failed=1
-(( !failed )) && logger.success '🚀 Cluster prepared for testing.'
+install_catalogsource
+logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-(( !failed )) && serverless_operator_e2e_tests || failed=2
+serverless_operator_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  (( !failed )) && install_strimzi || failed=6
-  (( !failed )) && serverless_operator_kafka_e2e_tests || failed=7
+  install_strimzi
+  serverless_operator_kafka_e2e_tests
 fi
-
-(( !failed )) && ensure_serverless_installed || failed=3
+ensure_serverless_installed
 # Run Knative Serving & Eventing downstream E2E tests.
-(( !failed )) && downstream_serving_e2e_tests || failed=4
-(( !failed )) && downstream_eventing_e2e_tests || failed=5
-
-(( failed )) && dump_state
-(( failed )) && exit $failed
+downstream_serving_e2e_tests
+downstream_eventing_e2e_tests
 
 success

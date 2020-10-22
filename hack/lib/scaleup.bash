@@ -2,7 +2,6 @@
 
 function scale_up_workers {
   local current_total az_total replicas idx
-  logger.info "Scaling cluster to ${SCALE_UP}"
   if [[ "${SCALE_UP}" -lt "0" ]]; then
     logger.info 'Skipping scaling up, because SCALE_UP is negative.'
     return 0
@@ -12,6 +11,8 @@ function scale_up_workers {
     logger.info 'Skipping scaling up, the cluster is not scalable.'
     return 0
   fi
+
+  logger.info "Scaling cluster to ${SCALE_UP}"
 
   logger.debug 'Get the machineset with most replicas'
   current_total="$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')"

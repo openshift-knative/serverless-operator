@@ -14,9 +14,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
 set -Eeuo pipefail
 
-scale_up_workers || exit $?
-create_namespaces || exit $?
+debugging.setup
 
-exitcode=0
-
-exit $exitcode
+scale_up_workers
+create_namespaces

@@ -21,19 +21,29 @@ function resolve_hostname {
   fi
 }
 
+function wait_until_labelled_pods_are_ready {
+  local label ns
+  label="${1:?Pass a label as arg[1]}"
+  ns="${2:?Pass a namespace as arg[2]}"
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
+'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+}
+
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
-  local seconds timeout interval
-  interval=5
+  local seconds timeout
+  interval="${interval:-2}"
   seconds=0
-  timeout=$1
+  timeout=${1:?Pass timeout as arg[1]}
   shift
-  while eval $*; do
+  ln='.' logger.debug "Wait until non-zero (max ${timeout} sec.): ${*} .."
+  while (eval "$*" 2>/dev/null); do
     seconds=$(( seconds + interval ))
-    logger.debug "Execution failed: ${*}. Waiting ${interval} sec ($seconds/${timeout})..."
+    echo -n '.'
     sleep $interval
     [[ $seconds -gt $timeout ]] && logger.error "Time out of ${timeout} exceeded" && return 1
   done
+  echo ' done'
   return 0
 }
 

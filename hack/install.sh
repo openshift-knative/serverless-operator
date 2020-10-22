@@ -13,12 +13,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
 set -Eeuo pipefail
 
-scale_up_workers || exit $?
-create_namespaces || exit $?
+debugging.setup
 
-exitcode=0
+scale_up_workers
+create_namespaces
 
-(( !exitcode )) && ensure_catalogsource_installed || exitcode=3
-(( !exitcode )) && ensure_serverless_installed ${INSTALL_PREVIOUS_VERSION} || exitcode=4
-
-exit $exitcode
+ensure_catalogsource_installed
+ensure_serverless_installed "${INSTALL_PREVIOUS_VERSION}"

@@ -7,7 +7,7 @@ function install_tracing {
 
 function deploy_zipkin {
   logger.info "Installing Zipkin in namespace ${ZIPKIN_NAMESPACE}"
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -58,13 +58,14 @@ spec:
 EOF
 
   logger.info "Waiting until Zipkin is available"
-  kubectl wait deployment --all --timeout=600s --for=condition=Available -n ${ZIPKIN_NAMESPACE} || return 1
+  kubectl wait deployment --all --timeout=600s \
+    --for=condition=Available -n "${ZIPKIN_NAMESPACE}"
 }
 
 function enable_eventing_tracing {
   header_text "Configuring tracing for Eventing"
 
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -81,10 +82,10 @@ EOF
 function teardown_tracing {
   logger.warn 'Teardown tracing'
 
-  oc delete service    -n "${ZIPKIN_NAMESPACE}" zipkin
-  oc delete deployment -n "${ZIPKIN_NAMESPACE}" zipkin
+  oc delete service    -n "${ZIPKIN_NAMESPACE}" zipkin --ignore-not-found
+  oc delete deployment -n "${ZIPKIN_NAMESPACE}" zipkin --ignore-not-found
 
-  timeout 600 "[[ \$(oc get pods -n ${ZIPKIN_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 2
+  timeout 600 "[[ \$(oc get pods -n ${ZIPKIN_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
 
   logger.success 'Tracing is uninstalled.'
 }

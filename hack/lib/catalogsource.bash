@@ -12,7 +12,8 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  local rootdir pull_user
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
   pull_user="puller"
@@ -21,7 +22,7 @@ function install_catalogsource {
   token=$(oc --kubeconfig=$pull_user.kubeconfig whoami -t)
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-  # Create a backup of the CSV so we don't pollute the repository.
+  logger.debug "Create a backup of the CSV so we don't pollute the repository."
   cp "$csv" "${rootdir}/bkp.yaml"
 
   if [ -n "$OPENSHIFT_CI" ]; then
@@ -33,26 +34,47 @@ function install_catalogsource {
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
   fi
 
-  cat "$csv"
+  if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+    logger.info 'CSV'
+    cat "$csv"
+  fi
 
-  # Build the bundle image in the cluster-internal registry.
-  oc -n "$OLM_NAMESPACE" new-build --binary --strategy=docker --name serverless-bundle
-  oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
+  if ! oc get buildconfigs serverless-bundle -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
+    logger.info 'Create a bundle image build'
+    oc -n "$OLM_NAMESPACE" new-build --binary \
+      --strategy=docker --name serverless-bundle
+  else
+    logger.debug 'Serverless bundle image build is already created'
+  fi
+  if ! [ -f "${rootdir}/_output/serverless-bundle.sha1sum" ] || \
+      ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
+    logger.info 'Build the bundle image in the cluster-internal registry.'
+    oc -n "$OLM_NAMESPACE" start-build serverless-bundle \
+      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F
+    mkdir -p "${rootdir}/_output"
+    find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
+      > "${rootdir}/_output/serverless-bundle.sha1sum"
+  else
+    logger.debug 'Serverless bundle build is up-to-date'
+  fi
 
-  # Undo potential changes to the CSV to not pollute the repository.
+  logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
   mv "${rootdir}/bkp.yaml" "$csv"
 
-  # HACK: Allow to run the index pod as privileged so it has necessary access to run the
-  # podman commands.
+  logger.info "HACK: Allow to run the index pod as privileged so it has \
+necessary access to run the podman commands."
   oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user privileged -z default
 
-  # Install the index deployment.
+  logger.info 'Install the index deployment.'
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: serverless-index
+  labels:
+    app: serverless-index
 spec:
   selector:
     matchLabels:
@@ -83,20 +105,33 @@ spec:
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
           /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serverless-index
+  labels:
+    app: serverless-index
+spec:
+  selector:
+    app: serverless-index
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
 EOF
 
-  # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
-  wait_until_pods_running "$OLM_NAMESPACE"
-  indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
+  logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
+  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE"
 
-  # Install the catalogsource.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
+  logger.info 'Install the catalogsource.'
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: serverless-operator
 spec:
-  address: $indexip:50051
+  address: serverless-index.$OLM_NAMESPACE.svc:50051
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc
@@ -107,21 +142,23 @@ EOF
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
-  oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR" || return 10
-  [ -f "$CATALOG_SOURCE_FILENAME" ] && rm -v "$CATALOG_SOURCE_FILENAME"
+  oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
+  oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   logger.info "Wait for the ${OPERATOR} pod to disappear"
-  timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]" || return 11
+  timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]"
   logger.success 'CatalogSource deleted'
 }
 
 # TODO: Deduplicate with the `create_htpasswd_users` function in test/lib.bash.
 function add_user {
-  name=$1
-  pass=$2
+  local name pass
+  name="${1:?Pass a name as arg[1]}"
+  pass="${2:?Pass a password as arg[2]}"
 
-  logger.info "Creating user $name:$pass"
+  logger.info "Creating user $name:***"
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
-    logger.info 'Secret htpass-secret already existsed, updating it.'
+    logger.debug 'Secret htpass-secret already existsed, updating it.'
     sed -i -e '$a\' users.htpasswd
   else
     touch users.htpasswd
@@ -132,11 +169,11 @@ function add_user {
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
   oc apply -f openshift/identity/htpasswd.yaml
 
-  logger.info 'Generate kubeconfig'
+  logger.debug 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
   occmd="bash -c '! oc login --kubeconfig=$name.kubeconfig --username=$name --password=$pass > /dev/null'"
-  timeout 180 "${occmd}" || return 1
+  timeout 180 "${occmd}"
 }
