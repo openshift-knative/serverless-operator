@@ -21,10 +21,6 @@ type KnativeKafkaSpec struct {
 // +k8s:openapi-gen=true
 type KnativeKafkaStatus struct {
 	duckv1.Status `json:",inline"`
-
-	// The version of the installed release
-	// +optional
-	Version string `json:"version,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
