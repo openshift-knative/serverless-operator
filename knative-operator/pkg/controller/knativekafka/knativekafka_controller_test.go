@@ -39,7 +39,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		instance: makeCr(withChannelEnabled, withSourceEnabled),
 		exists: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{},
 	}, {
@@ -49,13 +49,13 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}, {
 		name:     "Create CR with channel disabled and source enabled",
 		instance: makeCr(withSourceEnabled),
 		exists: []types.NamespacedName{
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
@@ -66,7 +66,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}, {
 		name:     "Delete CR",
@@ -74,7 +74,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-controller-manager", Namespace: "knative-sources"},
+			{Name: "kafka-controller-manager", Namespace: "knative-eventing"},
 		},
 	}}
 
@@ -153,135 +153,6 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
-			}
-		})
-	}
-}
-
-func TestInjectOwner(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
-	tests := []struct {
-		name   string
-		obj    *unstructured.Unstructured
-		owner  mf.Owner
-		expect *unstructured.Unstructured
-	}{{
-		name: "namespaced resource in same namespace",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Service",
-				"metadata": map[string]interface{}{
-					"name":      "default",
-					"namespace": "knative-eventing",
-				},
-			},
-		},
-		owner: &v1alpha1.KnativeKafka{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "KnativeKafka",
-				APIVersion: "operator.serverless.openshift.io/v1alpha1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "knative-kafka",
-				Namespace: "knative-eventing",
-				UID:       types.UID("deadbeef"),
-			},
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Service",
-				"metadata": map[string]interface{}{
-					"name":      "default",
-					"namespace": "knative-eventing",
-					"ownerReferences": []interface{}{map[string]interface{}{
-						"apiVersion":         "operator.serverless.openshift.io/v1alpha1",
-						"kind":               "KnativeKafka",
-						"name":               "knative-kafka",
-						"uid":                "deadbeef",
-						"blockOwnerDeletion": true,
-						"controller":         true,
-					}},
-				},
-			},
-		},
-	}, {
-		name: "namespaced resource in different namespace",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Service",
-				"metadata": map[string]interface{}{
-					"name":      "default",
-					"namespace": "knative-sources",
-				},
-			},
-		},
-		owner: &v1alpha1.KnativeKafka{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "KnativeKafka",
-				APIVersion: "operator.serverless.openshift.io/v1alpha1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "knative-kafka",
-				Namespace: "knative-eventing",
-				UID:       types.UID("deadbeef"),
-			},
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Service",
-				"metadata": map[string]interface{}{
-					"name":      "default",
-					"namespace": "knative-sources",
-				},
-			},
-		},
-	}, {
-		name: "cluster-scoped resource",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "rbac.authorization.k8s.io/v1",
-				"kind":       "ClusterRole",
-				"metadata": map[string]interface{}{
-					"name": "default",
-				},
-			},
-		},
-		owner: &v1alpha1.KnativeKafka{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "KnativeKafka",
-				APIVersion: "operator.serverless.openshift.io/v1alpha1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "knative-kafka",
-				Namespace: "knative-eventing",
-				UID:       types.UID("deadbeef"),
-			},
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "rbac.authorization.k8s.io/v1",
-				"kind":       "ClusterRole",
-				"metadata": map[string]interface{}{
-					"name": "default",
-				},
-			},
-		},
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := injectOwner(test.owner)(test.obj)
-			if err != nil {
-				t.Fatalf("injectOwner: (%v)", err)
-			}
-
-			if !equality.Semantic.DeepEqual(test.expect, test.obj) {
-				t.Fatalf("Resource wasn't what we expected: %#v, want %#v", test.obj, test.expect)
 			}
 		})
 	}
