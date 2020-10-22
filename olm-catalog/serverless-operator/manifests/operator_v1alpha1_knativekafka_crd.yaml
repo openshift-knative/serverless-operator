@@ -3,6 +3,13 @@ kind: CustomResourceDefinition
 metadata:
   name: knativekafkas.operator.serverless.openshift.io
 spec:
+  additionalPrinterColumns:
+    - JSONPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Reason
+      type: string
   group: operator.serverless.openshift.io
   names:
     kind: KnativeKafka
