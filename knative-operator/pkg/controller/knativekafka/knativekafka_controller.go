@@ -34,9 +34,10 @@ const (
 )
 
 var (
-	log         = logf.Log.WithName("controller_knativekafka")
-	role        = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	log               = logf.Log.WithName("controller_knativekafka")
+	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	roleOrRoleBinding = mf.Any(role, rolebinding)
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -242,7 +243,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 		instance.Status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings in manifest: %w", err)
 	}
-	if err := manifest.Filter(not(mf.Any(role, rolebinding))).Apply(); err != nil {
+	if err := manifest.Filter(not(roleOrRoleBinding)).Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
@@ -280,11 +281,11 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance 
 		return nil
 	}
 	log.Info("Deleting resources in manifest")
-	if err := manifest.Filter(mf.NoCRDs, not(mf.Any(role, rolebinding))).Delete(); err != nil {
+	if err := manifest.Filter(mf.NoCRDs, not(roleOrRoleBinding)).Delete(); err != nil {
 		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 	}
 	// Delete Roles last, as they may be useful for human operators to clean up.
-	if err := manifest.Filter(mf.Any(role, rolebinding)).Delete(); err != nil {
+	if err := manifest.Filter(roleOrRoleBinding).Delete(); err != nil {
 		return fmt.Errorf("failed to remove rbac: %w", err)
 	}
 	return nil
