@@ -7,8 +7,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	kafkachannelv1beta1 "knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1"
-	eventingmessagingv1beta1 "knative.dev/eventing/pkg/apis/messaging/v1beta1"
-	eventingsourcesv1alpha2 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -35,12 +35,12 @@ var (
 		},
 	}
 
-	subscription = &eventingmessagingv1beta1.Subscription{
+	subscription = &eventingmessagingv1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      subscriptionName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingmessagingv1beta1.SubscriptionSpec{
+		Spec: eventingmessagingv1.SubscriptionSpec{
 			Channel: corev1.ObjectReference{
 				APIVersion: channelAPIVersion,
 				Kind:       kafkaChannelKind,
@@ -56,12 +56,12 @@ var (
 		},
 	}
 
-	ps = &eventingsourcesv1alpha2.PingSource{
+	ps = &eventingsourcesv1beta1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1alpha2.PingSourceSpec{
+		Spec: eventingsourcesv1beta1.PingSourceSpec{
 			JsonData: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
@@ -81,8 +81,8 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	cleanup := func() {
 		test.CleanupAll(t, client)
 		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(kafkaChannelName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.MessagingV1beta1().Subscriptions(testNamespace).Delete(subscriptionName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(subscriptionName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -101,13 +101,13 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	// Create subscription (from channel to service)
-	_, err = client.Clients.Eventing.MessagingV1beta1().Subscriptions(testNamespace).Create(subscription)
+	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(subscription)
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
 
 	// Create source (channel as sink)
-	_, err = client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
 	if err != nil {
 		t.Fatal("Knative PingSource not created: ", err)
 	}
