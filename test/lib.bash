@@ -13,6 +13,7 @@ NAMESPACES+=("serverless-tests3")
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
+source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing-contrib.bash"
 
 # == Lifefycle
 
