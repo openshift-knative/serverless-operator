@@ -22,7 +22,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 	}
 
 	// Implicitly checks that HTTP works.
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Now check that HTTPS works.
 	httpsURL := ksvc.Status.URL.DeepCopy()
