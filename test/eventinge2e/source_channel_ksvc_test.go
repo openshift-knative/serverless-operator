@@ -7,8 +7,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1beta1"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -43,7 +43,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			Namespace: testNamespace,
 		},
 	}
-	channel, err := client.Clients.Eventing.MessagingV1beta1().Channels(testNamespace).Create(imc)
+	channel, err := client.Clients.Eventing.MessagingV1().Channels(testNamespace).Create(imc)
 	if err != nil {
 		t.Fatal("Unable to create Channel: ", err)
 	}
@@ -67,7 +67,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.MessagingV1beta1().Subscriptions(testNamespace).Create(subscription)
+	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(subscription)
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}

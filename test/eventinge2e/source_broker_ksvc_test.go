@@ -8,8 +8,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1beta1"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 

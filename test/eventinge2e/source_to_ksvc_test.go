@@ -7,7 +7,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	pkgTest "knative.dev/pkg/test"
 )
