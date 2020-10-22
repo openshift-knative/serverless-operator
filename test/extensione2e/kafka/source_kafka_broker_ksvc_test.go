@@ -18,7 +18,7 @@ const (
 	kafkaBrokerName  = "smoke-test-kafka-broker"
 	kafkatriggerName = "smoke-test-trigger"
 	cmName           = "smoke-test-br-cm"
-	brokerAPIVersion = "eventing.knative.dev/v1beta1"
+	brokerAPIVersion = "eventing.knative.dev/v1"
 	brokerKind       = "Broker"
 )
 
