@@ -30,11 +30,36 @@ function register_teardown {
   return 2
 }
 
-function test_success {
-  local testsuite
-  testsuite="${1:?Pass test suite as arg[1]}"
+# Overwritten, safe, version of test function from test-infra that acts well
+# with `set -Eeuo pipefail`.
+#
+# Run the given E2E tests. Assume tests are tagged e2e, unless `-tags=XXX` is passed.
+# Parameters: $1..$n - any go test flags, then directories containing the tests to run.
+function go_test_e2e {
+  local go_test_args=()
+  local retcode
+  # Remove empty args as `go test` will consider it as running tests for the
+  # current directory, which is not expected.
+  for arg in "$@"; do
+    [[ -n "$arg" ]] && go_test_args+=("$arg")
+  done
+  [[ ! " $*" == *" -tags="* ]] && go_test_args+=("-tags=e2e")
+  set +Eeo pipefail
+  report_go_test -race -count=1 "${go_test_args[@]}"
+  retcode=$?
+  set -Eeuo pipefail
 
-  logger.success "🌟 ${testsuite} tests have passed 🌟"
+  report_test_status "$retcode"
+  return "$retcode"
+}
+
+function report_test_status {
+  local retcode="${1:?Pass a retcode as arg[1]}"
+  if ! (( retcode )); then
+    logger.success '🌟 Tests have passed 🌟'
+  else
+    logger.error '🚨 Tests have failures! 🚨'
+  fi
 }
 
 function serverless_operator_e2e_tests {
@@ -52,8 +77,6 @@ function serverless_operator_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  test_success 'operator e2e'
 
   wait_for_knative_serving_ingress_ns_deleted
 }
@@ -73,16 +96,17 @@ function serverless_operator_kafka_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  test_success 'Kafka'
 }
 
 function end_prober_test {
-  local PROBER_PID=$1
-  echo "done" > /tmp/prober-signal
-  logger.info "Waiting for prober test to finish"
+  local PROBER_PID=${1:?Pass a PID as arg[1]}
+  local retcode
+  echo 'done' > /tmp/prober-signal
+  logger.info 'Waiting for prober test to finish'
   wait "${PROBER_PID}"
-  return $?
+  retcode=$?
+  report_test_status "$retcode"
+  return "$retcode"
 }
 
 function teardown {
@@ -138,7 +162,7 @@ function gather_knative_state {
 
 function create_htpasswd_users {
   local occmd num_users
-  num_users=3
+  num_users=${num_users:-3}
   logger.info "Creating htpasswd for ${num_users} users"
 
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
@@ -166,6 +190,8 @@ function create_htpasswd_users {
     occmd="bash -c '! oc login --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
     timeout 180 "${occmd}"
   done
+
+  logger.success "${num_users} htpasswd users created"
 }
 
 function add_roles {

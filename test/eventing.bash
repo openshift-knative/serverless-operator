@@ -12,8 +12,6 @@ function upstream_knative_eventing_e2e {
 
   # run_e2e_tests defined in knative-eventing
   run_e2e_tests
-
-  test_success 'Eventing upstream'
 }
 
 function downstream_eventing_e2e_tests {
@@ -31,6 +29,4 @@ function downstream_eventing_e2e_tests {
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  test_success 'Eventing downstream'
 }

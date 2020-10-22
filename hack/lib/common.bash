@@ -36,14 +36,17 @@ function timeout {
   seconds=0
   timeout=${1:?Pass timeout as arg[1]}
   shift
-  ln='.' logger.debug "Wait until non-zero (max ${timeout} sec.): ${*} .."
+  ln=' ' logger.debug "${*} : Waiting until non-zero (max ${timeout} sec.)"
   while (eval "$*" 2>/dev/null); do
     seconds=$(( seconds + interval ))
     echo -n '.'
-    sleep $interval
-    [[ $seconds -gt $timeout ]] && logger.error "Time out of ${timeout} exceeded" && return 1
+    sleep "$interval"
+    [[ $seconds -gt $timeout ]] && echo '' \
+      && logger.error "Time out of ${timeout} exceeded" \
+      && return 71
   done
-  echo ' done'
+  [[ $seconds -gt 0 ]] && echo -n ' '
+  echo 'done'
   return 0
 }
 

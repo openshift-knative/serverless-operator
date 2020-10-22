@@ -44,7 +44,7 @@ function install_catalogsource {
     oc -n "$OLM_NAMESPACE" new-build --binary \
       --strategy=docker --name serverless-bundle
   else
-    logger.debug 'Serverless bundle image build is already created'
+    logger.info 'Serverless bundle image build is already created'
   fi
   if ! [ -f "${rootdir}/_output/serverless-bundle.sha1sum" ] || \
       ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
@@ -55,7 +55,7 @@ function install_catalogsource {
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
   else
-    logger.debug 'Serverless bundle build is up-to-date'
+    logger.info 'Serverless bundle build is up-to-date'
   fi
 
   logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
