@@ -9,6 +9,9 @@ function install_strimzi {
   | sed 's/namespace: .*/namespace: kafka/' \
   | oc -n kafka apply -f -
 
+  # Wait for the CRD we need to actually be active
+  oc wait crd --timeout=-1s kafkas.kafka.strimzi.io --for=condition=Established
+
   header "Applying Strimzi Cluster file"
   oc -n kafka apply -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/${strimzi_version}/examples/kafka/kafka-persistent.yaml"
 
