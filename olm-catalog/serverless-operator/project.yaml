@@ -7,9 +7,8 @@ olm:
   replaces: 1.10.0
   skipRange: '>=1.10.0 <1.11.0'
   channels:
-    default: '4.3'
+    default: '4.6'
     list:
-      - '4.5'
       - '4.6'
 
 requirements:
@@ -17,7 +16,6 @@ requirements:
     minVersion: 1.15.0
   golang: '1.14'
   ocp:
-    - '4.5'
     - '4.6'
 
 dependencies:

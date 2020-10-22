@@ -33,7 +33,12 @@ const (
 	finalizerName = "knative-kafka-openshift"
 )
 
-var log = logf.Log.WithName("controller_knativekafka")
+var (
+	log               = logf.Log.WithName("controller_knativekafka")
+	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	roleOrRoleBinding = mf.Any(role, rolebinding)
+)
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
 
@@ -209,7 +214,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	m, err := manifest.Transform(
-		injectOwner(instance),
+		mf.InjectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
@@ -227,9 +232,20 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 // Install Knative Kafka components
 func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Installing manifest")
-	if err := manifest.Apply(); err != nil {
+	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
+	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
+	// (Cluster)RoleBindings, then the rest of the manifest.
+	if err := manifest.Filter(role).Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
-		return fmt.Errorf("failed to apply manifest: %w", err)
+		return fmt.Errorf("failed to apply (cluster)roles in manifest: %w", err)
+	}
+	if err := manifest.Filter(rolebinding).Apply(); err != nil {
+		instance.Status.MarkInstallFailed(err.Error())
+		return fmt.Errorf("failed to apply (cluster)rolebindings in manifest: %w", err)
+	}
+	if err := manifest.Filter(not(roleOrRoleBinding)).Apply(); err != nil {
+		instance.Status.MarkInstallFailed(err.Error())
+		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	instance.Status.MarkInstallSucceeded()
 	return nil
@@ -265,11 +281,13 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance 
 		return nil
 	}
 	log.Info("Deleting resources in manifest")
-	if err := manifest.Delete(); err != nil {
-		// TODO: any conditions?
-		return fmt.Errorf("failed to apply manifest: %w", err)
+	if err := manifest.Filter(mf.NoCRDs, not(roleOrRoleBinding)).Delete(); err != nil {
+		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 	}
-	// TODO: any conditions?
+	// Delete Roles last, as they may be useful for human operators to clean up.
+	if err := manifest.Filter(roleOrRoleBinding).Delete(); err != nil {
+		return fmt.Errorf("failed to remove rbac: %w", err)
+	}
 	return nil
 }
 
@@ -370,23 +388,6 @@ func setBootstrapServers(bootstrapServers string) mf.Transformer {
 	}
 }
 
-// InjectOwner creates a Tranformer which adds an OwnerReference pointing to
-// `owner` to namespace-scoped objects.
-//
-// The difference from Manifestival's Inject owner is, it only does it for
-// resources that are in the same namespace as the owner.
-// For the resources that are in the same namespace, it fallbacks to
-// Manifestival's InjectOwner
-func injectOwner(owner mf.Owner) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetNamespace() == owner.GetNamespace() {
-			return mf.InjectOwner(owner)(u)
-		} else {
-			return nil
-		}
-	}
-}
-
 func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
 	// Execute each stage in sequence until one returns an error
 	for _, stage := range stages {
@@ -395,4 +396,11 @@ func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifes
 		}
 	}
 	return nil
+}
+
+// TODO: get rid of this when we update to Manifestival version that has this function
+var not = func(pred mf.Predicate) mf.Predicate {
+	return func(u *unstructured.Unstructured) bool {
+		return !pred(u)
+	}
 }
