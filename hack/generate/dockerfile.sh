@@ -15,6 +15,7 @@ values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
 values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"
+values[EVENTING_CONTRIB_VERSION]="$(metadata.get dependencies.eventing_contrib)"
 values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocp.*' | sed 's/^/v/' | paste -sd ',' -)"
 

@@ -54,11 +54,11 @@ spec:
             memory: 1000Mi
           requests:
             memory: 256Mi
-    ---
+---
 EOF
 
   logger.info "Waiting until Zipkin is available"
-  timeout 600 "[[ \$(oc get pods -n ${ZIPKIN_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 1
+  kubectl wait deployment --all --timeout=600s --for=condition=Available -n ${ZIPKIN_NAMESPACE} || return 1
 }
 
 function enable_eventing_tracing {

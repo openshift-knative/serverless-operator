@@ -32,13 +32,13 @@ test-unit:
 	go test ./knative-operator/...
 	go test ./serving/ingress/...
 
-# Run only E2E tests from the current repo.
+# Run only SERVING/EVENTING E2E tests from the current repo.
 test-e2e:
 	./test/e2e-tests.sh
 
-# TODO: that will - soon... run the e2e tests with Kafka
+# Run E2E tests from the current repo for serving+eventing+knativeKafka
 test-e2e-with-kafka:
-	./test/e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
