@@ -9,11 +9,10 @@ import (
 )
 
 const (
-	eventingName                 = "knative-eventing"
-	eventingNamespace            = "knative-eventing"
-	knativeKafkaName             = "knative-kafka"
-	knativeKafkaChannelNamespace = "knative-eventing"
-	knativeKafkaSourceNamespace  = "knative-sources"
+	eventingName          = "knative-eventing"
+	eventingNamespace     = "knative-eventing"
+	knativeKafkaName      = "knative-kafka"
+	knativeKafkaNamespace = "knative-eventing"
 )
 
 var knativeKafkaChannelControlPlaneDeploymentNames = []string{
@@ -51,7 +50,7 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
 		for i := range knativeKafkaChannelControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaChannelControlPlaneDeploymentNames[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaChannelNamespace); err != nil {
+			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
@@ -60,15 +59,14 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for KafkaSource", func(t *testing.T) {
 		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaSourceNamespace); err != nil {
+			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaChannelNamespace)
-		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaSourceNamespace)
+		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaNamespace)
 	})
 
 	t.Run("remove knativekafka cr", func(t *testing.T) {
@@ -78,14 +76,14 @@ func TestKnativeKafka(t *testing.T) {
 
 		for i := range knativeKafkaChannelControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaChannelControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaChannelNamespace); err != nil {
+			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
 		}
 
 		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaSourceNamespace); err != nil {
+			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
 		}

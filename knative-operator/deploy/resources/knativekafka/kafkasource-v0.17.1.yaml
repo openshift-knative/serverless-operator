@@ -1,15 +1,8 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: knative-sources
-  labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kafka-controller-manager
-  namespace: knative-sources
+  namespace: knative-eventing
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
 ---
@@ -146,7 +139,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
-  namespace: knative-sources
+  namespace: knative-eventing
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -161,7 +154,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
-  namespace: knative-sources
+  namespace: knative-eventing
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -176,7 +169,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
-  namespace: knative-sources
+  namespace: knative-eventing
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -261,7 +254,7 @@ spec:
     webhookClientConfig:
       service:
         name: kafka-source-webhook
-        namespace: knative-sources
+        namespace: knative-eventing
   additionalPrinterColumns:
   - name: Topics
     type: string
@@ -290,7 +283,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kafka-controller
-  namespace: knative-sources
+  namespace: knative-eventing
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
     control-plane: kafka-controller-manager
@@ -305,7 +298,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kafka-controller-manager
-  namespace: knative-sources
+  namespace: knative-eventing
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
     control-plane: kafka-controller-manager
@@ -361,7 +354,7 @@ metadata:
     role: webhook
     contrib.eventing.knative.dev/release: "v0.17.1"
   name: kafka-source-webhook
-  namespace: knative-sources
+  namespace: knative-eventing
 spec:
   ports:
   - name: https-webhook
@@ -382,7 +375,7 @@ webhooks:
   clientConfig:
     service:
       name: kafka-source-webhook
-      namespace: knative-sources
+      namespace: knative-eventing
   failurePolicy: Fail
   name: defaulting.webhook.kafka.sources.knative.dev
 ---
@@ -398,7 +391,7 @@ webhooks:
   clientConfig:
     service:
       name: kafka-source-webhook
-      namespace: knative-sources
+      namespace: knative-eventing
   failurePolicy: Fail
   name: kafkabindings.webhook.kafka.sources.knative.dev
 ---
@@ -414,7 +407,7 @@ webhooks:
   clientConfig:
     service:
       name: kafka-source-webhook
-      namespace: knative-sources
+      namespace: knative-eventing
   failurePolicy: Fail
   name: validation.webhook.kafka.sources.knative.dev
 ---
@@ -430,7 +423,7 @@ webhooks:
   clientConfig:
     service:
       name: kafka-source-webhook
-      namespace: knative-sources
+      namespace: knative-eventing
   failurePolicy: Fail
   name: config.webhook.kafka.sources.knative.dev
   namespaceSelector:
@@ -442,6 +435,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: kafka-source-webhook-certs
-  namespace: knative-sources
+  namespace: knative-eventing
   labels:
     contrib.eventing.knative.dev/release: "v0.17.1"
