@@ -64,9 +64,8 @@ func getRolePath() string {
 	ns, found := os.LookupEnv(TestRolePath)
 	if found {
 		return ns
-	} else {
-		return rolePath
 	}
+	return rolePath
 }
 
 func addMonitoringLabelToNamespace(namespace string, api client.Client) error {

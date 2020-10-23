@@ -9,7 +9,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -52,7 +51,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 		return nil, err
 	}
 	u := &unstructured.Unstructured{Object: uo}
-	ru, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Create(u, metav1.CreateOptions{})
+	ru, err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Create(u, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 }
 
 func DeleteKnativeKafka(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -91,8 +90,8 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		lastState := &kafkav1alpha1.KnativeKafka{}
-		u := &unstructured.Unstructured{}
-		u, err = ctx.Clients.Dynamic.Resource(schema.GroupVersionResource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas"))).Namespace(namespace).Get(name, metav1.GetOptions{})
+		var u *unstructured.Unstructured
+		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(name, metav1.GetOptions{})
 		if err != nil {
 			return inState(nil, err)
 		}

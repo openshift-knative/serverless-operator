@@ -3,6 +3,7 @@ package dashboard
 import (
 	"context"
 	"fmt"
+
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	mfc "github.com/manifestival/controller-runtime-client"

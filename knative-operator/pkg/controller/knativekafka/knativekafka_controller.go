@@ -253,6 +253,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		u := u // To avoid memory aliasing
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			instance.Status.MarkDeploymentsNotReady()

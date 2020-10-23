@@ -29,7 +29,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 	if err := manifest.Apply(); err != nil {
 		return fmt.Errorf("failed to apply kourier manifest: %w", err)
 	}
-	if err := checkDeployments(&manifest, instance, api); err != nil {
+	if err := checkDeployments(&manifest, api); err != nil {
 		return fmt.Errorf("failed to check deployments: %w", err)
 	}
 	log.Info("Kourier is ready")
@@ -38,7 +38,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, api client.Client, scheme *
 
 // Check for deployments in knative-serving-ingress
 // This function is copied from knativeserving_controller.go in serving-operator
-func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing, api client.Client) error {
+func checkDeployments(manifest *mf.Manifest, api client.Client) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployment := &appsv1.Deployment{}
@@ -48,7 +48,7 @@ func checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeSe
 		}
 		for _, c := range deployment.Status.Conditions {
 			if c.Type == appsv1.DeploymentAvailable && c.Status != v1.ConditionTrue {
-				return fmt.Errorf("Deployment %q/%q not ready", u.GetName(), u.GetNamespace())
+				return fmt.Errorf("deployment %q/%q not ready", u.GetName(), u.GetNamespace())
 			}
 		}
 	}

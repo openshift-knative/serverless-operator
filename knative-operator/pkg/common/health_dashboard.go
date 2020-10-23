@@ -3,8 +3,9 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"os"
+
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"

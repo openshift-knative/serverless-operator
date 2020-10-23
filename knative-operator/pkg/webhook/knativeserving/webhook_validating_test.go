@@ -34,7 +34,7 @@ var ks2 = &servingv1alpha1.KnativeServing{
 func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_SERVING_NAMESPACE", "knative-serving")
-	validator := KnativeServingValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{ks1})
 	result := validator.Handle(context.TODO(), types.Request{})
 	if result.Response.Allowed {
@@ -44,7 +44,7 @@ func TestInvalidNamespace(t *testing.T) {
 
 func TestLoneliness(t *testing.T) {
 	os.Clearenv()
-	validator := KnativeServingValidator{}
+	validator := Validator{}
 	validator.InjectDecoder(&mockDecoder{ks1})
 	validator.InjectClient(fake.NewFakeClient(ks2))
 	result := validator.Handle(context.TODO(), types.Request{})

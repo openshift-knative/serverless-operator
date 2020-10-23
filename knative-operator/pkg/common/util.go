@@ -111,7 +111,6 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 			},
 		},
 	})
-	return
 }
 
 // common function to enqueue reconcile requests for resources

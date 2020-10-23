@@ -94,3 +94,7 @@ generated-files: release-files
 # Runs the lints Github Actions do too.
 lint:
 	woke
+	(cd openshift-knative-operator && golangci-lint run)
+	(cd serving/ingress && golangci-lint run)
+	(cd test && golangci-lint run)
+	(cd knative-operator && golangci-lint run)

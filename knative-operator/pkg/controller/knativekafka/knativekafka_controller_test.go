@@ -105,7 +105,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				rawKafkaSourceManifest:  kafkaSourceManifest,
 			}
 
-			// Reconcile to intialize
+			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}

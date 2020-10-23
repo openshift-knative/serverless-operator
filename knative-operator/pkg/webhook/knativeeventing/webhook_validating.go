@@ -27,21 +27,21 @@ func ValidatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
 		WithManager(mgr).
 		ForType(&eventingv1alpha1.KnativeEventing{}).
-		Handlers(&KnativeEventingValidator{}).
+		Handlers(&Validator{}).
 		Build()
 }
 
-// KnativeEventingValidator validates KnativeEventing CR's
-type KnativeEventingValidator struct {
+// Validator validates KnativeEventing CR's
+type Validator struct {
 	client  client.Client
 	decoder types.Decoder
 }
 
 // Implement admission.Handler so the controller can handle admission request.
-var _ admission.Handler = (*KnativeEventingValidator)(nil)
+var _ admission.Handler = (*Validator)(nil)
 
 // What makes us a webhook
-func (v *KnativeEventingValidator) Handle(ctx context.Context, req types.Request) types.Response {
+func (v *Validator) Handle(ctx context.Context, req types.Request) types.Response {
 	ke := &eventingv1alpha1.KnativeEventing{}
 
 	err := v.decoder.Decode(req, ke)
@@ -56,8 +56,8 @@ func (v *KnativeEventingValidator) Handle(ctx context.Context, req types.Request
 	return admission.ValidationResponse(allowed, reason)
 }
 
-// KnativeEventingValidator checks for a minimum OpenShift version
-func (v *KnativeEventingValidator) validate(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (allowed bool, reason string, err error) {
+// Validator checks for a minimum OpenShift version
+func (v *Validator) validate(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (allowed bool, reason string, err error) {
 	log := common.Log.WithName("validate")
 	stages := []func(context.Context, *eventingv1alpha1.KnativeEventing) (bool, string, error){
 		v.validateNamespace,
@@ -79,28 +79,28 @@ func (v *KnativeEventingValidator) validate(ctx context.Context, ke *eventingv1a
 	return
 }
 
-// KnativeEventingValidator implements inject.Client.
+// Validator implements inject.Client.
 // A client will be automatically injected.
-var _ inject.Client = (*KnativeEventingValidator)(nil)
+var _ inject.Client = (*Validator)(nil)
 
 // InjectClient injects the client.
-func (v *KnativeEventingValidator) InjectClient(c client.Client) error {
+func (v *Validator) InjectClient(c client.Client) error {
 	v.client = c
 	return nil
 }
 
-// KnativeEventingValidator implements inject.Decoder.
+// Validator implements inject.Decoder.
 // A decoder will be automatically injected.
-var _ inject.Decoder = (*KnativeEventingValidator)(nil)
+var _ inject.Decoder = (*Validator)(nil)
 
 // InjectDecoder injects the decoder.
-func (v *KnativeEventingValidator) InjectDecoder(d types.Decoder) error {
+func (v *Validator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
 }
 
 // validate required namespace, if any
-func (v *KnativeEventingValidator) validateNamespace(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
+func (v *Validator) validateNamespace(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_EVENTING_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeEventing may only be created in %s namespace", ns), nil
@@ -109,7 +109,7 @@ func (v *KnativeEventingValidator) validateNamespace(ctx context.Context, ke *ev
 }
 
 // validate this is the only KE in this namespace
-func (v *KnativeEventingValidator) validateLoneliness(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
+func (v *Validator) validateLoneliness(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
 	list := &eventingv1alpha1.KnativeEventingList{}
 	if err := v.client.List(ctx, &client.ListOptions{Namespace: ke.Namespace}, list); err != nil {
 		return false, "Unable to list KnativeEventings", err
