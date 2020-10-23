@@ -22,7 +22,7 @@ data:
         "list": []
       },
       "editable": false,
-      "description" : "Knative Health status - Serving",
+      "description" : "Knative Health status",
       "gnetId": null,
       "graphTooltip": 0,
       "links": [],
@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"serving_status\"})",
+                 "expr": "floor(sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})/2)",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
