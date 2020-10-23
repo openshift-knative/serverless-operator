@@ -146,12 +146,11 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	//TODO: to be enabled
-	//if instance.Status.IsReady() {
-	//	common.KnativeKafkaUpG.Set(1)
-	//} else {
-	//	common.KnativeKafkaUpG.Set(0)
-	//}
+	if instance.Status.IsReady() {
+		common.KnativeKafkaUpG.Set(1)
+	} else {
+		common.KnativeKafkaUpG.Set(0)
+	}
 	return reconcile.Result{}, reconcileErr
 }
 
