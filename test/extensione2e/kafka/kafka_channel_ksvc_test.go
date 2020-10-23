@@ -12,6 +12,7 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -112,7 +113,7 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 		t.Fatal("Knative PingSource not created: ", err)
 	}
 
-	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 
 	// cleanup if everything ends smoothly
 	cleanup()

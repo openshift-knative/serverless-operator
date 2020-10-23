@@ -12,6 +12,7 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -128,7 +129,7 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	}
 
 	// Wait for text in kservice
-	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 
 	// Cleanup
 	cleanup()

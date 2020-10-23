@@ -2,7 +2,6 @@ package knativekafkae2e
 
 import (
 	"fmt"
-	"net/url"
 	"testing"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -15,9 +14,9 @@ import (
 	kafkabindingv1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1beta1"
 	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	pkgTest "knative.dev/pkg/test"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -146,22 +145,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		t.Fatal("Unable to create batch cronjob: ", err)
 	}
 
-	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 	// cleanup if everything ends smoothly
 	cleanup()
-}
-
-// This should probably move to an exported function from servinge2e
-func waitForRouteServingText(t *testing.T, client *test.Context, routeURL *url.URL, expectedText string) {
-	t.Helper()
-	if _, err := pkgTest.WaitForEndpointState(
-		&pkgTest.KubeClient{Kube: client.Clients.Kube},
-		t.Logf,
-		routeURL,
-		pkgTest.EventuallyMatchesBody(expectedText),
-		"WaitForRouteToServeText",
-		true); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
-	}
-
 }
