@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -39,10 +40,10 @@ func IstioGateway(name, namespace string) *unstructured.Unstructured {
 	}
 }
 
-// IstioGatewayWithTls creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
+// IstioGatewayWithTLS creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
 // for a specific host with a custom domain and certificates.
 // The certificate/privateKey must be already mounted on the istio-ingressgateway on the given paths
-func IstioGatewayWithTls(name, namespace string, host, privateKeyPath, serverCertificatePath string) *unstructured.Unstructured {
+func IstioGatewayWithTLS(name, namespace string, host, privateKeyPath, serverCertificatePath string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "networking.istio.io/v1alpha3",

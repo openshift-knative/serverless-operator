@@ -8,28 +8,26 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingv1beta1 "knative.dev/eventing/pkg/apis/eventing/v1beta1"
-	eventingsourcesv1alpha2 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
-	brokerName        = "smoke-test-broker"
-	triggerName       = "smoke-test-trigger"
-	cmName            = "smoke-test-br-cm"
-	brokerAPIVersion  = "eventing.knative.dev/v1beta1"
-	brokerKind        = "Broker"
-	triggerAPIVersion = "eventing.knative.dev/v1beta1"
-	triggerKind       = "trigger"
+	brokerName       = "smoke-test-broker"
+	triggerName      = "smoke-test-trigger"
+	cmName           = "smoke-test-br-cm"
+	brokerAPIVersion = "eventing.knative.dev/v1beta1"
+	brokerKind       = "Broker"
 )
 
 func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1beta1().Brokers(testNamespace).Delete(brokerName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Delete(triggerName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(brokerName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(triggerName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(cmName, &metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
@@ -56,12 +54,12 @@ kind: %q`, channelAPIVersion, channelKind),
 	if err != nil {
 		t.Fatal("Unable to create ConfigMap: ", err)
 	}
-	br := &eventingv1beta1.Broker{
+	br := &eventingv1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      brokerName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingv1beta1.BrokerSpec{
+		Spec: eventingv1.BrokerSpec{
 			Config: &duckv1.KReference{
 				APIVersion: "v1",
 				Kind:       "ConfigMap",
@@ -69,16 +67,16 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	broker, err := client.Clients.Eventing.EventingV1beta1().Brokers(testNamespace).Create(br)
+	broker, err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(br)
 	if err != nil {
 		t.Fatal("Unable to create broker: ", err)
 	}
-	tr := &eventingv1beta1.Trigger{
+	tr := &eventingv1.Trigger{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      triggerName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingv1beta1.TriggerSpec{
+		Spec: eventingv1.TriggerSpec{
 			Broker: broker.Name,
 			Subscriber: duckv1.Destination{
 				Ref: &duckv1.KReference{
@@ -89,17 +87,17 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.EventingV1beta1().Triggers(testNamespace).Create(tr)
+	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(tr)
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
 
-	ps := &eventingsourcesv1alpha2.PingSource{
+	ps := &eventingsourcesv1beta1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1alpha2.PingSourceSpec{
+		Spec: eventingsourcesv1beta1.PingSourceSpec{
 			JsonData: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
@@ -112,7 +110,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

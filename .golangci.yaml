@@ -1,0 +1,27 @@
+run:
+  timeout: 5m
+
+  skip-dirs:
+    - pkg/client
+
+linters:
+  enable:
+    - asciicheck
+    - gofmt
+    - goimports
+    - golint
+    - gosec
+    - misspell
+    - prealloc
+    - stylecheck
+    - unconvert
+    - unparam
+  disable:
+    - errcheck
+
+issues:
+  exclude-rules:
+    - path: test # Excludes /test, *_test.go etc.
+      linters:
+        - gosec
+        - unparam

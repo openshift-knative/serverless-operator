@@ -89,8 +89,12 @@ generated-files: release-files
 	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
 	(cd serving/ingress; ./hack/update-deps.sh)
 	(cd test; ./hack/update-deps.sh)
-	(cd knative-operator; dep ensure -v)
+	(cd knative-operator; ./hack/update-deps.sh)
 
 # Runs the lints Github Actions do too.
 lint:
 	woke
+	(cd openshift-knative-operator && golangci-lint run)
+	(cd serving/ingress && golangci-lint run)
+	(cd test && golangci-lint run)
+	(cd knative-operator && golangci-lint run)

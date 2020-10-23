@@ -143,7 +143,7 @@ func TestReconcile(t *testing.T) {
 			route(ingressNamespace, routeName),
 		},
 		WantPatches: []clientgotesting.PatchActionImpl{
-			clientgotesting.PatchActionImpl{
+			{
 				Name:       ingName,
 				ActionImpl: clientgotesting.ActionImpl{Namespace: ingNamespace},
 				Patch:      []byte(`{"metadata":{"finalizers":["ocp-ingress"],"resourceVersion":""}}`),
@@ -172,7 +172,7 @@ func TestReconcile(t *testing.T) {
 			Name: routeName,
 		}},
 		WantPatches: []clientgotesting.PatchActionImpl{
-			clientgotesting.PatchActionImpl{
+			{
 				Name:       ingName,
 				ActionImpl: clientgotesting.ActionImpl{Namespace: ingNamespace},
 				Patch:      []byte(`{"metadata":{"finalizers":[],"resourceVersion":""}}`),

@@ -2,8 +2,9 @@ package sources
 
 import (
 	"context"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"

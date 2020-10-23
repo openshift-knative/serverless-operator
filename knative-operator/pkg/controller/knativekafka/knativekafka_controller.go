@@ -146,12 +146,11 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	//TODO: to be enabled
-	//if instance.Status.IsReady() {
-	//	common.KnativeKafkaUpG.Set(1)
-	//} else {
-	//	common.KnativeKafkaUpG.Set(0)
-	//}
+	if instance.Status.IsReady() {
+		common.KnativeKafkaUpG.Set(1)
+	} else {
+		common.KnativeKafkaUpG.Set(0)
+	}
 	return reconcile.Result{}, reconcileErr
 }
 
@@ -254,6 +253,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		u := u // To avoid memory aliasing
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			instance.Status.MarkDeploymentsNotReady()

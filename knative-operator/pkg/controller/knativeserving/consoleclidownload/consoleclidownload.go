@@ -3,10 +3,11 @@ package consoleclidownload
 import (
 	"context"
 	"fmt"
-	v1 "github.com/openshift/api/route/v1"
-	appsv1 "k8s.io/api/apps/v1"
 	"os"
 	"strings"
+
+	v1 "github.com/openshift/api/route/v1"
+	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
@@ -41,11 +42,11 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 		return err
 	}
 	service := &servingv1.Service{}
-	if err := reconcileKnCCDResources(instance, apiclient, scheme, service); err != nil {
+	if err := reconcileKnCCDResources(instance, apiclient, service); err != nil {
 		return err
 	}
 	if !service.Status.IsReady() {
-		return fmt.Errorf("Knative Service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
+		return fmt.Errorf("knative service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
 	if err := reconcileKnConsoleCLIDownload(apiclient, instance, service); err != nil {
 		return err
@@ -55,7 +56,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 
 // reconcileKnCCDResources reconciles required resources viz Knative Service
 // which will serve kn cross platform binaries within cluster
-func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme, service *servingv1.Service) error {
+func reconcileKnCCDResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client, service *servingv1.Service) error {
 	log.Info("Installing kn ConsoleCLIDownload resources")
 	err := apiclient.Get(context.TODO(), client.ObjectKey{Namespace: instance.GetNamespace(), Name: knConsoleCLIDownloadService}, service)
 	switch {
@@ -221,15 +222,15 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 			DisplayName: "kn - OpenShift Serverless Command Line Interface (CLI)",
 			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.",
 			Links: []consolev1.Link{
-				consolev1.Link{
+				{
 					Text: "Download kn for Linux",
 					Href: baseURL + "/amd64/linux/kn-linux-amd64.tar.gz",
 				},
-				consolev1.Link{
+				{
 					Text: "Download kn for macOS",
 					Href: baseURL + "/amd64/macos/kn-macos-amd64.tar.gz",
 				},
-				consolev1.Link{
+				{
 					Text: "Download kn for Windows",
 					Href: baseURL + "/amd64/windows/kn-windows-amd64.zip",
 				},
