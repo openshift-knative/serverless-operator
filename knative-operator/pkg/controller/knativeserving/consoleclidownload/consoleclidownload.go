@@ -3,10 +3,11 @@ package consoleclidownload
 import (
 	"context"
 	"fmt"
-	v1 "github.com/openshift/api/route/v1"
-	appsv1 "k8s.io/api/apps/v1"
 	"os"
 	"strings"
+
+	v1 "github.com/openshift/api/route/v1"
+	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
@@ -221,15 +222,15 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 			DisplayName: "kn - OpenShift Serverless Command Line Interface (CLI)",
 			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.",
 			Links: []consolev1.Link{
-				consolev1.Link{
+				{
 					Text: "Download kn for Linux",
 					Href: baseURL + "/amd64/linux/kn-linux-amd64.tar.gz",
 				},
-				consolev1.Link{
+				{
 					Text: "Download kn for macOS",
 					Href: baseURL + "/amd64/macos/kn-macos-amd64.tar.gz",
 				},
-				consolev1.Link{
+				{
 					Text: "Download kn for Windows",
 					Href: baseURL + "/amd64/windows/kn-windows-amd64.zip",
 				},
