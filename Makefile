@@ -86,10 +86,10 @@ release-files:
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 generated-files: release-files
-	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
-	(cd serving/ingress; ./hack/update-deps.sh)
-	(cd test; ./hack/update-deps.sh)
-	(cd knative-operator; ./hack/update-deps.sh)
+	(cd openshift-knative-operator && ./hack/update-codegen.sh && ./hack/update-deps.sh && ./hack/update-manifests.sh)
+	(cd serving/ingress && ./hack/update-codegen.sh && ./hack/update-deps.sh)
+	(cd test && ./hack/update-deps.sh)
+	(cd knative-operator && ./hack/update-deps.sh)
 
 # Runs the lints Github Actions do too.
 lint:
