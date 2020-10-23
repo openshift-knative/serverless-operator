@@ -15,8 +15,7 @@ var (
 	)
 	KnativeServingUpG  = knativeUp.WithLabelValues("serving_status")
 	KnativeEventingUpG = knativeUp.WithLabelValues("eventing_status")
-	//TODO: to be enabled
-	//KnativeKafkaUpG    = knativeUp.WithLabelValues("kafka_status")
+	KnativeKafkaUpG    = knativeUp.WithLabelValues("kafka_status")
 )
 
 func init() {
