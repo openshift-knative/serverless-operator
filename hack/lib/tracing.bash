@@ -63,7 +63,7 @@ EOF
 }
 
 function enable_eventing_tracing {
-  header_text "Configuring tracing for Eventing"
+  logger.info "Configuring tracing for Eventing"
 
   cat <<EOF | oc apply -f -
 apiVersion: v1
