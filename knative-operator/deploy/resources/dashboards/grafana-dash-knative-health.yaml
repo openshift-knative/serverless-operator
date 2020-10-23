@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "floor(sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\"})/2)",
+                 "expr": "floor(sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})/2)",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
