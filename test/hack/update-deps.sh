@@ -26,6 +26,7 @@ FLOATING_DEPS=(
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
 
   "knative.dev/eventing@${KN_VERSION}"
+  "knative.dev/eventing-contrib@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/serving@${KN_VERSION}"
