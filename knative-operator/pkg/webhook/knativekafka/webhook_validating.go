@@ -9,6 +9,7 @@ import (
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
@@ -63,6 +64,7 @@ func (v *KnativeKafkaValidator) validate(ctx context.Context, ke *operatorv1alph
 		v.validateNamespace,
 		v.validateLoneliness,
 		v.validateShape,
+		v.validateDependencies,
 	}
 	for _, stage := range stages {
 		allowed, reason, err = stage(ctx, ke)
@@ -128,5 +130,19 @@ func (v *KnativeKafkaValidator) validateShape(_ context.Context, ke *operatorv1a
 	if ke.Spec.Channel.Enabled && ke.Spec.Channel.BootstrapServers == "" {
 		return false, "spec.channel.bootStrapServers is a required detail when spec.channel.enabled is true", nil
 	}
+	return true, "", nil
+}
+
+// validate that KnativeEventing is installed as a hard dep
+func (v *KnativeKafkaValidator) validateDependencies(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
+	// check to see if we can find KnativeEventing
+	list := &eventingv1alpha1.KnativeEventingList{}
+	if err := v.client.List(ctx, &client.ListOptions{Namespace: ke.Namespace}, list); err != nil {
+		return false, "Unable to list KnativeEventing instance", err
+	}
+	if len(list.Items) == 0 {
+		return false, "KnativeEventing instance must be installed before KnativeKafka", nil
+	}
+	// successful case
 	return true, "", nil
 }
