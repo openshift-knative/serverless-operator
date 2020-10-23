@@ -45,11 +45,13 @@ test-operator: test-unit test-e2e
 
 # Run upstream E2E tests including upgrades (Serving, Eventing, ...).
 test-upstream-e2e:
-	./test/upstream-e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
-	TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:
