@@ -21,6 +21,28 @@ function resolve_hostname {
   fi
 }
 
+# Waits until labelled pods reports ready. It should be used erroneous, upstream,
+# wait_until_pods_running func.
+function wait_until_labelled_pods_are_ready {
+  local label ns
+  label="${1:?Pass a label as arg[1]}"
+  ns="${2:?Pass a namespace as arg[2]}"
+
+  # Wait for some pods to sprung
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]"
+  # Wait until they are ready to receive communications
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
+'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+}
+
+function wait_until_pods_running {
+  logger.error "Upstream function wait_until_pods_running doesn't work well \
+with strict Bash rules that should be used while scripting, and shouldn't be \
+used in OpenShift Serverless. Please use wait_until_labelled_pods_are_ready \
+instead"
+  exit 88
+}
+
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
   local seconds timeout interval

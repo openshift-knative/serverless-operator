@@ -35,8 +35,6 @@ function upstream_knative_eventing_contrib_e2e {
   logger.info 'Starting eventing-contrib tests'
   (( !failed )) && run_e2e_tests || failed=$?
 
-  print_test_result ${failed}
-
   return $failed
   )
 }
