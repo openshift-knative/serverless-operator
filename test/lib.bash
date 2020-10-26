@@ -11,7 +11,7 @@ NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 NAMESPACES+=("serverless-tests3")
 
-declare -a waited_pids
+declare -a waited_pids=()
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
