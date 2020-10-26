@@ -1,10 +1,6 @@
 package webhook
 
 import (
-	"errors"
-	"os"
-
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -31,26 +27,12 @@ func AddToManager(m manager.Manager) error {
 	}
 
 	log.Info("Setting up webhook server")
-	operatorNs := os.Getenv(common.NamespaceEnvKey)
-	if operatorNs == "" {
-		return errors.New("NAMESPACE not provided via environment")
-	}
 	// This will be started when the Manager is started
+	truePtr := true
 	as, err := webhook.NewServer("admission-webhook-server", m, webhook.ServerOptions{
-		Port:    9876,
-		CertDir: "/tmp/cert",
-		BootstrapOptions: &webhook.BootstrapOptions{
-			MutatingWebhookConfigName:   "mutating-knative-openshift",
-			ValidatingWebhookConfigName: "validating-knative-openshift",
-			Service: &webhook.Service{
-				Namespace: operatorNs,
-				Name:      "admission-server-service",
-				// Selectors should select the pods that runs this webhook server.
-				Selectors: map[string]string{
-					"app": "openshift-admission-server",
-				},
-			},
-		},
+		Port:                          9876,
+		CertDir:                       "/apiserver.local.config/certificates",
+		DisableWebhookConfigInstaller: &truePtr,
 	})
 	if err != nil {
 		log.Error(err, "Unable to create a new webhook server")
