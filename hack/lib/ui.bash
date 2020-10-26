@@ -74,22 +74,22 @@ function logger.__log {
 
 if [[ "${SHOULD_COLOR}" == "false" ]]; then
   function logger.debug {
-    echo 'DEBUG' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "$(date '+%H:%M:%S.%3N') DEBUG:   $*"
   }
 
   function logger.info {
-    echo 'INFO' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "$(date '+%H:%M:%S.%3N') INFO:    $*"
   }
 
   function logger.success {
-    echo 'SUCCESS' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "$(date '+%H:%M:%S.%3N') SUCCESS: $*"
   }
 
   function logger.warn {
-    echo 'WARNING' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "$(date '+%H:%M:%S.%3N') WARNING: $*"
   }
 
   function logger.error {
-    echo 'ERROR' "$(date '+%H:%M:%S.%3N')" "$*"
+    echo "$(date '+%H:%M:%S.%3N') ERROR:   $*"
   }
 fi
