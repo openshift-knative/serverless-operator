@@ -11,8 +11,6 @@ NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 NAMESPACES+=("serverless-tests3")
 
-declare -a waited_pids=()
-
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing-contrib.bash"
@@ -287,12 +285,15 @@ function run_rolling_upgrade_tests {
 }
 
 function end_prober {
-  local prober_pid prober_signal retcode title
+  local prober_pid prober_signal retcode title piddir
   title=${1:?Pass a title as arg[1]}
   prober_pid=${2:?Pass a pid as a arg[2]}
   prober_signal=${3:-/tmp/prober-signal}
+  piddir="${piddir:-/tmp/svls-probes/$$}"
 
-  if array.contains "${prober_pid}" "${waited_pids[@]}"; then
+  mkdir -p "${piddir}" || return $?
+
+  if [ -f "${piddir}/${prober_pid}" ]; then
     logger.info "Prober of PID ${prober_pid} is closed already."
     return 0
   fi
@@ -305,7 +306,7 @@ function end_prober {
 
   wait "${prober_pid}"
   retcode=$?
-  waited_pids+=("${prober_pid}")
+  echo 'done' > "${piddir}/${prober_pid}"
   if ! (( retcode )); then
     logger.success "${title} prober passed"
   else
