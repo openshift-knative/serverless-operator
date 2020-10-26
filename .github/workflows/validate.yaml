@@ -76,10 +76,6 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/get-woke/woke/main/install.sh | sh -s -- -b "${TEMP_PATH}" "${WOKE_VERSION}" 2>&1
           echo '::endgroup::'
 
-          echo '::group:: 🥶 Installing shellcheck ...'
-          sudo apt install shellcheck -y
-          echo '::endgroup::'
-
           echo "${TEMP_PATH}" >> $GITHUB_PATH
 
       - name: Go Lint - knative-operator
