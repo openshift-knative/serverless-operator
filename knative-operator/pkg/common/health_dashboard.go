@@ -2,10 +2,9 @@ package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
-
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
@@ -19,11 +18,11 @@ var logh = Log.WithName("health dashboard")
 const ConfigManagedNamespace = "openshift-config-managed"
 
 func InstallHealthDashboard(api client.Client) error {
-	namespace, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		return err
+	namespace := os.Getenv(NamespaceEnvKey)
+	if namespace == "" {
+		return errors.New("NAMESPACE not provided via environment")
 	}
-	err = api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
+	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
 		logh.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
 		return nil

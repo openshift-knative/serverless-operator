@@ -1,7 +1,10 @@
 package webhook
 
 import (
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	"errors"
+	"os"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -28,9 +31,9 @@ func AddToManager(m manager.Manager) error {
 	}
 
 	log.Info("Setting up webhook server")
-	operatorNs, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		return err
+	operatorNs := os.Getenv(common.NamespaceEnvKey)
+	if operatorNs == "" {
+		return errors.New("NAMESPACE not provided via environment")
 	}
 	// This will be started when the Manager is started
 	as, err := webhook.NewServer("admission-webhook-server", m, webhook.ServerOptions{

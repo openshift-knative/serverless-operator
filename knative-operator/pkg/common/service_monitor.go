@@ -2,13 +2,13 @@ package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	appsv1 "k8s.io/api/apps/v1"
@@ -59,10 +59,9 @@ func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config
 	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
 	// necessary to configure Prometheus to scrape metrics from this operator.
 	services := []*v1.Service{service}
-	metricsNamespace, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		log.Error(err, "failed to get metrics namespace")
-		return err
+	metricsNamespace := os.Getenv(NamespaceEnvKey)
+	if metricsNamespace == "" {
+		return errors.New("NAMESPACE not provided via environment")
 	}
 	_, err = metrics.CreateServiceMonitors(cfg, metricsNamespace, services)
 
