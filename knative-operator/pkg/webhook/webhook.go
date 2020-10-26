@@ -1,14 +1,7 @@
 package webhook
 
 import (
-	"context"
-
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -21,12 +14,6 @@ var AddToManagerFuncs []func(manager.Manager) (webhook.Webhook, error)
 
 // AddToManager adds all Webhooks to the Manager
 func AddToManager(m manager.Manager) error {
-
-	if !runningOnOpenshift(m.GetConfig()) {
-		log.Info("OpenShift not detected; no webhooks will be configured")
-		return nil
-	}
-
 	webhooks := []webhook.Webhook{}
 	for _, f := range AddToManagerFuncs {
 		wh, err := f(m)
@@ -74,22 +61,4 @@ func AddToManager(m manager.Manager) error {
 		return err
 	}
 	return nil
-}
-
-func runningOnOpenshift(cfg *rest.Config) bool {
-	c, err := client.New(cfg, client.Options{})
-	if err != nil {
-		log.Error(err, "Can't create client")
-		return false
-	}
-	gvk := schema.GroupVersionKind{Group: "route.openshift.io", Version: "v1", Kind: "route"}
-	list := &unstructured.UnstructuredList{}
-	list.SetGroupVersionKind(gvk)
-	if err := c.List(context.TODO(), nil, list); err != nil {
-		if !meta.IsNoMatchError(err) {
-			log.Error(err, "Unable to query for OpenShift Route")
-		}
-		return false
-	}
-	return true
 }
