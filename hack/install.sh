@@ -8,8 +8,6 @@
 #  * Install Knative Serving custom resource
 #
 
-echo 'Testing Shellcheck integration' ${BASH_SOURCE[0]}
-
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
