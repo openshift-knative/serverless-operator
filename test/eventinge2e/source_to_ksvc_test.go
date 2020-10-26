@@ -1,15 +1,14 @@
 package eventinge2e
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingsourcesv1alpha2 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	pkgTest "knative.dev/pkg/test"
 )
 
 const (
@@ -26,7 +25,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -38,12 +37,12 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
-	ps := &eventingsourcesv1alpha2.PingSource{
+	ps := &eventingsourcesv1beta1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1alpha2.PingSourceSpec{
+		Spec: eventingsourcesv1beta1.PingSourceSpec{
 			JsonData: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
@@ -56,26 +55,12 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
-	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 
 	// Delete the PingSource
-	client.Clients.Eventing.SourcesV1alpha2().PingSources(testNamespace).Delete(ps.Name, &metav1.DeleteOptions{})
-}
-
-func waitForRouteServingText(t *testing.T, client *test.Context, routeURL *url.URL, expectedText string) {
-	t.Helper()
-	if _, err := pkgTest.WaitForEndpointState(
-		&pkgTest.KubeClient{Kube: client.Clients.Kube},
-		t.Logf,
-		routeURL,
-		pkgTest.EventuallyMatchesBody(expectedText),
-		"WaitForRouteToServeText",
-		true); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
-	}
-
+	client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(ps.Name, &metav1.DeleteOptions{})
 }

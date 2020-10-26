@@ -20,4 +20,4 @@ LABEL \
       io.k8s.display-name="Red Hat OpenShift Serverless Bundle" \
       com.redhat.openshift.versions="__OCP_TARGET_VLIST__" \
       com.redhat.delivery.operator.bundle=true \
-      com.redhat.delivery.backport=true
+      com.redhat.delivery.backport=false

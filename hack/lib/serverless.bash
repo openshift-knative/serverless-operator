@@ -4,7 +4,8 @@ function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local prev=${1:-false}
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
-     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
+     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1 && \
+     oc get knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
   then
     logger.success 'Serverless is already installed.'
     return 0
@@ -43,6 +44,9 @@ function install_serverless_latest {
   fi
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr || return $?
+  fi
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    deploy_knativekafka_cr || return $?
   fi
 
   logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
@@ -164,6 +168,32 @@ EOF
   logger.success 'Knative Eventing has been installed successfully.'
 }
 
+function deploy_knativekafka_cr {
+  logger.info 'Deploy Knative Kafka'
+
+  # Wait for the CRD to appear
+  timeout 900 "[[ \$(oc get crd | grep -c knativekafkas.operator.serverless.openshift.io) -eq 0 ]]" || return 6
+
+  # Install Knative Kafka
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: ${EVENTING_NAMESPACE}
+spec:
+  source:
+    enabled: true
+  channel:
+    enabled: true
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
+EOF
+
+  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative Kafka has been installed sucessfully.'
+}
+
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
@@ -180,9 +210,15 @@ function teardown_serverless {
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
+    # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
+    oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
   fi
-  logger.info 'Ensure no knative eventing pods running'
-  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
+  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeKafka CR'
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" || return $?
+  fi
+  logger.info 'Ensure no knative eventing or knative kafka pods running'
+  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 10
   if oc get namespace "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${EVENTING_NAMESPACE}"
   fi

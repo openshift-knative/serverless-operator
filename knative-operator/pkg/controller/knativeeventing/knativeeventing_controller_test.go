@@ -2,9 +2,10 @@ package knativeeventing
 
 import (
 	"context"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"os"
 	"testing"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"

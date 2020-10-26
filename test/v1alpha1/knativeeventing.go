@@ -1,8 +1,9 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/pkg/errors"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -68,7 +69,7 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "knativeeventing %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("knativeeventing %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }

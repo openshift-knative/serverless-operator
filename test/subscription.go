@@ -1,10 +1,10 @@
 package test
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators/v1alpha1"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -85,7 +85,7 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "subscription %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("subscription %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }
@@ -99,7 +99,7 @@ func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inS
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "clusterserviceversion %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("clusterserviceversion %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }

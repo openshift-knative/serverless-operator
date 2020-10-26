@@ -47,7 +47,7 @@ pushed to your docker repository.
 
 Use the appropriate make targets or scripts in `hack`:
 
-- `make dev`: Deploys the serverless-operator without deploying Knative Serving and Eventing.
+- `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing and Kafka components.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
@@ -74,7 +74,8 @@ make release-files
 #### serverless-operator tests
 
 - `make test-unit`: Runs unit tests.
-- `make test-e2e`: Scales, installs and runs E2E tests.
+- `make test-e2e`: Scales, installs and runs E2E tests (except for Knative Kafka components).
+- `make test-e2e-with-kafka`: Scales, installs and runs E2E tests (also tests Knative Kafka components).
 - `make install-mesh test-e2e`: Scales, installs and runs E2E tests, including ServiceMesh integration tests
 - `make test-operator`: Runs unit and E2E tests.
 
@@ -249,3 +250,13 @@ To uninstall service mesh operator, run `make uninstall-mesh`.
 ```
 make uninstall-mesh
 ```
+
+## Contributing
+
+### Linting
+
+To run the linters that CI is running, you can use `make lint`.
+The required linters for that are:
+
+- [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language
+- [`golangci-lint`](https://golangci-lint.run/) to lint golang code

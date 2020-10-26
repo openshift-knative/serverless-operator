@@ -32,7 +32,7 @@ var _ ingressreconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind finalizes ingress resource.
 func (r *Reconciler) FinalizeKind(ctx context.Context, ing *v1alpha1.Ingress) reconciler.Event {
-	routes, err := r.routeList(ctx, ing)
+	routes, err := r.routeList(ing)
 	if err != nil {
 		return fmt.Errorf("failed to list routes for deletion: %w", err)
 	}
@@ -49,7 +49,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, ing *v1alpha1.Ingress) re
 func (r *Reconciler) ReconcileKind(ctx context.Context, ing *v1alpha1.Ingress) reconciler.Event {
 	logger := logging.FromContext(ctx)
 
-	existing, err := r.routeList(ctx, ing)
+	existing, err := r.routeList(ing)
 	if err != nil {
 		return fmt.Errorf("failed to list routes: %w", err)
 	}
@@ -65,7 +65,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ing *v1alpha1.Ingress) r
 		return nil
 	}
 	for _, route := range routes {
-		if err := r.reconcileRoute(ctx, ing, route); err != nil {
+		if err := r.reconcileRoute(ctx, route); err != nil {
 			return err
 		}
 		delete(existingMap, route.Name)
@@ -89,7 +89,7 @@ func (r *Reconciler) deleteRoute(ctx context.Context, route *routev1.Route) erro
 	return nil
 }
 
-func (r *Reconciler) reconcileRoute(ctx context.Context, ci *v1alpha1.Ingress, desired *routev1.Route) error {
+func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route) error {
 	logger := logging.FromContext(ctx)
 
 	// Check if this Route already exists
@@ -118,7 +118,7 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, ci *v1alpha1.Ingress, d
 	return nil
 }
 
-func (r *Reconciler) routeList(ctx context.Context, ing *v1alpha1.Ingress) ([]*routev1.Route, error) {
+func (r *Reconciler) routeList(ing *v1alpha1.Ingress) ([]*routev1.Route, error) {
 	ingressLabels := ing.GetLabels()
 	return r.routeLister.List(labels.SelectorFromSet(map[string]string{
 		networking.IngressLabelKey:     ing.GetName(),

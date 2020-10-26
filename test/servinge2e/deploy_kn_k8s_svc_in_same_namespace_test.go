@@ -9,7 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	pkgTest "knative.dev/pkg/test"
 )
 
 func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
@@ -38,7 +37,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Check Kube service responds
-	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Deploy Knative service in the same namespace
 	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
@@ -47,14 +46,14 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Check that both services respond
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
-	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
 	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
 
 	// Check that Kube service still responds
-	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
 	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
@@ -68,7 +67,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Check that Knative service responds
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	//Create deployment
 	err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
@@ -90,8 +89,8 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Check that both services respond
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
-	waitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
+	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
 	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
@@ -99,23 +98,10 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
 
 	// Check that Knative service still responds
-	waitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Delete the Knative service
 	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
-}
-
-func waitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
-	t.Helper()
-	if _, err := pkgTest.WaitForEndpointState(
-		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
-		t.Logf,
-		routeURL,
-		pkgTest.EventuallyMatchesBody(expectedText),
-		"WaitForRouteToServeText",
-		true); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
-	}
 }
 
 func withRouteForServiceReady(ctx *test.Context, serviceName, namespace string) (*routev1.Route, error) {

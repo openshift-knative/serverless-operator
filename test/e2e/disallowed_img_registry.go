@@ -13,7 +13,7 @@ import (
 
 const gcr = "gcr.io"
 
-func verifyNoDisallowedImageReference(t *testing.T, caCtx *test.Context, namespace string) {
+func VerifyNoDisallowedImageReference(t *testing.T, caCtx *test.Context, namespace string) {
 	podSpecableTypes := []schema.GroupVersionResource{{
 		Group:    "apps",
 		Version:  "v1",

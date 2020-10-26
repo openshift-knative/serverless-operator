@@ -88,22 +88,22 @@ func TestSourceReconcile(t *testing.T) {
 	if _, err := r.Reconcile(apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
 	}
-	smApiService := &corev1.Service{}
-	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smApiService); err != nil {
+	smAPIService := &corev1.Service{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smAPIService); err != nil {
 		t.Fatalf("get: (%v)", err)
 	}
-	if smApiService.Spec.Selector[common.SourceLabel] != "apiserver-source-controller" {
-		t.Fatalf("got %q, want %q", smApiService.Spec.Selector[common.SourceLabel], "apiserver-source-controller")
+	if smAPIService.Spec.Selector[common.SourceLabel] != "apiserver-source-controller" {
+		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[common.SourceLabel], "apiserver-source-controller")
 	}
-	if smApiService.Spec.Selector[common.SourceNameLabel] != "api1" {
-		t.Fatalf("got %q, want %q", smApiService.Spec.Selector[common.SourceNameLabel], "api1")
+	if smAPIService.Spec.Selector[common.SourceNameLabel] != "api1" {
+		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[common.SourceNameLabel], "api1")
 	}
-	smApi := &monitoringv1.ServiceMonitor{}
-	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smApi); err != nil {
+	smAPI := &monitoringv1.ServiceMonitor{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smAPI); err != nil {
 		t.Fatalf("get: (%v)", err)
 	}
-	if smApi.Spec.Selector.MatchLabels["name"] != "api1" {
-		t.Fatalf("got %q, want %q", smApi.Spec.Selector.MatchLabels["name"], "api1")
+	if smAPI.Spec.Selector.MatchLabels["name"] != "api1" {
+		t.Fatalf("got %q, want %q", smAPI.Spec.Selector.MatchLabels["name"], "api1")
 	}
 
 	// Reconcile for a ping source

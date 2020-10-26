@@ -27,30 +27,30 @@ func MutatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
 		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
 		WithManager(mgr).
 		ForType(&servingv1alpha1.KnativeServing{}).
-		Handlers(&KnativeServingConfigurator{}).
+		Handlers(&Configurator{}).
 		Build()
 }
 
-// KnativeServingConfigurator annotates Kss
-type KnativeServingConfigurator struct {
+// Configurator annotates Kss
+type Configurator struct {
 	client  client.Client
 	decoder types.Decoder
 }
 
 // Implement admission.Handler so the controller can handle admission request.
-var _ admission.Handler = (*KnativeServingConfigurator)(nil)
+var _ admission.Handler = (*Configurator)(nil)
 
-// KnativeServingConfigurator adds an annotation to every incoming
+// Configurator adds an annotation to every incoming
 // KnativeServing CR.
-func (a *KnativeServingConfigurator) Handle(ctx context.Context, req types.Request) types.Response {
+func (v *Configurator) Handle(ctx context.Context, req types.Request) types.Response {
 	ks := &servingv1alpha1.KnativeServing{}
 
-	err := a.decoder.Decode(req, ks)
+	err := v.decoder.Decode(req, ks)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusBadRequest, err)
 	}
 
-	err = common.Mutate(ks, a.client)
+	err = common.Mutate(ks, v.client)
 	if err != nil {
 		return admission.ErrorResponse(http.StatusInternalServerError, err)
 	}
@@ -62,22 +62,22 @@ func (a *KnativeServingConfigurator) Handle(ctx context.Context, req types.Reque
 	return util.PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
 }
 
-// KnativeServingConfigurator implements inject.Client.
+// Configurator implements inject.Client.
 // A client will be automatically injected.
-var _ inject.Client = (*KnativeServingConfigurator)(nil)
+var _ inject.Client = (*Configurator)(nil)
 
 // InjectClient injects the client.
-func (v *KnativeServingConfigurator) InjectClient(c client.Client) error {
+func (v *Configurator) InjectClient(c client.Client) error {
 	v.client = c
 	return nil
 }
 
-// KnativeServingConfigurator implements inject.Decoder.
+// Configurator implements inject.Decoder.
 // A decoder will be automatically injected.
-var _ inject.Decoder = (*KnativeServingConfigurator)(nil)
+var _ inject.Decoder = (*Configurator)(nil)
 
 // InjectDecoder injects the decoder.
-func (v *KnativeServingConfigurator) InjectDecoder(d types.Decoder) error {
+func (v *Configurator) InjectDecoder(d types.Decoder) error {
 	v.decoder = d
 	return nil
 }

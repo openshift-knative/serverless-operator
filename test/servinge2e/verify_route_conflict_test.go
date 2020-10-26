@@ -48,7 +48,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 			t.Fatal("Knative Service not ready", err)
 		}
 
-		waitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
+		WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
 		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
 		if err != nil {

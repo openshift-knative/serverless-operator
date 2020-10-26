@@ -29,9 +29,6 @@ import (
 )
 
 const (
-	ingressClassKey   = "networking.knative.dev/ingress.class"
-	istioIngressClass = "istio.ingress.networking.knative.dev"
-
 	// This needs to remain "knative-serving-openshift" to be compatible with earlier versions.
 	finalizerName = "knative-serving-openshift"
 

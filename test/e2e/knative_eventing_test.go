@@ -50,7 +50,7 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
-		verifyNoDisallowedImageReference(t, caCtx, eventingNamespace)
+		VerifyNoDisallowedImageReference(t, caCtx, eventingNamespace)
 	})
 
 	t.Run("remove knativeeventing cr", func(t *testing.T) {

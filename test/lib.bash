@@ -13,6 +13,7 @@ NAMESPACES+=("serverless-tests3")
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
+source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing-contrib.bash"
 
 # == Lifefycle
 
@@ -66,6 +67,29 @@ function serverless_operator_e2e_tests {
   return $failed
 }
 
+function serverless_operator_kafka_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Kafka tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
+    --channel "$OLM_CHANNEL" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+}
+
 function downstream_serving_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -90,6 +114,30 @@ function downstream_serving_e2e_tests {
   print_test_result ${failed}
 
   return $failed
+}
+
+function downstream_knative_kafka_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Knative Kafka tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  local failed=0
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@" || failed=1
+
+  print_test_result ${failed}
+
+  return $failed
+
 }
 
 function downstream_eventing_e2e_tests {

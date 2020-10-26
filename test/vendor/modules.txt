@@ -39,6 +39,8 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
+# github.com/google/uuid v1.1.2
+github.com/google/uuid
 # github.com/googleapis/gnostic v0.4.0
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
@@ -56,7 +58,10 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
-# github.com/openshift/api v3.9.1-0.20190924102528-32369d4db2ad+incompatible => github.com/openshift/api v0.0.0-20200618202633-7192180f496a
+# github.com/openshift-knative/serverless-operator v1.3.1-0.20201015133617-f1541b896646
+## explicit
+github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1
+# github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible => github.com/openshift/api v0.0.0-20200618202633-7192180f496a
 ## explicit
 github.com/openshift/api/config/v1
 github.com/openshift/api/console/v1
@@ -87,7 +92,6 @@ github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientse
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1
 github.com/operator-framework/operator-lifecycle-manager/pkg/lib/version
 # github.com/pkg/errors v0.9.1
-## explicit
 github.com/pkg/errors
 # github.com/rickb777/date v1.13.0
 github.com/rickb777/date/period
@@ -99,7 +103,7 @@ github.com/robfig/cron/v3
 github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# go.opencensus.io v0.22.4
+# go.opencensus.io v0.22.5-0.20200716030834-3456e1d174b2
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -470,6 +474,7 @@ knative.dev/eventing/pkg/apis/configs
 knative.dev/eventing/pkg/apis/configs/v1alpha1
 knative.dev/eventing/pkg/apis/duck
 knative.dev/eventing/pkg/apis/duck/v1
+knative.dev/eventing/pkg/apis/duck/v1alpha1
 knative.dev/eventing/pkg/apis/duck/v1beta1
 knative.dev/eventing/pkg/apis/eventing
 knative.dev/eventing/pkg/apis/eventing/v1
@@ -498,6 +503,27 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1
 knative.dev/eventing/pkg/logging
+# knative.dev/eventing-contrib v0.17.5
+## explicit
+knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging
+knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1alpha1
+knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1
+knative.dev/eventing-contrib/kafka/channel/pkg/client/clientset/versioned
+knative.dev/eventing-contrib/kafka/channel/pkg/client/clientset/versioned/scheme
+knative.dev/eventing-contrib/kafka/channel/pkg/client/clientset/versioned/typed/messaging/v1alpha1
+knative.dev/eventing-contrib/kafka/channel/pkg/client/clientset/versioned/typed/messaging/v1beta1
+knative.dev/eventing-contrib/kafka/channel/pkg/utils
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1beta1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/scheme
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/bindings/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/bindings/v1beta1
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1beta1
 # knative.dev/networking v0.0.0-20200831172815-5f2e0ad6215f
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
@@ -535,6 +561,7 @@ knative.dev/pkg/tracing/config
 knative.dev/pkg/tracing/propagation
 knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/tracker
+knative.dev/pkg/webhook/resourcesemantics
 # knative.dev/serving v0.17.3
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
@@ -554,9 +581,14 @@ knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1beta1
 # knative.dev/test-infra v0.0.0-20200915193842-f4d4232c1f04
 ## explicit
 knative.dev/test-infra/scripts
+# sigs.k8s.io/controller-runtime v0.6.1
+sigs.k8s.io/controller-runtime/pkg/runtime/scheme
+sigs.k8s.io/controller-runtime/pkg/scheme
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
+# github.com/apache/camel-k => github.com/apache/camel-k v1.1.0
 # github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
+# github.com/openshift-knative/serverless-operator/knative-operator => ../knative-operator
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20200618202633-7192180f496a
 # k8s.io/api => k8s.io/api v0.17.6
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.6

@@ -16,6 +16,9 @@ function prepare_knative_serving_tests {
 
   cd "$KNATIVE_SERVING_HOME" || return $?
 
+  # Don't bother with the chaosduck downstream for now
+  rm -rf test/config/chaosduck.yaml
+
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
   oc adm policy add-scc-to-user privileged -z default -n serving-tests

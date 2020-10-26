@@ -32,24 +32,26 @@ test-unit:
 	go test ./knative-operator/...
 	go test ./serving/ingress/...
 
-# Run only E2E tests from the current repo.
+# Run only SERVING/EVENTING E2E tests from the current repo.
 test-e2e:
 	./test/e2e-tests.sh
 
-# TODO: that will - soon... run the e2e tests with Kafka
+# Run E2E tests from the current repo for serving+eventing+knativeKafka
 test-e2e-with-kafka:
-	./test/e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
 # Run upstream E2E tests including upgrades (Serving, Eventing, ...).
 test-upstream-e2e:
-	./test/upstream-e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
-	TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:
@@ -65,6 +67,7 @@ test-all-e2e: test-e2e test-upstream-e2e
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
+# Generates all files that are templated with release metadata.
 release-files:
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
@@ -82,8 +85,18 @@ release-files:
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
 
+# Generates all files that can be generated, includes release files, code generation
+# and updates vendoring.
 generated-files: release-files
 	(cd openshift-knative-operator; ./hack/update-codegen.sh; ./hack/update-deps.sh; ./hack/update-manifests.sh)
 	(cd serving/ingress; ./hack/update-deps.sh)
 	(cd test; ./hack/update-deps.sh)
-	(cd knative-operator; dep ensure -v)
+	(cd knative-operator; ./hack/update-deps.sh)
+
+# Runs the lints Github Actions do too.
+lint:
+	woke
+	(cd openshift-knative-operator && golangci-lint run)
+	(cd serving/ingress && golangci-lint run)
+	(cd test && golangci-lint run)
+	(cd knative-operator && golangci-lint run)
