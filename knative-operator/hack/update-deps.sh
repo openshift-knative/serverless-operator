@@ -13,4 +13,8 @@ go mod vendor
 # TODO: Remove this once we bump kubernetes versions.
 git apply "$ROOT_DIR/hack/manifestival.patch"
 
-find vendor/ \( -name "OWNERS" -o -name "OWNERS_ALIASES" -o -name "BUILD" -o -name "BUILD.bazel" -o -name "*_test.go" \) -print0 | xargs -0 rm -f
+find vendor/ \( -name "OWNERS" \
+  -o -name "OWNERS_ALIASES" \
+  -o -name "BUILD" \
+  -o -name "BUILD.bazel" \
+  -o -name "*_test.go" \) -exec rm -fv {} +

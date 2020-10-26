@@ -53,10 +53,11 @@ fi
 go mod tidy
 go mod vendor
 
-rm -rf $(find vendor/ -name 'OWNERS')
-# Remove unit tests & e2e tests.
-rm -rf $(find vendor/ -path '*/pkg/*_test.go')
-rm -rf $(find vendor/ -path '*/e2e/*_test.go')
+# Remove unnecessary files.
+find vendor/ \( -name "OWNERS" \
+  -o -name "OWNERS_ALIASES" \
+  -o -name "BUILD" \
+  -o -name "BUILD.bazel" \
+  -o -name "*_test.go" \) -exec rm -fv {} +
 
-# Add permission for shell scripts
-chmod +x $(find vendor -type f -name '*.sh')
+find vendor -type f -name '*.sh' -exec chmod +x {} +
