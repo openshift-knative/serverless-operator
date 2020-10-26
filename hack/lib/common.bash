@@ -35,14 +35,6 @@ function wait_until_labelled_pods_are_ready {
 'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
 }
 
-function wait_until_pods_running {
-  logger.error "Upstream function wait_until_pods_running doesn't work well \
-with strict Bash rules that should be used while scripting, and shouldn't be \
-used in OpenShift Serverless. Please use wait_until_labelled_pods_are_ready \
-instead"
-  exit 88
-}
-
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
   local seconds timeout interval
