@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 
-NAME=hello
-TARGET=${USER:-world}
+set -Eeuo pipefail
+
+# shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
+
+NAME="${NAME:-hello}"
+TARGET="${USER:-world}"
 
 # Create a sample Knative Service
 cat <<EOF | kubectl apply -f -
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
-  name: $NAME
+  name: ${NAME}
 spec:
   template:
     spec:
@@ -16,18 +21,18 @@ spec:
         - image: gcr.io/knative-samples/helloworld-go
           env:
             - name: TARGET
-              value: $TARGET
+              value: ${TARGET}
+          readinessProbe:
+            httpGet:
+              path: /
 EOF
 
 # Wait for the Knative Service to be ready
-while output=$(kubectl get ksvc $NAME); do
-  echo "$output"
-  echo $output | grep True >/dev/null && break
-  sleep 2
-done
+timeout 100 "[[ \$(kubectl get ksvc ${NAME} -o \
+jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
 
-# Parse the URL from the knative service
-URL=$(kubectl get ksvc $NAME | grep True | awk '{print $2}')
+# Get the URL from the knative service
+URL="$(kubectl get ksvc hello -o jsonpath='{.status.url}')"
 
 # Fetch it, accounting for possible ingress race conditions
-until curl -f $URL; do sleep 2; done
+until curl -f "$URL" 2>/dev/null; do sleep 2; done
