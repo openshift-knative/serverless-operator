@@ -25,7 +25,12 @@ function upstream_knative_eventing_e2e {
 
 function actual_eventing_version {
   oc get knativeeventing.operator.knative.dev \
-    knative-eventing -n "${EVENTING_NAMESPACE}" -o=jsonpath="{.status.version}"
+    knative-eventing -n "${EVENTING_NAMESPACE}" -o=jsonpath="{.status.version}" \
+    || return $?
+}
+
+function prepare_knative_eventing_tests {
+  logger.info 'Nothing to prepare for Eventing upgrade tests'
 }
 
 function run_eventing_preupgrade_test {
@@ -38,7 +43,8 @@ function run_eventing_preupgrade_test {
 
   go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
-    --imagetemplate="${image_template}"
+    --imagetemplate="${image_template}" \
+    || return $?
 
   logger.success 'Eventing pre upgrade tests passed'
 }
@@ -68,7 +74,7 @@ function start_eventing_prober {
 }
 
 function wait_for_eventing_prober_ready {
-  wait_for_file "${EVENTING_READY_FILE}"
+  wait_for_file "${EVENTING_READY_FILE}" || return $?
 
   logger.success 'Eventing prober is ready'
 }
@@ -77,7 +83,20 @@ function end_eventing_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  end_prober_test 'Eventing' "${prober_pid}" "${EVENTING_PROBER_FILE}"
+  end_prober 'Eventing' "${prober_pid}" "${EVENTING_PROBER_FILE}" || return $?
+}
+
+function check_eventing_upgraded {
+  local latest_version
+  latest_version="${1:?Pass a target eventing version as arg[1]}"
+
+  logger.debug 'Check KnativeEventing has the latest version with Ready status'
+  timeout 300 "[[ ! ( \$(oc get knativeeventing.operator.knative.dev \
+    knative-eventing -n ${EVENTING_NAMESPACE} -o=jsonpath='{.status.version}') \
+    == ${latest_version} && \$(oc get knativeeventing.operator.knative.dev \
+    knative-eventing -n ${EVENTING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]" \
+    || return $?
 }
 
 function run_eventing_postupgrade_test {
@@ -90,7 +109,8 @@ function run_eventing_postupgrade_test {
 
   go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
-    --imagetemplate="${image_template}"
+    --imagetemplate="${image_template}" \
+    || return $?
 
   logger.success 'Eventing post upgrade tests passed'
 }

@@ -11,6 +11,8 @@ NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 NAMESPACES+=("serverless-tests3")
 
+declare -a waited_pids
+
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing-contrib.bash"
@@ -58,11 +60,11 @@ function serverless_operator_e2e_tests {
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@" || failed=$?
 
   print_test_result ${failed}
 
-  wait_for_knative_serving_ingress_ns_deleted || return 1
+  wait_for_knative_serving_ingress_ns_deleted || return $?
 
   return $failed
 }
@@ -83,7 +85,7 @@ function serverless_operator_kafka_e2e_tests {
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@" || failed=$?
 
   print_test_result ${failed}
 
@@ -109,7 +111,7 @@ function downstream_serving_e2e_tests {
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@" || failed=$?
 
   print_test_result ${failed}
 
@@ -132,7 +134,7 @@ function downstream_knative_kafka_e2e_tests {
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@" || failed=$?
 
   print_test_result ${failed}
 
@@ -156,7 +158,7 @@ function downstream_eventing_e2e_tests {
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
-    "$@" || failed=1
+    "$@" || failed=$?
 
   print_test_result ${failed}
 
@@ -171,7 +173,7 @@ function run_rolling_upgrade_tests {
   local latest_cluster_version latest_serving_version latest_eventing_version \
     rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
     eventing_prober_pid prev_serving_version prev_eventing_version \
-    ocp_target_version
+    ocp_target_version retcode
 
   scope="${1:?Provide an upgrade scope as arg[1]}"
   serving_in_scope="$(echo "${scope}" | grep -vq serving ; echo "$?")"
@@ -184,37 +186,45 @@ function run_rolling_upgrade_tests {
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
   if (( eventing_in_scope )); then
-    prepare_knative_eventing_tests
+    prepare_knative_eventing_tests || return $?
   fi
   if (( serving_in_scope )); then
-    prepare_knative_serving_tests
+    prepare_knative_serving_tests || return $?
   fi
 
   logger.info 'Testing with pre upgrade tests'
 
   if (( serving_in_scope )); then
-    run_serving_preupgrade_test
+    run_serving_preupgrade_test || return $?
   fi
   if (( eventing_in_scope )); then
-    run_eventing_preupgrade_test
+    run_eventing_preupgrade_test || return $?
   fi
 
   logger.info 'Starting prober tests'
 
   if (( serving_in_scope )); then
     start_serving_prober "${prev_serving_version}" /tmp/prober-pid
+    retcode=$?
     serving_prober_pid=$(cat /tmp/prober-pid)
+    if (( retcode )); then
+      return $retcode
+    fi
   fi
   if (( eventing_in_scope )); then
     start_eventing_prober /tmp/prober-pid
+    retcode=$?
     eventing_prober_pid=$(cat /tmp/prober-pid)
+    if (( retcode )); then
+      return $retcode
+    fi
   fi
 
   if (( serving_in_scope )); then
-    wait_for_serving_prober_ready
+    wait_for_serving_prober_ready || return $?
   fi
   if (( eventing_in_scope )); then
-    wait_for_eventing_prober_ready
+    wait_for_eventing_prober_ready || return $?
   fi
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
@@ -227,10 +237,10 @@ function run_rolling_upgrade_tests {
 
     approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
     if (( serving_in_scope )); then
-      check_serving_upgraded "${latest_serving_version}"
+      check_serving_upgraded "${latest_serving_version}" || return $?
     fi
     if (( eventing_in_scope )); then
-      check_eventing_upgraded "${latest_eventing_version}"
+      check_eventing_upgraded "${latest_eventing_version}" || return $?
     fi
   fi
 
@@ -241,47 +251,51 @@ function run_rolling_upgrade_tests {
     # should have zero failed requests. Cluster upgrade will fail probers as
     # stuff is moved around.
     if (( serving_in_scope )); then
-      end_serving_prober "${serving_prober_pid}"
+      end_serving_prober "${serving_prober_pid}" || return $?
     fi
     if (( eventing_in_scope )); then
-      end_eventing_prober "${eventing_prober_pid}"
+      end_eventing_prober "${eventing_prober_pid}" || return $?
     fi
 
-    upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}"
+    upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}" || return $?
   fi
 
   if (( serving_in_scope )); then
-    wait_for_serving_test_services_settle
+    wait_for_serving_test_services_settle || return $?
   fi
 
   logger.info "Running postupgrade tests"
 
   if (( serving_in_scope )); then
-    run_serving_postupgrade_test
+    run_serving_postupgrade_test || return $?
   fi
   if (( eventing_in_scope )); then
-    run_eventing_postupgrade_test
+    run_eventing_postupgrade_test || return $?
   fi
 
   if (( serving_in_scope )); then
-    end_serving_prober "${serving_prober_pid}"
+    end_serving_prober "${serving_prober_pid}" || return $?
   fi
   if (( eventing_in_scope )); then
-    end_eventing_prober "${eventing_prober_pid}"
+    end_eventing_prober "${eventing_prober_pid}" || return $?
   fi
 
-  cleanup_serving_test_services
+  cleanup_serving_test_services || return $?
 
   cd "$rootdir" || return $?
   return 0
 }
 
-function end_prober_test {
+function end_prober {
   local prober_pid prober_signal retcode title
   title=${1:?Pass a title as arg[1]}
   prober_pid=${2:?Pass a pid as a arg[2]}
   prober_signal=${3:-/tmp/prober-signal}
 
+  if array.contains "${prober_pid}" "${waited_pids[@]}"; then
+    logger.info "Prober of PID ${prober_pid} is closed already."
+    return 0
+  fi
   if kill -0 "${prober_pid}" 2>/dev/null; then
     logger.debug "${title} prober of PID ${prober_pid} isn't running..."
   else
@@ -291,6 +305,7 @@ function end_prober_test {
 
   wait "${prober_pid}"
   retcode=$?
+  waited_pids+=("${prober_pid}")
   if ! (( retcode )); then
     logger.success "${title} prober passed"
   else
@@ -306,15 +321,15 @@ function upgrade_ocp_cluster {
   if [[ -n "$upgrade_ocp_image" ]]; then
     ocp_target_version="$upgrade_ocp_image"
     oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
-      --force=true --allow-explicit-upgrade
+      --force=true --allow-explicit-upgrade || return $?
   else
     latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
       | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
     [[ $latest_cluster_version != "" ]] || return 1
     ocp_target_version="$latest_cluster_version"
-    oc adm upgrade --to-latest=true --force=true
+    oc adm upgrade --to-latest=true --force=true || return $?
   fi
-  timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${ocp_target_version}\")].state}') != Completed ]]" || return 1
+  timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${ocp_target_version}\")].state}') != Completed ]]" || return $?
 
   logger.success "New cluster version: $(oc get clusterversion \
     version -o jsonpath='{.status.desired.version}')"
@@ -380,28 +395,28 @@ function create_htpasswd_users {
 
   logger.info 'Add users to htpasswd'
   for i in $(seq 1 $num_users); do
-    htpasswd -b users.htpasswd "user${i}" "password${i}"
+    htpasswd -b users.htpasswd "user${i}" "password${i}" || return $?
   done
 
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run -o yaml | kubectl apply -f -
-  oc apply -f openshift/identity/htpasswd.yaml
+    --dry-run -o yaml | kubectl apply -f -  || return $?
+  oc apply -f openshift/identity/htpasswd.yaml || return $?
 
   logger.info 'Generate kubeconfig for each user'
   for i in $(seq 1 $num_users); do
     cp "${KUBECONFIG}" "user${i}.kubeconfig"
     occmd="bash -c '! oc login --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} > /dev/null'"
-    timeout 180 "${occmd}" || return 1
+    timeout 180 "${occmd}" || return $?
   done
 }
 
 function add_roles {
   logger.info "Adding roles to users"
-  oc adm policy add-role-to-user admin user1 -n "$TEST_NAMESPACE"
-  oc adm policy add-role-to-user edit user2 -n "$TEST_NAMESPACE"
-  oc adm policy add-role-to-user view user3 -n "$TEST_NAMESPACE"
+  oc adm policy add-role-to-user admin user1 -n "$TEST_NAMESPACE" || return $?
+  oc adm policy add-role-to-user edit user2 -n "$TEST_NAMESPACE" || return $?
+  oc adm policy add-role-to-user view user3 -n "$TEST_NAMESPACE" || return $?
 }
 
 function delete_users {
@@ -411,10 +426,10 @@ function delete_users {
     logger.debug "htpasswd user line: ${line}"
     user=$(echo "${line}" | cut -d: -f1)
     if [ -f "${user}.kubeconfig" ]; then
-      rm -v "${user}.kubeconfig"
+      rm -fv "${user}.kubeconfig" || return $?
     fi
   done < "users.htpasswd"
-  rm -v users.htpasswd
+  rm -fv users.htpasswd  || return $?
 }
 
 function add_systemnamespace_label {
@@ -423,8 +438,8 @@ function add_systemnamespace_label {
 }
 
 function add_networkpolicy {
-  local NAMESPACE=$1
-  cat <<EOF | oc apply -f -
+  cat <<EOF | oc apply -f - || return $?
+---
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -432,9 +447,7 @@ metadata:
   namespace: "$1"
 spec:
   podSelector:
-EOF
-
-  cat <<EOF | oc apply -f -
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -479,7 +492,8 @@ function trigger_gc_and_print_knative {
 function wait_for_leader_controller() {
   echo -n "Waiting for a leader Controller"
   for i in {1..150}; do  # timeout after 5 minutes
-    local leader=$(oc get lease -n "${SERVING_NAMESPACE}" -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' | cut -d"_" -f1 | grep "^controller-" | head -1)
+    local leader
+    leader=$(oc get lease -n "${SERVING_NAMESPACE}" -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' | cut -d"_" -f1 | grep "^controller-" | head -1)
     # Make sure the leader pod exists.
     if [ -n "${leader}" ] && oc get pod "${leader}" -n "${SERVING_NAMESPACE}"  >/dev/null 2>&1; then
       echo -e "\nNew leader Controller has been elected"

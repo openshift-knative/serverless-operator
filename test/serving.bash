@@ -106,7 +106,8 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
 function actual_serving_version {
   oc get knativeserving.operator.knative.dev \
-    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}"
+    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}" \
+    || return $?
 }
 
 function run_serving_preupgrade_test {
@@ -121,7 +122,7 @@ function run_serving_preupgrade_test {
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain
+    --resolvabledomain || return $?
 
   logger.success 'Serving pre upgrade tests passed'
 }
@@ -163,7 +164,7 @@ function wait_for_serving_prober_ready {
   # Wait for the upgrade-probe kservice to be ready before proceeding
   timeout 900 "[[ \$(oc get services.serving.knative.dev upgrade-probe \
     -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
-    != True ]]"
+    != True ]]" || return $?
 
   logger.success 'Serving prober is ready'
 }
@@ -177,21 +178,22 @@ function check_serving_upgraded {
     knative-serving -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') \
     == ${latest_serving_version} && \$(oc get knativeserving.operator.knative.dev \
     knative-serving -n ${SERVING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]" \
+    || return $?
 }
 
 function end_serving_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  end_prober_test 'Serving' "${prober_pid}"
+  end_prober 'Serving' "${prober_pid}" || return $?
 }
 
 function wait_for_serving_test_services_settle {
   # Wait for all services to become ready again. Exclude the upgrade-probe as
   # that'll be removed by the prober test above.
   for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v 'upgrade-probe'); do
-    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]" || return $?
   done
 
   # Give time to settle things down
@@ -220,5 +222,6 @@ function cleanup_serving_test_services {
   oc delete --ignore-not-found=true ksvc \
     pizzaplanet-upgrade-service \
     scale-to-zero-upgrade-service \
-    upgrade-probe -n serving-tests
+    upgrade-probe -n serving-tests \
+    || return $?
 }
