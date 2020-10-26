@@ -77,7 +77,7 @@ jobs:
           echo '::endgroup::'
 
           echo '::group:: 🥶 Installing shellcheck ...'
-          apt install shellcheck -y
+          sudo apt install shellcheck -y
           echo '::endgroup::'
 
           echo "${TEMP_PATH}" >> $GITHUB_PATH
