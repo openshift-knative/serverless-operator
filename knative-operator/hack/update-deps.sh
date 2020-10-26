@@ -17,4 +17,4 @@ find vendor/ \( -name "OWNERS" \
   -o -name "OWNERS_ALIASES" \
   -o -name "BUILD" \
   -o -name "BUILD.bazel" \
-  -o -name "*_test.go" \) -print0 | xargs -0 rm -f
+  -o -name "*_test.go" \) -exec rm -fv {} +
