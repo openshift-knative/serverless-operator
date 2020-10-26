@@ -10,4 +10,7 @@ const (
 	ServerlessOperatorOwnerNamespace = "operator.knative.openshift.io/ownerNamespace"
 	KafkaOwnerName                   = "knativekafkas.operator.serverless.openshift.io/ownerName"
 	KafkaOwnerNamespace              = "knativekafkas.operator.serverless.openshift.io/ownerNamespace"
+
+	// The namespace of the pod will be available through this key.
+	NamespaceEnvKey = "NAMESPACE"
 )
