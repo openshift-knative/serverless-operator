@@ -54,7 +54,10 @@ go mod tidy
 go mod vendor
 
 # Remove unnecessary files.
-find vendor/ \( -name "OWNERS" -o -name "OWNERS_ALIASES" -o -name "BUILD" -o -name "BUILD.bazel" -o -name "*_test.go" \) -print0 | xargs -0 rm -f
+find vendor/ \( -name "OWNERS" \
+  -o -name "OWNERS_ALIASES" \
+  -o -name "BUILD" \
+  -o -name "BUILD.bazel" \
+  -o -name "*_test.go" \) -print0 | xargs -0 rm -f
 
-# Add permission for shell scripts
-chmod +x $(find vendor -type f -name '*.sh')
+find vendor -type f -name '*.sh' -exec chmod +x {} +
