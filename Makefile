@@ -49,7 +49,7 @@ test-upstream-e2e:
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
-test-upstream-e2e-no-upgrade:
+test-upstream-e2e-no-upgrade: test-e2e
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
