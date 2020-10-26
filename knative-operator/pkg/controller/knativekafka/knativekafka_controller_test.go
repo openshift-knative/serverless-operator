@@ -6,6 +6,7 @@ import (
 	"time"
 
 	mf "github.com/manifestival/manifestival"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -24,6 +25,10 @@ var (
 		NamespacedName: types.NamespacedName{Namespace: "knative-eventing", Name: "knative-kafka"},
 	}
 )
+
+func init() {
+	apis.AddToScheme(scheme.Scheme)
+}
 
 func TestKnativeKafkaReconcile(t *testing.T) {
 	tests := []struct {
@@ -77,12 +82,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// Register operator types with the runtime scheme.
-			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, test.instance)
-
 			initObjs := []runtime.Object{test.instance}
-
 			cl := fake.NewFakeClient(initObjs...)
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkachannel-latest.yaml"))
@@ -97,7 +97,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 			r := &ReconcileKnativeKafka{
 				client:                  cl,
-				scheme:                  s,
+				scheme:                  scheme.Scheme,
 				rawKafkaChannelManifest: kafkaChannelManifest,
 				rawKafkaSourceManifest:  kafkaSourceManifest,
 			}

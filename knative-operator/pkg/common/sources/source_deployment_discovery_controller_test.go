@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -71,17 +72,16 @@ func init() {
 	os.Setenv(common.TestRolePath, "../testdata/role_service_monitor.yaml")
 	os.Setenv(common.TestSourceServiceMonitorPath, "../testdata/source-service-monitor.yaml")
 	os.Setenv(common.TestSourceServicePath, "../testdata/source-service.yaml")
+
+	apis.AddToScheme(scheme.Scheme)
 }
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
 func TestSourceReconcile(t *testing.T) {
 	initObjs := []runtime.Object{&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace}
 	cl := fake.NewFakeClient(initObjs...)
-	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	monitor := &monitoringv1.ServiceMonitor{}
-	scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
-	r := &ReconcileSourceDeployment{client: cl, scheme: s}
+
+	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
