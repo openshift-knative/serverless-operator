@@ -37,7 +37,8 @@ function run_eventing_preupgrade_test {
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
   local image_template
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
@@ -56,7 +57,8 @@ function start_eventing_prober {
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=probe \
     -timeout=30m \
@@ -103,7 +105,8 @@ function run_eventing_postupgrade_test {
 
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
@@ -112,5 +115,3 @@ function run_eventing_postupgrade_test {
 
   logger.success 'Eventing post upgrade tests passed'
 }
-
-
