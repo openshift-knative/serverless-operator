@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -31,7 +32,7 @@ func WithKnativeEventingReady(ctx *test.Context, name, namespace string) (*event
 }
 
 func CreateKnativeEventing(ctx *test.Context, name, namespace string) (*eventingoperatorv1alpha1.KnativeEventing, error) {
-	eventing, err := ctx.Clients.Operator.KnativeEventings(namespace).Create(KnativeEventing(name, namespace))
+	eventing, err := ctx.Clients.Operator.KnativeEventings(namespace).Create(context.Background(), KnativeEventing(name, namespace), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func CreateKnativeEventing(ctx *test.Context, name, namespace string) (*eventing
 }
 
 func DeleteKnativeEventing(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.Operator.KnativeEventings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Operator.KnativeEventings(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -64,7 +65,7 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Operator.KnativeEventings(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Operator.KnativeEventings(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

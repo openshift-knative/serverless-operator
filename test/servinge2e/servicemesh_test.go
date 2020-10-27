@@ -27,11 +27,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	network "knative.dev/networking/pkg"
+	nv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/autoscaling"
-	"knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
@@ -43,7 +44,7 @@ const (
 )
 
 func getServiceMeshNamespace(ctx *test.Context) string {
-	namespace, err := ctx.Clients.Kube.CoreV1().Namespaces().Get(serviceMeshTestNamespaceName, meta.GetOptions{})
+	namespace, err := ctx.Clients.Kube.CoreV1().Namespaces().Get(context.Background(), serviceMeshTestNamespaceName, meta.GetOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Failed to verify %q namespace labels: %v", serviceMeshTestNamespaceName, err)
 	}
@@ -67,7 +68,7 @@ func httpProxyService(name, host string) *servingv1.Service {
 }
 
 func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *servingv1.Service {
-	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(service)
+	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(context.Background(), service, meta.CreateOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error creating ksvc: %v", err)
 	}
@@ -75,7 +76,7 @@ func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *serv
 	// Let the ksvc be deleted after test
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-		return ctx.Clients.Serving.ServingV1().Services(service.Namespace).Delete(service.Name, &meta.DeleteOptions{})
+		return ctx.Clients.Serving.ServingV1().Services(service.Namespace).Delete(context.Background(), service.Name, meta.DeleteOptions{})
 	})
 
 	service, err = test.WaitForServiceState(ctx, service.Name, service.Namespace, test.IsServiceReady)
@@ -132,7 +133,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// A cluster-local variant of the "sidecar-via-activator" scenario
 		name: "local-sidecar-via-activator",
 		labels: map[string]string{
-			serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
 		},
 		annotations: map[string]string{
 			"sidecar.istio.io/inject": "true",
@@ -142,7 +143,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// A cluster-local variant of the "sidecar-without-activator" scenario
 		name: "local-sidecar-without-activator",
 		labels: map[string]string{
-			serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
 		},
 		annotations: map[string]string{
 			"sidecar.istio.io/inject":          "true",
@@ -158,7 +159,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Create a ksvc with the specified annotations and labels
 			service := test.Service(scenario.name, serviceMeshTestNamespaceName, serviceMeshTestImage, scenario.annotations)
 			service.ObjectMeta.Labels = scenario.labels
-			service, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(service)
+			service, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(context.Background(), service, meta.CreateOptions{})
 			if err != nil {
 				t.Errorf("error creating ksvc: %v", err)
 				return
@@ -167,7 +168,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Let the ksvc be deleted after test
 			caCtx.AddToCleanup(func() error {
 				t.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-				return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(service.Name, &meta.DeleteOptions{})
+				return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(context.Background(), service.Name, meta.DeleteOptions{})
 			})
 
 			// Wait until the Ksvc is ready.
@@ -180,10 +181,10 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			serviceURL := service.Status.URL.URL()
 
 			// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
-			if service.GetLabels()[serving.VisibilityLabelKey] == serving.VisibilityClusterLocal {
+			if service.GetLabels()[network.VisibilityLabelKey] == string(nv1alpha1.IngressVisibilityClusterLocal) {
 				// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-				httpProxy, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(
-					httpProxyService(scenario.name+"-proxy", service.Status.URL.Host))
+				httpProxy, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(context.Background(),
+					httpProxyService(scenario.name+"-proxy", service.Status.URL.Host), meta.CreateOptions{})
 				if err != nil {
 					t.Errorf("error creating ksvc: %v", err)
 					return
@@ -192,7 +193,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 				// Let the ksvc be deleted after test
 				caCtx.AddToCleanup(func() error {
 					t.Logf("Cleaning up Knative Service '%s/%s'", httpProxy.Namespace, httpProxy.Name)
-					return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(httpProxy.Name, &meta.DeleteOptions{})
+					return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(context.Background(), httpProxy.Name, meta.DeleteOptions{})
 				})
 
 				// Wait until the Proxy is ready.
@@ -207,6 +208,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 
 			// Verify the service is actually accessible from the outside
 			if _, err := pkgTest.WaitForEndpointState(
+				context.Background(),
 				&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 				t.Logf,
 				serviceURL,
@@ -217,7 +219,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			}
 
 			// Verify the expected istio-proxy is really there
-			podList, err := caCtx.Clients.Kube.CoreV1().Pods(serviceMeshTestNamespaceName).List(meta.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})
+			podList, err := caCtx.Clients.Kube.CoreV1().Pods(serviceMeshTestNamespaceName).List(context.Background(), meta.ListOptions{LabelSelector: "network.knative.dev/service=" + service.Name})
 			if err != nil {
 				t.Errorf("error listing pods: %v", err)
 				return
@@ -407,7 +409,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		Value: jwks,
 	})
 	jwksKsvc.ObjectMeta.Labels = map[string]string{
-		serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
 	}
 	jwksKsvc = withServiceReadyOrFail(caCtx, jwksKsvc)
 
@@ -451,14 +453,14 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		Resource: "policies",
 	}
 
-	authPolicy, err = caCtx.Clients.Dynamic.Resource(policyGvr).Namespace(serviceMeshTestNamespaceName).Create(authPolicy, meta.CreateOptions{})
+	authPolicy, err = caCtx.Clients.Dynamic.Resource(policyGvr).Namespace(serviceMeshTestNamespaceName).Create(context.Background(), authPolicy, meta.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating istio Policy: %v", err)
 	}
 
 	caCtx.AddToCleanup(func() error {
 		t.Logf("Cleaning up istio Policy default")
-		return caCtx.Clients.Dynamic.Resource(policyGvr).Namespace(authPolicy.GetNamespace()).Delete(authPolicy.GetName(), &meta.DeleteOptions{})
+		return caCtx.Clients.Dynamic.Resource(policyGvr).Namespace(authPolicy.GetNamespace()).Delete(context.Background(), authPolicy.GetName(), meta.DeleteOptions{})
 	})
 
 	// Create a test ksvc, should be accessible only via proper JWT token
@@ -469,6 +471,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 	// Wait until the Route is ready and also verify the route returns a 401 without a token
 	if _, err := pkgTest.WaitForEndpointState(
+		context.Background(),
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 		t.Logf,
 		testKsvc.Status.URL.URL(),
@@ -642,7 +645,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
@@ -676,20 +679,20 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 			},
 		},
 	}
-	route, err := caCtx.Clients.Route.Routes(serviceMeshNamespace).Create(route)
+	route, err := caCtx.Clients.Route.Routes(serviceMeshNamespace).Create(context.Background(), route, meta.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}
 
 	caCtx.AddToCleanup(func() error {
 		t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-		return caCtx.Clients.Route.Routes(route.Namespace).Delete(route.Name, &meta.DeleteOptions{})
+		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
 	})
 
 	// Do a spoofed HTTP request via the OpenShiftRouter
 	// Note, here we go via the OpenShift Router IP address, not kourier, as usual with the "spoof" client.
 	routerIP := lookupOpenShiftRouterIP(caCtx)
-	sc, err := spoof.New(caCtx.Clients.Kube, t.Logf, customDomain, false, routerIP.String(), time.Second, time.Minute)
+	sc, err := spoof.New(context.Background(), caCtx.Clients.Kube, t.Logf, customDomain, false, routerIP.String(), time.Second, time.Minute)
 	if err != nil {
 		t.Fatalf("Error creating a Spoofing Client: %v", err)
 	}
@@ -713,7 +716,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 
 // newSpoofClientWithTLS returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
 func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
-	return spoof.New(ctx.Clients.Kube, ctx.T.Logf, customDomain, false, ip, time.Second, time.Minute, func(transport *http.Transport) *http.Transport {
+	return spoof.New(context.Background(), ctx.Clients.Kube, ctx.T.Logf, customDomain, false, ip, time.Second, time.Minute, func(transport *http.Transport) *http.Transport {
 		// Custom DialTLSContext to specify the ingress IP address, our certPool and the SNI header for the custom domain
 		transport.DialTLSContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			// We ignore the request address, force the given <IP>:443
@@ -764,7 +767,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 	// openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in custom.example.com.csr -out custom.example.com.crt
 
 	// The script stores the cert in a secret called "example.com":
-	exampleSecret, err := caCtx.Clients.Kube.CoreV1().Secrets(serviceMeshNamespace).Get(caSecretName, meta.GetOptions{})
+	exampleSecret, err := caCtx.Clients.Kube.CoreV1().Secrets(serviceMeshNamespace).Get(context.Background(), caSecretName, meta.GetOptions{})
 	if errors.IsNotFound(err) {
 		t.Skipf("Secret %q in %q doesn't exist. Use \"make install-mesh\" for ServiceMesh setup.", caSecretName, serviceMeshNamespace)
 	}
@@ -779,7 +782,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		serving.VisibilityLabelKey: serving.VisibilityClusterLocal,
+		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
@@ -830,14 +833,14 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 			},
 		},
 	}
-	route, err = caCtx.Clients.Route.Routes(serviceMeshNamespace).Create(route)
+	route, err = caCtx.Clients.Route.Routes(serviceMeshNamespace).Create(context.Background(), route, meta.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}
 
 	caCtx.AddToCleanup(func() error {
 		t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-		return caCtx.Clients.Route.Routes(route.Namespace).Delete(route.Name, &meta.DeleteOptions{})
+		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
 	})
 
 	// Do a spoofed HTTP request.

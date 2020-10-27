@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -59,20 +60,20 @@ func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.S
 }
 
 func CreateService(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
-	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(Service(name, namespace, image, nil))
+	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), Service(name, namespace, image, nil), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(service.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(context.Background(), service.Name, metav1.DeleteOptions{})
 	})
 	return service, nil
 }
 
 func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) error {
 	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
-		pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(metav1.ListOptions{
+		pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), metav1.ListOptions{
 			LabelSelector: "app=controller",
 		})
 		if apierrs.IsUnauthorized(err) {
@@ -99,7 +100,7 @@ func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) er
 }
 
 func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
-	d, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(name, metav1.GetOptions{})
+	d, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -127,7 +128,7 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 		err       error
 	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Serving.ServingV1().Services(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Serving.ServingV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -142,7 +143,7 @@ func WaitForOperatorDepsDeleted(ctx *Context) error {
 		"knative-serving-operator", "knative-eventing-operator", "knative-openshift"}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(metav1.ListOptions{})
+		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(context.Background(), metav1.ListOptions{})
 		for _, deployment := range existingDeployments.Items {
 			for _, serverlessDep := range serverlessDependencies {
 				if strings.Contains(deployment.Name, serverlessDep) {
@@ -199,13 +200,13 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 		},
 	}
 
-	if _, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(deployment); err != nil {
+	if _, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Create(context.Background(), deployment, metav1.CreateOptions{}); err != nil {
 		return err
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up Deployment '%s/%s'", deployment.Namespace, deployment.Name)
-		return ctx.Clients.Kube.AppsV1().Deployments(namespace).Delete(deployment.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.Kube.AppsV1().Deployments(namespace).Delete(context.Background(), deployment.Name, metav1.DeleteOptions{})
 	})
 
 	return nil
@@ -217,7 +218,7 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 		err       error
 	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Route.Routes(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Route.Routes(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

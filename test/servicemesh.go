@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -165,14 +166,14 @@ func IstioServiceEntryForKnativeServiceTowardsKourier(service *servingv1.Service
 }
 
 func CreateUnstructured(ctx *Context, schema schema.GroupVersionResource, unstructured *unstructured.Unstructured) *unstructured.Unstructured {
-	ret, err := ctx.Clients.Dynamic.Resource(schema).Namespace(unstructured.GetNamespace()).Create(unstructured, meta.CreateOptions{})
+	ret, err := ctx.Clients.Dynamic.Resource(schema).Namespace(unstructured.GetNamespace()).Create(context.Background(), unstructured, meta.CreateOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error creating %s %s: %v", schema.GroupResource(), unstructured.GetName(), err)
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up %s %s", schema.GroupResource(), ret.GetName())
-		return ctx.Clients.Dynamic.Resource(schema).Namespace(ret.GetNamespace()).Delete(ret.GetName(), &meta.DeleteOptions{})
+		return ctx.Clients.Dynamic.Resource(schema).Namespace(ret.GetNamespace()).Delete(context.Background(), ret.GetName(), meta.DeleteOptions{})
 	})
 
 	return ret

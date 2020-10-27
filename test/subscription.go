@@ -1,10 +1,11 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/apis/operators/v1alpha1"
+	"github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -58,20 +59,20 @@ func WithOperatorReady(ctx *Context, subscriptionName string) (*v1alpha1.Subscri
 	}
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up CSV '%s/%s'", csv.Namespace, csv.Name)
-		return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csv.Namespace).Delete(csv.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csv.Namespace).Delete(context.Background(), csv.Name, metav1.DeleteOptions{})
 	})
 
 	return subs, nil
 }
 
 func CreateSubscription(ctx *Context, name string) (*v1alpha1.Subscription, error) {
-	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(Subscription(name))
+	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up Subscription '%s/%s'", subs.Namespace, subs.Name)
-		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(subs.Namespace).Delete(subs.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(subs.Namespace).Delete(context.Background(), subs.Name, metav1.DeleteOptions{})
 	})
 	return subs, nil
 }
@@ -80,7 +81,7 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 	var lastState *v1alpha1.Subscription
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -94,7 +95,7 @@ func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inS
 	var lastState *v1alpha1.ClusterServiceVersion
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

@@ -1,6 +1,7 @@
 package eventinge2e
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -26,10 +27,10 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(brokerName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(triggerName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(cmName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), brokerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -51,7 +52,7 @@ apiVersion: %q
 kind: %q`, channelAPIVersion, channelKind),
 		},
 	}
-	configMap, err := client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(cm)
+	configMap, err := client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), cm, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create ConfigMap: ", err)
 	}
@@ -68,7 +69,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	broker, err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(br)
+	broker, err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), br, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create broker: ", err)
 	}
@@ -88,7 +89,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(tr)
+	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(context.Background(), tr, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
@@ -111,7 +112,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

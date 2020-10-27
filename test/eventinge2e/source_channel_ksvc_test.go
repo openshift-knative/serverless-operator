@@ -1,6 +1,7 @@
 package eventinge2e
 
 import (
+	"context"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -24,9 +25,9 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(subscriptionName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.MessagingV1().Channels(testNamespace).Delete(channelName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Channels(testNamespace).Delete(context.Background(), channelName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -44,7 +45,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			Namespace: testNamespace,
 		},
 	}
-	channel, err := client.Clients.Eventing.MessagingV1().Channels(testNamespace).Create(imc)
+	channel, err := client.Clients.Eventing.MessagingV1().Channels(testNamespace).Create(context.Background(), imc, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Channel: ", err)
 	}
@@ -68,7 +69,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(subscription)
+	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(context.Background(), subscription, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
@@ -90,7 +91,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

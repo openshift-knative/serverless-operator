@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -34,7 +35,7 @@ func VerifyNoDisallowedImageReference(t *testing.T, caCtx *test.Context, namespa
 
 	for _, podSpecableType := range podSpecableTypes {
 
-		result, err := caCtx.Clients.Dynamic.Resource(podSpecableType).Namespace(namespace).List(metav1.ListOptions{})
+		result, err := caCtx.Clients.Dynamic.Resource(podSpecableType).Namespace(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("Error listing %v: %v", podSpecableType, err)
 		}

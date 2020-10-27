@@ -1,6 +1,7 @@
 package servinge2e
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
@@ -50,15 +51,15 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
-	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{})
 
 	// Check that Kube service still responds
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
 
 	// Deploy Knative service in the namespace first
 	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
@@ -93,15 +94,15 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	caCtx.Clients.Route.Routes(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
-	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(svc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
 
 	// Check that Knative service still responds
 	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Delete the Knative service
-	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(ksvc.Name, &metav1.DeleteOptions{})
+	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{})
 }
 
 func withRouteForServiceReady(ctx *test.Context, serviceName, namespace string) (*routev1.Route, error) {
@@ -118,14 +119,14 @@ func withRouteForServiceReady(ctx *test.Context, serviceName, namespace string) 
 		},
 	}
 
-	route, err := ctx.Clients.Route.Routes(namespace).Create(r)
+	route, err := ctx.Clients.Route.Routes(namespace).Create(context.Background(), r, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up OCP Route '%s/%s'", r.Namespace, r.Name)
-		return ctx.Clients.Route.Routes(namespace).Delete(route.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.Route.Routes(namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 	})
 
 	return test.WaitForRouteState(ctx, route.Name, route.Namespace, routeHasHost)
@@ -159,14 +160,14 @@ func createKubeService(ctx *test.Context, name, namespace string) (*corev1.Servi
 		},
 	}
 
-	svc, err := ctx.Clients.Kube.CoreV1().Services(namespace).Create(kubeService)
+	svc, err := ctx.Clients.Kube.CoreV1().Services(namespace).Create(context.Background(), kubeService, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up K8s Service '%s/%s'", kubeService.Namespace, kubeService.Name)
-		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(svc.Name, &metav1.DeleteOptions{})
+		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
 	})
 
 	return svc, nil
