@@ -15,7 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var (
@@ -76,7 +75,6 @@ func init() {
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
 func TestSourceReconcile(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
 	initObjs := []runtime.Object{&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace}
 	cl := fake.NewFakeClient(initObjs...)
 	// Register operator types with the runtime scheme.

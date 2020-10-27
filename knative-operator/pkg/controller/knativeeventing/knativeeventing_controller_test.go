@@ -18,7 +18,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var (
@@ -54,8 +53,6 @@ func init() {
 
 // TestEventingReconcile runs Reconcile to verify if eventing resources are created/deleted.
 func TestEventingReconcile(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	tests := []struct {
 		name           string
 		ownerName      string

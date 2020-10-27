@@ -2,17 +2,18 @@ package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -53,28 +54,31 @@ func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config
 	// Create Service object to expose the metrics port(s).
 	service, err := metrics.CreateMetricsService(ctx, cfg, servicePorts)
 	if err != nil {
-		log.Info("Could not create metrics Service", "error", err.Error())
+		return fmt.Errorf("failed to create metrics service: %w", err)
 	}
 
 	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
 	// necessary to configure Prometheus to scrape metrics from this operator.
 	services := []*v1.Service{service}
-	metricsNamespace, err := k8sutil.GetOperatorNamespace()
-	if err != nil {
-		log.Error(err, "failed to get metrics namespace")
-		return err
+	metricsNamespace := os.Getenv(NamespaceEnvKey)
+	if metricsNamespace == "" {
+		return errors.New("NAMESPACE not provided via environment")
 	}
-	_, err = metrics.CreateServiceMonitors(cfg, metricsNamespace, services)
 
-	if err != nil {
-		log.Info("Could not create ServiceMonitor object", "error", err.Error())
-		// If this operator is deployed to a cluster without the prometheus-operator running, it will return
-		// ErrServiceMonitorNotPresent, which can be used to safely skip ServiceMonitor creation.
+	if _, err := metrics.CreateServiceMonitors(cfg, metricsNamespace, services); err != nil {
 		if err == metrics.ErrServiceMonitorNotPresent {
-			log.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects", "error", err.Error())
+			// If this operator is deployed to a cluster without the prometheus-operator running, it will return
+			// ErrServiceMonitorNotPresent, which can be used to safely skip ServiceMonitor creation.
+			log.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects")
+			return nil
 		}
+		if apierrs.IsAlreadyExists(err) {
+			// If the servicemonitor already exists, we don't want to report an error.
+			return nil
+		}
+		return fmt.Errorf("failed to create service monitors: %w", err)
 	}
-	return err
+	return nil
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.

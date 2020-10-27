@@ -17,7 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var (
@@ -27,8 +26,6 @@ var (
 )
 
 func TestKnativeKafkaReconcile(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	tests := []struct {
 		name         string
 		instance     *v1alpha1.KnativeKafka
@@ -159,8 +156,6 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 }
 
 func TestSetBootstrapServers(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	tests := []struct {
 		name             string
 		obj              *unstructured.Unstructured

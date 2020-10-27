@@ -99,8 +99,6 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Restore the original maxReplicas for any tests running after this test suite
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec": {"maxReplicas": '${max_replicas}', "minReplicas": '${min_replicas}'}}' || failed=6
 
-  print_test_result ${failed}
-
   return $failed
 }
 

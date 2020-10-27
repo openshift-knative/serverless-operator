@@ -31,6 +31,29 @@ function register_teardown {
   return 2
 }
 
+# Overwritten, safe, version of test function from test-infra that acts well
+# with `set -Eeuo pipefail`.
+#
+# Run the given E2E tests. Assume tests are tagged e2e, unless `-tags=XXX` is passed.
+# Parameters: $1..$n - any go test flags, then directories containing the tests to run.
+function go_test_e2e {
+  local go_test_args=()
+  local retcode
+  # Remove empty args as `go test` will consider it as running tests for the
+  # current directory, which is not expected.
+  [[ ! " $*" == *" -tags="* ]] && go_test_args+=("-tags=e2e")
+  for arg in "$@"; do
+    [[ -n "$arg" ]] && go_test_args+=("$arg")
+  done
+  set +Eeuo pipefail
+  report_go_test -race -count=1 "${go_test_args[@]}"
+  retcode=$?
+  set -Eeuo pipefail
+
+  print_test_result "$retcode"
+  return "$retcode"
+}
+
 function print_test_result {
   local test_status
   test_status="${1:?status is required}"
@@ -60,8 +83,6 @@ function serverless_operator_e2e_tests {
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=$?
 
-  print_test_result ${failed}
-
   wait_for_knative_serving_ingress_ns_deleted || return $?
 
   return $failed
@@ -84,8 +105,6 @@ function serverless_operator_kafka_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=$?
-
-  print_test_result ${failed}
 
   return $failed
 }
@@ -111,8 +130,6 @@ function downstream_serving_e2e_tests {
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=$?
 
-  print_test_result ${failed}
-
   return $failed
 }
 
@@ -133,8 +150,6 @@ function downstream_knative_kafka_e2e_tests {
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=$?
-
-  print_test_result ${failed}
 
   return $failed
 
@@ -157,8 +172,6 @@ function downstream_eventing_e2e_tests {
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@" || failed=$?
-
-  print_test_result ${failed}
 
   return $failed
 }
