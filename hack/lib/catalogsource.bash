@@ -86,7 +86,7 @@ spec:
 EOF
 
   # Wait for the index pod to be up to avoid inconsistencies with the catalog source.
-  wait_until_pods_running "$OLM_NAMESPACE"
+  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE"
   indexip="$(oc -n "$OLM_NAMESPACE" get pods -l app=serverless-index -ojsonpath='{.items[0].status.podIP}')"
 
   # Install the catalogsource.
