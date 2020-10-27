@@ -86,12 +86,7 @@ var (
 
 func init() {
 	apis.AddToScheme(scheme.Scheme)
-
-	dec, err := admission.NewDecoder(scheme.Scheme)
-	if err != nil {
-		panic(err)
-	}
-	decoder = dec
+	decoder, _ = admission.NewDecoder(scheme.Scheme)
 }
 
 func TestHappy(t *testing.T) {
