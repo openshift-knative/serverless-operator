@@ -17,7 +17,7 @@ metadata:
   namespace: ${OPERATORS_NAMESPACE}
 EOF
   fi
-  logger.success "Namespaces has bean created: ${NAMESPACES[*]}"
+  logger.success "Namespaces have been created: ${NAMESPACES[*]}"
 }
 
 function delete_namespaces {
@@ -29,5 +29,5 @@ function delete_namespaces {
       oc delete ns "$ns"
     fi
   done
-  logger.success "Namespaces has been deleted."
+  logger.success "Namespaces have been deleted."
 }
