@@ -60,8 +60,6 @@ image "v0.17.0-pingsource-cleanup__pingsource" "${eventing}-pingsource-cleanup"
 image "PING_IMAGE"           "${eventing}-ping"
 image "MT_PING_IMAGE"        "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
-image "BROKER_INGRESS_IMAGE" "${eventing}-broker-ingress"
-image "BROKER_FILTER_IMAGE"  "${eventing}-broker-filter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
