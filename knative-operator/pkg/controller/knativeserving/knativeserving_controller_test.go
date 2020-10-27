@@ -25,7 +25,6 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 )
@@ -123,8 +122,6 @@ func init() {
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
 func TestKourierReconcile(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	tests := []struct {
 		name           string
 		ownerName      string
@@ -374,8 +371,6 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 // TestKnativeServingStatus tests KnativeServing CR status with Kourier's installation failure.
 func TestKnativeServingStatus(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	ks := &defaultKnativeServing
 	ingress := &defaultIngress
 	knService := &defaultKnService
