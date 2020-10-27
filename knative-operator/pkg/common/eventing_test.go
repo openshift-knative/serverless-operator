@@ -2,14 +2,15 @@ package common_test
 
 import (
 	"os"
-	"reflect"
 	"testing"
 
-	"sigs.k8s.io/yaml"
-
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"sigs.k8s.io/yaml"
 )
 
 func TestMutateEventing(t *testing.T) {
@@ -56,8 +57,8 @@ func TestEventingWebhookMemoryLimit(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Input.Name, func(t *testing.T) {
 			common.MutateEventing(&test.Input)
-			if !reflect.DeepEqual(test.Input.Spec.Resources, test.Expected) {
-				t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", test.Input.Name, test.Expected, test.Input.Spec.Resources)
+			if !cmp.Equal(test.Input.Spec.Resources, test.Expected, cmpopts.IgnoreUnexported(resource.Quantity{})) {
+				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.Expected, test.Input.Spec.Resources))
 			}
 		})
 	}

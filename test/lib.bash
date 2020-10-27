@@ -411,7 +411,7 @@ function create_htpasswd_users {
   kubectl create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run -o yaml | kubectl apply -f -  || return $?
+    --dry-run=client -o yaml | kubectl apply -f - || return $?
   oc apply -f openshift/identity/htpasswd.yaml || return $?
 
   logger.info 'Generate kubeconfig for each user'

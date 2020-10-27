@@ -5,8 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/api/equality"
-
+	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -92,8 +91,8 @@ func TestApplyEnvironmentToDeployment(t *testing.T) {
 				sortEnv(got)
 				sortEnv(test.expect)
 
-				if !equality.Semantic.DeepEqual(test.expect, got) {
-					t.Fatalf("Deployment wasn't what we expected: %#v, want %#v", got, test.expect)
+				if !cmp.Equal(test.expect, got) {
+					t.Errorf("Deployment not as expected, diff: %s", cmp.Diff(got, test.expect))
 				}
 			}
 		})
