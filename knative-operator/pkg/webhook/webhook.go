@@ -1,6 +1,7 @@
 package webhook
 
 import (
+	"knative.dev/pkg/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -28,11 +29,10 @@ func AddToManager(m manager.Manager) error {
 
 	log.Info("Setting up webhook server")
 	// This will be started when the Manager is started
-	truePtr := true
 	as, err := webhook.NewServer("admission-webhook-server", m, webhook.ServerOptions{
 		Port:                          9876,
 		CertDir:                       "/apiserver.local.config/certificates",
-		DisableWebhookConfigInstaller: &truePtr,
+		DisableWebhookConfigInstaller: ptr.Bool(true),
 	})
 	if err != nil {
 		log.Error(err, "Unable to create a new webhook server")
