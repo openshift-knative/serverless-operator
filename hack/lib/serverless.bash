@@ -30,6 +30,16 @@ function install_serverless_previous {
   remove_installplan "$CURRENT_CSV"
 
   deploy_serverless_operator "$PREVIOUS_CSV"  || return $?
+
+  # TODO(ksuszyns): Remove this if block if no longer required
+  if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
+    logger.info "Ensure ${SERVING_NAMESPACE} and ${EVENTING_NAMESPACE} \
+namespaces exists, as ${PREVIOUS_CSV} didn't created them automatically."
+
+    ensure_namespace "${SERVING_NAMESPACE}"
+    ensure_namespace "${EVENTING_NAMESPACE}"
+  fi
+
   deploy_knativeserving_cr || return $?
   deploy_knativeeventing_cr || return $?
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
