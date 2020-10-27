@@ -30,6 +30,9 @@ spec:
           spec:
             type: object
             description: 'KnativeKafkaSpec defines the desired state of the KnativeKafka (from the client).'
+            required:
+            - channel
+            - source
             properties:
               channel:
                 description: Allows configuration for KafkaChannel installation
@@ -44,7 +47,6 @@ spec:
                     type: boolean
                 required:
                 - enabled
-                - bootstrapServers
                 type: object
               source:
                 description: Allows configuration for KafkaSource installation
