@@ -5,13 +5,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -336,8 +336,8 @@ func TestCustomCertsConfigMap(t *testing.T) {
 				// Avoid ownerRef comparison for now.
 				got.OwnerReferences = nil
 
-				if !equality.Semantic.DeepEqual(got, want) {
-					t.Fatalf("ConfigMaps %#v not equal to %#v", got, want)
+				if !cmp.Equal(got, want) {
+					t.Errorf("ConfigMaps not equal, diff: %s", cmp.Diff(got, want))
 				}
 			}
 
@@ -347,8 +347,8 @@ func TestCustomCertsConfigMap(t *testing.T) {
 					t.Fatalf("Failed to fetch controller: %v", err)
 				}
 
-				if !equality.Semantic.DeepEqual(got, test.outCtrl) {
-					t.Fatalf("ConfigMaps %#v not equal to %#v", got, test.outCtrl)
+				if !cmp.Equal(got, test.outCtrl) {
+					t.Errorf("Deployments not equal, diff: %s", cmp.Diff(got, test.outCtrl))
 				}
 			}
 		})
