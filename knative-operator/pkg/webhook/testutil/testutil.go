@@ -1,19 +1,25 @@
 package testutil
 
 import (
-	configv1 "github.com/openshift/api/config/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"encoding/json"
+
+	"k8s.io/api/admission/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
-func MockClusterVersion(version string) *configv1.ClusterVersion {
-	return &configv1.ClusterVersion{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "version",
-		},
-		Status: configv1.ClusterVersionStatus{
-			Desired: configv1.Update{
-				Version: version,
+// RequestFor generates an admission request for the given object.
+func RequestFor(obj runtime.Object) (types.Request, error) {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		return types.Request{}, err
+	}
+	return types.Request{
+		AdmissionRequest: &v1beta1.AdmissionRequest{
+			Object: runtime.RawExtension{
+				Raw:    b,
+				Object: obj,
 			},
 		},
-	}
+	}, nil
 }
