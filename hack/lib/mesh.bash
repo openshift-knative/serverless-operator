@@ -79,7 +79,7 @@ EOF
 
 
 function deploy_servicemesh_namespace {
-  oc create namespace istio-system -o yaml --dry-run | oc apply -f -
+  oc create namespace istio-system -o yaml --dry-run=client | oc apply -f -
 }
 
 # This is used to showcase custom domains with TLS, and by TestKsvcWithServiceMeshCustomTlsDomain
@@ -88,8 +88,8 @@ function deploy_servicemesh_example_certificates {
   openssl req -out custom.example.com.csr -newkey rsa:2048 -nodes -keyout custom.example.com.key -subj "/CN=custom-ksvc-domain.example.com/O=Example Inc."
   openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in custom.example.com.csr -out custom.example.com.crt
 
-  oc create -n istio-system secret tls custom.example.com --key=custom.example.com.key --cert=custom.example.com.crt -o yaml --dry-run | oc apply -f -
-  oc create -n istio-system secret tls example.com --key=example.com.key --cert=example.com.crt -o yaml --dry-run | oc apply -f -
+  oc create -n istio-system secret tls custom.example.com --key=custom.example.com.key --cert=custom.example.com.crt -o yaml --dry-run=client | oc apply -f -
+  oc create -n istio-system secret tls example.com --key=example.com.key --cert=example.com.crt -o yaml --dry-run=client | oc apply -f -
 }
 
 
