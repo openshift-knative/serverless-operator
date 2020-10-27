@@ -6,6 +6,7 @@ require (
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/go-logr/logr v0.1.0
+	github.com/google/go-cmp v0.5.2
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/manifestival/controller-runtime-client v0.2.0-0.1.12

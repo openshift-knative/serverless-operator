@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"reflect"
-
+	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -101,15 +100,15 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 		},
 	}
 
-	for i := range cases {
-		tc := cases[i]
-		environ := environFromMap(tc.envMap)
-		overrideMap := common.BuildImageOverrideMapFromEnviron(environ, tc.prefix)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			environ := environFromMap(tc.envMap)
+			overrideMap := common.BuildImageOverrideMapFromEnviron(environ, tc.prefix)
 
-		if !reflect.DeepEqual(overrideMap, tc.expected) {
-			t.Errorf("Image override map is not equal. Case name: %q. Expected: %v, actual: %v", tc.name, tc.expected, overrideMap)
-		}
-
+			if !cmp.Equal(overrideMap, tc.expected) {
+				t.Errorf("Image override map not as expected, diff: %s", cmp.Diff(tc.expected, overrideMap))
+			}
+		})
 	}
 }
 
@@ -176,18 +175,18 @@ func TestSetAnnotations(t *testing.T) {
 		},
 	}
 
-	for i := range cases {
-		tc := cases[i]
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			u := &unstructured.Unstructured{}
+			u.SetAnnotations(tc.existing)
 
-		u := &unstructured.Unstructured{}
-		u.SetAnnotations(tc.existing)
+			if err := common.SetAnnotations(tc.toSet)(u); err != nil {
+				t.Errorf("Error when setting annotations. Case name: %q. Error: %s", tc.name, err.Error())
+			}
 
-		if err := common.SetAnnotations(tc.toSet)(u); err != nil {
-			t.Errorf("Error when setting annotations. Case name: %q. Error: %s", tc.name, err.Error())
-		}
-
-		if !reflect.DeepEqual(u.GetAnnotations(), tc.expected) {
-			t.Errorf("Annotations are not equal. Case name: %q. Expected: %v, actual: %v", tc.name, tc.expected, u.GetAnnotations())
-		}
+			if !cmp.Equal(u.GetAnnotations(), tc.expected) {
+				t.Errorf("Annotations not as expected, diff: %s", cmp.Diff(tc.expected, u.GetAnnotations()))
+			}
+		})
 	}
 }

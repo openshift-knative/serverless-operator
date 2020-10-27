@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -263,8 +263,8 @@ func TestSetBootstrapServers(t *testing.T) {
 				t.Fatalf("setBootstrapServers: (%v)", err)
 			}
 
-			if !equality.Semantic.DeepEqual(test.expect, test.obj) {
-				t.Fatalf("Resource wasn't what we expected: %#v, want %#v", test.obj, test.expect)
+			if !cmp.Equal(test.expect, test.obj) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
 			}
 		})
 	}
