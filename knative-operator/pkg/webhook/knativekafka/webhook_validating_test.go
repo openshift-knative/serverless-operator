@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	. "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
-	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -17,9 +17,7 @@ import (
 )
 
 func init() {
-	configv1.AddToScheme(scheme.Scheme)
-	operatorv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
-	eventingv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
+	apis.AddToScheme(scheme.Scheme)
 }
 
 var defaultCR = &operatorv1alpha1.KnativeKafka{

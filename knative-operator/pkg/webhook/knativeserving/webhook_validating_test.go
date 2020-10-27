@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	. "github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
-	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -16,8 +16,7 @@ import (
 )
 
 func init() {
-	configv1.AddToScheme(scheme.Scheme)
-	servingv1alpha1.AddToScheme(scheme.Scheme)
+	apis.AddToScheme(scheme.Scheme)
 }
 
 var ks1 = &servingv1alpha1.KnativeServing{

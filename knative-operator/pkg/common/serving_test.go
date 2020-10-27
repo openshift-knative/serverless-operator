@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,7 +18,7 @@ import (
 )
 
 func init() {
-	configv1.AddToScheme(scheme.Scheme)
+	apis.AddToScheme(scheme.Scheme)
 }
 
 func newKs() *servingv1alpha1.KnativeServing {

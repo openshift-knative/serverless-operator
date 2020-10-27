@@ -5,28 +5,24 @@ import (
 	"os"
 	"testing"
 
-	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-
-	"k8s.io/apimachinery/pkg/api/equality"
-
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
-	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	apis "knative.dev/pkg/apis"
+	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 )
 
 var (
@@ -37,7 +33,7 @@ var (
 		},
 		Status: v1alpha1.KnativeServingStatus{
 			Status: duckv1.Status{
-				Conditions: []apis.Condition{
+				Conditions: []pkgapis.Condition{
 					{
 						Status: "True",
 						Type:   "DeploymentsAvailable",
@@ -94,7 +90,7 @@ var (
 		},
 		Status: servingv1.ServiceStatus{
 			Status: duckv1.Status{
-				Conditions: []apis.Condition{
+				Conditions: []pkgapis.Condition{
 					{
 						Status: "True",
 						Type:   "Ready",
@@ -102,7 +98,7 @@ var (
 				},
 			},
 			RouteStatusFields: servingv1.RouteStatusFields{
-				URL: &apis.URL{Host: "kn-cli-knative-serving.example.com"},
+				URL: &pkgapis.URL{Host: "kn-cli-knative-serving.example.com"},
 			},
 		},
 	}
@@ -118,6 +114,8 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
+
+	apis.AddToScheme(scheme.Scheme)
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
@@ -155,19 +153,10 @@ func TestKourierReconcile(t *testing.T) {
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
 			knService := &defaultKnService
-			monitor := &monitoringv1.ServiceMonitor{}
 			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
-			// Register operator types with the runtime scheme.
-			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-			s.AddKnownTypes(consolev1.GroupVersion, ccd)
-			s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
-			s.AddKnownTypes(routev1.GroupVersion, &routev1.Route{})
-			scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
 			cl := fake.NewFakeClient(initObjs...)
-			r := &ReconcileKnativeServing{client: cl, scheme: s}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {
@@ -332,10 +321,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewFakeClient(test.in...)
-			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-
-			r := &ReconcileKnativeServing{client: cl, scheme: s}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			if err := r.ensureCustomCertsConfigMap(ks); err != nil {
 				t.Fatal(err)
@@ -377,14 +363,8 @@ func TestKnativeServingStatus(t *testing.T) {
 
 	initObjs := []runtime.Object{ks, ingress, knService}
 
-	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-	s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-	s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
-
 	cl := fake.NewFakeClient(initObjs...)
-	r := &ReconcileKnativeServing{client: cl, scheme: s}
+	r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 	// Test with invalid Kourier manifest file.
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/non-exist-file")
