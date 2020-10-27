@@ -310,12 +310,8 @@ function end_prober {
     logger.info "Prober of PID ${prober_pid} is closed already."
     return 0
   fi
-  if kill -0 "${prober_pid}" 2>/dev/null; then
-    logger.debug "${title} prober of PID ${prober_pid} isn't running..."
-  else
-    echo 'done' > "${prober_signal}"
-    logger.info "Waiting for ${title} prober test to finish"
-  fi
+  logger.info "Waiting for ${title} prober test to finish"
+  echo 'done' > "${prober_signal}"
 
   wait "${prober_pid}"
   retcode=$?
