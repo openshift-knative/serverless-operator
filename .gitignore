@@ -1,6 +1,4 @@
-.crds/
-_output
-catalogsource-ci.yaml
+_output/
 user*.kubeconfig
 users.htpasswd
 puller.kubeconfig
