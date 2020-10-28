@@ -1,6 +1,7 @@
 package knativekafkae2e
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -113,9 +114,9 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(kafkaTopicName, &metav1.DeleteOptions{})
-		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(kafkaSourceName, &metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(cronJobName, &metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName, metav1.DeleteOptions{})
+		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName, metav1.DeleteOptions{})
+		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -128,19 +129,19 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	}
 
 	// Create kafkatopic
-	_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Create(&kafkaTopicObj, metav1.CreateOptions{})
+	_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Create(context.Background(), &kafkaTopicObj, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create KafkaTopic: ", err)
 	}
 
 	// create kafka source
-	_, err = client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Create(&kafkaSource)
+	_, err = client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create kafkaSource: ", err)
 	}
 
 	// send event to kafka topic
-	_, err = client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Create(cj)
+	_, err = client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Create(context.Background(), cj, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create batch cronjob: ", err)
 	}

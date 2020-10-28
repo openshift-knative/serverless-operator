@@ -1,6 +1,7 @@
 package knativekafkae2e
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -90,10 +91,10 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(kafkaBrokerName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(kafkatriggerName, &metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(cmName, &metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), kafkaBrokerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -105,25 +106,25 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	}
 
 	// Create the configmap
-	_, err = client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(channelTemplateCM)
+	_, err = client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), channelTemplateCM, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Channel Template ConfigMap: ", err)
 	}
 
 	// Create the (kafka backed) broker
-	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(broker)
+	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), broker, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Kafka Backed Broker: ", err)
 	}
 
 	// Create the Trigger
-	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(trigger)
+	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(context.Background(), trigger, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
 
 	// Create the source
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(brokerps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), brokerps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create pingsource: ", err)
 	}

@@ -1,6 +1,7 @@
 package servinge2e
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"strings"
@@ -31,7 +32,7 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 		t.Fatalf("failed to verify kn ConsoleCLIDownload Service URL is present: %v", err)
 	}
 	// Verify kn ConsoleCLIDownload CO and if download links are cluster local
-	ccd, err := caCtx.Clients.ConsoleCLIDownload.Get("kn", metav1.GetOptions{})
+	ccd, err := caCtx.Clients.ConsoleCLIDownload.Get(context.Background(), "kn", metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("unable to GET kn ConsoleCLIDownload CO 'kn': %v", err)
 	}

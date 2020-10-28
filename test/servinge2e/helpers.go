@@ -1,6 +1,7 @@
 package servinge2e
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
 	t.Helper()
 	if _, err := pkgTest.WaitForEndpointState(
+		context.Background(),
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 		t.Logf,
 		routeURL,
