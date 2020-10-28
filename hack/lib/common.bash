@@ -21,10 +21,11 @@ function wait_until_labelled_pods_are_ready {
   ns="${2:?Pass a namespace as arg[2]}"
 
   # Wait for some pods to sprung
-  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]"
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]" || return 1
   # Wait until they are ready to receive communications
   timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
-'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]" || return 1
+  return 0
 }
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
