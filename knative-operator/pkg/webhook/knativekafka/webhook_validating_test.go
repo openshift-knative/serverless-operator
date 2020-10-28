@@ -13,7 +13,6 @@ import (
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
 var (
@@ -81,7 +80,7 @@ var (
 		},
 	}
 
-	decoder types.Decoder
+	decoder *admission.Decoder
 )
 
 func init() {
@@ -103,7 +102,7 @@ func TestHappy(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if !result.Response.Allowed {
+	if !result.Allowed {
 		t.Error("The request is not allowed but should be")
 	}
 }
@@ -122,7 +121,7 @@ func TestInvalidNamespace(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
+	if result.Allowed {
 		t.Error("The required namespace is wrong, but the request is allowed")
 	}
 }
@@ -141,8 +140,8 @@ func TestLoneliness(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
-		t.Errorf("Too many KnativeKafkas: %v", result.Response)
+	if result.Allowed {
+		t.Errorf("Too many KnativeKafkas: %v", result.AdmissionResponse)
 	}
 }
 
@@ -160,7 +159,7 @@ func TestInvalidShape(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
+	if result.Allowed {
 		t.Error("The shape is invalid, but the request is allowed")
 	}
 }
@@ -179,7 +178,7 @@ func TestValidateDeps(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
+	if result.Allowed {
 		t.Error("No KnativeEventing instance install, but request allowed")
 	}
 }
