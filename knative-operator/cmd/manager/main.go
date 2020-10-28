@@ -7,23 +7,27 @@ import (
 	"fmt"
 	"os"
 
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
-	"github.com/operator-framework/operator-sdk/pkg/log/zap"
-	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	"github.com/spf13/pflag"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	zapr "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -31,30 +35,20 @@ var (
 	metricsHost               = "0.0.0.0"
 	metricsPort         int32 = 8383
 	operatorMetricsPort int32 = 8686
+	log                       = logf.Log.WithName("cmd")
 )
-var log = logf.Log.WithName("cmd")
+
+func init() {
+	prodConf := zap.NewProductionEncoderConfig()
+	prodConf.EncodeTime = zapcore.ISO8601TimeEncoder
+	logf.SetLogger(zapr.New(zapr.Encoder(zapcore.NewJSONEncoder(prodConf))))
+}
 
 func main() {
-	// Add the zap logger flag set to the CLI. The flag set must
-	// be added before calling pflag.Parse().
-	pflag.CommandLine.AddFlagSet(zap.FlagSet())
-
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Set("zap-time-encoding", "iso8601")
-
 	pflag.Parse()
-
-	// Use a zap logr.Logger implementation. If none of the zap
-	// flags are configured (or if the zap flag set is not being
-	// used), this defaults to a production zap logger.
-	//
-	// The logger instantiated here can be changed to any logger
-	// implementing the logr.Logger interface. This logger will
-	// be propagated through the whole operator, generating
-	// uniform and structured logs.
-	logf.SetLogger(zap.Logger())
 
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()
@@ -75,7 +69,6 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          "", // The serverless operator always watches all namespaces.
-		MapperProvider:     restmapper.NewDynamicRESTMapper,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 	})
 	if err != nil {
@@ -97,11 +90,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Setup all webhooks
-	if err := webhook.AddToManager(mgr); err != nil {
-		log.Error(err, "")
-		os.Exit(1)
-	}
+	// Setup all Webhooks
+	hookServer := mgr.GetWebhookServer()
+	hookServer.Port = 9876
+	hookServer.CertDir = "/apiserver.local.config/certificates"
+	hookServer.KeyName = "apiserver.key"
+	hookServer.CertName = "apiserver.crt"
+
+	// Serving Webhooks
+	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: &knativeserving.Configurator{}})
+	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: &knativeserving.Validator{}})
+	// Eventing Webhooks
+	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Configurator{}})
+	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Validator{}})
+	// Kafka Webhooks
+	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{}})
 
 	if err := setupMonitoring(ctx, cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")
