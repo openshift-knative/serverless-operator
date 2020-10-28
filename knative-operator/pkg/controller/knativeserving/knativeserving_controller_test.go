@@ -258,9 +258,9 @@ func TestCustomCertsConfigMap(t *testing.T) {
 	}{{
 		name: "plain field",
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil, ""),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
+			cm("test-cm", nil, nil, nil, "1"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
 		},
 	}, {
 		name: "upgrade from 1.6.0",
@@ -269,11 +269,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil, "1"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
+			cm("test-cm", nil, nil, nil, "2"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
 		},
-		outCtrl: ctrl("1"),
+		outCtrl: ctrl("2"),
 	}, {
 		name: "just one secondary already filled",
 		in: []runtime.Object{
@@ -283,11 +283,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "3"),
+			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "4"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
-		outCtrl: ctrl("3"),
+		outCtrl: ctrl("4"),
 	}, {
 		name: "both secondaries filled",
 		in: []runtime.Object{
@@ -297,11 +297,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "1"),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "2"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
-		outCtrl: ctrl("1"),
+		outCtrl: ctrl("2"),
 	}, {
 		name: "certificate gets rolled",
 		in: []runtime.Object{
@@ -311,11 +311,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "100"),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "101"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
-		outCtrl: ctrl("100"),
+		outCtrl: ctrl("101"),
 	}}
 
 	for _, test := range tests {
@@ -346,6 +346,9 @@ func TestCustomCertsConfigMap(t *testing.T) {
 				if err := cl.Get(context.TODO(), types.NamespacedName{Name: test.outCtrl.Name, Namespace: test.outCtrl.Namespace}, got); err != nil {
 					t.Fatalf("Failed to fetch controller: %v", err)
 				}
+
+				// Unset as its not significant anyway.
+				got.ResourceVersion = ""
 
 				if !cmp.Equal(got, test.outCtrl) {
 					t.Errorf("Deployments not equal, diff: %s", cmp.Diff(got, test.outCtrl))
@@ -398,6 +401,10 @@ func TestKnativeServingStatus(t *testing.T) {
 
 func ctrl(certVersion string) *appsv1.Deployment {
 	return &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "controller",
@@ -416,6 +423,10 @@ func ctrl(certVersion string) *appsv1.Deployment {
 
 func cm(name string, labels, annotations, data map[string]string, resourceVersion string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:       "knative-serving",
 			Name:            name,
