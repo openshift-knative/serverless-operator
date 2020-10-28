@@ -83,7 +83,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ing *v1alpha1.Ingress) r
 func (r *Reconciler) deleteRoute(ctx context.Context, route *routev1.Route) error {
 	logger := logging.FromContext(ctx)
 	logger.Infof("Deleting route %s(%s)", route.Name, route.Spec.Host)
-	if err := r.routeClient.Routes(route.Namespace).Delete(route.Name, &metav1.DeleteOptions{}); err != nil {
+	if err := r.routeClient.Routes(route.Namespace).Delete(ctx, route.Name, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("failed to delete route: %w", err)
 	}
 	return nil
@@ -96,7 +96,7 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 	route, err := r.routeLister.Routes(desired.Namespace).Get(desired.Name)
 	if errors.IsNotFound(err) {
 		logger.Infof("Creating route %s(%s)", desired.Name, desired.Spec.Host)
-		if _, err := r.routeClient.Routes(desired.Namespace).Create(desired); err != nil {
+		if _, err := r.routeClient.Routes(desired.Namespace).Create(ctx, desired, metav1.CreateOptions{}); err != nil {
 			return fmt.Errorf("failed to create route :%w", err)
 		}
 	} else if err != nil {
@@ -110,7 +110,7 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 		existing.Annotations = desired.Annotations
 		existing.Labels = desired.Labels
 
-		if _, err := r.routeClient.Routes(existing.Namespace).Update(existing); err != nil {
+		if _, err := r.routeClient.Routes(existing.Namespace).Update(ctx, existing, metav1.UpdateOptions{}); err != nil {
 			return fmt.Errorf("failed to update route :%w", err)
 		}
 	}
