@@ -20,6 +20,7 @@ OCP_VERSION="release-4.6"
 FLOATING_DEPS=(
   "github.com/openshift/api@${OCP_VERSION}"
 
+  "knative.dev/eventing@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/test-infra@${KN_VERSION}"
