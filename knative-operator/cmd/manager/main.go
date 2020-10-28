@@ -103,7 +103,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := setupMonitoring(ctx, cfg); err != nil {
+	if err := setupMonitoring(cfg, mgr.GetClient()); err != nil {
 		log.Error(err, "Failed to start monitoring")
 	}
 
@@ -116,17 +116,7 @@ func main() {
 	}
 }
 
-func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return fmt.Errorf("failed to create cluster config: %w", err)
-	}
-
-	cl, err := client.New(config, client.Options{})
-	if err != nil {
-		return fmt.Errorf("failed to create a client: %w", err)
-	}
-
+func setupMonitoring(cfg *rest.Config, cl client.Client) error {
 	namespace := os.Getenv(common.NamespaceEnvKey)
 	if namespace == "" {
 		return errors.New("NAMESPACE not provided via environment")
@@ -141,7 +131,7 @@ func setupMonitoring(ctx context.Context, cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.SetupServerlessOperatorServiceMonitor(ctx, cfg, cl, metricsPort, metricsHost, operatorMetricsPort); err != nil {
+	if err := common.SetupServerlessOperatorServiceMonitor(cfg, cl, metricsPort, metricsHost, operatorMetricsPort); err != nil {
 		return fmt.Errorf("failed to setup the Service monitor: %w", err)
 	}
 
