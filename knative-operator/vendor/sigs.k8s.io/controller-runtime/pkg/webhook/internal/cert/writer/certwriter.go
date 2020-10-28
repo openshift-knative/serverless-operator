@@ -33,9 +33,9 @@ const (
 	// CACertName is the name of the CA certificate
 	CACertName = "ca-cert.pem"
 	// ServerKeyName is the name of the server private key
-	ServerKeyName = "key.pem"
+	ServerKeyName = "apiserver.key"
 	// ServerCertName is the name of the serving certificate
-	ServerCertName = "cert.pem"
+	ServerCertName = "apiserver.crt"
 )
 
 // CertWriter provides method to handle webhooks.

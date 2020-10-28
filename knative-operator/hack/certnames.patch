@@ -1,0 +1,16 @@
+diff --git a/knative-operator/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/internal/cert/writer/certwriter.go b/knative-operator/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/internal/cert/writer/certwriter.go
+index ed6b5110..c0c67e16 100644
+--- a/knative-operator/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/internal/cert/writer/certwriter.go
++++ b/knative-operator/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/internal/cert/writer/certwriter.go
+@@ -33,9 +33,9 @@ const (
+ 	// CACertName is the name of the CA certificate
+ 	CACertName = "ca-cert.pem"
+ 	// ServerKeyName is the name of the server private key
+-	ServerKeyName = "key.pem"
++	ServerKeyName = "apiserver.key"
+ 	// ServerCertName is the name of the serving certificate
+-	ServerCertName = "cert.pem"
++	ServerCertName = "apiserver.crt"
+ )
+ 
+ // CertWriter provides method to handle webhooks.
