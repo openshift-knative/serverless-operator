@@ -8,10 +8,10 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // ConsoleNotification is the extension for configuring openshift web console notifications.
 type ConsoleNotification struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ConsoleNotificationSpec `json:"spec"`
+
+	Spec ConsoleNotificationSpec `json:"spec"`
 }
 
 // ConsoleNotificationSpec is the desired console notification configuration.
@@ -19,6 +19,7 @@ type ConsoleNotificationSpec struct {
 	// text is the visible text of the notification.
 	Text string `json:"text"`
 	// location is the location of the notification in the console.
+	// Valid values are: "BannerTop", "BannerBottom", "BannerTopBottom".
 	// +optional
 	Location ConsoleNotificationLocation `json:"location,omitempty"`
 	// link is an object that holds notification link details.
@@ -34,6 +35,7 @@ type ConsoleNotificationSpec struct {
 
 // ConsoleNotificationLocationSelector is a set of possible notification targets
 // to which a notification may be appended.
+// +kubebuilder:validation:Pattern=`^(BannerTop|BannerBottom|BannerTopBottom)$`
 type ConsoleNotificationLocation string
 
 const (
@@ -49,7 +51,7 @@ const (
 
 type ConsoleNotificationList struct {
 	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
-	Items           []ConsoleNotification `json:"items"`
+
+	Items []ConsoleNotification `json:"items"`
 }

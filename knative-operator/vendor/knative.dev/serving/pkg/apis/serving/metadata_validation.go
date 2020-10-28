@@ -37,7 +37,10 @@ var (
 		UpdaterAnnotation,
 		CreatorAnnotation,
 		RevisionLastPinnedAnnotationKey,
+		RoutingStateModifiedAnnotationKey,
 		GroupNamePrefix+"forceUpgrade",
+		RevisionPreservedAnnotationKey,
+		RoutesAnnotationKey,
 	)
 )
 
@@ -58,6 +61,19 @@ func validateKnativeAnnotations(annotations map[string]string) (errs *apis.Field
 		}
 	}
 	return
+}
+
+// ValidateHasNoAutoscalingAnnotation validates that the respective entity does not have
+// annotations from the autoscaling group. It's to be used to validate Service and
+// Configuration.
+func ValidateHasNoAutoscalingAnnotation(annotations map[string]string) (errs *apis.FieldError) {
+	for key := range annotations {
+		if strings.HasPrefix(key, autoscaling.GroupName) {
+			errs = errs.Also(
+				apis.ErrInvalidKeyName(key, apis.CurrentField, `autoscaling annotations must be put under "spec.template.metadata.annotations" to work`))
+		}
+	}
+	return errs
 }
 
 // ValidateQueueSidecarAnnotation validates QueueSideCarResourcePercentageAnnotation
@@ -98,7 +114,7 @@ func ValidateContainerConcurrency(ctx context.Context, containerConcurrency *int
 	if containerConcurrency != nil {
 		cfg := config.FromContextOrDefaults(ctx).Defaults
 
-		var minContainerConcurrency int64 = 0
+		var minContainerConcurrency int64
 		if !cfg.AllowContainerConcurrencyZero {
 			minContainerConcurrency = 1
 		}
@@ -112,9 +128,9 @@ func ValidateContainerConcurrency(ctx context.Context, containerConcurrency *int
 }
 
 // ValidateClusterVisibilityLabel function validates the visibility label on a Route
-func ValidateClusterVisibilityLabel(label string) (errs *apis.FieldError) {
+func ValidateClusterVisibilityLabel(label, key string) (errs *apis.FieldError) {
 	if label != VisibilityClusterLocal {
-		errs = apis.ErrInvalidValue(label, VisibilityLabelKey)
+		errs = apis.ErrInvalidValue(label, key)
 	}
 	return
 }

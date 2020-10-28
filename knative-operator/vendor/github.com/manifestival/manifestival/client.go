@@ -5,6 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+const (
+	defaultManager = FieldManager("manifestival")
+)
+
 // Client includes the operations required by the Manifestival interface
 type Client interface {
 	Create(obj *unstructured.Unstructured, options ...ApplyOption) error
@@ -19,6 +23,7 @@ func ApplyWith(options []ApplyOption) *ApplyOptions {
 		ForUpdate: &metav1.UpdateOptions{},
 		Overwrite: true,
 	}
+	defaultManager.ApplyWith(result)
 	for _, f := range options {
 		f.ApplyWith(result)
 	}
@@ -57,6 +62,9 @@ type DeleteOptions struct {
 // Indicates that changes should not be persisted
 var DryRunAll = dryRunAll{}
 
+// FieldManager is the name of the actor applying changes
+type FieldManager string
+
 // The duration in seconds before the object should be deleted
 type GracePeriodSeconds int64
 
@@ -80,6 +88,11 @@ func (dryRunAll) ApplyWith(opts *ApplyOptions) {
 }
 func (i Overwrite) ApplyWith(opts *ApplyOptions) {
 	opts.Overwrite = bool(i)
+}
+func (f FieldManager) ApplyWith(opts *ApplyOptions) {
+	fm := string(f)
+	opts.ForCreate.FieldManager = fm
+	opts.ForUpdate.FieldManager = fm
 }
 
 func (dryRunAll) DeleteWith(opts *DeleteOptions) {

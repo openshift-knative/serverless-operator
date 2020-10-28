@@ -9,8 +9,7 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // Scheduler holds cluster-wide config information to run the Kubernetes Scheduler
 // and influence its placement decisions. The canonical name for this config is `cluster`.
 type Scheduler struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// spec holds user settable values for configuration
@@ -31,7 +30,8 @@ type SchedulerSpec struct {
 	Policy ConfigMapNameReference `json:"policy"`
 	// defaultNodeSelector helps set the cluster-wide default node selector to
 	// restrict pod placement to specific nodes. This is applied to the pods
-	// created in all namespaces without a specified nodeSelector value.
+	// created in all namespaces and creates an intersection with any existing
+	// nodeSelectors already set on a pod, additionally constraining that pod's selector.
 	// For example,
 	// defaultNodeSelector: "type=user-node,region=east" would set nodeSelector
 	// field in pod spec to "type=user-node,region=east" to all pods created
@@ -69,7 +69,7 @@ type SchedulerStatus struct {
 
 type SchedulerList struct {
 	metav1.TypeMeta `json:",inline"`
-	// Standard object's metadata.
 	metav1.ListMeta `json:"metadata"`
-	Items           []Scheduler `json:"items"`
+
+	Items []Scheduler `json:"items"`
 }
