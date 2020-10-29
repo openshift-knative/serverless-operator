@@ -124,7 +124,7 @@ spec:
 EOF
 
   logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
-  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE"
+  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE" || return $?
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
