@@ -8,51 +8,33 @@ import (
 
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
-
-// Creates a new validating KnativeKafka Webhook
-func ValidatingWebhook(mgr manager.Manager) (webhook.Webhook, error) {
-	common.Log.Info("Setting up validating webhook for KnativeKafka")
-	return builder.NewWebhookBuilder().
-		Name("validating.knativekafka.openshift.io").
-		Validating().
-		Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
-		WithManager(mgr).
-		ForType(&operatorv1alpha1.KnativeKafka{}).
-		Handlers(&Validator{}).
-		Build()
-}
 
 // Validator validates KnativeKafka CR's
 type Validator struct {
 	client  client.Client
-	decoder types.Decoder
+	decoder *admission.Decoder
 }
 
 // Implement admission.Handler so the controller can handle admission request.
 var _ admission.Handler = (*Validator)(nil)
 
 // What makes us a webhook
-func (v *Validator) Handle(ctx context.Context, req types.Request) types.Response {
+func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ke := &operatorv1alpha1.KnativeKafka{}
 
 	err := v.decoder.Decode(req, ke)
 	if err != nil {
-		return admission.ErrorResponse(http.StatusBadRequest, err)
+		return admission.Errored(http.StatusBadRequest, err)
 	}
 
 	allowed, reason, err := v.validate(ctx, ke)
 	if err != nil {
-		return admission.ErrorResponse(http.StatusInternalServerError, err)
+		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.ValidationResponse(allowed, reason)
 }
@@ -94,10 +76,10 @@ func (v *Validator) InjectClient(c client.Client) error {
 
 // Validator implements inject.Decoder.
 // A decoder will be automatically injected.
-var _ inject.Decoder = (*Validator)(nil)
+var _ admission.DecoderInjector = (*Validator)(nil)
 
 // InjectDecoder injects the decoder.
-func (v *Validator) InjectDecoder(d types.Decoder) error {
+func (v *Validator) InjectDecoder(d *admission.Decoder) error {
 	v.decoder = d
 	return nil
 }
@@ -114,7 +96,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.
 // validate this is the only KE in this namespace
 func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
 	list := &operatorv1alpha1.KnativeKafkaList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ke.Namespace}, list); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeKafkas", err
 	}
 	for _, v := range list.Items {
@@ -137,7 +119,7 @@ func (v *Validator) validateShape(_ context.Context, ke *operatorv1alpha1.Knativ
 func (v *Validator) validateDependencies(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
 	// check to see if we can find KnativeEventing
 	list := &eventingv1alpha1.KnativeEventingList{}
-	if err := v.client.List(ctx, &client.ListOptions{Namespace: ke.Namespace}, list); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventing instance", err
 	}
 	if len(list.Items) == 0 {

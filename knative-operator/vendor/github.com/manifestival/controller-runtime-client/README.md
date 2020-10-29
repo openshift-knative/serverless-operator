@@ -17,18 +17,18 @@ import (
 func main() {
     var client client.Client = ...
     
-    f, err := mfc.NewManifest("file.yaml", client)
+    manifest, err := mfc.NewManifest("file.yaml", client)
     if err != nil {
         panic("Failed to load manifest")
     }
-    f.ApplyAll()
+    manifest.Apply()
     
     // a slightly more complex example
     m, err := mf.ManifestFrom(mf.Recursive("dir/"), mf.UseClient(mfc.NewClient(client)))
     if err != nil {
         panic("Failed to load manifest")
     }
-    m.ApplyAll()
+    m.Apply()
 }
 ```
 

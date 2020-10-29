@@ -22,6 +22,10 @@ const (
 
 func deployment(name string, containers ...v1.Container) *appsv1.Deployment {
 	return &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -90,6 +94,9 @@ func TestApplyEnvironmentToDeployment(t *testing.T) {
 
 				sortEnv(got)
 				sortEnv(test.expect)
+
+				// Unset as the new fake clients touch this.
+				got.ResourceVersion = ""
 
 				if !cmp.Equal(test.expect, got) {
 					t.Errorf("Deployment not as expected, diff: %s", cmp.Diff(got, test.expect))

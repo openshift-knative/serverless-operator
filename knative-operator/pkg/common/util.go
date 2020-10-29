@@ -14,7 +14,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 var Log = logf.Log.WithName("knative").WithName("openshift")

@@ -12,7 +12,6 @@ import (
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
 
 var (
@@ -27,7 +26,7 @@ var (
 		},
 	}
 
-	decoder types.Decoder
+	decoder *admission.Decoder
 )
 
 func init() {
@@ -48,7 +47,7 @@ func TestInvalidNamespace(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
+	if result.Allowed {
 		t.Error("The required namespace is wrong, but the request is allowed")
 	}
 }
@@ -66,7 +65,7 @@ func TestLoneliness(t *testing.T) {
 	}
 
 	result := validator.Handle(context.Background(), req)
-	if result.Response.Allowed {
-		t.Errorf("Too many KnativeServings: %v", result.Response)
+	if result.Allowed {
+		t.Errorf("Too many KnativeServings: %v", result.AdmissionResponse)
 	}
 }
