@@ -1,11 +1,11 @@
 ---
 project:
   name: serverless-operator
-  version: 1.11.0
+  version: 1.12.0
 
 olm:
-  replaces: 1.10.0
-  skipRange: '>=1.10.0 <1.11.0'
+  replaces: 1.11.0
+  skipRange: '>=1.11.0 <1.12.0'
   channels:
     default: '4.6'
     list:
