@@ -39,7 +39,7 @@ const (
 	TestSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
 )
 
-func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config, api client.Client, metricsPort int32, metricsHost string, operatorMetricsPort int32) error {
+func SetupServerlessOperatorServiceMonitor(cfg *rest.Config, api client.Client, metricsPort int32, metricsHost string, operatorMetricsPort int32) error {
 	// Commented below to avoid a stream of these errors at startup:
 	// E1021 22:50:03.372487       1 reflector.go:134] github.com/operator-framework/operator-sdk/pkg/kube-metrics/collector.go:67: Failed to list *unstructured.Unstructured: the server could not find the requested resource
 	if err := serveCRMetrics(cfg, metricsHost, operatorMetricsPort); err != nil {
@@ -52,7 +52,7 @@ func SetupServerlessOperatorServiceMonitor(ctx context.Context, cfg *rest.Config
 		{Port: operatorMetricsPort, Name: metrics.CRPortName, Protocol: v1.ProtocolTCP, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: operatorMetricsPort}},
 	}
 	// Create Service object to expose the metrics port(s).
-	service, err := metrics.CreateMetricsService(ctx, cfg, servicePorts)
+	service, err := metrics.CreateMetricsService(context.Background(), cfg, servicePorts)
 	if err != nil {
 		return fmt.Errorf("failed to create metrics service: %w", err)
 	}
