@@ -127,9 +127,9 @@ function run_serving_preupgrade_test {
 
 function start_serving_prober {
   local image_template prev_serving_version probe_fraction serving_prober_pid \
-    result_file
+    pid_file
   prev_serving_version="${1:?Pass a previous Serving version as arg[1]}"
-  result_file="${2:?Pass a result file as arg[2]}"
+  pid_file="${2:?Pass a PID file as arg[2]}"
 
   logger.info 'Starting Serving prober'
 
@@ -155,7 +155,7 @@ function start_serving_prober {
 
   logger.debug "Serving prober PID is ${serving_prober_pid}"
 
-  echo ${serving_prober_pid} > "${result_file}"
+  echo ${serving_prober_pid} > "${pid_file}"
 }
 
 function wait_for_serving_prober_ready {

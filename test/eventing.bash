@@ -49,10 +49,13 @@ function run_eventing_preupgrade_test {
 }
 
 function start_eventing_prober {
-  local eventing_prober_pid result_file image_template
-  result_file="${1:?Pass a result file as arg[1]}"
-
+  local eventing_prober_pid pid_file image_template eventing_prober_interval
+  pid_file="${1:?Pass a PID file as arg[1]}"
   logger.info 'Starting Eventing prober'
+
+  EVENTING_PROBER_INTERVAL_MSEC="${EVENTING_PROBER_INTERVAL_MSEC:-2}"
+  eventing_prober_interval="${EVENTING_PROBER_INTERVAL_MSEC}ms"
+
 
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
   cd "${KNATIVE_EVENTING_HOME}" || return $?
@@ -60,6 +63,11 @@ function start_eventing_prober {
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
+  # FIXME: knative/operator#297 Restore scale to zero setting
+  E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
+  E2E_UPGRADE_TESTS_SERVING_USE=true \
+  E2E_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
+  E2E_UPGRADE_TESTS_INTERVAL="${eventing_prober_interval}" \
   go_test_e2e -tags=probe \
     -timeout=30m \
     ./test/upgrade \
@@ -70,7 +78,7 @@ function start_eventing_prober {
 
   logger.debug "Eventing prober PID is ${eventing_prober_pid}"
 
-  echo ${eventing_prober_pid} > "${result_file}"
+  echo ${eventing_prober_pid} > "${pid_file}"
 }
 
 function wait_for_eventing_prober_ready {
