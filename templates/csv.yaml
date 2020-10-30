@@ -32,10 +32,10 @@ metadata:
           },
           "spec": {
             "source": {
-              "enabled": "false"
+              "enabled": false
             },
             "channel": {
-              "enabled": "false",
+              "enabled": false,
               "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
             }
           }
