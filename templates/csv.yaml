@@ -22,7 +22,7 @@ metadata:
             "name": "knative-eventing"
           },
           "spec": {
-          },
+          }
         },
         {
           "apiVersion": "operator.serverless.openshift.io/v1alpha1",
