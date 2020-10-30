@@ -31,11 +31,13 @@ metadata:
             "name": "knative-kafka"
           },
           "spec": {
-            source:
-              enabled: true
-            channel:
-              enabled: true
-              bootstrapServers: REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS
+            "source": {
+              "enabled": "false"
+            },
+            "channel": {
+              "enabled": "false",
+              "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
+            }
           }
         }
       ]
