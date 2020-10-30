@@ -70,12 +70,15 @@ kafka_image "DISPATCHER_IMAGE"                     "${eventing_contrib}-kafka-ch
 kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_contrib}-kafka-channel-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_contrib}-kafka-channel-webhook"
 
-declare -A values
-values[spec.version]="$(metadata.get project.version)"
-values[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
-values['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
-values[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
-values[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
+declare -A yaml_keys
+yaml_keys[spec.version]="$(metadata.get project.version)"
+yaml_keys[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
+yaml_keys['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
+yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
+yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
+
+declare -A vars
+vars[OCP_TARGET]="$(metadata.get 'requirements.ocp.[0]')"
 
 function add_related_image {
   cat << EOF | yq write --inplace --script - "$1"
@@ -128,7 +131,12 @@ for name in "${kafka_images[@]}"; do
   add_downstream_operator_deployment_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
-for name in "${!values[@]}"; do
-  echo "Value: ${name} -> ${values[$name]}"
-  yq write --inplace "$target" "$name" "${values[$name]}"
+for name in "${!yaml_keys[@]}"; do
+  echo "Value: ${name} -> ${yaml_keys[$name]}"
+  yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
+done
+
+for name in "${!vars[@]}"; do
+  echo "Value: ${name} -> ${vars[$name]}"
+  sed --in-place "s/__${name}__/${vars[${name}]}/" "$target"
 done
