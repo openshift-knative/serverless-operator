@@ -53,7 +53,7 @@ function start_eventing_prober {
   pid_file="${1:?Pass a PID file as arg[1]}"
   logger.info 'Starting Eventing prober'
 
-  EVENTING_PROBER_INTERVAL_MSEC="${EVENTING_PROBER_INTERVAL_MSEC:-2}"
+  EVENTING_PROBER_INTERVAL_MSEC="${EVENTING_PROBER_INTERVAL_MSEC:-50}"
   eventing_prober_interval="${EVENTING_PROBER_INTERVAL_MSEC}ms"
 
 
