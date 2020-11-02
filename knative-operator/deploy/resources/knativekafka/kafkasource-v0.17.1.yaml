@@ -206,7 +206,7 @@ spec:
     webhookClientConfig:
       service:
         name: kafka-source-webhook
-        namespace: knative-sources
+        namespace: knative-eventing
   additionalPrinterColumns:
   - name: BootstrapServers
     type: string
