@@ -374,6 +374,14 @@ spec:
                     command:
                       - knative-openshift
                     imagePullPolicy: Always
+                    readinessProbe:
+                      httpGet:
+                        path: /readyz
+                        port: 8687
+                    livenessProbe:
+                      httpGet:
+                        path: /healthz
+                        port: 8687
                     env:
                       - name: WATCH_NAMESPACE
                         value: ""
