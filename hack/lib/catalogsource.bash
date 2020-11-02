@@ -13,6 +13,7 @@ function install_catalogsource {
   logger.info "Installing CatalogSource"
 
   local rootdir pull_user
+
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
@@ -44,7 +45,7 @@ function install_catalogsource {
   if ! oc get buildconfigs serverless-bundle -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info 'Create a bundle image build'
     oc -n "$OLM_NAMESPACE" new-build --binary \
-      --strategy=docker --name serverless-bundle
+      --strategy=docker --name serverless-bundle || return $?
   else
     logger.info 'Serverless bundle image build is already created'
   fi
@@ -52,7 +53,7 @@ function install_catalogsource {
       ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
     logger.info 'Build the bundle image in the cluster-internal registry.'
     oc -n "$OLM_NAMESPACE" start-build serverless-bundle \
-      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F
+      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F  || return $?
     mkdir -p "${rootdir}/_output"
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"

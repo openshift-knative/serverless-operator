@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-function array.contains {
-  local e match="$1"
-  shift
-  for e; do [[ "$e" == "$match" ]] && return 0; done
-  return 1
-}
-
 function array.join {
   local IFS="$1"
   shift
@@ -42,4 +35,33 @@ function timeout {
     [[ $seconds -gt $timeout ]] && logger.error "Time out of ${timeout} exceeded" && return 1
   done
   return 0
+}
+
+function wait_for_file {
+  local file timeout waits
+  file="${1:?Pass a filepath as arg[1]}"
+  waits="${2:-300}"
+
+  timeout "${waits}" "[[ ! -f '${file}' ]]" || return $?
+}
+
+function versions.le {
+  local v1 v2 cmp
+  v1="${1:?Pass a version to check as arg[1]}"
+  v2="${2:?Pass a version to check against as arg[2]}"
+  cmp="$(echo -e "${v1}\n${v2}" | sort -V | head -n 1)"
+
+  [ "${v1}" = "${cmp}" ]
+}
+
+function versions.lt {
+  local v1 v2
+  v1="${1:?Pass a version to check as arg[1]}"
+  v2="${2:?Pass a version to check against as arg[2]}"
+
+  if ! [ "${v1}" = "${v2}" ]; then
+    return 1
+  fi
+
+  versions.le "${v1}" "${v2}"
 }
