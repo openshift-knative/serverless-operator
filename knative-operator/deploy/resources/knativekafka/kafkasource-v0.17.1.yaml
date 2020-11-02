@@ -185,6 +185,11 @@ metadata:
   name: kafkabindings.bindings.knative.dev
 spec:
   group: bindings.knative.dev
+  preserveUnknownFields: false
+  validation:
+    openAPIV3Schema:
+      type: object
+      x-kubernetes-preserve-unknown-fields: true
   names:
     categories:
     - all
@@ -196,6 +201,12 @@ spec:
   scope: Namespaced
   subresources:
     status: {}
+  conversion:
+    strategy: Webhook
+    webhookClientConfig:
+      service:
+        name: kafka-source-webhook
+        namespace: knative-sources
   additionalPrinterColumns:
   - name: BootstrapServers
     type: string
