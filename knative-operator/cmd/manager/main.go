@@ -106,7 +106,7 @@ func main() {
 	// Kafka Webhooks
 	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{}})
 
-	if err := setupMonitoring(cfg, mgr.GetClient()); err != nil {
+	if err := setupMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")
 	}
 
@@ -119,7 +119,11 @@ func main() {
 	}
 }
 
-func setupMonitoring(cfg *rest.Config, cl client.Client) error {
+func setupMonitoring(cfg *rest.Config) error {
+	cl, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return fmt.Errorf("failed to create a client: %w", err)
+	}
 	namespace := os.Getenv(common.NamespaceEnvKey)
 	if namespace == "" {
 		return errors.New("NAMESPACE not provided via environment")
