@@ -12,7 +12,9 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  local rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  local rootdir pull_user
+
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
   pull_user="puller"
@@ -36,8 +38,8 @@ function install_catalogsource {
   cat "$csv"
 
   # Build the bundle image in the cluster-internal registry.
-  oc -n "$OLM_NAMESPACE" new-build --binary --strategy=docker --name serverless-bundle
-  oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
+  oc -n "$OLM_NAMESPACE" new-build --binary --strategy=docker --name serverless-bundle || return $?
+  oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F || return $?
 
   # Undo potential changes to the CSV to not pollute the repository.
   mv "${rootdir}/bkp.yaml" "$csv"
@@ -48,7 +50,7 @@ function install_catalogsource {
 
   # Install the index deployment.
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
 apiVersion: apps/v1
 kind: Deployment
 metadata:
