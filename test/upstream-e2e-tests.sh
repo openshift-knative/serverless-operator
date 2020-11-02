@@ -11,25 +11,21 @@ if [ -n "$OPENSHIFT_CI" ]; then
 fi
 debugging.setup
 
-create_namespaces || exit $?
-
 failed=0
 
 teardown_serverless || failed=1
-(( !failed )) && install_catalogsource || failed=2
+(( !failed )) && create_namespaces || failed=2
+(( !failed )) && install_catalogsource || failed=3
 (( !failed )) && logger.success '🚀 Cluster prepared for testing.'
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
-  # TODO(markusthoemmes): Remove after 1.11 is cut.
-  (( !failed )) && oc create namespace "${SERVING_NAMESPACE}"
-
-  (( !failed )) && install_serverless_previous || failed=3
-  (( !failed )) && run_knative_serving_rolling_upgrade_tests || failed=4
-  (( !failed )) && trigger_gc_and_print_knative || failed=5
+  (( !failed )) && install_serverless_previous || failed=4
+  (( !failed )) && run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving,eventing}" || failed=5
+  (( !failed )) && trigger_gc_and_print_knative || failed=6
   # Call teardown only if E2E tests follow.
   if [[ $TEST_KNATIVE_E2E == true ]]; then
-    (( !failed )) && teardown_serverless || failed=6
+    (( !failed )) && teardown_serverless || failed=7
   fi
 fi
 
