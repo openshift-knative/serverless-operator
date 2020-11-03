@@ -137,8 +137,6 @@ spec:
 
     ## Knative Eventing
 
-    Knative Eventing is a **[Technology Preview feature](https://access.redhat.com/support/offerings/techpreview)!**
-
     Knative Eventing is a system that is designed to address a common need for cloud native
     development and provides composable primitives to enable late-binding event sources and
     event consumers.
