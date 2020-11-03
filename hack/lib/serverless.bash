@@ -115,9 +115,9 @@ function approve_csv {
     --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}'
 
   logger.info 'Wait for the installplan to be available'
-  timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]"
+  timeout 900 "[[ -z \$(find_install_plan ${csv_version}) ]]"
 
-  install_plan=$(find_install_plan "$csv_version")
+  install_plan=$(find_install_plan "${csv_version}")
   oc get "$install_plan" -n "${OPERATORS_NAMESPACE}" -o yaml \
     | sed 's/\(.*approved:\) false/\1 true/' \
     | oc replace -f -
@@ -129,11 +129,11 @@ function approve_csv {
 }
 
 function find_install_plan {
-  local csv=$1
+  local csv="${1:-Pass a CSV as arg[1]}"
   for plan in $(oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers -o name); do
-    if [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) -eq 1 && \
-       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c $OLM_SOURCE) -eq 1 ]]; then
-         echo $plan
+    if [[ $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c "$csv") -eq 1 && \
+       $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]; then
+         echo "$plan"
          return 0
     fi
   done
@@ -155,7 +155,8 @@ function deploy_knativeserving_cr {
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
   oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
 
-  timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'
+  timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
+-n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Serving has been installed successfully.'
 }
@@ -177,7 +178,9 @@ spec:
   {}
 EOF
 
-  timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'
+  timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
+knative-eventing -n ${EVENTING_NAMESPACE} \
+-o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Eventing has been installed successfully.'
 }
@@ -203,7 +206,9 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'
+  timeout 900 "[[ \$(oc get knativekafkas.operator.serverless.openshift.io \
+knative-kafka -n ${EVENTING_NAMESPACE} \
+-o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Kafka has been installed sucessfully.'
 }

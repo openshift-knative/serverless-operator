@@ -121,6 +121,23 @@ function downstream_serving_e2e_tests {
     "$@"
 }
 
+function downstream_eventing_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Eventing downstream tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@"
+}
+
 function downstream_knative_kafka_e2e_tests {
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -133,23 +150,6 @@ function downstream_knative_kafka_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@"
-}
-
-function downstream_eventing_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Eventing tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"

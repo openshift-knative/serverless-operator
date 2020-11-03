@@ -20,40 +20,6 @@ function upstream_knative_eventing_e2e {
   run_e2e_tests
 }
 
-function downstream_eventing_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Eventing downstream tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@"
-}
-
-function downstream_knative_kafka_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Knative Kafka tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@"
-}
-
 function actual_eventing_version {
   oc get knativeeventing.operator.knative.dev \
     knative-eventing -n "${EVENTING_NAMESPACE}" -o=jsonpath="{.status.version}"
@@ -86,7 +52,6 @@ function start_eventing_prober {
 
   EVENTING_PROBER_INTERVAL_MSEC="${EVENTING_PROBER_INTERVAL_MSEC:-50}"
   eventing_prober_interval="${EVENTING_PROBER_INTERVAL_MSEC}ms"
-
 
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
   cd "${KNATIVE_EVENTING_HOME}"

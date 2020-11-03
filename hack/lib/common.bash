@@ -21,14 +21,6 @@ function wait_until_labelled_pods_are_ready {
   return 0
 }
 
-function wait_until_labelled_pods_are_ready {
-  local label ns
-  label="${1:?Pass a label as arg[1]}"
-  ns="${2:?Pass a namespace as arg[2]}"
-  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
-'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
-}
-
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
   local seconds timeout

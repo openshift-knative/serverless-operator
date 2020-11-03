@@ -74,7 +74,7 @@ EOF
 
   logger.info "Waiting until service mesh operators are available"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments} --no-headers | wc -l) != 4 ]]"
-  oc wait --for=condition=Available deployment ${mesh_deployments} --timeout=300s -n openshift-operators
+  oc wait --for=condition=Available deployment "${mesh_deployments}" --timeout=300s -n openshift-operators
 }
 
 
@@ -155,7 +155,7 @@ EOF
 
   logger.info "Waiting until service mesh deployments are available"
   timeout 600 "[[ \$(oc get deploy -n istio-system ${istio_deployments} --no-headers | wc -l) != 5 ]]"
-  oc wait --for=condition=Available deployment ${istio_deployments} --timeout=300s -n istio-system
+  oc wait --for=condition=Available deployment "${istio_deployments}" --timeout=300s -n istio-system
 }
 
 
