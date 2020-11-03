@@ -13,17 +13,20 @@ function install_catalogsource {
   logger.info "Installing CatalogSource"
 
   local rootdir pull_user
+
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   # Add a user that is allowed to pull images from the registry.
   pull_user="puller"
   add_user "$pull_user" "puller"
   oc -n "$OLM_NAMESPACE" policy add-role-to-user registry-viewer "$pull_user"
-  token=$(oc --kubeconfig=$pull_user.kubeconfig whoami -t)
+  token=$(oc --kubeconfig=${pull_user}.kubeconfig whoami -t)
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
+
   logger.debug "Create a backup of the CSV so we don't pollute the repository."
-  cp "$csv" "${rootdir}/bkp.yaml"
+  mkdir -p "${rootdir}/_output"
+  cp "$csv" "${rootdir}/_output/bkp.yaml"
 
   if [ -n "$OPENSHIFT_CI" ]; then
     # Image variables supplied by ci-operator.
@@ -35,7 +38,7 @@ function install_catalogsource {
   fi
 
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-    logger.info 'CSV'
+    logger.info 'Listing CSV content'
     cat "$csv"
   fi
 
@@ -55,13 +58,13 @@ function install_catalogsource {
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
   else
-    logger.info 'Serverless bundle build is up-to-date'
+    logger.info 'Serverless bundle build is up-to-date.'
   fi
 
   logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
-  mv "${rootdir}/bkp.yaml" "$csv"
+  mv "${rootdir}/_output/bkp.yaml" "$csv"
 
-  logger.info "HACK: Allow to run the index pod as privileged so it has \
+  logger.debug "HACK: Allow to run the index pod as privileged so it has \
 necessary access to run the podman commands."
   oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user privileged -z default
 
@@ -103,7 +106,7 @@ spec:
         - -c
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.11.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
 ---
 apiVersion: v1
@@ -131,7 +134,7 @@ kind: CatalogSource
 metadata:
   name: serverless-operator
 spec:
-  address: serverless-index.$OLM_NAMESPACE.svc:50051
+  address: serverless-index.${OLM_NAMESPACE}.svc:50051
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc
@@ -153,12 +156,12 @@ function delete_catalog_source {
 # TODO: Deduplicate with the `create_htpasswd_users` function in test/lib.bash.
 function add_user {
   local name pass
-  name="${1:?Pass a name as arg[1]}"
-  pass="${2:?Pass a password as arg[2]}"
+  name=${1:?Pass a username as arg[1]}
+  pass=${2:?Pass a password as arg[2]}
 
   logger.info "Creating user $name:***"
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
-    logger.debug 'Secret htpass-secret already existsed, updating it.'
+    logger.debug 'Secret htpass-secret already existed, updating it.'
     sed -i -e '$a\' users.htpasswd
   else
     touch users.htpasswd
@@ -174,6 +177,6 @@ function add_user {
 
   logger.debug 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
-  occmd="bash -c '! oc login --kubeconfig=$name.kubeconfig --username=$name --password=$pass > /dev/null'"
+  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} > /dev/null'"
   timeout 180 "${occmd}"
 }

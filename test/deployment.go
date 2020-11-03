@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,7 +14,7 @@ func WithDeploymentReady(ctx *Context, name string, namespace string) (*appsv1.D
 	var deployment *appsv1.Deployment
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		var err error
-		deployment, err = ctx.Clients.Kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
+		deployment, err = ctx.Clients.Kube.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -31,7 +32,7 @@ func WithDeploymentReady(ctx *Context, name string, namespace string) (*appsv1.D
 
 func WithDeploymentGone(ctx *Context, name string, namespace string) error {
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		_, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
+		_, err := ctx.Clients.Kube.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil && apierrs.IsNotFound(err) {
 			return true, nil
 		} else if err != nil {

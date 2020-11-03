@@ -1,6 +1,7 @@
 package servinge2e
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -41,11 +42,11 @@ func TestNetworkPolicy(t *testing.T) {
 		},
 	}
 
-	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policyDeny)
+	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(context.Background(), policyDeny, metav1.CreateOptions{})
 	if err != nil && !apierrs.IsAlreadyExists(err) {
 		t.Fatalf("Failed to create networkpolicy %v: %v", policyDeny, err)
 	}
-	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameDeny, &metav1.DeleteOptions{})
+	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(context.Background(), policyNameDeny, metav1.DeleteOptions{})
 
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	// We don't want connections to be kept alive.
@@ -90,11 +91,11 @@ func TestNetworkPolicy(t *testing.T) {
 		},
 	}
 
-	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(policyAllow)
+	_, err = caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Create(context.Background(), policyAllow, metav1.CreateOptions{})
 	if err != nil && !apierrs.IsAlreadyExists(err) {
 		t.Fatalf("Failed to create networkpolicy %v: %v", policyAllow, err)
 	}
-	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(policyNameAllow, &metav1.DeleteOptions{})
+	defer caCtx.Clients.Kube.NetworkingV1().NetworkPolicies(testNamespace3).Delete(context.Background(), policyNameAllow, metav1.DeleteOptions{})
 
 	// Poll until network policy became active. It takes a few seconds.
 	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {

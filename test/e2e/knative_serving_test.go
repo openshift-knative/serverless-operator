@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -84,7 +85,7 @@ func TestKnativeServing(t *testing.T) {
 			t.Fatal("Failed to remove Knative Serving", err)
 		}
 
-		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(servingNamespace+"-ingress", metav1.GetOptions{})
+		ns, err := caCtx.Clients.Kube.CoreV1().Namespaces().Get(context.Background(), servingNamespace+"-ingress", metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			// Namespace is already gone, all good!
 			return

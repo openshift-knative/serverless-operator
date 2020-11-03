@@ -2,13 +2,16 @@ package common_test
 
 import (
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	configv1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -17,7 +20,7 @@ import (
 )
 
 func init() {
-	configv1.AddToScheme(scheme.Scheme)
+	apis.AddToScheme(scheme.Scheme)
 }
 
 func newKs() *servingv1alpha1.KnativeServing {
@@ -179,8 +182,8 @@ func TestWebhookMemoryLimit(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !reflect.DeepEqual(test.Input.Spec.Resources, test.Expected) {
-				t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", test.Input.Name, test.Expected, test.Input.Spec.Resources)
+			if !cmp.Equal(test.Input.Spec.Resources, test.Expected, cmpopts.IgnoreUnexported(resource.Quantity{})) {
+				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.Expected, test.Input.Spec.Resources))
 			}
 		})
 	}

@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
+function ensure_namespace {
+  local ns
+  ns="${1:?Pass namespace name as arg[1]}"
+  if ! oc get namespace "${ns}" >/dev/null 2>&1; then
+    oc create namespace "${ns}"
+  fi
+}
+
 function create_namespaces {
   logger.info 'Create namespaces'
   for ns in "${NAMESPACES[@]}"; do
-    if ! oc get ns "${ns}" >/dev/null 2>&1; then
-      oc create ns "${ns}"
-    fi
+    ensure_namespace "${ns}"
   done
   # Create an OperatorGroup if there are no other ones in the namespace.
   if [[ $(oc get operatorgroups -oname -n "${OPERATORS_NAMESPACE}" | wc -l) -eq 0 ]]; then
@@ -17,7 +23,7 @@ metadata:
   namespace: ${OPERATORS_NAMESPACE}
 EOF
   fi
-  logger.success "Namespaces has bean created: ${NAMESPACES[*]}"
+  logger.success "Namespaces have been created: ${NAMESPACES[*]}"
 }
 
 function delete_namespaces {
@@ -29,5 +35,5 @@ function delete_namespaces {
       oc delete ns "$ns"
     fi
   done
-  logger.success "Namespaces has been deleted."
+  logger.success "Namespaces have been deleted."
 }

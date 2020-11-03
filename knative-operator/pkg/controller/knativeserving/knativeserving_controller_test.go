@@ -5,13 +5,11 @@ import (
 	"os"
 	"testing"
 
-	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-
-	"k8s.io/apimachinery/pkg/api/equality"
-
+	"github.com/google/go-cmp/cmp"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
-	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -20,14 +18,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	apis "knative.dev/pkg/apis"
+	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 )
 
 var (
@@ -38,7 +33,7 @@ var (
 		},
 		Status: v1alpha1.KnativeServingStatus{
 			Status: duckv1.Status{
-				Conditions: []apis.Condition{
+				Conditions: []pkgapis.Condition{
 					{
 						Status: "True",
 						Type:   "DeploymentsAvailable",
@@ -95,7 +90,7 @@ var (
 		},
 		Status: servingv1.ServiceStatus{
 			Status: duckv1.Status{
-				Conditions: []apis.Condition{
+				Conditions: []pkgapis.Condition{
 					{
 						Status: "True",
 						Type:   "Ready",
@@ -103,7 +98,7 @@ var (
 				},
 			},
 			RouteStatusFields: servingv1.RouteStatusFields{
-				URL: &apis.URL{Host: "kn-cli-knative-serving.example.com"},
+				URL: &pkgapis.URL{Host: "kn-cli-knative-serving.example.com"},
 			},
 		},
 	}
@@ -119,12 +114,12 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
+
+	apis.AddToScheme(scheme.Scheme)
 }
 
 // TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
 func TestKourierReconcile(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	tests := []struct {
 		name           string
 		ownerName      string
@@ -158,19 +153,10 @@ func TestKourierReconcile(t *testing.T) {
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
 			knService := &defaultKnService
-			monitor := &monitoringv1.ServiceMonitor{}
 			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
-			// Register operator types with the runtime scheme.
-			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-			s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-			s.AddKnownTypes(consolev1.GroupVersion, ccd)
-			s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
-			s.AddKnownTypes(routev1.GroupVersion, &routev1.Route{})
-			scheme.Scheme.AddKnownTypes(monitoringv1.SchemeGroupVersion, monitor)
 			cl := fake.NewFakeClient(initObjs...)
-			r := &ReconcileKnativeServing{client: cl, scheme: s}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {
@@ -272,9 +258,9 @@ func TestCustomCertsConfigMap(t *testing.T) {
 	}{{
 		name: "plain field",
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil, ""),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
+			cm("test-cm", nil, nil, nil, "1"),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
 		},
 	}, {
 		name: "upgrade from 1.6.0",
@@ -283,11 +269,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"test": "foo"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, nil, "1"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, ""),
+			cm("test-cm", nil, nil, nil, "2"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
 		},
-		outCtrl: ctrl("1"),
+		outCtrl: ctrl("2"),
 	}, {
 		name: "just one secondary already filled",
 		in: []runtime.Object{
@@ -297,11 +283,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "3"),
+			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "4"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
-		outCtrl: ctrl("3"),
+		outCtrl: ctrl("4"),
 	}, {
 		name: "both secondaries filled",
 		in: []runtime.Object{
@@ -311,11 +297,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "1"),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "2"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
 		},
-		outCtrl: ctrl("1"),
+		outCtrl: ctrl("2"),
 	}, {
 		name: "certificate gets rolled",
 		in: []runtime.Object{
@@ -325,20 +311,17 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
 		out: []*corev1.ConfigMap{
-			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "100"),
+			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "101"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
 			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
 		},
-		outCtrl: ctrl("100"),
+		outCtrl: ctrl("101"),
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewFakeClient(test.in...)
-			s := scheme.Scheme
-			s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-
-			r := &ReconcileKnativeServing{client: cl, scheme: s}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			if err := r.ensureCustomCertsConfigMap(ks); err != nil {
 				t.Fatal(err)
@@ -353,8 +336,8 @@ func TestCustomCertsConfigMap(t *testing.T) {
 				// Avoid ownerRef comparison for now.
 				got.OwnerReferences = nil
 
-				if !equality.Semantic.DeepEqual(got, want) {
-					t.Fatalf("ConfigMaps %#v not equal to %#v", got, want)
+				if !cmp.Equal(got, want) {
+					t.Errorf("ConfigMaps not equal, diff: %s", cmp.Diff(got, want))
 				}
 			}
 
@@ -364,8 +347,11 @@ func TestCustomCertsConfigMap(t *testing.T) {
 					t.Fatalf("Failed to fetch controller: %v", err)
 				}
 
-				if !equality.Semantic.DeepEqual(got, test.outCtrl) {
-					t.Fatalf("ConfigMaps %#v not equal to %#v", got, test.outCtrl)
+				// Unset as its not significant anyway.
+				got.ResourceVersion = ""
+
+				if !cmp.Equal(got, test.outCtrl) {
+					t.Errorf("Deployments not equal, diff: %s", cmp.Diff(got, test.outCtrl))
 				}
 			}
 		})
@@ -374,22 +360,14 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 // TestKnativeServingStatus tests KnativeServing CR status with Kourier's installation failure.
 func TestKnativeServingStatus(t *testing.T) {
-	logf.SetLogger(logf.ZapLogger(true))
-
 	ks := &defaultKnativeServing
 	ingress := &defaultIngress
 	knService := &defaultKnService
 
 	initObjs := []runtime.Object{ks, ingress, knService}
 
-	// Register operator types with the runtime scheme.
-	s := scheme.Scheme
-	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, ks)
-	s.AddKnownTypes(configv1.SchemeGroupVersion, ingress)
-	s.AddKnownTypes(servingv1.SchemeGroupVersion, knService)
-
 	cl := fake.NewFakeClient(initObjs...)
-	r := &ReconcileKnativeServing{client: cl, scheme: s}
+	r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 	// Test with invalid Kourier manifest file.
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/non-exist-file")
@@ -423,6 +401,10 @@ func TestKnativeServingStatus(t *testing.T) {
 
 func ctrl(certVersion string) *appsv1.Deployment {
 	return &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "controller",
@@ -441,6 +423,10 @@ func ctrl(certVersion string) *appsv1.Deployment {
 
 func cm(name string, labels, annotations, data map[string]string, resourceVersion string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:       "knative-serving",
 			Name:            name,

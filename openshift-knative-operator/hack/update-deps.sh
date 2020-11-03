@@ -10,16 +10,17 @@ set -o pipefail
 cd ${ROOT_DIR}
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.17"
+KN_VERSION="release-0.18"
 
 # Controls the version of OCP related dependencies.
-OCP_VERSION="release-4.5"
+OCP_VERSION="release-4.6"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
   "github.com/openshift/api@${OCP_VERSION}"
 
+  "knative.dev/eventing@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/test-infra@${KN_VERSION}"
@@ -45,10 +46,11 @@ fi
 go mod tidy
 go mod vendor
 
-rm -rf $(find vendor/ -name 'OWNERS')
-# Remove unit tests & e2e tests.
-rm -rf $(find vendor/ -path '*/pkg/*_test.go')
-rm -rf $(find vendor/ -path '*/e2e/*_test.go')
+# Remove unnecessary files.
+find vendor/ \( -name "OWNERS" \
+  -o -name "OWNERS_ALIASES" \
+  -o -name "BUILD" \
+  -o -name "BUILD.bazel" \
+  -o -name "*_test.go" \) -exec rm -fv {} +
 
-# Add permission for shell scripts
-chmod +x $(find vendor -type f -name '*.sh')
+find vendor -type f -name '*.sh' -exec chmod +x {} +

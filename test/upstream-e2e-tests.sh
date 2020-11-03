@@ -12,18 +12,15 @@ fi
 debugging.setup
 dump_state.setup
 
-create_namespaces
 teardown_serverless
+create_namespaces
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
-  # TODO(markusthoemmes): Remove after 1.11 is cut.
-  oc create namespace "${SERVING_NAMESPACE}"
-
   install_serverless_previous
-  run_knative_serving_rolling_upgrade_tests
+  run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving,eventing}"
   trigger_gc_and_print_knative
   # Call teardown only if E2E tests follow.
   if [[ $TEST_KNATIVE_E2E == true ]]; then

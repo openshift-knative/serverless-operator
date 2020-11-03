@@ -45,7 +45,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 	if err := reconcileKnCCDResources(instance, apiclient, service); err != nil {
 		return err
 	}
-	if !service.Status.IsReady() {
+	if !service.IsReady() {
 		return fmt.Errorf("knative service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
 	if err := reconcileKnConsoleCLIDownload(apiclient, instance, service); err != nil {
@@ -221,7 +221,7 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 		Spec: consolev1.ConsoleCLIDownloadSpec{
 			DisplayName: "kn - OpenShift Serverless Command Line Interface (CLI)",
 			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.",
-			Links: []consolev1.Link{
+			Links: []consolev1.CLIDownloadLink{
 				{
 					Text: "Download kn for Linux",
 					Href: baseURL + "/amd64/linux/kn-linux-amd64.tar.gz",

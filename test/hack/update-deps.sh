@@ -10,23 +10,21 @@ set -o pipefail
 cd ${ROOT_DIR}
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.17"
+KN_VERSION="release-0.18"
 
 # Controls the version of OCP related dependencies.
-# We currency stick to 4.4 as 4.5 needs 0.18 K8s clients, which will come via the 0.18
-# Knative release.
-OCP_VERSION="release-4.4"
+OCP_VERSION="release-4.6"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  # Reenable this once we move to 4.5. Currently hardcoded in go.mod.
-  #"github.com/openshift/api@${OCP_VERSION}"
+  "github.com/openshift/api@${OCP_VERSION}"
   "github.com/openshift/client-go@${OCP_VERSION}"
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
 
   "knative.dev/eventing@${KN_VERSION}"
   "knative.dev/eventing-contrib@${KN_VERSION}"
+  "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/serving@${KN_VERSION}"
@@ -53,10 +51,20 @@ fi
 go mod tidy
 go mod vendor
 
-rm -rf $(find vendor/ -name 'OWNERS')
-# Remove unit tests & e2e tests.
-rm -rf $(find vendor/ -path '*/pkg/*_test.go')
-rm -rf $(find vendor/ -path '*/e2e/*_test.go')
+# Remove files conflicting due to logr.
+rm -f vendor/knative.dev/pkg/test/logging/tlogger.go \
+  vendor/knative.dev/pkg/test/logging/zapr.go \
+  vendor/knative.dev/pkg/test/logging/sugar.go \
+  vendor/knative.dev/pkg/test/logging/error.go \
+  vendor/knative.dev/pkg/test/logging/spew_encoder.go \
+  vendor/knative.dev/pkg/test/logging/memory_encoder.go \
+  vendor/knative.dev/pkg/test/logging/logger.go
 
-# Add permission for shell scripts
-chmod +x $(find vendor -type f -name '*.sh')
+# Remove unnecessary files.
+find vendor/ \( -name "OWNERS" \
+  -o -name "OWNERS_ALIASES" \
+  -o -name "BUILD" \
+  -o -name "BUILD.bazel" \
+  -o -name "*_test.go" \) -exec rm -fv {} +
+
+find vendor -type f -name '*.sh' -exec chmod +x {} +

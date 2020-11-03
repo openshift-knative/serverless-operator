@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 
-function array.contains {
-  local e match="$1"
-  shift
-  for e; do [[ "$e" == "$match" ]] && return 0; done
-  return 1
-}
-
 function array.join {
   local IFS="$1"
   shift
   echo "$*"
 }
 
-function resolve_hostname {
-  local ip
-  ip="$(LANG=C host -t a "${1}" | grep 'has address' | head -n 1 | awk '{print $4}')"
-  if [ "${ip}" != "" ]; then
-    echo "${ip}"
-  fi
+# Waits until labelled pods reports ready. It should be used erroneous, upstream,
+# wait_until_pods_running func.
+function wait_until_labelled_pods_are_ready {
+  local label ns
+  label="${1:?Pass a label as arg[1]}"
+  ns="${2:?Pass a namespace as arg[2]}"
+
+  # Wait for some pods to sprung
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]"
+  # Wait until they are ready to receive communications
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
+'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+  return 0
 }
 
 function wait_until_labelled_pods_are_ready {
@@ -50,22 +50,31 @@ function timeout {
   return 0
 }
 
-# Waits until the given hostname resolves via DNS
-# Parameters: $1 - hostname
-function wait_until_hostname_resolves() {
-  logger.info "Waiting until hostname $1 resolves via DNS"
-  for _ in {1..150}; do  # timeout after 15 minutes
-    local ip
-    ip="$(resolve_hostname "$1")"
-    if [[ "$ip" != "" ]]; then
-      echo ''
-      logger.info "Resolved as ${ip}"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo -e "\n\n"
-  logger.error "Timeout waiting for hostname $1 to resolve via DNS"
-  return 1
+function wait_for_file {
+  local file timeout waits
+  file="${1:?Pass a filepath as arg[1]}"
+  waits="${2:-300}"
+
+  timeout "${waits}" "[[ ! -f '${file}' ]]"
+}
+
+function versions.le {
+  local v1 v2 cmp
+  v1="${1:?Pass a version to check as arg[1]}"
+  v2="${2:?Pass a version to check against as arg[2]}"
+  cmp="$(echo -e "${v1}\n${v2}" | sort -V | head -n 1)"
+
+  [ "${v1}" = "${cmp}" ]
+}
+
+function versions.lt {
+  local v1 v2
+  v1="${1:?Pass a version to check as arg[1]}"
+  v2="${2:?Pass a version to check against as arg[2]}"
+
+  if ! [ "${v1}" = "${v2}" ]; then
+    return 1
+  fi
+
+  versions.le "${v1}" "${v2}"
 }

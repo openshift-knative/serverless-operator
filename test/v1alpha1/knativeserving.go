@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -31,7 +32,7 @@ func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*servin
 }
 
 func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingoperatorv1alpha1.KnativeServing, error) {
-	serving, err := ctx.Clients.Operator.KnativeServings(namespace).Create(KnativeServing(name, namespace))
+	serving, err := ctx.Clients.Operator.KnativeServings(namespace).Create(context.Background(), KnativeServing(name, namespace), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func CreateKnativeServing(ctx *test.Context, name, namespace string) (*servingop
 }
 
 func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.Operator.KnativeServings(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Operator.KnativeServings(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -64,7 +65,7 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Operator.KnativeServings(namespace).Get(name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Operator.KnativeServings(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

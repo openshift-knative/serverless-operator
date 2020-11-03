@@ -1,4 +1,4 @@
-_output
+_output/
 user*.kubeconfig
 users.htpasswd
 puller.kubeconfig

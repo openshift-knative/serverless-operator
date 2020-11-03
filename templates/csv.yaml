@@ -22,7 +22,7 @@ metadata:
             "name": "knative-eventing"
           },
           "spec": {
-          },
+          }
         },
         {
           "apiVersion": "operator.serverless.openshift.io/v1alpha1",
@@ -31,11 +31,13 @@ metadata:
             "name": "knative-kafka"
           },
           "spec": {
-            source:
-              enabled: true
-            channel:
-              enabled: true
-              bootstrapServers: REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS
+            "source": {
+              "enabled": false
+            },
+            "channel": {
+              "enabled": false,
+              "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
+            }
           }
         }
       ]
@@ -443,6 +445,102 @@ spec:
           - '*'
         serviceAccountName: knative-operator
     strategy: deployment
+  webhookdefinitions:
+  - generateName: validating.knativeeventings.operator.serverless.openshift.io
+    type: ValidatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+    - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+    - apiGroups:
+      - operator.knative.dev
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - knativeeventings
+    sideEffects: None
+    webhookPath: /validate-knativeeventings
+  - generateName: validating.knativeservings.operator.serverless.openshift.io
+    type: ValidatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+    - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+    - apiGroups:
+      - operator.knative.dev
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - knativeservings
+    sideEffects: None
+    webhookPath: /validate-knativeservings
+  - generateName: validating.knativekafkas.operator.serverless.openshift.io
+    type: ValidatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+    - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+    - apiGroups:
+      - operator.serverless.openshift.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - knativekafkas
+    sideEffects: None
+    webhookPath: /validate-knativekafkas
+  - generateName: mutating.knativeeventings.operator.serverless.openshift.io
+    type: MutatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+    - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+    - apiGroups:
+      - operator.knative.dev
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - knativeeventings
+    sideEffects: None
+    webhookPath: /mutate-knativeeventings
+  - generateName: mutating.knativeservings.operator.serverless.openshift.io
+    type: MutatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+    - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+    - apiGroups:
+      - operator.knative.dev
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - knativeservings
+    sideEffects: None
+    webhookPath: /mutate-knativeservings
   installModes:
   - supported: false
     type: OwnNamespace

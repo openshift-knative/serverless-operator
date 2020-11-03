@@ -3,6 +3,7 @@
 package v1
 
 import (
+	"context"
 	time "time"
 
 	versioned "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/clientset/versioned"
@@ -44,13 +45,13 @@ func NewFilteredProjectInformer(client versioned.Interface, resyncPeriod time.Du
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().Projects().List(options)
+				return client.ConfigV1().Projects().List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1().Projects().Watch(options)
+				return client.ConfigV1().Projects().Watch(context.TODO(), options)
 			},
 		},
 		&configv1.Project{},

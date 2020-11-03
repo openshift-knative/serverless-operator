@@ -37,14 +37,14 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	ks := comp.(*v1alpha1.KnativeServing)
 
 	// Set the default host to the cluster's host.
-	if domain, err := e.fetchClusterHost(); err != nil {
+	if domain, err := e.fetchClusterHost(ctx); err != nil {
 		return fmt.Errorf("failed to fetch cluster host: %w", err)
 	} else if domain != "" {
 		common.Configure(&ks.Spec.CommonSpec, "domain", domain, "")
 	}
 
 	// Attempt to locate kibana route which is available if openshift-logging has been configured
-	if loggingHost := e.fetchLoggingHost(); loggingHost != "" {
+	if loggingHost := e.fetchLoggingHost(ctx); loggingHost != "" {
 		common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
 			fmt.Sprintf(loggingURLTemplate, loggingHost))
 	}
@@ -91,8 +91,8 @@ func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {
 }
 
 // fetchClusterHost fetches the cluster's hostname from the cluster's ingress config.
-func (e *extension) fetchClusterHost() (string, error) {
-	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get("cluster", metav1.GetOptions{})
+func (e *extension) fetchClusterHost(ctx context.Context) (string, error) {
+	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get(ctx, "cluster", metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch cluster config: %w", err)
 	}
@@ -101,8 +101,8 @@ func (e *extension) fetchClusterHost() (string, error) {
 
 // fetchLoggingHost fetches the hostname of the Kibana installed by Openshift Logging,
 // if present.
-func (e *extension) fetchLoggingHost() string {
-	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get("kibana", metav1.GetOptions{})
+func (e *extension) fetchLoggingHost(ctx context.Context) string {
+	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get(ctx, "kibana", metav1.GetOptions{})
 	if err != nil || len(route.Status.Ingress) == 0 {
 		return ""
 	}

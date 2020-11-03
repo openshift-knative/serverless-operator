@@ -1,6 +1,7 @@
 package servinge2e
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -26,14 +27,14 @@ func TestRouteConflictBehavior(t *testing.T) {
 	svcB := types.NamespacedName{Namespace: "test", Name: "a-conflict"}
 
 	for _, ns := range []string{svcA.Namespace, svcB.Namespace} {
-		if _, err := caCtx.Clients.Kube.CoreV1().Namespaces().Create(&corev1.Namespace{
+		if _, err := caCtx.Clients.Kube.CoreV1().Namespaces().Create(context.Background(), &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: ns,
 			},
-		}); err != nil && !apierrs.IsAlreadyExists(err) {
+		}, metav1.CreateOptions{}); err != nil && !apierrs.IsAlreadyExists(err) {
 			t.Fatalf("Failed to create namespace %s: %v", ns, err)
 		}
-		defer caCtx.Clients.Kube.CoreV1().Namespaces().Delete(ns, &metav1.DeleteOptions{})
+		defer caCtx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), ns, metav1.DeleteOptions{})
 	}
 
 	// Each of the two services should be the "oldest" and it should work regardless.
@@ -48,7 +49,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 			t.Fatal("Knative Service not ready", err)
 		}
 
-		waitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
+		WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
 		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
 		if err != nil {
@@ -93,7 +94,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 		}
 
 		for _, svc := range services {
-			if err := caCtx.Clients.Serving.ServingV1().Services(svc.Namespace).Delete(svc.Name, &metav1.DeleteOptions{}); err != nil {
+			if err := caCtx.Clients.Serving.ServingV1().Services(svc.Namespace).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 				t.Fatalf("Failed to remove ksvc %v: %v", svc, err)
 			}
 		}

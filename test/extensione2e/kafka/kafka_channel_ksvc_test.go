@@ -1,6 +1,7 @@
 package knativekafkae2e
 
 import (
+	"context"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -12,6 +13,7 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -80,9 +82,9 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(kafkaChannelName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(subscriptionName, &metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(pingSourceName, &metav1.DeleteOptions{})
+		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer test.CleanupAll(t, client)
@@ -95,24 +97,24 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	// Create kafka channel
-	_, err = client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Create(&kafkaChannel)
+	_, err = client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Create(context.Background(), &kafkaChannel, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create KafkaChannel: ", err)
 	}
 
 	// Create subscription (from channel to service)
-	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(subscription)
+	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(context.Background(), subscription, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
 
 	// Create source (channel as sink)
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(ps)
+	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: ", err)
 	}
 
-	waitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 
 	// cleanup if everything ends smoothly
 	cleanup()

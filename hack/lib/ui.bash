@@ -104,17 +104,17 @@ function logger.__log {
   message="$3"
   now="$(date '+%H:%M:%S.%3N')"
   ln="${ln:-\n}"
-  
+
   printf "${color}️%-7s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}${ln}" "${level}" "${now}" "${message}" 1>&2
 }
 
 if [[ "${SHOULD_COLOR}" == "false" ]]; then
   function logger.debug {
-    echo "$(date '+%H:%M:%S.%3N')   DEBUG: $*"
+    echo "$(date '+%H:%M:%S.%3N') DEBUG:   $*"
   }
 
   function logger.info {
-    echo "$(date '+%H:%M:%S.%3N')    INFO: $*"
+    echo "$(date '+%H:%M:%S.%3N') INFO:    $*"
   }
 
   function logger.success {
@@ -126,6 +126,6 @@ if [[ "${SHOULD_COLOR}" == "false" ]]; then
   }
 
   function logger.error {
-    echo "$(date '+%H:%M:%S.%3N')   ERROR: $*"
+    echo "$(date '+%H:%M:%S.%3N') ERROR:   $*"
   }
 fi

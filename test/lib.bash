@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# == Overrides & test releated
+# == Overrides & test related
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
@@ -50,13 +50,15 @@ function go_test_e2e {
   retcode=$?
   set -Eeuo pipefail
 
-  report_test_status "$retcode"
+  print_test_result "$retcode"
   return "$retcode"
 }
 
-function report_test_status {
-  local retcode="${1:?Pass a retcode as arg[1]}"
-  if ! (( retcode )); then
+function print_test_result {
+  local test_status
+  test_status="${1:?status is required}"
+
+  if ! (( test_status )); then
     logger.success '🌟 Tests have passed 🌟'
   else
     logger.error '🚨 Tests have failures! 🚨'
@@ -99,15 +101,214 @@ function serverless_operator_kafka_e2e_tests {
     "$@"
 }
 
-function end_prober_test {
-  local PROBER_PID=${1:?Pass a PID as arg[1]}
-  local retcode
-  echo 'done' > /tmp/prober-signal
-  logger.info 'Waiting for prober test to finish'
-  wait "${PROBER_PID}"
-  retcode=$?
-  report_test_status "$retcode"
-  return "$retcode"
+function downstream_serving_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Serving tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
+  add_systemnamespace_label
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@"
+}
+
+function downstream_knative_kafka_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Knative Kafka tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@"
+}
+
+function downstream_eventing_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Eventing tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@"
+}
+
+# == Upgrade testing
+
+function run_rolling_upgrade_tests {
+  logger.info "Running rolling upgrade tests"
+
+  local latest_cluster_version latest_serving_version latest_eventing_version \
+    rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
+    eventing_prober_pid prev_serving_version prev_eventing_version \
+    ocp_target_version retcode
+
+  scope="${1:?Provide an upgrade scope as arg[1]}"
+  serving_in_scope="$(echo "${scope}" | grep -vq serving ; echo "$?")"
+  eventing_in_scope="$(echo "${scope}" | grep -vq eventing ; echo "$?")"
+
+  prev_serving_version="$(actual_serving_version)"
+  prev_eventing_version="$(actual_eventing_version)"
+
+  # Save the rootdir before changing dir
+  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+
+  if (( eventing_in_scope )); then
+    prepare_knative_eventing_tests
+  fi
+  if (( serving_in_scope )); then
+    prepare_knative_serving_tests
+  fi
+
+  logger.info 'Testing with pre upgrade tests'
+
+  if (( serving_in_scope )); then
+    run_serving_preupgrade_test
+  fi
+  if (( eventing_in_scope )); then
+    run_eventing_preupgrade_test
+  fi
+
+  logger.info 'Starting prober tests'
+
+  if (( serving_in_scope )); then
+    start_serving_prober "${prev_serving_version}" /tmp/prober-pid
+    serving_prober_pid=$(cat /tmp/prober-pid)
+  fi
+  if (( eventing_in_scope )); then
+    start_eventing_prober /tmp/prober-pid
+    eventing_prober_pid=$(cat /tmp/prober-pid)
+  fi
+
+  if (( serving_in_scope )); then
+    wait_for_serving_prober_ready
+  fi
+  if (( eventing_in_scope )); then
+    wait_for_eventing_prober_ready
+  fi
+
+  if [[ $UPGRADE_SERVERLESS == true ]]; then
+    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
+    latest_eventing_version="${KNATIVE_EVENTING_VERSION/v/}"
+
+    logger.info "Updating Serverless to ${CURRENT_CSV}"
+    logger.debug "Serving version: ${prev_serving_version} -> ${latest_serving_version}"
+    logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
+
+    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
+    if (( serving_in_scope )); then
+      check_serving_upgraded "${latest_serving_version}"
+    fi
+    if (( eventing_in_scope )); then
+      check_eventing_upgraded "${latest_eventing_version}"
+    fi
+  fi
+
+  # Might not work in OpenShift CI but we want it here so that we can consume
+  # this script later and re-use
+  if [[ $UPGRADE_CLUSTER == true ]]; then
+    # End the prober test now before we start cluster upgrade, up until now we
+    # should have zero failed requests. Cluster upgrade will fail probers as
+    # stuff is moved around.
+    if (( serving_in_scope )); then
+      end_serving_prober "${serving_prober_pid}"
+    fi
+    if (( eventing_in_scope )); then
+      end_eventing_prober "${eventing_prober_pid}"
+    fi
+
+    upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}"
+  fi
+
+  if (( serving_in_scope )); then
+    wait_for_serving_test_services_settle
+  fi
+
+  logger.info "Running postupgrade tests"
+
+  if (( serving_in_scope )); then
+    run_serving_postupgrade_test
+  fi
+  if (( eventing_in_scope )); then
+    run_eventing_postupgrade_test
+  fi
+
+  if (( serving_in_scope )); then
+    end_serving_prober "${serving_prober_pid}"
+  fi
+  if (( eventing_in_scope )); then
+    end_eventing_prober "${eventing_prober_pid}"
+  fi
+
+  if (( serving_in_scope )); then
+    cleanup_serving_test_services
+  fi
+
+  cd "$rootdir"
+}
+
+function end_prober {
+  local prober_pid prober_signal retcode title piddir
+  title=${1:?Pass a title as arg[1]}
+  prober_pid=${2:?Pass a pid as a arg[2]}
+  prober_signal=${3:-/tmp/prober-signal}
+  piddir="${piddir:-/tmp/svls-probes/$$}"
+
+  mkdir -p "${piddir}"
+
+  if [ -f "${piddir}/${prober_pid}" ]; then
+    logger.info "Prober of PID ${prober_pid} is closed already."
+    return 0
+  fi
+  logger.info "Waiting for ${title} prober test to finish"
+  echo 'done' > "${prober_signal}"
+
+  wait "${prober_pid}"
+  echo 'done' > "${piddir}/${prober_pid}"
+  logger.success "${title} prober passed"
+}
+
+function upgrade_ocp_cluster {
+  local ocp_target_version upgrade_ocp_image latest_cluster_version
+  upgrade_ocp_image="${1:-}"
+
+  if [[ -n "$upgrade_ocp_image" ]]; then
+    ocp_target_version="$upgrade_ocp_image"
+    oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
+      --force=true --allow-explicit-upgrade
+  else
+    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
+      | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
+    [[ $latest_cluster_version != "" ]]
+    ocp_target_version="$latest_cluster_version"
+    oc adm upgrade --to-latest=true --force=true
+  fi
+  timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${ocp_target_version}\")].state}') != Completed ]]"
+
+  logger.success "New cluster version: $(oc get clusterversion \
+    version -o jsonpath='{.status.desired.version}')"
 }
 
 function teardown {
@@ -209,10 +410,10 @@ function delete_users {
     logger.debug "htpasswd user line: ${line}"
     user=$(echo "${line}" | cut -d: -f1)
     if [ -f "${user}.kubeconfig" ]; then
-      rm -v "${user}.kubeconfig"
+      rm -fv "${user}.kubeconfig"
     fi
   done < "users.htpasswd"
-  rm -v users.htpasswd
+  rm -fv users.htpasswd
 }
 
 function add_systemnamespace_label {
@@ -277,6 +478,7 @@ function wait_for_leader_controller() {
   local leader
   echo -n "Waiting for a leader Controller"
   for i in {1..150}; do  # timeout after 5 minutes
+    local leader
     leader=$(set +o pipefail && oc get lease -n "${SERVING_NAMESPACE}" \
       -ojsonpath='{range .items[*].spec}{"\n"}{.holderIdentity}' \
       | cut -d'_' -f1 | grep "^controller-" | head -1)

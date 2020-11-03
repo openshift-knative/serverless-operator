@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
 	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
@@ -51,7 +52,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 		return nil, err
 	}
 	u := &unstructured.Unstructured{Object: uo}
-	ru, err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Create(u, metav1.CreateOptions{})
+	ru, err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Create(context.Background(), u, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func CreateKnativeKafka(ctx *test.Context, name, namespace string) (*kafkav1alph
 }
 
 func DeleteKnativeKafka(ctx *test.Context, name, namespace string) error {
-	if err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Delete(name, &metav1.DeleteOptions{}); err != nil {
+	if err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
 
@@ -91,7 +92,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		lastState := &kafkav1alpha1.KnativeKafka{}
 		var u *unstructured.Unstructured
-		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(name, metav1.GetOptions{})
+		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			return inState(nil, err)
 		}

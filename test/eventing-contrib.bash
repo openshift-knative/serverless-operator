@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 
+# For SC2164
+set -e
+
 function upstream_knative_eventing_contrib_e2e {
   logger.info 'Running eventing-contrib tests'
 
   local randomns
+
   export TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_CONTRIB_VERSION}:knative-eventing-test-{{.Name}}"
 
-  cd "$KNATIVE_EVENTING_CONTRIB_HOME" || return $?
+  cd "$KNATIVE_EVENTING_CONTRIB_HOME"
 
   # This the namespace used to install and test Knative Eventing-Contrib.
   randomns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2> /dev/null \

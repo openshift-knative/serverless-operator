@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# For SC2164
+set -e
+
 function wait_for_knative_serving_ingress_ns_deleted {
   local NS="${SERVING_NAMESPACE}-ingress"
   timeout 180 '[[ $(oc get ns $NS --no-headers | wc -l) == 1 ]]' || true
@@ -12,6 +15,10 @@ function wait_for_knative_serving_ingress_ns_deleted {
 }
 
 function prepare_knative_serving_tests {
+  logger.debug 'Preparing Serving tests'
+
+  cd "$KNATIVE_SERVING_HOME"
+
   # Don't bother with the chaosduck downstream for now
   rm -fv test/config/chaosduck.yaml
 
@@ -32,8 +39,6 @@ function prepare_knative_serving_tests {
 
 function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
-
-  cd "$KNATIVE_SERVING_HOME" || return $?
 
   prepare_knative_serving_tests
 
@@ -102,129 +107,121 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     '{"spec": {"maxReplicas": '${max_replicas}', "minReplicas": '${min_replicas}'}}'
 }
 
-function run_knative_serving_rolling_upgrade_tests {
-  logger.info "Running Serving rolling upgrade tests"
+function actual_serving_version {
+  oc get knativeserving.operator.knative.dev \
+    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}"
+}
 
-  local upgrade_to latest_cluster_version \
-    prev_serving_version latest_serving_version
+function run_serving_preupgrade_test {
+  logger.info 'Running Serving pre upgrade tests'
 
-  cd "$KNATIVE_SERVING_HOME" || return $?
+  local image_template
 
   prepare_knative_serving_tests
 
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
-  PROBE_FRACTION=1.0
-  prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n "$SERVING_NAMESPACE" -o=jsonpath="{.status.version}")
-
-  if [[ ${prev_serving_version} < "0.14.0" ]]; then
-    PROBE_FRACTION=0.95
-  fi
-  logger.info "Target success fraction is $PROBE_FRACTION"
 
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain
 
-  logger.info "Starting prober test"
+  logger.success 'Serving pre upgrade tests passed'
+}
+
+function start_serving_prober {
+  local image_template prev_serving_version probe_fraction serving_prober_pid \
+    pid_file
+  prev_serving_version="${1:?Pass a previous Serving version as arg[1]}"
+  pid_file="${2:?Pass a PID file as arg[2]}"
+
+  logger.info 'Starting Serving prober'
 
   rm -fv /tmp/prober-signal
-  go_test_e2e -tags=probe -timeout=20m ./test/upgrade \
-    -probe.success_fraction=$PROBE_FRACTION \
+  cd "${KNATIVE_SERVING_HOME}"
+
+  probe_fraction=1.0
+  if [[ ${prev_serving_version} < "0.14.0" ]]; then
+    probe_fraction=0.95
+  fi
+  logger.info "Target success fraction for Serving is ${probe_fraction}"
+
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+
+  go_test_e2e -tags=probe \
+    -timeout=30m \
+    ./test/upgrade \
+    -probe.success_fraction=${probe_fraction} \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain &
-  PROBER_PID=$!
+  serving_prober_pid=$!
 
+  logger.debug "Serving prober PID is ${serving_prober_pid}"
+
+  echo ${serving_prober_pid} > "${pid_file}"
+}
+
+function wait_for_serving_prober_ready {
   # Wait for the upgrade-probe kservice to be ready before proceeding
   timeout 900 "[[ \$(oc get services.serving.knative.dev upgrade-probe \
-  -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+    -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
+    != True ]]"
 
-  if [[ $UPGRADE_SERVERLESS == true ]]; then
-    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
+  logger.success 'Serving prober is ready'
+}
 
-    logger.info "Updating serving version ${prev_serving_version} -> ${latest_serving_version}"
+function check_serving_upgraded {
+  local latest_serving_version
+  latest_serving_version="${1:?Pass a target serving version as arg[1]}"
 
-    # Get latest CSV from the given channel
-    upgrade_to="$CURRENT_CSV"
+  logger.debug 'Check KnativeServing has the latest version with Ready status'
+  timeout 300 "[[ ! ( \$(oc get knativeserving.operator.knative.dev \
+    knative-serving -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') \
+    == ${latest_serving_version} && \$(oc get knativeserving.operator.knative.dev \
+    knative-serving -n ${SERVING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
+}
 
-    approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL"
-    # Check KnativeServing has the latest version with Ready status
-    timeout 300 "[[ ! ( \$(oc get knativeserving.operator.knative.dev knative-serving \
-      -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') == ${latest_serving_version} \
-      && \$(oc get knativeserving.operator.knative.dev knative-serving \
-      -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
-      == True ) ]]"
-    end_prober_test ${PROBER_PID}
-  fi
+function end_serving_prober {
+  local prober_pid
+  prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  # Might not work in OpenShift CI but we want it here so that we can consume
-  # this script later and re-use
-  if [[ $UPGRADE_CLUSTER == true ]]; then
-    # End the prober test now before we start cluster upgrade, up until now we
-    # should have zero failed requests
-    end_prober_test ${PROBER_PID}
+  end_prober 'Serving' "${prober_pid}"
+}
 
-    local target_cluster_version
-
-    if [[ -n "$UPGRADE_OCP_IMAGE" ]]; then
-      target_cluster_version="$UPGRADE_OCP_IMAGE"
-      oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
-      --force=true --allow-explicit-upgrade
-    else
-      latest_cluster_version=$(oc adm upgrade \
-        | sed -ne '/VERSION/,$ p' | grep -v VERSION \
-        | awk '{print $1}' | sort -r | head -n 1)
-      [[ $latest_cluster_version != "" ]]
-      target_cluster_version="$latest_cluster_version"
-      oc adm upgrade --to-latest=true --force=true
-    fi
-    timeout 7200 "[[ \$(oc get clusterversion \
-      -o=jsonpath='{.items[0].status.history[?(@.version==\"${target_cluster_version}\")].state}')\
-      != Completed ]]"
-
-    logger.info "New cluster version: $(oc get clusterversion version -o \
-      jsonpath='{.status.desired.version}')"
-  fi
-
+function wait_for_serving_test_services_settle {
   # Wait for all services to become ready again. Exclude the upgrade-probe as
   # that'll be removed by the prober test above.
-  for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v "upgrade-probe"); do
-    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests \
-      -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+  for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v 'upgrade-probe'); do
+    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
   done
 
   # Give time to settle things down
   sleep 30
+}
 
-  logger.info "Running postupgrade tests"
-  go_test_e2e -tags=postupgrade -timeout=20m ./test/upgrade \
+function run_serving_postupgrade_test {
+  logger.info 'Running Serving post upgrade tests'
+
+  local image_template
+
+  cd "${KNATIVE_SERVING_HOME}"
+
+  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+
+  go_test_e2e -tags=postupgrade \
+    -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain
 
-  oc delete --ignore-not-found=true ksvc -n serving-tests \
-    pizzaplanet-upgrade-service \
-    scale-to-zero-upgrade-service \
-    upgrade-probe
+  logger.success 'Serving post upgrade tests passed'
 }
 
-function downstream_serving_e2e_tests {
-  declare -a kubeconfigs
-  local kubeconfigs_str
-
-  logger.info "Running Serving downstream tests"
-  kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
-  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
-
-  # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
-  add_systemnamespace_label
-
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
-    --kubeconfigs "${kubeconfigs_str}" \
-    "$@"
+function cleanup_serving_test_services {
+  oc delete --ignore-not-found=true ksvc \
+    pizzaplanet-upgrade-service \
+    scale-to-zero-upgrade-service \
+    upgrade-probe -n serving-tests
 }
