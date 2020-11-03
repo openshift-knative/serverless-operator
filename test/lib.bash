@@ -183,8 +183,7 @@ function run_rolling_upgrade_tests {
 
   local latest_cluster_version latest_serving_version latest_eventing_version \
     rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
-    eventing_prober_pid prev_serving_version prev_eventing_version \
-    ocp_target_version retcode
+    eventing_prober_pid prev_serving_version prev_eventing_version retcode
 
   scope="${1:?Provide an upgrade scope as arg[1]}"
   serving_in_scope="$(echo "${scope}" | grep -vq serving ; echo "$?")"
@@ -325,21 +324,20 @@ function end_prober {
 }
 
 function upgrade_ocp_cluster {
-  local ocp_target_version upgrade_ocp_image latest_cluster_version
+  local upgrade_ocp_image latest_cluster_version
   upgrade_ocp_image="${1:-}"
 
   if [[ -n "$upgrade_ocp_image" ]]; then
-    ocp_target_version="$upgrade_ocp_image"
     oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
       --force=true --allow-explicit-upgrade || return $?
+    timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${upgrade_ocp_image}\")].state}') != Completed ]]" || return $?
   else
     latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
       | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
     [[ $latest_cluster_version != "" ]] || return 1
-    ocp_target_version="$latest_cluster_version"
     oc adm upgrade --to-latest=true --force=true || return $?
+    timeout 7200 "[[ \$(oc get clusterversion version -o=jsonpath='{.status.history[?(@.version==\"${latest_cluster_version}\")].state}') != Completed ]]" || return $?
   fi
-  timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${ocp_target_version}\")].state}') != Completed ]]" || return $?
 
   logger.success "New cluster version: $(oc get clusterversion \
     version -o jsonpath='{.status.desired.version}')"
