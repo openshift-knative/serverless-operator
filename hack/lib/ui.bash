@@ -63,13 +63,14 @@ function logger.error {
 }
 
 function logger.__log {
-  local message level now color
+  local message level now color ln
   level="$1"
   color="$2"
   message="$3"
   now="$(date '+%H:%M:%S.%3N')"
+  ln="${ln:-\n}"
   
-  printf "${color}%7s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}\n" "${level}" "${now}" "${message}" 1>&2
+  printf "${color}%7s ${COLOR_CYAN}%s ${color}%s${COLOR_NC}${ln}" "${level}" "${now}" "${message}" 1>&2
 }
 
 if [[ "${SHOULD_COLOR}" == "false" ]]; then
