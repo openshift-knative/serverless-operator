@@ -41,7 +41,7 @@ image "autoscaler"     "${serving}-autoscaler"
 image "autoscaler-hpa" "${serving}-autoscaler-hpa"
 image "controller"     "${serving}-controller"
 image "webhook"        "${serving}-webhook"
-image "storage-version-migration-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
+image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
 image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "3scale-kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
@@ -56,7 +56,7 @@ image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingres
 image "imc-controller__controller"                  "${eventing}-channel-controller"
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
 
-image "v0.17.0-pingsource-cleanup__pingsource" "${eventing}-pingsource-cleanup"
+image "v0.17.0-pingsource-cleanup-eventing-$(metadata.get dependencies.eventing)__pingsource" "${eventing}-pingsource-cleanup"
 image "PING_IMAGE"           "${eventing}-ping"
 image "MT_PING_IMAGE"        "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
