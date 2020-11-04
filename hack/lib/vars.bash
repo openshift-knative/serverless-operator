@@ -9,7 +9,7 @@ if [[ -n "${ARTIFACT_DIR:-}" ]]; then
 fi
 
 # shellcheck disable=SC1091,SC1090
-source "$(dirname "${BASH_SOURCE[0]}")/../../test/vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/test-infra/scripts/e2e-tests.sh"
 
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"

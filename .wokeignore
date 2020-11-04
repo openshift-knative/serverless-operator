@@ -1,4 +1,1 @@
-knative-operator/vendor/*
-openshift-knative-operator/vendor/*
-serving/ingress/vendor/*
-test/vendor/*
+vendor/*
