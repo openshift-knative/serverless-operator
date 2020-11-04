@@ -32,11 +32,6 @@ function download {
     url="https://github.com/knative/$component/releases/download/$version/$file"
 
     wget --no-check-certificate "$url" -O "$target_file"
-
-    if [[ "$file" == "serving-post-install-jobs.yaml" ]]; then
-      sed -i -e "s/generateName: storage-version-migration-serving-/name: storage-version-migration-serving-${version:1}/g"  $target_file
-    fi
-
   done
 }
 
