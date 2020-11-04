@@ -1,11 +1,12 @@
 package servinge2e
 
 import (
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
-	"knative.dev/serving/pkg/apis/autoscaling"
 	network "knative.dev/networking/pkg"
 	nv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
-	"testing"
+	"knative.dev/serving/pkg/apis/autoscaling"
 )
 
 // Smoke tests for networking which access public and cluster-local
@@ -56,4 +57,3 @@ func TestServiceToServiceCalls(t *testing.T) {
 		})
 	}
 }
-
