@@ -161,9 +161,8 @@ spec:
     - A Knative Eventing Channel that is backed by Apache Kafka topics
 
     ### Prerequisites
-    Knative Eventing and Apache Kafka are required since this operator will attempt to
-    install Knative components that work with an Apache Kafka cluster that must be accessible by the
-    installation.
+    Knative Eventing and an Apache Kafka such as [AMQ Streams](https://access.redhat.com/documentation/en-us/red_hat_amq/7.7/html/amq_streams_on_openshift_overview/index)
+    is required to be accessible from the cluster. This  operator will create Knative components which work with the Apache Kafka cluster.
 
     ## Knative Client - `kn`
     The Knative client `kn` is your door to the Knative world. It allows you to
