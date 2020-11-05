@@ -58,28 +58,28 @@ func (metricsPredicate) Update(_ event.UpdateEvent) bool {
 
 func (metricsPredicate) Create(e event.CreateEvent) bool {
 	if metric := getMetricFor(e.Object); metric != nil {
-		(*metric).Inc()
+		metric.Inc()
 	}
-	return true
+	return false
 }
 
 func (metricsPredicate) Delete(e event.DeleteEvent) bool {
 	if metric := getMetricFor(e.Object); metric != nil {
-		(*metric).Dec()
+		metric.Dec()
 	}
-	return true
+	return false
 }
 
-func getMetricFor(obj runtime.Object) *prometheus.Gauge {
+func getMetricFor(obj runtime.Object) prometheus.Gauge {
 	switch obj.(type) {
 	case *servingv1.Service:
-		return &ServicesG
+		return ServicesG
 	case *servingv1.Revision:
-		return &RevisionsG
+		return RevisionsG
 	case *servingv1.Route:
-		return &RoutesG
+		return RoutesG
 	case *eventingsourcesv1beta1.PingSource, *eventingsourcesv1beta1.ApiServerSource, *eventingsourcesv1beta1.SinkBinding, *kafkasourcev1beta1.KafkaSource:
-		return &SourcesG
+		return SourcesG
 	}
 	return nil
 }

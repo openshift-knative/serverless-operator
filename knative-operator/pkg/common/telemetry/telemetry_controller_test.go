@@ -35,7 +35,7 @@ func TestTelemetryMetricsUpdates(t *testing.T) {
 	for n, tc := range metricSteps {
 		mp := metricsPredicate{}
 		dto := ioprometheusclient.Metric{}
-		var metric *prometheus.Gauge
+		var metric prometheus.Gauge
 		switch tc.event.(type) {
 		case event.CreateEvent:
 			mp.Create(tc.event.(event.CreateEvent))
@@ -50,7 +50,7 @@ func TestTelemetryMetricsUpdates(t *testing.T) {
 		if metric == nil {
 			t.Fatal("Cannot get metric")
 		}
-		err := (*metric).Write(&dto)
+		err := metric.Write(&dto)
 		if err != nil {
 			t.Fatal("Cannot write metric:", err)
 		}
