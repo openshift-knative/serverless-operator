@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
-	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -56,18 +54,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.TODO()
-	// Become the leader before proceeding
-	// This needs to remain "knative-serving-openshift-lock" to allow for safe upgrades.
-	err = leader.Become(ctx, "knative-serving-openshift-lock")
-	if err != nil {
-		log.Error(err, "")
-		os.Exit(1)
-	}
-
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:              "", // The serverless operator always watches all namespaces.
+		LeaderElection:         true,
+		LeaderElectionID:       "knative-serving-openshift-lock",
 		MetricsBindAddress:     fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
 	})
