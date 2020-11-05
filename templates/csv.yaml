@@ -95,7 +95,7 @@ spec:
     source project Knative.
 
     # Prerequisites
-    Knative Serving (and Knative Eventing respectively) can only be installed into the
+    Knative Serving (and Knative Eventing/Kafka respectively) can only be installed into the
     `knative-serving` (`knative-eventing`) namespace. These namespaces will be
     automatically created when installing the operator.
 
@@ -150,6 +150,19 @@ spec:
        * without modifying producer or consumer, and
        * with the ability to select a specific subset of events from a particular
          producer.
+
+    ## Knative Kafka
+
+    Knative Kafka is a **[Technology Preview feature](https://access.redhat.com/support/offerings/techpreview)!**
+
+    Apache Kafka is a distributed streaming platform and Knative Kafka adds
+    the following components:
+    - A Knative Eventing Source to consume messages from an Apache Kafka topic
+    - A Knative Eventing Channel that is backed by Apache Kafka topics
+
+    ### Prerequisites
+    Knative Eventing and an Apache Kafka such as [AMQ Streams](https://access.redhat.com/documentation/en-us/red_hat_amq/7.7/html/amq_streams_on_openshift_overview/index)
+    is required to be accessible from the cluster. This  operator will create Knative components which work with the Apache Kafka cluster.
 
     ## Knative Client - `kn`
     The Knative client `kn` is your door to the Knative world. It allows you to
