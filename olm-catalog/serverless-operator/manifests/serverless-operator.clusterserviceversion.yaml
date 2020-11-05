@@ -371,8 +371,6 @@ spec:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
-                    command:
-                      - knative-openshift
                     imagePullPolicy: Always
                     env:
                       - name: WATCH_NAMESPACE
@@ -483,8 +481,6 @@ spec:
                   - name: knative-openshift-ingress
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-                    command:
-                      - knative-openshift-ingress
                     imagePullPolicy: Always
                     env:
                       - name: WATCH_NAMESPACE
