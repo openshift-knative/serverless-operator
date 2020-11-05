@@ -89,6 +89,5 @@ func checkIfShouldEnableTelemetry(component Component) bool {
 
 // checkIfShouldDisableTelemetry returns true if we manage to swap first.
 func checkIfShouldDisableTelemetry(component Component) bool {
-	return os.Getenv(SkipTelemetryEnvVar) == "" &&
-		!shouldDisableTelemetryFor[component].Swap(true)
+	return os.Getenv(SkipTelemetryEnvVar) == "" && !shouldDisableTelemetryFor[component].Swap(true)
 }
