@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -48,6 +49,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileKnativeEventing{
 		client: client,
 		scheme: mgr.GetScheme(),
+		mgr:    mgr,
 	}
 }
 
@@ -72,6 +74,7 @@ type ReconcileKnativeEventing struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	mgr    manager.Manager
 }
 
 // Reconcile reads that state of the cluster for a KnativeEventing
@@ -104,6 +107,7 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
+		telemetry.TryStartTelemetry(r.mgr, telemetry.EventingC)
 	} else {
 		common.KnativeEventingUpG.Set(0)
 	}
@@ -179,6 +183,8 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
+	// Stop telemetry
+	defer telemetry.TryStopTelemetry(telemetry.EventingC)
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
@@ -207,5 +213,6 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
 	}
+
 	return nil
 }

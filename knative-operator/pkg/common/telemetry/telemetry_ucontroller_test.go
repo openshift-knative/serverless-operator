@@ -14,13 +14,13 @@ import (
 )
 
 var (
-	service           = servingv1.Service{}
-	route             = servingv1.Route{}
-	revision          = servingv1.Revision{}
-	pingSource        = eventingsourcesv1beta1.PingSource{}
-	apiServerSource   = eventingsourcesv1beta1.ApiServerSource{}
-	SinkBindingSource = eventingsourcesv1beta1.SinkBinding{}
-	kafkaSource       = kafkasourcev1beta1.KafkaSource{}
+	service           = &servingv1.Service{}
+	route             = &servingv1.Route{}
+	revision          = &servingv1.Revision{}
+	pingSource        = &eventingsourcesv1beta1.PingSource{}
+	apiServerSource   = &eventingsourcesv1beta1.ApiServerSource{}
+	sinkBindingSource = &eventingsourcesv1beta1.SinkBinding{}
+	kafkaSource       = &kafkasourcev1beta1.KafkaSource{}
 )
 
 type metricCase struct {
@@ -32,20 +32,19 @@ type metricCase struct {
 func TestTelemetryMetricsUpdates(t *testing.T) {
 	// run this in a serialized manner so that values are predictable for sources
 	metricSteps := generateMetricUpdateSteps()
-	for n, tc := range metricSteps {
+	for _, tc := range metricSteps {
 		mp := metricsPredicate{}
 		dto := ioprometheusclient.Metric{}
 		var metric prometheus.Gauge
-		switch tc.event.(type) {
-		case event.CreateEvent:
-			mp.Create(tc.event.(event.CreateEvent))
-			metric = getMetricFor(tc.event.(event.CreateEvent).Object)
-		case event.DeleteEvent:
-			mp.Delete(tc.event.(event.DeleteEvent))
-			metric = getMetricFor(tc.event.(event.DeleteEvent).Object)
-		case event.UpdateEvent:
-			mp.Update(tc.event.(event.UpdateEvent))
-			metric = getMetricFor(tc.event.(event.UpdateEvent).ObjectOld)
+		if create, ok := tc.event.(event.CreateEvent); ok {
+			mp.Create(create)
+			metric = getMetricFor(create.Object)
+		} else if delete, ok := tc.event.(event.DeleteEvent); ok {
+			mp.Delete(delete)
+			metric = getMetricFor(delete.Object)
+		} else if update, ok := tc.event.(event.UpdateEvent); ok {
+			mp.Update(update)
+			metric = getMetricFor(update.ObjectOld)
 		}
 		if metric == nil {
 			t.Fatal("Cannot get metric")
@@ -55,7 +54,7 @@ func TestTelemetryMetricsUpdates(t *testing.T) {
 			t.Fatal("Cannot write metric:", err)
 		}
 		if *dto.Gauge.Value != tc.expectedMetricValue {
-			t.Errorf("Got = %v, want: %v for event: %v", *dto.Gauge.Value, tc.expectedMetricValue, n)
+			t.Errorf("Got = %v, want: %v for event: %v", *dto.Gauge.Value, tc.expectedMetricValue, tc.name)
 		}
 	}
 }
@@ -66,25 +65,25 @@ func generateMetricUpdateSteps() (ret []metricCase) {
 		obj  runtime.Object
 	}{{
 		name: "service",
-		obj:  service.DeepCopyObject(),
+		obj:  service,
 	}, {
 		name: "route",
-		obj:  route.DeepCopyObject(),
+		obj:  route,
 	}, {
 		name: "revision",
-		obj:  revision.DeepCopyObject(),
+		obj:  revision,
 	}, {
 		name: "pingsource",
-		obj:  pingSource.DeepCopyObject(),
+		obj:  pingSource,
 	}, {
 		name: "apiserversource",
-		obj:  apiServerSource.DeepCopyObject(),
+		obj:  apiServerSource,
 	}, {
 		name: "sinkbindingsource",
-		obj:  SinkBindingSource.DeepCopyObject(),
+		obj:  sinkBindingSource,
 	}, {
 		name: "kafkasource",
-		obj:  kafkaSource.DeepCopyObject(),
+		obj:  kafkaSource,
 	}}
 	ret = []metricCase{}
 	for _, v := range objects {
@@ -92,13 +91,11 @@ func generateMetricUpdateSteps() (ret []metricCase) {
 			name:                fmt.Sprintf("create a %s", v.name),
 			event:               event.CreateEvent{Object: v.obj},
 			expectedMetricValue: 1,
-		})
-		ret = append(ret, metricCase{
+		}, metricCase{
 			name:                fmt.Sprintf("delete a %s", v.name),
 			event:               event.DeleteEvent{Object: v.obj},
 			expectedMetricValue: 0,
-		})
-		ret = append(ret, metricCase{
+		}, metricCase{
 			name:                fmt.Sprintf("update a %s", v.name),
 			event:               event.UpdateEvent{ObjectOld: v.obj},
 			expectedMetricValue: 0,

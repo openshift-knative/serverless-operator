@@ -1,6 +1,9 @@
 package telemetry
 
 import (
+	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/runtime"
 	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
@@ -15,35 +18,51 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var typesAndMetrics = []runtime.Object{
-	&servingv1.Service{},
-	&servingv1.Revision{},
-	&servingv1.Route{},
-	&eventingsourcesv1beta1.PingSource{},
-	&eventingsourcesv1beta1.ApiServerSource{},
-}
+var (
+	servingObjects = []runtime.Object{
+		&servingv1.Service{},
+		&servingv1.Revision{},
+		&servingv1.Route{},
+	}
 
-// Add creates a new Controller and adds it to the Manager. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr)
-}
+	eventingObjects = []runtime.Object{
+		&eventingsourcesv1beta1.PingSource{},
+		&eventingsourcesv1beta1.ApiServerSource{},
+		&eventingsourcesv1beta1.SinkBinding{},
+	}
 
-// add adds a new Controller to mgr for watching Telemetry resources
-func add(mgr manager.Manager) error {
+	knativeKafkaObjects = []runtime.Object{
+		&kafkasourcev1beta1.KafkaSource{},
+	}
+)
+
+// creates an unmanaged controller for watching Telemetry resources
+func createTelemetryController(mgr manager.Manager, component Component) (*controller.Controller, error) {
 	// Create a new controller
-	c, err := controller.New("telemetry-resources-discovery-controller", mgr, controller.Options{
+	c, err := controller.NewUnmanaged(fmt.Sprintf("telemetry-resources-%s-controller-%s", component, uuid.New().String()), mgr, controller.Options{
 		Reconciler: reconcile.Func(func(reconcile.Request) (reconcile.Result, error) { // No actual update happens here
 			return reconcile.Result{}, nil
 		}),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	for _, tp := range typesAndMetrics {
+	for _, tp := range getObjects(component) {
 		if err := c.Watch(&source.Kind{Type: tp}, &handler.EnqueueRequestForObject{}, metricsPredicate{}); err != nil {
-			return err
+			return nil, err
 		}
+	}
+	return &c, nil
+}
+
+func getObjects(component Component) []runtime.Object {
+	switch component {
+	case EventingC:
+		return eventingObjects
+	case ServingC:
+		return servingObjects
+	case KnativeKafkaC:
+		return knativeKafkaObjects
 	}
 	return nil
 }

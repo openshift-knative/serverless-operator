@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
@@ -68,6 +69,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileKnativeServing{
 		client: client,
 		scheme: mgr.GetScheme(),
+		mgr:    mgr,
 	}
 }
 
@@ -124,6 +126,7 @@ type ReconcileKnativeServing struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	mgr    manager.Manager
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -156,6 +159,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
+		telemetry.TryStartTelemetry(r.mgr, telemetry.ServingC)
 	} else {
 		common.KnativeServingUpG.Set(0)
 	}
@@ -358,6 +362,8 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
+	// Stop telemetry
+	defer telemetry.TryStopTelemetry(telemetry.ServingC)
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

@@ -9,6 +9,8 @@ import (
 	mf "github.com/manifestival/manifestival"
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -66,6 +68,7 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 
 	reconcileKnativeKafka := ReconcileKnativeKafka{
 		client:                  mgr.GetClient(),
+		mgr:                     mgr,
 		scheme:                  mgr.GetScheme(),
 		rawKafkaChannelManifest: kafkaChannelManifest,
 		rawKafkaSourceManifest:  kafkaSourceManifest,
@@ -107,6 +110,7 @@ type ReconcileKnativeKafka struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client                  client.Client
+	mgr                     manager.Manager
 	scheme                  *runtime.Scheme
 	rawKafkaChannelManifest mf.Manifest
 	rawKafkaSourceManifest  mf.Manifest
@@ -148,6 +152,7 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
+		telemetry.TryStartTelemetry(r.mgr, telemetry.KnativeKafkaC)
 	} else {
 		common.KnativeKafkaUpG.Set(0)
 	}
@@ -334,6 +339,8 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildAll)
+	// Stop telemetry
+	defer telemetry.TryStopTelemetry(telemetry.KnativeKafkaC)
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}
@@ -342,7 +349,6 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.Kn
 		r.transform,
 		r.deleteResources,
 	}
-
 	return executeStages(instance, manifest, stages)
 }
 
