@@ -142,7 +142,7 @@ spec:
     - A producer can generate events before a consumer is listening, and a consumer can express an interest in an event or class of events that are not yet being produced.
     - Services can be connected to create new applications
        * without modifying producer or consumer, and
-       * with the ability to select a specific subset of events from a particular
+       * with the ability to select a specific subset of events from a particular producer
 
     ## Knative CLI `kn`
     The Knative client `kn` allows you to create Knative resources from the command line or from within
