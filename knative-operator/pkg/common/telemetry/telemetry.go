@@ -61,6 +61,8 @@ func TryStartTelemetry(mgr manager.Manager, component Component) error {
 			log.Error(err, "cannot start telemetry controller for ", "component", component)
 		}
 	}()
+	// allow stopping telemetry if we stopped before
+	shouldDisableTelemetryFor[component].Swap(false)
 	return nil
 }
 
@@ -73,10 +75,10 @@ func TryStopTelemetry(component Component) {
 	// stop the telemetry controller
 	// the lock above makes sure we close once and not panic
 	close(StopChannels[component])
-	// allow future setups
-	shouldEnableTelemetryFor[component].Swap(false)
 	// can't use a closed channel
 	StopChannels[component] = make(chan struct{})
+	// allow future setups
+	shouldEnableTelemetryFor[component].Swap(false)
 }
 
 // checkIfShouldEnableTelemetry returns true if we manage to swap first from false to true.
@@ -87,5 +89,6 @@ func checkIfShouldEnableTelemetry(component Component) bool {
 
 // checkIfShouldDisableTelemetry returns true if we manage to swap first.
 func checkIfShouldDisableTelemetry(component Component) bool {
-	return os.Getenv(SkipTelemetryEnvVar) == "" && !shouldDisableTelemetryFor[component].Swap(true)
+	return os.Getenv(SkipTelemetryEnvVar) == "" &&
+		!shouldDisableTelemetryFor[component].Swap(true)
 }
