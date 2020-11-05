@@ -18,4 +18,4 @@ LABEL \
     description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
     io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator"
 
-ENTRYPOINT ["/ko-app/operator"] 
+ENTRYPOINT ["/ko-app/operator"]
