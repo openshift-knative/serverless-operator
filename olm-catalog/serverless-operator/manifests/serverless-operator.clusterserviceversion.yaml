@@ -373,6 +373,14 @@ spec:
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
                     imagePullPolicy: Always
+                    readinessProbe:
+                      httpGet:
+                        path: /readyz
+                        port: 8687
+                    livenessProbe:
+                      httpGet:
+                        path: /healthz
+                        port: 8687
                     env:
                       - name: WATCH_NAMESPACE
                         value: ""
