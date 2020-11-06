@@ -125,47 +125,48 @@ spec:
     This operator provides the following components:
 
     ## Knative Serving
-    Knative Serving builds on Kubernetes to support deploying and serving of
-    applications and functions as serverless containers. Serving is easy to get
-    started with and scales to support advanced scenarios. Other features
-    includes:
-    - Rapid deployment of serverless containers
-    - Automatic scaling up and down to zero
+    Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers.
+    Serving simplifies the application deployment, dynamically scales based on in incoming traffic and supports custom rollout strategies with traffic splitting.
+    Other features include:
+    - Simplified deployment of serverless containers
+    - Traffic-based auto-scaling, including scale-to-zero
     - Routing and network programming
-    - Point-in-time snapshots of deployed code and configurations
-    ![](https://i.imgur.com/vqL48B8.png)
+    - Point-in-time application snapshots and their configurations
 
     ## Knative Eventing
-
-    Knative Eventing is a system that is designed to address a common need for cloud native
-    development and provides composable primitives to enable late-binding event sources and
+    Knative Eventing provides a platform that offers composable primitives to enable late-binding event sources and
     event consumers.
-    Knative Eventing is designed to address a common need for cloud
-    native development:
-    - Services are loosely coupled during development and deployed independently
-    - A producer can generate events before a consumer is listening, and a consumer
-       can express an interest in an event or class of events that is not yet being
-       produced.
+    Knative Eventing supports the following architectural cloud-native concepts:
+
+    - Services are loosely coupled during development and deployed independently to production
+    - A producer can generate events before a consumer is listening, and a consumer can express an interest in an event or class of events that are not yet being produced.
     - Services can be connected to create new applications
        * without modifying producer or consumer, and
-       * with the ability to select a specific subset of events from a particular
-         producer.
+       * with the ability to select a specific subset of events from a particular producer
 
-    ## Knative Client - `kn`
-    The Knative client `kn` is your door to the Knative world. It allows you to
-    create Knative resources interactively from the command line or from within
+    ## Serverless functions
+    Serverless functions extend Knative allowing developers to write functions that let them focus on business logic.
+    These functions are deployed as Knative Services and take advantage of Knative Serving and Eventing.
+    Serverless functions bring greater efficiency, more scalability and faster development that facilitate rapid go-to-market.
+
+    Other features include:
+    - Based on Buildpacks
+    - Quarkus, Node and Go support
+    - Local developer experience through the kn CLI
+    - Project templates
+    - Support for receiving CloudEvents and plain HTTP requests
+
+    ## Knative CLI `kn`
+    The Knative client `kn` allows you to create Knative resources from the command line or from within
     Shell scripts.
+    With its extensive help pages and autocompletion support, it frees you from memorizing the detailed structure of the Knative resource schemas.
 
     `kn` offers you:
-    - Full support for managing all features of Knative Serving (services,
-      revisions, traffic splits)
-    - Growing support Knative eventing, closely following its development
-      (managing of sources & triggers)
-    - A plugin architecture similar to that of kubectl plugins
-    - A thin client-specific API in golang which helps in tasks like synchronously
-      waiting on Knative service write operations.
-    - An easy integration of Knative into Tekton Pipelines by using kn in a Tekton
-      Task.
+    - Full support for managing all features of Knative Serving: Services, Revisions and Routes
+    - Support for managing Knative Eventing entities: Sources, Brokers, Triggers, Channels and Subscriptions
+    - A kubectl-like plugin architecture to extend the built-in functionality
+    - Easy integration of Knative into Tekton pipelines by using `kn` in a Tekton task
+    - Support for creating, building and deploying serverless functions for multiple runtimes (Node, Quarkus, Golang)
 
     # Further Information
     For documentation on OpenShift Serverless, see:
