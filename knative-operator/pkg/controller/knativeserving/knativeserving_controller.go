@@ -159,7 +159,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
-		telemetry.TryStartTelemetry(r.mgr, telemetry.ServingC)
+		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.ServingC); err != nil {
+			return reconcile.Result{}, err
+		}
 	} else {
 		common.KnativeServingUpG.Set(0)
 	}

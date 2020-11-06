@@ -107,7 +107,9 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
-		telemetry.TryStartTelemetry(r.mgr, telemetry.EventingC)
+		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.EventingC); err != nil {
+			return reconcile.Result{}, err
+		}
 	} else {
 		common.KnativeEventingUpG.Set(0)
 	}

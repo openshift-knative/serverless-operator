@@ -152,7 +152,9 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
-		telemetry.TryStartTelemetry(r.mgr, telemetry.KnativeKafkaC)
+		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.KnativeKafkaC); err != nil {
+			return reconcile.Result{}, err
+		}
 	} else {
 		common.KnativeKafkaUpG.Set(0)
 	}
