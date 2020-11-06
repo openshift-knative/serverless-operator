@@ -164,7 +164,7 @@ spec:
     `kn` offers you:
     - Full support for managing all features of Knative Serving: Services, Revisions and Routes
     - Support for managing Knative Eventing entities: Sources, Brokers, Triggers, Channels and Subscriptions
-    - A kubetl-like plugin architecture to extend the built-in functionality
+    - A kubectl-like plugin architecture to extend the built-in functionality
     - Easy integration of Knative into Tekton pipelines by using `kn` in a Tekton task
     - Support for creating, building and deploying serverless functions for multiple runtimes (Node, Quarkus, Golang)
 
