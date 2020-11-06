@@ -66,50 +66,14 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	// Create a ksvc with the specified annotations and labels
 	service := test.Service(tc.name, namespace, helloworldImage, tc.annotations)
 	service.ObjectMeta.Labels = tc.labels
-	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), service, meta.CreateOptions{})
-	if err != nil {
-		t.Errorf("error creating ksvc: %v", err)
-		return
-	}
 
-	// Let the ksvc be deleted after test
-	ctx.AddToCleanup(func() error {
-		t.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-		return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(context.Background(), service.Name, meta.DeleteOptions{})
-	})
-
-	// Wait until the Ksvc is ready.
-	service, err = test.WaitForServiceState(ctx, service.Name, service.Namespace, test.IsServiceReady)
-	if err != nil {
-		t.Errorf("error waiting for ksvc readiness: %v", err)
-		return
-	}
-
+	service = withServiceReadyOrFail(ctx, service)
 	serviceURL := service.Status.URL.URL()
 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
 	if service.GetLabels()[network.VisibilityLabelKey] == string(nv1alpha1.IngressVisibilityClusterLocal) {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-		httpProxy, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(),
-			httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host), meta.CreateOptions{})
-		if err != nil {
-			t.Errorf("error creating ksvc: %v", err)
-			return
-		}
-
-		// Let the ksvc be deleted after test
-		ctx.AddToCleanup(func() error {
-			t.Logf("Cleaning up Knative Service '%s/%s'", httpProxy.Namespace, httpProxy.Name)
-			return ctx.Clients.Serving.ServingV1().Services(namespace).Delete(context.Background(), httpProxy.Name, meta.DeleteOptions{})
-		})
-
-		// Wait until the Proxy is ready.
-		httpProxy, err = test.WaitForServiceState(ctx, httpProxy.Name, httpProxy.Namespace, test.IsServiceReady)
-		if err != nil {
-			t.Errorf("error waiting for ksvc readiness: %v", err)
-			return
-		}
-
+		httpProxy := withServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
 		serviceURL = httpProxy.Status.URL.URL()
 	}
 
@@ -129,6 +93,11 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), meta.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})
 	if err != nil {
 		t.Errorf("error listing pods: %v", err)
+		return
+	}
+
+	if len(podList.Items) == 0 {
+		t.Errorf("any pod for ksvc %q dos not found", service.Name)
 		return
 	}
 
