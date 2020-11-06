@@ -76,6 +76,7 @@ func TryStopTelemetry(component Component) {
 		return
 	}
 	mu.Lock()
+	defer mu.Unlock()
 	if skipTelemetryStoppingFor[component] {
 		return
 	}
@@ -88,5 +89,4 @@ func TryStopTelemetry(component Component) {
 	// allow future setups
 	skipTelemetryEnablingFor[component] = false
 	skipTelemetryStoppingFor[component] = true
-	mu.Unlock()
 }
