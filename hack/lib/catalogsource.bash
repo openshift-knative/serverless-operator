@@ -152,6 +152,9 @@ spec:
   sourceType: grpc
 EOF
 
+  logger.info 'Wait for the namespaces to be created.'
+  timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]" || return 1
+
   logger.success "CatalogSource installed successfully"
 }
 
