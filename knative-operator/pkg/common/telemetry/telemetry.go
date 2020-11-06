@@ -44,6 +44,7 @@ func TryStartTelemetry(mgr manager.Manager, component Component) error {
 		return nil
 	}
 	mu.Lock()
+	defer mu.Unlock()
 	if skipTelemetryEnablingFor[component] {
 		return nil
 	}
@@ -67,7 +68,6 @@ func TryStartTelemetry(mgr manager.Manager, component Component) error {
 	// allow stopping telemetry if we stopped before
 	skipTelemetryEnablingFor[component] = true
 	skipTelemetryStoppingFor[component] = false
-	mu.Unlock()
 	return nil
 }
 
