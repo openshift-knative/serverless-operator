@@ -27,7 +27,14 @@ import (
 // This needs to remain "knative-eventing-openshift" to be compatible with earlier versions.
 const finalizerName = "knative-eventing-openshift"
 
-var log = common.Log.WithName("controller")
+var (
+	log           = common.Log.WithName("controller")
+	stopTelemetry = make(chan struct{})
+	// Protects from processing order, if true we should install telemetry
+	// if it is false we need to uninstall it in the next delete stage.
+	// We start by assuming no telemetry is available.
+	shouldInstall = true
+)
 
 // Add creates a new KnativeEventing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -36,7 +43,7 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager) *ReconcileKnativeEventing {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
@@ -54,12 +61,18 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
+func add(mgr manager.Manager, r *ReconcileKnativeEventing) error {
 	// Create a new controller
 	c, err := controller.New("knativeeventing-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
+
+	tc, err := telemetry.CreateTelemetryController(mgr, telemetry.EventingObjects, "eventing", mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	r.tc = tc
 
 	// Watch for changes to primary resource KnativeEventing
 	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
@@ -73,8 +86,9 @@ type ReconcileKnativeEventing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
-	scheme *runtime.Scheme
 	mgr    manager.Manager
+	scheme *runtime.Scheme
+	tc     *controller.Controller
 }
 
 // Reconcile reads that state of the cluster for a KnativeEventing
@@ -107,8 +121,11 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
-		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.EventingC); err != nil {
-			return reconcile.Result{}, err
+		if shouldInstall {
+			if err := telemetry.TryStartTelemetry(*r.tc, r.mgr, stopTelemetry, "eventing", r.client); err != nil {
+				return reconcile.Result{}, err
+			}
+			shouldInstall = false
 		}
 	} else {
 		common.KnativeEventingUpG.Set(0)
@@ -186,7 +203,12 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
 	// Stop telemetry
-	defer telemetry.TryStopTelemetry(telemetry.EventingC)
+	defer func() {
+		if !shouldInstall {
+			telemetry.TryStopTelemetry(&stopTelemetry, "eventing")
+			shouldInstall = true
+		}
+	}()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
@@ -215,6 +237,5 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
 	}
-
 	return nil
 }

@@ -47,7 +47,14 @@ const (
 	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 )
 
-var log = common.Log.WithName("controller")
+var (
+	log           = common.Log.WithName("controller")
+	stopTelemetry = make(chan struct{})
+	// Protects from processing order, if true we should install telemetry
+	// if it is false we need to uninstall in the next delete stage.
+	// We start by assuming no telemetry is available.
+	shouldInstall = true
+)
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -56,7 +63,7 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager) *ReconcileKnativeServing {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
@@ -74,7 +81,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
+func add(mgr manager.Manager, r *ReconcileKnativeServing) error {
 	// Create a new controller
 	c, err := controller.New("knativeserving-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -114,6 +121,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 	}
 
+	tc, err := telemetry.CreateTelemetryController(mgr, telemetry.ServingObjects, "serving", mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	r.tc = *tc
+
 	return nil
 }
 
@@ -125,8 +138,9 @@ type ReconcileKnativeServing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
-	scheme *runtime.Scheme
 	mgr    manager.Manager
+	scheme *runtime.Scheme
+	tc     controller.Controller
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -159,9 +173,13 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
-		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.ServingC); err != nil {
-			return reconcile.Result{}, err
+		if shouldInstall {
+			if err := telemetry.TryStartTelemetry(r.tc, r.mgr, stopTelemetry, "serving", r.client); err != nil {
+				return reconcile.Result{}, err
+			}
+			shouldInstall = false
 		}
+
 	} else {
 		common.KnativeServingUpG.Set(0)
 	}
@@ -365,7 +383,12 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	// Stop telemetry
-	defer telemetry.TryStopTelemetry(telemetry.ServingC)
+	defer func() {
+		if !shouldInstall {
+			telemetry.TryStopTelemetry(&stopTelemetry, "serving")
+			shouldInstall = true
+		}
+	}()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

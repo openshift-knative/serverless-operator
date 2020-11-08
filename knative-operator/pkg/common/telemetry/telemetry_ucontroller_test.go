@@ -32,6 +32,10 @@ type metricCase struct {
 func TestTelemetryMetricsUpdates(t *testing.T) {
 	// run this in a serialized manner so that values are predictable for sources
 	metricSteps := generateMetricUpdateSteps()
+	servicesG = serverlessTelemetryG.WithLabelValues("service")
+	routesG = serverlessTelemetryG.WithLabelValues("route")
+	revisionsG = serverlessTelemetryG.WithLabelValues("revision")
+	sourcesG = serverlessTelemetryG.WithLabelValues("source")
 	for _, tc := range metricSteps {
 		mp := metricsPredicate{}
 		dto := ioprometheusclient.Metric{}
@@ -88,12 +92,16 @@ func generateMetricUpdateSteps() (ret []metricCase) {
 	ret = []metricCase{}
 	for _, v := range objects {
 		ret = append(ret, metricCase{
-			name:                fmt.Sprintf("create a %s", v.name),
-			event:               event.CreateEvent{Object: v.obj},
+			name: fmt.Sprintf("create a %s", v.name),
+			event: event.CreateEvent{
+				Object: v.obj,
+			},
 			expectedMetricValue: 1,
 		}, metricCase{
-			name:                fmt.Sprintf("delete a %s", v.name),
-			event:               event.DeleteEvent{Object: v.obj},
+			name: fmt.Sprintf("delete a %s", v.name),
+			event: event.DeleteEvent{
+				Object: v.obj,
+			},
 			expectedMetricValue: 0,
 		}, metricCase{
 			name:                fmt.Sprintf("update a %s", v.name),

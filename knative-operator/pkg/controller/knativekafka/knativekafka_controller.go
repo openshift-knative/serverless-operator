@@ -40,6 +40,11 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
+	stopTelemetry     = make(chan struct{})
+	// Protects from processing order, if true we should install telemetry
+	// if it is false we need to uninstall in the next delete stage.
+	// We start by assuming no telemetry is available.
+	shouldInstall = true
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -99,6 +104,12 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		}
 	}
 
+	tc, err := telemetry.CreateTelemetryController(mgr, telemetry.KnativeKafkaObjects, "knativeKafka", mgr.GetClient())
+	if err != nil {
+		return err
+	}
+	r.tc = *tc
+
 	return nil
 }
 
@@ -114,6 +125,7 @@ type ReconcileKnativeKafka struct {
 	scheme                  *runtime.Scheme
 	rawKafkaChannelManifest mf.Manifest
 	rawKafkaSourceManifest  mf.Manifest
+	tc                      controller.Controller
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -152,8 +164,11 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
-		if err := telemetry.TryStartTelemetry(r.mgr, telemetry.KnativeKafkaC); err != nil {
-			return reconcile.Result{}, err
+		if shouldInstall {
+			if err := telemetry.TryStartTelemetry(r.tc, r.mgr, stopTelemetry, "knativeKafka", r.client); err != nil {
+				return reconcile.Result{}, err
+			}
+			shouldInstall = false
 		}
 	} else {
 		common.KnativeKafkaUpG.Set(0)
@@ -342,7 +357,12 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	// Stop telemetry
-	defer telemetry.TryStopTelemetry(telemetry.KnativeKafkaC)
+	defer func() {
+		if !shouldInstall {
+			telemetry.TryStopTelemetry(&stopTelemetry, "knativekafka")
+			shouldInstall = true
+		}
+	}()
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}

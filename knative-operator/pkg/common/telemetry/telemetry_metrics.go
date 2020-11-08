@@ -13,10 +13,10 @@ var (
 		},
 		[]string{"type"},
 	)
-	ServicesG  = serverlessTelemetryG.WithLabelValues("service")
-	RoutesG    = serverlessTelemetryG.WithLabelValues("route")
-	RevisionsG = serverlessTelemetryG.WithLabelValues("revision")
-	SourcesG   = serverlessTelemetryG.WithLabelValues("source")
+	servicesG  prometheus.Gauge
+	routesG    prometheus.Gauge
+	revisionsG prometheus.Gauge
+	sourcesG   prometheus.Gauge
 )
 
 func init() {
