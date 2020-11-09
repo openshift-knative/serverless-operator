@@ -75,26 +75,6 @@ func httpProxyService(name, namespace, host string) *servingv1.Service {
 	return proxy
 }
 
-func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *servingv1.Service {
-	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(context.Background(), service, meta.CreateOptions{})
-	if err != nil {
-		ctx.T.Fatalf("Error creating ksvc: %v", err)
-	}
-
-	// Let the ksvc be deleted after test
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-		return ctx.Clients.Serving.ServingV1().Services(service.Namespace).Delete(context.Background(), service.Name, meta.DeleteOptions{})
-	})
-
-	service, err = test.WaitForServiceState(ctx, service.Name, service.Namespace, test.IsServiceReady)
-	if err != nil {
-		ctx.T.Fatalf("Error waiting for ksvc readiness: %v", err)
-	}
-
-	return service
-}
-
 // Skipped unless ServiceMesh has been installed via "make install-mesh"
 func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 
