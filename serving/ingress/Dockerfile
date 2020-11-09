@@ -1,5 +1,7 @@
 FROM openshift/origin-release:golang-1.14 AS builder
 COPY . .
+
+WORKDIR serving/ingress
 ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ./cmd/controller
 
