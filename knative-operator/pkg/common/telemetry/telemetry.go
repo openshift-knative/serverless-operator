@@ -2,11 +2,11 @@ package telemetry
 
 import (
 	"context"
-	"os"
 	"sync"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
@@ -16,58 +16,64 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-const SkipTelemetryEnvVar = "SKIP_TELEMETRY"
+var log = common.Log.WithName("telemetry")
 
-var (
-	log             = common.Log.WithName("telemetry")
-	metricsSnapshot = map[string]*sync.Map{
-		"eventing":     {},
-		"serving":      {},
-		"knativeKafka": {},
+type Telemetry struct {
+	name            string
+	stop            chan struct{}
+	metricsSnapshot sync.Map
+	tc              *controller.Controller
+}
+
+func NewTelemetry(name string, mgr manager.Manager, objects []runtime.Object) (*Telemetry, error) {
+	t := &Telemetry{}
+	t.name = name
+	t.stop = make(chan struct{})
+	tc, err := newTelemetryController(name, objects, mgr, t)
+	if err != nil {
+		return nil, err
 	}
-)
+	t.tc = tc
+	return t, nil
+}
 
 // TryStartTelemetry setups telemetry per component either Eventing, KnativeKafka or Serving.
 // When called it assumes that the component has status ready.
-func TryStartTelemetry(c controller.Controller, mgr manager.Manager, stop chan struct{}, component string, api client.Client) error {
-	if os.Getenv(SkipTelemetryEnvVar) != "" {
-		return nil
-	}
-	log.Info("starting telemetry for:", "component", component)
+func (t *Telemetry) TryStartTelemetry(api client.Client, mgr manager.Manager) error {
+	log.Info("starting telemetry for:", "component", t.name)
 	// Initialize metrics before we start the corresponding controller.
 	// There is a tiny window to miss events here, but should be ok for telemetry purposes.
-	InitializeAndTakeMetricsSnapshot(component, api)
+	t.InitializeAndTakeMetricsSnapshot(api)
 	// Start our controller in a goroutine so that we do not block.
-	go func() {
-		// Block until our controller manager is elected leader. We presume our
-		// entire process will terminate if we lose leadership, so we don't need
-		// to handle that.
-		<-mgr.Elected()
-		// Start our controller. This will block until it is stopped
-		// or the controller returns an error.
-		if err := c.Start(stop); err != nil {
-			log.Error(err, "cannot start telemetry controller for", "component", component)
-		}
-	}()
+	if t.tc != nil { // meant to allow nop objects in tests
+		go func() {
+			// Block until our controller manager is elected leader. We presume our
+			// entire process will terminate if we lose leadership, so we don'telemetry need
+			// to handle that.
+			<-mgr.Elected()
+			// Start our controller. This will block until it is stopped
+			// or the controller returns an error.
+			if err := (*t.tc).Start(t.stop); err != nil {
+				log.Error(err, "cannot start telemetry controller for", "component", t.name)
+			}
+		}()
+	}
 	return nil
 }
 
 // TryStopTelemetry stops telemetry per component either Eventing, KnativeKafka or Serving
 // When called it assumes that we are reconciling a deletion event.
-func TryStopTelemetry(stop *chan struct{}, component string) {
-	if os.Getenv(SkipTelemetryEnvVar) != "" {
-		return
-	}
-	log.Info("stopping telemetry for:", "component", component)
+func (t *Telemetry) TryStopTelemetry() {
+	log.Info("stopping telemetry for:", "component", t.name)
 	// Stop the telemetry controller
 	// the lock above makes sure we close once and not panic
-	close(*stop)
-	// Can't use a closed channel
-	*stop = make(chan struct{})
+	close(t.stop)
+	// Can'telemetry use a closed channel
+	t.stop = make(chan struct{})
 	// Remove snapshot entries for the components so that snapshot is does not get
 	// unbounded since the telemetry controller can be restarted multiple times.
-	metricsSnapshot[component].Range(func(key interface{}, value interface{}) bool {
-		metricsSnapshot[component].Delete(key)
+	t.metricsSnapshot.Range(func(key interface{}, value interface{}) bool {
+		t.metricsSnapshot.Delete(key)
 		return true
 	})
 }
@@ -81,15 +87,15 @@ func TryStopTelemetry(stop *chan struct{}, component string) {
 // Serverless Operator is running. No metric label is removed when components are removed so that
 // if any component eg. Eventing is removed and CRDs exist, it will show existing CRs correctly.
 // Telemetry should be used in the background so no error is returned here.
-func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
-	switch component {
+func (t *Telemetry) InitializeAndTakeMetricsSnapshot(api client.Client) {
+	switch t.name {
 	case "eventing":
 		sourcesG = serverlessTelemetryG.WithLabelValues("source")
 		pingSourceList := &eventingsourcesv1beta1.PingSourceList{}
 		if err := api.List(context.TODO(), pingSourceList); err == nil {
 			sourcesG.Set(float64(len(pingSourceList.Items)))
 			for _, obj := range pingSourceList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -97,7 +103,7 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), sinkBindingList); err == nil {
 			sourcesG.Add(float64(len(sinkBindingList.Items)))
 			for _, obj := range sinkBindingList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -105,7 +111,7 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), apiServerSourceList); err == nil {
 			sourcesG.Add(float64(len(apiServerSourceList.Items)))
 			for _, obj := range pingSourceList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -114,7 +120,7 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), knativeKafkaList); err == nil {
 			sourcesG.Add(float64(len(knativeKafkaList.Items)))
 			for _, obj := range knativeKafkaList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -124,7 +130,7 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), serviceList); err == nil {
 			servicesG.Set(float64(len(serviceList.Items)))
 			for _, obj := range serviceList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -133,7 +139,7 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), revisionList); err != nil {
 			revisionsG.Set(float64(len(revisionList.Items)))
 			for _, obj := range revisionList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 
@@ -142,37 +148,37 @@ func InitializeAndTakeMetricsSnapshot(component string, api client.Client) {
 		if err := api.List(context.TODO(), routeList); err == nil {
 			routesG.Set(float64(len(routeList.Items)))
 			for _, obj := range routeList.Items {
-				addToSnaphost(obj.GetObjectMeta(), component)
+				t.addToSnaphost(obj.GetObjectMeta())
 			}
 		}
 	}
 }
 
-func addToSnaphost(obj metav1.Object, component string) {
+func (t *Telemetry) addToSnaphost(obj metav1.Object) {
 	if obj == nil {
 		return
 	}
-	metricsSnapshot[component].Store(types.NamespacedName{
+	t.metricsSnapshot.Store(types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	}, true)
 }
 
-func deleteFromSnaphost(obj metav1.Object, component string) {
+func (t *Telemetry) deleteFromSnaphost(obj metav1.Object) {
 	if obj == nil {
 		return
 	}
-	metricsSnapshot[component].Delete(types.NamespacedName{
+	t.metricsSnapshot.Delete(types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	})
 }
 
-func inSnapshot(obj metav1.Object, component string) (ok bool) {
+func (t *Telemetry) inSnapshot(obj metav1.Object) (ok bool) {
 	if obj == nil {
 		return false
 	}
-	_, ok = metricsSnapshot[component].Load(types.NamespacedName{
+	_, ok = t.metricsSnapshot.Load(types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	})

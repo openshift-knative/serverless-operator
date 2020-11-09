@@ -9,7 +9,6 @@ import (
 	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -37,8 +36,8 @@ var (
 	}
 )
 
-// creates an unmanaged controller for watching Telemetry resources
-func CreateTelemetryController(mgr manager.Manager, objects []runtime.Object, name string, api client.Client) (*controller.Controller, error) {
+// newTelemetryController creates an unmanaged controller for watching Telemetry resources
+func newTelemetryController(name string, objects []runtime.Object, mgr manager.Manager, telemetry *Telemetry) (*controller.Controller, error) {
 	// Create a new controller
 	c, err := controller.NewUnmanaged(fmt.Sprintf("telemetry-resources-%s-controller-%s", name, uuid.New().String()), mgr, controller.Options{
 		Reconciler: reconcile.Func(func(reconcile.Request) (reconcile.Result, error) { // No actual update happens here
@@ -50,7 +49,7 @@ func CreateTelemetryController(mgr manager.Manager, objects []runtime.Object, na
 	}
 	for _, tp := range objects {
 		if err := c.Watch(&source.Kind{Type: tp}, &handler.EnqueueRequestForObject{}, metricsPredicate{
-			client: &api,
+			telemetry: telemetry,
 		}); err != nil {
 			return nil, err
 		}
@@ -60,26 +59,26 @@ func CreateTelemetryController(mgr manager.Manager, objects []runtime.Object, na
 
 type metricsPredicate struct {
 	predicate.Funcs
-	client *client.Client
+	telemetry *Telemetry
 }
 
-func (mp metricsPredicate) Update(_ event.UpdateEvent) bool {
+func (metricsPredicate) Update(_ event.UpdateEvent) bool {
 	return false
 }
 
 func (mp metricsPredicate) Create(e event.CreateEvent) bool {
 	if metric := getMetricFor(e.Object); metric != nil {
-		if !inSnapshot(e.Meta, getComponentFor(e.Object)) { // skip if we have seen this at controller creation time, so we don't count it twice
+		if !mp.telemetry.inSnapshot(e.Meta) { // skip if we have seen this at controller creation time, so we don'telemetry count it twice
 			metric.Inc()
 		}
 	}
 	return false
 }
 
-func (metricsPredicate) Delete(e event.DeleteEvent) bool {
+func (mp metricsPredicate) Delete(e event.DeleteEvent) bool {
 	if metric := getMetricFor(e.Object); metric != nil {
-		if inSnapshot(e.Meta, getComponentFor(e.Object)) {
-			deleteFromSnaphost(e.Meta, getComponentFor(e.Object))
+		if mp.telemetry.inSnapshot(e.Meta) {
+			mp.telemetry.deleteFromSnaphost(e.Meta)
 		}
 		metric.Dec()
 	}
@@ -98,16 +97,4 @@ func getMetricFor(obj runtime.Object) prometheus.Gauge {
 		return sourcesG
 	}
 	return nil
-}
-
-func getComponentFor(obj runtime.Object) string {
-	switch obj.(type) {
-	case *servingv1.Service, *servingv1.Revision, *servingv1.Route:
-		return "serving"
-	case *eventingsourcesv1beta1.PingSource, *eventingsourcesv1beta1.ApiServerSource, *eventingsourcesv1beta1.SinkBinding:
-		return "eventing"
-	case *kafkasourcev1beta1.KafkaSource:
-		return "knativeKafka"
-	}
-	return ""
 }

@@ -2,7 +2,6 @@ package knativekafka
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
-
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +28,6 @@ var (
 )
 
 func init() {
-	os.Setenv(telemetry.SkipTelemetryEnvVar, "true")
 	apis.AddToScheme(scheme.Scheme)
 }
 
@@ -104,6 +101,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				scheme:                  scheme.Scheme,
 				rawKafkaChannelManifest: kafkaChannelManifest,
 				rawKafkaSourceManifest:  kafkaSourceManifest,
+				telemetry:               &telemetry.Telemetry{},
 			}
 
 			// Reconcile to initialize

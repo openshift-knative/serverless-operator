@@ -115,7 +115,6 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
-	os.Setenv(telemetry.SkipTelemetryEnvVar, "true")
 
 	apis.AddToScheme(scheme.Scheme)
 }
@@ -158,7 +157,7 @@ func TestKourierReconcile(t *testing.T) {
 			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
 			cl := fake.NewFakeClient(initObjs...)
-			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme, telemetry: &telemetry.Telemetry{}}
 
 			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {

@@ -48,12 +48,11 @@ const (
 )
 
 var (
-	log           = common.Log.WithName("controller")
-	stopTelemetry = make(chan struct{})
+	log = common.Log.WithName("controller")
 	// Protects from processing order, if true we should install telemetry
 	// if it is false we need to uninstall in the next delete stage.
 	// We start by assuming no telemetry is available.
-	shouldInstall = true
+	shouldInstallTelemetry = true
 )
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -121,11 +120,11 @@ func add(mgr manager.Manager, r *ReconcileKnativeServing) error {
 		}
 	}
 
-	tc, err := telemetry.CreateTelemetryController(mgr, telemetry.ServingObjects, "serving", mgr.GetClient())
+	t, err := telemetry.NewTelemetry("serving", mgr, telemetry.ServingObjects)
 	if err != nil {
 		return err
 	}
-	r.tc = *tc
+	r.telemetry = t
 
 	return nil
 }
@@ -137,10 +136,10 @@ var _ reconcile.Reconciler = &ReconcileKnativeServing{}
 type ReconcileKnativeServing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	mgr    manager.Manager
-	scheme *runtime.Scheme
-	tc     controller.Controller
+	client    client.Client
+	mgr       manager.Manager
+	scheme    *runtime.Scheme
+	telemetry *telemetry.Telemetry
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -173,11 +172,11 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
-		if shouldInstall {
-			if err := telemetry.TryStartTelemetry(r.tc, r.mgr, stopTelemetry, "serving", r.client); err != nil {
+		if shouldInstallTelemetry {
+			if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
 				return reconcile.Result{}, err
 			}
-			shouldInstall = false
+			shouldInstallTelemetry = false
 		}
 
 	} else {
@@ -384,9 +383,9 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	// Stop telemetry
 	defer func() {
-		if !shouldInstall {
-			telemetry.TryStopTelemetry(&stopTelemetry, "serving")
-			shouldInstall = true
+		if !shouldInstallTelemetry {
+			r.telemetry.TryStopTelemetry()
+			shouldInstallTelemetry = true
 		}
 	}()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
