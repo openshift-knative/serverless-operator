@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
@@ -157,7 +156,7 @@ func TestKourierReconcile(t *testing.T) {
 			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
 			cl := fake.NewFakeClient(initObjs...)
-			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme, telemetry: &telemetry.Telemetry{}}
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
 			if _, err := r.Reconcile(defaultRequest); err != nil {

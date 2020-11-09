@@ -10,6 +10,7 @@ import (
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
+	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,14 +37,13 @@ const (
 )
 
 var (
-	log               = logf.Log.WithName("controller_knativekafka")
-	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-	roleOrRoleBinding = mf.Any(role, rolebinding)
-	// Protects from processing order, if true we should install telemetry
-	// if it is false we need to uninstall in the next delete stage.
-	// We start by assuming no telemetry is available.
-	shouldInstallTelemetry = true
+	log                 = logf.Log.WithName("controller_knativekafka")
+	role                = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding         = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	roleOrRoleBinding   = mf.Any(role, rolebinding)
+	knativeKafkaObjects = []runtime.Object{
+		&kafkasourcev1beta1.KafkaSource{},
+	}
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -70,12 +70,17 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
+	t, err := telemetry.NewTelemetry("knativeKafka", mgr, knativeKafkaObjects, mgr.GetClient())
+	if err != nil {
+		log.Error(err, "failed to create telemetry for knativeKafka")
+	}
 	reconcileKnativeKafka := ReconcileKnativeKafka{
 		client:                  mgr.GetClient(),
 		mgr:                     mgr,
 		scheme:                  mgr.GetScheme(),
 		rawKafkaChannelManifest: kafkaChannelManifest,
 		rawKafkaSourceManifest:  kafkaSourceManifest,
+		telemetry:               t,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -102,13 +107,6 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 			return err
 		}
 	}
-
-	t, err := telemetry.NewTelemetry("knativeKafka", mgr, telemetry.KnativeKafkaObjects)
-	if err != nil {
-		return err
-	}
-	r.telemetry = t
-
 	return nil
 }
 
@@ -163,11 +161,8 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
-		if shouldInstallTelemetry {
-			if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
-				return reconcile.Result{}, err
-			}
-			shouldInstallTelemetry = false
+		if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
+			return reconcile.Result{}, err
 		}
 	} else {
 		common.KnativeKafkaUpG.Set(0)
@@ -356,12 +351,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	// Stop telemetry
-	defer func() {
-		if !shouldInstallTelemetry {
-			r.telemetry.TryStopTelemetry()
-			shouldInstallTelemetry = true
-		}
-	}()
+	defer r.telemetry.TryStopTelemetry()
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}

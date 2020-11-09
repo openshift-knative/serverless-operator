@@ -13,10 +13,14 @@ var (
 		},
 		[]string{"type"},
 	)
-	servicesG  prometheus.Gauge
-	routesG    prometheus.Gauge
-	revisionsG prometheus.Gauge
-	sourcesG   prometheus.Gauge
+	serviceG           prometheus.Gauge
+	routeG             prometheus.Gauge
+	revisionG          prometheus.Gauge
+	configurationG     prometheus.Gauge
+	pingSourceG        prometheus.Gauge
+	apiServerSourceG   prometheus.Gauge
+	sinkBindingSourceG prometheus.Gauge
+	kafkaSourceG       prometheus.Gauge
 )
 
 func init() {

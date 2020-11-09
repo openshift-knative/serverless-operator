@@ -9,7 +9,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,7 +100,6 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				scheme:                  scheme.Scheme,
 				rawKafkaChannelManifest: kafkaChannelManifest,
 				rawKafkaSourceManifest:  kafkaSourceManifest,
-				telemetry:               &telemetry.Telemetry{},
 			}
 
 			// Reconcile to initialize

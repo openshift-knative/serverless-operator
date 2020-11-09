@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -28,11 +29,12 @@ import (
 const finalizerName = "knative-eventing-openshift"
 
 var (
-	log = common.Log.WithName("controller")
-	// Protects from processing order, if true we should install telemetry
-	// if it is false we need to uninstall it in the next delete stage.
-	// We start by assuming no telemetry is available.
-	shouldInstallTelemetry = true
+	log             = common.Log.WithName("controller")
+	eventingObjects = []runtime.Object{
+		&eventingsourcesv1beta1.PingSource{},
+		&eventingsourcesv1beta1.ApiServerSource{},
+		&eventingsourcesv1beta1.SinkBinding{},
+	}
 )
 
 // Add creates a new KnativeEventing Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -51,11 +53,15 @@ func newReconciler(mgr manager.Manager) *ReconcileKnativeEventing {
 			Name: ns,
 		}})
 	}
-
+	t, err := telemetry.NewTelemetry("eventing", mgr, eventingObjects, client)
+	if err != nil {
+		log.Error(err, "failed to create telemetry for eventing")
+	}
 	return &ReconcileKnativeEventing{
-		client: client,
-		scheme: mgr.GetScheme(),
-		mgr:    mgr,
+		client:    client,
+		scheme:    mgr.GetScheme(),
+		mgr:       mgr,
+		telemetry: t,
 	}
 }
 
@@ -66,11 +72,6 @@ func add(mgr manager.Manager, r *ReconcileKnativeEventing) error {
 	if err != nil {
 		return err
 	}
-	t, err := telemetry.NewTelemetry("eventing", mgr, telemetry.EventingObjects)
-	if err != nil {
-		return err
-	}
-	r.telemetry = t
 	// Watch for changes to primary resource KnativeEventing
 	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
 }
@@ -118,11 +119,8 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
-		if shouldInstallTelemetry {
-			if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
-				return reconcile.Result{}, err
-			}
-			shouldInstallTelemetry = false
+		if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
+			return reconcile.Result{}, err
 		}
 	} else {
 		common.KnativeEventingUpG.Set(0)
@@ -200,12 +198,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
 	// Stop telemetry
-	defer func() {
-		if !shouldInstallTelemetry {
-			r.telemetry.TryStopTelemetry()
-			shouldInstallTelemetry = true
-		}
-	}()
+	defer r.telemetry.TryStopTelemetry()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
