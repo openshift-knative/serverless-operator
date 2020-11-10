@@ -35,9 +35,9 @@ func NewTelemetry(name string, mgr manager.Manager, objects []runtime.Object, ap
 	return t, nil
 }
 
-// TryStartTelemetry setups telemetry per component either Eventing, KnativeKafka or Serving.
+// TryStart setups telemetry per component either Eventing, KnativeKafka or Serving.
 // When called it assumes that the component has status ready.
-func (t *Telemetry) TryStartTelemetry(api client.Client, mgr manager.Manager) error {
+func (t *Telemetry) TryStart(api client.Client, mgr manager.Manager) error {
 	if t == nil {
 		return nil
 	}
@@ -48,10 +48,6 @@ func (t *Telemetry) TryStartTelemetry(api client.Client, mgr manager.Manager) er
 		t.initializeAndUpdateMetrics(api)
 		// Start our controller in a goroutine so that we do not block.
 		go func() {
-			// Block until our controller manager is elected leader. We presume our
-			// entire process will terminate if we lose leadership, so we don'telemetry need
-			// to handle that.
-			<-mgr.Elected()
 			// Start our controller. This will block until it is stopped
 			// or the controller returns a starting error.
 			if err := (*t.tc).Start(t.stop); err != nil {
@@ -63,9 +59,9 @@ func (t *Telemetry) TryStartTelemetry(api client.Client, mgr manager.Manager) er
 	return nil
 }
 
-// TryStopTelemetry stops telemetry per component either Eventing, KnativeKafka or Serving
+// TryStop stops telemetry per component either Eventing, KnativeKafka or Serving
 // When called it assumes that we are reconciling a deletion event.
-func (t *Telemetry) TryStopTelemetry() {
+func (t *Telemetry) TryStop() {
 	if t == nil {
 		return
 	}
@@ -84,19 +80,6 @@ func (t *Telemetry) TryStopTelemetry() {
 func (t *Telemetry) initializeAndUpdateMetrics(api client.Client) {
 	if t == nil {
 		return
-	}
-	switch t.name {
-	case "eventing":
-		pingSourceG = serverlessTelemetryG.WithLabelValues("source_ping")
-		apiServerSourceG = serverlessTelemetryG.WithLabelValues("source_apiserver")
-		sinkBindingSourceG = serverlessTelemetryG.WithLabelValues("source_sinkbinding")
-	case "knativeKafka":
-		kafkaSourceG = serverlessTelemetryG.WithLabelValues("source_kafka")
-	case "serving":
-		serviceG = serverlessTelemetryG.WithLabelValues("service")
-		routeG = serverlessTelemetryG.WithLabelValues("route")
-		revisionG = serverlessTelemetryG.WithLabelValues("revision")
-		configurationG = serverlessTelemetryG.WithLabelValues("configuration")
 	}
 	for _, obj := range t.objects {
 		updateMetricFor(obj, api)

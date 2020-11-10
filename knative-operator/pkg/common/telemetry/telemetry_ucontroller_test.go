@@ -66,14 +66,6 @@ func TestTelemetryMetricsUpdates(t *testing.T) {
 	kafkasourcev1beta1.SchemeBuilder.AddToScheme(sch)
 	servingv1.SchemeBuilder.AddToScheme(sch)
 	cl := fake.NewFakeClientWithScheme(sch)
-	telem := []Telemetry{
-		{name: "eventing"},
-		{name: "serving"},
-		{name: "knativeKafka"},
-	}
-	for _, tel := range telem {
-		tel.initializeAndUpdateMetrics(cl)
-	}
 	for _, tc := range metricSteps {
 		mp := metricsPredicate{api: cl}
 		dto := ioprometheusclient.Metric{}

@@ -161,7 +161,7 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
-		if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
+		if err := r.telemetry.TryStart(r.client, r.mgr); err != nil {
 			return reconcile.Result{}, err
 		}
 	} else {
@@ -351,7 +351,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	// Stop telemetry
-	defer r.telemetry.TryStopTelemetry()
+	defer r.telemetry.TryStop()
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
 	}

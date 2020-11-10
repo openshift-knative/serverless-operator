@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/runtime"
 	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
@@ -22,7 +21,7 @@ import (
 // newTelemetryController creates an unmanaged controller for watching Telemetry resources
 func newTelemetryController(name string, objects []runtime.Object, mgr manager.Manager, telemetry *Telemetry, api client.Client) (*controller.Controller, error) {
 	// Create a new controller
-	c, err := controller.NewUnmanaged(fmt.Sprintf("telemetry-resources-%s-controller-%s", name, uuid.New().String()), mgr, controller.Options{
+	c, err := controller.NewUnmanaged(fmt.Sprintf("telemetry-resources-%s-controller", name), mgr, controller.Options{
 		Reconciler: reconcile.Func(func(reconcile.Request) (reconcile.Result, error) { // No actual update happens here
 			return reconcile.Result{}, nil
 		}),

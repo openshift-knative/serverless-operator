@@ -13,14 +13,14 @@ var (
 		},
 		[]string{"type"},
 	)
-	serviceG           prometheus.Gauge
-	routeG             prometheus.Gauge
-	revisionG          prometheus.Gauge
-	configurationG     prometheus.Gauge
-	pingSourceG        prometheus.Gauge
-	apiServerSourceG   prometheus.Gauge
-	sinkBindingSourceG prometheus.Gauge
-	kafkaSourceG       prometheus.Gauge
+	serviceG           = serverlessTelemetryG.WithLabelValues("service")
+	routeG             = serverlessTelemetryG.WithLabelValues("route")
+	revisionG          = serverlessTelemetryG.WithLabelValues("revision")
+	configurationG     = serverlessTelemetryG.WithLabelValues("configuration")
+	pingSourceG        = serverlessTelemetryG.WithLabelValues("source_ping")
+	apiServerSourceG   = serverlessTelemetryG.WithLabelValues("source_apiserver")
+	sinkBindingSourceG = serverlessTelemetryG.WithLabelValues("source_sinkbinding")
+	kafkaSourceG       = serverlessTelemetryG.WithLabelValues("source_kafka")
 )
 
 func init() {

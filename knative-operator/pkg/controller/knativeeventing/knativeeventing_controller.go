@@ -119,7 +119,7 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
-		if err := r.telemetry.TryStartTelemetry(r.client, r.mgr); err != nil {
+		if err := r.telemetry.TryStart(r.client, r.mgr); err != nil {
 			return reconcile.Result{}, err
 		}
 	} else {
@@ -198,7 +198,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
 	// Stop telemetry
-	defer r.telemetry.TryStopTelemetry()
+	defer r.telemetry.TryStop()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

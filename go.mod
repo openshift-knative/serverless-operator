@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.2
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
