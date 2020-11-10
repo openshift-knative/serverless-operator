@@ -1,13 +1,18 @@
 FROM openshift/origin-release:golang-1.14 AS builder
+
+ENV BASE=github.com/openshift-knative/serverless-operator
+WORKDIR ${GOPATH}/src/${BASE}
+
 COPY . .
+
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/operator ./cmd/operator
+RUN go build -o /tmp/operator ${BASE}/openshift-knative-operator/cmd/operator
 
 FROM openshift/origin-base
 COPY --from=builder /tmp/operator /ko-app/operator
 
 ENV KO_DATA_PATH="/var/run/ko"
-COPY cmd/operator/kodata $KO_DATA_PATH
+COPY openshift-knative-operator/cmd/operator/kodata $KO_DATA_PATH
 
 LABEL \
     com.redhat.component="openshift-serverless-1-tech-preview-knative-rhel8-operator-container" \
