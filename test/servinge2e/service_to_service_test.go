@@ -80,7 +80,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	// Verify the service is actually accessible from the outside
 	if _, err := pkgTest.WaitForEndpointState(
 		context.Background(),
-		&pkgTest.KubeClient{Kube: ctx.Clients.Kube},
+		ctx.Clients.Kube,
 		t.Logf,
 		serviceURL,
 		pkgTest.EventuallyMatchesBody(helloworldText),

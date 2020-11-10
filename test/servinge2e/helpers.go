@@ -15,7 +15,7 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 	t.Helper()
 	if _, err := pkgTest.WaitForEndpointState(
 		context.Background(),
-		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
+		caCtx.Clients.Kube,
 		t.Logf,
 		routeURL,
 		pkgTest.EventuallyMatchesBody(expectedText),
