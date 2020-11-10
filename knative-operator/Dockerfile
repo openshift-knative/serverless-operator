@@ -1,9 +1,13 @@
 FROM openshift/origin-release:golang-1.14 AS builder
+
+ENV BASE=github.com/openshift-knative/serverless-operator
+WORKDIR ${GOPATH}/src/${BASE}
+
 COPY . .
 
 WORKDIR knative-operator
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/operator ./cmd/manager
+RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
 
 FROM openshift/origin-base
 COPY --from=builder /tmp/operator /ko-app/operator
