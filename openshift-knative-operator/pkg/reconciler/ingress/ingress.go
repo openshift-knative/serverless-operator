@@ -15,9 +15,9 @@ import (
 	"knative.dev/pkg/reconciler"
 	"knative.dev/serving/pkg/apis/serving"
 
-	routev1client "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/clientset/versioned/typed/route/v1"
-	routev1lister "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/listers/route/v1"
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
+	routev1client "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/clientset/versioned/typed/route/v1"
+	routev1lister "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/listers/route/v1"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/reconciler/ingress/resources"
 	routev1 "github.com/openshift/api/route/v1"
 )
 

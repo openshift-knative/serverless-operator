@@ -30,7 +30,6 @@ teardown:
 # Test targets for CI operator.
 test-unit:
 	go test ./knative-operator/...
-	go test ./serving/ingress/...
 
 # Run only SERVING/EVENTING E2E tests from the current repo.
 test-e2e:
@@ -90,7 +89,6 @@ release-files:
 generated-files: release-files
 	./hack/update-deps.sh
 	(cd openshift-knative-operator && ./hack/update-codegen.sh && ./hack/update-manifests.sh)
-	(cd serving/ingress && ./hack/update-codegen.sh)
 	./hack/update-deps.sh
 
 # Runs the lints Github Actions do too.

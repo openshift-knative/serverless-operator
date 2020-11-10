@@ -106,12 +106,6 @@ jobs:
           version: v1.30
           working-directory: ./src/github.com/${{ github.repository }}/openshift-knative-operator
 
-      - name: Go Lint - serving/ingress
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.30
-          working-directory: ./src/github.com/${{ github.repository }}/serving/ingress
-
       - name: Go Lint - test
         uses: golangci/golangci-lint-action@v2
         with:

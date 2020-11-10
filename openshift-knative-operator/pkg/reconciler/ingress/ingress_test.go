@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	fakerouteclient "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/injection/client/fake"
+	fakerouteclient "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client/fake"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,8 +22,8 @@ import (
 	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/serving"
 
-	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
-	. "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/testing"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/reconciler/ingress/resources"
+	. "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/reconciler/testing"
 	. "knative.dev/pkg/reconciler/testing"
 )
 

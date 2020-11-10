@@ -1,8 +1,8 @@
 package testing
 
 import (
-	fakerouteclientset "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/clientset/versioned/fake"
-	routev1listers "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/listers/route/v1"
+	fakerouteclientset "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/clientset/versioned/fake"
+	routev1listers "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/listers/route/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
