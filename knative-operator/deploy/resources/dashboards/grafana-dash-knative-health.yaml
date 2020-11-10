@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "floor(sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})/2)",
+                 "expr": "avg_over_time ((sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"}) / (sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})))[1m:30s]) >bool 0.95",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
@@ -94,7 +94,7 @@ data:
                }
             ],
             "thresholds": "",
-            "title": "Knative Status",
+            "title": "Knative Current Status",
             "type": "singlestat",
             "valueFontSize": "200%",
             "valueMaps": [
