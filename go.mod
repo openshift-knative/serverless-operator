@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.2
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.1.2
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
@@ -18,6 +18,7 @@ require (
 	github.com/operator-framework/operator-sdk v0.19.4
 	github.com/prometheus-operator/prometheus-operator v0.43.0
 	github.com/prometheus/client_golang v1.8.0
+	github.com/prometheus/client_model v0.2.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
 	google.golang.org/genproto v0.0.0-20200914193844-75d14daec038 // indirect
