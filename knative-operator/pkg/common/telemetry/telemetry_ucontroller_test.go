@@ -24,31 +24,31 @@ var (
 		}}
 	route = &servingv1.Route{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "route",
 		}}
 	revision = &servingv1.Revision{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "revision",
 		}}
 	configuration = &servingv1.Configuration{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "configuration",
 		}}
 	pingSource = &eventingsourcesv1beta1.PingSource{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "pingsource",
 		}}
 	apiServerSource = &eventingsourcesv1beta1.ApiServerSource{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "apiserversource",
 		}}
 	sinkBindingSource = &eventingsourcesv1beta1.SinkBinding{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "sinkbinding",
 		}}
 	kafkaSource = &kafkasourcev1beta1.KafkaSource{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "service",
+			Name: "kafkasource",
 		}}
 )
 
