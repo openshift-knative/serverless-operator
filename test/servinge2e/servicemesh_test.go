@@ -37,10 +37,11 @@ import (
 )
 
 type testCase struct {
-	name               string
-	labels             map[string]string // Ksvc labels
-	annotations        map[string]string // Revision template annotations
-	expectIstioSidecar bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
+	name                string
+	labels              map[string]string // Ksvc labels
+	annotations         map[string]string // Revision template annotations
+	expectIstioSidecar  bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
+	expectedMetricCount float64
 }
 
 const (
