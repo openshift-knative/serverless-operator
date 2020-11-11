@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "avg_over_time ((sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"}) / (sum(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})))[1m:30s]) >bool 0.95",
+                 "expr": "min by (type)(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
