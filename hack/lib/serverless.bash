@@ -40,6 +40,11 @@ function install_serverless_latest {
   logger.info "Installing latest version of Serverless..."
   deploy_serverless_operator_latest || return $?
 
+  # TODO: Remove this when the previous release has readiness checks available (since 1.12).
+  if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
+    timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]" || return $?
+  fi
+
   if [[ $INSTALL_SERVING == "true" ]]; then
     deploy_knativeserving_cr || return $?
   fi
