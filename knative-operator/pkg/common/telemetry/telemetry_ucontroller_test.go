@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/prometheus/client_golang/prometheus"
 	ioprometheusclient "github.com/prometheus/client_model/go"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,14 +59,14 @@ type metricCase struct {
 	expectedMetricValue float64
 }
 
+func init() {
+	apis.AddToScheme(scheme.Scheme)
+}
+
 func TestTelemetryMetricsUpdates(t *testing.T) {
 	// run this in a serialized manner so that values are predictable for sources
 	metricSteps := generateMetricUpdateSteps()
-	sch := scheme.Scheme
-	eventingsourcesv1beta1.SchemeBuilder.AddToScheme(sch)
-	kafkasourcev1beta1.SchemeBuilder.AddToScheme(sch)
-	servingv1.SchemeBuilder.AddToScheme(sch)
-	cl := fake.NewFakeClientWithScheme(sch)
+	cl := fake.NewFakeClient()
 	for _, tc := range metricSteps {
 		mp := metricsPredicate{api: cl}
 		dto := ioprometheusclient.Metric{}

@@ -19,7 +19,7 @@ import (
 )
 
 // newTelemetryController creates an unmanaged controller for watching Telemetry resources
-func newTelemetryController(name string, objects []runtime.Object, mgr manager.Manager, telemetry *Telemetry, api client.Client) (*controller.Controller, error) {
+func newTelemetryController(name string, objects []runtime.Object, mgr manager.Manager) (controller.Controller, error) {
 	// Create a new controller
 	c, err := controller.NewUnmanaged(fmt.Sprintf("telemetry-resources-%s-controller", name), mgr, controller.Options{
 		Reconciler: reconcile.Func(func(reconcile.Request) (reconcile.Result, error) { // No actual update happens here
@@ -31,19 +31,17 @@ func newTelemetryController(name string, objects []runtime.Object, mgr manager.M
 	}
 	for _, tp := range objects {
 		if err := c.Watch(&source.Kind{Type: tp}, &handler.EnqueueRequestForObject{}, metricsPredicate{
-			telemetry: telemetry,
-			api:       api,
+			api: mgr.GetClient(),
 		}); err != nil {
 			return nil, err
 		}
 	}
-	return &c, nil
+	return c, nil
 }
 
 type metricsPredicate struct {
 	predicate.Funcs
-	telemetry *Telemetry
-	api       client.Client
+	api client.Client
 }
 
 func (metricsPredicate) Update(_ event.UpdateEvent) bool {

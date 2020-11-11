@@ -13,7 +13,7 @@ var log = common.Log.WithName("telemetry")
 type Telemetry struct {
 	name string
 	stop chan struct{}
-	tc   *controller.Controller
+	tc   controller.Controller
 	// Protects from processing order, if true we should install telemetry
 	// if it is false we need to uninstall in the next delete stage.
 	// We start by assuming no telemetry is available.
@@ -22,17 +22,17 @@ type Telemetry struct {
 }
 
 func NewTelemetry(name string, mgr manager.Manager, objects []runtime.Object, api client.Client) (*Telemetry, error) {
-	t := &Telemetry{}
-	t.name = name
-	t.stop = make(chan struct{})
-	t.objects = objects
-	t.shouldInstallTelemetry = true
-	tc, err := newTelemetryController(name, objects, mgr, t, api)
+	tc, err := newTelemetryController(name, objects, mgr)
 	if err != nil {
 		return nil, err
 	}
-	t.tc = tc
-	return t, nil
+	return &Telemetry{
+		name:                   name,
+		stop:                   make(chan struct{}),
+		objects:                objects,
+		shouldInstallTelemetry: true,
+		tc:                     tc,
+	}, nil
 }
 
 // TryStart setups telemetry per component either Eventing, KnativeKafka or Serving.
@@ -50,7 +50,7 @@ func (t *Telemetry) TryStart(api client.Client, mgr manager.Manager) error {
 		go func() {
 			// Start our controller. This will block until it is stopped
 			// or the controller returns a starting error.
-			if err := (*t.tc).Start(t.stop); err != nil {
+			if err := t.tc.Start(t.stop); err != nil {
 				log.Error(err, "cannot start telemetry controller for", "component", t.name)
 			}
 		}()
