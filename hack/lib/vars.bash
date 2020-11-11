@@ -37,6 +37,7 @@ export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
 export SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
 export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
+export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
 export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
 export ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"

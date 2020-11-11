@@ -31,15 +31,6 @@ function install_serverless_previous {
 
   deploy_serverless_operator "$PREVIOUS_CSV"  || return $?
 
-  # TODO(ksuszyns): Remove this if block if no longer required
-  if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
-    logger.info "Ensure ${SERVING_NAMESPACE} and ${EVENTING_NAMESPACE} \
-namespaces exists, as ${PREVIOUS_CSV} didn't created them automatically."
-
-    ensure_namespace "${SERVING_NAMESPACE}"
-    ensure_namespace "${EVENTING_NAMESPACE}"
-  fi
-
   deploy_knativeserving_cr || return $?
   deploy_knativeeventing_cr || return $?
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
@@ -152,6 +143,11 @@ function deploy_knativeserving_cr {
   oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" || return $?
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  # TODO: Remove this when the previous release has readiness checks available (since 1.12).
+  if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
+    timeout 120 "[[ -z \$(oc get namespace ${INGRESS_NAMESPACE}) ]]" || return $?
+  fi
 
   logger.success 'Knative Serving has been installed successfully.'
 }
