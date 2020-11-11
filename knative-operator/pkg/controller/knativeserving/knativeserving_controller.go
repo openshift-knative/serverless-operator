@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -46,7 +48,15 @@ const (
 	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 )
 
-var log = common.Log.WithName("controller")
+var (
+	log            = common.Log.WithName("controller")
+	servingObjects = []runtime.Object{
+		&servingv1.Service{},
+		&servingv1.Revision{},
+		&servingv1.Route{},
+		&servingv1.Configuration{},
+	}
+)
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -55,7 +65,7 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager) *ReconcileKnativeServing {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
@@ -64,15 +74,20 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 			Name: ns,
 		}})
 	}
-
+	t, err := telemetry.NewTelemetry("serving", mgr, servingObjects, client)
+	if err != nil {
+		log.Error(err, "failed to create telemetry for serving")
+	}
 	return &ReconcileKnativeServing{
-		client: client,
-		scheme: mgr.GetScheme(),
+		client:    client,
+		scheme:    mgr.GetScheme(),
+		mgr:       mgr,
+		telemetry: t,
 	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
+func add(mgr manager.Manager, r *ReconcileKnativeServing) error {
 	// Create a new controller
 	c, err := controller.New("knativeserving-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -111,7 +126,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -122,8 +136,10 @@ var _ reconcile.Reconciler = &ReconcileKnativeServing{}
 type ReconcileKnativeServing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client    client.Client
+	mgr       manager.Manager
+	scheme    *runtime.Scheme
+	telemetry *telemetry.Telemetry
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -156,6 +172,9 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
+		if err := r.telemetry.TryStart(r.client, r.mgr); err != nil {
+			return reconcile.Result{}, err
+		}
 	} else {
 		common.KnativeServingUpG.Set(0)
 	}
@@ -358,6 +377,8 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
+	// Stop telemetry
+	defer r.telemetry.TryStop()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
