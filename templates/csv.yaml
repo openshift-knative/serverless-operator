@@ -300,6 +300,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
+                # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                 image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
@@ -574,6 +575,9 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
+    - name: knative-operator
+      # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.svc.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
