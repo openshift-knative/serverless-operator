@@ -241,6 +241,8 @@ function teardown_serverless {
   for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
+  oc delete namespace openshift-serverless --ignore-not-found=true
+
   logger.success 'Serverless has been uninstalled.'
 }
 
