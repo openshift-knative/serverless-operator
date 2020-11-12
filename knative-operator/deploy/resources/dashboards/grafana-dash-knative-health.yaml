@@ -94,7 +94,7 @@ data:
                }
             ],
             "thresholds": "",
-            "title": "Knative Current Status",
+            "title": "Knative Status",
             "type": "singlestat",
             "valueFontSize": "200%",
             "valueMaps": [
