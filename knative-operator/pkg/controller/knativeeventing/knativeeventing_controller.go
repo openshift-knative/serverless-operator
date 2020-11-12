@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common/telemetry"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -15,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -28,14 +26,7 @@ import (
 // This needs to remain "knative-eventing-openshift" to be compatible with earlier versions.
 const finalizerName = "knative-eventing-openshift"
 
-var (
-	log             = common.Log.WithName("controller")
-	eventingObjects = []runtime.Object{
-		&eventingsourcesv1beta1.PingSource{},
-		&eventingsourcesv1beta1.ApiServerSource{},
-		&eventingsourcesv1beta1.SinkBinding{},
-	}
-)
+var log = common.Log.WithName("controller")
 
 // Add creates a new KnativeEventing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -44,7 +35,7 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) *ReconcileKnativeEventing {
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
@@ -53,25 +44,21 @@ func newReconciler(mgr manager.Manager) *ReconcileKnativeEventing {
 			Name: ns,
 		}})
 	}
-	t, err := telemetry.NewTelemetry("eventing", mgr, eventingObjects, client)
-	if err != nil {
-		log.Error(err, "failed to create telemetry for eventing")
-	}
+
 	return &ReconcileKnativeEventing{
-		client:    client,
-		scheme:    mgr.GetScheme(),
-		mgr:       mgr,
-		telemetry: t,
+		client: client,
+		scheme: mgr.GetScheme(),
 	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r *ReconcileKnativeEventing) error {
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
 	c, err := controller.New("knativeeventing-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
+
 	// Watch for changes to primary resource KnativeEventing
 	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
 }
@@ -83,10 +70,8 @@ var _ reconcile.Reconciler = &ReconcileKnativeEventing{}
 type ReconcileKnativeEventing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client    client.Client
-	mgr       manager.Manager
-	scheme    *runtime.Scheme
-	telemetry *telemetry.Telemetry
+	client client.Client
+	scheme *runtime.Scheme
 }
 
 // Reconcile reads that state of the cluster for a KnativeEventing
@@ -119,9 +104,6 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 	common.KnativeEventingUpG = common.KnativeUp.WithLabelValues("eventing_status")
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
-		if err := r.telemetry.TryStart(r.client, r.mgr); err != nil {
-			return reconcile.Result{}, err
-		}
 	} else {
 		common.KnativeEventingUpG.Set(0)
 	}
@@ -198,11 +180,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
 	// Stop telemetry
-	defer func() {
-		r.telemetry.TryStop()
-		common.KnativeUp.DeleteLabelValues("eventing_status")
-	}()
-
+	defer common.KnativeUp.DeleteLabelValues("eventing_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
