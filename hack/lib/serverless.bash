@@ -149,11 +149,6 @@ function deploy_knativeserving_cr {
 
   timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  # TODO: Remove this when the previous release has readiness checks available (since 1.12).
-  if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
-    timeout 120 "[[ -z \$(oc get namespace ${INGRESS_NAMESPACE}) ]]" || return $?
-  fi
-
   logger.success 'Knative Serving has been installed successfully.'
 }
 
@@ -216,6 +211,11 @@ function teardown_serverless {
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
   if oc get namespace "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${SERVING_NAMESPACE}"
+  fi
+  logger.info 'Ensure no ingress pods running'
+  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
+  if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
+    oc delete namespace "${INGRESS_NAMESPACE}"
   fi
 
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
