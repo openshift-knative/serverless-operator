@@ -170,6 +170,7 @@ func (r *ReconcileKnativeServing) Reconcile(request reconcile.Request) (reconcil
 		}
 	}
 
+	common.KnativeServingUpG = common.KnativeUp.WithLabelValues("serving_status")
 	if instance.Status.IsReady() {
 		common.KnativeServingUpG.Set(1)
 		if err := r.telemetry.TryStart(r.client, r.mgr); err != nil {
@@ -378,7 +379,10 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	// Stop telemetry
-	defer r.telemetry.TryStop()
+	defer func() {
+		r.telemetry.TryStop()
+		common.KnativeUp.DeleteLabelValues("serving_status")
+	}()
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
