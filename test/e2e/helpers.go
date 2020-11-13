@@ -18,12 +18,7 @@ import (
 	pkgTest "knative.dev/pkg/test"
 )
 
-type healthStat struct {
-	servingStatus  float64
-	eventingStatus float64
-}
-
-func fetchHealthMetrics(metricsURL string) (*healthStat, error) {
+func fetchHealthMetrics(metricsURL string, metricName string) (*float64, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, metricsURL, nil)
 	if err != nil {
 		return nil, err
@@ -33,35 +28,28 @@ func fetchHealthMetrics(metricsURL string) (*healthStat, error) {
 	if err != nil {
 		return nil, err
 	}
-	stat, err := extracMetrictData(resp.Body)
+	stat, err := extracMetrictData(resp.Body, metricName)
 	if err != nil {
 		return nil, err
 	}
 	return stat, nil
 }
 
-func extracMetrictData(body io.Reader) (*healthStat, error) {
+func extracMetrictData(body io.Reader, metricName string) (*float64, error) {
 	var parser expfmt.TextParser
 	metricFamilies, err := parser.TextToMetricFamilies(body)
 	if err != nil {
 		return nil, fmt.Errorf("reading text format failed: %v", err)
 	}
-	healthStat := healthStat{}
 	pm := prometheusMetric(metricFamilies, "knative_up")
 	if pm == nil {
 		return nil, errors.New("could not get metric family `knative_up` from prometheus exported metrics")
 	}
-	servingStatus := getMetricValueByTypeLabel("serving_status", pm)
-	if servingStatus == nil {
-		return nil, errors.New("could not get metric type `service_status` from prometheus metric `knative_up`")
+	status := getMetricValueByTypeLabel(metricName, pm)
+	if status == nil {
+		return nil, fmt.Errorf("could not get metric type `%s` from prometheus metric `knative_up`", metricName)
 	}
-	healthStat.servingStatus = *servingStatus
-	eventingStatus := getMetricValueByTypeLabel("eventing_status", pm)
-	if eventingStatus == nil {
-		return nil, errors.New("could not get metric type `eventing_status` from prometheus metric `knative_up`")
-	}
-	healthStat.eventingStatus = *eventingStatus
-	return &healthStat, nil
+	return status, nil
 }
 
 func prometheusMetric(metricFamilies map[string]*ioprometheusclient.MetricFamily, key string) []*ioprometheusclient.Metric {
@@ -132,7 +120,7 @@ func verifyOperatorMetricsEndpoint(caCtx *test.Context, metricsPath string, t *t
 		return
 	}
 
-	// Verify that the endpoint is actually working
+	// Wait until the endpoint is actually working
 	if _, err := pkgTest.WaitForEndpointState(
 		context.Background(),
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},

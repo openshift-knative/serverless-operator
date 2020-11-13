@@ -49,11 +49,11 @@ func TestKnativeServing(t *testing.T) {
 
 		// Serving should be up
 		verifyOperatorMetricsEndpoint(caCtx, metricsPath, t)
-		stat, err := fetchHealthMetrics(metricsPath)
+		stat, err := fetchHealthMetrics(metricsPath, "serving_status")
 		if err != nil {
 			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
 		}
-		t.Errorf("Got = %v, want: %v for Serving health status", stat.servingStatus, 1)
+		t.Errorf("Got = %v, want: %v for Serving health status", stat, 1)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
@@ -109,13 +109,6 @@ func TestKnativeServing(t *testing.T) {
 		if ns.Status.Phase != corev1.NamespaceTerminating {
 			t.Fatalf("Ingress namespace phase = %v, want %v", ns.Status.Phase, corev1.NamespaceTerminating)
 		}
-
-		// Serving should be down
-		stat, err := fetchHealthMetrics(metricsPath)
-		if err != nil {
-			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
-		}
-		t.Errorf("Got = %v, want: %v for Serving health status", stat.servingStatus, 0)
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
