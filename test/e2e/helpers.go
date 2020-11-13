@@ -93,12 +93,12 @@ func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricNam
 	// Check if Operator's service monitor service is available
 	_, err := caCtx.Clients.Kube.CoreV1().Services("openshift-serverless").Get(context.Background(), "knative-openshift-metrics", meta.GetOptions{})
 	if err != nil {
-		t.Errorf("error getting service monitor service: %v", err)
+		t.Fatalf("Error getting service monitor service: %v", err)
 		return
 	}
 	metricsURL, err := url.Parse(metricsPath)
 	if err != nil {
-		t.Errorf("error parsing url for metrics: %v", err)
+		t.Fatalf("Error parsing url for metrics: %v", err)
 		return
 	}
 	// Wait until the endpoint is actually working
@@ -111,12 +111,12 @@ func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricNam
 		"WaitForMetricsToServeText",
 		true)
 	if err != nil {
-		t.Errorf("Failed to access the operator metrics endpoint : %v", err)
+		t.Fatalf("Failed to access the operator metrics endpoint : %v", err)
 		return
 	}
 	stat, err := extracMetrictData(bytes.NewReader(resp.Body), metricName)
 	if err != nil {
-		t.Errorf("Failed to get metrics from operator's prometheus endpoint: %v", err)
+		t.Fatalf("Failed to get metrics from operator's prometheus endpoint: %v", err)
 		return
 	}
 	if *stat != expectedValue {
