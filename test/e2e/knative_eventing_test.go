@@ -25,7 +25,11 @@ var knativeControlPlaneDeploymentNames = []string{
 
 func TestKnativeEventing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-
+	route, err := setupMetricsRoute(caCtx, "eventing")
+	if err != nil {
+		t.Fatal("Failed to setup operator metrics route", err)
+	}
+	metricsPath := route.Spec.Host + route.Spec.Path
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
@@ -38,6 +42,13 @@ func TestKnativeEventing(t *testing.T) {
 		if _, err := v1a1test.WithKnativeEventingReady(caCtx, eventingName, eventingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeEventing", err)
 		}
+		// Eventing should be up
+		verifyOperatorMetricsEndpoint(caCtx, metricsPath, t)
+		stat, err := fetchHealthMetrics(metricsPath)
+		if err != nil {
+			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
+		}
+		t.Errorf("Got = %v, want: %v for Eventing health status", stat.eventingStatus, 1)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
@@ -64,6 +75,13 @@ func TestKnativeEventing(t *testing.T) {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
 		}
+
+		// Eventing should be down
+		stat, err := fetchHealthMetrics(metricsPath)
+		if err != nil {
+			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
+		}
+		t.Errorf("Got = %v, want: %v for Eventing health status", stat.eventingStatus, 0)
 	})
 
 	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
