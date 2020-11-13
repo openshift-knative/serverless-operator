@@ -179,7 +179,6 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
-	// Stop telemetry
 	defer common.KnativeUp.DeleteLabelValues("eventing_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
