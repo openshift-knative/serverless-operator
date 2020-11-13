@@ -120,6 +120,6 @@ func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricNam
 		return
 	}
 	if *stat != expectedValue {
-		t.Errorf("Got = %v, want: %v for Eventing health status", stat, expectedValue)
+		t.Errorf("Got = %v, want: %v for metric type: %s", stat, expectedValue, metricName)
 	}
 }
