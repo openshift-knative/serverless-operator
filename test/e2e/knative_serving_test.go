@@ -33,7 +33,7 @@ func TestKnativeServing(t *testing.T) {
 	if err != nil {
 		t.Fatal("Failed to setup operator metrics route", err)
 	}
-	metricsPath := route.Spec.Host + route.Spec.Path
+	metricsPath := "http://" + route.Spec.Host + route.Spec.Path
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
