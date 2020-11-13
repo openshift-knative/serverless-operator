@@ -111,12 +111,12 @@ func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricNam
 		"WaitForMetricsToServeText",
 		true)
 	if err != nil {
-		t.Errorf("the operator metrics endpoint is not accessible: %v", err)
+		t.Errorf("Failed to access the operator metrics endpoint : %v", err)
 		return
 	}
 	stat, err := extracMetrictData(bytes.NewReader(resp.Body), metricName)
 	if err != nil {
-		t.Errorf("Failed to get metrics from operator's prometheus endpoint", err)
+		t.Errorf("Failed to get metrics from operator's prometheus endpoint: %v", err)
 		return
 	}
 	if *stat != expectedValue {
