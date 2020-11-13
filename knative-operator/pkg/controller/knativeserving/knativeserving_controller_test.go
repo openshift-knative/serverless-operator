@@ -113,7 +113,7 @@ var (
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
+	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-serving.yaml")
 
 	apis.AddToScheme(scheme.Scheme)
 }
