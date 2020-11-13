@@ -1,11 +1,11 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"testing"
 
@@ -17,23 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	pkgTest "knative.dev/pkg/test"
 )
-
-func fetchHealthMetrics(metricsURL string, metricName string) (*float64, error) {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, metricsURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	httpClient := http.Client{}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	stat, err := extracMetrictData(resp.Body, metricName)
-	if err != nil {
-		return nil, err
-	}
-	return stat, nil
-}
 
 func extracMetrictData(body io.Reader, metricName string) (*float64, error) {
 	var parser expfmt.TextParser
@@ -106,7 +89,7 @@ func setupMetricsRoute(caCtx *test.Context, name string) (*v1.Route, error) {
 	return r, nil
 }
 
-func verifyOperatorMetricsEndpoint(caCtx *test.Context, metricsPath string, t *testing.T) {
+func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricName string, expectedValue int, t *testing.T) {
 	// Check if Operator's service monitor service is available
 	_, err := caCtx.Clients.Kube.CoreV1().Services("openshift-serverless").Get(context.Background(), "knative-openshift-metrics", meta.GetOptions{})
 	if err != nil {
@@ -121,14 +104,21 @@ func verifyOperatorMetricsEndpoint(caCtx *test.Context, metricsPath string, t *t
 	}
 
 	// Wait until the endpoint is actually working
-	if _, err := pkgTest.WaitForEndpointState(
+	resp, err := pkgTest.WaitForEndpointState(
 		context.Background(),
 		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
 		t.Logf,
 		metricsURL,
 		pkgTest.EventuallyMatchesBody("# TYPE knative_up gauge"),
 		"WaitForMetricsToServeText",
-		true); err != nil {
+		true)
+
+	if err != nil {
 		t.Errorf("the operator metrics endpoint is not accessible: %v", err)
 	}
+	stat, err := extracMetrictData(bytes.NewReader(resp.Body), metricName)
+	if err != nil {
+		t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
+	}
+	t.Errorf("Got = %v, want: %v for Eventing health status", stat, expectedValue)
 }

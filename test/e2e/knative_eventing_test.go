@@ -43,12 +43,7 @@ func TestKnativeEventing(t *testing.T) {
 			t.Fatal("Failed to deploy KnativeEventing", err)
 		}
 		// Eventing should be up
-		verifyOperatorMetricsEndpoint(caCtx, metricsPath, t)
-		stat, err := fetchHealthMetrics(metricsPath, "eventing_status")
-		if err != nil {
-			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
-		}
-		t.Errorf("Got = %v, want: %v for Eventing health status", stat, 1)
+		verifyHealthStatusMetric(caCtx, metricsPath, "eventing_status", 1, t)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {

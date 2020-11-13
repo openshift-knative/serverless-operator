@@ -46,14 +46,8 @@ func TestKnativeServing(t *testing.T) {
 		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
-
 		// Serving should be up
-		verifyOperatorMetricsEndpoint(caCtx, metricsPath, t)
-		stat, err := fetchHealthMetrics(metricsPath, "serving_status")
-		if err != nil {
-			t.Fatal("Failed to get metrics from operator's prometheus endpoint", err)
-		}
-		t.Errorf("Got = %v, want: %v for Serving health status", stat, 1)
+		verifyHealthStatusMetric(caCtx, metricsPath, "serving_status", 1, t)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
