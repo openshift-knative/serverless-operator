@@ -97,7 +97,6 @@ func setupMetricsRoute(caCtx *test.Context, name string) (*v1.Route, error) {
 			Namespace: "openshift-serverless",
 		},
 		Spec: v1.RouteSpec{
-			Host: "knative-openshift-metrics",
 			Port: &v1.RoutePort{
 				TargetPort: intstr.FromString("8383"),
 			},
