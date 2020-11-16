@@ -10,13 +10,13 @@ install:
 	./hack/install.sh
 
 install-serving:
-	INSTALL_EVENTING="false" INSTALL_KAFKA="false" ./hack/install.sh
+	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
-	INSTALL_SERVING="false" INSTALL_KAFKA="false" ./hack/install.sh
+	INSTALL_SERVING="false" ./hack/install.sh
 
 install-kafka:
-	INSTALL_SERVING="false" INSTALL_EVENTING="true" ./hack/install.sh
+	INSTALL_SERVING="false" INSTALL_EVENTING="true" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-strimzi:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh

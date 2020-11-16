@@ -51,7 +51,7 @@ Use the appropriate make targets or scripts in `hack`:
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
-- `INSTALL_KAFKA=true make install-kafka`: Scales the cluster appropriately, deploys serverless-operator, Knative Eventing and Knative Kafka 
+- `make install-kafka`: Scales the cluster appropriately, deploys serverless-operator, Knative Eventing and Knative Kafka 
 in `knative-eventing` namespace by default. Requires to install a Strimzi cluster with `make install-strimzi`.
 - `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
