@@ -47,7 +47,7 @@ data:
              "thresholdLabels": false,
              "thresholdMarkers": true
            },
-           "id": 29,
+           "id": 1,
            "interval": null,
            "isNew": true,
            "links": [],
@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "min by (type)(knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status\"})",
+                 "expr": "min by(job)(knative_up{namespace=\"$namespace\", job=\"knative-openshift-metrics\", type=~\"eventing_status|serving_status|kafka_status\"})",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
@@ -130,6 +130,7 @@ data:
           },
           "fill": 1,
           "fillGradient": 0,
+          "collapsed": false,
           "gridPos": {
             "h": 9,
             "w": 12,
@@ -149,7 +150,7 @@ data:
           },
           "lines": true,
           "linewidth": 1,
-          "span": 6,
+          "span": 12,
           "nullPointMode": "null",
           "percentage": false,
           "pluginVersion": "7.1.0",
@@ -233,7 +234,7 @@ data:
          "y": 0
        },
        "hiddenSeries": false,
-       "id": 2,
+       "id": 3,
        "legend": {
          "avg": false,
          "current": false,
@@ -251,7 +252,7 @@ data:
        "pointradius": 2,
        "points": false,
        "renderer": "flot",
-       "span": 6,
+       "span": 12,
        "seriesOverrides": [],
        "spaceLength": 10,
        "stack": false,
@@ -261,7 +262,7 @@ data:
            "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"eventing_status\"}",
            "format": "time-series",
            "interval": "",
-           "legendFormat": "Eventing status - 1 is up, 0 is down",
+           "legendFormat": "Knative Eventing status - 1 is up, 0 is down",
            "refId": "B"
          }
        ],
@@ -304,7 +305,95 @@ data:
        "yaxis": {
        "align": false,
        "alignLevel": null
-      }
+       }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "prometheus",
+        "fieldConfig": {
+         "defaults": {
+         "custom": {}
+        },
+        "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "hiddenSeries": false,
+        "id": 4,
+        "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+        },
+       "lines": true,
+       "linewidth": 1,
+       "nullPointMode": "null",
+       "percentage": false,
+       "pluginVersion": "7.1.0",
+       "pointradius": 2,
+       "points": false,
+       "renderer": "flot",
+       "span": 6,
+       "seriesOverrides": [],
+       "spaceLength": 10,
+       "stack": false,
+       "steppedLine": false,
+       "targets": [
+       {
+           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"kafka_status\"}",
+           "format": "time-series",
+           "interval": "",
+           "legendFormat": "Knative Kafka status - 1 is up, 0 is down",
+           "refId": "B"
+       }
+      ],
+       "thresholds": [],
+       "timeFrom": null,
+       "timeRegions": [],
+       "timeShift": null,
+       "title": "Knative Health Status - Kafka",
+       "tooltip": {
+         "shared": true,
+         "sort": 0,
+         "value_type": "individual"
+       },
+       "type": "graph",
+       "xaxis": {
+         "buckets": null,
+         "mode": "time",
+         "name": null,
+         "show": true,
+         "values": []
+       },
+       "yaxes": [
+         {
+           "format": "none",
+           "label": null,
+           "logBase": 1,
+           "max": 1,
+           "min": 0,
+           "show": false
+         },
+         {
+           "format": "none",
+           "label": null,
+           "logBase": 1,
+           "max": 1,
+           "min": 0,
+           "show": false
+         }
+       ],
+       "yaxis": {
+       "align": false,
+       "alignLevel": null
+       }
       }
      ],
      "schemaVersion": 26,
