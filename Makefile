@@ -9,11 +9,23 @@ images:
 install:
 	./hack/install.sh
 
+install-all: install-strimzi
+	INSTALL_KAFKA="true" ./hack/install.sh
+
 install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
 	INSTALL_SERVING="false" ./hack/install.sh
+
+install-kafka:
+	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
+
+install-strimzi:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+
+uninstall-strimzi:
+	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
 
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
