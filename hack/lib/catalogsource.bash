@@ -191,6 +191,6 @@ function add_user {
 
   logger.debug 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
-  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} > /dev/null'"
+  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} --insecure-skip-tls-verify=true > /dev/null'"
   timeout 180 "${occmd}" || return 1
 }
