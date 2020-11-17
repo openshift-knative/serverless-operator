@@ -112,6 +112,12 @@ func (v *Validator) validateShape(_ context.Context, ke *operatorv1alpha1.Knativ
 	if ke.Spec.Channel.Enabled && ke.Spec.Channel.BootstrapServers == "" {
 		return false, "spec.channel.bootStrapServers is a required detail when spec.channel.enabled is true", nil
 	}
+	if ke.Spec.Channel.AuthSecretName != "" && ke.Spec.Channel.AuthSecretNamespace == "" {
+		return false, "spec.channel.authSecretNamespace is required when spec.channel.authSecretName is defined", nil
+	}
+	if ke.Spec.Channel.AuthSecretNamespace != "" && ke.Spec.Channel.AuthSecretName == "" {
+		return false, "spec.channel.authSecretName is required when spec.channel.authSecretNamespace is defined", nil
+	}
 	return true, "", nil
 }
 

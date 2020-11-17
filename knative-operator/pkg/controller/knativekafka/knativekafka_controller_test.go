@@ -270,6 +270,129 @@ func TestSetBootstrapServers(t *testing.T) {
 	}
 }
 
+func TestSetAuthSecret(t *testing.T) {
+	tests := []struct {
+		name            string
+		obj             *unstructured.Unstructured
+		secretNamespace string
+		secretName      string
+		expect          *unstructured.Unstructured
+	}{{
+		name: "Update config-kafka",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+		secretNamespace: "my-ns",
+		secretName:      "my-secret",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"authSecretNamespace": "my-ns",
+					"authSecretName":      "my-secret",
+				},
+			},
+		},
+	}, {
+		name: "Update config-kafka - overwrite",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"authSecretNamespace": "TO_BE_OVERWRITTEN",
+					"authSecretName":      "TO_BE_OVERWRITTEN",
+				},
+			},
+		},
+		secretNamespace: "my-ns",
+		secretName:      "my-secret",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"authSecretNamespace": "my-ns",
+					"authSecretName":      "my-secret",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other configmaps",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+		secretNamespace: "my-ns",
+		secretName:      "my-secret",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other resources",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+		secretNamespace: "my-ns",
+		secretName:      "my-secret",
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := setAuthSecret(test.secretNamespace, test.secretName)(test.obj)
+			if err != nil {
+				t.Fatalf("setAuthSecretNamespace/setAuthSecretName: (%v)", err)
+			}
+
+			if !cmp.Equal(test.expect, test.obj) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
+			}
+		})
+	}
+}
+
 func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 	base := &v1alpha1.KnativeKafka{
 		ObjectMeta: metav1.ObjectMeta{
@@ -284,6 +407,7 @@ func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 			Channel: v1alpha1.Channel{
 				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
+				// TODO
 			},
 		},
 	}

@@ -45,6 +45,14 @@ spec:
                     description: Enabled defines if the KafkaChannel installation
                       is enabled
                     type: boolean
+                  authSecretNamespace:
+                    description: AuthSecretNamespace is the namespace of the secret that contains Kafka
+                      auth configuration.
+                    type: string
+                  authSecretName:
+                    description: AuthSecretName is the name of the secret that contains Kafka
+                      auth configuration.
+                    type: string
                 required:
                 - enabled
                 type: object

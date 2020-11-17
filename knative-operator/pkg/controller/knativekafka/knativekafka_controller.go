@@ -220,6 +220,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
+		setAuthSecret(instance.Spec.Channel.AuthSecretNamespace, instance.Spec.Channel.AuthSecretName),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 	)
 	if err != nil {
@@ -383,6 +384,22 @@ func setBootstrapServers(bootstrapServers string) mf.Transformer {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
 			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
 			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// setAuthSecret sets Kafka auth secret namespace and name value in config-kafka
+func setAuthSecret(secretNamespace, secretName string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
+			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, secretNamespace, "data", "authSecretNamespace"); err != nil {
+				return err
+			}
+			if err := unstructured.SetNestedField(u.Object, secretName, "data", "authSecretName"); err != nil {
 				return err
 			}
 		}
