@@ -49,6 +49,7 @@ Use the appropriate make targets or scripts in `hack`:
 
 - `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing and Kafka components.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
+- `make install-all`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving, Eventing and Kafka.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
 - `make install-kafka`: Scales the cluster appropriately, deploys serverless-operator, Knative Eventing and Knative Kafka 
