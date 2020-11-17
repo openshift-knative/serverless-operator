@@ -54,9 +54,9 @@ image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter
 image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
 image "imc-controller__controller"                  "${eventing}-channel-controller"
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
+image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
 image "PING_IMAGE"           "${eventing}-ping"
-image "MT_PING_IMAGE"        "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
