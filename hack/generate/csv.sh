@@ -56,7 +56,6 @@ image "imc-controller__controller"                  "${eventing}-channel-control
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
 image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
-image "PING_IMAGE"           "${eventing}-ping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
