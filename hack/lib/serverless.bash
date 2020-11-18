@@ -222,6 +222,7 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
+  # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Knative Kafka has been set to use no auth sucessfully.'
@@ -247,6 +248,7 @@ spec:
     authSecretName: my-tls-secret
 EOF
 
+  # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Knative Kafka has been set to use TLS auth sucessfully.'
@@ -272,6 +274,7 @@ spec:
     authSecretName: my-sasl-secret
 EOF
 
+  # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
   logger.success 'Knative Kafka has been set to use SASL auth sucessfully.'
