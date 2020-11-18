@@ -204,6 +204,79 @@ EOF
   logger.success 'Knative Kafka has been installed sucessfully.'
 }
 
+function ensure_kafka_no_auth {
+  logger.info 'Ensure Knative Kafka using no Kafka auth'
+
+  # Apply Knative Kafka
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: ${EVENTING_NAMESPACE}
+spec:
+  source:
+    enabled: true
+  channel:
+    enabled: true
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
+EOF
+
+  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative Kafka has been set to use no auth sucessfully.'
+}
+
+function ensure_kafka_tls_auth {
+  logger.info 'Ensure Knative Kafka using TLS auth'
+
+  # Apply Knative Kafka
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: ${EVENTING_NAMESPACE}
+spec:
+  source:
+    enabled: true
+  channel:
+    enabled: true
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9093
+    authSecretNamespace: default
+    authSecretName: my-tls-secret
+EOF
+
+  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative Kafka has been set to use TLS auth sucessfully.'
+}
+
+function ensure_kafka_sasl_auth {
+  logger.info 'Ensure Knative Kafka using SASL auth'
+
+  # Apply Knative Kafka
+  cat <<EOF | oc apply -f - || return $?
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: ${EVENTING_NAMESPACE}
+spec:
+  source:
+    enabled: true
+  channel:
+    enabled: true
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9094
+    authSecretNamespace: default
+    authSecretName: my-sasl-secret
+EOF
+
+  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+
+  logger.success 'Knative Kafka has been set to use SASL auth sucessfully.'
+}
+
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
