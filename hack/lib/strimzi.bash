@@ -69,7 +69,6 @@ EOF
   oc wait kafka --all --timeout=-1s --for=condition=Ready -n kafka
 
   header "Applying Strimzi TLS Admin user"
-
   cat <<-EOF | oc apply -f -
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
@@ -118,8 +117,8 @@ spec:
         host: "*"
 EOF
 
-header_text "Applying Strimzi SASL Admin User"
-cat <<-EOF | oc apply -f -
+  header "Applying Strimzi SASL Admin User"
+  cat <<-EOF | oc apply -f -
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
 metadata:
@@ -180,7 +179,7 @@ EOF
       --from-literal=user.crt="$TLSUSER_CRT" \
       --from-literal=user.key="$TLSUSER_KEY"
 
-  header_text "Creating a Secret, containing SASL from Strimzi"
+  header "Creating a Secret, containing SASL from Strimzi"
   SASL_PASSWD=$(oc -n kafka get secret my-sasl-user --template='{{index .data "password"}}' | base64 --decode )
   oc create secret --namespace default generic my-sasl-secret \
       --from-literal=password="$SASL_PASSWD" \
