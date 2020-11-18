@@ -28,11 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	network "knative.dev/networking/pkg"
-	nv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/autoscaling"
+	"knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
@@ -117,7 +117,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// A cluster-local variant of the "sidecar-via-activator" scenario
 		name: "local-sidecar-via-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			istioInjectKey: "true",
@@ -127,7 +127,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// A cluster-local variant of the "sidecar-without-activator" scenario
 		name: "local-sidecar-without-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			istioInjectKey:                     "true",
@@ -309,7 +309,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		Value: jwks,
 	})
 	jwksKsvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	jwksKsvc = withServiceReadyOrFail(caCtx, jwksKsvc)
 
@@ -545,7 +545,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
@@ -682,7 +682,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
