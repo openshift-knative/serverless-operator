@@ -4,13 +4,12 @@ import (
 	"context"
 	"testing"
 
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	pkgTest "knative.dev/pkg/test"
-
 	"github.com/openshift-knative/serverless-operator/test"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	network "knative.dev/networking/pkg"
-	nv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/serving/pkg/apis/autoscaling"
+	"knative.dev/serving/pkg/apis/serving"
 )
 
 // Smoke tests for networking which access public and cluster-local
@@ -38,7 +37,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 	}, {
 		name: "cluster-local-via-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			autoscaling.TargetBurstCapacityKey: "-1",
@@ -46,7 +45,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 	}, {
 		name: "cluster-local-without-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			autoscaling.TargetBurstCapacityKey: "0",
@@ -71,7 +70,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	serviceURL := service.Status.URL.URL()
 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
-	if service.GetLabels()[network.VisibilityLabelKey] == string(nv1alpha1.IngressVisibilityClusterLocal) {
+	if service.GetLabels()[network.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
 		httpProxy := withServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
 		serviceURL = httpProxy.Status.URL.URL()
