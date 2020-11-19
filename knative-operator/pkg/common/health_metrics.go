@@ -15,7 +15,7 @@ var (
 	)
 	KnativeServingUpG  prometheus.Gauge
 	KnativeEventingUpG prometheus.Gauge
-	KnativeKafkaUpG    = KnativeUp.WithLabelValues("kafka_status")
+	KnativeKafkaUpG    prometheus.Gauge
 )
 
 func init() {
