@@ -37,4 +37,7 @@ function download {
 }
 
 download serving $KNATIVE_SERVING_VERSION "${serving_files[@]}"
+# TODO: Remove this patch once 0.18.5 of serving or newer is available.
+git apply "$root/openshift-knative-operator/hack/001-liveness.patch"
+
 download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
