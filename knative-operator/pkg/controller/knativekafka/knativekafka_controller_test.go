@@ -407,7 +407,6 @@ func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 			Channel: v1alpha1.Channel{
 				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
-				// TODO
 			},
 		},
 	}
