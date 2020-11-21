@@ -20,7 +20,8 @@ function install_catalogsource {
   token=$(oc --config=$pull_user.kubeconfig whoami -t)
 
   csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-  # Create a backup of the CSV so we don't pollute the repository.
+
+  logger.debug "Create a backup of the CSV so we don't pollute the repository."
   cp "$csv" "${rootdir}/bkp.yaml"
 
   if [ -n "${OPENSHIFT_BUILD_NAMESPACE:-}" ]; then
@@ -38,10 +39,13 @@ function install_catalogsource {
   oc -n "$OLM_NAMESPACE" start-build serverless-bundle --from-dir olm-catalog/serverless-operator -F
 
   # Undo potential changes to the CSV to not pollute the repository.
+  logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
   mv "${rootdir}/bkp.yaml" "$csv"
 
   # HACK: Allow to run the index pod as root so it has necessary access.
-  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user anyuid -z default
+  logger.debug "HACK: Allow to run the index pod as privileged so it has \
+necessary access to run the podman commands."
+  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user privileged -z default
 
   # Install the index deployment.
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
