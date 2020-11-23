@@ -40,8 +40,6 @@ function install_strimzi {
             tls: true
             authentication:
               type: scram-sha-512
-        authorization:
-          type: simple
         config:
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
