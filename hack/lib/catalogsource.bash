@@ -82,7 +82,7 @@ spec:
         - -c
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add --container-tool=podman -d index.db --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry add --container-tool=podman -d index.db --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2-1,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
 EOF
 
