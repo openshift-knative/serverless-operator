@@ -10,7 +10,7 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
-eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-post-install-jobs)
+eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-pre-install-jobs)
 
 function download {
   component=$1
@@ -20,8 +20,9 @@ function download {
 
   files=("$@")
 
-  target_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}/${version:1}"
-  rm -r "$target_dir"
+  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  target_dir="${component_dir}/${version:1}"
+  rm -r "$component_dir"
   mkdir -p "$target_dir"
   
   for (( i=0; i<${#files[@]}; i++ ));
@@ -36,4 +37,7 @@ function download {
 }
 
 download serving $KNATIVE_SERVING_VERSION "${serving_files[@]}"
+# TODO: Remove this patch once 0.18.5 of serving or newer is available.
+git apply "$root/openshift-knative-operator/hack/001-liveness.patch"
+
 download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
