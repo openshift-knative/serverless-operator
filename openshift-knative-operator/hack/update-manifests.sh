@@ -10,7 +10,7 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
-eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
+eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-pre-install-jobs)
 
 function download {
   component=$1
