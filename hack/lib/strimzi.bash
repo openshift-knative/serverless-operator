@@ -169,6 +169,10 @@ EOF
   header "Waiting for Strimzi admin users to become ready"
   oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
 
+  header "Deleting existing Kafka user secrets"
+  oc delete secret -n default my-tls-secret || true
+  oc delete secret -n default my-sasl-secret || true
+
   header "Creating a Secret, containing TLS from Strimzi"
   STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
   TLSUSER_CRT=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.crt"}}' | base64 --decode )
