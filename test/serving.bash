@@ -217,9 +217,5 @@ function run_serving_postupgrade_test {
 }
 
 function cleanup_serving_test_services {
-  oc delete --ignore-not-found=true ksvc \
-    pizzaplanet-upgrade-service \
-    scale-to-zero-upgrade-service \
-    upgrade-probe -n serving-tests \
-    || return $?
+  oc delete --all=true ksvc -n serving-tests || return $?
 }
