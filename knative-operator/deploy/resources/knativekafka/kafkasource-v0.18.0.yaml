@@ -1,17 +1,18 @@
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kafka-controller-manager
   namespace: knative-eventing
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: eventing-sources-kafka-controller
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 rules:
 - apiGroups:
   - sources.knative.dev
@@ -66,7 +67,6 @@ rules:
   - pods
   - services
   - endpoints
-  - persistentvolumeclaims
   - events
   - configmaps
   - secrets
@@ -88,54 +88,54 @@ rules:
   - leases
   verbs: *everything
 - apiGroups:
-  - "admissionregistration.k8s.io"
+    - "admissionregistration.k8s.io"
   resources:
-  - "mutatingwebhookconfigurations"
-  - "validatingwebhookconfigurations"
+    - "mutatingwebhookconfigurations"
+    - "validatingwebhookconfigurations"
   verbs: &everything
-  - "get"
-  - "list"
-  - "create"
-  - "update"
-  - "delete"
-  - "patch"
-  - "watch"
+    - "get"
+    - "list"
+    - "create"
+    - "update"
+    - "delete"
+    - "patch"
+    - "watch"
 - apiGroups:
-  - "apiextensions.k8s.io"
+    - "apiextensions.k8s.io"
   resources:
-  - "customresourcedefinitions"
+    - "customresourcedefinitions"
   verbs:
-  - "get"
-  - "list"
-  - "create"
-  - "update"
-  - "delete"
-  - "patch"
-  - "watch"
+    - "get"
+    - "list"
+    - "create"
+    - "update"
+    - "delete"
+    - "patch"
+    - "watch"
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-contrib-kafka-source-observer
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
     duck.knative.dev/source: "true"
 rules:
-- apiGroups:
-  - "sources.knative.dev"
-  resources:
-  - "kafkasources"
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "kafkasources"
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
@@ -150,7 +150,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller-addressable-resolver
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
@@ -165,7 +165,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller-podspecable-binding
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 subjects:
 - kind: ServiceAccount
   name: kafka-controller-manager
@@ -179,7 +179,7 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
   name: kafkabindings.bindings.knative.dev
@@ -208,18 +208,18 @@ spec:
         name: kafka-source-webhook
         namespace: knative-eventing
   additionalPrinterColumns:
-  - name: BootstrapServers
-    type: string
-    JSONPath: ".spec.bootstrapServers"
-  - name: Ready
-    type: string
-    JSONPath: ".status.conditions[?(@.type==\"Ready\")].status"
-  - name: Reason
-    type: string
-    JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-  - name: Age
-    type: date
-    JSONPath: .metadata.creationTimestamp
+    - name: BootstrapServers
+      type: string
+      JSONPath: ".spec.bootstrapServers"
+    - name: Ready
+      type: string
+      JSONPath: ".status.conditions[?(@.type==\"Ready\")].status"
+    - name: Reason
+      type: string
+      JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp
   versions:
   - name: v1alpha1
     served: true
@@ -232,7 +232,7 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -267,21 +267,21 @@ spec:
         name: kafka-source-webhook
         namespace: knative-eventing
   additionalPrinterColumns:
-  - name: Topics
-    type: string
-    JSONPath: ".spec.topics"
-  - name: BootstrapServers
-    type: string
-    JSONPath: ".spec.bootstrapServers"
-  - name: Ready
-    type: string
-    JSONPath: ".status.conditions[?(@.type==\"Ready\")].status"
-  - name: Reason
-    type: string
-    JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-  - name: Age
-    type: date
-    JSONPath: .metadata.creationTimestamp
+    - name: Topics
+      type: string
+      JSONPath: ".spec.topics"
+    - name: BootstrapServers
+      type: string
+      JSONPath: ".spec.bootstrapServers"
+    - name: Ready
+      type: string
+      JSONPath: ".status.conditions[?(@.type==\"Ready\")].status"
+    - name: Reason
+      type: string
+      JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp
   versions:
   - name: v1alpha1
     served: true
@@ -296,7 +296,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
     control-plane: kafka-controller-manager
 spec:
   selector:
@@ -311,7 +311,7 @@ metadata:
   name: kafka-controller-manager
   namespace: knative-eventing
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
     control-plane: kafka-controller-manager
 spec:
   replicas: 1
@@ -325,7 +325,7 @@ spec:
       serviceAccountName: kafka-controller-manager
       containers:
       - name: manager
-        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/controller@sha256:d7306e7b01f61172919bd7bfd304c4892388b675e48e16fa71063c51ef440c1a
+        image: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/controller@sha256:b93e1cc64b06f5397bc850bfc2046c95578889a5a7e8d264d9069a34870ca18a
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
@@ -338,7 +338,7 @@ spec:
         - name: CONFIG_LEADERELECTION_NAME
           value: config-leader-election-kafka
         - name: KAFKA_RA_IMAGE
-          value: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/receive_adapter@sha256:2bb36e62f1b4bd33eda26257371bc4f19db38da2062ebc712fce0fc42151f3ea
+          value: gcr.io/knative-releases/knative.dev/eventing-contrib/kafka/source/cmd/receive_adapter@sha256:cfca162865aca16536a83fe65250a3fba6580c517da1e65c1b3b21d09ee5a724
         volumeMounts:
         resources:
           requests:
@@ -363,14 +363,14 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
   name: kafka-source-webhook
   namespace: knative-eventing
 spec:
   ports:
-  - name: https-webhook
-    port: 443
-    targetPort: 8443
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
   selector:
     control-plane: kafka-controller-manager
 ---
@@ -379,7 +379,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -395,7 +395,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: kafkabindings.webhook.kafka.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -411,7 +411,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -427,7 +427,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.kafka.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -448,4 +448,4 @@ metadata:
   name: kafka-source-webhook-certs
   namespace: knative-eventing
   labels:
-    contrib.eventing.knative.dev/release: "v0.17.1"
+    contrib.eventing.knative.dev/release: v0.18.0
