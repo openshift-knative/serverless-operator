@@ -36,6 +36,11 @@ func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
 
+	// Mark the Kourier dependency as installing to avoid race conditions with readiness.
+	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsUnknown() {
+		ks.Status.MarkDependencyInstalling("Kourier")
+	}
+
 	// Set the default host to the cluster's host.
 	if domain, err := e.fetchClusterHost(ctx); err != nil {
 		return fmt.Errorf("failed to fetch cluster host: %w", err)
