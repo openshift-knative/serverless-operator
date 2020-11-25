@@ -101,7 +101,7 @@ func (r *ReconcileKnativeEventing) Reconcile(request reconcile.Request) (reconci
 			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
 		}
 	}
-
+	common.KnativeEventingUpG = common.KnativeUp.WithLabelValues("eventing_status")
 	if instance.Status.IsReady() {
 		common.KnativeEventingUpG.Set(1)
 	} else {
@@ -179,6 +179,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
+	defer common.KnativeUp.DeleteLabelValues("eventing_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/apis"
 
 	ocpfake "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client/fake"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -104,6 +105,14 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		expected: ks(),
+	}, {
+		name: "respects different status",
+		in: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Status.MarkDependenciesInstalled()
+		}),
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Status.MarkDependenciesInstalled()
+		}),
 	}}
 
 	for _, c := range cases {
@@ -118,8 +127,12 @@ func TestReconcile(t *testing.T) {
 			ext := NewExtension(ctx)
 			ext.Reconcile(context.Background(), ks)
 
-			if !cmp.Equal(ks, c.expected) {
-				t.Errorf("Got = %v, want: %v, diff:\n%s", ks, c.expected, cmp.Diff(ks, c.expected))
+			// Ignore time differences.
+			opt := cmp.Comparer(func(apis.VolatileTime, apis.VolatileTime) bool {
+				return true
+			})
+			if !cmp.Equal(ks, c.expected, opt) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", ks, c.expected, cmp.Diff(ks, c.expected, opt))
 			}
 		})
 	}
@@ -167,6 +180,8 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 			},
 		},
 	}
+
+	base.Status.MarkDependencyInstalling("Kourier")
 
 	for _, mod := range mods {
 		mod(base)

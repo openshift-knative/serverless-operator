@@ -63,7 +63,7 @@ jobs:
       - name: Install Tools
         working-directory: ./src/github.com/${{ github.repository }}
         env:
-          WOKE_VERSION: v0.1.11
+          WOKE_VERSION: v0.4.1
         run: |
           TEMP_PATH="$(mktemp -d)"
           cd $TEMP_PATH
@@ -98,25 +98,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.30
-          working-directory: ./src/github.com/${{ github.repository }}/knative-operator
-
-      - name: Go Lint - openshift-knative-operator
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.30
-          working-directory: ./src/github.com/${{ github.repository }}/openshift-knative-operator
-
-      - name: Go Lint - serving/ingress
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.30
-          working-directory: ./src/github.com/${{ github.repository }}/serving/ingress
-
-      - name: Go Lint - test
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.30
-          working-directory: ./src/github.com/${{ github.repository }}/test
+          working-directory: ./src/github.com/${{ github.repository }}
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
       # since their action is not yet released under a stable version.

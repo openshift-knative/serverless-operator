@@ -31,13 +31,9 @@ function install_serverless_previous {
 
   deploy_serverless_operator "$PREVIOUS_CSV"
 
-  # TODO(ksuszyns): Remove this if block if no longer required
+  # TODO: Remove this when the previous release has readiness checks available (since 1.12).
   if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
-    logger.info "Ensure ${SERVING_NAMESPACE} and ${EVENTING_NAMESPACE} \
-namespaces exists, as ${PREVIOUS_CSV} didn't created them automatically."
-
-    ensure_namespace "${SERVING_NAMESPACE}"
-    ensure_namespace "${EVENTING_NAMESPACE}"
+    timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]"
   fi
 
   deploy_knativeserving_cr
@@ -225,6 +221,11 @@ function teardown_serverless {
   if oc get namespace "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${SERVING_NAMESPACE}"
   fi
+  logger.info 'Ensure no ingress pods running'
+  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
+    oc delete namespace "${INGRESS_NAMESPACE}"
+  fi
 
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
@@ -253,6 +254,8 @@ function teardown_serverless {
       | grep serverless-operator | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
+  oc delete namespace openshift-serverless --ignore-not-found=true
+
   logger.success 'Serverless has been uninstalled.'
 }
 

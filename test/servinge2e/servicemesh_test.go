@@ -28,19 +28,27 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	network "knative.dev/networking/pkg"
-	nv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/autoscaling"
+	"knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
+
+type testCase struct {
+	name               string
+	labels             map[string]string // Ksvc labels
+	annotations        map[string]string // Revision template annotations
+	expectIstioSidecar bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
+}
 
 const (
 	// A test namespace that is part of the ServiceMesh (setup by "make install-mesh")
 	serviceMeshTestNamespaceName = "default"
-	serviceMeshTestImage         = "gcr.io/knative-samples/helloworld-go"
-	serviceMeshTestProxyImage    = "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
+	helloworldImage              = "gcr.io/knative-samples/helloworld-go"
+	httpProxyImage               = "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
+	istioInjectKey               = "sidecar.istio.io/inject"
 )
 
 func getServiceMeshNamespace(ctx *test.Context) string {
@@ -57,34 +65,14 @@ func isServiceMeshInstalled(ctx *test.Context) bool {
 }
 
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
-func httpProxyService(name, host string) *servingv1.Service {
-	proxy := test.Service(name, serviceMeshTestNamespaceName, serviceMeshTestProxyImage, nil)
+func httpProxyService(name, namespace, host string) *servingv1.Service {
+	proxy := test.Service(name, namespace, httpProxyImage, nil)
 	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, core.EnvVar{
 		Name:  "TARGET_HOST",
 		Value: host,
 	})
 
 	return proxy
-}
-
-func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *servingv1.Service {
-	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(context.Background(), service, meta.CreateOptions{})
-	if err != nil {
-		ctx.T.Fatalf("Error creating ksvc: %v", err)
-	}
-
-	// Let the ksvc be deleted after test
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-		return ctx.Clients.Serving.ServingV1().Services(service.Namespace).Delete(context.Background(), service.Name, meta.DeleteOptions{})
-	})
-
-	service, err = test.WaitForServiceState(ctx, service.Name, service.Namespace, test.IsServiceReady)
-	if err != nil {
-		ctx.T.Fatalf("Error waiting for ksvc readiness: %v", err)
-	}
-
-	return service
 }
 
 // Skipped unless ServiceMesh has been installed via "make install-mesh"
@@ -99,17 +87,13 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		t.Skipf("Test namespace %q not a mesh member, use \"make install-mesh\" for ServiceMesh setup", serviceMeshTestNamespaceName)
 	}
 
-	tests := []struct {
-		name               string
-		labels             map[string]string // Ksvc labels
-		annotations        map[string]string // Revision template annotations
-		expectIstioSidecar bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
-	}{{
+	tests := []testCase{{
 		// Requests go via gateway -> activator -> pod , by default
 		// Verifies the activator can connect to the pod
 		name: "sidecar-via-activator",
 		annotations: map[string]string{
-			"sidecar.istio.io/inject": "true",
+			istioInjectKey:                     "true",
+			autoscaling.TargetBurstCapacityKey: "-1",
 		},
 		expectIstioSidecar: true,
 	}, {
@@ -117,7 +101,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// Verifies the gateway can connect to the pod directly
 		name: "sidecar-without-activator",
 		annotations: map[string]string{
-			"sidecar.istio.io/inject":          "true",
+			istioInjectKey:                     "true",
 			autoscaling.TargetBurstCapacityKey: "0",
 			autoscaling.MinScaleAnnotationKey:  "1",
 		},
@@ -126,27 +110,27 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		// Verifies the "sidecar.istio.io/inject" annotation is really what decides the istio-proxy presence
 		name: "no-sidecar",
 		annotations: map[string]string{
-			"sidecar.istio.io/inject": "false",
+			istioInjectKey: "false",
 		},
 		expectIstioSidecar: false,
 	}, {
 		// A cluster-local variant of the "sidecar-via-activator" scenario
 		name: "local-sidecar-via-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
-			"sidecar.istio.io/inject": "true",
+			istioInjectKey: "true",
 		},
 		expectIstioSidecar: true,
 	}, {
 		// A cluster-local variant of the "sidecar-without-activator" scenario
 		name: "local-sidecar-without-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
-			"sidecar.istio.io/inject":          "true",
+			istioInjectKey:                     "true",
 			autoscaling.TargetBurstCapacityKey: "0",
 			autoscaling.MinScaleAnnotationKey:  "1",
 		},
@@ -156,91 +140,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 	for _, scenario := range tests {
 		scenario := scenario
 		t.Run(scenario.name, func(t *testing.T) {
-			// Create a ksvc with the specified annotations and labels
-			service := test.Service(scenario.name, serviceMeshTestNamespaceName, serviceMeshTestImage, scenario.annotations)
-			service.ObjectMeta.Labels = scenario.labels
-			service, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(context.Background(), service, meta.CreateOptions{})
-			if err != nil {
-				t.Errorf("error creating ksvc: %v", err)
-				return
-			}
-
-			// Let the ksvc be deleted after test
-			caCtx.AddToCleanup(func() error {
-				t.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
-				return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(context.Background(), service.Name, meta.DeleteOptions{})
-			})
-
-			// Wait until the Ksvc is ready.
-			service, err = test.WaitForServiceState(caCtx, service.Name, service.Namespace, test.IsServiceReady)
-			if err != nil {
-				t.Errorf("error waiting for ksvc readiness: %v", err)
-				return
-			}
-
-			serviceURL := service.Status.URL.URL()
-
-			// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
-			if service.GetLabels()[network.VisibilityLabelKey] == string(nv1alpha1.IngressVisibilityClusterLocal) {
-				// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-				httpProxy, err := caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Create(context.Background(),
-					httpProxyService(scenario.name+"-proxy", service.Status.URL.Host), meta.CreateOptions{})
-				if err != nil {
-					t.Errorf("error creating ksvc: %v", err)
-					return
-				}
-
-				// Let the ksvc be deleted after test
-				caCtx.AddToCleanup(func() error {
-					t.Logf("Cleaning up Knative Service '%s/%s'", httpProxy.Namespace, httpProxy.Name)
-					return caCtx.Clients.Serving.ServingV1().Services(serviceMeshTestNamespaceName).Delete(context.Background(), httpProxy.Name, meta.DeleteOptions{})
-				})
-
-				// Wait until the Proxy is ready.
-				httpProxy, err = test.WaitForServiceState(caCtx, httpProxy.Name, httpProxy.Namespace, test.IsServiceReady)
-				if err != nil {
-					t.Errorf("error waiting for ksvc readiness: %v", err)
-					return
-				}
-
-				serviceURL = httpProxy.Status.URL.URL()
-			}
-
-			// Verify the service is actually accessible from the outside
-			if _, err := pkgTest.WaitForEndpointState(
-				context.Background(),
-				&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
-				t.Logf,
-				serviceURL,
-				pkgTest.EventuallyMatchesBody(helloworldText),
-				"WaitForRouteToServeText",
-				true); err != nil {
-				t.Errorf("the Route at domain %s didn't serve the expected text %q: %v", service.Status.URL.URL(), helloworldText, err)
-			}
-
-			// Verify the expected istio-proxy is really there
-			podList, err := caCtx.Clients.Kube.CoreV1().Pods(serviceMeshTestNamespaceName).List(context.Background(), meta.ListOptions{LabelSelector: "network.knative.dev/service=" + service.Name})
-			if err != nil {
-				t.Errorf("error listing pods: %v", err)
-				return
-			}
-
-			for _, pod := range podList.Items {
-				istioProxyFound := false
-				for _, container := range pod.Spec.Containers {
-					if container.Name == "istio-proxy" {
-						istioProxyFound = true
-					}
-				}
-
-				if scenario.expectIstioSidecar != istioProxyFound {
-					if scenario.expectIstioSidecar {
-						t.Errorf("scenario %s expects istio-proxy to be present, but no such container exists in %s", scenario.name, pod.Name)
-					} else {
-						t.Errorf("scenario %s does not expect istio-proxy to be present in pod %s, but it has one", scenario.name, pod.Name)
-					}
-				}
-			}
+			testServiceToService(t, caCtx, serviceMeshTestNamespaceName, scenario)
 		})
 	}
 }
@@ -409,7 +309,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		Value: jwks,
 	})
 	jwksKsvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	jwksKsvc = withServiceReadyOrFail(caCtx, jwksKsvc)
 
@@ -645,7 +545,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
@@ -782,7 +682,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 	// Deploy a cluster-local ksvc "hello"
 	ksvc := test.Service("hello", serviceMeshTestNamespaceName, "openshift/hello-openshift", nil)
 	ksvc.ObjectMeta.Labels = map[string]string{
-		network.VisibilityLabelKey: string(nv1alpha1.IngressVisibilityClusterLocal),
+		network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 	}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 

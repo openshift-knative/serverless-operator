@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 branch=${1-'openshift-serverless-v1.0.0'}
 

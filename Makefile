@@ -9,11 +9,23 @@ images:
 install:
 	./hack/install.sh
 
+install-all: install-strimzi
+	INSTALL_KAFKA="true" ./hack/install.sh
+
 install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
 	INSTALL_SERVING="false" ./hack/install.sh
+
+install-kafka:
+	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
+
+install-strimzi:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+
+uninstall-strimzi:
+	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
 
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
@@ -30,6 +42,7 @@ teardown:
 # Test targets for CI operator.
 test-unit:
 	go test ./knative-operator/...
+	go test ./openshift-knative-operator/...
 	go test ./serving/ingress/...
 
 # Run only SERVING/EVENTING E2E tests from the current repo.
@@ -88,15 +101,13 @@ release-files:
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 generated-files: release-files
-	(cd openshift-knative-operator && ./hack/update-codegen.sh && ./hack/update-deps.sh && ./hack/update-manifests.sh)
-	(cd serving/ingress && ./hack/update-codegen.sh && ./hack/update-deps.sh)
-	(cd test && ./hack/update-deps.sh)
-	(cd knative-operator && ./hack/update-deps.sh)
+	./hack/update-deps.sh
+	(cd knative-operator && ./hack/update-manifests.sh)
+	(cd openshift-knative-operator && ./hack/update-codegen.sh && ./hack/update-manifests.sh)
+	(cd serving/ingress && ./hack/update-codegen.sh)
+	./hack/update-deps.sh
 
 # Runs the lints Github Actions do too.
 lint:
 	woke
-	(cd openshift-knative-operator && golangci-lint run)
-	(cd serving/ingress && golangci-lint run)
-	(cd test && golangci-lint run)
-	(cd knative-operator && golangci-lint run)
+	golangci-lint run

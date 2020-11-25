@@ -1,27 +1,17 @@
 FROM openshift/origin-release:golang-1.14 AS builder
 
-ENV SRC=${GOPATH}/src/github.com/openshift-knative/serverless-operator/knative-operator
+ENV BASE=github.com/openshift-knative/serverless-operator
+WORKDIR ${GOPATH}/src/${BASE}
 
-WORKDIR ${SRC}
 COPY . .
 
+WORKDIR knative-operator
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /usr/bin/manager ./cmd/manager
+RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
 
 FROM openshift/origin-base
-
-ENV OPERATOR=/usr/local/bin/knative-openshift \
-    USER_UID=1001 \
-    USER_NAME=knative-openshift
-
-COPY --from=builder /usr/bin/manager ${OPERATOR}
-
-COPY build/bin /usr/local/bin
-RUN /usr/local/bin/user_setup
-
+COPY --from=builder /tmp/operator /ko-app/operator
 # install manifest[s]
-COPY deploy /deploy
+COPY knative-operator/deploy /deploy
 
-ENTRYPOINT ["/usr/local/bin/entrypoint"]
-
-USER ${USER_UID}
+ENTRYPOINT ["/ko-app/operator"]

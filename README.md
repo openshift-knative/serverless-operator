@@ -3,6 +3,29 @@
 Provides a collection of API's to support deploying and serving of serverless
 applications and functions.
 
+## Requirements
+
+For the scripts in this repository to work properly, the following requirements apply.
+
+- `podman` aliased to `docker` or `docker` (17.05 or newer) (only if you need/want to
+build images from code)
+- `bash` (4.0.0 or newer)
+- `make`
+- `yq` (3.4.0)
+
+## Install an unreleased version
+
+To install an unreleased version (either **nightly** from master or the respective version
+from an already cut branch), you can follow these steps. You can replace the `crc start`
+step with whatever cluster you might want to use. Also make sure to check out the respective
+branch of the version you want to install first.
+
+```
+$ crc start --cpus=6 --memory 16384
+$ unset DOCKER_REPO_OVERRIDE # This makes sure that pre-built images are used
+$ make install
+```
+
 ## Development and private cluster testing
 
 ### tl;dr
@@ -12,17 +35,9 @@ the CI environment), use these commands:
 
 ```
 $ crc start --cpus=6 --memory 16384
+$ export DOCKER_REPO_OVERRIDE=docker.io/username
 $ make images test-operator
 ```
-
-### Requirements
-
-- `podman` aliased to `docker` or `docker` (17.05 or newer)
-- `podman` or `docker` is logged into a repository you can push to
-- `DOCKER_REPO_OVERRIDE` points to that repository
-- `bash` (4.0.0 or newer)
-- `make`
-- `yq` (3.4.0)
 
 ### CRC-based cluster
 
@@ -49,10 +64,15 @@ Use the appropriate make targets or scripts in `hack`:
 
 - `make dev`: Deploys the serverless-operator without deploying Knative Serving, Eventing and Kafka components.
 - `make install`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving and Eventing.
+- `make install-all`: Scales the cluster appropriately, deploys serverless-operator, Knative Serving, Eventing and Kafka.
 - `make install-serving`: Scales the cluster appropriately, deploys serverless-operator and Knative Serving.
 - `make install-eventing`: Scales the cluster appropriately, deploys serverless-operator and Knative Eventing.
+- `make install-kafka`: Scales the cluster appropriately, deploys serverless-operator, Knative Eventing and Knative Kafka 
+in `knative-eventing` namespace by default. Requires to install a Strimzi cluster with `make install-strimzi`.
 - `make install-previous`: same as `make install` but deploy previous serverless-operator
   version.
+- `make install-strimzi`: Install the latest Strimzi operator and a kafka cluster instance in `kafka` namespace by default.
+- `make unistall-strimzi`: Uninstall the Strimzi operator and any existing kafka cluster instance. 
 - `make install-mesh`: Install service mesh operator and enable sidecar injections.
 - `make uninstall-mesh `: Uninstall service mesh operator and disable sidecar injection.
 

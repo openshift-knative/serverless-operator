@@ -29,7 +29,11 @@ const (
 
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-
+	route, err := setupMetricsRoute(caCtx, "serving")
+	if err != nil {
+		t.Fatal("Failed to setup operator metrics route", err)
+	}
+	metricsURL := "http://" + route.Spec.Host + route.Spec.Path
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
@@ -42,6 +46,11 @@ func TestKnativeServing(t *testing.T) {
 		if _, err := v1a1test.WithKnativeServingReady(caCtx, servingName, servingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeServing", err)
 		}
+	})
+
+	t.Run("verify health metrics work correctly", func(t *testing.T) {
+		// Serving should be up
+		verifyHealthStatusMetric(caCtx, metricsURL, "serving_status", 1)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
@@ -59,11 +68,6 @@ func TestKnativeServing(t *testing.T) {
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range []string{"3scale-kourier-control", "3scale-kourier-gateway"} {
-			// Workaround for https://issues.redhat.com/browse/SRVCOM-1008 - wait for Kourier deployments to
-			// be ready before checking their scales.
-			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace+"-ingress"); err != nil {
-				t.Fatal("Failed", err)
-			}
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}

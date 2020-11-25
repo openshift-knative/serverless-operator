@@ -146,6 +146,7 @@ func (r *ReconcileKnativeKafka) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
+	common.KnativeKafkaUpG = common.KnativeUp.WithLabelValues("kafka_status")
 	if instance.Status.IsReady() {
 		common.KnativeKafkaUpG.Set(1)
 	} else {
@@ -302,6 +303,7 @@ func isDeploymentAvailable(d *appsv1.Deployment) bool {
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
 func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) error {
+	defer common.KnativeUp.DeleteLabelValues("kafka_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

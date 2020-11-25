@@ -12,12 +12,12 @@ fi
 
 repo=$1
 
-docker build -t "$repo/openshift-knative-operator" openshift-knative-operator
+docker build -t "$repo/openshift-knative-operator" -f openshift-knative-operator/Dockerfile .
 docker push "$repo/openshift-knative-operator"
 
-docker build -t "$repo/knative-operator" knative-operator
+docker build -t "$repo/knative-operator" -f knative-operator/Dockerfile .
 docker push "$repo/knative-operator"
 
-docker build -t "$repo/knative-openshift-ingress" serving/ingress
+docker build -t "$repo/knative-openshift-ingress" -f serving/ingress/Dockerfile .
 docker push "$repo/knative-openshift-ingress"
 

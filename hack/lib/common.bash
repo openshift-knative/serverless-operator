@@ -24,9 +24,9 @@ function wait_until_labelled_pods_are_ready {
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
   local seconds timeout
-  interval="${interval:-2}"
+  timeout="${1:?Pass a timeout as arg[1]}"
+  interval="${interval:-1}"
   seconds=0
-  timeout=${1:?Pass timeout as arg[1]}
   shift
   ln=' ' logger.debug "${*} : Waiting until non-zero (max ${timeout} sec.)"
   while (eval "$*" 2>/dev/null); do

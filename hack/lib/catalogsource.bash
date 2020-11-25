@@ -32,9 +32,11 @@ function install_catalogsource {
     # Image variables supplied by ci-operator.
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
     sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
+    sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
   fi
 
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
@@ -44,19 +46,29 @@ function install_catalogsource {
 
   if ! oc get buildconfigs serverless-bundle -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info 'Create a bundle image build'
-    oc -n "$OLM_NAMESPACE" new-build --binary \
+    oc -n "${OLM_NAMESPACE}" new-build --binary \
       --strategy=docker --name serverless-bundle
   else
     logger.info 'Serverless bundle image build is already created'
   fi
+
+  # Fetch previously created ConfigMap or remove empty file
+  oc -n "${OLM_NAMESPACE}" get configmap serverless-bundle-sha1sums \
+    -o jsonpath='{.data.serverless-bundle\.sha1sum}' \
+    > "${rootdir}/_output/serverless-bundle.sha1sum" 2>/dev/null \
+    || rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
+
   if ! [ -f "${rootdir}/_output/serverless-bundle.sha1sum" ] || \
       ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
     logger.info 'Build the bundle image in the cluster-internal registry.'
-    oc -n "$OLM_NAMESPACE" start-build serverless-bundle \
+    oc -n "${OLM_NAMESPACE}" start-build serverless-bundle \
       --from-dir "${rootdir}/olm-catalog/serverless-operator" -F
     mkdir -p "${rootdir}/_output"
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
+    oc -n "${OLM_NAMESPACE}" create configmap serverless-bundle-sha1sums \
+      --from-file="${rootdir}/_output/serverless-bundle.sha1sum"
+    rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
   else
     logger.info 'Serverless bundle build is up-to-date.'
   fi
@@ -148,6 +160,8 @@ function delete_catalog_source {
   oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
   oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle-sha1sums
+  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle
   logger.info "Wait for the ${OPERATOR} pod to disappear"
   timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]"
   logger.success 'CatalogSource deleted'

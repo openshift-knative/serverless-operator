@@ -34,7 +34,7 @@ function prepare_knative_serving_tests {
   add_systemnamespace_label
 
   export GATEWAY_OVERRIDE="kourier"
-  export GATEWAY_NAMESPACE_OVERRIDE="${SERVING_NAMESPACE}-ingress"
+  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
 }
 
 function upstream_knative_serving_e2e_and_conformance_tests {
@@ -220,8 +220,5 @@ function run_serving_postupgrade_test {
 }
 
 function cleanup_serving_test_services {
-  oc delete --ignore-not-found=true ksvc \
-    pizzaplanet-upgrade-service \
-    scale-to-zero-upgrade-service \
-    upgrade-probe -n serving-tests
+  oc delete --all=true ksvc -n serving-tests
 }

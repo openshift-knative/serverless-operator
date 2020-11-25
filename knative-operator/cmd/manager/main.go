@@ -1,14 +1,10 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -16,13 +12,13 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
-	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	zapr "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -35,6 +31,7 @@ var (
 	metricsHost               = "0.0.0.0"
 	metricsPort         int32 = 8383
 	operatorMetricsPort int32 = 8686
+	healthPort          int32 = 8687
 	log                       = logf.Log.WithName("cmd")
 )
 
@@ -57,22 +54,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.TODO()
-	// Become the leader before proceeding
-	// This needs to remain "knative-serving-openshift-lock" to allow for safe upgrades.
-	err = leader.Become(ctx, "knative-serving-openshift-lock")
+	// Create a new Cmd to provide shared dependencies and start components
+	mgr, err := manager.New(cfg, manager.Options{
+		Namespace:              "", // The serverless operator always watches all namespaces.
+		LeaderElection:         true,
+		LeaderElectionID:       "knative-serving-openshift-lock",
+		MetricsBindAddress:     fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
+	})
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
 
-	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{
-		Namespace:          "", // The serverless operator always watches all namespaces.
-		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
-	})
-	if err != nil {
-		log.Error(err, "")
+	// Add readiness probe
+	if err := mgr.AddReadyzCheck("ready-ping", healthz.Ping); err != nil {
+		log.Error(err, "unable to add a readiness check")
+		os.Exit(1)
+	}
+
+	// Add liveness probe
+	if err := mgr.AddHealthzCheck("health-ping", healthz.Ping); err != nil {
+		log.Error(err, "unable to add a health check")
 		os.Exit(1)
 	}
 
