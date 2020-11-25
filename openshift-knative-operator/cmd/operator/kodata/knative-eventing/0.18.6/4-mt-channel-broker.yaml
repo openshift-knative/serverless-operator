@@ -16,7 +16,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 rules:
   # Configs resources and status we care about.
   - apiGroups:
@@ -57,7 +57,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 rules:
   - apiGroups:
       - eventing.knative.dev
@@ -97,7 +97,7 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -118,7 +118,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 rules:
   - apiGroups:
       - eventing.knative.dev
@@ -157,7 +157,7 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -179,7 +179,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -209,7 +209,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 subjects:
   - kind: ServiceAccount
     name: mt-broker-filter
@@ -239,7 +239,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 subjects:
   - kind: ServiceAccount
     name: mt-broker-ingress
@@ -270,7 +270,7 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 spec:
   selector:
     matchLabels:
@@ -279,23 +279,25 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: filter
-        eventing.knative.dev/release: "v0.18.4"
+        eventing.knative.dev/release: "v0.18.6"
     spec:
       serviceAccountName: mt-broker-filter
       containers:
         - name: filter
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtbroker/filter@sha256:9a2544be33f1ad358974e65aeca0d81d6e0b811f8da4b6f8e4a1246d808db494
-          livenessProbe:
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtbroker/filter@sha256:0fb725adce888462062b9bc160ff0a6984442efec8611421054ca130b5d3b32e
+          readinessProbe: &probe
             failureThreshold: 3
             httpGet:
               path: /healthz
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 5
             periodSeconds: 2
             successThreshold: 1
             timeoutSeconds: 1
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 5
           resources:
             requests:
               cpu: 100m
@@ -341,7 +343,7 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: filter
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
   name: broker-filter
   namespace: knative-eventing
 spec:
@@ -378,7 +380,7 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 spec:
   selector:
     matchLabels:
@@ -387,23 +389,25 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: ingress
-        eventing.knative.dev/release: "v0.18.4"
+        eventing.knative.dev/release: "v0.18.6"
     spec:
       serviceAccountName: mt-broker-ingress
       containers:
         - name: ingress
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtbroker/ingress@sha256:4ab87d21bcd1311cf656e1362851256523908d1dc14c994cff5c50625de75daf
-          livenessProbe:
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtbroker/ingress@sha256:03114e6a9e508600f5925f9a4adc551ded18d6972ad460e4155c6fe7ce8d4297
+          readinessProbe: &probe
             failureThreshold: 3
             httpGet:
               path: /healthz
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 5
             periodSeconds: 2
             successThreshold: 1
             timeoutSeconds: 1
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 5
           resources:
             requests:
               cpu: 100m
@@ -449,7 +453,7 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: ingress
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
   name: broker-ingress
   namespace: knative-eventing
 spec:
@@ -486,7 +490,7 @@ metadata:
   name: mt-broker-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 spec:
   replicas: 1
   selector:
@@ -496,7 +500,7 @@ spec:
     metadata:
       labels:
         app: mt-broker-controller
-        eventing.knative.dev/release: "v0.18.4"
+        eventing.knative.dev/release: "v0.18.6"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -512,7 +516,7 @@ spec:
       containers:
         - name: mt-broker-controller
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtchannel_broker@sha256:6289a600f77a4ca59869a52136d9f5545c75bed4a861e6bee4001f1dfd76723d
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtchannel_broker@sha256:cb717e7dfe2c3f5b052fed128f690b0c18b70126b39806b77c4b377b446d8190
           resources:
             requests:
               cpu: 100m
@@ -568,7 +572,7 @@ metadata:
   name: broker-ingress-hpa
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -590,7 +594,7 @@ metadata:
   name: broker-filter-hpa
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.4"
+    eventing.knative.dev/release: "v0.18.6"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
