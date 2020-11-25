@@ -98,8 +98,16 @@ EOF
   oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
 
   header "Deleting existing Kafka user secrets"
-  oc delete secret -n default my-tls-secret || true
-  oc delete secret -n default my-sasl-secret || true
+
+  if oc get secret my-tls-secret -n default >/dev/null 2>&1
+  then
+    oc delete secret -n default my-tls-secret
+  fi
+
+  if oc get secret my-sasl-secret -n default >/dev/null 2>&1
+  then
+    oc delete secret -n default my-sasl-secret
+  fi
 
   header "Creating a Secret, containing TLS from Strimzi"
   STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
