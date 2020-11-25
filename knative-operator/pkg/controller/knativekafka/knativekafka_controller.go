@@ -395,7 +395,7 @@ func setBootstrapServers(bootstrapServers string) mf.Transformer {
 func setAuthSecret(secretNamespace, secretName string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
-			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
+			log.Info("Found ConfigMap config-kafka, updating it with authSecretName and authSecretNamespace from spec")
 			if err := unstructured.SetNestedField(u.Object, secretNamespace, "data", "authSecretNamespace"); err != nil {
 				return err
 			}

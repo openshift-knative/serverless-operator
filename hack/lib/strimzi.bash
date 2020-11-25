@@ -122,7 +122,9 @@ EOF
   header "Creating a Secret, containing SASL from Strimzi"
   SASL_PASSWD=$(oc -n kafka get secret my-sasl-user --template='{{index .data "password"}}' | base64 --decode )
   oc create secret --namespace default generic my-sasl-secret \
+      --from-literal=ca.crt="$STRIMZI_CRT" \
       --from-literal=password="$SASL_PASSWD" \
+      --from-literal=saslType="SCRAM-SHA-512" \
       --from-literal=user="my-sasl-user"
 }
 
