@@ -58,18 +58,54 @@ var (
 			},
 		},
 	}
-	invalidShapeCR = &operatorv1alpha1.KnativeKafka{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "invalidShapeCR",
-			Namespace: "knative-eventing",
-		},
-		Spec: operatorv1alpha1.KnativeKafkaSpec{
-			Source: operatorv1alpha1.Source{
-				Enabled: false,
+	invalidShapeCRs = []operatorv1alpha1.KnativeKafka{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "invalidShapeCR-1",
+				Namespace: "knative-eventing",
 			},
-			Channel: operatorv1alpha1.Channel{
-				Enabled: true,
-				// need to have bootstrapServers defined here!
+			Spec: operatorv1alpha1.KnativeKafkaSpec{
+				Source: operatorv1alpha1.Source{
+					Enabled: false,
+				},
+				Channel: operatorv1alpha1.Channel{
+					Enabled: true,
+					// need to have bootstrapServers defined here!
+				},
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "invalidShapeCR-2",
+				Namespace: "knative-eventing",
+			},
+			Spec: operatorv1alpha1.KnativeKafkaSpec{
+				Source: operatorv1alpha1.Source{
+					Enabled: false,
+				},
+				Channel: operatorv1alpha1.Channel{
+					Enabled:             true,
+					BootstrapServers:    "foo.example.com",
+					AuthSecretNamespace: "my-ns",
+					// need to have AuthSecretName here
+				},
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "invalidShapeCR-3",
+				Namespace: "knative-eventing",
+			},
+			Spec: operatorv1alpha1.KnativeKafkaSpec{
+				Source: operatorv1alpha1.Source{
+					Enabled: false,
+				},
+				Channel: operatorv1alpha1.Channel{
+					Enabled:          true,
+					BootstrapServers: "foo.example.com",
+					AuthSecretName:   "my-secret",
+					// need to have AuthSecretNamespace here
+				},
 			},
 		},
 	}
@@ -153,14 +189,16 @@ func TestInvalidShape(t *testing.T) {
 	validator.InjectDecoder(decoder)
 	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
 
-	req, err := testutil.RequestFor(invalidShapeCR)
-	if err != nil {
-		t.Fatalf("Failed to generate a request for %v: %v", invalidShapeCR, err)
-	}
+	for _, cr := range invalidShapeCRs {
+		req, err := testutil.RequestFor(&cr)
+		if err != nil {
+			t.Fatalf("Failed to generate a request for %v: %v", cr, err)
+		}
 
-	result := validator.Handle(context.Background(), req)
-	if result.Allowed {
-		t.Error("The shape is invalid, but the request is allowed")
+		result := validator.Handle(context.Background(), req)
+		if result.Allowed {
+			t.Error("The shape is invalid, but the request is allowed")
+		}
 	}
 }
 

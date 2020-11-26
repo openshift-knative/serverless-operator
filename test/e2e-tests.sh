@@ -31,7 +31,12 @@ ensure_serverless_installed
 downstream_serving_e2e_tests
 downstream_eventing_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
+  ensure_kafka_no_auth
   downstream_knative_kafka_e2e_tests
+  # ensure_kafka_tls_auth
+  # downstream_knative_kafka_e2e_tests
+  # ensure_kafka_sasl_auth
+  # downstream_knative_kafka_e2e_tests
 fi
 
 success

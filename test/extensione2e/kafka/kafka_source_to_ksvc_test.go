@@ -37,6 +37,7 @@ const (
 )
 
 var (
+	// TODO: TLS/SASL? --> https://issues.redhat.com/browse/SRVKE-647
 	bootstrapServer = clusterName + "-kafka-bootstrap.kafka:9092"
 	kafkaGVR        = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
 

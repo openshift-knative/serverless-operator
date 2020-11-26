@@ -31,9 +31,6 @@ function upstream_knative_eventing_contrib_e2e {
   # shellcheck disable=SC1090
   source "${KNATIVE_EVENTING_CONTRIB_HOME}/openshift/e2e-common.sh"
 
-  logger.info 'Installing Strimzi'
-  install_strimzi
-
   # run_e2e_tests defined in eventing-contrib
   logger.info 'Starting eventing-contrib tests'
   run_e2e_tests
