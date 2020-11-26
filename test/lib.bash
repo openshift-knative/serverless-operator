@@ -165,8 +165,8 @@ function run_rolling_upgrade_tests {
     eventing_prober_pid prev_serving_version prev_eventing_version retcode
 
   scope="${1:?Provide an upgrade scope as arg[1]}"
-  serving_in_scope="$(echo "${scope}" | grep -vq serving ; echo "$?")"
-  eventing_in_scope="$(echo "${scope}" | grep -vq eventing ; echo "$?")"
+  serving_in_scope="$(echo "${scope}" | grep -c serving)"
+  eventing_in_scope="$(echo "${scope}" | grep -c eventing)"
 
   prev_serving_version="$(actual_serving_version)"
   prev_eventing_version="$(actual_eventing_version)"
