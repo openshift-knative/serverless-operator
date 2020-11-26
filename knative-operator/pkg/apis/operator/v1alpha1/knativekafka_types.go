@@ -60,6 +60,16 @@ type Channel struct {
 	// KafkaChannels will use
 	// +optional
 	BootstrapServers string `json:"bootstrapServers"`
+
+	// AuthSecretNamespace is the namespace of the secret that contains Kafka
+	// auth configuration.
+	// +optional
+	AuthSecretNamespace string `json:"authSecretNamespace"`
+
+	// AuthSecretName is the name of the secret that contains Kafka
+	// auth configuration.
+	// +optional
+	AuthSecretName string `json:"authSecretName"`
 }
 
 func init() {
