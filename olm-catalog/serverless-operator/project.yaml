@@ -20,7 +20,7 @@ requirements:
 
 dependencies:
   serving: 0.18.2
-  eventing: 0.18.4
+  eventing: 0.18.6
   eventing_contrib: 0.18.0
   kourier: 0.18.1
   cli: 0.17.2
