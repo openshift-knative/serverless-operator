@@ -41,3 +41,6 @@ download serving $KNATIVE_SERVING_VERSION "${serving_files[@]}"
 git apply "$root/openshift-knative-operator/hack/001-liveness.patch"
 
 download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
+# Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
+# TODO: propose to upstream
+git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
