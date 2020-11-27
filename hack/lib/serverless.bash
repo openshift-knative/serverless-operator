@@ -239,7 +239,7 @@ spec:
     enabled: true
   channel:
     enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9093
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9094
     authSecretNamespace: default
     authSecretName: my-tls-secret
 EOF
@@ -265,7 +265,7 @@ spec:
     enabled: true
   channel:
     enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9094
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9093
     authSecretNamespace: default
     authSecretName: my-sasl-secret
 EOF
