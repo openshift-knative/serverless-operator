@@ -26,15 +26,14 @@ function scale_up_workers {
   fi
 
   idx=0
-  for mset in $(oc get machineset -n openshift-machine-api -o name);
-  do
-    replicas=$(( ${SCALE_UP} / ${az_total} ))
-    if [ ${idx} -lt $(( ${SCALE_UP} % ${az_total} )) ];then
-          let replicas++
+  for mset in $(oc get machineset -n openshift-machine-api -o name); do
+    replicas=$(( SCALE_UP / az_total ))
+    if [ ${idx} -lt $(( SCALE_UP % az_total )) ];then
+      (( replicas++ )) || true
     fi
-    let idx++
+    (( idx++ )) || true
     logger.debug "Bump ${mset} to ${replicas}"
-    oc scale ${mset} -n openshift-machine-api --replicas=${replicas}
+    oc scale "${mset}" -n openshift-machine-api --replicas=${replicas}
   done
   wait_until_machineset_scales_up "${SCALE_UP}"
 }
