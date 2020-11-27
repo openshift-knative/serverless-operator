@@ -9,20 +9,18 @@ import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	kmeta "knative.dev/pkg/kmeta"
+	"knative.dev/pkg/kmeta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,18 +37,9 @@ const (
 	TestSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
 )
 
-func SetupServerlessOperatorServiceMonitor(cfg *rest.Config, api client.Client, metricsPort int32, metricsHost string, operatorMetricsPort int32) error {
-	// Commented below to avoid a stream of these errors at startup:
-	// E1021 22:50:03.372487       1 reflector.go:134] github.com/operator-framework/operator-sdk/pkg/kube-metrics/collector.go:67: Failed to list *unstructured.Unstructured: the server could not find the requested resource
-	if err := serveCRMetrics(cfg, metricsHost, operatorMetricsPort); err != nil {
-		log.Info("Could not generate and serve custom resource metrics", "error", err.Error())
-	}
-
+func SetupServerlessOperatorServiceMonitor(cfg *rest.Config, api client.Client, metricsPort int32) error {
 	// Add to the below struct any other metrics ports you want to expose.
-	servicePorts := []v1.ServicePort{
-		{Port: metricsPort, Name: metrics.OperatorPortName, Protocol: v1.ProtocolTCP, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: metricsPort}},
-		{Port: operatorMetricsPort, Name: metrics.CRPortName, Protocol: v1.ProtocolTCP, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: operatorMetricsPort}},
-	}
+	servicePorts := []v1.ServicePort{{Port: metricsPort, Name: metrics.OperatorPortName, Protocol: v1.ProtocolTCP, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: metricsPort}}}
 	// Create Service object to expose the metrics port(s).
 	service, err := metrics.CreateMetricsService(context.Background(), cfg, servicePorts)
 	if err != nil {
@@ -77,40 +66,6 @@ func SetupServerlessOperatorServiceMonitor(cfg *rest.Config, api client.Client, 
 			return nil
 		}
 		return fmt.Errorf("failed to create service monitors: %w", err)
-	}
-	return nil
-}
-
-// serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
-// It serves those metrics on "http://metricsHost:operatorMetricsPort".
-func serveCRMetrics(cfg *rest.Config, metricsHost string, operatorMetricsPort int32) error {
-
-	// If we dont use a custom list here, the typical call to get a filtered list of gvks using k8sutil.GetGVKsFromAddToScheme(apis.AddToScheme)
-	// will end up with resources the Operator does not have access to eg. `Kind=LimitRange`
-	// The list of resources returned is unrelated to our purposes here, thus the customization.
-	gvkFilterList := []schema.GroupVersionKind{
-		{
-			Group:   "operator.knative.dev",
-			Version: "v1alpha1",
-			Kind:    "KnativeServing",
-		},
-		{
-			Group:   "operator.knative.dev",
-			Version: "v1alpha1",
-			Kind:    "KnativeEventing",
-		},
-	}
-	// To generate metrics in other namespaces, add the values below.
-	// This is due to this bug: https://github.com/operator-framework/operator-sdk/issues/2494
-	// For the workaround check here: https://github.com/operator-framework/operator-sdk/pull/2601/files#r396745465
-	// and https://github.com/shipwright-io/build/pull/73
-	// In order to avoid getting a bad value we avoid using k8sutil.GetWatchNamespace() that gets the value from the WATCH_NAMESPACE
-	// env var. That value is by default "" but user may change it, affecting the metrics endpoint.
-	namespaces := []string{""}
-	// Generate and serve custom resource specific metrics.
-	err := kubemetrics.GenerateAndServeCRMetrics(cfg, namespaces, gvkFilterList, metricsHost, operatorMetricsPort)
-	if err != nil {
-		return err
 	}
 	return nil
 }

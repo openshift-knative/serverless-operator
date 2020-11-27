@@ -28,11 +28,10 @@ import (
 
 // Change below variables to serve metrics on different host or port.
 var (
-	metricsHost               = "0.0.0.0"
-	metricsPort         int32 = 8383
-	operatorMetricsPort int32 = 8686
-	healthPort          int32 = 8687
-	log                       = logf.Log.WithName("cmd")
+	metricsHost       = "0.0.0.0"
+	metricsPort int32 = 8383
+	healthPort  int32 = 8687
+	log               = logf.Log.WithName("cmd")
 )
 
 func init() {
@@ -141,7 +140,7 @@ func setupMonitoring(cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.SetupServerlessOperatorServiceMonitor(cfg, cl, metricsPort, metricsHost, operatorMetricsPort); err != nil {
+	if err := common.SetupServerlessOperatorServiceMonitor(cfg, cl, metricsPort); err != nil {
 		return fmt.Errorf("failed to setup the Service monitor: %w", err)
 	}
 
