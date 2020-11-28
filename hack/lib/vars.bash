@@ -37,7 +37,7 @@ readonly INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
 readonly KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
 readonly OPENSHIFT_CI="${OPENSHIFT_CI:-}"
 readonly OPERATOR="${OPERATOR:-serverless-operator}"
-readonly SCALE_UP="${SCALE_UP:-8}"
+readonly SCALE_UP="${SCALE_UP:-10}"
 
 readonly OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 readonly OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-operators}"
