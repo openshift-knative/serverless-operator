@@ -215,7 +215,6 @@ github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientse
 # github.com/operator-framework/operator-sdk v0.19.4
 ## explicit
 github.com/operator-framework/operator-sdk/pkg/k8sutil
-github.com/operator-framework/operator-sdk/pkg/kube-metrics
 github.com/operator-framework/operator-sdk/pkg/metrics
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
@@ -856,9 +855,6 @@ k8s.io/kube-openapi/pkg/generators
 k8s.io/kube-openapi/pkg/generators/rules
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
-# k8s.io/kube-state-metrics v1.7.2
-k8s.io/kube-state-metrics/pkg/metric
-k8s.io/kube-state-metrics/pkg/metrics_store
 # k8s.io/utils v0.0.0-20200729134348-d5654de09c73
 k8s.io/utils/buffer
 k8s.io/utils/integer
