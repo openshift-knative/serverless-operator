@@ -46,6 +46,7 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
 	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
+	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
 	os.Setenv(common.TestRolePath, "../dashboard/testdata/role_service_monitor.yaml")
 	os.Setenv(common.TestEventingBrokerServiceMonitorPath, "../dashboard/testdata/broker-service-monitors.yaml")
 	os.Setenv(common.TestMonitor, "true")
@@ -87,8 +88,13 @@ func TestEventingReconcile(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 			// Check if Eventing dashboard configmaps are available
+			resourcesCM := &corev1.ConfigMap{}
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-resources", Namespace: dashboardNamespace.Name}, resourcesCM)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
 			brokerCM := &corev1.ConfigMap{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: dashboardNamespace.Name}, brokerCM)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: dashboardNamespace.Name}, brokerCM)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
@@ -109,6 +115,10 @@ func TestEventingReconcile(t *testing.T) {
 				t.Fatalf("get: (%v)", err)
 			}
 			// Delete Dashboard configmaps.
+			err = cl.Delete(context.TODO(), resourcesCM)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
 			err = cl.Delete(context.TODO(), brokerCM)
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
@@ -147,6 +157,8 @@ func TestEventingReconcile(t *testing.T) {
 				}
 			}
 			// Check again if Eventing dashboard configmaps are available
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-resources", Namespace: dashboardNamespace.Name}, resourcesCM)
+			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: dashboardNamespace.Name}, brokerCM)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-source", Namespace: dashboardNamespace.Name}, sourceCM)

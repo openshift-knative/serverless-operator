@@ -168,6 +168,9 @@ func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1al
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Dashboards")
+	if err := dashboard.Apply(os.Getenv(dashboard.EventingResourceDashboardPathEnvVar), instance, r.client); err != nil {
+		return err
+	}
 	if err := dashboard.Apply(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
 		return err
 	}
@@ -188,11 +191,14 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	}
 	log.Info("Running cleanup logic")
 	log.Info("Deleting eventing dashboards")
+	if err := dashboard.Delete(os.Getenv(dashboard.EventingResourceDashboardPathEnvVar), instance, r.client); err != nil {
+		return fmt.Errorf("failed to delete resource dashboard configmap: %w", err)
+	}
 	if err := dashboard.Delete(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete dashboard broker configmap: %w", err)
+		return fmt.Errorf("failed to delete broker dashboard configmap: %w", err)
 	}
 	if err := dashboard.Delete(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete dashboard filter configmap: %w", err)
+		return fmt.Errorf("failed to delete source dashboard configmap: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
 	refetched := &eventingv1alpha1.KnativeEventing{}
