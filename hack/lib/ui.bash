@@ -21,16 +21,16 @@ readonly COLOR_LIGHT_RED='\e[1;31m'
 readonly COLOR_LIGHT_YELLOW='\e[1;33m'
 
 declare -a ERROR_HANDLERS
-trap 'invoke.error_handlers' ERR
+trap 'error_handlers.invoke' ERR
 
-function register.error_handler {
+function error_handlers.register {
   local handlerfunc
   handlerfunc="${1:?Pass an error handler as arg[1]}"
-  logger.debug "Registering a error handler: ${handlerfunc}"
+  logger.debug "Registering error handler: ${handlerfunc}"
   ERROR_HANDLERS+=("${handlerfunc}")
 }
 
-function invoke.error_handlers {
+function error_handlers.invoke {
   local code="${1:-${?}}"
   local handlerfunc
 
@@ -64,7 +64,7 @@ function debugging.setup {
   # Tell bash about it  (there's nothing special about 19, its arbitrary)
   export BASH_XTRACEFD=19
 
-  register.error_handler stacktrace
+  error_handlers.register stacktrace
 
   # Register finish of debugging at exit
   trap debugging.finish EXIT

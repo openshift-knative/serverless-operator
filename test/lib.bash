@@ -330,7 +330,7 @@ function dump_state.setup {
     return 0
   fi
 
-  register.error_handler dump_state
+  error_handlers.register dump_state
 }
 
 function dump_state {
