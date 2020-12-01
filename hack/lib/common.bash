@@ -14,16 +14,16 @@ function wait_until_labelled_pods_are_ready {
   ns="${2:?Pass a namespace as arg[2]}"
 
   # Wait for some pods to sprung
-  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]" || return 1
+  timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]"
   # Wait until they are ready to receive communications
   timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
-'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]" || return 1
+    'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
   return 0
 }
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout {
-  local timeout
+  local seconds timeout
   timeout="${1:?Pass a timeout as arg[1]}"
   interval="${interval:-1}"
   seconds=0
@@ -47,7 +47,7 @@ function wait_for_file {
   file="${1:?Pass a filepath as arg[1]}"
   waits="${2:-300}"
 
-  timeout "${waits}" "[[ ! -f '${file}' ]]" || return $?
+  timeout "${waits}" "[[ ! -f '${file}' ]]"
 }
 
 function versions.le {

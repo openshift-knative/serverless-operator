@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# For SC2164
+set -e
+
 function wait_for_knative_serving_ingress_ns_deleted {
   local NS="${SERVING_NAMESPACE}-ingress"
   timeout 180 '[[ $(oc get ns $NS --no-headers | wc -l) == 1 ]]' || true
@@ -8,16 +11,16 @@ function wait_for_knative_serving_ingress_ns_deleted {
   if oc -n $NS get svc kourier >/dev/null 2>&1 && [ "$(oc -n $NS get svc kourier -ojsonpath="{.status.loadBalancer.*}")" = "" ]; then
     oc -n $NS patch services/kourier --type=json --patch='[{"op":"replace","path":"/metadata/finalizers","value":[]}]'
   fi
-  timeout 180 '[[ $(oc get ns $NS --no-headers | wc -l) == 1 ]]' || return 1
+  timeout 180 '[[ $(oc get ns $NS --no-headers | wc -l) == 1 ]]'
 }
 
 function prepare_knative_serving_tests {
   logger.debug 'Preparing Serving tests'
 
-  cd "$KNATIVE_SERVING_HOME" || return $?
+  cd "$KNATIVE_SERVING_HOME"
 
   # Don't bother with the chaosduck downstream for now
-  rm -rf test/config/chaosduck.yaml
+  rm -fv test/config/chaosduck.yaml
 
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
@@ -37,12 +40,13 @@ function prepare_knative_serving_tests {
 function upstream_knative_serving_e2e_and_conformance_tests {
   logger.info "Running Serving E2E and conformance tests"
 
-  prepare_knative_serving_tests || return $?
+  prepare_knative_serving_tests
 
   # Enable allow-zero-initial-scale before running e2e tests (for test/e2e/initial_scale_test.go)
-  oc -n ${SERVING_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}' || return $?
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
 
-  local failed=0
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
   local parallel=3
@@ -53,15 +57,16 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
+  go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
+    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" || failed=1
+    --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
   oc tag -n serving-tests "registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
   go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}" || failed=2
+    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
   
   # Prevent HPA from scaling to make HA tests more stable
   local max_replicas min_replicas
@@ -75,10 +80,10 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   # Changing the bucket count and cycling the controllers will leave around stale
   # lease resources at the old sharding factor, so clean these up.
-  oc -n ${SERVING_NAMESPACE} delete leases --all
+  oc -n "${SERVING_NAMESPACE}" delete leases --all
 
   # Wait for a new leader Controller to prevent race conditions during service reconciliation
-  wait_for_leader_controller || failed=3
+  wait_for_leader_controller
 
   # Dump the leases post-setup.
   oc get lease -n "${SERVING_NAMESPACE}"
@@ -86,7 +91,8 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Give the controller time to sync with the rest of the system components.
   sleep 30
 
-  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec": {"maxReplicas": '${REPLICAS}', "minReplicas": '${REPLICAS}'}}' || failed=4
+  oc -n "$SERVING_NAMESPACE" patch hpa activator \
+    --patch '{"spec": {"maxReplicas": '${REPLICAS}', "minReplicas": '${REPLICAS}'}}'
 
   # Run HA tests separately as they're stopping core Knative Serving pods
   # Define short -spoofinterval to ensure frequent probing while stopping pods
@@ -94,18 +100,16 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     --resolvabledomain \
     --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" || failed=5
+    --imagetemplate "$image_template"
 
   # Restore the original maxReplicas for any tests running after this test suite
-  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch '{"spec": {"maxReplicas": '${max_replicas}', "minReplicas": '${min_replicas}'}}' || failed=6
-
-  return $failed
+  oc -n "$SERVING_NAMESPACE" patch hpa activator --patch \
+    '{"spec": {"maxReplicas": '${max_replicas}', "minReplicas": '${min_replicas}'}}'
 }
 
 function actual_serving_version {
   oc get knativeserving.operator.knative.dev \
-    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}" \
-    || return $?
+    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}"
 }
 
 function run_serving_preupgrade_test {
@@ -113,14 +117,14 @@ function run_serving_preupgrade_test {
 
   local image_template
 
-  cd "${KNATIVE_SERVING_HOME}" || return $?
+  prepare_knative_serving_tests
 
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
   go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain || return $?
+    --resolvabledomain
 
   logger.success 'Serving pre upgrade tests passed'
 }
@@ -134,7 +138,7 @@ function start_serving_prober {
   logger.info 'Starting Serving prober'
 
   rm -fv /tmp/prober-signal
-  cd "${KNATIVE_SERVING_HOME}" || return $?
+  cd "${KNATIVE_SERVING_HOME}"
 
   probe_fraction=1.0
   if [[ ${prev_serving_version} < "0.14.0" ]]; then
@@ -162,7 +166,7 @@ function wait_for_serving_prober_ready {
   # Wait for the upgrade-probe kservice to be ready before proceeding
   timeout 900 "[[ \$(oc get services.serving.knative.dev upgrade-probe \
     -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
-    != True ]]" || return $?
+    != True ]]"
 
   logger.success 'Serving prober is ready'
 }
@@ -176,22 +180,21 @@ function check_serving_upgraded {
     knative-serving -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') \
     == ${latest_serving_version} && \$(oc get knativeserving.operator.knative.dev \
     knative-serving -n ${SERVING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]" \
-    || return $?
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
 }
 
 function end_serving_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  end_prober 'Serving' "${prober_pid}" || return $?
+  end_prober 'Serving' "${prober_pid}"
 }
 
 function wait_for_serving_test_services_settle {
   # Wait for all services to become ready again. Exclude the upgrade-probe as
   # that'll be removed by the prober test above.
   for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v 'upgrade-probe'); do
-    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]" || return $?
+    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
   done
 
   # Give time to settle things down
@@ -203,7 +206,7 @@ function run_serving_postupgrade_test {
 
   local image_template
 
-  cd "${KNATIVE_SERVING_HOME}" || return $?
+  cd "${KNATIVE_SERVING_HOME}"
 
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
@@ -211,11 +214,11 @@ function run_serving_postupgrade_test {
     -timeout=20m ./test/upgrade \
     --imagetemplate "$image_template" \
     --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain || return $?
+    --resolvabledomain
 
   logger.success 'Serving post upgrade tests passed'
 }
 
 function cleanup_serving_test_services {
-  oc delete --all=true ksvc -n serving-tests || return $?
+  oc delete --all=true ksvc -n serving-tests
 }

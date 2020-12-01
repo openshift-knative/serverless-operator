@@ -47,7 +47,7 @@ function install_catalogsource {
   if ! oc get buildconfigs serverless-bundle -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info 'Create a bundle image build'
     oc -n "${OLM_NAMESPACE}" new-build --binary \
-      --strategy=docker --name serverless-bundle || return $?
+      --strategy=docker --name serverless-bundle
   else
     logger.info 'Serverless bundle image build is already created'
   fi
@@ -62,13 +62,13 @@ function install_catalogsource {
       ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
     logger.info 'Build the bundle image in the cluster-internal registry.'
     oc -n "${OLM_NAMESPACE}" start-build serverless-bundle \
-      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F  || return $?
+      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F
     mkdir -p "${rootdir}/_output"
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
     oc -n "${OLM_NAMESPACE}" create configmap serverless-bundle-sha1sums \
-      --from-file="${rootdir}/_output/serverless-bundle.sha1sum" || return $?
-    rm -f "${rootdir}/_output/serverless-bundle.sha1sum" || return $?
+      --from-file="${rootdir}/_output/serverless-bundle.sha1sum"
+    rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
   else
     logger.info 'Serverless bundle build is up-to-date.'
   fi
@@ -82,7 +82,7 @@ necessary access to run the podman commands."
 
   logger.info 'Install the index deployment.'
   # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $? 
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -137,10 +137,10 @@ spec:
 EOF
 
   logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
-  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE" || return $?
+  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE"
 
   logger.info 'Install the catalogsource.'
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f - || return $?
+  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -157,13 +157,13 @@ EOF
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
-  oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR" || return $?
-  oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index || return $?
-  oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index || return $?
-  oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle-sha1sums || return $?
-  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle || return $?
+  oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
+  oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle-sha1sums
+  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle
   logger.info "Wait for the ${OPERATOR} pod to disappear"
-  timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]" || return 11
+  timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]"
   logger.success 'CatalogSource deleted'
 }
 
@@ -192,5 +192,5 @@ function add_user {
   logger.debug 'Generate kubeconfig'
   cp "${KUBECONFIG}" "$name.kubeconfig"
   occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} > /dev/null'"
-  timeout 180 "${occmd}" || return 1
+  timeout 180 "${occmd}"
 }

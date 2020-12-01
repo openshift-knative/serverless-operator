@@ -29,30 +29,30 @@ function install_serverless_previous {
   # upgrade to the latest version immediately
   remove_installplan "$CURRENT_CSV"
 
-  deploy_serverless_operator "$PREVIOUS_CSV"  || return $?
+  deploy_serverless_operator "$PREVIOUS_CSV"
 
   # TODO: Remove this when the previous release has readiness checks available (since 1.12).
   if versions.le "$(metadata.get olm.replaces)" 1.11.0; then
-    timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]" || return $?
+    timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]"
   fi
 
-  deploy_knativeserving_cr || return $?
-  deploy_knativeeventing_cr || return $?
+  deploy_knativeserving_cr
+  deploy_knativeeventing_cr
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
 }
 
 function install_serverless_latest {
   logger.info "Installing latest version of Serverless..."
-  deploy_serverless_operator_latest || return $?
+  deploy_serverless_operator_latest
 
   if [[ $INSTALL_SERVING == "true" ]]; then
-    deploy_knativeserving_cr || return $?
+    deploy_knativeserving_cr
   fi
   if [[ $INSTALL_EVENTING == "true" ]]; then
-    deploy_knativeeventing_cr || return $?
+    deploy_knativeeventing_cr
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
-    deploy_knativekafka_cr || return $?
+    deploy_knativekafka_cr
   fi
 
   logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
@@ -94,10 +94,10 @@ spec:
   startingCSV: "${csv}"
 EOF
   [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
-  oc apply -f "$tmpfile" || return $?
+  oc apply -f "$tmpfile"
 
   # Approve the initial installplan automatically
-  approve_csv "$csv" "$OLM_CHANNEL" || return 5
+  approve_csv "$csv" "$OLM_CHANNEL"
 }
 
 function approve_csv {
@@ -108,26 +108,30 @@ function approve_csv {
   logger.info 'Ensure channel and source is set properly'
   oc patch subscriptions.operators.coreos.com "$OPERATOR" -n "${OPERATORS_NAMESPACE}" \
     --type 'merge' \
-    --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}' \
-    || return $?
+    --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}'
 
   logger.info 'Wait for the installplan to be available'
-  timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]" || return 1
+  timeout 900 "[[ -z \$(find_install_plan ${csv_version}) ]]"
 
-  install_plan=$(find_install_plan $csv_version)
-  oc get $install_plan -n ${OPERATORS_NAMESPACE} -o yaml | sed 's/\(.*approved:\) false/\1 true/' | oc replace -f -
+  install_plan=$(find_install_plan "${csv_version}")
+  oc get "$install_plan" -n "${OPERATORS_NAMESPACE}" -o yaml \
+    | sed 's/\(.*approved:\) false/\1 true/' \
+    | oc replace -f -
 
   if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
     oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
-    return 1
+    return 105
   fi
 }
 
 function find_install_plan {
-  local csv=$1
-  for plan in `oc get installplan -n ${OPERATORS_NAMESPACE} --no-headers -o name`; do 
-    [[ $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c $csv) -eq 1 && \
-       $(oc get $plan -n ${OPERATORS_NAMESPACE} -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c $OLM_SOURCE) -eq 1 ]] && echo $plan && return 0
+  local csv="${1:-Pass a CSV as arg[1]}"
+  for plan in $(oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers -o name); do
+    if [[ $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c "$csv") -eq 1 && \
+       $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]; then
+         echo "$plan"
+         return 0
+    fi
   done
   echo ""
 }
@@ -136,7 +140,7 @@ function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
 
   # Wait for the CRD to appear
-  timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]" || return 6
+  timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]"
 
   local rootdir
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
@@ -145,9 +149,10 @@ function deploy_knativeserving_cr {
   # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
   # ensure compatibility with this resource and its spec in the current format.
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
-  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" || return $?
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
 
-  timeout 900 '[[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
+    -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Serving has been installed successfully.'
 }
@@ -156,10 +161,10 @@ function deploy_knativeeventing_cr {
   logger.info 'Deploy Knative Eventing'
 
   # Wait for the CRD to appear
-  timeout 900 "[[ \$(oc get crd | grep -c knativeeventings.operator.knative.dev) -eq 0 ]]" || return 6
+  timeout 900 "[[ \$(oc get crd | grep -c knativeeventings.operator.knative.dev) -eq 0 ]]"
 
   # Install Knative Eventing
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
@@ -169,7 +174,9 @@ spec:
   {}
 EOF
 
-  timeout 900 '[[ $(oc get knativeeventing.operator.knative.dev knative-eventing -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
+    knative-eventing -n ${EVENTING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Eventing has been installed successfully.'
 }
@@ -178,10 +185,10 @@ function deploy_knativekafka_cr {
   logger.info 'Deploy Knative Kafka'
 
   # Wait for the CRD to appear
-  timeout 900 "[[ \$(oc get crd | grep -c knativekafkas.operator.serverless.openshift.io) -eq 0 ]]" || return 6
+  timeout 900 "[[ \$(oc get crd | grep -c knativekafkas.operator.serverless.openshift.io) -eq 0 ]]"
 
   # Install Knative Kafka
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: operator.serverless.openshift.io/v1alpha1
 kind: KnativeKafka
 metadata:
@@ -195,7 +202,9 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  timeout 900 "[[ \$(oc get knativekafkas.operator.serverless.openshift.io \
+    knative-kafka -n ${EVENTING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Kafka has been installed sucessfully.'
 }
@@ -281,40 +290,44 @@ function teardown_serverless {
 
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeServing CR'
-    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" || return $?
+    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}"
   fi
   logger.info 'Ensure no knative serving pods running'
-  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
+  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
   if oc get namespace "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${SERVING_NAMESPACE}"
   fi
   logger.info 'Ensure no ingress pods running'
-  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 9
+  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
   if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${INGRESS_NAMESPACE}"
   fi
 
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
-    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" || return $?
+    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
     # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
     oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
   fi
   if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeKafka CR'
-    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" || return $?
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
   fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
-  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]" || return 10
+  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
   if oc get namespace "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${EVENTING_NAMESPACE}"
   fi
 
-  oc delete subscriptions.operators.coreos.com -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" 2>/dev/null
-  for ip in $(set +o pipefail && oc get installplan -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
-    oc delete installplan -n "${OPERATORS_NAMESPACE}" $ip
+  oc delete subscriptions.operators.coreos.com \
+    -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
+    --ignore-not-found
+  for ip in $(set +o pipefail && oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
+      | grep serverless-operator | cut -f1 -d' '); do
+    oc delete installplan -n "${OPERATORS_NAMESPACE}" "$ip"
   done
-  for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" | grep serverless-operator | cut -f1 -d' '); do
+  for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
+      | grep serverless-operator | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
   oc delete namespace openshift-serverless --ignore-not-found=true

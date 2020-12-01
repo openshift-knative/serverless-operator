@@ -22,7 +22,7 @@ function uninstall_mesh {
 
 function deploy_servicemesh_operators {
   logger.info "Installing service mesh operators in namespace openshift-operators"
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -73,8 +73,8 @@ spec:
 EOF
 
   logger.info "Waiting until service mesh operators are available"
-  timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments} --no-headers | wc -l) != 4 ]]" || return 1
-  oc wait --for=condition=Available deployment ${mesh_deployments} --timeout=300s -n openshift-operators || return $?
+  timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments} --no-headers | wc -l) != 4 ]]"
+  oc wait --for=condition=Available deployment "${mesh_deployments}" --timeout=300s -n openshift-operators
 }
 
 
@@ -88,13 +88,19 @@ function deploy_servicemesh_example_certificates {
   openssl req -out custom.example.com.csr -newkey rsa:2048 -nodes -keyout custom.example.com.key -subj "/CN=custom-ksvc-domain.example.com/O=Example Inc."
   openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in custom.example.com.csr -out custom.example.com.crt
 
-  oc create -n istio-system secret tls custom.example.com --key=custom.example.com.key --cert=custom.example.com.crt -o yaml --dry-run=client | oc apply -f -
-  oc create -n istio-system secret tls example.com --key=example.com.key --cert=example.com.crt -o yaml --dry-run=client | oc apply -f -
+  oc create -n istio-system secret tls custom.example.com \
+    --key=custom.example.com.key \
+    --cert=custom.example.com.crt \
+    -o yaml --dry-run=client | oc apply -f -
+  oc create -n istio-system secret tls example.com \
+    --key=example.com.key \
+    --cert=example.com.crt \
+    -o yaml --dry-run=client | oc apply -f -
 }
 
 
 function deploy_smcp {
-  cat <<EOF | oc apply -f - || return $?
+  cat <<EOF | oc apply -f -
 apiVersion: maistra.io/v1
 kind: ServiceMeshControlPlane
 metadata:
@@ -148,8 +154,8 @@ spec:
 EOF
 
   logger.info "Waiting until service mesh deployments are available"
-  timeout 600 "[[ \$(oc get deploy -n istio-system ${istio_deployments} --no-headers | wc -l) != 5 ]]" || return 1
-  oc wait --for=condition=Available deployment ${istio_deployments} --timeout=300s -n istio-system || return $?
+  timeout 600 "[[ \$(oc get deploy -n istio-system ${istio_deployments} --no-headers | wc -l) != 5 ]]"
+  oc wait --for=condition=Available deployment "${istio_deployments}" --timeout=300s -n istio-system
 }
 
 
@@ -201,7 +207,7 @@ function remove_smmr {
 function undeploy_smcp {
   oc delete servicemeshcontrolplane basic-install -n istio-system --ignore-not-found
   oc wait --for=delete deployment ${istio_deployments} --timeout=300s -n istio-system || true  # Ignore not found error
-  timeout 600 "[[ \$(oc get deploy -n istio-system ${istio_deployments} --no-headers | wc -l) != 0 ]]" || return 1
+  timeout 600 "[[ \$(oc get deploy -n istio-system ${istio_deployments} --no-headers | wc -l) != 0 ]]"
 }
 
 function undeploy_servicemesh_operators {

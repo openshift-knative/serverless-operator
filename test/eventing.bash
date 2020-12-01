@@ -1,30 +1,28 @@
 #!/usr/bin/env bash
 
+# For SC2164
+set -e
+
 readonly EVENTING_READY_FILE="/tmp/eventing-prober-ready"
 readonly EVENTING_PROBER_FILE="/tmp/eventing-prober-signal"
 
 function upstream_knative_eventing_e2e {
   logger.info 'Running eventing tests'
 
-  local failed=0
-
   export TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
-  cd "${KNATIVE_EVENTING_HOME}" || return $?
+  cd "${KNATIVE_EVENTING_HOME}"
 
   # shellcheck disable=SC1090
   source "${KNATIVE_EVENTING_HOME}/openshift/e2e-common.sh"
 
   # run_e2e_tests defined in knative-eventing
-  run_e2e_tests || failed=$?
-
-  return $failed
+  run_e2e_tests
 }
 
 function actual_eventing_version {
   oc get knativeeventing.operator.knative.dev \
-    knative-eventing -n "${EVENTING_NAMESPACE}" -o=jsonpath="{.status.version}" \
-    || return $?
+    knative-eventing -n "${EVENTING_NAMESPACE}" -o=jsonpath="{.status.version}"
 }
 
 function prepare_knative_eventing_tests {
@@ -34,7 +32,7 @@ function prepare_knative_eventing_tests {
 function run_eventing_preupgrade_test {
   logger.info 'Running Eventing pre upgrade tests'
 
-  cd "${KNATIVE_EVENTING_HOME}" || return $?
+  cd "${KNATIVE_EVENTING_HOME}"
 
   local image_template
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
@@ -42,8 +40,7 @@ function run_eventing_preupgrade_test {
 
   go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
-    --imagetemplate="${image_template}" \
-    || return $?
+    --imagetemplate="${image_template}"
 
   logger.success 'Eventing pre upgrade tests passed'
 }
@@ -56,9 +53,8 @@ function start_eventing_prober {
   EVENTING_PROBER_INTERVAL_MSEC="${EVENTING_PROBER_INTERVAL_MSEC:-50}"
   eventing_prober_interval="${EVENTING_PROBER_INTERVAL_MSEC}ms"
 
-
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
-  cd "${KNATIVE_EVENTING_HOME}" || return $?
+  cd "${KNATIVE_EVENTING_HOME}"
 
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
@@ -82,7 +78,7 @@ function start_eventing_prober {
 }
 
 function wait_for_eventing_prober_ready {
-  wait_for_file "${EVENTING_READY_FILE}" || return $?
+  wait_for_file "${EVENTING_READY_FILE}"
 
   logger.success 'Eventing prober is ready'
 }
@@ -91,7 +87,7 @@ function end_eventing_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
 
-  end_prober 'Eventing' "${prober_pid}" "${EVENTING_PROBER_FILE}" || return $?
+  end_prober 'Eventing' "${prober_pid}" "${EVENTING_PROBER_FILE}"
 }
 
 function check_eventing_upgraded {
@@ -103,23 +99,21 @@ function check_eventing_upgraded {
     knative-eventing -n ${EVENTING_NAMESPACE} -o=jsonpath='{.status.version}') \
     == ${latest_version} && \$(oc get knativeeventing.operator.knative.dev \
     knative-eventing -n ${EVENTING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]" \
-    || return $?
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
 }
 
 function run_eventing_postupgrade_test {
   logger.info 'Running Eventing post upgrade tests'
   local image_template
 
-  cd "${KNATIVE_EVENTING_HOME}" || return $?
+  cd "${KNATIVE_EVENTING_HOME}"
 
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
-    --imagetemplate="${image_template}" \
-    || return $?
+    --imagetemplate="${image_template}"
 
   logger.success 'Eventing post upgrade tests passed'
 }

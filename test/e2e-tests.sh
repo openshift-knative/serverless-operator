@@ -10,38 +10,33 @@ if [ -n "$OPENSHIFT_CI" ]; then
   env
 fi
 debugging.setup
+dump_state.setup
 
-scale_up_workers || exit $?
-create_namespaces || exit $?
-create_htpasswd_users && add_roles || exit $?
+scale_up_workers
+create_namespaces
+create_htpasswd_users
+add_roles
 
-failed=0
-
-(( !failed )) && install_catalogsource || failed=1
-(( !failed )) && logger.success '🚀 Cluster prepared for testing.'
+install_catalogsource
+logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-(( !failed )) && serverless_operator_e2e_tests || failed=2
+serverless_operator_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  (( !failed )) && install_strimzi || failed=3
-  (( !failed )) && serverless_operator_kafka_e2e_tests || failed=4
+  install_strimzi
+  serverless_operator_kafka_e2e_tests
 fi
-
-(( !failed )) && ensure_serverless_installed || failed=5
+ensure_serverless_installed
 # Run Knative Serving & Eventing downstream E2E tests.
-(( !failed )) && downstream_serving_e2e_tests || failed=6
-(( !failed )) && downstream_eventing_e2e_tests || failed=7
-
+downstream_serving_e2e_tests
+downstream_eventing_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
- (( !failed )) && ensure_kafka_no_auth || failed=8
- (( !failed )) && downstream_knative_kafka_e2e_tests || failed=9
- (( !failed )) && ensure_kafka_tls_auth || failed=10
- (( !failed )) && downstream_knative_kafka_e2e_tests || failed=11
- (( !failed )) && ensure_kafka_sasl_auth || failed=12
- (( !failed )) && downstream_knative_kafka_e2e_tests || failed=13
+  ensure_kafka_no_auth
+  downstream_knative_kafka_e2e_tests
+  ensure_kafka_tls_auth
+  downstream_knative_kafka_e2e_tests
+  ensure_kafka_sasl_auth
+  downstream_knative_kafka_e2e_tests
 fi
-
-(( failed )) && dump_state
-(( failed )) && exit $failed
 
 success

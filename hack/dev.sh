@@ -14,10 +14,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
 set -Eeuo pipefail
 
-create_namespaces || exit $?
+debugging.setup
 
-exitcode=0
-
-(( !exitcode )) && ensure_catalogsource_installed || exitcode=3
-
-exit $exitcode
+create_namespaces
+ensure_catalogsource_installed

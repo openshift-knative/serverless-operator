@@ -15,7 +15,7 @@ function create_namespaces {
   done
   # Create an OperatorGroup if there are no other ones in the namespace.
   if [[ $(oc get operatorgroups -oname -n "${OPERATORS_NAMESPACE}" | wc -l) -eq 0 ]]; then
-    cat <<EOF | oc apply -f - || return $?
+    cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:

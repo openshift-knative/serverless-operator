@@ -2,7 +2,6 @@
 
 function scale_up_workers {
   local current_total az_total replicas idx
-  logger.info "Scaling cluster to ${SCALE_UP}"
   if [[ "${SCALE_UP}" -lt "0" ]]; then
     logger.info 'Skipping scaling up, because SCALE_UP is negative.'
     return 0
@@ -12,6 +11,8 @@ function scale_up_workers {
     logger.info 'Skipping scaling up, the cluster is not scalable.'
     return 0
   fi
+
+  logger.info "Scaling cluster to ${SCALE_UP}"
 
   logger.debug 'Get the machineset with most replicas'
   current_total="$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')"
@@ -25,15 +26,14 @@ function scale_up_workers {
   fi
 
   idx=0
-  for mset in $(oc get machineset -n openshift-machine-api -o name);
-  do
-    replicas=$(( ${SCALE_UP} / ${az_total} ))
-    if [ ${idx} -lt $(( ${SCALE_UP} % ${az_total} )) ];then
-          let replicas++
+  for mset in $(oc get machineset -n openshift-machine-api -o name); do
+    replicas=$(( SCALE_UP / az_total ))
+    if [ ${idx} -lt $(( SCALE_UP % az_total )) ];then
+      (( replicas++ )) || true
     fi
-    let idx++
+    (( idx++ )) || true
     logger.debug "Bump ${mset} to ${replicas}"
-    oc scale ${mset} -n openshift-machine-api --replicas=${replicas}
+    oc scale "${mset}" -n openshift-machine-api --replicas=${replicas}
   done
   wait_until_machineset_scales_up "${SCALE_UP}"
 }

@@ -147,7 +147,7 @@ function uninstall_strimzi {
   oc delete kafka -n kafka my-cluster
 
   header "Waiting for Kafka to get deleted"
-  timeout 600 "[[ \$(oc get kafkas -n kafka -o jsonpath='{.items}') != '[]' ]]" || return 2
+  timeout 600 "[[ \$(oc get kafkas -n kafka -o jsonpath='{.items}') != '[]' ]]"
 
   header "Deleting Strimzi Cluster file"
   curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml" \

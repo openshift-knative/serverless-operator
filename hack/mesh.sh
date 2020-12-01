@@ -11,10 +11,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
 set -Eeuo pipefail
 
-if [[ $UNINSTALL_MESH == "true" ]]; then
-  uninstall_mesh || exit 1
-else
-  install_mesh || exit 2
-fi
+debugging.setup
 
-exit 0
+if [[ ${UNINSTALL_MESH:-} == "true" ]]; then
+  uninstall_mesh
+else
+  install_mesh
+fi
