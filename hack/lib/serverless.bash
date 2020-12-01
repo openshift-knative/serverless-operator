@@ -152,7 +152,7 @@ function deploy_knativeserving_cr {
   oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
 
   timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
--n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+    -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Serving has been installed successfully.'
 }
@@ -175,8 +175,8 @@ spec:
 EOF
 
   timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
-knative-eventing -n ${EVENTING_NAMESPACE} \
--o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+    knative-eventing -n ${EVENTING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Eventing has been installed successfully.'
 }
@@ -203,8 +203,8 @@ spec:
 EOF
 
   timeout 900 "[[ \$(oc get knativekafkas.operator.serverless.openshift.io \
-knative-kafka -n ${EVENTING_NAMESPACE} \
--o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+    knative-kafka -n ${EVENTING_NAMESPACE} \
+    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Kafka has been installed sucessfully.'
 }

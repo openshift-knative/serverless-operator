@@ -17,7 +17,7 @@ function wait_until_labelled_pods_are_ready {
   timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o name | wc -l) == '0' ]]"
   # Wait until they are ready to receive communications
   timeout 300 "[[ \$(oc get pods -l ${label} -n ${ns} -o \
-'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+    'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
   return 0
 }
 
