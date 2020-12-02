@@ -33,7 +33,6 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
-	defer test.CleanupAll(t, client)
 	defer cleanup()
 
 	// Setup a knative service

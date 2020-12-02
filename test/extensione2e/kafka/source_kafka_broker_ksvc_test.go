@@ -97,7 +97,6 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
-	defer test.CleanupAll(t, client)
 	defer cleanup()
 
 	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
@@ -131,7 +130,4 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 
 	// Wait for text in kservice
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-
-	// Cleanup
-	cleanup()
 }
