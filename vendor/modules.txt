@@ -863,7 +863,7 @@ k8s.io/utils/trace
 # knative.dev/caching v0.0.0-20200922173540-a6b8bbd6999a
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.18.4
+# knative.dev/eventing v0.18.5-0.20201105155307-650096a39064
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/configs
@@ -898,7 +898,8 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1beta1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1
-# knative.dev/eventing-contrib v0.18.3
+knative.dev/eventing/pkg/utils
+# knative.dev/eventing-contrib v0.18.6
 ## explicit
 knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging
 knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1alpha1
