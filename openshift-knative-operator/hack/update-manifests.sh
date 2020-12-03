@@ -40,6 +40,10 @@ download serving $KNATIVE_SERVING_VERSION "${serving_files[@]}"
 # TODO: Remove this patch once 0.18.5 of serving or newer is available.
 git apply "$root/openshift-knative-operator/hack/001-liveness.patch"
 
+# TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
+# See also https://issues.redhat.com/browse/SRVKS-670.
+git apply "$root/openshift-knative-operator/hack/003-activator-pdb.patch"
+
 download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
 # TODO: propose to upstream
