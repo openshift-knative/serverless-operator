@@ -30,7 +30,7 @@ function upstream_knative_eventing_contrib_e2e {
 
   failed=0
 
-  # run_e2e_tests defined in eventing-contrib
+  # create_auth_secrets and run_e2e_tests defined in eventing-contrib
   logger.info 'Starting eventing-contrib tests'
   (( !failed )) && create_auth_secrets || failed=$?
 
