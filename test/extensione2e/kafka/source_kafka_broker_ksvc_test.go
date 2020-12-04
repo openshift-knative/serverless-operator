@@ -61,7 +61,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 				Ref: &duckv1.KReference{
 					APIVersion: ksvcAPIVersion,
 					Kind:       ksvcKind,
-					Name:       helloWorldService,
+					Name:       helloWorldService + "-broker",
 				},
 			},
 		},
@@ -99,7 +99,7 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-broker", testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
