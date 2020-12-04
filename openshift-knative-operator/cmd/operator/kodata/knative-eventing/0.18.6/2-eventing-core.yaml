@@ -667,8 +667,8 @@ metadata:
   labels:
     eventing.knative.dev/release: "v0.18.6"
 spec:
-  # when set to 0 (and only 0) will be set to 1 when the first PingSource is created.
-  replicas: 0
+  # We hard-code to 1, see https://github.com/knative/eventing/issues/4627
+  replicas: 1
   selector:
     matchLabels:
       eventing.knative.dev/source: ping-source-controller
