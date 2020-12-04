@@ -4,9 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/util/wait"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kafkachannelv1beta1 "knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1"
@@ -84,19 +81,9 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		if err := waitForPingSourceDeleted(client, pingSourceName); err != nil {
-			t.Errorf("PingSource not deleted in time: %v", err)
-		}
-		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
-		if err := waitForSubscriptionDeleted(client, subscriptionName); err != nil {
-			t.Errorf("Subscription not deleted in time: %v", err)
-		}
 		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
-		if err := waitForChannelDeleted(client, kafkaChannelName); err != nil {
-			t.Errorf("Channel not deleted in time: %v", err)
-		}
-
+		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
@@ -126,34 +113,4 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-}
-
-func waitForChannelDeleted(ctx *test.Context, channelName string) error {
-	return wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		_, err := ctx.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Get(context.Background(), channelName, metav1.GetOptions{})
-		if errors.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
-}
-
-func waitForSubscriptionDeleted(ctx *test.Context, subscriptionName string) error {
-	return wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		_, err := ctx.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Get(context.Background(), subscriptionName, metav1.GetOptions{})
-		if errors.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
-}
-
-func waitForPingSourceDeleted(ctx *test.Context, pingSourceName string) error {
-	return wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		_, err := ctx.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Get(context.Background(), pingSourceName, metav1.GetOptions{})
-		if errors.IsNotFound(err) {
-			return true, nil
-		}
-		return false, err
-	})
 }
