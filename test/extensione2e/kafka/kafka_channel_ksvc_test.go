@@ -6,7 +6,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	kafkachannelv1beta1 "knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1"
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
@@ -87,7 +86,6 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
-	defer test.CleanupAll(t, client)
 	defer cleanup()
 
 	// Setup a knative service
@@ -115,7 +113,4 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-
-	// cleanup if everything ends smoothly
-	cleanup()
 }
