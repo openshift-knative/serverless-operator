@@ -35,10 +35,10 @@ fi
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
  (( !failed )) && ensure_kafka_no_auth || failed=8
  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=9
- (( !failed )) && ensure_kafka_tls_auth || failed=10
- (( !failed )) && downstream_knative_kafka_e2e_tests || failed=11
- (( !failed )) && ensure_kafka_sasl_auth || failed=12
- (( !failed )) && downstream_knative_kafka_e2e_tests || failed=13
+#  (( !failed )) && ensure_kafka_tls_auth || failed=10
+#  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=11
+#  (( !failed )) && ensure_kafka_sasl_auth || failed=12
+#  (( !failed )) && downstream_knative_kafka_e2e_tests || failed=13
 fi
 
 (( failed )) && dump_state
