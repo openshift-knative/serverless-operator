@@ -30,7 +30,6 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
-	defer test.CleanupAll(t, client)
 	defer cleanup()
 
 	// Setup a knative service
@@ -96,5 +95,4 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-
 }

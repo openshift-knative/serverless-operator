@@ -120,7 +120,6 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
-	defer test.CleanupAll(t, client)
 	defer cleanup()
 
 	// Setup a knative service
@@ -148,6 +147,4 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	}
 
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
-	// cleanup if everything ends smoothly
-	cleanup()
 }
