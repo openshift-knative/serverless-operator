@@ -1,0 +1,13 @@
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.18.2/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.18.2/2-serving-core.yaml
+index adce83ca..30f47d86 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.18.2/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.18.2/2-serving-core.yaml
+@@ -2106,7 +2106,7 @@ metadata:
+   labels:
+     serving.knative.dev/release: "v0.18.2"
+ spec:
+-  minAvailable: 80%
++  minAvailable: 1
+   selector:
+     matchLabels:
+       app: activator
