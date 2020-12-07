@@ -115,7 +115,8 @@ function approve_csv {
   timeout 900 "[[ -z \$(find_install_plan $csv_version) ]]" || return 1
 
   install_plan=$(find_install_plan $csv_version)
-  oc get $install_plan -n ${OPERATORS_NAMESPACE} -o yaml | sed 's/\(.*approved:\) false/\1 true/' | oc replace -f -
+  oc patch "$install_plan" -n "${OPERATORS_NAMESPACE}" \
+    --type merge --patch '{"spec":{"approved":true}}'
 
   if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
     oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
