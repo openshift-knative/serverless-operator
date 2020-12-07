@@ -113,7 +113,7 @@ var (
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	os.Setenv(dashboard.ServingDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative.yaml")
+	os.Setenv(dashboard.ServingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-serving-resources.yaml")
 
 	apis.AddToScheme(scheme.Scheme)
 }
@@ -178,7 +178,7 @@ func TestKourierReconcile(t *testing.T) {
 
 			// Check if Serving dashboard configmap is available
 			dashboardCM := &corev1.ConfigMap{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative", Namespace: ns.Name}, dashboardCM)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
@@ -227,7 +227,7 @@ func TestKourierReconcile(t *testing.T) {
 			checkError(t, err)
 
 			// Check again if Serving dashboard configmap is available.
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative", Namespace: ns.Name}, dashboardCM)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
 			checkError(t, err)
 		})
 	}

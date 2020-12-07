@@ -355,8 +355,10 @@ spec:
                       value: "knative-eventing"
                     - name: REQUIRED_KAFKA_NAMESPACE
                       value: "knative-eventing"
-                    - name: SERVING_DASHBOARD_MANIFEST_PATH
-                      value: "deploy/resources/dashboards/grafana-dash-knative.yaml"
+                    - name: SERVING_RESOURCES_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative-serving-resources.yaml"
+                    - name: EVENTING_RESOURCES_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative-eventing-resources.yaml"
                     - name: EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-source.yaml"
                     - name: EVENTING_BROKER_DASHBOARD_MANIFEST_PATH

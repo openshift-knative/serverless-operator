@@ -18,9 +18,10 @@ var log = common.Log.WithName("dashboard")
 
 const ConfigManagedNamespace = "openshift-config-managed"
 
-const ServingDashboardPathEnvVar = "SERVING_DASHBOARD_MANIFEST_PATH"
+const EventingResourceDashboardPathEnvVar = "EVENTING_RESOURCES_DASHBOARD_MANIFEST_PATH"
 const EventingBrokerDashboardPathEnvVar = "EVENTING_BROKER_DASHBOARD_MANIFEST_PATH"
 const EventingSourceDashboardPathEnvVar = "EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH"
+const ServingResourceDashboardPathEnvVar = "SERVING_RESOURCES_DASHBOARD_MANIFEST_PATH"
 
 // Apply applies dashboard resources.
 func Apply(path string, instance operatorv1alpha1.KComponent, api client.Client) error {
