@@ -10,6 +10,7 @@ import (
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
+	"knative.dev/eventing/pkg/utils"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -61,7 +62,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 				Ref: &duckv1.KReference{
 					APIVersion: ksvcAPIVersion,
 					Kind:       ksvcKind,
-					Name:       helloWorldService,
+					Name:       helloWorldService + "-broker",
 				},
 			},
 		},
@@ -95,11 +96,23 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, testNamespace, "default")
+	if err != nil {
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, testNamespace)
+	}
+
+	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, testNamespace, "default")
+	if err != nil {
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, testNamespace)
+	}
+
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-broker", testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
