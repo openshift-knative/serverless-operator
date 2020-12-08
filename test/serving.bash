@@ -127,24 +127,17 @@ function run_knative_serving_rolling_upgrade_tests {
   if [[ $UPGRADE_SERVERLESS == true ]]; then
     logger.info "updating serving version from ${PREVIOUS_CSV} to ${CURRENT_CSV}"
 
+    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
+
     # Get latest CSV from the given channel
     upgrade_to="$CURRENT_CSV"
 
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
-    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* || \
-          "$cluster_version" = 4.2.* || "${HOSTNAME}" = *ocp-42* ]]; then
-      if approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" ; then # Upgrade should fail on OCP 4.1, 4.2
-        return 1
-      fi
-      # Check we got RequirementsNotMet error
-      [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
-      # Check KnativeServing still has the old version
-      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$prev_serving_version" ]] || return 1
-    else
-      approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
-      # Check KnativeServing has the latest version with Ready status
-      timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
-    fi
+
+    approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
+    # Check KnativeServing has the latest version with Ready status
+    timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+
     end_prober_test ${PROBER_PID} || return $?
   fi
 
