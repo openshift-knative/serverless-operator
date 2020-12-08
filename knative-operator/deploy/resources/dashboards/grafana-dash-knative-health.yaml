@@ -105,12 +105,12 @@ data:
                  },
                  {
                    "op": "=",
-                   "text": "Healthy",
+                   "text": "Ready",
                    "value": "1"
                  },
                  {
                    "op": "=",
-                   "text": "Unhealthy",
+                   "text": "NotReady",
                    "value": "0"
                  }
             ],
@@ -166,7 +166,7 @@ data:
               "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"serving_status\"}",
               "format": "time_series",
               "interval": "",
-              "legendFormat": "Serving status - 1 is up, 0 is down",
+              "legendFormat": "Status - 1 is Ready, 0 is NotReady",
               "refId": "A"
             }
           ],
@@ -174,7 +174,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Knative Health Status - Serving",
+          "title": "Knative Serving Status",
           "tooltip": {
             "shared": true,
             "none": 0,
@@ -262,7 +262,7 @@ data:
            "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"eventing_status\"}",
            "format": "time-series",
            "interval": "",
-           "legendFormat": "Knative Eventing status - 1 is up, 0 is down",
+           "legendFormat": "Status - 1 is Ready, 0 is NotReady",
            "refId": "B"
          }
        ],
@@ -270,7 +270,7 @@ data:
        "timeFrom": null,
        "timeRegions": [],
        "timeShift": null,
-       "title": "Knative Health Status - Eventing",
+       "title": "Knative Eventing Status",
        "tooltip": {
          "shared": true,
          "sort": 0,
@@ -350,7 +350,7 @@ data:
            "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics\", type=\"kafka_status\"}",
            "format": "time-series",
            "interval": "",
-           "legendFormat": "Knative Kafka status - 1 is up, 0 is down",
+           "legendFormat": "Status - 1 is Ready, 0 is NotReady",
            "refId": "B"
        }
       ],
@@ -358,7 +358,7 @@ data:
        "timeFrom": null,
        "timeRegions": [],
        "timeShift": null,
-       "title": "Knative Health Status - Kafka",
+       "title": "Knative Kafka Status",
        "tooltip": {
          "shared": true,
          "sort": 0,
