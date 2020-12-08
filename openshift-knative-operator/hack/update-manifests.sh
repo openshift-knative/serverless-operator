@@ -48,3 +48,6 @@ download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
+
+# SRVKE-654: relax the MT adapter replica
+git apply "$root/openshift-knative-operator/hack/004-eventing-pingsource-one-replica.patch"
