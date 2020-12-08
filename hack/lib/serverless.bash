@@ -93,7 +93,7 @@ spec:
   installPlanApproval: Manual
   startingCSV: "${csv}"
 EOF
-  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
+  cat "$tmpfile"
   oc apply -f "$tmpfile"
 
   # Approve the initial installplan automatically
