@@ -51,3 +51,6 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.pat
 
 # SRVKE-654: relax the MT adapter replica
 git apply "$root/openshift-knative-operator/hack/004-eventing-pingsource-one-replica.patch"
+
+# Apply port of 4640 to Serverless Operator
+git apply "$root/openshift-knative-operator/hack/005-imc-pod_anti_affinity.patch"

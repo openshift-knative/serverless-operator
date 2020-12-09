@@ -1,0 +1,19 @@
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/3-in-memory-channel.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/3-in-memory-channel.yaml
+index 4a976467..c7f7cfef 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/3-in-memory-channel.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/3-in-memory-channel.yaml
+@@ -565,6 +565,14 @@ spec:
+     metadata:
+       labels: *labels
+     spec:
++      affinity:
++        podAntiAffinity:
++          preferredDuringSchedulingIgnoredDuringExecution:
++          - podAffinityTerm:
++              labelSelector:
++                matchLabels: *labels
++              topologyKey: kubernetes.io/hostname
++            weight: 100
+       serviceAccountName: imc-dispatcher
+       containers:
+         - name: dispatcher
