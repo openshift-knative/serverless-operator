@@ -18,7 +18,7 @@ metadata:
   name: sugar-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.6"
+    eventing.knative.dev/release: "v0.19.2"
 spec:
   replicas: 1
   selector:
@@ -31,7 +31,7 @@ spec:
       serviceAccountName: eventing-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/sugar_controller@sha256:2970ebdb4b2aa68212d88680fbdf9c47a4bb80f04d721120e97c242eee60300f
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/sugar_controller@sha256:eb1f9a59ca91f53cf95ebadad681774aef47835fa9ea70ec7b8acedb11bccc86
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
