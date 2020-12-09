@@ -100,6 +100,36 @@ EOF
 
   header "Waiting for Strimzi admin users to become ready"
   oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
+
+  header "Deleting existing Kafka user secrets"
+
+  if oc get secret my-tls-secret -n default >/dev/null 2>&1
+  then
+    oc delete secret -n default my-tls-secret
+  fi
+
+  if oc get secret my-sasl-secret -n default >/dev/null 2>&1
+  then
+    oc delete secret -n default my-sasl-secret
+  fi
+
+  header "Creating a Secret, containing TLS from Strimzi"
+  STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
+  TLSUSER_CRT=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.crt"}}' | base64 --decode )
+  TLSUSER_KEY=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.key"}}' | base64 --decode )
+
+  oc create secret --namespace default generic my-tls-secret \
+      --from-literal=ca.crt="$STRIMZI_CRT" \
+      --from-literal=user.crt="$TLSUSER_CRT" \
+      --from-literal=user.key="$TLSUSER_KEY"
+
+  header "Creating a Secret, containing SASL from Strimzi"
+  SASL_PASSWD=$(oc -n kafka get secret my-sasl-user --template='{{index .data "password"}}' | base64 --decode )
+  oc create secret --namespace default generic my-sasl-secret \
+      --from-literal=ca.crt="$STRIMZI_CRT" \
+      --from-literal=password="$SASL_PASSWD" \
+      --from-literal=saslType="SCRAM-SHA-512" \
+      --from-literal=user="my-sasl-user"
 }
 
 function install_strimzi {
@@ -110,6 +140,10 @@ function install_strimzi {
 }
 
 function delete_strimzi_users {
+  header "Deleting Kafka user secrets"
+  oc delete secret -n default my-tls-secret
+  oc delete secret -n default my-sasl-secret
+
   header "Deleting Strimzi users"
   oc -n kafka delete kafkauser.kafka.strimzi.io my-sasl-user
   oc -n kafka delete kafkauser.kafka.strimzi.io my-tls-user
