@@ -1,10 +1,10 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.19.2/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.19.2/2-eventing-core.yaml
 index 8e4ec0cf..279e67b0 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.19.2/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.19.2/2-eventing-core.yaml
 @@ -667,8 +667,7 @@ metadata:
    labels:
-     eventing.knative.dev/release: "v0.18.6"
+     eventing.knative.dev/release: "v0.19.2"
  spec:
 -  # when set to 0 (and only 0) will be set to 1 when the first PingSource is created.
 -  replicas: 0
@@ -12,16 +12,3 @@ index 8e4ec0cf..279e67b0 100644
    selector:
      matchLabels:
        eventing.knative.dev/source: ping-source-controller
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
-index 279e67b0..4114d70e 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
-@@ -700,7 +700,7 @@ spec:
-             - name: K_NO_SHUTDOWN_AFTER
-               value: ''
-             - name: K_SINK_TIMEOUT
--              value: ''
-+              value: '-1'
-             - name: POD_NAME
-               valueFrom:
-                 fieldRef:
