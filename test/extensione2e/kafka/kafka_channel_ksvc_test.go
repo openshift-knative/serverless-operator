@@ -9,6 +9,7 @@ import (
 	kafkachannelv1beta1 "knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1"
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
+	"knative.dev/eventing/pkg/utils"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -51,7 +52,7 @@ var (
 				Ref: &duckv1.KReference{
 					APIVersion: ksvcAPIVersion,
 					Kind:       ksvcKind,
-					Name:       helloWorldService,
+					Name:       helloWorldService + "-channel",
 				},
 			},
 		},
@@ -84,12 +85,25 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
 		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
 		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
+	// Get Secret Name -> AuthSecretName
+	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, testNamespace, "default")
+	if err != nil {
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, testNamespace)
+	}
+
+	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, testNamespace, "default")
+	if err != nil {
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, testNamespace)
+	}
+
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-channel", testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
