@@ -23,7 +23,6 @@ require (
 	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.19.2
-	knative.dev/eventing-contrib v0.18.6
 	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
 	knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
 	knative.dev/operator v0.19.1

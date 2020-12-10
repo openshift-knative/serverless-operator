@@ -26,7 +26,7 @@ FLOATING_DEPS=(
   "knative.dev/eventing-kafka@${KN_VERSION}"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
-  #"knative.dev/pkg@${KN_VERSION}"
+  #"knative.dev/pkg@${KN_VERSION}" Manually bumped pkg because operator is out of whack.
   "knative.dev/serving@${KN_VERSION}"
   "knative.dev/test-infra@${KN_VERSION}"
 )

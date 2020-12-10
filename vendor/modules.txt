@@ -853,14 +853,6 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1
 knative.dev/eventing/pkg/utils
-# knative.dev/eventing-contrib v0.18.6
-## explicit
-knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging
-knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1
-knative.dev/eventing-contrib/kafka/channel/pkg/utils
-knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings
-knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1beta1
-knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1
 # knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
 ## explicit
 knative.dev/eventing-kafka/pkg/apis/bindings
