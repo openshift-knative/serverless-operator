@@ -812,7 +812,7 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20201113182901-ee88f744543c
+# knative.dev/caching v0.0.0-20201104174804-1a305923cfbe
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
 # knative.dev/eventing v0.19.2
@@ -873,6 +873,7 @@ knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1
 knative.dev/eventing-kafka/pkg/common/constants
 # knative.dev/hack v0.0.0-20201112185459-01a34c573bd8
+## explicit
 knative.dev/hack
 # knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
 ## explicit
@@ -894,7 +895,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.19.1
+# knative.dev/operator v0.19.2-0.20201210110341-1d35f8de11a6
 ## explicit
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -917,7 +918,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing
 knative.dev/operator/pkg/reconciler/knativeeventing/common
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
-# knative.dev/pkg v0.0.0-20201117020252-ab1a398f669c
+# knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
