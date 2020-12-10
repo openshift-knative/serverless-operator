@@ -3,3 +3,4 @@ _output
 catalogsource-ci.yaml
 user*.kubeconfig
 users.htpasswd
+puller.kubeconfig

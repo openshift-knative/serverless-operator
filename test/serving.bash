@@ -26,9 +26,6 @@ function checkout_knative_serving_operator {
 }
 
 function prepare_knative_serving_tests {
-  # Remove unneeded manifest
-  rm test/config/100-istio-default-domain.yaml
-
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
@@ -94,7 +91,7 @@ function run_knative_serving_e2e_and_conformance_tests {
 function run_knative_serving_rolling_upgrade_tests {
   logger.info "Running Serving rolling upgrade tests"
   (
-  local failed upgrade_to latest_cluster_version cluster_version prev_serving_version latest_serving_version
+  local failed upgrade_to latest_cluster_version cluster_version latest_serving_version
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -128,30 +125,19 @@ function run_knative_serving_rolling_upgrade_tests {
   PROBER_PID=$!
 
   if [[ $UPGRADE_SERVERLESS == true ]]; then
-    prev_serving_version=$(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}")
-    # This is ugly hack. Use KNATIVE_SERVING_VERSION if issues/361 was solved.
-    latest_serving_version=$(sed -n 's/^.*Version.*"\(.*\)".*$/\1/p' ${rootdir}/knative-operator/vendor/knative.dev/serving-operator/version/version.go)
+    logger.info "updating serving version from ${PREVIOUS_CSV} to ${CURRENT_CSV}"
 
-    logger.info "updating serving version from ${prev_serving_version} to ${latest_serving_version}"
+    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
 
     # Get latest CSV from the given channel
-    upgrade_to=$("${rootdir}/hack/catalog.sh" | sed -n '/channels/,$p;' | sed -n "/- name: \"${OLM_UPGRADE_CHANNEL}\"$/{n;p;}" | awk '{ print $2 }')
+    upgrade_to="$CURRENT_CSV"
 
     cluster_version=$(oc get clusterversion -o=jsonpath="{.items[0].status.history[?(@.state==\"Completed\")].version}")
-    if [[ "$cluster_version" = 4.1.* || "${HOSTNAME}" = *ocp-41* || \
-          "$cluster_version" = 4.2.* || "${HOSTNAME}" = *ocp-42* ]]; then
-      if approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" ; then # Upgrade should fail on OCP 4.1, 4.2
-        return 1
-      fi
-      # Check we got RequirementsNotMet error
-      [[ $(oc get ClusterServiceVersion $upgrade_to -n $OPERATORS_NAMESPACE -o=jsonpath="{.status.requirementStatus[?(@.name==\"$upgrade_to\")].message}") =~ "requirement not met: minKubeVersion" ]] || return 1
-      # Check KnativeServing still has the old version
-      [[ $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == "$prev_serving_version" ]] || return 1
-    else
-      approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
-      # Check KnativeServing has the latest version with Ready status
-      timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
-    fi
+
+    approve_csv "$upgrade_to" "$OLM_UPGRADE_CHANNEL" || return 1
+    # Check KnativeServing has the latest version with Ready status
+    timeout 300 '[[ ! ( $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.version}") == $latest_serving_version && $(oc get knativeserving.operator.knative.dev knative-serving -n $SERVING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") == True ) ]]' || return 1
+
     end_prober_test ${PROBER_PID} || return $?
   fi
 
@@ -216,6 +202,3 @@ function run_knative_serving_operator_tests {
   return $exitstatus
   )
 }
-
-
-
