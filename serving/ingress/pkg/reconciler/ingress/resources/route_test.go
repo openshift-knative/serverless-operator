@@ -338,7 +338,7 @@ func withTimeout(timeout time.Duration) ruleOption {
 	return func(rule *networkingv1alpha1.IngressRule) {
 		rule.HTTP = &networkingv1alpha1.HTTPIngressRuleValue{
 			Paths: []networkingv1alpha1.HTTPIngressPath{{
-				Timeout: &metav1.Duration{Duration: timeout},
+				DeprecatedTimeout: &metav1.Duration{Duration: timeout},
 			}},
 		}
 	}
