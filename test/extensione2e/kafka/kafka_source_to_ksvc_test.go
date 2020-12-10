@@ -13,8 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/eventing/pkg/utils"
 
-	kafkabindingv1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1beta1"
-	kafkasourcev1beta1 "knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1"
+	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
+	kafkasourcev1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -127,9 +127,9 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
-		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
-		client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
@@ -248,7 +248,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 		// create kafka source
 		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, kafkaTopicName+"-"+name, tc)
-		_, err = client.Clients.KafkaSource.SourcesV1beta1().KafkaSources(testNamespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
+		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create kafkaSource(%s): %v", kafkaSource.GetName(), err)
 		}

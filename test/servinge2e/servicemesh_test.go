@@ -372,7 +372,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 	// Wait until the Route is ready and also verify the route returns a 401 without a token
 	if _, err := pkgTest.WaitForEndpointState(
 		context.Background(),
-		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
+		caCtx.Clients.Kube,
 		t.Logf,
 		testKsvc.Status.URL.URL(),
 		func(resp *spoof.Response) (bool, error) {
