@@ -10,7 +10,7 @@ set -o pipefail
 cd ${ROOT_DIR}
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.18"
+KN_VERSION="release-0.19"
 
 # Controls the version of OCP related dependencies.
 OCP_VERSION="release-4.6"
@@ -23,10 +23,10 @@ FLOATING_DEPS=(
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
 
   "knative.dev/eventing@${KN_VERSION}"
-  "knative.dev/eventing-contrib@${KN_VERSION}"
+  "knative.dev/eventing-kafka@${KN_VERSION}"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
-  "knative.dev/pkg@${KN_VERSION}"
+  #"knative.dev/pkg@${KN_VERSION}"
   "knative.dev/serving@${KN_VERSION}"
   "knative.dev/test-infra@${KN_VERSION}"
 )
