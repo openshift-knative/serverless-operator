@@ -25,3 +25,19 @@ index 279e67b0..4114d70e 100644
              - name: POD_NAME
                valueFrom:
                  fieldRef:
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
+index 4114d70e..3cb42eac 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.18.6/2-eventing-core.yaml
+@@ -692,9 +692,9 @@ spec:
+             # DO NOT MODIFY: The values below are being filled by the ping source controller
+             # See 500-controller.yaml
+             - name: K_METRICS_CONFIG
+-              value: ''
++              value: '{}'
+             - name: K_LOGGING_CONFIG
+-              value: ''
++              value: '{}'
+             - name: K_LEADER_ELECTION_CONFIG
+               value: ''
+             - name: K_NO_SHUTDOWN_AFTER
