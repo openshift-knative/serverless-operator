@@ -277,7 +277,7 @@ make uninstall-mesh
 
 To create a new version of the serverless-operator (usually after a release branch has
 been cut), there are a few steps we have to do. These steps can be done one after the
-other and do not have to been sent as one PR, to avoid clogging up the respective PR.
+other and do not have to be sent as one PR, to avoid clogging up the respective PR.
 
 #### 1. Update the version metadata of the serverless-operator
 
@@ -308,7 +308,7 @@ separately, to ease review.
 
 The repository itself depends on the respective upstream releases. The
 `openshift-knative-operator` for example is straightly build from vendoring the upstream
-opeartor and the tests heavily rely on upstream clients, APIs and helpers.
+operator and the tests heavily rely on upstream clients, APIs and helpers.
 
 To update the dependencies, update the `KN_VERSION` variable in
 [`update-deps.sh`](./hack/update-deps.sh). Then run `./hack/update-deps.sh --upgrade` 
