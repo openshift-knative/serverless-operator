@@ -65,14 +65,17 @@ func NewLogger(configJSON string, levelOverride string, opts ...zap.Option) (*za
 	if err2 != nil {
 		panic(err2)
 	}
-	return enrichLoggerWithCommitID(logger.Named(fallbackLoggerName)), loggingCfg.Level
+
+	slogger := enrichLoggerWithCommitID(logger.Named(fallbackLoggerName))
+	slogger.Warnw("Failed to parse logging config - using default zap production config", zap.Error(err))
+	return slogger, loggingCfg.Level
 }
 
 func enrichLoggerWithCommitID(logger *zap.Logger) *zap.SugaredLogger {
-	commmitID, err := changeset.Get()
+	commitID, err := changeset.Get()
 	if err == nil {
 		// Enrich logs with GitHub commit ID.
-		return logger.With(zap.String(logkey.GitHubCommitID, commmitID)).Sugar()
+		return logger.With(zap.String(logkey.GitHubCommitID, commitID)).Sugar()
 	}
 
 	logger.Info("Fetch GitHub commit ID from kodata failed", zap.Error(err))
@@ -212,7 +215,7 @@ func UpdateLevelFromConfigMap(logger *zap.SugaredLogger, atomicLevel zap.AtomicL
 			// reset to global level
 			loggingCfg, err := zapConfigFromJSON(config.LoggingConfig)
 			switch {
-			case err == errEmptyLoggerConfig:
+			case errors.Is(err, errEmptyLoggerConfig):
 				level = zap.NewAtomicLevel().Level()
 			case err != nil:
 				logger.With(zap.Error(err)).Errorf("Failed to parse logger configuration. "+
@@ -238,9 +241,9 @@ func ConfigMapName() string {
 	return "config-logging"
 }
 
-// JsonToLoggingConfig converts a json string of a Config.
-// Returns a non-nil Config always.
-func JsonToLoggingConfig(jsonCfg string) (*Config, error) {
+// JSONToConfig converts a JSON string of a Config.
+// Always returns a non-nil Config.
+func JSONToConfig(jsonCfg string) (*Config, error) {
 	if jsonCfg == "" {
 		return nil, errEmptyJSONLogginString
 	}
@@ -258,8 +261,8 @@ func JsonToLoggingConfig(jsonCfg string) (*Config, error) {
 	return cfg, nil
 }
 
-// LoggingConfigToJson converts a Config to a json string.
-func LoggingConfigToJson(cfg *Config) (string, error) {
+// ConfigToJSON  converts a Config to a JSON string.
+func ConfigToJSON(cfg *Config) (string, error) {
 	if cfg == nil || cfg.LoggingConfig == "" {
 		return "", nil
 	}

@@ -66,9 +66,14 @@ type ExporterOptions struct {
 
 	// PrometheusPort is the port to expose metrics if metrics backend is Prometheus.
 	// It should be between maxPrometheusPort and maxPrometheusPort. 0 value means
-	// using the default 9090 value. If is ignored if metrics backend is not
+	// using the default 9090 value. It is ignored if metrics backend is not
 	// Prometheus.
 	PrometheusPort int
+
+	// PrometheusHost is the host to expose metrics on if metrics backend is Prometheus.
+	// The default value is "0.0.0.0". It is ignored if metrics backend is not
+	// Prometheus.
+	PrometheusHost string
 
 	// ConfigMap is the data from config map config-observability. Must be present.
 	// See https://github.com/knative/serving/blob/master/config/config-observability.yaml
@@ -196,7 +201,7 @@ func newMetricsExporter(config *metricsConfig, logger *zap.SugaredLogger) (view.
 	// If there is a Prometheus Exporter server running, stop it.
 	resetCurPromSrv()
 
-	// TODO(https://github.com/knative/pkg/issues/866): Move Stackdriver and Promethus
+	// TODO(https://github.com/knative/pkg/issues/866): Move Stackdriver and Prometheus
 	// operations before stopping to an interface.
 	if se, ok := curMetricsExporter.(stoppable); ok {
 		se.StopMetricsExporter()
@@ -213,7 +218,7 @@ func newMetricsExporter(config *metricsConfig, logger *zap.SugaredLogger) (view.
 
 	ff := factory[config.backendDestination]
 	if ff == nil {
-		return nil, nil, fmt.Errorf("unsuppored metrics backend %v", config.backendDestination)
+		return nil, nil, fmt.Errorf("unsupported metrics backend %v", config.backendDestination)
 	}
 	return ff(config, logger)
 }
