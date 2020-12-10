@@ -60,7 +60,7 @@ func TestMakeRoute(t *testing.T) {
 						serving.RouteNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: "600s",
+						TimeoutAnnotation: defaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName0,
@@ -145,7 +145,7 @@ func TestMakeRoute(t *testing.T) {
 						serving.RouteNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: "600s",
+						TimeoutAnnotation: defaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName0,
@@ -174,7 +174,7 @@ func TestMakeRoute(t *testing.T) {
 						serving.RouteNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: "600s",
+						TimeoutAnnotation: defaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName1,
@@ -212,7 +212,7 @@ func TestMakeRoute(t *testing.T) {
 						serving.RouteNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: "600s",
+						TimeoutAnnotation: defaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName1,

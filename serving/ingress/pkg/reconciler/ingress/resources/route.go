@@ -13,6 +13,7 @@ import (
 	networkingv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/ptr"
+	"knative.dev/serving/pkg/apis/config"
 )
 
 const (
@@ -20,6 +21,8 @@ const (
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
 	KourierHTTPPort        = "http2"
 )
+
+var defaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
 // said field does not contain a value we can work with.
@@ -82,10 +85,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 				// So, in order to make openshift route to work converting it into seconds.
 				annotations[TimeoutAnnotation] = fmt.Sprintf("%vs", rule.HTTP.Paths[i].Timeout.Duration.Seconds())
 			} else {
-				/* Currently v0.5.0 of serving code does not have "DefaultMaxRevisionTimeoutSeconds" So hard coding "timeout" value.
-				Once serving updated to latest version then will remove hard coded value and update with
-				annotations[TimeoutAnnotation] = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds) */
-				annotations[TimeoutAnnotation] = "600s"
+				annotations[TimeoutAnnotation] = defaultTimeout
 			}
 
 		}
