@@ -692,9 +692,9 @@ spec:
             # DO NOT MODIFY: The values below are being filled by the ping source controller
             # See 500-controller.yaml
             - name: K_METRICS_CONFIG
-              value: ''
+              value: '{}'
             - name: K_LOGGING_CONFIG
-              value: ''
+              value: '{}'
             - name: K_LEADER_ELECTION_CONFIG
               value: ''
             - name: K_NO_SHUTDOWN_AFTER
