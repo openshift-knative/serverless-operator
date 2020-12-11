@@ -9,7 +9,7 @@ source "$root/hack/lib/__sources__.bash"
 
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
-serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
+serving_files=(serving-crds serving-core serving-hpa serving-domainmapping-crds serving-domainmapping serving-post-install-jobs)
 eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
 
 function download {
@@ -37,12 +37,10 @@ function download {
 }
 
 download serving $KNATIVE_SERVING_VERSION "${serving_files[@]}"
-# TODO: Remove this patch once 0.18.5 of serving or newer is available.
-git apply "$root/openshift-knative-operator/hack/001-liveness.patch"
 
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
-git apply "$root/openshift-knative-operator/hack/003-activator-pdb.patch"
+git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
 download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
