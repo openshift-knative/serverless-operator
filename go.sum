@@ -2681,8 +2681,8 @@ knative.dev/networking v0.0.0-20200922180040-a71b40c69b15 h1:UhUyfzy5VTEdkWXlkJA
 knative.dev/networking v0.0.0-20200922180040-a71b40c69b15/go.mod h1:WphBxM2NFDmDLc5FAJUOdGdgdXbuD/ALSWa//jKw92I=
 knative.dev/networking v0.0.0-20201028144035-3287613a3b41 h1:Ok/FwVK/SWFO3CfXekx7O0SjYkqgEylCuUyRsBDPzgU=
 knative.dev/networking v0.0.0-20201028144035-3287613a3b41/go.mod h1:ufoHg7bjiTnAG56pHhd6fpHOJAp5TFQO/buMlz8Wys4=
-knative.dev/operator v0.18.2 h1:MlWIMMYUiRsFdcMmDoAGTp9n3d8ETCG/K6hUavZTE1s=
-knative.dev/operator v0.18.2/go.mod h1:OzNClxJsIRJxtEv9t6a/TnwUUn+o9rRFMEjcBb5wvuY=
+knative.dev/operator v0.18.5-0.20201211161442-1011b0729ba9 h1:xqLHY63234jgI0JxdMNeJk4uwPMZQiDLuXPJPVPNPe0=
+knative.dev/operator v0.18.5-0.20201211161442-1011b0729ba9/go.mod h1:OzNClxJsIRJxtEv9t6a/TnwUUn+o9rRFMEjcBb5wvuY=
 knative.dev/pkg v0.0.0-20191101194912-56c2594e4f11/go.mod h1:pgODObA1dTyhNoFxPZTTjNWfx6F0aKsKzn+vaT9XO/Q=
 knative.dev/pkg v0.0.0-20191111150521-6d806b998379/go.mod h1:pgODObA1dTyhNoFxPZTTjNWfx6F0aKsKzn+vaT9XO/Q=
 knative.dev/pkg v0.0.0-20200207155214-fef852970f43/go.mod h1:pgODObA1dTyhNoFxPZTTjNWfx6F0aKsKzn+vaT9XO/Q=

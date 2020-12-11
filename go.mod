@@ -27,7 +27,7 @@ require (
 	knative.dev/eventing v0.18.5-0.20201105155307-650096a39064
 	knative.dev/eventing-contrib v0.18.6
 	knative.dev/networking v0.0.0-20201028144035-3287613a3b41
-	knative.dev/operator v0.18.2
+	knative.dev/operator v0.18.5-0.20201211161442-1011b0729ba9
 	knative.dev/pkg v0.0.0-20201026165741-2f75016c1368
 	knative.dev/serving v0.18.2
 	knative.dev/test-infra v0.0.0-20200921012245-37f1a12adbd3
