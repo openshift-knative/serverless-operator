@@ -23,8 +23,7 @@ import (
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 
 	// Extensions
-	kafkachannelversioned "knative.dev/eventing-contrib/kafka/channel/pkg/client/clientset/versioned"
-	kafkasourceversioned "knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned"
+	kafkaversioned "knative.dev/eventing-kafka/pkg/client/clientset/versioned"
 )
 
 // Context holds objects related to test execution
@@ -48,8 +47,7 @@ type Clients struct {
 	ProxyConfig        configV1.ConfigV1Interface
 	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
 	MonitoringClient   monclientv1.MonitoringV1Interface
-	KafkaSource        *kafkasourceversioned.Clientset
-	KafkaChannel       *kafkachannelversioned.Clientset
+	Kafka              *kafkaversioned.Clientset
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -131,8 +129,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Eventing = eventingversioned.NewForConfigOrDie(cfg)
 	clients.Route = routev1.NewForConfigOrDie(cfg)
 	clients.ProxyConfig = configV1.NewForConfigOrDie(cfg)
-	clients.KafkaSource = kafkasourceversioned.NewForConfigOrDie(cfg)
-	clients.KafkaChannel = kafkachannelversioned.NewForConfigOrDie(cfg)
+	clients.Kafka = kafkaversioned.NewForConfigOrDie(cfg)
 
 	clients.OLM, err = client.NewClient(kubeconfig)
 	if err != nil {

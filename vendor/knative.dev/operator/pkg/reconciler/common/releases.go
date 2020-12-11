@@ -46,15 +46,18 @@ var cache = map[string]mf.Manifest{}
 // per the spec in the component. If spec.version is empty, the latest
 // version known to the operator is returned.
 func TargetVersion(instance v1alpha1.KComponent) string {
-	target := instance.GetSpec().GetVersion()
-	if target == "" {
-		// If spec.version is not set and spec.manifests are set, we leave the target version empty.
-		if len(instance.GetSpec().GetManifests()) != 0 {
-			return ""
+	version := instance.GetSpec().GetVersion()
+	if len(instance.GetSpec().GetManifests()) == 0 {
+		if version == "" {
+			return latestRelease(instance)
 		}
-		return latestRelease(instance)
+
+		if sanitizeSemver(version) == semver.MajorMinor(sanitizeSemver(version)) {
+			return getLatestRelease(instance, version)
+		}
 	}
-	return target
+
+	return version
 }
 
 // TargetManifest returns the manifest for the TargetVersion
@@ -74,42 +77,52 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	return fetch(installedManifestPath(current, instance))
 }
 
-// IsUpDowngradeEligible returns the bool indicate whether the installed manifest is able to upgrade or downgrade to
-// the target manifest.
-func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
-	current := instance.GetStatus().GetVersion()
-	// If there is no manifest installed, return true, because the target manifest is able to install.
-	if current == "" {
-		return true
-	}
-	current = sanitizeSemver(current)
+// IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
+// manifest is able to upgrade or downgrade to the target manifest.
+func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
+	var err error
 	target := sanitizeSemver(TargetVersion(instance))
+	if !semver.IsValid(target) {
+		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
+	}
 
+	if len(strings.Split(target, ".")) < 2 {
+		return fmt.Errorf("target version %v should at least include the major and minor numbers.", target)
+	}
+
+	current := instance.GetStatus().GetVersion()
+	// If there is no manifest installed, return nil, because the target manifest is able to install.
+	if current == "" {
+		return nil
+	}
+
+	current = sanitizeSemver(current)
 	currentMajor := semver.Major(current)
 	targetMajor := semver.Major(target)
 	if currentMajor != targetMajor {
 		// All the official releases of Knative are under the same Major version number. If target and current versions
 		// are different in terms of major version, upgrade or downgrade is not supported.
 		// TODO We need to deal with the the case of bumping major version later.
-		return false
+		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
+			"installed KnativeServing version is %v.", current)
 	}
 
 	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
-		return false
+		return fmt.Errorf("minor number of the current version %v should be an integer.", current)
 	}
-
 	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
 	if err != nil {
-		return false
+		return fmt.Errorf("minor number of the target version %v should be an integer.", target)
 	}
 
-	// If the diff between minor versions are less than 2, return true.
+	// If the diff between minor versions are less than 2, return nil.
 	if abs(currentMinor-targetMinor) < 2 {
-		return true
+		return nil
 	}
 
-	return false
+	return fmt.Errorf("not supported to upgrade or downgrade across multiple MINOR versions. The "+
+		"installed KnativeServing version is %v.", current)
 }
 
 func getVersionKey(instance v1alpha1.KComponent) string {
@@ -281,10 +294,29 @@ func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 
 // latestRelease returns the latest release tag available under kodata directory for Knative component.
 func latestRelease(instance v1alpha1.KComponent) string {
+	return getLatestRelease(instance, "")
+}
+
+// getLatestRelease returns the latest release tag available under kodata directory for Knative component
+// based on spec.version.
+func getLatestRelease(instance v1alpha1.KComponent, version string) string {
+	// The versions are in a descending order, so the first one will be the latest version.
 	vers, err := allReleases(instance)
 	if err != nil {
 		panic(err)
 	}
-	// The versions are in a descending order, so the first one will be the latest version.
-	return vers[0]
+
+	if version == "" {
+		return vers[0]
+	}
+
+	for _, val := range vers {
+		if strings.HasPrefix(val, version) &&
+			semver.MajorMinor(sanitizeSemver(val)) == semver.MajorMinor(sanitizeSemver(version)) {
+			// If spec.version is set in the format of major.minor, we return the latest version matching
+			// spec.version.
+			return val
+		}
+	}
+	return ""
 }

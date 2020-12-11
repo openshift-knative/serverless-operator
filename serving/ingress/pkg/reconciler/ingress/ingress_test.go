@@ -217,7 +217,7 @@ func ing(ns, name string, opts ...ingressOption) *v1alpha1.Ingress {
 				Hosts: []string{domainName},
 				HTTP: &v1alpha1.HTTPIngressRuleValue{
 					Paths: []v1alpha1.HTTPIngressPath{{
-						Timeout: &metav1.Duration{Duration: 5 * time.Second},
+						DeprecatedTimeout: &metav1.Duration{Duration: 5 * time.Second},
 					}},
 				},
 			}},

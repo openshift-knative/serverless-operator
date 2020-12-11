@@ -54,7 +54,7 @@ func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricLab
 	// Wait until the endpoint is actually working and we get the expected value back
 	_, err = pkgTest.WaitForEndpointState(
 		context.Background(),
-		&pkgTest.KubeClient{Kube: caCtx.Clients.Kube},
+		caCtx.Clients.Kube,
 		caCtx.T.Logf,
 		metricsURL,
 		pkgTest.EventuallyMatchesBody(expectedStr),

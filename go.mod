@@ -7,30 +7,29 @@ require (
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.2
-	github.com/google/uuid v1.1.2 // indirect
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
 	github.com/openshift/client-go v0.0.0-20200929181438-91d71ef2122c
-	github.com/openzipkin/zipkin-go v0.2.5 // indirect
 	github.com/operator-framework/api v0.3.16
-	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201013052701-d7b2aff003ad
+	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201204053353-74afb991dc39
 	github.com/operator-framework/operator-sdk v0.19.4
 	github.com/prometheus-operator/prometheus-operator v0.43.0
 	github.com/prometheus/client_golang v1.8.0
 	github.com/spf13/pflag v1.0.5
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
 	google.golang.org/genproto v0.0.0-20200914193844-75d14daec038 // indirect
 	k8s.io/api v0.19.2
 	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.18.5-0.20201105155307-650096a39064
-	knative.dev/eventing-contrib v0.18.6
-	knative.dev/networking v0.0.0-20201028144035-3287613a3b41
-	knative.dev/operator v0.18.2
-	knative.dev/pkg v0.0.0-20201026165741-2f75016c1368
-	knative.dev/serving v0.18.2
-	knative.dev/test-infra v0.0.0-20200921012245-37f1a12adbd3
+	knative.dev/eventing v0.19.2
+	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
+	knative.dev/hack v0.0.0-20201112185459-01a34c573bd8 // indirect
+	knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
+	knative.dev/operator v0.19.2-0.20201210110341-1d35f8de11a6
+	knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
+	knative.dev/serving v0.19.0
+	knative.dev/test-infra v0.0.0-20201103172604-456882f71719
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )

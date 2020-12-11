@@ -6,7 +6,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kafkachannelv1beta1 "knative.dev/eventing-contrib/kafka/channel/pkg/apis/messaging/v1beta1"
+	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -81,7 +81,7 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
+		client.Clients.Kafka.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
 		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
 		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
@@ -95,7 +95,7 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	// Create kafka channel
-	_, err = client.Clients.KafkaChannel.MessagingV1beta1().KafkaChannels(testNamespace).Create(context.Background(), &kafkaChannel, metav1.CreateOptions{})
+	_, err = client.Clients.Kafka.MessagingV1beta1().KafkaChannels(testNamespace).Create(context.Background(), &kafkaChannel, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create KafkaChannel: ", err)
 	}
