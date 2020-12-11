@@ -23,4 +23,4 @@ requirements:
   eventing_kafka: 0.19.1
   kourier: 0.19.1
   cli: 0.18.4
-  maistra: 1.1.5
+  maistra: 2.0.0
