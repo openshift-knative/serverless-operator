@@ -15,11 +15,8 @@ function upstream_knative_eventing_kafka_e2e {
   # This the namespace used to install and test Knative Eventing-Kafka.
   randomns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2> /dev/null \
     | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)"
-  TEST_EVENTING_NAMESPACE="${TEST_EVENTING_NAMESPACE:-"${randomns}"}"
-  export TEST_EVENTING_NAMESPACE
-
-  export KNATIVE_DEFAULT_NAMESPACE
-  KNATIVE_DEFAULT_NAMESPACE="knative-eventing"
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"${randomns}"}"
+  export SYSTEM_NAMESPACE
 
   # Config tracing config.
   export CONFIG_TRACING_CONFIG
