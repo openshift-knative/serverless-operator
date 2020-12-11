@@ -14,7 +14,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/test-infra/scrip
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
-export KNATIVE_EVENTING_CONTRIB_VERSION="${KNATIVE_EVENTING_CONTRIB_VERSION:-v$(metadata.get dependencies.eventing_contrib)}"
+export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
 
 CURRENT_CSV="$(metadata.get project.name).v$(metadata.get project.version)"
 PREVIOUS_CSV="$(metadata.get project.name).v$(metadata.get olm.replaces)"
@@ -23,7 +23,7 @@ export CURRENT_CSV PREVIOUS_CSV
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
 export KNATIVE_EVENTING_HOME="${GOPATH}/src/knative.dev/eventing"
-export KNATIVE_EVENTING_CONTRIB_HOME="${GOPATH}/src/knative.dev/eventing-contrib"
+export KNATIVE_EVENTING_KAFKA_HOME="${GOPATH}/src/knative.dev/eventing-kafka"
 
 export CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.yaml}"
 export DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"

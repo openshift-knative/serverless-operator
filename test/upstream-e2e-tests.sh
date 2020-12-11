@@ -28,7 +28,7 @@ if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   fi
 fi
 
-# Run upstream knative serving, eventing and eventing-contrib tests
+# Run upstream knative serving, eventing and eventing-kafka tests
 if [[ $TEST_KNATIVE_E2E == true ]]; then
   # Need 6 worker nodes when running upstream. Set, if not enough.
   if [[ "${SCALE_UP}" -lt 6 ]]; then
@@ -37,7 +37,7 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   scale_up_workers
   ensure_serverless_installed
   if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-    upstream_knative_eventing_contrib_e2e
+    upstream_knative_eventing_kafka_e2e
   fi
   upstream_knative_serving_e2e_and_conformance_tests
   upstream_knative_eventing_e2e

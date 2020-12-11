@@ -11,7 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
-eventing_contrib="${registry}/knative-v$(metadata.get dependencies.eventing_contrib):knative-eventing-sources"
+eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
 
 declare -a images
 declare -A images_addresses
@@ -61,12 +61,12 @@ image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
-kafka_image "kafka-controller-manager__manager"    "${eventing_contrib}-kafka-source-controller"
-kafka_image "KAFKA_RA_IMAGE"                       "${eventing_contrib}-kafka-source-adapter"
-kafka_image "kafka-ch-controller__controller"      "${eventing_contrib}-kafka-channel-controller"
-kafka_image "DISPATCHER_IMAGE"                     "${eventing_contrib}-kafka-channel-dispatcher"
-kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_contrib}-kafka-channel-dispatcher"
-kafka_image "kafka-webhook__kafka-webhook"         "${eventing_contrib}-kafka-channel-webhook"
+kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-controller"
+kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
+kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
+kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
+kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_kafka}-consolidated-dispatcher"
+kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
