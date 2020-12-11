@@ -41,6 +41,8 @@ image "autoscaler"     "${serving}-autoscaler"
 image "autoscaler-hpa" "${serving}-autoscaler-hpa"
 image "controller"     "${serving}-controller"
 image "webhook"        "${serving}-webhook"
+image "domain-mapping" "${serving}-domain-mapping"
+image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
 image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
