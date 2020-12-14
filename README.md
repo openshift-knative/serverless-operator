@@ -273,6 +273,60 @@ make uninstall-mesh
 
 ## Contributing
 
+### Create a new version
+
+To create a new version of the serverless-operator (usually after a release branch has
+been cut), there are a few steps we have to do. These steps can be done one after the
+other and do not have to be sent as one PR, to avoid clogging up the respective PR.
+
+#### 1. Update the version metadata of the serverless-operator
+
+The first thing we usually do is to update the version metadata of the operator. That
+mostly includes bumping the version to the next desired version (i.e. 1.12 -> 1.13).
+This is done by adjusting the respective settings in the `project` and `olm` part of
+[`project.yaml`](./olm-catalog/serverless-operator/project.yaml). The settings to be
+changed usually are `project.version`, `olm.replaces` and `olm.skipRange`.
+
+Next, add the now outdated version of serverless-operator to the CatalogSource deployment
+in [catalogsource.bash](./hack/lib/catalogsource.bash). The image to be added usually has
+the following format: `registry.svc.ci.openshift.org/openshift/openshift-serverless-$OLD_VERSION:serverless-bundle`.
+Add it before the "current" image, which is `image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle`.
+
+After the changes are done, commit them and run `make generated-files`. All manifests
+will now be updated accordingly. It's encouraged to commit the generated changes
+separately, to ease review.
+
+#### 2. Update the image coordinates and installation manifests
+
+To update the image coordinates of the component you want to bump, adjust its version in
+the `dependencies` section of [`project.yaml`](./olm-catalog/serverless-operator/project.yaml).
+
+It should be a rare occasion, but between releases, the manifest files we want to pull
+might have changed. If that is the case, adjust the files downloaded in
+[`update-manifests.sh`](./openshift-knative-operator/hack/update-manifests.sh).
+
+Likewise a rare occasion should be patches to the manifest files. `update-manifests.sh`
+might be applying patches that can be removed in the new release or have to be adjusted.
+Make sure to review them and act accordingly.
+
+After the changes are done, commit them and run `make generated-files`. All manifests
+will now be updated accordingly. It's encouraged to commit the generated changes
+separately, to ease review.
+
+#### 3. Update the Golang dependencies
+
+The repository itself depends on the respective upstream releases. The
+`openshift-knative-operator` for example is straightly build from vendoring the upstream
+operator and the tests heavily rely on upstream clients, APIs and helpers.
+
+To update the dependencies, update the `KN_VERSION` variable in
+[`update-deps.sh`](./hack/update-deps.sh). Then run `./hack/update-deps.sh --upgrade` 
+(like we do upstream) to pull in all the correct versions. It's encouraged to commit
+the generated changes separately, to ease review.
+
+If we're bumping our minimum supported Openshift version, bump the `OCP_VERSION` variable
+in the same file and follow the same process.
+
 ### Linting
 
 To run the linters that CI is running, you can use `make lint`.
