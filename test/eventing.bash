@@ -37,8 +37,7 @@ function run_eventing_preupgrade_test {
   local image_template
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
-
-  go_test_e2e -tags=preupgrade \
+  SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
     --imagetemplate="${image_template}"
 
@@ -64,6 +63,7 @@ function start_eventing_prober {
   E2E_UPGRADE_TESTS_SERVING_USE=true \
   E2E_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
   E2E_UPGRADE_TESTS_INTERVAL="${eventing_prober_interval}" \
+  SYSTEM_NAMESPACE=$EVENTING_NAMESPACE \
   go_test_e2e -tags=probe \
     -timeout=30m \
     ./test/upgrade \
@@ -110,8 +110,7 @@ function run_eventing_postupgrade_test {
 
   # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
-
-  go_test_e2e -tags=postupgrade \
+  SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
     --imagetemplate="${image_template}"
 
