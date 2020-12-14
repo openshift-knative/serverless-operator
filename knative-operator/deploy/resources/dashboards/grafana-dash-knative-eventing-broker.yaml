@@ -579,7 +579,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Dispatch Latency ",
+          "title": "Broker (broker-ingress): Event Dispatch Latency (ms)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1065,7 +1065,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Dispatch Latency ",
+          "title": "Trigger (broker-filter): Event Dispatch Latency (ms)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1178,7 +1178,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Processing Latency ",
+          "title": "Trigger (broker-filter): Event Processing Latency (ms)",
           "tooltip": {
             "shared": true,
             "sort": 0,
