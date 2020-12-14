@@ -17,6 +17,12 @@ create_namespaces
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
+# Need 6 worker nodes when running upgrade or upstream. Set, if not enough.
+if [[ "${SCALE_UP}" -lt 6 ]]; then
+  SCALE_UP=6
+  scale_up_workers
+fi
+
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   install_serverless_previous
@@ -30,11 +36,6 @@ fi
 
 # Run upstream knative serving, eventing and eventing-kafka tests
 if [[ $TEST_KNATIVE_E2E == true ]]; then
-  # Need 6 worker nodes when running upstream. Set, if not enough.
-  if [[ "${SCALE_UP}" -lt 6 ]]; then
-    SCALE_UP=6
-  fi
-  scale_up_workers
   ensure_serverless_installed
   if [[ $TEST_KNATIVE_KAFKA == true ]]; then
     upstream_knative_eventing_kafka_e2e
