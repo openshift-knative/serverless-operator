@@ -287,6 +287,11 @@ This is done by adjusting the respective settings in the `project` and `olm` par
 [`project.yaml`](./olm-catalog/serverless-operator/project.yaml). The settings to be
 changed usually are `project.version`, `olm.replaces` and `olm.skipRange`.
 
+Next, add the now outdated version of serverless-operator to the CatalogSource deployment
+in [catalogsource.bash](./hack/lib/catalogsource.bash). The image to be added usually has
+the following format: `registry.svc.ci.openshift.org/openshift/openshift-serverless-$OLD_VERSION:serverless-bundle`.
+Add it before the "current" image, which is `image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle`.
+
 After the changes are done, commit them and run `make generated-files`. All manifests
 will now be updated accordingly. It's encouraged to commit the generated changes
 separately, to ease review.
@@ -299,6 +304,10 @@ the `dependencies` section of [`project.yaml`](./olm-catalog/serverless-operator
 It should be a rare occasion, but between releases, the manifest files we want to pull
 might have changed. If that is the case, adjust the files downloaded in
 [`update-manifests.sh`](./openshift-knative-operator/hack/update-manifests.sh).
+
+Likewise a rare occasion should be patches to the manifest files. `update-manifests.sh`
+might be applying patches that can be removed in the new release or have to be adjusted.
+Make sure to review them and act accordingly.
 
 After the changes are done, commit them and run `make generated-files`. All manifests
 will now be updated accordingly. It's encouraged to commit the generated changes
