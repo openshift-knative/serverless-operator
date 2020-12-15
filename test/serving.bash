@@ -126,6 +126,11 @@ function run_serving_preupgrade_test {
     --kubeconfig "$KUBECONFIG" \
     --resolvabledomain
 
+  # Remove the following files in case we failed to clean them up in an earlier test.
+  rm -f /tmp/prober-signal
+  rm -f /tmp/autoscaling-signal
+  rm -f /tmp/autoscaling-tbc-signal
+
   logger.success 'Serving pre upgrade tests passed'
 }
 
@@ -186,6 +191,14 @@ function check_serving_upgraded {
 function end_serving_prober {
   local prober_pid
   prober_pid="${1:?Pass a prober pid as arg[1]}"
+
+  # The probe tests are blocking on the following files to know when it should exit.
+  #
+  # This is kind of gross. First attempt was to just send a signal to the go test,
+  # but "go test" intercepts the signal and always exits with a non-zero code.
+  echo "done" > /tmp/prober-signal
+  echo "done" > /tmp/autoscaling-signal
+  echo "done" > /tmp/autoscaling-tbc-signal
 
   end_prober 'Serving' "${prober_pid}"
 }
