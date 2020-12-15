@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 readonly ROOT_DIR=$(dirname $0)/..
-source ${ROOT_DIR}/vendor/knative.dev/hack/library.sh
+
+# shellcheck disable=SC1091,SC1090
+source "${ROOT_DIR}/vendor/knative.dev/hack/library.sh"
 
 set -o errexit
 set -o nounset
