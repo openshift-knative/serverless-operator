@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    name: knative-openshift
+  name: knative-openshift-metrics
+  namespace: placeholder
+spec:
+  endpoints:
+  - port: http-metrics
+  namespaceSelector: {}
+  selector:
+    matchLabels:
+      name: knative-openshift

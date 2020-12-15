@@ -72,11 +72,6 @@ github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1
 github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/coreos/prometheus-operator v0.38.1-0.20200424145508-7e176fda06cc
-github.com/coreos/prometheus-operator/pkg/apis/monitoring
-github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1
-github.com/coreos/prometheus-operator/pkg/client/versioned/scheme
-github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/emicklei/go-restful v2.11.1+incompatible
@@ -209,10 +204,6 @@ github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientse
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha2
-# github.com/operator-framework/operator-sdk v0.19.4
-## explicit
-github.com/operator-framework/operator-sdk/pkg/k8sutil
-github.com/operator-framework/operator-sdk/pkg/metrics
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/prometheus-operator/prometheus-operator v0.44.1

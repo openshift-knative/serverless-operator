@@ -2,23 +2,18 @@ package common
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/kmeta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,39 +31,6 @@ const (
 	TestSourceServiceMonitorPath         = "TEST_SOURCE_SERVICE_MONITOR_PATH"
 	TestSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
 )
-
-func SetupServerlessOperatorServiceMonitor(cfg *rest.Config, api client.Client, metricsPort int32) error {
-	// Add to the below struct any other metrics ports you want to expose.
-	servicePorts := []v1.ServicePort{{Port: metricsPort, Name: metrics.OperatorPortName, Protocol: v1.ProtocolTCP, TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: metricsPort}}}
-	// Create Service object to expose the metrics port(s).
-	service, err := metrics.CreateMetricsService(context.Background(), cfg, servicePorts)
-	if err != nil {
-		return fmt.Errorf("failed to create metrics service: %w", err)
-	}
-
-	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
-	// necessary to configure Prometheus to scrape metrics from this operator.
-	services := []*v1.Service{service}
-	metricsNamespace := os.Getenv(NamespaceEnvKey)
-	if metricsNamespace == "" {
-		return errors.New("NAMESPACE not provided via environment")
-	}
-
-	if _, err := metrics.CreateServiceMonitors(cfg, metricsNamespace, services); err != nil {
-		if err == metrics.ErrServiceMonitorNotPresent {
-			// If this operator is deployed to a cluster without the prometheus-operator running, it will return
-			// ErrServiceMonitorNotPresent, which can be used to safely skip ServiceMonitor creation.
-			log.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects")
-			return nil
-		}
-		if apierrs.IsAlreadyExists(err) {
-			// If the servicemonitor already exists, we don't want to report an error.
-			return nil
-		}
-		return fmt.Errorf("failed to create service monitors: %w", err)
-	}
-	return nil
-}
 
 func SetupEventingBrokerServiceMonitors(client client.Client, instance *eventingv1alpha1.KnativeEventing) error {
 	manifest, err := mf.NewManifest(getMonitorPath(TestEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))

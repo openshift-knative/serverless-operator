@@ -140,10 +140,6 @@ func setupMonitoring(cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.SetupServerlessOperatorServiceMonitor(cfg, cl, metricsPort); err != nil {
-		return fmt.Errorf("failed to setup the Service monitor: %w", err)
-	}
-
 	if err := common.InstallHealthDashboard(cl); err != nil {
 		return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
 	}
