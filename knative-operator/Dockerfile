@@ -5,7 +5,6 @@ WORKDIR ${GOPATH}/src/${BASE}
 
 COPY . .
 
-WORKDIR knative-operator
 ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
 
