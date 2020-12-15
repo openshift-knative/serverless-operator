@@ -127,7 +127,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Event Count",
+          "title": "ApiServerSource: Event Count (rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Success Rate  (2xx Event)",
+          "title": "ApiServerSource: Success Rate (2xx Event, fraction rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -284,7 +284,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "ApiServerSource: Event Count by Response Code Class",
+          "title": "ApiServerSource: Event Count by Response Code Class (rate per minute)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -399,7 +399,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Failure Rate (non-2xx Event)",
+          "title": "ApiServerSource: Failure Rate (non-2xx Event, fraction rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -501,7 +501,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Event Count",
+          "title": "MT PingSource: Event Count (rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -589,7 +589,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Success Rate  (2xx Event)",
+          "title": "MT PingSource: Success Rate  (2xx Event, fraction rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -658,7 +658,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "MT PingSource: Event Count by Response Code Class",
+          "title": "MT PingSource: Event Count by Response Code Class (rate per minute)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -773,7 +773,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Failure Rate (non-2xx Event)",
+          "title": "MT PingSource: Failure Rate (non-2xx Event, fraction rate per minute)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -875,7 +875,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "Kafka: Event Count",
+             "title": "Kafka: Event Count (rate per minute)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
@@ -963,7 +963,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "KafkaSource: Success Rate (2xx Event)",
+             "title": "KafkaSource: Success Rate (2xx Event, fraction rate per minute)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
@@ -1032,7 +1032,7 @@ data:
              "timeFrom": null,
              "timeRegions": [],
              "timeShift": null,
-             "title": "KafkaSource: Event Count by Response Code Class",
+             "title": "KafkaSource: Event Count by Response Code Class (rate per minute)",
              "tooltip": {
                "shared": true,
                "sort": 0,
@@ -1147,7 +1147,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "KafkaSource: Failure Rate (non-2xx Event)",
+             "title": "KafkaSource: Failure Rate (non-2xx Event, fraction rate per minute)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
