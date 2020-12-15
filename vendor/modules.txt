@@ -202,7 +202,7 @@ github.com/operator-framework/api/pkg/operators
 github.com/operator-framework/api/pkg/operators/v1
 github.com/operator-framework/api/pkg/operators/v1alpha1
 github.com/operator-framework/api/pkg/operators/v1alpha2
-# github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201204053353-74afb991dc39
+# github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201214005626-fe32277830b3
 ## explicit
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned
@@ -815,7 +815,7 @@ k8s.io/utils/trace
 # knative.dev/caching v0.0.0-20201104174804-1a305923cfbe
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.19.2
+# knative.dev/eventing v0.19.3
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/configs
@@ -872,7 +872,7 @@ knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1
 knative.dev/eventing-kafka/pkg/common/constants
-# knative.dev/hack v0.0.0-20201112185459-01a34c573bd8
+# knative.dev/hack v0.0.0-20201103151104-3d5abc3a0075
 ## explicit
 knative.dev/hack
 # knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
@@ -895,7 +895,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.19.2-0.20201210110341-1d35f8de11a6
+# knative.dev/operator v0.19.2-0.20201214144543-1930abb4fcc7
 ## explicit
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -994,9 +994,6 @@ knative.dev/serving/pkg/client/clientset/versioned/typed/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1
 knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1alpha1
 knative.dev/serving/pkg/networking
-# knative.dev/test-infra v0.0.0-20201103172604-456882f71719
-## explicit
-knative.dev/test-infra/scripts
 # sigs.k8s.io/controller-runtime v0.6.3
 ## explicit
 sigs.k8s.io/controller-runtime/pkg/cache

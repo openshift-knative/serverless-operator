@@ -12,7 +12,7 @@ require (
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
 	github.com/openshift/client-go v0.0.0-20200929181438-91d71ef2122c
 	github.com/operator-framework/api v0.3.16
-	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201204053353-74afb991dc39
+	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201214005626-fe32277830b3
 	github.com/operator-framework/operator-sdk v0.19.4
 	github.com/prometheus-operator/prometheus-operator v0.43.0
 	github.com/prometheus/client_golang v1.8.0
@@ -22,14 +22,13 @@ require (
 	k8s.io/api v0.19.2
 	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.19.2
+	knative.dev/eventing v0.19.3
 	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
-	knative.dev/hack v0.0.0-20201112185459-01a34c573bd8 // indirect
+	knative.dev/hack v0.0.0-20201103151104-3d5abc3a0075
 	knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
-	knative.dev/operator v0.19.2-0.20201210110341-1d35f8de11a6
+	knative.dev/operator v0.19.2-0.20201214144543-1930abb4fcc7
 	knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
 	knative.dev/serving v0.19.0
-	knative.dev/test-infra v0.0.0-20201103172604-456882f71719
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )

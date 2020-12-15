@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 readonly ROOT_DIR=$(dirname $0)/..
-source ${ROOT_DIR}/vendor/knative.dev/test-infra/scripts/library.sh
+
+# shellcheck disable=SC1091,SC1090
+source "${ROOT_DIR}/vendor/knative.dev/hack/library.sh"
 
 set -o errexit
 set -o nounset
@@ -22,13 +24,13 @@ FLOATING_DEPS=(
   "github.com/openshift/client-go@${OCP_VERSION}"
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
 
-  "knative.dev/eventing@${KN_VERSION}"
   "knative.dev/eventing-kafka@${KN_VERSION}"
+  "knative.dev/eventing@${KN_VERSION}"
+  "knative.dev/hack@${KN_VERSION}"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/serving@${KN_VERSION}"
-  "knative.dev/test-infra@${KN_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
