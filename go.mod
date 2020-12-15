@@ -24,12 +24,11 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.19.2
 	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
-	knative.dev/hack v0.0.0-20201112185459-01a34c573bd8 // indirect
+	knative.dev/hack v0.0.0-20201112185459-01a34c573bd8
 	knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
 	knative.dev/operator v0.19.2-0.20201210110341-1d35f8de11a6
 	knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
 	knative.dev/serving v0.19.0
-	knative.dev/test-infra v0.0.0-20201103172604-456882f71719
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )

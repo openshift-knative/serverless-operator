@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly ROOT_DIR=$(dirname $0)/..
-source ${ROOT_DIR}/vendor/knative.dev/test-infra/scripts/library.sh
+source ${ROOT_DIR}/vendor/knative.dev/hack/library.sh
 
 set -o errexit
 set -o nounset
@@ -28,7 +28,6 @@ FLOATING_DEPS=(
   "knative.dev/operator@${KN_VERSION}"
   "knative.dev/pkg@${KN_VERSION}"
   "knative.dev/serving@${KN_VERSION}"
-  "knative.dev/test-infra@${KN_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.

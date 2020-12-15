@@ -994,9 +994,6 @@ knative.dev/serving/pkg/client/clientset/versioned/typed/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1
 knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1alpha1
 knative.dev/serving/pkg/networking
-# knative.dev/test-infra v0.0.0-20201103172604-456882f71719
-## explicit
-knative.dev/test-infra/scripts
 # sigs.k8s.io/controller-runtime v0.6.3
 ## explicit
 sigs.k8s.io/controller-runtime/pkg/cache

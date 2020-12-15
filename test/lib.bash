@@ -31,7 +31,7 @@ function register_teardown {
   return 2
 }
 
-# Overwritten, safe, version of test function from test-infra that acts well
+# Overwritten, safe, version of test function from hack that acts well
 # with `set -Eeuo pipefail`.
 #
 # Run the given E2E tests. Assume tests are tagged e2e, unless `-tags=XXX` is passed.
