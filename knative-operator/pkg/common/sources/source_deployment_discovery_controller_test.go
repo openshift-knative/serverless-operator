@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	v1 "k8s.io/api/apps/v1"

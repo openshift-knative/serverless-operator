@@ -3,7 +3,6 @@ module github.com/openshift-knative/serverless-operator
 go 1.14
 
 require (
-	github.com/coreos/prometheus-operator v0.38.1-0.20200424145508-7e176fda06cc
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.2
@@ -15,6 +14,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201204053353-74afb991dc39
 	github.com/operator-framework/operator-sdk v0.19.4
 	github.com/prometheus-operator/prometheus-operator v0.43.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.43.0
 	github.com/prometheus/client_golang v1.8.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
