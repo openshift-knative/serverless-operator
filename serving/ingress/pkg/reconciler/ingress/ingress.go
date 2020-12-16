@@ -13,7 +13,6 @@ import (
 	ingressreconciler "knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
-	"knative.dev/serving/pkg/apis/serving"
 
 	routev1client "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/clientset/versioned/typed/route/v1"
 	routev1lister "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/listers/route/v1"
@@ -119,10 +118,9 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 }
 
 func (r *Reconciler) routeList(ing *v1alpha1.Ingress) ([]*routev1.Route, error) {
-	ingressLabels := ing.GetLabels()
 	return r.routeLister.List(labels.SelectorFromSet(map[string]string{
-		networking.IngressLabelKey:     ing.GetName(),
-		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
-		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
+		networking.IngressLabelKey:                ing.GetName(),
+		resources.OpenShiftRouteLabelKey:          ing.GetName(),
+		resources.OpenShiftRouteNamespaceLabelKey: ing.GetNamespace(),
 	}))
 }
