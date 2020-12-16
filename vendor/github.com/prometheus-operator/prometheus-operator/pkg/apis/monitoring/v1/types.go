@@ -131,8 +131,19 @@ type PrometheusSpec struct {
 	// to use for pulling prometheus and alertmanager images from registries
 	// see http://kubernetes.io/docs/user-guide/images#specifying-imagepullsecrets-on-a-pod
 	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
-	// Number of instances to deploy for a Prometheus deployment.
+	// Number of replicas of each shard to deploy for a Prometheus deployment.
+	// Number of replicas multiplied by shards is the total number of Pods
+	// created.
 	Replicas *int32 `json:"replicas,omitempty"`
+	// EXPERIMENTAL: Number of shards to distribute targets onto. Number of
+	// replicas multiplied by shards is the total number of Pods created. Note
+	// that scaling down shards will not reshard data onto remaining instances,
+	// it must be manually moved. Increasing shards will not reshard data
+	// either but it will continue to be available from the same instances. To
+	// query globally use Thanos sidecar and Thanos querier or remote write
+	// data to a central location. Sharding is done on the content of the
+	// `__address__` target meta-label.
+	Shards *int32 `json:"shards,omitempty"`
 	// Name of Prometheus external label used to denote replica name.
 	// Defaults to the value of `prometheus_replica`. External label will
 	// _not_ be added when value is set to empty string (`""`).
@@ -354,7 +365,7 @@ type PrometheusSpec struct {
 	// enforce the TargetLimit to keep overall number of targets under
 	// the desired limit.
 	// Note that if TargetLimit is higher that value will be taken instead.
-	EnforcedTargetLimit*uint64 `json:"enforcedTargetLimit,omitempty"`
+	EnforcedTargetLimit *uint64 `json:"enforcedTargetLimit,omitempty"`
 }
 
 // PrometheusRuleExcludeConfig enables users to configure excluded PrometheusRule names and their namespaces
@@ -384,7 +395,7 @@ type ArbitraryFSAccessThroughSMsConfig struct {
 // https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 // +k8s:openapi-gen=true
 type PrometheusStatus struct {
-	// Represents whether any actions on the underlaying managed objects are
+	// Represents whether any actions on the underlying managed objects are
 	// being performed. Only delete actions will be performed.
 	Paused bool `json:"paused"`
 	// Total number of non-terminated pods targeted by this Prometheus deployment
@@ -516,7 +527,11 @@ type ThanosSpec struct {
 	// If not provided, no requests/limits will be set
 	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 	// ObjectStorageConfig configures object storage in Thanos.
+	// Alternative to ObjectStorageConfigFile, and lower order priority.
 	ObjectStorageConfig *v1.SecretKeySelector `json:"objectStorageConfig,omitempty"`
+	// ObjectStorageConfigFile specifies the path of the object storage configuration file.
+	// When used alongside with ObjectStorageConfig, ObjectStorageConfigFile takes precedence.
+	ObjectStorageConfigFile *string `json:"objectStorageConfigFile,omitempty"`
 	// ListenLocal makes the Thanos sidecar listen on loopback, so that it
 	// does not bind against the Pod IP.
 	ListenLocal bool `json:"listenLocal,omitempty"`
@@ -1088,7 +1103,7 @@ type PrometheusRuleList struct {
 	Items []*PrometheusRule `json:"items"`
 }
 
-// PrometheusRule defines alerting rules for a Prometheus instance
+// PrometheusRule defines recording and alerting rules for a Prometheus instance
 // +genclient
 // +k8s:openapi-gen=true
 type PrometheusRule struct {
@@ -1225,7 +1240,7 @@ type AlertmanagerSpec struct {
 	// and the actual ExternalURL is still true, but the server serves requests
 	// under a different route prefix. For example for use with `kubectl proxy`.
 	RoutePrefix string `json:"routePrefix,omitempty"`
-	// If set to true all actions on the underlaying managed objects are not
+	// If set to true all actions on the underlying managed objects are not
 	// goint to be performed, except for delete actions.
 	Paused bool `json:"paused,omitempty"`
 	// Define which Nodes the Pods are scheduled on.
@@ -1272,6 +1287,12 @@ type AlertmanagerSpec struct {
 	// Needs to be provided for non RFC1918 [1] (public) addresses.
 	// [1] RFC1918: https://tools.ietf.org/html/rfc1918
 	ClusterAdvertiseAddress string `json:"clusterAdvertiseAddress,omitempty"`
+	// Interval between gossip attempts.
+	ClusterGossipInterval string `json:"clusterGossipInterval,omitempty"`
+	// Interval between pushpull attempts.
+	ClusterPushpullInterval string `json:"clusterPushpullInterval,omitempty"`
+	// Timeout for cluster peering.
+	ClusterPeerTimeout string `json:"clusterPeerTimeout,omitempty"`
 	// Port name used for the pods and governing service.
 	// This defaults to web
 	PortName string `json:"portName,omitempty"`
@@ -1302,7 +1323,7 @@ type AlertmanagerList struct {
 // https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 // +k8s:openapi-gen=true
 type AlertmanagerStatus struct {
-	// Represents whether any actions on the underlaying managed objects are
+	// Represents whether any actions on the underlying managed objects are
 	// being performed. Only delete actions will be performed.
 	Paused bool `json:"paused"`
 	// Total number of non-terminated pods targeted by this Alertmanager

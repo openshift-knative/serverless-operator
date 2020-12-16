@@ -976,6 +976,11 @@ func (in *PrometheusSpec) DeepCopyInto(out *PrometheusSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.Shards != nil {
+		in, out := &in.Shards, &out.Shards
+		*out = new(int32)
+		**out = **in
+	}
 	if in.ReplicaExternalLabelName != nil {
 		in, out := &in.ReplicaExternalLabelName, &out.ReplicaExternalLabelName
 		*out = new(string)
@@ -1715,6 +1720,11 @@ func (in *ThanosRulerSpec) DeepCopyInto(out *ThanosRulerSpec) {
 		*out = new(corev1.SecretKeySelector)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ObjectStorageConfigFile != nil {
+		in, out := &in.ObjectStorageConfigFile, &out.ObjectStorageConfigFile
+		*out = new(string)
+		**out = **in
+	}
 	if in.QueryEndpoints != nil {
 		in, out := &in.QueryEndpoints, &out.QueryEndpoints
 		*out = make([]string, len(*in))
@@ -1846,6 +1856,11 @@ func (in *ThanosSpec) DeepCopyInto(out *ThanosSpec) {
 		in, out := &in.ObjectStorageConfig, &out.ObjectStorageConfig
 		*out = new(corev1.SecretKeySelector)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.ObjectStorageConfigFile != nil {
+		in, out := &in.ObjectStorageConfigFile, &out.ObjectStorageConfigFile
+		*out = new(string)
+		**out = **in
 	}
 	if in.TracingConfig != nil {
 		in, out := &in.TracingConfig, &out.TracingConfig
