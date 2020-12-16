@@ -3,9 +3,9 @@ module github.com/openshift-knative/serverless-operator
 go 1.14
 
 require (
-	github.com/go-logr/logr v0.2.1
+	github.com/go-logr/logr v0.3.0
 	github.com/go-logr/zapr v0.2.0 // indirect
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.4
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
@@ -13,8 +13,8 @@ require (
 	github.com/operator-framework/api v0.3.16
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201214005626-fe32277830b3
 	github.com/operator-framework/operator-sdk v0.19.4
-	github.com/prometheus-operator/prometheus-operator v0.43.0
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.43.0
+	github.com/prometheus-operator/prometheus-operator v0.44.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.44.1
 	github.com/prometheus/client_golang v1.8.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
@@ -34,9 +34,6 @@ require (
 )
 
 replace (
-	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
-	github.com/go-logr/zapr => github.com/go-logr/zapr v0.2.0 // To make klog happy
-
 	// Kubernetes v1.18.8
 	k8s.io/api => k8s.io/api v0.18.8
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.8
