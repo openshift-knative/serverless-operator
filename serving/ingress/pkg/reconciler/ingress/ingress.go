@@ -119,8 +119,8 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 
 func (r *Reconciler) routeList(ing *v1alpha1.Ingress) ([]*routev1.Route, error) {
 	return r.routeLister.List(labels.SelectorFromSet(map[string]string{
-		networking.IngressLabelKey:                ing.GetName(),
-		resources.OpenShiftRouteLabelKey:          ing.GetName(),
-		resources.OpenShiftRouteNamespaceLabelKey: ing.GetNamespace(),
+		networking.IngressLabelKey:                  ing.GetName(),
+		resources.OpenShiftIngressLabelKey:          ing.GetName(),
+		resources.OpenShiftIngressNamespaceLabelKey: ing.GetNamespace(),
 	}))
 }

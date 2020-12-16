@@ -55,11 +55,11 @@ func TestMakeRoute(t *testing.T) {
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						networking.IngressLabelKey:      "ingress",
-						serving.RouteLabelKey:           "route1",
-						serving.RouteNamespaceLabelKey:  "default",
-						OpenShiftRouteLabelKey:          "ingress",
-						OpenShiftRouteNamespaceLabelKey: "default",
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
 						TimeoutAnnotation: defaultTimeout,
@@ -105,11 +105,11 @@ func TestMakeRoute(t *testing.T) {
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						networking.IngressLabelKey:      "ingress",
-						serving.RouteLabelKey:           "route1",
-						serving.RouteNamespaceLabelKey:  "default",
-						OpenShiftRouteLabelKey:          "ingress",
-						OpenShiftRouteNamespaceLabelKey: "default",
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
 						TimeoutAnnotation: "3600s",
@@ -144,11 +144,11 @@ func TestMakeRoute(t *testing.T) {
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						networking.IngressLabelKey:      "ingress",
-						serving.RouteLabelKey:           "route1",
-						serving.RouteNamespaceLabelKey:  "default",
-						OpenShiftRouteLabelKey:          "ingress",
-						OpenShiftRouteNamespaceLabelKey: "default",
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
 						TimeoutAnnotation: defaultTimeout,
@@ -175,11 +175,11 @@ func TestMakeRoute(t *testing.T) {
 			}, {
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						networking.IngressLabelKey:      "ingress",
-						serving.RouteLabelKey:           "route1",
-						serving.RouteNamespaceLabelKey:  "default",
-						OpenShiftRouteLabelKey:          "ingress",
-						OpenShiftRouteNamespaceLabelKey: "default",
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
 						TimeoutAnnotation: defaultTimeout,
@@ -215,11 +215,11 @@ func TestMakeRoute(t *testing.T) {
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						networking.IngressLabelKey:      "ingress",
-						serving.RouteLabelKey:           "route1",
-						serving.RouteNamespaceLabelKey:  "default",
-						OpenShiftRouteLabelKey:          "ingress",
-						OpenShiftRouteNamespaceLabelKey: "default",
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
 						TimeoutAnnotation: defaultTimeout,

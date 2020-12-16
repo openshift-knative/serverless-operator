@@ -21,8 +21,8 @@ const (
 	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
 	KourierHTTPPort        = "http2"
 
-	OpenShiftRouteLabelKey          = "serving.knative.openshift.io/route"
-	OpenShiftRouteNamespaceLabelKey = "serving.knative.openshift.io/routenamespace"
+	OpenShiftIngressLabelKey          = "serving.knative.openshift.io/ingressName"
+	OpenShiftIngressNamespaceLabelKey = "serving.knative.openshift.io/ingressNamespace"
 )
 
 var defaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
@@ -95,9 +95,9 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	}
 
 	labels := kmeta.UnionMaps(ci.Labels, map[string]string{
-		networking.IngressLabelKey:      ci.GetName(),
-		OpenShiftRouteLabelKey:          ci.GetName(),
-		OpenShiftRouteNamespaceLabelKey: ci.GetNamespace(),
+		networking.IngressLabelKey:        ci.GetName(),
+		OpenShiftIngressLabelKey:          ci.GetName(),
+		OpenShiftIngressNamespaceLabelKey: ci.GetNamespace(),
 	})
 
 	name := routeName(string(ci.GetUID()), host)
