@@ -67,7 +67,7 @@ func TestReconcile(t *testing.T) {
 			route(ingressNamespace, routeName),
 			route(ingressNamespace, "foo"), // This gets deleted.
 			route(ingressNamespace, "foo2", func(r *routev1.Route) {
-				r.Labels[serving.RouteLabelKey] = "foo"
+				r.Labels[resources.OpenShiftRouteLabelKey] = "foo"
 			}), // This doesn't cause the label doesn't match.
 		},
 		WantDeletes: []clientgotesting.DeleteActionImpl{{
@@ -244,9 +244,11 @@ func route(ns, name string, opts ...routeOption) *routev1.Route {
 			Name:      name,
 			Namespace: ns,
 			Labels: map[string]string{
-				networking.IngressLabelKey:     "test",
-				serving.RouteLabelKey:          "test",
-				serving.RouteNamespaceLabelKey: "testNs",
+				networking.IngressLabelKey:                "test",
+				serving.RouteLabelKey:                     "test",
+				serving.RouteNamespaceLabelKey:            "testNs",
+				resources.OpenShiftRouteLabelKey:          "test",
+				resources.OpenShiftRouteNamespaceLabelKey: "testNs",
 			},
 			Annotations: map[string]string{
 				resources.TimeoutAnnotation:          "5s",
