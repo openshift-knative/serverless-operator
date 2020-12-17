@@ -64,7 +64,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+\", container != \"POD\", container != \"\"}[1m])) by (container)",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+|pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}[1m])) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -74,7 +74,7 @@ data:
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total CPU Usage",
+          "title": "Total CPU Usage (rate per minute)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -144,7 +144,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+\", container != \"POD\", container != \"\"}) by (container)",
+              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+|pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -154,7 +154,7 @@ data:
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total Memory Usage",
+          "title": "Total Memory Usage (rate per minute)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -229,14 +229,14 @@ data:
             "steppedLine": false,
             "targets": [
              {
-                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "received bytes",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "legendFormat": "transmitted bytes",
                 "refId": "B"
               }
@@ -245,7 +245,7 @@ data:
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Total Network I/O ",
+            "title": "Total Network I/O (rate per minute)",
             "tooltip": {
               "shared": true,
               "sort": 2,
@@ -288,7 +288,7 @@ data:
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Network I/O errors ",
+            "description": "Network I/O errors (rate per minute)",
             "fill": 1,
             "fillGradient": 0,
             "gridPos": {
@@ -324,14 +324,14 @@ data:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat":  "receive errors",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "instant": false,
                 "legendFormat": "transmit errors",
@@ -342,7 +342,7 @@ data:
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Total Network Errors",
+            "title": "Total Network Errors (rate per minute)",
             "tooltip": {
               "shared": true,
               "sort": 2,
