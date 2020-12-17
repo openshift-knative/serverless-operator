@@ -3,7 +3,7 @@ kind: ServiceMonitor
 metadata:
   labels:
     name: knative-openshift
-  name: knative-openshift-metrics
+  name: knative-openshift-metrics2
   namespace: placeholder
 spec:
   endpoints:
