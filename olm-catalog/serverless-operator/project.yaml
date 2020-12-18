@@ -23,5 +23,5 @@ dependencies:
   eventing: 0.19.2
   eventing_kafka: 0.19.1
   kourier: 0.19.1
-  cli: 0.18.4
+  cli: 0.19.1
   maistra: 2.0.0
