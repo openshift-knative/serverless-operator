@@ -9,7 +9,7 @@ olm:
   channels:
     default: '4.6'
     list:
-      - '4.6'
+      - '4.6,4.7'
 
 requirements:
   kube:
