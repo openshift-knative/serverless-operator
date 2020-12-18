@@ -170,6 +170,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.ensureCustomCertsConfigMap,
 		r.installKourier,
 		r.installDashboard,
+		r.installServingRbacProxyServiceMonitors,
 		r.ensureProxySettings,
 		r.installKnConsoleCLIDownload,
 	}
@@ -357,6 +358,17 @@ func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.Kna
 	return dashboard.Apply(os.Getenv(dashboard.ServingResourceDashboardPathEnvVar), instance, r.client)
 }
 
+// installServingRbacProxyServiceMonitors installs service monitors with rbac proxy support for control plane pods
+func (r *ReconcileKnativeServing) installServingRbacProxyServiceMonitors(instance *servingv1alpha1.KnativeServing) error {
+	if err := common.SetupMonitoringRequirements(r.client, instance); err != nil {
+		return err
+	}
+	if err := common.SetupRbacProxyRequirements(r.client, instance); err != nil {
+		return err
+	}
+	return common.SetupServingControlPlaneServiceMonitors(r.client, instance)
+}
+
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
 	defer common.KnativeUp.DeleteLabelValues("serving_status")
@@ -383,6 +395,8 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 
+	log.Info("Deleting rbac proxy based service monitor resources")
+	common.DeleteRbacProxyRequirements(r.client, instance)
 	// The above might take a while, so we refetch the resource again in case it has changed.
 	refetched := &servingv1alpha1.KnativeServing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {

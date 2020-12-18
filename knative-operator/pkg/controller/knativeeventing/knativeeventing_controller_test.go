@@ -47,7 +47,7 @@ func init() {
 	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
 	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
-	os.Setenv(common.TestRolePath, "../dashboard/testdata/role_service_monitor.yaml")
+	os.Setenv(common.TestRolePath, "../dashboard/testdata/role-service-monitor.yaml")
 	os.Setenv(common.TestEventingBrokerServiceMonitorPath, "../dashboard/testdata/broker-service-monitors.yaml")
 	os.Setenv(common.TestMonitor, "true")
 

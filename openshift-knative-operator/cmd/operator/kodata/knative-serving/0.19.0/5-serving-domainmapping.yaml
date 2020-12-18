@@ -152,6 +152,13 @@ spec:
               weight: 100
       serviceAccountName: controller
       containers:
+        - name: kube-rbac-proxy
+          image: quay.io/brancz/kube-rbac-proxy:v0.7.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8444"
+            - "--upstream=http://127.0.0.1:9090/"
+            - "--logtostderr=true"
+            - "--v=10"
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
@@ -236,6 +243,13 @@ spec:
               weight: 100
       serviceAccountName: controller
       containers:
+        - name: kube-rbac-proxy
+          image: quay.io/brancz/kube-rbac-proxy:v0.7.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8444"
+            - "--upstream=http://127.0.0.1:9090/"
+            - "--logtostderr=true"
+            - "--v=10"
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
@@ -265,6 +279,8 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/serving
+            - name: METRICS_PROMETHEUS_HOST
+              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
           ports:

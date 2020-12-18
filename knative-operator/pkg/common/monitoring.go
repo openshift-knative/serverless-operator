@@ -20,7 +20,7 @@ const (
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
 	monitoringLabel = "openshift.io/cluster-monitoring"
-	rolePath        = "deploy/role_service_monitor.yaml"
+	rolePath        = "deploy/resources/monitoring/role-service-monitor.yaml"
 	TestRolePath    = "TEST_ROLE_PATH"
 )
 
