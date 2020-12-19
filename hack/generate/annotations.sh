@@ -18,6 +18,6 @@ cp "$template" "$target"
 
 for name in "${!values[@]}"; do
   echo "Value: ${name} -> ${values[$name]}"
-  yq write --inplace --tag '!!str' "$target" \
+  yq write --inplace --tag '!!str' --style double "$target" \
     "annotations[$name]" "${values[$name]}"
 done
