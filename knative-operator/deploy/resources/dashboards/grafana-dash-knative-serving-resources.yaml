@@ -88,7 +88,7 @@ data:
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total CPU Usage (rate per minute)"",
+          "title": "Total CPU Usage (rate per minute)",
           "tooltip": {
             "shared": true,
             "sort": 2,
