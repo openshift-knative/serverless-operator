@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
   
 istio_deployments="istio-citadel istio-galley istio-pilot istio-sidecar-injector kiali"
-mesh_deployments="elasticsearch-operator istio-operator jaeger-operator kiali-operator"
+mesh_deployments=(istio-operator jaeger-operator kiali-operator)
 
 function install_mesh {
   deploy_servicemesh_operators
@@ -23,18 +23,6 @@ function uninstall_mesh {
 function deploy_servicemesh_operators {
   logger.info "Installing service mesh operators in namespace openshift-operators"
   cat <<EOF | oc apply -f -
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: elasticsearch-operator
-  namespace: openshift-operators
-spec:
-  channel: preview
-  name: elasticsearch-operator
-  installPlanApproval: Automatic
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
----
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -73,8 +61,8 @@ spec:
 EOF
 
   logger.info "Waiting until service mesh operators are available"
-  timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments} --no-headers | wc -l) != 4 ]]"
-  oc wait --for=condition=Available deployment "${mesh_deployments}" --timeout=300s -n openshift-operators
+  timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments[*]} --no-headers | wc -l) != ${#mesh_deployments[*]} ]]"
+  oc wait --for=condition=Available deployment "${mesh_deployments[@]}" --timeout=300s -n openshift-operators
 }
 
 
