@@ -50,7 +50,7 @@ test-e2e:
 	./test/e2e-tests.sh
 
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
-test-e2e-with-kafka:
+test-e2e-with-kafka: install-mesh
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
