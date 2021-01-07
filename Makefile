@@ -68,7 +68,8 @@ test-upstream-e2e-no-upgrade:
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:
-	TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade

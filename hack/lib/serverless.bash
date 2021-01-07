@@ -36,8 +36,16 @@ function install_serverless_previous {
     timeout 120 "[[ \$(oc get namespace ${SERVING_NAMESPACE} ${EVENTING_NAMESPACE} --no-headers | wc -l) != 2 ]]" || return $?
   fi
 
-  deploy_knativeserving_cr || return $?
-  deploy_knativeeventing_cr || return $?
+  if [[ $INSTALL_SERVING == "true" ]]; then
+    deploy_knativeserving_cr || return $?
+  fi
+  if [[ $INSTALL_EVENTING == "true" ]]; then
+    deploy_knativeeventing_cr || return $?
+  fi
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    deploy_knativekafka_cr || return $?
+  fi
+
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
 }
 
