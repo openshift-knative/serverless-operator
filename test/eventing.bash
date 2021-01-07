@@ -33,6 +33,8 @@ function prepare_knative_eventing_tests {
 
 function run_eventing_preupgrade_test {
   logger.info 'Running Eventing pre upgrade tests'
+  local channels
+  channels="${1:?Pass the list of channels as arg[1]}"
 
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
@@ -42,6 +44,7 @@ function run_eventing_preupgrade_test {
 
   go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
+    -channels="${channels}" \
     --imagetemplate="${image_template}" \
     || return $?
 
@@ -109,7 +112,8 @@ function check_eventing_upgraded {
 
 function run_eventing_postupgrade_test {
   logger.info 'Running Eventing post upgrade tests'
-  local image_template
+  local image_template channels
+  channels="${1:?Pass the list of channels as arg[1]}"
 
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
@@ -118,6 +122,7 @@ function run_eventing_postupgrade_test {
 
   go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
+    -channels="${channels}" \
     --imagetemplate="${image_template}" \
     || return $?
 
