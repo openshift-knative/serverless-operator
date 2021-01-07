@@ -31,6 +31,8 @@ function prepare_knative_eventing_tests {
 
 function run_eventing_preupgrade_test {
   logger.info 'Running Eventing pre upgrade tests'
+  local channels
+  channels="${1:?Pass the list of channels as arg[1]}"
 
   cd "${KNATIVE_EVENTING_HOME}"
 
@@ -39,6 +41,7 @@ function run_eventing_preupgrade_test {
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
   SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
+    -channels="${channels}" \
     --imagetemplate="${image_template}"
 
   logger.success 'Eventing pre upgrade tests passed'
@@ -104,7 +107,8 @@ function check_eventing_upgraded {
 
 function run_eventing_postupgrade_test {
   logger.info 'Running Eventing post upgrade tests'
-  local image_template
+  local image_template channels
+  channels="${1:?Pass the list of channels as arg[1]}"
 
   cd "${KNATIVE_EVENTING_HOME}"
 
@@ -112,6 +116,7 @@ function run_eventing_postupgrade_test {
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
   SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
+    -channels="${channels}" \
     --imagetemplate="${image_template}"
 
   logger.success 'Eventing post upgrade tests passed'
