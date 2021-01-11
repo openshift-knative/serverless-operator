@@ -17,6 +17,8 @@ import (
 )
 
 const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+const observabilityCMName = "observability"
+const observabilityBackendKey = "metrics.backend-destination"
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context) operator.Extension {
@@ -50,7 +52,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Attempt to locate kibana route which is available if openshift-logging has been configured
 	if loggingHost := e.fetchLoggingHost(ctx); loggingHost != "" {
-		common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+		common.Configure(&ks.Spec.CommonSpec, observabilityCMName, "logging.revision-url-template",
 			fmt.Sprintf(loggingURLTemplate, loggingHost))
 	}
 
@@ -86,6 +88,13 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
+	}
+
+	// Disable metrics backend by default due to OOM issues, for more check SRVKS-679
+	// Until now by default nothing was set and knative/pkg set the backend to `prometheus`
+	// As an exception if the user sets the backend explicitly in the CR the value is not modified.
+	if _, ok := ks.Spec.CommonSpec.Config[observabilityCMName][observabilityBackendKey]; !ok {
+		common.Configure(&ks.Spec.CommonSpec, observabilityCMName, observabilityBackendKey, "none")
 	}
 
 	return nil
