@@ -17,6 +17,7 @@ import (
 )
 
 const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+const observabilityCMName = "config-observability"
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context) operator.Extension {
@@ -86,6 +87,17 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
+	}
+
+	// Disable metrics backend by default due to OOM issues, for more check SRVKS-679
+	// Until now by default nothing was set and knative/pkg set the backend to `prometheus`
+	// As an exception if the user sets the backend explicitly in the CR the value is not modified.
+	if observCMData, ok := ks.Spec.CommonSpec.Config[observabilityCMName]; ok {
+		if _, ok := observCMData[observabilityCMName]; !ok {
+			common.Configure(&ks.Spec.CommonSpec, observabilityCMName, "metrics.backend-destination", "none")
+		}
+	} else {
+		common.Configure(&ks.Spec.CommonSpec, observabilityCMName, "metrics.backend-destination", "none")
 	}
 
 	return nil
