@@ -25,7 +25,7 @@ func setupMetricsRoute(caCtx *test.Context, name string) (*v1.Route, error) {
 			Path: "/metrics",
 			To: v1.RouteTargetReference{
 				Kind: "Service",
-				Name: "knative-openshift-metrics",
+				Name: "knative-openshift-metrics2",
 			},
 		},
 	}
@@ -42,7 +42,7 @@ func setupMetricsRoute(caCtx *test.Context, name string) (*v1.Route, error) {
 
 func verifyHealthStatusMetric(caCtx *test.Context, metricsPath string, metricLabel string, expectedValue int) {
 	// Check if Operator's service monitor service is available
-	_, err := caCtx.Clients.Kube.CoreV1().Services("openshift-serverless").Get(context.Background(), "knative-openshift-metrics", meta.GetOptions{})
+	_, err := caCtx.Clients.Kube.CoreV1().Services("openshift-serverless").Get(context.Background(), "knative-openshift-metrics2", meta.GetOptions{})
 	if err != nil {
 		caCtx.T.Fatalf("Error getting service monitor service: %v", err)
 	}

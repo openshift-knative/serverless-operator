@@ -12,7 +12,6 @@ require (
 	github.com/openshift/client-go v0.0.0-20200929181438-91d71ef2122c
 	github.com/operator-framework/api v0.3.16
 	github.com/operator-framework/operator-lifecycle-manager v0.0.0-20201214005626-fe32277830b3
-	github.com/operator-framework/operator-sdk v0.19.4
 	github.com/prometheus-operator/prometheus-operator v0.44.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.44.1
 	github.com/prometheus/client_golang v1.8.0
