@@ -12,6 +12,7 @@ registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
+rbac_proxy="quay.io/brancz/kube-rbac-proxy:v0.8.0"
 
 declare -a images
 declare -A images_addresses
@@ -37,12 +38,19 @@ function kafka_image {
 
 image "queue-proxy"    "${serving}-queue"
 image "activator"      "${serving}-activator"
+image "activator__kube-rbac-proxy"  "$rbac_proxy"
 image "autoscaler"     "${serving}-autoscaler"
+image "autoscaler__kube-rbac-proxy"  "$rbac_proxy"
 image "autoscaler-hpa" "${serving}-autoscaler-hpa"
+image "autoscaler-hpa__kube-rbac-proxy"  "$rbac_proxy"
 image "controller"     "${serving}-controller"
+image "controler__kube-rbac-proxy"  "$rbac_proxy"
 image "webhook"        "${serving}-webhook"
+image "webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "domain-mapping" "${serving}-domain-mapping"
+image "domain-mapping__kube-rbac-proxy"  "$rbac_proxy"
 image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
+image "domainmapping-webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
 image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
