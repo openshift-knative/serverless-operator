@@ -46,3 +46,5 @@ download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
+
+git apply "$root/openshift-knative-operator/hack/004-rbac-proxy.patch"
