@@ -1,43 +1,8 @@
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-index 3c213343..5415d61d 100644
+index 3c213343..9724c974 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-@@ -248,7 +248,33 @@ roleRef:
-   kind: ClusterRole
-   name: knative-serving-admin
-   apiGroup: rbac.authorization.k8s.io
--
-+---
-+apiVersion: rbac.authorization.k8s.io/v1
-+kind: ClusterRole
-+metadata:
-+  name: rbac-proxy-reviews-prom
-+rules:
-+  - apiGroups: ["authentication.k8s.io"]
-+    resources:
-+      - tokenreviews
-+    verbs: ["create"]
-+  - apiGroups: ["authorization.k8s.io"]
-+    resources:
-+      - subjectaccessreviews
-+    verbs: ["create"]
-+---
-+apiVersion: rbac.authorization.k8s.io/v1
-+kind: ClusterRoleBinding
-+metadata:
-+  name: rbac-proxy-reviews-prom-rb
-+roleRef:
-+  apiGroup: rbac.authorization.k8s.io
-+  kind: ClusterRole
-+  name: rbac-proxy-reviews-prom
-+subjects:
-+  - kind: ServiceAccount
-+    name: controller
-+    namespace: knative-serving
- ---
- # Copyright 2018 The Knative Authors
- #
-@@ -2226,6 +2252,8 @@ spec:
+@@ -2226,6 +2226,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/internal/serving
@@ -46,7 +11,7 @@ index 3c213343..5415d61d 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2257,6 +2285,13 @@ spec:
+@@ -2257,6 +2259,13 @@ spec:
                    value: "activator"
              failureThreshold: 12
              initialDelaySeconds: 15
@@ -60,7 +25,7 @@ index 3c213343..5415d61d 100644
        # The activator (often) sits on the dataplane, and may proxy long (e.g.
        # streaming, websockets) requests.  We give a long grace period for the
        # activator to "lame duck" and drain outstanding requests before we
-@@ -2371,6 +2406,8 @@ spec:
+@@ -2371,6 +2380,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -69,7 +34,7 @@ index 3c213343..5415d61d 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2398,6 +2435,13 @@ spec:
+@@ -2398,6 +2409,13 @@ spec:
                  - name: k-kubelet-probe
                    value: "autoscaler"
              failureThreshold: 6
@@ -83,7 +48,7 @@ index 3c213343..5415d61d 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2495,6 +2539,8 @@ spec:
+@@ -2495,6 +2513,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/internal/serving
@@ -92,7 +57,7 @@ index 3c213343..5415d61d 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2507,6 +2553,13 @@ spec:
+@@ -2507,6 +2527,13 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -106,7 +71,7 @@ index 3c213343..5415d61d 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2655,6 +2708,8 @@ spec:
+@@ -2655,6 +2682,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -115,7 +80,7 @@ index 3c213343..5415d61d 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2681,6 +2736,13 @@ spec:
+@@ -2681,6 +2710,13 @@ spec:
              !!merge <<: *probe
              failureThreshold: 6
              initialDelaySeconds: 20
@@ -197,3 +162,302 @@ index d0b8b2bb..508c6211 100644
        # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
        # high value that we respect whatever value it has configured for the lame duck grace period.
        terminationGracePeriodSeconds: 300
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml
+new file mode 100644
+index 00000000..11005a1e
+--- /dev/null
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml
+@@ -0,0 +1,293 @@
++---
++apiVersion: rbac.authorization.k8s.io/v1beta1
++kind: ClusterRole
++metadata:
++  name: rbac-proxy-metrics-prom
++rules:
++  - nonResourceURLs: ["/metrics"]
++    verbs: ["get"]
++---
++apiVersion: rbac.authorization.k8s.io/v1beta1
++kind: ClusterRoleBinding
++metadata:
++  name: rbac-proxy-metrics-prom-rb
++roleRef:
++  apiGroup: rbac.authorization.k8s.io
++  kind: ClusterRole
++  name: rbac-proxy-metrics-prom
++subjects:
++  - kind: ServiceAccount
++    name: prometheus-k8s
++    namespace: openshift-monitoring
++---
++apiVersion: rbac.authorization.k8s.io/v1
++kind: ClusterRole
++metadata:
++  name: rbac-proxy-reviews-prom
++rules:
++  - apiGroups: ["authentication.k8s.io"]
++    resources:
++      - tokenreviews
++    verbs: ["create"]
++  - apiGroups: ["authorization.k8s.io"]
++    resources:
++      - subjectaccessreviews
++    verbs: ["create"]
++---
++apiVersion: rbac.authorization.k8s.io/v1
++kind: ClusterRoleBinding
++metadata:
++  name: rbac-proxy-reviews-prom-rb
++roleRef:
++  apiGroup: rbac.authorization.k8s.io
++  kind: ClusterRole
++  name: rbac-proxy-reviews-prom
++subjects:
++  - kind: ServiceAccount
++    name: controller
++    namespace: knative-serving
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: activator-sm-service
++  name: activator-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: activator
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: autoscaler-sm-service
++  name: autoscaler-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: autoscaler
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: autoscaler-hpa-sm-service
++  name: autoscaler-hpa-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: autoscaler-hpa
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: controller-sm-service
++  name: controller-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: controller
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: domain-mapping-sm-service
++  name: domain-mapping-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: domain-mapping
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: domainmapping-webhook-sm-service
++  name: domainmapping-webhook-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: domainmapping-webhook
++---
++apiVersion: v1
++kind: Service
++metadata:
++  labels:
++    name: webhook-sm-service
++  name: webhook-sm-service
++  namespace: knative-serving
++spec:
++  ports:
++    - name: https
++      port: 8444
++  selector:
++    app: webhook
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: activator-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++    bearerTokenSecret:
++      key: ""
++    port: https
++    scheme: https
++    tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++    - knative-serving
++  selector:
++    matchLabels:
++      name: activator-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: autoscaler-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: autoscaler-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: autoscaler-hpa-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: autoscaler-hpa-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: controller-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: controller-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: domain-mapping-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: domain-mapping-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: domainmapping-webhook-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: domainmapping-webhook-sm-service
++---
++apiVersion: monitoring.coreos.com/v1
++kind: ServiceMonitor
++metadata:
++  name: webhook-sm
++  namespace: knative-serving
++spec:
++  endpoints:
++    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
++      bearerTokenSecret:
++        key: ""
++      port: https
++      scheme: https
++      tlsConfig:
++        insecureSkipVerify: true
++  namespaceSelector:
++    matchNames:
++      - knative-serving
++  selector:
++    matchLabels:
++      name: webhook-sm-service
