@@ -15,6 +15,7 @@ import (
 
 	routeclient "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/injection/client"
 	routeinformer "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/injection/informers/route/v1/route"
+	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 )
 
 const kourierIngressClassName = "kourier.ingress.networking.knative.dev"
@@ -48,11 +49,20 @@ func NewController(
 		Handler:    controller.HandleAll(impl.Enqueue),
 	})
 
+	// We started using OpenShiftIngressLabelKey labels below but still handle resources with this labels for safety.
 	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: reconciler.LabelExistsFilterFunc(networking.IngressLabelKey),
 		Handler: controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
 			serving.RouteNamespaceLabelKey,
 			networking.IngressLabelKey,
+		)),
+	})
+
+	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: reconciler.LabelExistsFilterFunc(networking.IngressLabelKey),
+		Handler: controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
+			resources.OpenShiftIngressNamespaceLabelKey,
+			resources.OpenShiftIngressLabelKey,
 		)),
 	})
 

@@ -49,13 +49,9 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, ing *v1alpha1.Ingress) re
 func (r *Reconciler) ReconcileKind(ctx context.Context, ing *v1alpha1.Ingress) reconciler.Event {
 	logger := logging.FromContext(ctx)
 
-	existing, err := r.routeList(ing)
+	existingMap, err := r.routeList(ing)
 	if err != nil {
 		return fmt.Errorf("failed to list routes: %w", err)
-	}
-	existingMap := make(map[string]*routev1.Route, len(existing))
-	for _, route := range existing {
-		existingMap[route.Name] = route
 	}
 
 	routes, err := resources.MakeRoutes(ing)
@@ -118,11 +114,35 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 	return nil
 }
 
-func (r *Reconciler) routeList(ing *v1alpha1.Ingress) ([]*routev1.Route, error) {
+func (r *Reconciler) routeList(ing *v1alpha1.Ingress) (map[string]*routev1.Route, error) {
+	routes := make(map[string]*routev1.Route)
+
 	ingressLabels := ing.GetLabels()
-	return r.routeLister.List(labels.SelectorFromSet(map[string]string{
+	// List routes by upstream label. We started using OpenShiftIngressLabelKey labels but
+	// still use the labels for safety.
+	rs, err := r.routeLister.List(labels.SelectorFromSet(map[string]string{
 		networking.IngressLabelKey:     ing.GetName(),
 		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
 		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
 	}))
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range rs {
+		routes[r.Name] = r
+	}
+
+	// List routes by the downstream label.
+	rs, err = r.routeLister.List(labels.SelectorFromSet(map[string]string{
+		resources.OpenShiftIngressLabelKey:          ing.GetName(),
+		resources.OpenShiftIngressNamespaceLabelKey: ing.GetNamespace(),
+	}))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range rs {
+		routes[r.Name] = r
+	}
+	return routes, nil
 }
