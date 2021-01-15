@@ -1,173 +1,9 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-index 3c213343..9724c974 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-@@ -2226,6 +2226,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/internal/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-             readOnlyRootFilesystem: true
-@@ -2257,6 +2259,13 @@ spec:
-                   value: "activator"
-             failureThreshold: 12
-             initialDelaySeconds: 15
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
-       # The activator (often) sits on the dataplane, and may proxy long (e.g.
-       # streaming, websockets) requests.  We give a long grace period for the
-       # activator to "lame duck" and drain outstanding requests before we
-@@ -2371,6 +2380,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-             readOnlyRootFilesystem: true
-@@ -2398,6 +2409,13 @@ spec:
-                 - name: k-kubelet-probe
-                   value: "autoscaler"
-             failureThreshold: 6
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
- ---
- apiVersion: v1
- kind: Service
-@@ -2495,6 +2513,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/internal/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-             readOnlyRootFilesystem: true
-@@ -2507,6 +2527,13 @@ spec:
-               containerPort: 9090
-             - name: profiling
-               containerPort: 8008
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
- ---
- apiVersion: v1
- kind: Service
-@@ -2655,6 +2682,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-             readOnlyRootFilesystem: true
-@@ -2681,6 +2710,13 @@ spec:
-             !!merge <<: *probe
-             failureThreshold: 6
-             initialDelaySeconds: 20
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
-       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
-       # high value that we respect whatever value it has configured for the lame duck grace period.
-       terminationGracePeriodSeconds: 300
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-index 83b88232..5a0a0e15 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-@@ -67,6 +67,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-             readOnlyRootFilesystem: true
-@@ -79,6 +81,13 @@ spec:
-               containerPort: 9090
-             - name: profiling
-               containerPort: 8008
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
- ---
- apiVersion: v1
- kind: Service
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-index d0b8b2bb..508c6211 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-@@ -187,6 +187,13 @@ spec:
-               containerPort: 9090
-             - name: profiling
-               containerPort: 8008
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
-
- ---
- # Copyright 2020 The Knative Authors
-@@ -265,6 +272,8 @@ spec:
-             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-             - name: METRICS_DOMAIN
-               value: knative.dev/serving
-+            - name: METRICS_PROMETHEUS_HOST
-+              value: "127.0.0.1"
-           securityContext:
-             allowPrivilegeEscalation: false
-           ports:
-@@ -286,6 +295,13 @@ spec:
-             !!merge <<: *probe
-             failureThreshold: 6
-             initialDelaySeconds: 20
-+        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-+          args:
-+            - "--secure-listen-address=0.0.0.0:8444"
-+            - "--upstream=http://127.0.0.1:9090/"
-+            - "--logtostderr=true"
-+            - "--v=10"
-       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
-       # high value that we respect whatever value it has configured for the lame duck grace period.
-       terminationGracePeriodSeconds: 300
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml
 new file mode 100644
-index 00000000..11005a1e
+index 00000000..37558cd9
 --- /dev/null
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/7-rbac-proxy.yaml
-@@ -0,0 +1,293 @@
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml
+@@ -0,0 +1,314 @@
 +---
 +apiVersion: rbac.authorization.k8s.io/v1beta1
 +kind: ClusterRole
@@ -220,6 +56,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: activator-sm-service-tls
 +  labels:
 +    name: activator-sm-service
 +  name: activator-sm-service
@@ -234,6 +72,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: autoscaler-sm-service-tls
 +  labels:
 +    name: autoscaler-sm-service
 +  name: autoscaler-sm-service
@@ -248,6 +88,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: autoscaler-hpa-sm-service-tls
 +  labels:
 +    name: autoscaler-hpa-sm-service
 +  name: autoscaler-hpa-sm-service
@@ -262,6 +104,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: controller-sm-service-tls
 +  labels:
 +    name: controller-sm-service
 +  name: controller-sm-service
@@ -276,6 +120,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: domain-mapping-sm-service-tls
 +  labels:
 +    name: domain-mapping-sm-service
 +  name: domain-mapping-sm-service
@@ -290,6 +136,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: domainmapping-webhook-sm-service-tls
 +  labels:
 +    name: domainmapping-webhook-sm-service
 +  name: domainmapping-webhook-sm-service
@@ -304,6 +152,8 @@ index 00000000..11005a1e
 +apiVersion: v1
 +kind: Service
 +metadata:
++  annotations:
++    service.beta.openshift.io/serving-cert-secret-name: webhook-sm-service-tls
 +  labels:
 +    name: webhook-sm-service
 +  name: webhook-sm-service
@@ -328,7 +178,8 @@ index 00000000..11005a1e
 +    port: https
 +    scheme: https
 +    tlsConfig:
-+        insecureSkipVerify: true
++      caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++      serverName: activator-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +    - knative-serving
@@ -349,7 +200,8 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: autoscaler-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
@@ -370,7 +222,8 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: autoscaler-hpa-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
@@ -391,7 +244,8 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: controller-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
@@ -412,7 +266,8 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: domain-mapping-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
@@ -433,7 +288,8 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: domainmapping-webhook-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
@@ -454,10 +310,239 @@ index 00000000..11005a1e
 +      port: https
 +      scheme: https
 +      tlsConfig:
-+        insecureSkipVerify: true
++        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
++        serverName: webhook-sm-service.knative-serving.svc
 +  namespaceSelector:
 +    matchNames:
 +      - knative-serving
 +  selector:
 +    matchLabels:
 +      name: webhook-sm-service
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
+index 3c213343..b29fb891 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
+@@ -2226,6 +2226,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/internal/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -2257,6 +2259,22 @@ spec:
+                   value: "activator"
+             failureThreshold: 12
+             initialDelaySeconds: 15
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-activator-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-activator-sm-service-tls
++          secret:
++            secretName: activator-sm-service-tls
+       # The activator (often) sits on the dataplane, and may proxy long (e.g.
+       # streaming, websockets) requests.  We give a long grace period for the
+       # activator to "lame duck" and drain outstanding requests before we
+@@ -2371,6 +2389,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -2398,6 +2418,22 @@ spec:
+                 - name: k-kubelet-probe
+                   value: "autoscaler"
+             failureThreshold: 6
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-autoscaler-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-autoscaler-sm-service-tls
++          secret:
++            secretName: autoscaler-sm-service-tls
+ ---
+ apiVersion: v1
+ kind: Service
+@@ -2495,6 +2531,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/internal/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -2507,6 +2545,22 @@ spec:
+               containerPort: 9090
+             - name: profiling
+               containerPort: 8008
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-controller-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-controller-sm-service-tls
++          secret:
++            secretName: controller-sm-service-tls
+ ---
+ apiVersion: v1
+ kind: Service
+@@ -2655,6 +2709,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -2681,6 +2737,22 @@ spec:
+             !!merge <<: *probe
+             failureThreshold: 6
+             initialDelaySeconds: 20
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-webhook-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-webhook-sm-service-tls
++          secret:
++            secretName: webhook-sm-service-tls
+       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+       # high value that we respect whatever value it has configured for the lame duck grace period.
+       terminationGracePeriodSeconds: 300
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
+index 83b88232..6897d64e 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
+@@ -67,6 +67,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -79,6 +81,23 @@ spec:
+               containerPort: 9090
+             - name: profiling
+               containerPort: 8008
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-autoscaler-hpa-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-autoscaler-hpa-sm-service-tls
++          secret:
++            secretName: autoscaler-hpa-sm-service-tls
++
+ ---
+ apiVersion: v1
+ kind: Service
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
+index d0b8b2bb..4c582eac 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
+@@ -187,6 +187,22 @@ spec:
+               containerPort: 9090
+             - name: profiling
+               containerPort: 8008
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-domain-mapping-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-domain-mapping-sm-service-tls
++          secret:
++            secretName: domain-mapping-sm-service-tls
+
+ ---
+ # Copyright 2020 The Knative Authors
+@@ -265,6 +281,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+           ports:
+@@ -286,6 +304,22 @@ spec:
+             !!merge <<: *probe
+             failureThreshold: 6
+             initialDelaySeconds: 20
++        - name: kube-rbac-proxy
++          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          volumeMounts:
++            - mountPath: /etc/tls/private
++              name: secret-domainmapping-webhook-sm-service-tls
++          args:
++            - "--secure-listen-address=0.0.0.0:8444"
++            - "--upstream=http://127.0.0.1:9090/"
++            - "--tls-cert-file=/etc/tls/private/tls.crt"
++            - "--tls-private-key-file=/etc/tls/private/tls.key"
++            - "--logtostderr=true"
++            - "--v=10"
++      volumes:
++        - name: secret-domainmapping-webhook-sm-service-tls
++          secret:
++            secretName: domainmapping-webhook-sm-service-tls
+       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+       # high value that we respect whatever value it has configured for the lame duck grace period.
+       terminationGracePeriodSeconds: 300
