@@ -69,7 +69,7 @@ var (
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv(common.TestRolePath, "../testdata/role_service_monitor.yaml")
+	os.Setenv(common.TestRolePath, "../testdata/role-service-monitor.yaml")
 	os.Setenv(common.TestSourceServiceMonitorPath, "../testdata/source-service-monitor.yaml")
 	os.Setenv(common.TestSourceServicePath, "../testdata/source-service.yaml")
 

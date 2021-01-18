@@ -170,6 +170,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.ensureCustomCertsConfigMap,
 		r.installKourier,
 		r.installDashboard,
+		r.installMonitoringRequirements,
 		r.ensureProxySettings,
 		r.installKnConsoleCLIDownload,
 	}
@@ -280,7 +281,6 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 	if err := r.client.Update(context.TODO(), controller); err != nil {
 		return fmt.Errorf("error updating the controller annotation: %w", err)
 	}
-
 	return nil
 }
 
@@ -355,6 +355,11 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
 	return dashboard.Apply(os.Getenv(dashboard.ServingResourceDashboardPathEnvVar), instance, r.client)
+}
+
+func (r *ReconcileKnativeServing) installMonitoringRequirements(instance *servingv1alpha1.KnativeServing) error {
+	log.Info("Installing Serving Monitoring requirements")
+	return common.SetupMonitoringRequirements(r.client, instance)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.

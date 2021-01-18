@@ -187,6 +187,22 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
+        - name: kube-rbac-proxy
+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          volumeMounts:
+            - mountPath: /etc/tls/private
+              name: secret-domain-mapping-sm-service-tls
+          args:
+            - "--secure-listen-address=0.0.0.0:8444"
+            - "--upstream=http://127.0.0.1:9090/"
+            - "--tls-cert-file=/etc/tls/private/tls.crt"
+            - "--tls-private-key-file=/etc/tls/private/tls.key"
+            - "--logtostderr=true"
+            - "--v=10"
+      volumes:
+        - name: secret-domain-mapping-sm-service-tls
+          secret:
+            secretName: domain-mapping-sm-service-tls
 
 ---
 # Copyright 2020 The Knative Authors
@@ -265,6 +281,8 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/serving
+            - name: METRICS_PROMETHEUS_HOST
+              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
           ports:
@@ -286,6 +304,22 @@ spec:
             !!merge <<: *probe
             failureThreshold: 6
             initialDelaySeconds: 20
+        - name: kube-rbac-proxy
+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          volumeMounts:
+            - mountPath: /etc/tls/private
+              name: secret-domainmapping-webhook-sm-service-tls
+          args:
+            - "--secure-listen-address=0.0.0.0:8444"
+            - "--upstream=http://127.0.0.1:9090/"
+            - "--tls-cert-file=/etc/tls/private/tls.crt"
+            - "--tls-private-key-file=/etc/tls/private/tls.key"
+            - "--logtostderr=true"
+            - "--v=10"
+      volumes:
+        - name: secret-domainmapping-webhook-sm-service-tls
+          secret:
+            secretName: domainmapping-webhook-sm-service-tls
       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
       # high value that we respect whatever value it has configured for the lame duck grace period.
       terminationGracePeriodSeconds: 300

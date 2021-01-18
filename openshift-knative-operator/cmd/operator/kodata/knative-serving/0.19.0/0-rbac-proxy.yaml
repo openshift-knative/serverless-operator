@@ -1,0 +1,314 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: rbac-proxy-metrics-prom
+rules:
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-proxy-metrics-prom-rb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rbac-proxy-metrics-prom
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s
+    namespace: openshift-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rbac-proxy-reviews-prom
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources:
+      - tokenreviews
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources:
+      - subjectaccessreviews
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-proxy-reviews-prom-rb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rbac-proxy-reviews-prom
+subjects:
+  - kind: ServiceAccount
+    name: controller
+    namespace: knative-serving
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: activator-sm-service-tls
+  labels:
+    name: activator-sm-service
+  name: activator-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: activator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: autoscaler-sm-service-tls
+  labels:
+    name: autoscaler-sm-service
+  name: autoscaler-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: autoscaler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: autoscaler-hpa-sm-service-tls
+  labels:
+    name: autoscaler-hpa-sm-service
+  name: autoscaler-hpa-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: autoscaler-hpa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: controller-sm-service-tls
+  labels:
+    name: controller-sm-service
+  name: controller-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: domain-mapping-sm-service-tls
+  labels:
+    name: domain-mapping-sm-service
+  name: domain-mapping-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: domain-mapping
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: domainmapping-webhook-sm-service-tls
+  labels:
+    name: domainmapping-webhook-sm-service
+  name: domainmapping-webhook-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: domainmapping-webhook
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: webhook-sm-service-tls
+  labels:
+    name: webhook-sm-service
+  name: webhook-sm-service
+  namespace: knative-serving
+spec:
+  ports:
+    - name: https
+      port: 8444
+  selector:
+    app: webhook
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: activator-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    bearerTokenSecret:
+      key: ""
+    port: https
+    scheme: https
+    tlsConfig:
+      caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+      serverName: activator-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+    - knative-serving
+  selector:
+    matchLabels:
+      name: activator-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: autoscaler-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: autoscaler-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: autoscaler-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: autoscaler-hpa-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: autoscaler-hpa-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: autoscaler-hpa-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: controller-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: controller-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: controller-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: domain-mapping-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: domain-mapping-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: domain-mapping-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: domainmapping-webhook-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: domainmapping-webhook-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: domainmapping-webhook-sm-service
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: webhook-sm
+  namespace: knative-serving
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      bearerTokenSecret:
+        key: ""
+      port: https
+      scheme: https
+      tlsConfig:
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        serverName: webhook-sm-service.knative-serving.svc
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchLabels:
+      name: webhook-sm-service
