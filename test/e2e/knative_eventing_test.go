@@ -25,7 +25,7 @@ var knativeControlPlaneDeploymentNames = []string{
 
 func TestKnativeEventing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-	route, err := setupMetricsRoute(caCtx, "eventing")
+	route, err := SetupMetricsRoute(caCtx, "eventing")
 	if err != nil {
 		t.Fatal("Failed to setup operator metrics route", err)
 	}
@@ -46,7 +46,7 @@ func TestKnativeEventing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		verifyHealthStatusMetric(caCtx, metricsURL, "eventing_status", 1)
+		VerifyHealthStatusMetric(caCtx, metricsURL, "eventing_status", 1)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {

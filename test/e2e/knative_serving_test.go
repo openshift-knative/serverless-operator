@@ -16,7 +16,6 @@ import (
 
 const (
 	servingName                   = "knative-serving"
-	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
 	image                         = "gcr.io/knative-samples/helloworld-go"
 	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
@@ -29,7 +28,7 @@ const (
 
 func TestKnativeServing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-	route, err := setupMetricsRoute(caCtx, "serving")
+	route, err := SetupMetricsRoute(caCtx, "serving")
 	if err != nil {
 		t.Fatal("Failed to setup operator metrics route", err)
 	}
@@ -50,7 +49,12 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Serving should be up
-		verifyHealthStatusMetric(caCtx, metricsURL, "serving_status", 1)
+		VerifyHealthStatusMetric(caCtx, metricsURL, "serving_status", 1)
+	})
+
+	t.Run("verify control plane metrics work correctly", func(t *testing.T) {
+		// Serving control plane metrics should work
+		verifyServingControlPlaneMetrics(caCtx)
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
