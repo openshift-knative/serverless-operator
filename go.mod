@@ -3,6 +3,7 @@ module github.com/openshift-knative/serverless-operator
 go 1.14
 
 require (
+	github.com/Jeffail/gabs v1.4.0
 	github.com/go-logr/logr v0.3.0
 	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.4

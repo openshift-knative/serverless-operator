@@ -26,11 +26,6 @@ var knativeKafkaSourceControlPlaneDeploymentNames = []string{
 
 func TestKnativeKafka(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-	route, err := e2e.SetupMetricsRoute(caCtx, "knativekafka")
-	if err != nil {
-		t.Fatal("Failed to setup operator metrics route", err)
-	}
-	metricsURL := "http://" + route.Spec.Host + route.Spec.Path
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
@@ -53,9 +48,9 @@ func TestKnativeKafka(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		e2e.VerifyHealthStatusMetric(caCtx, metricsURL, "eventing_status", 1)
+		e2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1")
 		// KnativeKafka should be up
-		e2e.VerifyHealthStatusMetric(caCtx, metricsURL, "kafka_status", 1)
+		e2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1")
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
