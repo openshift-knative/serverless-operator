@@ -41,7 +41,9 @@ func TestKnativeEventing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		VerifyHealthStatusMetric(caCtx, "eventing_status", "1")
+		if err := VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
+		}
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {

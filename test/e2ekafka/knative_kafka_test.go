@@ -48,9 +48,13 @@ func TestKnativeKafka(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		e2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1")
+		if err := e2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
+		}
 		// KnativeKafka should be up
-		e2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1")
+		if err := e2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for KnativeKafka", err)
+		}
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {

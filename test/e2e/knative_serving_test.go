@@ -44,12 +44,16 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Serving should be up
-		VerifyHealthStatusMetric(caCtx, "serving_status", "1")
+		if err := VerifyHealthStatusMetric(caCtx, "serving_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for Serving", err)
+		}
 	})
 
 	t.Run("verify control plane metrics work correctly", func(t *testing.T) {
 		// Serving control plane metrics should work
-		VerifyServingControlPlaneMetrics(caCtx)
+		if err := VerifyServingControlPlaneMetrics(caCtx); err != nil {
+			t.Fatal("Failed to verify that control plane metrics work correctly", err)
+		}
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {

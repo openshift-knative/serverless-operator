@@ -3,10 +3,12 @@ package e2e
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Jeffail/gabs"
 	"github.com/openshift-knative/serverless-operator/test"
@@ -19,15 +21,23 @@ import (
 
 const servingNamespace = "knative-serving"
 
-type PrometheusInfo struct {
+var prometheusTargetTimeout = 10 * time.Minute
+
+type prometheusInfo struct {
 	options   []interface{}
 	queryPath string
 	token     string
 }
 
-func NewPrometheusInfo(caCtx *test.Context) *PrometheusInfo {
-	route := getPrometheusRoute(caCtx)
-	bToken := getBearerTokenForPrometheusAccount(caCtx)
+func newPrometheusInfo(caCtx *test.Context) (*prometheusInfo, error) {
+	route, err := getPrometheusRoute(caCtx)
+	if err != nil {
+		return nil, err
+	}
+	bToken, err := getBearerTokenForPrometheusAccount(caCtx)
+	if err != nil {
+		return nil, err
+	}
 	var reqOption pkgTest.RequestOption = func(request *http.Request) {
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bToken))
 	}
@@ -35,45 +45,53 @@ func NewPrometheusInfo(caCtx *test.Context) *PrometheusInfo {
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		return transport
 	}
-	pc := &PrometheusInfo{
+	pc := &prometheusInfo{
 		options:   []interface{}{reqOption, transportOption},
 		queryPath: "https://" + route.Spec.Host + "/api/v1/query?query=",
 		token:     bToken,
 	}
-	return pc
+	return pc, nil
 }
 
-func getPrometheusRoute(caCtx *test.Context) *v1.Route {
+func getPrometheusRoute(caCtx *test.Context) (*v1.Route, error) {
 	r, err := caCtx.Clients.Route.Routes("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
 	if err != nil {
-		caCtx.T.Fatalf("Error getting Prometheus route %v", err)
+		return nil, fmt.Errorf("error getting Prometheus route %v", err)
 	}
-	return r
+	return r, nil
 }
 
-func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue string) {
-	pc := NewPrometheusInfo(caCtx)
+func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue string) error {
+	pc, err := newPrometheusInfo(caCtx)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("%s%s", pc.queryPath, url.QueryEscape(fmt.Sprintf(`knative_up{type="%s"}`, label)))
 	metricsURL, err := url.Parse(path)
 	if err != nil {
-		caCtx.T.Fatalf("Error parsing url for metrics: %v", err)
+		return fmt.Errorf("error parsing url for metrics: %v", err)
 	}
 	// Wait until the endpoint is actually working and we get the expected value back
-	_, err = pkgTest.WaitForEndpointState(
+	_, err = pkgTest.WaitForEndpointStateWithTimeout(
 		context.Background(),
 		caCtx.Clients.Kube,
 		caCtx.T.Logf,
 		metricsURL,
 		eventuallyMatchesValue(expectedValue),
 		"WaitForMetricsToServeText",
-		true, pc.options...)
+		true,
+		prometheusTargetTimeout, pc.options...)
 	if err != nil {
-		caCtx.T.Fatalf("Failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
+		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
 	}
+	return nil
 }
 
-func VerifyServingControlPlaneMetrics(caCtx *test.Context) {
-	pc := NewPrometheusInfo(caCtx)
+func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
+	pc, err := newPrometheusInfo(caCtx)
+	if err != nil {
+		return err
+	}
 	servingMetrics := []string{
 		"activator_client_results",
 		"autoscaler_actual_pods",
@@ -87,50 +105,52 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) {
 		path := fmt.Sprintf("%s%s", pc.queryPath, metric)
 		metricsURL, err := url.Parse(path)
 		if err != nil {
-			caCtx.T.Fatalf("Error parsing url for metrics %v", err)
+			return fmt.Errorf("error parsing url for metrics %v", err)
 		}
 		// Wait until the endpoint is actually working and we get the expected value back
-		_, err = pkgTest.WaitForEndpointState(
+		_, err = pkgTest.WaitForEndpointStateWithTimeout(
 			context.Background(),
 			caCtx.Clients.Kube,
 			caCtx.T.Logf,
 			metricsURL,
 			pkgTest.EventuallyMatchesBody(metric),
 			"WaitForMetricsToServeText",
-			true, pc.options...)
+			true,
+			prometheusTargetTimeout, pc.options...)
 		if err != nil {
-			caCtx.T.Fatalf("Failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
-		}
-	}
-}
-
-func getBearerTokenForPrometheusAccount(caCtx *test.Context) string {
-	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
-	if err != nil {
-		caCtx.T.Fatalf("Error getting service account prometheus-k8s: %v", err)
-	}
-	tokenSecret := getSecretNameForToken(sa.Secrets)
-	if tokenSecret == nil {
-		caCtx.T.Fatal("Token name for prometheus-k8s service account not found")
-	}
-	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), *tokenSecret, meta.GetOptions{})
-	if err != nil {
-		caCtx.T.Fatalf("Error getting secret %s: %v", *tokenSecret, err)
-	}
-	tokenContents := sec.Data["token"]
-	if len(tokenContents) == 0 {
-		caCtx.T.Fatalf("Token data is missing for token %s", *tokenSecret)
-	}
-	return string(tokenContents)
-}
-
-func getSecretNameForToken(secrets []corev1.ObjectReference) *string {
-	for _, sec := range secrets {
-		if strings.Contains(sec.Name, "token") {
-			return &sec.Name
+			return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
 		}
 	}
 	return nil
+}
+
+func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
+	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("error getting service account prometheus-k8s %v", err)
+	}
+	tokenSecret := getSecretNameForToken(sa.Secrets)
+	if tokenSecret == "" {
+		return "", errors.New("token name for prometheus-k8s service account not found")
+	}
+	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, meta.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("error getting secret %s %v", tokenSecret, err)
+	}
+	tokenContents := sec.Data["token"]
+	if len(tokenContents) == 0 {
+		return "", fmt.Errorf("token data is missing for token %s", tokenSecret)
+	}
+	return string(tokenContents), nil
+}
+
+func getSecretNameForToken(secrets []corev1.ObjectReference) string {
+	for _, sec := range secrets {
+		if strings.Contains(sec.Name, "token") {
+			return sec.Name
+		}
+	}
+	return ""
 }
 
 func eventuallyMatchesValue(expectedValue string) spoof.ResponseChecker {
