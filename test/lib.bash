@@ -10,6 +10,7 @@ export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 NAMESPACES+=("${TEST_NAMESPACE}")
 NAMESPACES+=("serverless-tests2")
 NAMESPACES+=("serverless-tests3")
+NAMESPACES+=("serverless-tests-mesh")
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
@@ -115,7 +116,7 @@ function downstream_serving_e2e_tests {
   # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
   add_systemnamespace_label
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/servinge2e \
+  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"

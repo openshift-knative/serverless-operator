@@ -206,11 +206,56 @@ To install service mesh operator, run `make install-mesh`
 make install-mesh
 ```
 
-Then, create Knative Service with `sidecar.istio.io/inject: "true"` annotation in `default` namespace,
+and create a `ServiceMeshControlPlane`.
+
+```
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+  namespace: istio-system
+spec:
+  version: v2.0
+```
+
+Then, add your namespace to `ServiceMeshMemberRoll`
+
+```
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+    - $NAMESPACE_YOU_WANT_TO_ADD
+    # Add namespace you want to include mesh.
+```
+
+and add `NetworkPolicy` in your namespace.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-serving-system-namespace
+  namespace: $NAMESPACE_YOU_WANT_TO_ADD
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          knative.openshift.io/system-namespace: "true"
+  podSelector: {}
+  policyTypes:
+  - Ingress
+```
+
+Then, create Knative Service with `sidecar.istio.io/inject: "true"` annotation in your namespace,
 which is one of the namespaces in the `ServiceMeshMemberRoll`.
 
 ```sh
-cat <<EOF | oc apply -n default -f -
+cat <<EOF | oc apply -n $NAMESPACE_YOU_WANT_TO_ADD -f -
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -229,40 +274,6 @@ spec:
   - latestRevision: true
     percent: 100
 EOF
-```
-
-`make install-mesh` creates `ServiceMeshMemberRoll` with `default` namespaces.
-If you want to add more namespaces, please modify it.
-
-```
-apiVersion: maistra.io/v1
-kind: ServiceMeshMemberRoll
-metadata:
-  name: default
-  namespace: istio-system
-spec:
-  members:
-    - default
-    # Add namespace you want to include mesh.
-```
-
-And add `NetworkPolicy` in your namespace.
-
-```
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-from-serving-system-namespace
-  namespace: $NAMESPACE_YOU_WANT_TO_ADD
-spec:
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          knative.openshift.io/system-namespace: "true"
-  podSelector: {}
-  policyTypes:
-  - Ingress
 ```
 
 To uninstall service mesh operator, run `make uninstall-mesh`.
