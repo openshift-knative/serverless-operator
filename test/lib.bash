@@ -162,7 +162,8 @@ function run_rolling_upgrade_tests {
 
   local latest_cluster_version latest_serving_version latest_eventing_version \
     rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
-    eventing_prober_pid prev_serving_version prev_eventing_version retcode
+    eventing_prober_pid prev_serving_version prev_eventing_version retcode \
+    channels
 
   scope="${1:?Provide an upgrade scope as arg[1]}"
   serving_in_scope="$(echo "${scope}" | grep -c serving)"
@@ -170,6 +171,8 @@ function run_rolling_upgrade_tests {
 
   prev_serving_version="$(actual_serving_version)"
   prev_eventing_version="$(actual_eventing_version)"
+
+  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -187,7 +190,7 @@ function run_rolling_upgrade_tests {
     run_serving_preupgrade_test
   fi
   if (( eventing_in_scope )); then
-    run_eventing_preupgrade_test
+    run_eventing_preupgrade_test "${channels}"
   fi
 
   logger.info 'Starting prober tests'
@@ -251,7 +254,7 @@ function run_rolling_upgrade_tests {
     run_serving_postupgrade_test
   fi
   if (( eventing_in_scope )); then
-    run_eventing_postupgrade_test
+    run_eventing_postupgrade_test "${channels}"
   fi
 
   if (( serving_in_scope )); then
