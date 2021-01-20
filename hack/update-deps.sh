@@ -23,6 +23,7 @@ FLOATING_DEPS=(
   "github.com/openshift/api@${OCP_VERSION}"
   "github.com/openshift/client-go@${OCP_VERSION}"
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
+  "github.com/openshift/openshift-controller-manager@${OCP_VERSION}"
 
   "knative.dev/eventing-kafka@${KN_VERSION}"
   "knative.dev/eventing@${KN_VERSION}"

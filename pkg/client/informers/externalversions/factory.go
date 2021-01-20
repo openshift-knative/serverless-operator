@@ -9,6 +9,7 @@ import (
 
 	versioned "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	config "github.com/openshift-knative/serverless-operator/pkg/client/informers/externalversions/config"
+	image "github.com/openshift-knative/serverless-operator/pkg/client/informers/externalversions/image"
 	internalinterfaces "github.com/openshift-knative/serverless-operator/pkg/client/informers/externalversions/internalinterfaces"
 	route "github.com/openshift-knative/serverless-operator/pkg/client/informers/externalversions/route"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -158,11 +159,16 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Config() config.Interface
+	Image() image.Interface
 	Route() route.Interface
 }
 
 func (f *sharedInformerFactory) Config() config.Interface {
 	return config.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Image() image.Interface {
+	return image.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Route() route.Interface {

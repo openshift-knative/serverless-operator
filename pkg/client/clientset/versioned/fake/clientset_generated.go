@@ -6,6 +6,8 @@ import (
 	clientset "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	configv1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/config/v1"
 	fakeconfigv1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/config/v1/fake"
+	imagev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/image/v1"
+	fakeimagev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/image/v1/fake"
 	routev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/route/v1"
 	fakeroutev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/route/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -65,6 +67,11 @@ var _ clientset.Interface = &Clientset{}
 // ConfigV1 retrieves the ConfigV1Client
 func (c *Clientset) ConfigV1() configv1.ConfigV1Interface {
 	return &fakeconfigv1.FakeConfigV1{Fake: &c.Fake}
+}
+
+// ImageV1 retrieves the ImageV1Client
+func (c *Clientset) ImageV1() imagev1.ImageV1Interface {
+	return &fakeimagev1.FakeImageV1{Fake: &c.Fake}
 }
 
 // RouteV1 retrieves the RouteV1Client

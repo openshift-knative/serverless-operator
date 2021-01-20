@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	configv1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/config/v1"
+	imagev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/image/v1"
 	routev1 "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/route/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -15,6 +16,7 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	ConfigV1() configv1.ConfigV1Interface
+	ImageV1() imagev1.ImageV1Interface
 	RouteV1() routev1.RouteV1Interface
 }
 
@@ -23,12 +25,18 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	configV1 *configv1.ConfigV1Client
+	imageV1  *imagev1.ImageV1Client
 	routeV1  *routev1.RouteV1Client
 }
 
 // ConfigV1 retrieves the ConfigV1Client
 func (c *Clientset) ConfigV1() configv1.ConfigV1Interface {
 	return c.configV1
+}
+
+// ImageV1 retrieves the ImageV1Client
+func (c *Clientset) ImageV1() imagev1.ImageV1Interface {
+	return c.imageV1
 }
 
 // RouteV1 retrieves the RouteV1Client
@@ -61,6 +69,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.imageV1, err = imagev1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 	cs.routeV1, err = routev1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -78,6 +90,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.configV1 = configv1.NewForConfigOrDie(c)
+	cs.imageV1 = imagev1.NewForConfigOrDie(c)
 	cs.routeV1 = routev1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -88,6 +101,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.configV1 = configv1.New(c)
+	cs.imageV1 = imagev1.New(c)
 	cs.routeV1 = routev1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
