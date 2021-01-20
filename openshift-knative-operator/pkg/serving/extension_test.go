@@ -16,7 +16,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/apis"
 
-	ocpfake "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client/fake"
+	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 )
 

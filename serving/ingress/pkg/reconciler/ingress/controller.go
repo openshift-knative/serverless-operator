@@ -13,8 +13,8 @@ import (
 	"knative.dev/pkg/reconciler"
 	"knative.dev/serving/pkg/apis/serving"
 
-	routeclient "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/injection/client"
-	routeinformer "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/client/injection/informers/route/v1/route"
+	routeclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
+	routeinformer "github.com/openshift-knative/serverless-operator/pkg/client/injection/informers/route/v1/route"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 )
 
