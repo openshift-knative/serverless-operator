@@ -94,7 +94,7 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
 	}
 	servingMetrics := []string{
 		"activator_client_results",
-		"autoscaler_actual_pods",
+		"autoscaler_client_latency_bucket",
 		"hpaautoscaler_client_latency_bucket",
 		"controller_client_latency_bucket",
 		"domainmapping_client_latency_bucket",
@@ -118,7 +118,7 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
 			true,
 			prometheusTargetTimeout, pc.options...)
 		if err != nil {
-			return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
+			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %v", metric, err)
 		}
 	}
 	return nil
