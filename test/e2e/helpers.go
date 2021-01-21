@@ -93,13 +93,13 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
 		return err
 	}
 	servingMetrics := []string{
-		"activator_client_results",
-		"autoscaler_client_latency_bucket",
-		"hpaautoscaler_client_latency_bucket",
-		"controller_client_latency_bucket",
-		"domainmapping_client_latency_bucket",
-		"domainmapping_webhook_client_latency_bucket",
-		"webhook_client_latency_bucket",
+		"activator_go_mallocs",
+		"autoscaler_go_mallocs",
+		"hpaautoscaler_go_mallocs",
+		"controller_go_mallocs",
+		"domainmapping_go_mallocs",
+		"domainmapping_webhook_go_mallocs",
+		"webhook_go_mallocs",
 	}
 	for _, metric := range servingMetrics {
 		path := fmt.Sprintf("%s%s", pc.queryPath, metric)
