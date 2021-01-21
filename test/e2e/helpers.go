@@ -21,7 +21,7 @@ import (
 
 const servingNamespace = "knative-serving"
 
-var prometheusTargetTimeout = 10 * time.Minute
+var prometheusTargetTimeout = 20 * time.Minute
 
 type prometheusInfo struct {
 	options   []interface{}
