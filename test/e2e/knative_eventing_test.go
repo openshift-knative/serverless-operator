@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 )
 
@@ -41,7 +42,7 @@ func TestKnativeEventing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		if err := VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
 		}
 	})

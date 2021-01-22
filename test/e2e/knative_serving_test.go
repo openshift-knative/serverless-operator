@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -16,6 +17,7 @@ import (
 
 const (
 	servingName                   = "knative-serving"
+	servingNamespace              = "knative-serving"
 	testNamespace                 = "serverless-tests"
 	image                         = "gcr.io/knative-samples/helloworld-go"
 	proxyImage                    = "gcr.io/knative-samples/autoscale-go:0.1"
@@ -44,15 +46,8 @@ func TestKnativeServing(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Serving should be up
-		if err := VerifyHealthStatusMetric(caCtx, "serving_status", "1"); err != nil {
+		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "serving_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for Serving", err)
-		}
-	})
-
-	t.Run("verify control plane metrics work correctly", func(t *testing.T) {
-		// Serving control plane metrics should work
-		if err := VerifyServingControlPlaneMetrics(caCtx); err != nil {
-			t.Fatal("Failed to verify that control plane metrics work correctly", err)
 		}
 	})
 

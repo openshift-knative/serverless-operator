@@ -1,4 +1,4 @@
-package e2e
+package monitoringe2e
 
 import (
 	"context"
@@ -18,8 +18,6 @@ import (
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
 )
-
-const servingNamespace = "knative-serving"
 
 var prometheusTargetTimeout = 20 * time.Minute
 
