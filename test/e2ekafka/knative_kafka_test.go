@@ -5,6 +5,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 )
 
@@ -26,7 +27,6 @@ var knativeKafkaSourceControlPlaneDeploymentNames = []string{
 
 func TestKnativeKafka(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
-
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
@@ -44,6 +44,17 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("deploy knativekafka cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := v1a1test.WithKnativeKafkaReady(caCtx, knativeKafkaName, eventingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeKafka", err)
+		}
+	})
+
+	t.Run("verify health metrics work correctly", func(t *testing.T) {
+		// Eventing should be up
+		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
+		}
+		// KnativeKafka should be up
+		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1"); err != nil {
+			t.Fatal("Failed to verify that health metrics work correctly for KnativeKafka", err)
 		}
 	})
 

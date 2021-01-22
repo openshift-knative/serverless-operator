@@ -156,6 +156,23 @@ function downstream_knative_kafka_e2e_tests {
     "$@"
 }
 
+function downstream_monitoring_e2e_tests {
+  declare -a kubeconfigs
+  local kubeconfigs_str
+
+  logger.info "Running Knative monitoring tests"
+  kubeconfigs+=("${KUBECONFIG}")
+  for cfg in user*.kubeconfig; do
+    kubeconfigs+=("$(pwd)/${cfg}")
+  done
+  kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+
+  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
+    --kubeconfig "${kubeconfigs[0]}" \
+    --kubeconfigs "${kubeconfigs_str}" \
+    "$@"
+}
+
 # == Upgrade testing
 
 function run_rolling_upgrade_tests {
