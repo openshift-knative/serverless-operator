@@ -103,9 +103,9 @@ release-files:
 # and updates vendoring.
 generated-files: release-files
 	./hack/update-deps.sh
+	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)
-	(cd openshift-knative-operator && ./hack/update-codegen.sh && ./hack/update-manifests.sh)
-	(cd serving/ingress && ./hack/update-codegen.sh)
+	(cd openshift-knative-operator && ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
 # Runs the lints Github Actions do too.

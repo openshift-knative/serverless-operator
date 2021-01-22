@@ -11,8 +11,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/clientset/versioned"
-	ocpclient "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/client/injection/client"
+	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
+	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	operator "knative.dev/operator/pkg/reconciler/common"
 )
 
