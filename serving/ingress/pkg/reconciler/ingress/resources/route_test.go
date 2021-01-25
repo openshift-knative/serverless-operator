@@ -3,7 +3,6 @@ package resources
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	routev1 "github.com/openshift/api/route/v1"
@@ -62,7 +61,7 @@ func TestMakeRoute(t *testing.T) {
 						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: defaultTimeout,
+						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName0,
@@ -98,44 +97,6 @@ func TestMakeRoute(t *testing.T) {
 			want:    []*routev1.Route{},
 		},
 		{
-			name: "valid, with timeout",
-			ingress: ingress(withRules(
-				rule(withHosts([]string{localDomain, externalDomain}), withTimeout(1*time.Hour))),
-			),
-			want: []*routev1.Route{{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						networking.IngressLabelKey:        "ingress",
-						serving.RouteLabelKey:             "route1",
-						serving.RouteNamespaceLabelKey:    "default",
-						OpenShiftIngressLabelKey:          "ingress",
-						OpenShiftIngressNamespaceLabelKey: "default",
-					},
-					Annotations: map[string]string{
-						TimeoutAnnotation: "3600s",
-					},
-					Namespace: lbNamespace,
-					Name:      routeName0,
-				},
-				Spec: routev1.RouteSpec{
-					Host: externalDomain,
-					To: routev1.RouteTargetReference{
-						Kind:   "Service",
-						Name:   lbService,
-						Weight: ptr.Int32(100),
-					},
-					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHTTPPort),
-					},
-					TLS: &routev1.TLSConfig{
-						Termination:                   routev1.TLSTerminationEdge,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
-					},
-					WildcardPolicy: routev1.WildcardPolicyNone,
-				},
-			}},
-		},
-		{
 			name: "valid, multiple rules",
 			ingress: ingress(withRules(
 				rule(withHosts([]string{localDomain, externalDomain})),
@@ -151,7 +112,7 @@ func TestMakeRoute(t *testing.T) {
 						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: defaultTimeout,
+						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName0,
@@ -182,7 +143,7 @@ func TestMakeRoute(t *testing.T) {
 						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: defaultTimeout,
+						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName1,
@@ -222,7 +183,7 @@ func TestMakeRoute(t *testing.T) {
 						OpenShiftIngressNamespaceLabelKey: "default",
 					},
 					Annotations: map[string]string{
-						TimeoutAnnotation: defaultTimeout,
+						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName1,
@@ -341,15 +302,5 @@ func withLocalVisibilityRule(rule *networkingv1alpha1.IngressRule) {
 func withHosts(hosts []string) ruleOption {
 	return func(rule *networkingv1alpha1.IngressRule) {
 		rule.Hosts = hosts
-	}
-}
-
-func withTimeout(timeout time.Duration) ruleOption {
-	return func(rule *networkingv1alpha1.IngressRule) {
-		rule.HTTP = &networkingv1alpha1.HTTPIngressRuleValue{
-			Paths: []networkingv1alpha1.HTTPIngressPath{{
-				DeprecatedTimeout: &metav1.Duration{Duration: timeout},
-			}},
-		}
 	}
 }
