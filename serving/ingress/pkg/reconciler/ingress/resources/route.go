@@ -25,7 +25,9 @@ const (
 	OpenShiftIngressNamespaceLabelKey = "serving.knative.openshift.io/ingressNamespace"
 )
 
-var defaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
+// DefaultTimeout is set by DefaultMaxRevisionTimeoutSeconds. So, the OpenShift Route's timeout
+// should not have any effect on Knative services by default.
+var DefaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
 // said field does not contain a value we can work with.
@@ -76,19 +78,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, nil
 	}
 
-	if rule.HTTP != nil {
-		for i := range rule.HTTP.Paths {
-			if rule.HTTP.Paths[i].DeprecatedTimeout != nil {
-				// Supported time units for openshift route annotations are microseconds (us), milliseconds (ms), seconds (s), minutes (m), hours (h), or days (d)
-				// But the timeout value from ingress is in xmys(ex: 10m0s) format
-				// So, in order to make openshift route to work converting it into seconds.
-				annotations[TimeoutAnnotation] = fmt.Sprintf("%vs", rule.HTTP.Paths[i].DeprecatedTimeout.Duration.Seconds())
-			} else {
-				annotations[TimeoutAnnotation] = defaultTimeout
-			}
-
-		}
-	}
+	// Set timeout for OpenShift Route
+	annotations[TimeoutAnnotation] = DefaultTimeout
 
 	labels := kmeta.UnionMaps(ci.Labels, map[string]string{
 		networking.IngressLabelKey:        ci.GetName(),

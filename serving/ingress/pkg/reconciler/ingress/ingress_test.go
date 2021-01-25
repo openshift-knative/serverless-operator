@@ -231,11 +231,6 @@ func ing(ns, name string, opts ...ingressOption) *v1alpha1.Ingress {
 		Spec: v1alpha1.IngressSpec{
 			Rules: []v1alpha1.IngressRule{{
 				Hosts: []string{domainName},
-				HTTP: &v1alpha1.HTTPIngressRuleValue{
-					Paths: []v1alpha1.HTTPIngressPath{{
-						DeprecatedTimeout: &metav1.Duration{Duration: 5 * time.Second},
-					}},
-				},
 			}},
 		},
 		Status: v1alpha1.IngressStatus{
@@ -267,14 +262,14 @@ func route(ns, name string, opts ...routeOption) *routev1.Route {
 				resources.OpenShiftIngressNamespaceLabelKey: "testNs",
 			},
 			Annotations: map[string]string{
-				resources.TimeoutAnnotation:          "5s",
+				resources.TimeoutAnnotation:          resources.DefaultTimeout,
 				networking.IngressClassAnnotationKey: "kourier.ingress.networking.knative.dev",
 			},
 		},
 		Spec: routev1.RouteSpec{
 			Host: domainName,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString("http2"),
+				TargetPort: intstr.FromString(resources.KourierHTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind:   "Service",
