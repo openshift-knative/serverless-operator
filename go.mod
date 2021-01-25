@@ -19,8 +19,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
 	google.golang.org/genproto v0.0.0-20200914193844-75d14daec038 // indirect
-	k8s.io/api v0.19.2
-	k8s.io/apimachinery v0.19.2
+	k8s.io/api v0.19.7
+	k8s.io/apimachinery v0.19.7
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.19.3
 	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
@@ -34,11 +34,11 @@ require (
 )
 
 replace (
-	// Kubernetes v1.18.8
-	k8s.io/api => k8s.io/api v0.18.8
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.8
-	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
-	k8s.io/client-go => k8s.io/client-go v0.18.8
-	k8s.io/code-generator => k8s.io/code-generator v0.18.8
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
+	// Kubernetes v1.19.7
+	k8s.io/api => k8s.io/api v0.19.7
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
+	k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
+	k8s.io/client-go => k8s.io/client-go v0.19.7
+	k8s.io/code-generator => k8s.io/code-generator v0.19.7
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 )
