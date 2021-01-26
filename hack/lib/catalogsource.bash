@@ -176,6 +176,7 @@ function add_user {
   logger.info "Creating user $name:***"
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
     logger.debug 'Secret htpass-secret already existed, updating it.'
+    # shellcheck disable=SC1003
     sed -i -e '$a\' users.htpasswd
   else
     touch users.htpasswd

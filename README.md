@@ -345,3 +345,4 @@ The required linters for that are:
 
 - [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language
 - [`golangci-lint`](https://golangci-lint.run/) to lint golang code
+- [`shellcheck`](https://www.shellcheck.net/) to lint shell files
