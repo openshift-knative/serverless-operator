@@ -389,8 +389,7 @@ function create_htpasswd_users {
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
     logger.info 'Secret htpass-secret already existed, updating it.'
     # Add a newline to the end of the file if not already present (htpasswd will butcher it otherwise).
-    # shellcheck disable=SC1003
-    sed -i -e '$a\' users.htpasswd
+    [ -n "$(tail -c1 users.htpasswd)" ] && echo >> users.htpasswd
   else
     touch users.htpasswd
   fi
