@@ -84,8 +84,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
           find . -type f \
-            -path './hack/*.*sh' \
-            -o -path './test/*.*.sh' \
+            -path './**/*.*sh' \
             -not -path '*vendor*' | xargs -r shellcheck --format=checkstyle \
             | reviewdog -f=checkstyle \
                 -name="shellcheck" \

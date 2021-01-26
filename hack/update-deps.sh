@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly ROOT_DIR=$(dirname $0)/..
+readonly ROOT_DIR=$(dirname "$0")/..
 
 # shellcheck disable=SC1091,SC1090
 source "${ROOT_DIR}/vendor/knative.dev/hack/library.sh"
@@ -9,7 +9,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cd ${ROOT_DIR}
+cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
 KN_VERSION="release-0.19"
@@ -46,7 +46,7 @@ done
 readonly GO_GET
 
 if (( GO_GET )); then
-  go get -d ${FLOATING_DEPS[@]}
+  go get -d "${FLOATING_DEPS[@]}"
 fi
 
 # Prune modules.

@@ -33,7 +33,7 @@ function scale_up_workers {
     fi
     (( idx++ )) || true
     logger.debug "Bump ${mset} to ${replicas}"
-    oc scale "${mset}" -n openshift-machine-api --replicas=${replicas}
+    oc scale "${mset}" -n openshift-machine-api --replicas="${replicas}"
   done
   wait_until_machineset_scales_up "${SCALE_UP}"
 }

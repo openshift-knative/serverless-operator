@@ -112,3 +112,4 @@ generated-files: release-files
 lint:
 	woke
 	golangci-lint run
+	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck

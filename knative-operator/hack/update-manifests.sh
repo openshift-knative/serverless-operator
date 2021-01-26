@@ -5,6 +5,7 @@ set -Eeuo pipefail
 root="$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Source the main vars file to get the serving/eventing version to be used.
+# shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
 version=${KOURIER_VERSION:-v$(metadata.get dependencies.kourier)}
