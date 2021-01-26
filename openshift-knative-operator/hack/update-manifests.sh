@@ -48,3 +48,5 @@ download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
 
 git apply "$root/openshift-knative-operator/hack/004-rbac-proxy.patch"
+# For SRVKE-629 we disable HPA:
+git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
