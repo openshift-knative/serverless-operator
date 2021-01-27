@@ -50,8 +50,8 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.12.0 <1.13.0'
-  name: serverless-operator.v1.13.0
+    olm.skipRange: '>=1.13.0 <1.14.0'
+  name: serverless-operator.v1.14.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -796,5 +796,5 @@ spec:
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.19.1:knative-eventing-kafka-consolidated-dispatcher"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
       image: "registry.svc.ci.openshift.org/openshift/knative-v0.19.1:knative-eventing-kafka-webhook"
-  replaces: serverless-operator.v1.12.0
-  version: 1.13.0
+  replaces: serverless-operator.v1.13.0
+  version: 1.14.0

@@ -85,7 +85,7 @@ data:
             },
             "targets": [
                {
-                 "expr": "min by(job)(knative_up{namespace=\"$namespace\", job=\"knative-openshift-metrics2\", type=~\"eventing_status|serving_status|kafka_status\"})",
+                 "expr": "min by(job)(knative_up{namespace=\"$namespace\", job=\"knative-openshift-metrics-3\", type=~\"eventing_status|serving_status|kafka_status\"})",
                  "intervalFactor": 2,
                  "legendFormat": "",
                  "metric": "knative_up",
@@ -163,7 +163,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics2\", type=\"serving_status\"}",
+              "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics-3\", type=\"serving_status\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Status - 1 is Ready, 0 is NotReady",
@@ -259,7 +259,7 @@ data:
        "steppedLine": false,
        "targets": [
          {
-           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics2\", type=\"eventing_status\"}",
+           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics-3\", type=\"eventing_status\"}",
            "format": "time-series",
            "interval": "",
            "legendFormat": "Status - 1 is Ready, 0 is NotReady",
@@ -347,7 +347,7 @@ data:
        "steppedLine": false,
        "targets": [
        {
-           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics2\", type=\"kafka_status\"}",
+           "expr": "knative_up{namespace=\"$namespace\", service=\"knative-openshift-metrics-3\", type=\"kafka_status\"}",
            "format": "time-series",
            "interval": "",
            "legendFormat": "Status - 1 is Ready, 0 is NotReady",

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     name: knative-openshift
-  name: knative-openshift-metrics2
+  name: knative-openshift-metrics-3
   namespace: placeholder
 spec:
   ports:
