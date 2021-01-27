@@ -148,7 +148,7 @@ func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclie
 		Name:      deprecatedResourceName,
 		Namespace: instance.Namespace,
 	}
-	toDelete := []runtime.Object{
+	toDelete := []client.Object{
 		&appsv1.Deployment{ObjectMeta: metaName},
 		&corev1.Service{ObjectMeta: metaName},
 		&v1.Route{ObjectMeta: metaName},

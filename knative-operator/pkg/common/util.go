@@ -5,9 +5,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -115,24 +115,21 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 
 // common function to enqueue reconcile requests for resources
 func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
-	enqueueRequests := func() handler.ToRequestsFunc {
-		return func(obj handler.MapObject) []reconcile.Request {
-			annotations := obj.Meta.GetAnnotations()
-			ownerNamespace := annotations[ownerNamespaceAnnotationKey]
-			ownerName := annotations[ownerNameAnnotationKey]
-			if ownerNamespace != "" && ownerName != "" {
-				return []reconcile.Request{{
-					NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
-				}}
-			}
-			return nil
+	return handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+		annotations := obj.GetAnnotations()
+		ownerNamespace := annotations[ownerNamespaceAnnotationKey]
+		ownerName := annotations[ownerNameAnnotationKey]
+		if ownerNamespace != "" && ownerName != "" {
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
+			}}
 		}
-	}
-	return &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests()}
+		return nil
+	})
 }
 
-func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind]runtime.Object {
-	gvkToResource := make(map[schema.GroupVersionKind]runtime.Object)
+func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind]client.Object {
+	gvkToResource := make(map[schema.GroupVersionKind]client.Object)
 
 	for _, manifest := range manifests {
 		resources := manifest.Resources()

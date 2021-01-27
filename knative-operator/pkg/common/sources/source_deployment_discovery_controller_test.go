@@ -11,7 +11,6 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -78,12 +77,13 @@ func init() {
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
 func TestSourceReconcile(t *testing.T) {
-	initObjs := []runtime.Object{&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace}
-	cl := fake.NewFakeClient(initObjs...)
+	cl := fake.NewClientBuilder().
+		WithObjects(&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace).
+		Build()
 
 	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
 	// Reconcile for an api server source
-	if _, err := r.Reconcile(apiserverRequest); err != nil {
+	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
 	}
 	smAPIService := &corev1.Service{}
@@ -105,7 +105,7 @@ func TestSourceReconcile(t *testing.T) {
 	}
 
 	// Reconcile for a ping source
-	if _, err := r.Reconcile(pingsourceRequest); err != nil {
+	if _, err := r.Reconcile(context.Background(), pingsourceRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
 	}
 	smPingService := &corev1.Service{}

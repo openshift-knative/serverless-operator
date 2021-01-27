@@ -39,20 +39,20 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.ToRequestsFunc(func(obj handler.MapObject) []reconcile.Request {
-		dep := obj.Object.(*v1.Deployment)
+	enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		dep := obj.(*v1.Deployment)
 		sourceLabel := dep.Spec.Selector.MatchLabels[common.SourceLabel]
 		sourceNameLabel := dep.Spec.Selector.MatchLabels[common.SourceNameLabel]
 		sourceRoleLabel := dep.Spec.Selector.MatchLabels[common.SourceRoleLabel]
 
 		if (sourceLabel != "" && sourceNameLabel != "") || (sourceLabel != "" && sourceRoleLabel != "") {
 			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: obj.Meta.GetNamespace(), Name: obj.Meta.GetName()},
+				NamespacedName: types.NamespacedName{Namespace: obj.GetNamespace(), Name: obj.GetName()},
 			}}
 		}
 		return nil
 	})
-	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: enqueueRequests}, skipDeletePredicate{}, skipUpdatePredicate{})
+	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipUpdatePredicate{})
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ type ReconcileSourceDeployment struct {
 }
 
 // Reconcile reads that state of the cluster for an eventing source deployment
-func (r *ReconcileSourceDeployment) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
 	dep := &v1.Deployment{}

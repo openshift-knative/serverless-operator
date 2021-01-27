@@ -130,7 +130,7 @@ func TestHappy(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
+	validator.InjectClient(fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build())
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {
@@ -149,7 +149,7 @@ func TestInvalidNamespace(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
+	validator.InjectClient(fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build())
 
 	req, err := testutil.RequestFor(invalidNamespaceCR)
 	if err != nil {
@@ -168,7 +168,7 @@ func TestLoneliness(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient(duplicateCR, validKnativeEventingCR))
+	validator.InjectClient(fake.NewClientBuilder().WithObjects(duplicateCR, validKnativeEventingCR).Build())
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {
@@ -187,7 +187,7 @@ func TestInvalidShape(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient(validKnativeEventingCR))
+	validator.InjectClient(fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build())
 
 	for _, cr := range invalidShapeCRs {
 		req, err := testutil.RequestFor(&cr)
@@ -208,7 +208,7 @@ func TestValidateDeps(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient())
+	validator.InjectClient(fake.NewClientBuilder().Build())
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {

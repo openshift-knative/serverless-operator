@@ -5,7 +5,6 @@ go 1.14
 require (
 	github.com/Jeffail/gabs v1.4.0
 	github.com/go-logr/logr v0.3.0
-	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.4
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
@@ -19,8 +18,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
 	google.golang.org/genproto v0.0.0-20200914193844-75d14daec038 // indirect
-	k8s.io/api v0.19.7
-	k8s.io/apimachinery v0.19.7
+	k8s.io/api v0.20.2
+	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.19.3
 	knative.dev/eventing-kafka v0.19.3-0.20201209141141-d86b0a2b533b
@@ -29,7 +28,7 @@ require (
 	knative.dev/operator v0.19.2-0.20201214144543-1930abb4fcc7
 	knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
 	knative.dev/serving v0.19.0
-	sigs.k8s.io/controller-runtime v0.6.3
+	sigs.k8s.io/controller-runtime v0.8.1
 	sigs.k8s.io/yaml v1.2.0
 )
 

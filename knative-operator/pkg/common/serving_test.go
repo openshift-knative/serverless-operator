@@ -69,7 +69,9 @@ func TestMutate(t *testing.T) {
 		tc := cases[i]
 		ks := tc.ks
 
-		client := fake.NewFakeClient(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain))
+		client := fake.NewClientBuilder().
+			WithObjects(mockNetworkConfig(strings.Split(networks, ",")), mockIngressConfig(domain)).
+			Build()
 		// Setup image override
 		// Mutate for OpenShift
 		err := common.Mutate(ks, client)
@@ -175,7 +177,7 @@ func TestWebhookMemoryLimit(t *testing.T) {
 	if err := yaml.Unmarshal(testdata, &tests); err != nil {
 		t.Fatalf("Failed to unmarshal tests: %v", err)
 	}
-	client := fake.NewFakeClient(mockIngressConfig("whatever"))
+	client := fake.NewClientBuilder().WithObjects(mockIngressConfig("whatever")).Build()
 	for _, test := range tests {
 		t.Run(test.Input.Name, func(t *testing.T) {
 			err := common.Mutate(&test.Input, client)

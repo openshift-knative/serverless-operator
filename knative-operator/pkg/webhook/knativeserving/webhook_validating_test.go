@@ -57,7 +57,7 @@ func TestLoneliness(t *testing.T) {
 
 	validator := Validator{}
 	validator.InjectDecoder(decoder)
-	validator.InjectClient(fake.NewFakeClient(ks2))
+	validator.InjectClient(fake.NewClientBuilder().WithObjects(ks2).Build())
 
 	req, err := testutil.RequestFor(ks1)
 	if err != nil {
