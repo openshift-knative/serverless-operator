@@ -19,6 +19,7 @@ spec:
       revision-timeout-seconds: "300"
     deployment:
       registriesSkippingTagResolving: "ko.local,dev.local"
+      progressDeadline: "120s"
     gc:
       stale-revision-create-delay: "24h"
       stale-revision-lastpinned-debounce: "5h"
