@@ -18,6 +18,7 @@ metadata:
   name: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -41,6 +42,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -49,6 +51,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 rules:
   - apiGroups: [""]
     resources: ["events"]
@@ -75,6 +78,7 @@ metadata:
   name: 3scale-kourier
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -106,6 +110,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 spec:
   replicas: 1
   selector:
@@ -117,7 +122,7 @@ spec:
         app: 3scale-kourier-control
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:072e2bb12eae88d5fde8b2fa77d20542ce0f4708d9e09a59c3b65c499462a8fc
+        - image: gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:ca4090e564c601bc32a487f586ad3d748d682d0e62cfce1c0c80ee0858a735e0
           name: kourier-control
           env:
             - name: CERTS_SECRET_NAMESPACE
@@ -153,6 +158,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 spec:
   ports:
     - name: grpc-xds
@@ -185,6 +191,7 @@ metadata:
   namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 spec:
   selector:
     matchLabels:
@@ -250,6 +257,7 @@ metadata:
   namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 spec:
   ports:
     - name: http2
@@ -271,6 +279,7 @@ metadata:
   namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 spec:
   ports:
     - name: http2
@@ -288,6 +297,7 @@ metadata:
   namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
+    serving.knative.dev/release: "v0.20.0"
 data:
   envoy-bootstrap.yaml: |
     dynamic_resources:
@@ -312,9 +322,12 @@ data:
               port_value: 9000
           filter_chains:
             - filters:
-                - name: envoy.http_connection_manager
-                  config:
+                - name: envoy.filters.network.http_connection_manager
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                     stat_prefix: stats_server
+                    http_filters:
+                      - name: envoy.filters.http.router
                     route_config:
                       virtual_hosts:
                         - name: admin_interface
@@ -330,9 +343,6 @@ data:
                                     exact_match: GET
                               route:
                                 cluster: service_stats
-                    http_filters:
-                      - name: envoy.router
-                        config: {}
       clusters:
         - name: service_stats
           connect_timeout: 0.250s
@@ -347,10 +357,16 @@ data:
                       path: /tmp/envoy.admin
         - name: xds_cluster
           connect_timeout: 1s
-          hosts:
-            - socket_address:
-                address: "kourier-control.knative-serving-ingress"
-                port_value: 18000
+          type: strict_dns
+          load_assignment:
+            cluster_name: xds_cluster
+            endpoints:
+              lb_endpoints:
+                endpoint:
+                  address:
+                    socket_address:
+                      address: "kourier-control.knative-serving-ingress"
+                      port_value: 18000
           http2_protocol_options: {}
           type: STRICT_DNS
     admin:

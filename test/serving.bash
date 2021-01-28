@@ -22,6 +22,9 @@ function prepare_knative_serving_tests {
   # Don't bother with the chaosduck downstream for now
   rm -fv test/config/chaosduck.yaml
 
+  # workaround until https://github.com/knative/operator/issues/431 was fixed.
+  rm -fv test/config/config-deployment.yaml
+
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
