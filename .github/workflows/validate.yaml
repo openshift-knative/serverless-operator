@@ -64,6 +64,7 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         env:
           WOKE_VERSION: v0.4.1
+          OSDK_VERSION: v1.3.0
         run: |
           TEMP_PATH="$(mktemp -d)"
           cd $TEMP_PATH
@@ -75,6 +76,10 @@ jobs:
           echo '::group:: Installing woke ... https://github.com/get-woke/woke'
           curl -sfL https://raw.githubusercontent.com/get-woke/woke/main/install.sh | sh -s -- -b "${TEMP_PATH}" "${WOKE_VERSION}" 2>&1
           echo '::endgroup::'
+
+          echo '::group:: Installing operator-sdk ... https://github.com/operator-framework/operator-sdk/'
+          curl -sfL https://github.com/operator-framework/operator-sdk/releases/download/${OSDK_VERSION}/operator-sdk_linux_amd64 -o "${TEMP_PATH}/operator-sdk"
+          chmod +x "${TEMP_PATH}/operator-sdk"
 
           echo "${TEMP_PATH}" >> $GITHUB_PATH
 
@@ -114,3 +119,8 @@ jobs:
                 -filter-mode="added" \
                 -fail-on-error="true" \
                 -level="error"
+
+      - name: OLM Bundle
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: |
+          operator-sdk bundle validate ./olm-catalog/serverless-operator
