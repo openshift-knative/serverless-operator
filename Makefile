@@ -113,3 +113,4 @@ lint:
 	woke
 	golangci-lint run
 	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck
+	operator-sdk bundle validate ./olm-catalog/serverless-operator
