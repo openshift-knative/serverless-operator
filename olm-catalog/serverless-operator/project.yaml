@@ -21,7 +21,7 @@ requirements:
 
 dependencies:
   serving: 0.20.0
-  eventing: 0.19.2
+  eventing: 0.20.0
   eventing_kafka: 0.19.1
   kourier: 0.20.0
   cli: 0.19.1
