@@ -4,7 +4,6 @@ metadata:
   labels:
     name: knative-openshift
   name: knative-openshift-metrics-3
-  namespace: placeholder
 spec:
   ports:
   - name: http-metrics
