@@ -12,7 +12,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -80,11 +79,11 @@ func TestEventingReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cl := fake.NewFakeClient([]runtime.Object{ke, dashboardNamespace, eventingNamespace}...)
+			cl := fake.NewClientBuilder().WithObjects(ke, dashboardNamespace, eventingNamespace).Build()
 			r := &ReconcileKnativeEventing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
-			if _, err := r.Reconcile(req); err != nil {
+			if _, err := r.Reconcile(context.Background(), req); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 			// Check if Eventing dashboard configmaps are available
@@ -141,7 +140,7 @@ func TestEventingReconcile(t *testing.T) {
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{Namespace: test.ownerNamespace, Name: test.ownerName},
 			}
-			if _, err := r.Reconcile(req); err != nil {
+			if _, err := r.Reconcile(context.Background(), req); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 			var checkError = func(t *testing.T, err error) {

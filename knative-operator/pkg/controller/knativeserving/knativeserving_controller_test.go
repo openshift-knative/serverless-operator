@@ -159,13 +159,12 @@ func TestKourierReconcile(t *testing.T) {
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
 			knService := &defaultKnService
-			initObjs := []runtime.Object{ks, ingress, ns, &servingNamespace, knService}
 
-			cl := fake.NewFakeClient(initObjs...)
+			cl := fake.NewClientBuilder().WithObjects(ks, ingress, ns, &servingNamespace, knService).Build()
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
-			if _, err := r.Reconcile(defaultRequest); err != nil {
+			if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
@@ -211,7 +210,7 @@ func TestKourierReconcile(t *testing.T) {
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{Namespace: test.ownerNamespace, Name: test.ownerName},
 			}
-			if _, err := r.Reconcile(req); err != nil {
+			if _, err := r.Reconcile(context.Background(), req); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
@@ -285,13 +284,13 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		in: []runtime.Object{
 			ctrl("2"),
 			cm("test-cm", nil, serviceCAAnnotations, nil, "3"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "4"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		outCtrl: ctrl("4"),
 	}, {
@@ -299,13 +298,13 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		in: []runtime.Object{
 			ctrl("0"),
 			cm("test-cm", nil, serviceCAAnnotations, nil, "1"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "2"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		outCtrl: ctrl("2"),
 	}, {
@@ -313,21 +312,24 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		in: []runtime.Object{
 			ctrl("10"),
 			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "100"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "101"),
-			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, ""),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, ""),
+			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, "1"),
 		},
 		outCtrl: ctrl("101"),
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			objs := append(test.in, &servingNamespace)
-			cl := fake.NewFakeClient(objs...)
+			cl := fake.NewClientBuilder().
+				WithObjects(&servingNamespace).
+				WithRuntimeObjects(test.in...).
+				Build()
+
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			if err := r.ensureCustomCertsConfigMap(ks); err != nil {
@@ -367,18 +369,15 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 // TestKnativeServingStatus tests KnativeServing CR status with Kourier's installation failure.
 func TestKnativeServingStatus(t *testing.T) {
-	ks := &defaultKnativeServing
-	ingress := &defaultIngress
-	knService := &defaultKnService
+	cl := fake.NewClientBuilder().
+		WithObjects(&defaultKnativeServing, &defaultIngress, &defaultKnService, &servingNamespace).
+		Build()
 
-	initObjs := []runtime.Object{ks, ingress, knService, &servingNamespace}
-
-	cl := fake.NewFakeClient(initObjs...)
 	r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 	// Test with invalid Kourier manifest file.
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/non-exist-file")
-	if _, err := r.Reconcile(defaultRequest); err == nil {
+	if _, err := r.Reconcile(context.Background(), defaultRequest); err == nil {
 		t.Fatalf("reconcile does not fail with invalid manifest path")
 	}
 
@@ -393,7 +392,7 @@ func TestKnativeServingStatus(t *testing.T) {
 
 	// Reconcile with correct Kourier manifest file.
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	if _, err := r.Reconcile(defaultRequest); err != nil {
+	if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
 	}
 	successKs := &v1alpha1.KnativeServing{}

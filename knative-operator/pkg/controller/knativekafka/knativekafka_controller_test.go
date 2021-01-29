@@ -13,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -82,8 +81,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			initObjs := []runtime.Object{test.instance}
-			cl := fake.NewFakeClient(initObjs...)
+			cl := fake.NewClientBuilder().WithObjects(test.instance).Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkachannel-latest.yaml"))
 			if err != nil {
@@ -103,7 +101,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			}
 
 			// Reconcile to initialize
-			if _, err := r.Reconcile(defaultRequest); err != nil {
+			if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
@@ -139,7 +137,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			}
 
 			// Reconcile again
-			if _, err := r.Reconcile(defaultRequest); err != nil {
+			if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 

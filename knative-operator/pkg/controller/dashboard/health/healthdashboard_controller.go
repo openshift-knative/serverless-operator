@@ -1,6 +1,8 @@
 package health
 
 import (
+	"context"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,7 +55,7 @@ type ReconcileHealthDashboard struct {
 }
 
 // Reconcile reads that state of the cluster for a HealthDashboard
-func (r *ReconcileHealthDashboard) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileHealthDashboard) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling HealthDashboard")
 	// in any case restore the current health dashboard, since the configmap shouldnt

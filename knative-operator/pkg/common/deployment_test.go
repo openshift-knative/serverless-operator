@@ -81,7 +81,7 @@ func TestApplyEnvironmentToDeployment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c := fake.NewFakeClient(test.in)
+			c := fake.NewClientBuilder().WithObjects(test.in).Build()
 			if err := common.ApplyEnvironmentToDeployment(namespace, deploymentName, test.env, c); err != nil {
 				t.Fatalf("ApplyEnvironmentToDeployment = %v, want no error", err)
 			}

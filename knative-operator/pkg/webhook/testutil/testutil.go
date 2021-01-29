@@ -3,7 +3,7 @@ package testutil
 import (
 	"encoding/json"
 
-	"k8s.io/api/admission/v1beta1"
+	v1 "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -15,7 +15,7 @@ func RequestFor(obj runtime.Object) (admission.Request, error) {
 		return admission.Request{}, err
 	}
 	return admission.Request{
-		AdmissionRequest: v1beta1.AdmissionRequest{
+		AdmissionRequest: v1.AdmissionRequest{
 			Object: runtime.RawExtension{
 				Raw:    b,
 				Object: obj,

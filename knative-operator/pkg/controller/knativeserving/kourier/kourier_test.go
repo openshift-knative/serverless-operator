@@ -11,7 +11,7 @@ import (
 )
 
 func TestReplaceImageFromEnvironment(t *testing.T) {
-	api := fake.NewFakeClient()
+	api := fake.NewClientBuilder().Build()
 	scheme := scheme.Scheme
 
 	wantControlImage := "foo/bar:control"
