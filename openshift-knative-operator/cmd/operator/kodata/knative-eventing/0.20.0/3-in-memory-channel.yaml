@@ -18,7 +18,7 @@ metadata:
   name: config-imc-event-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 data:
   MaxIdleConnections: "1000"
   MaxIdleConnectionsPerHost: "100"
@@ -43,7 +43,7 @@ kind: ClusterRole
 metadata:
   name: imc-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -77,7 +77,7 @@ kind: ClusterRole
 metadata:
   name: imc-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -114,7 +114,7 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -211,7 +211,7 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -232,7 +232,7 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -301,7 +301,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -335,7 +335,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -356,7 +356,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -386,7 +386,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
 subjects:
   - kind: ServiceAccount
     name: imc-dispatcher
@@ -415,7 +415,7 @@ kind: CustomResourceDefinition
 metadata:
   name: inmemorychannels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -495,10 +495,9 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     knative.dev/high-availability: "true"
 spec:
-  replicas: 1
   selector:
     matchLabels: &labels
       messaging.knative.dev/channel: in-memory-channel
@@ -510,7 +509,7 @@ spec:
       serviceAccountName: imc-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:541904d7fb0190fe2717d7bf22398d645ba2cbaf736ca39da01b6c6df396d780
+          image: gcr.io/knative-releases/channel_controller-3a8067a195a7aaea27173c325c9c8070@sha256:28faaeafc5dcf36cc6f7454d004fa9ec2657ee261642128d1bb47a972540ce57
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -523,7 +522,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: DISPATCHER_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:f231328f5ab58a791cc8801dc6b65dd555b82fcd83e6fbbc184bff0793a26f56
+              value: gcr.io/knative-releases/channel_dispatcher-9c2b1af1e7c55c4005384a6b4a52bbda@sha256:93a02d57daee7f848706277a970ce18dd9afbcc6cd65195796baaa7e06d52969
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -557,10 +556,9 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.19.2"
+    eventing.knative.dev/release: "v0.20.0"
     knative.dev/high-availability: "true"
 spec:
-  replicas: 1
   selector:
     matchLabels: &labels
       messaging.knative.dev/channel: in-memory-channel
@@ -569,10 +567,30 @@ spec:
     metadata:
       labels: *labels
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: *labels
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: imc-dispatcher
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:f231328f5ab58a791cc8801dc6b65dd555b82fcd83e6fbbc184bff0793a26f56
+          image: gcr.io/knative-releases/channel_dispatcher-9c2b1af1e7c55c4005384a6b4a52bbda@sha256:93a02d57daee7f848706277a970ce18dd9afbcc6cd65195796baaa7e06d52969
+          readinessProbe: &probe
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 5
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -591,6 +609,9 @@ spec:
             - name: CONTAINER_NAME
               value: dispatcher
           ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
             - containerPort: 9090
               name: metrics
 
