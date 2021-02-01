@@ -67,8 +67,6 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/serving
-            - name: METRICS_PROMETHEUS_HOST
-              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -81,23 +79,6 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
-        - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-          volumeMounts:
-            - mountPath: /etc/tls/private
-              name: secret-autoscaler-hpa-sm-service-tls
-          args:
-            - "--secure-listen-address=0.0.0.0:8444"
-            - "--upstream=http://127.0.0.1:9090/"
-            - "--tls-cert-file=/etc/tls/private/tls.crt"
-            - "--tls-private-key-file=/etc/tls/private/tls.key"
-            - "--logtostderr=true"
-            - "--v=10"
-      volumes:
-        - name: secret-autoscaler-hpa-sm-service-tls
-          secret:
-            secretName: autoscaler-hpa-sm-service-tls
-
 ---
 apiVersion: v1
 kind: Service

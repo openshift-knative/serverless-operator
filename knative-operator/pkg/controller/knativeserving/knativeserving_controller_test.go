@@ -108,19 +108,13 @@ var (
 			Name: dashboard.ConfigManagedNamespace,
 		},
 	}
-
-	servingNamespace = corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "knative-serving",
-		},
-	}
 )
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv(dashboard.ServingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-serving-resources.yaml")
-	os.Setenv("TEST_ROLE_PATH", "../dashboard/testdata/role-service-monitor.yaml")
+
 	apis.AddToScheme(scheme.Scheme)
 }
 
@@ -159,7 +153,7 @@ func TestKourierReconcile(t *testing.T) {
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
 			knService := &defaultKnService
-			initObjs := []runtime.Object{ks, ingress, ns, &servingNamespace, knService}
+			initObjs := []runtime.Object{ks, ingress, ns, knService}
 
 			cl := fake.NewFakeClient(initObjs...)
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
@@ -326,8 +320,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			objs := append(test.in, &servingNamespace)
-			cl := fake.NewFakeClient(objs...)
+			cl := fake.NewFakeClient(test.in...)
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			if err := r.ensureCustomCertsConfigMap(ks); err != nil {
@@ -371,7 +364,7 @@ func TestKnativeServingStatus(t *testing.T) {
 	ingress := &defaultIngress
 	knService := &defaultKnService
 
-	initObjs := []runtime.Object{ks, ingress, knService, &servingNamespace}
+	initObjs := []runtime.Object{ks, ingress, knService}
 
 	cl := fake.NewFakeClient(initObjs...)
 	r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}

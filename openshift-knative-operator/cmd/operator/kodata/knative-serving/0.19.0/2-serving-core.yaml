@@ -2226,8 +2226,6 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/internal/serving
-            - name: METRICS_PROMETHEUS_HOST
-              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -2259,22 +2257,6 @@ spec:
                   value: "activator"
             failureThreshold: 12
             initialDelaySeconds: 15
-        - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-          volumeMounts:
-            - mountPath: /etc/tls/private
-              name: secret-activator-sm-service-tls
-          args:
-            - "--secure-listen-address=0.0.0.0:8444"
-            - "--upstream=http://127.0.0.1:9090/"
-            - "--tls-cert-file=/etc/tls/private/tls.crt"
-            - "--tls-private-key-file=/etc/tls/private/tls.key"
-            - "--logtostderr=true"
-            - "--v=10"
-      volumes:
-        - name: secret-activator-sm-service-tls
-          secret:
-            secretName: activator-sm-service-tls
       # The activator (often) sits on the dataplane, and may proxy long (e.g.
       # streaming, websockets) requests.  We give a long grace period for the
       # activator to "lame duck" and drain outstanding requests before we
@@ -2389,8 +2371,6 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/serving
-            - name: METRICS_PROMETHEUS_HOST
-              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -2418,22 +2398,6 @@ spec:
                 - name: k-kubelet-probe
                   value: "autoscaler"
             failureThreshold: 6
-        - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-          volumeMounts:
-            - mountPath: /etc/tls/private
-              name: secret-autoscaler-sm-service-tls
-          args:
-            - "--secure-listen-address=0.0.0.0:8444"
-            - "--upstream=http://127.0.0.1:9090/"
-            - "--tls-cert-file=/etc/tls/private/tls.crt"
-            - "--tls-private-key-file=/etc/tls/private/tls.key"
-            - "--logtostderr=true"
-            - "--v=10"
-      volumes:
-        - name: secret-autoscaler-sm-service-tls
-          secret:
-            secretName: autoscaler-sm-service-tls
 ---
 apiVersion: v1
 kind: Service
@@ -2531,8 +2495,6 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/internal/serving
-            - name: METRICS_PROMETHEUS_HOST
-              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -2545,22 +2507,6 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
-        - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-          volumeMounts:
-            - mountPath: /etc/tls/private
-              name: secret-controller-sm-service-tls
-          args:
-            - "--secure-listen-address=0.0.0.0:8444"
-            - "--upstream=http://127.0.0.1:9090/"
-            - "--tls-cert-file=/etc/tls/private/tls.crt"
-            - "--tls-private-key-file=/etc/tls/private/tls.key"
-            - "--logtostderr=true"
-            - "--v=10"
-      volumes:
-        - name: secret-controller-sm-service-tls
-          secret:
-            secretName: controller-sm-service-tls
 ---
 apiVersion: v1
 kind: Service
@@ -2709,8 +2655,6 @@ spec:
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/serving
-            - name: METRICS_PROMETHEUS_HOST
-              value: "127.0.0.1"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -2737,22 +2681,6 @@ spec:
             !!merge <<: *probe
             failureThreshold: 6
             initialDelaySeconds: 20
-        - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
-          volumeMounts:
-            - mountPath: /etc/tls/private
-              name: secret-webhook-sm-service-tls
-          args:
-            - "--secure-listen-address=0.0.0.0:8444"
-            - "--upstream=http://127.0.0.1:9090/"
-            - "--tls-cert-file=/etc/tls/private/tls.crt"
-            - "--tls-private-key-file=/etc/tls/private/tls.key"
-            - "--logtostderr=true"
-            - "--v=10"
-      volumes:
-        - name: secret-webhook-sm-service-tls
-          secret:
-            secretName: webhook-sm-service-tls
       # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
       # high value that we respect whatever value it has configured for the lame duck grace period.
       terminationGracePeriodSeconds: 300

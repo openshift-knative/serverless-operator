@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	EventingBrokerServiceMonitorPath     = "deploy/resources/monitoring/broker-service-monitors.yaml"
-	EventingSourceServiceMonitorPath     = "deploy/resources/monitoring/source-service-monitor.yaml"
-	EventingSourcePath                   = "deploy/resources/monitoring/source-service.yaml"
+	EventingBrokerServiceMonitorPath     = "deploy/resources/broker-service-monitors.yaml"
+	EventingSourceServiceMonitorPath     = "deploy/resources/source-service-monitor.yaml"
+	EventingSourcePath                   = "deploy/resources/source-service.yaml"
 	SourceLabel                          = "eventing.knative.dev/source"
 	SourceNameLabel                      = "eventing.knative.dev/sourceName"
 	SourceRoleLabel                      = "sources.knative.dev/role"
