@@ -12,7 +12,7 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.19"
+KN_VERSION="release-0.20"
 
 # Controls the version of OCP related dependencies.
 OCP_VERSION="release-4.6"
