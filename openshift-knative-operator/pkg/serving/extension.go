@@ -17,7 +17,7 @@ import (
 )
 
 const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
-const observabilityCMName = "observability"
+const observabilityCMName = "config-observability"
 const observabilityBackendKey = "metrics.backend-destination"
 
 // NewExtension creates a new extension for a Knative Serving controller.
