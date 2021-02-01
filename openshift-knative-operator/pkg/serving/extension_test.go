@@ -87,7 +87,7 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
-			common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+			common.Configure(&ks.Spec.CommonSpec, observabilityCMName, "logging.revision-url-template",
 				fmt.Sprintf(loggingURLTemplate, "logging.example.com"))
 		}),
 	}, {
