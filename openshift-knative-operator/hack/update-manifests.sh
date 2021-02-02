@@ -47,6 +47,4 @@ download eventing $KNATIVE_EVENTING_VERSION "${eventing_files[@]}"
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
 
-git apply "$root/openshift-knative-operator/hack/004-rbac-proxy.patch"
-
 git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"

@@ -1,0 +1,24 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-openshift
+subjects:
+- kind: ServiceAccount
+  name: knative-openshift
+roleRef:
+  kind: Role
+  name: knative-openshift
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-openshift
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-openshift
+subjects:
+- kind: ServiceAccount
+  name: knative-openshift
+  namespace: default

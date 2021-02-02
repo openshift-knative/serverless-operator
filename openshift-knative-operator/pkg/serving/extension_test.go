@@ -87,7 +87,7 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
-			common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+			common.Configure(&ks.Spec.CommonSpec, observabilityCMName, "logging.revision-url-template",
 				fmt.Sprintf(loggingURLTemplate, "logging.example.com"))
 		}),
 	}, {
@@ -112,6 +112,18 @@ func TestReconcile(t *testing.T) {
 		}),
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
+		}),
+	}, {
+		name: "respect already configured metrics backend",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{observabilityCMName: {observabilityBackendKey: "prometheus"}},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			common.Configure(&ks.Spec.CommonSpec, observabilityCMName, observabilityBackendKey, "prometheus")
 		}),
 	}}
 
@@ -153,6 +165,8 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 						"domainTemplate": "{{.Name}}-{{.Namespace}}.{{.Domain}}",
 						"ingress.class":  "kourier.ingress.networking.knative.dev",
 					},
+					// By default backend is none
+					observabilityCMName: {observabilityBackendKey: "none"},
 				},
 				Registry: v1alpha1.Registry{
 					Default: "bar2",
