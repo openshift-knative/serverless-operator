@@ -14,10 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package handlers
-
-import "knative.dev/pkg/network"
-
-// Error sets up a handler suitable for use with the ErrorHandler field on
-// httputil's reverse proxy, which logs /proc/net/sockstat data.
-var Error = network.ErrorHandler
+// Package v1beta2 contains API Schema definitions for the sources v1beta2 API group.
+// +k8s:deepcopy-gen=package
+// +groupName=sources.knative.dev
+package v1beta2

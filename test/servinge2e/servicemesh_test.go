@@ -832,7 +832,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 		}
 
 		// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
-		resp, err := sc.Poll(req, pkgTest.IsStatusOK)
+		resp, err := sc.Poll(req, spoof.IsStatusOK)
 		if err != nil {
 			t.Fatalf("Error polling custom domain: %v", err)
 		}
@@ -978,7 +978,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 		}
 
 		// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
-		resp, err := sc.Poll(req, pkgTest.IsStatusOK)
+		resp, err := sc.Poll(req, spoof.IsStatusOK)
 		if err != nil {
 			t.Fatalf("Error polling custom domain: %v", err)
 		}
