@@ -319,7 +319,7 @@ index 00000000..37558cd9
 +    matchLabels:
 +      name: webhook-sm-service
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-index 3c213343..b29fb891 100644
+index 3c213343..9417537c 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
 @@ -2226,6 +2226,8 @@ spec:
@@ -331,7 +331,7 @@ index 3c213343..b29fb891 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2257,6 +2259,22 @@ spec:
+@@ -2257,6 +2259,26 @@ spec:
                    value: "activator"
              failureThreshold: 12
              initialDelaySeconds: 15
@@ -340,6 +340,10 @@ index 3c213343..b29fb891 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-activator-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -354,7 +358,7 @@ index 3c213343..b29fb891 100644
        # The activator (often) sits on the dataplane, and may proxy long (e.g.
        # streaming, websockets) requests.  We give a long grace period for the
        # activator to "lame duck" and drain outstanding requests before we
-@@ -2371,6 +2389,8 @@ spec:
+@@ -2371,6 +2393,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -363,7 +367,7 @@ index 3c213343..b29fb891 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2398,6 +2418,22 @@ spec:
+@@ -2398,6 +2422,26 @@ spec:
                  - name: k-kubelet-probe
                    value: "autoscaler"
              failureThreshold: 6
@@ -372,6 +376,10 @@ index 3c213343..b29fb891 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-autoscaler-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -386,7 +394,7 @@ index 3c213343..b29fb891 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2495,6 +2531,8 @@ spec:
+@@ -2495,6 +2539,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/internal/serving
@@ -395,7 +403,7 @@ index 3c213343..b29fb891 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2507,6 +2545,22 @@ spec:
+@@ -2507,6 +2553,26 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -404,6 +412,10 @@ index 3c213343..b29fb891 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-controller-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -418,7 +430,7 @@ index 3c213343..b29fb891 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2655,6 +2709,8 @@ spec:
+@@ -2655,6 +2721,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -427,7 +439,7 @@ index 3c213343..b29fb891 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2681,6 +2737,22 @@ spec:
+@@ -2681,6 +2749,26 @@ spec:
              !!merge <<: *probe
              failureThreshold: 6
              initialDelaySeconds: 20
@@ -436,6 +448,10 @@ index 3c213343..b29fb891 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-webhook-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -451,7 +467,7 @@ index 3c213343..b29fb891 100644
        # high value that we respect whatever value it has configured for the lame duck grace period.
        terminationGracePeriodSeconds: 300
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-index 83b88232..6897d64e 100644
+index 83b88232..abe895f0 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
 @@ -67,6 +67,8 @@ spec:
@@ -463,7 +479,7 @@ index 83b88232..6897d64e 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -79,6 +81,23 @@ spec:
+@@ -79,6 +81,27 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -472,6 +488,10 @@ index 83b88232..6897d64e 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-autoscaler-hpa-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -488,10 +508,10 @@ index 83b88232..6897d64e 100644
  apiVersion: v1
  kind: Service
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-index d0b8b2bb..4c582eac 100644
+index d0b8b2bb..253e0509 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-@@ -187,6 +187,22 @@ spec:
+@@ -187,6 +187,26 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -500,6 +520,10 @@ index d0b8b2bb..4c582eac 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-domain-mapping-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -511,10 +535,10 @@ index d0b8b2bb..4c582eac 100644
 +        - name: secret-domain-mapping-sm-service-tls
 +          secret:
 +            secretName: domain-mapping-sm-service-tls
-
+ 
  ---
  # Copyright 2020 The Knative Authors
-@@ -265,6 +281,8 @@ spec:
+@@ -265,6 +285,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -523,7 +547,7 @@ index d0b8b2bb..4c582eac 100644
            securityContext:
              allowPrivilegeEscalation: false
            ports:
-@@ -286,6 +304,22 @@ spec:
+@@ -286,6 +308,26 @@ spec:
              !!merge <<: *probe
              failureThreshold: 6
              initialDelaySeconds: 20
@@ -532,6 +556,10 @@ index d0b8b2bb..4c582eac 100644
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-domainmapping-webhook-sm-service-tls
++          resources:
++            requests:
++              memory: 20Mi
++              cpu: 10m
 +          args:
 +            - "--secure-listen-address=0.0.0.0:8444"
 +            - "--upstream=http://127.0.0.1:9090/"
@@ -546,107 +574,3 @@ index d0b8b2bb..4c582eac 100644
        # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
        # high value that we respect whatever value it has configured for the lame duck grace period.
        terminationGracePeriodSeconds: 300
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-@@ -2264,6 +2264,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-activator-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
-@@ -2423,6 +2430,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-autoscaler-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
-@@ -2550,6 +2564,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-controller-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
-@@ -2742,6 +2763,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-webhook-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-@@ -86,6 +86,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-autoscaler-hpa-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-@@ -192,6 +192,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-domain-mapping-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"
-@@ -309,6 +316,13 @@ spec:
-           volumeMounts:
-             - mountPath: /etc/tls/private
-               name: secret-domainmapping-webhook-sm-service-tls
-+          resources:
-+            requests:
-+              memory: 20Mi
-+              cpu: 10m
-+            limits:
-+              memory: 40Mi
-+              cpu: 20m
-           args:
-             - "--secure-listen-address=0.0.0.0:8444"
-             - "--upstream=http://127.0.0.1:9090/"

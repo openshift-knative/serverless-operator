@@ -2268,9 +2268,6 @@ spec:
             requests:
               memory: 20Mi
               cpu: 10m
-            limits:
-              memory: 40Mi
-              cpu: 20m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
@@ -2434,9 +2431,6 @@ spec:
             requests:
               memory: 20Mi
               cpu: 10m
-            limits:
-              memory: 40Mi
-              cpu: 20m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
@@ -2568,9 +2562,6 @@ spec:
             requests:
               memory: 20Mi
               cpu: 10m
-            limits:
-              memory: 40Mi
-              cpu: 20m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
@@ -2767,9 +2758,6 @@ spec:
             requests:
               memory: 20Mi
               cpu: 10m
-            limits:
-              memory: 40Mi
-              cpu: 20m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
