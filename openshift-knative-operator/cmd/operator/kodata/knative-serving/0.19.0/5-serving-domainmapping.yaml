@@ -192,6 +192,10 @@ spec:
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-domain-mapping-sm-service-tls
+          resources:
+            requests:
+              memory: 20Mi
+              cpu: 10m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
@@ -309,6 +313,10 @@ spec:
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-domainmapping-webhook-sm-service-tls
+          resources:
+            requests:
+              memory: 20Mi
+              cpu: 10m
           args:
             - "--secure-listen-address=0.0.0.0:8444"
             - "--upstream=http://127.0.0.1:9090/"
