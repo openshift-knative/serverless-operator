@@ -61,15 +61,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   fi
 
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
-    ./test/e2e ./test/conformance/api/v1/... ./test/conformance/runtime/... \
+    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template"
-
-  # Test new features especially DomainMapping without resolvabledomain.
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
-    ./test/conformance/api/v1alpha1/... \
-    --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
     --enable-beta \
     --enable-alpha
 
