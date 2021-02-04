@@ -123,70 +123,6 @@ function actual_serving_version {
     knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}"
 }
 
-function run_serving_preupgrade_test {
-  logger.info 'Running Serving pre upgrade tests'
-
-  local image_template
-
-  prepare_knative_serving_tests
-
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
-
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=preupgrade -timeout=20m ./test/upgrade \
-    --imagetemplate "$image_template" \
-    --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain
-
-  # Remove the following files in case we failed to clean them up in an earlier test.
-  rm -f /tmp/prober-signal
-  rm -f /tmp/autoscaling-signal
-  rm -f /tmp/autoscaling-tbc-signal
-
-  logger.success 'Serving pre upgrade tests passed'
-}
-
-function start_serving_prober {
-  local image_template prev_serving_version probe_fraction serving_prober_pid \
-    pid_file
-  prev_serving_version="${1:?Pass a previous Serving version as arg[1]}"
-  pid_file="${2:?Pass a PID file as arg[2]}"
-
-  logger.info 'Starting Serving prober'
-
-  rm -fv /tmp/prober-signal
-  cd "${KNATIVE_SERVING_HOME}"
-
-  probe_fraction=1.0
-  if [[ ${prev_serving_version} < "0.14.0" ]]; then
-    probe_fraction=0.95
-  fi
-  logger.info "Target success fraction for Serving is ${probe_fraction}"
-
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
-
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=probe \
-    -timeout=30m \
-    ./test/upgrade \
-    -probe.success_fraction=${probe_fraction} \
-    --imagetemplate "$image_template" \
-    --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain &
-  serving_prober_pid=$!
-
-  logger.debug "Serving prober PID is ${serving_prober_pid}"
-
-  echo ${serving_prober_pid} > "${pid_file}"
-}
-
-function wait_for_serving_prober_ready {
-  # Wait for the upgrade-probe kservice to be ready before proceeding
-  timeout 900 "[[ \$(oc get services.serving.knative.dev upgrade-probe \
-    -n serving-tests -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') \
-    != True ]]"
-
-  logger.success 'Serving prober is ready'
-}
-
 function check_serving_upgraded {
   local latest_serving_version
   latest_serving_version="${1:?Pass a target serving version as arg[1]}"
@@ -199,21 +135,6 @@ function check_serving_upgraded {
     -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
 }
 
-function end_serving_prober {
-  local prober_pid
-  prober_pid="${1:?Pass a prober pid as arg[1]}"
-
-  # The probe tests are blocking on the following files to know when it should exit.
-  #
-  # This is kind of gross. First attempt was to just send a signal to the go test,
-  # but "go test" intercepts the signal and always exits with a non-zero code.
-  echo "done" > /tmp/prober-signal
-  echo "done" > /tmp/autoscaling-signal
-  echo "done" > /tmp/autoscaling-tbc-signal
-
-  end_prober 'Serving' "${prober_pid}"
-}
-
 function wait_for_serving_test_services_settle {
   # Wait for all services to become ready again. Exclude the upgrade-probe as
   # that'll be removed by the prober test above.
@@ -223,26 +144,4 @@ function wait_for_serving_test_services_settle {
 
   # Give time to settle things down
   sleep 30
-}
-
-function run_serving_postupgrade_test {
-  logger.info 'Running Serving post upgrade tests'
-
-  local image_template
-
-  cd "${KNATIVE_SERVING_HOME}"
-
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
-
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=postupgrade \
-    -timeout=20m ./test/upgrade \
-    --imagetemplate "$image_template" \
-    --kubeconfig "$KUBECONFIG" \
-    --resolvabledomain
-
-  logger.success 'Serving post upgrade tests passed'
-}
-
-function cleanup_serving_test_services {
-  oc delete --all=true ksvc -n serving-tests
 }

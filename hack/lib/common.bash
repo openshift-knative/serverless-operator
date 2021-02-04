@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2001
+
 function array.join {
   local IFS="$1"
   shift
@@ -69,4 +71,11 @@ function versions.lt {
   fi
 
   versions.le "${v1}" "${v2}"
+}
+
+# Returns the major and minor part of the whole version, joined with a dot.
+function versions.major_minor {
+  local version=${1:?Pass a full version as arg[1]}
+  # Ref: https://regex101.com/r/Po1HA3/1
+  echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\1.\2/'
 }
