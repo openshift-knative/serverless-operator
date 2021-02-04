@@ -15,7 +15,7 @@ cd "${ROOT_DIR}"
 KN_VERSION="release-0.20"
 
 # Controls the version of OCP related dependencies.
-OCP_VERSION="release-4.6"
+OCP_VERSION="release-4.7"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
