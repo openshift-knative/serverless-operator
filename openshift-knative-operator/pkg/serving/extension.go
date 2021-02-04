@@ -7,13 +7,17 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/logging"
 )
 
 const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
@@ -21,16 +25,20 @@ const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context) operator.Extension {
 	return &extension{
-		ocpclient: ocpclient.Get(ctx),
+		ocpclient:  ocpclient.Get(ctx),
+		kubeclient: kubeclient.Get(ctx),
+		logger:     logging.FromContext(ctx),
 	}
 }
 
 type extension struct {
-	ocpclient versioned.Interface
+	ocpclient  versioned.Interface
+	kubeclient kubernetes.Interface
+	logger     *zap.SugaredLogger
 }
 
-func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
-	return nil
+func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
+	return []mf.Transformer{monitoring.InjectNamespaceWithSubject(ks.GetNamespace(), monitoring.OpenshiftMonitoringNamespace)}
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
@@ -50,7 +58,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Attempt to locate kibana route which is available if openshift-logging has been configured
 	if loggingHost := e.fetchLoggingHost(ctx); loggingHost != "" {
-		common.Configure(&ks.Spec.CommonSpec, "observability", "logging.revision-url-template",
+		common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, "logging.revision-url-template",
 			fmt.Sprintf(loggingURLTemplate, loggingHost))
 	}
 
@@ -86,6 +94,11 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
+	}
+
+	e.logger.Info("Installing Serving Monitoring Requirements")
+	if err := monitoring.SetupServingMonitoring(e.kubeclient, ks, e.logger); err != nil {
+		return err
 	}
 
 	return nil
