@@ -1,0 +1,14 @@
+{
+  "name": "serverless-ui-tests",
+  "version": "0.1.0-pre",
+  "description": "A UI tests for Serverless UI on OCP console",
+  "scripts": {
+    "test": "cypress run",
+    "cypress:open": "cypress open"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "cypress": "^6.4.0",
+    "semver": "^7.3.4"
+  }
+}
