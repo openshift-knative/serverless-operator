@@ -431,6 +431,8 @@ spec:
                         value: deploy/resources/knativekafka/kafkachannel-latest.yaml
                       - name: KAFKASOURCE_MANIFEST_PATH
                         value: deploy/resources/knativekafka/kafkasource-latest.yaml
+                      - name: QUICKSTART_MANIFEST_PATH
+                        value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.svc.ci.openshift.org/openshift/knative-v0.19.0:knative-serving-queue"
                       - name: "IMAGE_activator"

@@ -9,6 +9,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -172,6 +173,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.installDashboard,
 		r.installMonitoringRequirements,
 		r.ensureProxySettings,
+		r.installQuickstarts,
 		r.installKnConsoleCLIDownload,
 	}
 	for _, stage := range stages {
@@ -347,6 +349,13 @@ func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.Knati
 	return nil
 }
 
+func (r *ReconcileKnativeServing) installQuickstarts(instance *servingv1alpha1.KnativeServing) error {
+	if err := quickstart.Apply(instance, r.client); err != nil {
+		return err
+	}
+	return nil
+}
+
 // installKnConsoleCLIDownload creates CR for kn CLI download link
 func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
@@ -386,6 +395,11 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	log.Info("Deleting dashboard")
 	if err := dashboard.Delete(os.Getenv(dashboard.ServingResourceDashboardPathEnvVar), instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
+	}
+
+	log.Info("Deleting quickstart")
+	if err := quickstart.Delete(instance, r.client); err != nil {
+		return fmt.Errorf("failed to delete quickstarts: %w", err)
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.
