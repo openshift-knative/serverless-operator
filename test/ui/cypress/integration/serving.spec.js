@@ -1,10 +1,10 @@
 describe('OCP UI for Serverless', () => {
 
   it('can deploy kservice', () => {
-    context('with authenticated via Web Console', () => {
+    describe('with authenticated via Web Console', () => {
       cy.login()
     })
-    context('deploy Knative Service from image', () => {
+    describe('deploy kservice from image', () => {
       cy.visit('/add/ns/default')
       cy.contains('Knative Channel')
       cy.contains('Event Source')
@@ -16,23 +16,38 @@ describe('OCP UI for Serverless', () => {
       cy.get('input#form-checkbox-route-create-field').check()
       cy.get('input#form-input-application-name-field')
         .clear()
-        .type('showcase-app')
+        .type('demoapp')
       cy.get('input#form-input-name-field')
         .clear()
         .type('showcase')
-      try {
-        cy.get('button[type=submit]').click()
-        cy.contains('No Revisions')
-        cy.contains('showcase-app')
-      } finally {
-        cy.get('a.odc-topology__view-switcher').click()
-        cy.contains('showcase-app').click()
-        cy.contains('Actions').click()
-        cy.contains('Delete Application').click()
-        cy.get('input#form-input-resourceName-field')
-          .type('showcase-app{enter}')
-        cy.contains('No resources found')
-      }
+      cy.get('button[type=submit]').click()
+    })
+    describe('check availibility of kservice', () => {
+      cy.contains('No Revisions')
+      cy.contains('demoapp')
+      cy.visit('/topology/ns/default/list')
+      cy.contains('showcase').click()
+      cy.contains('Location:')
+      cy.contains('Running')
+      cy.get('a.co-external-link')
+        .scrollIntoView()
+        .should('have.attr', 'href')
+        .and('include', 'showcase')
+        .then((href) => {
+          cy.request({ method: 'OPTIONS', url: href, retryOnStatusCodeFailure: true }).then((response) => {
+            expect(response.body).to.have.property('artifact-id', 'knative-serving-showcase')
+          })
+        })
+    })
+    describe('remove kservice', () => {
+
+      cy.visit('/topology/ns/default/list')
+      cy.contains('demoapp').click()
+      cy.contains('Actions').click()
+      cy.contains('Delete Application').click()
+      cy.get('input#form-input-resourceName-field')
+        .type('demoapp{enter}')
+      cy.contains('No resources found')
     })
   })
 })
