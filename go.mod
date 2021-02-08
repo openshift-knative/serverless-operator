@@ -4,20 +4,33 @@ go 1.14
 
 require (
 	github.com/Jeffail/gabs v1.4.0
+	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
+	github.com/aws/aws-sdk-go v1.36.15 // indirect
+	github.com/evanphx/json-patch/v5 v5.1.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/go-logr/logr v0.3.0
+	github.com/go-logr/logr v0.4.0
+	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.14 // indirect
+	github.com/go-openapi/swag v0.19.12 // indirect
 	github.com/google/go-cmp v0.5.4
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/manifestival/controller-runtime-client v0.3.0
 	github.com/manifestival/manifestival v0.6.1
 	github.com/openshift/api v0.0.0-20210202165416-a9e731090f5e
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/operator-framework/api v0.5.1
 	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210204051820-4b67acc560a7
-	github.com/prometheus-operator/prometheus-operator v0.44.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.44.1
-	github.com/prometheus/client_golang v1.8.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.45.0
+	github.com/prometheus-operator/prometheus-operator/pkg/client v0.45.0
+	github.com/prometheus/client_golang v1.9.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
+	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
+	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
+	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
+	golang.org/x/tools v0.0.0-20201228162255-34cd474b9958 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
