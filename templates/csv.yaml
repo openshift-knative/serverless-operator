@@ -369,6 +369,8 @@ spec:
                       value: deploy/resources/knativekafka/kafkachannel-latest.yaml
                     - name: KAFKASOURCE_MANIFEST_PATH
                       value: deploy/resources/knativekafka/kafkasource-latest.yaml
+                    - name: QUICKSTART_MANIFEST_PATH
+                      value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
       - name: knative-openshift-ingress
         spec:
           replicas: 1
