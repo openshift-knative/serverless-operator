@@ -38,9 +38,19 @@ describe('OCP UI for Serverless', () => {
             expect(response.body).to.have.property('artifact-id', 'knative-serving-showcase')
           })
         })
+      cy.get('div.pf-topology-container__with-sidebar div.odc-revision-deployment-list__pod svg tspan')
+        .invoke('text')
+        .then((text) => {
+          expect(text).to.eq('1')
+        })
+      cy.wait(65_000)
+      cy.get('div.pf-topology-container__with-sidebar div.odc-revision-deployment-list__pod svg tspan')
+        .invoke('text')
+        .then((text) => {
+          expect(text).to.eq('0')
+        })
     })
     describe('remove kservice', () => {
-
       cy.visit('/topology/ns/default/list')
       cy.contains('demoapp').click()
       cy.contains('Actions').click()
