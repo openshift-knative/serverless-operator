@@ -1,4 +1,4 @@
-package v1
+package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -9,7 +9,7 @@ import (
 
 var (
 	GroupName     = "console.openshift.io"
-	GroupVersion  = schema.GroupVersion{Group: GroupName, Version: "v1"}
+	GroupVersion  = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 	schemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, corev1.AddToScheme)
 	// Install is a function which adds this version to a scheme
 	Install = schemeBuilder.AddToScheme
@@ -31,18 +31,8 @@ func Resource(resource string) schema.GroupResource {
 // addKnownTypes adds types to API group
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(GroupVersion,
-		&ConsoleLink{},
-		&ConsoleLinkList{},
-		&ConsoleCLIDownload{},
-		&ConsoleCLIDownloadList{},
-		&ConsoleNotification{},
-		&ConsoleNotificationList{},
-		&ConsoleExternalLogLink{},
-		&ConsoleExternalLogLinkList{},
-		&ConsoleYAMLSample{},
-		&ConsoleYAMLSampleList{},
-		&ConsoleQuickStart{},
-		&ConsoleQuickStartList{},
+		&ConsolePlugin{},
+		&ConsolePluginList{},
 	)
 	metav1.AddToGroupVersion(scheme, GroupVersion)
 	return nil

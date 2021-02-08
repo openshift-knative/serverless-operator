@@ -171,8 +171,11 @@ const (
 type WebhookDescription struct {
 	GenerateName string `json:"generateName"`
 	// +kubebuilder:validation:Enum=ValidatingAdmissionWebhook;MutatingAdmissionWebhook;ConversionWebhook
-	Type                    WebhookAdmissionType                            `json:"type"`
-	DeploymentName          string                                          `json:"deploymentName,omitempty"`
+	Type           WebhookAdmissionType `json:"type"`
+	DeploymentName string               `json:"deploymentName,omitempty"`
+	// +kubebuilder:validation:Maximum=65535
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=443
 	ContainerPort           int32                                           `json:"containerPort,omitempty"`
 	TargetPort              *intstr.IntOrString                             `json:"targetPort,omitempty"`
 	Rules                   []admissionregistrationv1.RuleWithOperations    `json:"rules,omitempty"`
@@ -376,6 +379,7 @@ const (
 	CSVReasonCannotModifyStaticOperatorGroupProvidedAPIs ConditionReason = "CannotModifyStaticOperatorGroupProvidedAPIs"
 	CSVReasonDetectedClusterChange                       ConditionReason = "DetectedClusterChange"
 	CSVReasonInvalidWebhookDescription                   ConditionReason = "InvalidWebhookDescription"
+	CSVReasonOperatorConditionNotUpgradeable             ConditionReason = "OperatorConditionNotUpgradeable"
 )
 
 // HasCaResources returns true if the CSV has owned APIServices or Webhooks.
