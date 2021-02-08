@@ -3,7 +3,6 @@ module github.com/openshift-knative/serverless-operator
 go 1.14
 
 require (
-	github.com/Jeffail/gabs v1.4.0
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/aws/aws-sdk-go v1.36.15 // indirect
 	github.com/evanphx/json-patch/v5 v5.1.0 // indirect
