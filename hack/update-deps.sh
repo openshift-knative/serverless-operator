@@ -20,7 +20,7 @@ OCP_VERSION="release-4.6"
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "github.com/openshift/api@${OCP_VERSION}"
+  "github.com/openshift/api@release-4.7"
   "github.com/openshift/client-go@${OCP_VERSION}"
   "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
 
