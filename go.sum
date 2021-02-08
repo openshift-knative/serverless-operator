@@ -1201,6 +1201,8 @@ github.com/opencontainers/runc v0.1.1 h1:GlxAyO6x8rfZYN9Tt0Kti5a/cP41iuiO2yYT0IJ
 github.com/opencontainers/runc v0.1.1/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
 github.com/opencontainers/runtime-spec v0.1.2-0.20190507144316-5b71a03e2700/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/runtime-tools v0.0.0-20181011054405-1d69bd0f9c39/go.mod h1:r3f7wjNzSs2extwzU3Y+6pKfobzPh+kKFJ3ofN+3nfs=
+github.com/openshift-knative/eventing-kafka v0.19.1-0.20210202142951-dd8077f58870 h1:YHFXUekPG3ORJFZOb/zwvPvMTzuzdcKwrriE0YCAU3k=
+github.com/openshift-knative/eventing-kafka v0.19.1-0.20210202142951-dd8077f58870/go.mod h1:AEZ6rAeaySMM/rIwlxI+Amwvhve8WhQKFhM0AyKFvxs=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=
@@ -1211,6 +1213,10 @@ github.com/openshift/build-machinery-go v0.0.0-20200917070002-f171684f77ab/go.mo
 github.com/openshift/client-go v0.0.0-20200326155132-2a6cd50aedd0/go.mod h1:uUQ4LClRO+fg5MF/P6QxjMCb1C9f7Oh4RKepftDnEJE=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47 h1:+TEY29DK0XhqB7HFC9OfV8qf3wffSyi7MWv3AP28DGQ=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47/go.mod h1:u7NRAjtYVAKokiI9LouzTv4mhds8P4S1TwdVAfbjKSk=
+github.com/openshift/knative-eventing v0.99.1-0.20210112194111-24e8ffe5a3a5 h1:AnaffWTynUgBPJa3mwr7fWjiNdEVcYrt76vq/Ibu45U=
+github.com/openshift/knative-eventing v0.99.1-0.20210112194111-24e8ffe5a3a5/go.mod h1:7KjOHRQTPqsH0y1NbQLnboZeWJWVTztQVd/0lFCmz7A=
+github.com/openshift/knative-serving v0.10.1-0.20210127081219-6330eae520d2 h1:73MxYyGe1wQJro6nNDXa0oH989GxCvm8vk+RVVDc3TQ=
+github.com/openshift/knative-serving v0.10.1-0.20210127081219-6330eae520d2/go.mod h1:357cOGGPTY1aNqbDeyr35/LvYn1yc0WCe0EQLTNN8Mc=
 github.com/opentracing-contrib/go-grpc v0.0.0-20180928155321-4b5a12d3ff02/go.mod h1:JNdpVEzCpXBgIiv4ds+TzhN1hrtxq6ClLrTlT9OQRSc=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing-contrib/go-stdlib v0.0.0-20190519235532-cf7a6c988dc9/go.mod h1:PLldrQSroqzH70Xl+1DQcGnefIbqsKR7UDaiux3zV+w=
@@ -2268,11 +2274,6 @@ k8s.io/utils v0.0.0-20210111153108-fddb29f9d009 h1:0T5IaWHO3sJTEmCP6mUlBvMukxPKU
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 knative.dev/caching v0.0.0-20210107021736-1ee47505018d h1:C5JgxpCO4Dv+pqUHxIS+e+OVOf4QLGjcQUTbe9+SNB8=
 knative.dev/caching v0.0.0-20210107021736-1ee47505018d/go.mod h1:N3jOlbf/CWZsEcfEpthv5b+LB9e+TqiDTVLH/Ti+vWE=
-knative.dev/eventing v0.19.1-0.20210112102830-a414aee50a2b/go.mod h1:7KjOHRQTPqsH0y1NbQLnboZeWJWVTztQVd/0lFCmz7A=
-knative.dev/eventing v0.20.1 h1:UE5OIWKIAI6zOROcZJ5wtM4mZTy/b+x4ostJ0J339HQ=
-knative.dev/eventing v0.20.1/go.mod h1:7KjOHRQTPqsH0y1NbQLnboZeWJWVTztQVd/0lFCmz7A=
-knative.dev/eventing-kafka v0.20.1-0.20210202112232-900179eb4a86 h1:ngrU36mz1TqPJDK7zpRvoxeodxn/sPHKZ5nJtMUertE=
-knative.dev/eventing-kafka v0.20.1-0.20210202112232-900179eb4a86/go.mod h1:AEZ6rAeaySMM/rIwlxI+Amwvhve8WhQKFhM0AyKFvxs=
 knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24 h1:kIztWfvnIFV8Lhlea02K3YO2mIzcDyQNzrBLn0Oq9sA=
 knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9 h1:7SXik2ulHr7URICeDYHPVdnyuT72RW9GouJ97XRkWbo=
@@ -2283,8 +2284,6 @@ knative.dev/pkg v0.0.0-20201224024804-27db5ac24cfb/go.mod h1:hckgW978SdzPA2H5EDv
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179 h1:lkrgrv69iUk2qhOG9symy15kJUaJZmMybSloi7C3gIw=
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
 knative.dev/reconciler-test v0.0.0-20210108100436-db4d65735605/go.mod h1:rmQpZseeqDpg6/ToFzIeV5hTRkOJujaXBCK7iYL7M4E=
-knative.dev/serving v0.20.0 h1:bxnmLCrwXDESqM4J1d8uKdl1XUQOq1DnHEVl6Ottnwo=
-knative.dev/serving v0.20.0/go.mod h1:357cOGGPTY1aNqbDeyr35/LvYn1yc0WCe0EQLTNN8Mc=
 pgregory.net/rapid v0.3.3/go.mod h1:UYpPVyjFHzYBGHIxLFoupi8vwk6rXNzRY9OMvVxFIOU=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/letsencrypt v0.0.3/go.mod h1:buyQKZ6IXrRnB7TdkHP0RyEybLx18HHyOSoTyoOLqNY=
