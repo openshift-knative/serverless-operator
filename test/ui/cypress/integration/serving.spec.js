@@ -1,5 +1,30 @@
 describe('OCP UI for Serverless', () => {
 
+  class ShowcaseKservice {
+    makeRequest() {
+      cy.get('a.co-external-link')
+      .scrollIntoView()
+      .should('have.attr', 'href')
+      .and('include', 'showcase')
+      .then((href) => {
+        cy.request({ method: 'OPTIONS', url: href, retryOnStatusCodeFailure: true }).then((response) => {
+          expect(response.body).to.have.property('artifact-id', 'knative-serving-showcase')
+        })
+      })  
+    }
+
+    checkScale(scale) {
+      cy.get('div.pf-topology-container__with-sidebar div.odc-revision-deployment-list__pod svg tspan')
+        .invoke('text')
+        .should((text) => {
+          expect(text).to.eq(`${scale}`)
+        })
+    }
+  }
+
+  const showcaseKsvc = new ShowcaseKservice()
+  
+
   it('can deploy kservice', () => {
     describe('with authenticated via Web Console', () => {
       cy.login()
@@ -26,29 +51,15 @@ describe('OCP UI for Serverless', () => {
       cy.contains('No Revisions')
       cy.contains('demoapp')
       cy.visit('/topology/ns/default/list')
-      cy.contains('showcase').click()
+      cy.get('div.pf-topology-content').contains('showcase').click()
       cy.contains('Location:')
       cy.contains('Running')
-      cy.get('a.co-external-link')
-        .scrollIntoView()
-        .should('have.attr', 'href')
-        .and('include', 'showcase')
-        .then((href) => {
-          cy.request({ method: 'OPTIONS', url: href, retryOnStatusCodeFailure: true }).then((response) => {
-            expect(response.body).to.have.property('artifact-id', 'knative-serving-showcase')
-          })
-        })
-      cy.get('div.pf-topology-container__with-sidebar div.odc-revision-deployment-list__pod svg tspan')
-        .invoke('text')
-        .then((text) => {
-          expect(text).to.eq('1')
-        })
-      cy.wait(65_000)
-      cy.get('div.pf-topology-container__with-sidebar div.odc-revision-deployment-list__pod svg tspan')
-        .invoke('text')
-        .then((text) => {
-          expect(text).to.eq('0')
-        })
+      showcaseKsvc.makeRequest()
+      showcaseKsvc.checkScale(1)
+      cy.wait(60_000) // 60sec.
+      showcaseKsvc.checkScale(0)
+      showcaseKsvc.makeRequest()
+      showcaseKsvc.checkScale(1)
     })
     describe('remove kservice', () => {
       cy.visit('/topology/ns/default/list')
