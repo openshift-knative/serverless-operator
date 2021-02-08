@@ -63,27 +63,25 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	}
 
 	caCtx.AddToCleanup(func() error {
-		t.Logf("Cleaning up OpenShift Route %s", route.GetName())
+		t.Logf("Cleaning up OpenShift Route %s", route.Name)
 		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
 	})
 
-	// Verify the created OCP Route
-	client := http.Client{}
-	req, err := http.NewRequest(http.MethodGet, ksvc.Status.URL.String(), nil)
-	if err != nil {
-		t.Fatal("Failed to construct request", err)
-	}
 	// Retry until OpenShift Route becomes ready.
 	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		resp, inErr := client.Do(req)
-		if inErr != nil || resp.StatusCode != http.StatusOK {
+		resp, inErr := http.Get(ksvc.Status.URL.String())
+		if inErr != nil {
+			return false, inErr
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
 			t.Logf("Retrying... route might not be ready yet")
 			return false, nil
 		}
 		return true, nil
 	})
 	if err != nil {
-		t.Fatalf("Faild to verify custom route: %v", err)
+		t.Fatalf("Failed to verify custom route: %v", err)
 	}
 
 }
