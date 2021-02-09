@@ -3,6 +3,7 @@ package monitoringe2e
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Jeffail/gabs"
 	"github.com/openshift-knative/serverless-operator/test"
 	v1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -160,26 +160,31 @@ func eventuallyMatchesValue(expectedValue string) spoof.ResponseChecker {
 	}
 }
 
+type promQuery struct {
+	Data promQueryData `json:"data"`
+}
+
+type promQueryData struct {
+	Result []promQueryResult `json:"result"`
+}
+
+type promQueryResult struct {
+	Value []interface{} `json:"value"`
+}
+
 // Re-uses the approach in cluster-monitoring-operator test framework (https://github.com/openshift/cluster-monitoring-operator)
 func getFirstValueFromPromQuery(body []byte) (string, error) {
-	res, err := gabs.ParseJSON(body)
-	if err != nil {
+	var response promQuery
+	if err := json.Unmarshal(body, &response); err != nil {
 		return "", err
 	}
-	count, err := res.ArrayCountP("data.result")
-	if err != nil {
-		return "", err
+	if count := len(response.Data.Result); count != 1 {
+		return "", fmt.Errorf("expected body to contain a single timeseries, got %d", count)
 	}
-	if count != 1 {
-		return "", fmt.Errorf("expected body to contain single timeseries but got %v", count)
+
+	timeseries := response.Data.Result[0]
+	if count := len(timeseries.Value); count < 2 {
+		return "", fmt.Errorf("expected body to contain at least 2 values, got %d", count)
 	}
-	timeseries, err := res.ArrayElementP(0, "data.result")
-	if err != nil {
-		return "", err
-	}
-	value, err := timeseries.ArrayElementP(1, "value")
-	if err != nil {
-		return "", err
-	}
-	return value.Data().(string), nil
+	return timeseries.Value[1].(string), nil
 }
