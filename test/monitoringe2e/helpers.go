@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -74,7 +73,7 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 	}
 
 	if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
-		value, _, err := pc.Query(context.Background(), url.QueryEscape(fmt.Sprintf(`knative_up{type="%s"}`, label)), time.Time{})
+		value, _, err := pc.Query(context.Background(), fmt.Sprintf(`knative_up{type="%s"}`, label), time.Time{})
 		if err != nil {
 			return false, err
 		}
