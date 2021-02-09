@@ -17,6 +17,7 @@ values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
 values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"
 values[EVENTING_KAFKA_VERSION]="$(metadata.get dependencies.eventing_kafka)"
 values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
+values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocp.*' | sed 's/^/v/' | paste -sd ',' -)"
 
 # Start fresh
