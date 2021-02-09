@@ -22,7 +22,7 @@ function check_node() {
 scale_up_workers
 create_namespaces
 create_htpasswd_users
-ensure_catalogsource_installed
+install_catalogsource
 ensure_serverless_installed
 check_node
 logger.success '🚀 Cluster prepared for testing.'

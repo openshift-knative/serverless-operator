@@ -66,6 +66,7 @@ function install_catalogsource {
     mkdir -p "${rootdir}/_output"
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
+    oc -n "${OLM_NAMESPACE}" delete configmap serverless-bundle-sha1sums --ignore-not-found=true
     oc -n "${OLM_NAMESPACE}" create configmap serverless-bundle-sha1sums \
       --from-file="${rootdir}/_output/serverless-bundle.sha1sum"
     rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
