@@ -18,4 +18,7 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+  config.env.TEST_NAMESPACE = process.env.TEST_NAMESPACE || 'default'
+
+  return config
 }

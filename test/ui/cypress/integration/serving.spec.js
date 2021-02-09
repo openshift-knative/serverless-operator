@@ -4,7 +4,7 @@ describe('OCP UI for Serverless', () => {
     constructor(ops = {}) {
       this.app = ops.app || 'demoapp'
       this.name = ops.name || 'showcase'
-      this.namespace = ops.namespace || 'default'
+      this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
       this.image = ops.image || {
         regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
         updated: 'quay.io/cardil/knative-serving-showcase-js'
