@@ -21,8 +21,6 @@ const (
 // 1. creates the deny-all policy and verify if access does not work.
 // 2. create the allow-from-serving-system-ns and verify if access works.
 func TestNetworkPolicy(t *testing.T) {
-	t.Skip("SRVKS-628: This needs investigation")
-
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
@@ -52,7 +50,7 @@ func TestNetworkPolicy(t *testing.T) {
 	// We don't want connections to be kept alive.
 	tr.DisableKeepAlives = true
 	client := http.Client{
-		Transport: http.DefaultTransport.(*http.Transport).Clone(),
+		Transport: tr,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, ksvc.Status.URL.String(), nil)
@@ -63,9 +61,12 @@ func TestNetworkPolicy(t *testing.T) {
 	// Poll until network policy became active. It takes a few seconds.
 	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		resp, inErr := client.Do(req)
-		if inErr == nil && resp.StatusCode == http.StatusOK {
-			t.Logf("Network policy did not block the request to %s", ksvc.Status.URL.String())
-			return false, nil
+		if inErr == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				t.Logf("Network policy did not block the request to %s", ksvc.Status.URL.String())
+				return false, nil
+			}
 		}
 		return true, nil
 	})
@@ -100,8 +101,13 @@ func TestNetworkPolicy(t *testing.T) {
 	// Poll until network policy became active. It takes a few seconds.
 	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
 		resp, inErr := client.Do(req)
-		if inErr != nil || resp.StatusCode != http.StatusOK {
+		if inErr != nil {
 			t.Logf("Network policy did not allow the request to %s: %v", ksvc.Status.URL.String(), inErr)
+			return false, nil
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			t.Logf("Unexpected status code: want %d, got %d", http.StatusOK, resp.StatusCode)
 			return false, nil
 		}
 		return true, nil
