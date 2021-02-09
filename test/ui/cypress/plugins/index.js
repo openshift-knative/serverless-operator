@@ -19,6 +19,9 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   config.env.TEST_NAMESPACE = process.env.TEST_NAMESPACE || 'default'
+  config.env.OCP_LOGIN_PROVIDER = process.env.OCP_LOGIN_PROVIDER || 'kube:admin'
+  config.env.OCP_USERNAME = process.env.OCP_USERNAME || 'kube:admin'
+  config.env.OCP_PASSWORD = process.env.OCP_PASSWORD
 
   return config
 }

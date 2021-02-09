@@ -25,23 +25,26 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('login', () => {
+  const loginProvider = Cypress.env('OCP_LOGIN_PROVIDER')
+  const username = Cypress.env('OCP_USERNAME')
   const password = Cypress.env('OCP_PASSWORD')
-  expect(password).to.match(/^(?:[a-zA-Z0-9]{5}-){3}[a-zA-Z0-9]{5}$/)
+  expect(password).to.match(/^.{3,}$/)
 
   cy.visit('/')
   cy.url().should('include', '/oauth/authorize')
   cy.contains('Log in with')
-  cy.contains('kube:admin').click()
-  cy.url().should('include', '/login/kube:admin')
+  cy.contains(loginProvider).click()
+  cy.url().should('include', `/login/${loginProvider}`)
 
   cy.get('#inputUsername')
-    .type('kubeadmin')
-    .should('have.value', 'kubeadmin')
+    .type(username)
+    .should('have.value', username)
 
   cy.get('#inputPassword')
     .type(password)
     .should('have.value', password)
   cy.get('button[type=submit]').click()
 
-  cy.contains('kube:admin')
+  cy.visit('/dashboards')
+  cy.contains(username)
 })

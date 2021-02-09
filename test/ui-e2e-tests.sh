@@ -22,9 +22,17 @@ function check_node() {
 scale_up_workers
 create_namespaces
 create_htpasswd_users
+ensure_catalogsource_installed
 ensure_serverless_installed
 check_node
 logger.success '🚀 Cluster prepared for testing.'
 
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui"
 npm install
+
+env OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}" \
+  OCP_USERNAME="${OCP_USERNAME:-user1}" \
+  OCP_PASSWORD="${OCP_PASSWORD:-password1}" \
+  CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console \
+  -o jsonpath='{.status.ingress[].host}')" \
+  npm run test -- headed
