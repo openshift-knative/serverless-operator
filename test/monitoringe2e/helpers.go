@@ -77,6 +77,7 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 		if err != nil {
 			return false, err
 		}
+		caCtx.T.Logf("Prometheus value: %s: %v", value.String(), value)
 		return value.String() == expectedValue, nil
 	}); err != nil {
 		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %w", err)
