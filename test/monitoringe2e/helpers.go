@@ -75,7 +75,10 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 
 	if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
 		value, _, err := pc.Query(context.Background(), url.QueryEscape(fmt.Sprintf(`knative_up{type="%s"}`, label)), time.Time{})
-		return value.String() == expectedValue, err
+		if err != nil {
+			return false, err
+		}
+		return value.String() == expectedValue, nil
 	}); err != nil {
 		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %w", err)
 	}
@@ -100,7 +103,10 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
 	for _, metric := range servingMetrics {
 		if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
 			value, _, err := pc.Query(context.Background(), metric, time.Time{})
-			return value.Type() == prommodel.ValScalar, err
+			if err != nil {
+				return false, err
+			}
+			return value.Type() == prommodel.ValScalar, nil
 		}); err != nil {
 			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %w", metric, err)
 		}
