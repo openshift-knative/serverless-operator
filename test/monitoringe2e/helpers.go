@@ -3,7 +3,6 @@ package monitoringe2e
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,19 +14,26 @@ import (
 	v1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	pkgTest "knative.dev/pkg/test"
-	"knative.dev/pkg/test/spoof"
+	"k8s.io/apimachinery/pkg/util/wait"
+
+	prom "github.com/prometheus/client_golang/api"
+	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	prommodel "github.com/prometheus/common/model"
 )
 
 var prometheusTargetTimeout = 20 * time.Minute
 
-type prometheusInfo struct {
-	options   []interface{}
-	queryPath string
-	token     string
+type authRoundtripper struct {
+	authorization string
+	inner         http.RoundTripper
 }
 
-func newPrometheusInfo(caCtx *test.Context) (*prometheusInfo, error) {
+func (a *authRoundtripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Set("Authorization", a.authorization)
+	return a.inner.RoundTrip(r)
+}
+
+func newPrometheusClient(caCtx *test.Context) (promv1.API, error) {
 	route, err := getPrometheusRoute(caCtx)
 	if err != nil {
 		return nil, err
@@ -36,60 +42,52 @@ func newPrometheusInfo(caCtx *test.Context) (*prometheusInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	var reqOption pkgTest.RequestOption = func(request *http.Request) {
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bToken))
+
+	rt := prom.DefaultRoundTripper.(*http.Transport).Clone()
+	rt.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	client, err := prom.NewClient(prom.Config{
+		Address: "https://" + route.Spec.Host,
+		RoundTripper: &authRoundtripper{
+			authorization: fmt.Sprintf("Bearer %s", bToken),
+			inner:         rt,
+		},
+	})
+	if err != nil {
+		return nil, err
 	}
-	var transportOption spoof.TransportOption = func(transport *http.Transport) *http.Transport {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		return transport
-	}
-	pc := &prometheusInfo{
-		options:   []interface{}{reqOption, transportOption},
-		queryPath: "https://" + route.Spec.Host + "/api/v1/query?query=",
-		token:     bToken,
-	}
-	return pc, nil
+
+	return promv1.NewAPI(client), nil
 }
 
 func getPrometheusRoute(caCtx *test.Context) (*v1.Route, error) {
 	r, err := caCtx.Clients.Route.Routes("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error getting Prometheus route %v", err)
+		return nil, fmt.Errorf("error getting Prometheus route: %w", err)
 	}
 	return r, nil
 }
 
 func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue string) error {
-	pc, err := newPrometheusInfo(caCtx)
+	pc, err := newPrometheusClient(caCtx)
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("%s%s", pc.queryPath, url.QueryEscape(fmt.Sprintf(`knative_up{type="%s"}`, label)))
-	metricsURL, err := url.Parse(path)
-	if err != nil {
-		return fmt.Errorf("error parsing url for metrics: %v", err)
-	}
-	// Wait until the endpoint is actually working and we get the expected value back
-	_, err = pkgTest.WaitForEndpointStateWithTimeout(
-		context.Background(),
-		caCtx.Clients.Kube,
-		caCtx.T.Logf,
-		metricsURL,
-		eventuallyMatchesValue(expectedValue),
-		"WaitForMetricsToServeText",
-		true,
-		prometheusTargetTimeout, pc.options...)
-	if err != nil {
-		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %v", err)
+
+	if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
+		value, _, err := pc.Query(context.Background(), url.QueryEscape(fmt.Sprintf(`knative_up{type="%s"}`, label)), time.Time{})
+		return value.String() == expectedValue, err
+	}); err != nil {
+		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %w", err)
 	}
 	return nil
 }
 
 func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
-	pc, err := newPrometheusInfo(caCtx)
+	pc, err := newPrometheusClient(caCtx)
 	if err != nil {
 		return err
 	}
+
 	servingMetrics := []string{
 		"activator_go_mallocs",
 		"autoscaler_go_mallocs",
@@ -100,23 +98,11 @@ func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
 		"webhook_go_mallocs",
 	}
 	for _, metric := range servingMetrics {
-		path := fmt.Sprintf("%s%s", pc.queryPath, metric)
-		metricsURL, err := url.Parse(path)
-		if err != nil {
-			return fmt.Errorf("error parsing url for metrics %v", err)
-		}
-		// Wait until the endpoint is actually working and we get the expected value back
-		_, err = pkgTest.WaitForEndpointStateWithTimeout(
-			context.Background(),
-			caCtx.Clients.Kube,
-			caCtx.T.Logf,
-			metricsURL,
-			pkgTest.EventuallyMatchesBody(metric),
-			"WaitForMetricsToServeText",
-			true,
-			prometheusTargetTimeout, pc.options...)
-		if err != nil {
-			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %v", metric, err)
+		if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
+			value, _, err := pc.Query(context.Background(), metric, time.Time{})
+			return value.Type() == prommodel.ValScalar, err
+		}); err != nil {
+			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %w", metric, err)
 		}
 	}
 	return nil
@@ -149,42 +135,4 @@ func getSecretNameForToken(secrets []corev1.ObjectReference) string {
 		}
 	}
 	return ""
-}
-
-func eventuallyMatchesValue(expectedValue string) spoof.ResponseChecker {
-	return func(resp *spoof.Response) (bool, error) {
-		if first, err := getFirstValueFromPromQuery(resp.Body); err != nil || first != expectedValue {
-			return false, nil
-		}
-		return true, nil
-	}
-}
-
-type promQuery struct {
-	Data promQueryData `json:"data"`
-}
-
-type promQueryData struct {
-	Result []promQueryResult `json:"result"`
-}
-
-type promQueryResult struct {
-	Value []interface{} `json:"value"`
-}
-
-// Re-uses the approach in cluster-monitoring-operator test framework (https://github.com/openshift/cluster-monitoring-operator)
-func getFirstValueFromPromQuery(body []byte) (string, error) {
-	var response promQuery
-	if err := json.Unmarshal(body, &response); err != nil {
-		return "", err
-	}
-	if count := len(response.Data.Result); count != 1 {
-		return "", fmt.Errorf("expected body to contain a single timeseries, got %d", count)
-	}
-
-	timeseries := response.Data.Result[0]
-	if count := len(timeseries.Value); count < 2 {
-		return "", fmt.Errorf("expected body to contain at least 2 values, got %d", count)
-	}
-	return timeseries.Value[1].(string), nil
 }
