@@ -23,28 +23,3 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
-
-Cypress.Commands.add('login', () => {
-  const loginProvider = Cypress.env('OCP_LOGIN_PROVIDER')
-  const username = Cypress.env('OCP_USERNAME')
-  const password = Cypress.env('OCP_PASSWORD')
-  expect(password).to.match(/^.{3,}$/)
-
-  cy.visit('/')
-  cy.url().should('include', '/oauth/authorize')
-  cy.contains('Log in with')
-  cy.contains(loginProvider).click()
-  cy.url().should('include', `/login/${loginProvider}`)
-
-  cy.get('#inputUsername')
-    .type(username)
-    .should('have.value', username)
-
-  cy.get('#inputPassword')
-    .type(password)
-    .should('have.value', password)
-  cy.get('button[type=submit]').click()
-
-  cy.visit('/dashboards')
-  cy.contains(username)
-})

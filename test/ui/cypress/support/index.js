@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+import './login'
 import './semver'
 
 // Alternatively you can use CommonJS syntax:
