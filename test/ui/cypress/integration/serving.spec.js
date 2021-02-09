@@ -5,25 +5,30 @@ describe('OCP UI for Serverless', () => {
       this.app = ops.app || 'demoapp'
       this.name = ops.name || 'showcase'
       this.namespace = ops.namespace || 'default'
-      this.image = ops.image ||
-        'quay.io/cardil/knative-serving-showcase:2-send-event'
+      this.image = ops.image || {
+        regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
+        updated: 'quay.io/cardil/knative-serving-showcase-js'
+      }
     }
 
     makeRequest() {
       cy.get('a.co-external-link')
-      .scrollIntoView()
-      .should('have.attr', 'href')
-      .and('include', 'showcase')
-      .then((href) => {
-        const req = {
-          method: 'OPTIONS',
-          url: href,
-          retryOnStatusCodeFailure: true
-        }
-        cy.request(req).then((response) => {
-          expect(response.body).to.have.property('version')
+        .last()
+        .scrollIntoView()
+        .should('have.attr', 'href')
+        .and('include', 'showcase')
+        .then((href) => {
+          const req = {
+            method: 'OPTIONS',
+            url: href,
+            retryOnStatusCodeFailure: true
+          }
+          cy.request(req).then((response) => {
+            expect(response.status).to.eq(200)
+            expect(response.body).to.have.property('version')
+            expect(JSON.stringify(response.body)).to.include('knative-serving-showcase')
+          })
         })
-      })  
     }
 
     checkScale(scale) {
@@ -35,22 +40,14 @@ describe('OCP UI for Serverless', () => {
           expect(text).to.eq(`${scale}`)
         })
     }
-  }
 
-  const showcaseKsvc = new ShowcaseKservice()
-  
-
-  it('can deploy kservice and scale it', () => {
-    describe('with authenticated via Web Console', () => {
-      cy.login()
-    })
-    describe('deploy kservice from image', () => {
+    deployImage(kind = 'regular') {
       cy.visit(`/add/ns/${showcaseKsvc.namespace}`)
       cy.contains('Knative Channel')
       cy.contains('Event Source')
       cy.visit(`/deploy-image/ns/${showcaseKsvc.namespace}`)
       cy.get('input[name=searchTerm]')
-        .type(showcaseKsvc.image)
+        .type(showcaseKsvc.image[kind])
       cy.contains('Validated')
       cy.get('input#form-radiobutton-resources-knative-field').check()
       cy.get('input#form-checkbox-route-create-field').check()
@@ -61,9 +58,33 @@ describe('OCP UI for Serverless', () => {
         .clear()
         .type(showcaseKsvc.name)
       cy.get('button[type=submit]').click()
-    })
-    describe('check availibility of kservice', () => {
+      cy.url().should('include', `/topology/ns/${showcaseKsvc.namespace}`)
       cy.contains(showcaseKsvc.app)
+    }
+
+    removeApp() {
+      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
+      cy.get('div.pf-topology-content')
+        .contains(showcaseKsvc.app).click()
+      cy.contains('Actions').click()
+      cy.contains('Delete Application').click()
+      cy.get('input#form-input-resourceName-field')
+        .type(showcaseKsvc.app)
+      cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
+      cy.contains('No resources found')
+    }
+  }
+
+  const showcaseKsvc = new ShowcaseKservice()
+
+  it('can deploy kservice and scale it', () => {
+    describe('with authenticated via Web Console', () => {
+      cy.login()
+    })
+    describe('deploy kservice from image', () => {
+      showcaseKsvc.deployImage()
+    })
+    describe('check automatic scaling of kservice', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.name).click()
@@ -77,15 +98,58 @@ describe('OCP UI for Serverless', () => {
       showcaseKsvc.checkScale(1)
     })
     describe('remove kservice', () => {
+      showcaseKsvc.removeApp()
+    })
+  })
+
+  it('can route traffic to multiple revisions', () => {
+    describe('with authenticated via Web Console', () => {
+      cy.login()
+    })
+    describe('deploy kservice from image', () => {
+      showcaseKsvc.deployImage()
+    })
+    describe('adding two revisions to traffic distribution', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.app).click()
+        .contains(showcaseKsvc.name).click()
       cy.contains('Actions').click()
-      cy.contains('Delete Application').click()
-      cy.get('input#form-input-resourceName-field')
-        .type(showcaseKsvc.app)
-      cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
-      cy.contains('No resources found')
+      cy.contains(`Edit ${showcaseKsvc.name}`).click()
+      cy.get('input[name=searchTerm]')
+        .clear()
+        .type(showcaseKsvc.image.updated)
+      cy.contains('Validated')
+      cy.get('button[type=submit]').click()
+      cy.url().should('include', `/k8s/cluster/projects/${showcaseKsvc.namespace}/workloads`)
+      cy.contains(showcaseKsvc.app)
+      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
+      cy.get('div.pf-topology-content')
+        .contains(showcaseKsvc.name).click()
+      cy.contains('Set Traffic Distribution').click()
+      cy.get('input[name="trafficSplitting.0.percent"]')
+        .clear()
+        .type('51')
+      cy.get('input[name="trafficSplitting.0.tag"]')
+        .type('v2')
+      cy.contains('Add Revision').click()
+      cy.get('input[name="trafficSplitting.1.percent"]')
+        .type('49')
+      cy.get('input[name="trafficSplitting.1.tag"]')
+        .type('v1')
+      cy.contains('Select a revision').click()
+      cy.get('ul.pf-c-dropdown__menu button').click()
+      cy.get('button[type=submit]').click()
+      cy.contains('51%')
+      cy.contains('49%')
+    })
+    describe('check traffic distribution works', () => {
+      cy.contains('Location:')
+      for (let i = 0; i < 8; i++) {
+        showcaseKsvc.makeRequest()
+      }
+    })
+    describe('remove kservice', () => {
+      showcaseKsvc.removeApp()
     })
   })
 })
