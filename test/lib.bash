@@ -168,7 +168,6 @@ function downstream_monitoring_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
