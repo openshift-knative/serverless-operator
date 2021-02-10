@@ -67,11 +67,21 @@ describe('OCP UI for Serverless', () => {
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.app).click()
       cy.contains('Actions').click()
-      cy.contains('Delete Application').click()
+      cy.contains('Delete Application')
+        .should('not.have.class', 'pf-m-disabled')
+        .click()
       cy.get('input#form-input-resourceName-field')
         .type(showcaseKsvc.app)
       cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
       cy.contains('No resources found')
+    }
+
+    showServiceDetails() {
+      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
+      cy.get('div.pf-topology-content')
+        .contains(showcaseKsvc.name).click()
+      cy.contains('Location:')
+        .scrollIntoView()
     }
   }
 
@@ -85,16 +95,23 @@ describe('OCP UI for Serverless', () => {
       showcaseKsvc.deployImage()
     })
     describe('check automatic scaling of kservice', () => {
-      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
-      cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
-      cy.contains('Location:')
-      cy.contains('Running')
+      showcaseKsvc.showServiceDetails()
       showcaseKsvc.makeRequest()
       showcaseKsvc.checkScale(1)
       cy.wait(60_000) // 60sec.
+
+      // TODO: below 2 operations shouldn't be neccesery, but they are as 
+      //       apparent slowness of UI was observed.
+      cy.reload()
+      showcaseKsvc.showServiceDetails()
+      cy.contains('All Revisions are autoscaled to 0')
       showcaseKsvc.checkScale(0)
       showcaseKsvc.makeRequest()
+      
+      // TODO: below 2 operations shouldn't be neccesery, but they are as 
+      //       apparent slowness of UI was observed.
+      cy.reload()
+      showcaseKsvc.showServiceDetails()
       showcaseKsvc.checkScale(1)
     })
     describe('remove kservice', () => {
@@ -120,12 +137,12 @@ describe('OCP UI for Serverless', () => {
         .type(showcaseKsvc.image.updated)
       cy.contains('Validated')
       cy.get('button[type=submit]').click()
-      cy.url().should('include', `/k8s/cluster/projects/${showcaseKsvc.namespace}/workloads`)
+      cy.url().should('include', showcaseKsvc.namespace)
       cy.contains(showcaseKsvc.app)
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.name).click()
-      cy.contains('Set Traffic Distribution').click()
+      cy.contains('Set traffic distribution', { matchCase: false }).click()
       cy.get('input[name="trafficSplitting.0.percent"]')
         .clear()
         .type('51')
@@ -136,7 +153,7 @@ describe('OCP UI for Serverless', () => {
         .type('49')
       cy.get('input[name="trafficSplitting.1.tag"]')
         .type('v1')
-      cy.contains('Select a revision').click()
+      cy.contains('Select a Revision', { matchCase: false }).click()
       cy.get('ul.pf-c-dropdown__menu button').click()
       cy.get('button[type=submit]').click()
       cy.contains('51%')
