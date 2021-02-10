@@ -77,7 +77,20 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 		if err != nil {
 			return false, err
 		}
-		caCtx.T.Logf("Prometheus value: %s: %v", value.String(), value)
+		caCtx.T.Logf("Prometheus value %T(%v): %s", value, value.Type(), value.String())
+		switch value.Type() {
+		case prommodel.ValNone:
+			caCtx.T.Logf("Type None")
+		case prommodel.ValScalar:
+			caCtx.T.Logf("Type Scalar")
+		case prommodel.ValVector:
+			caCtx.T.Logf("Type Vector")
+		case prommodel.ValString:
+			caCtx.T.Logf("Type String")
+		case prommodel.ValMatrix:
+			caCtx.T.Logf("Type Matrix")
+		}
+
 		return value.String() == expectedValue, nil
 	}); err != nil {
 		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %w", err)
