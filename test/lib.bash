@@ -197,6 +197,7 @@ function run_rolling_upgrade_tests {
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
 
+  # TODO(mgencur): Restore eventing upgrade tests.
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=upgrade -timeout=30m \
     ./test/upgrade \
     --imagetemplate "${image_template}" \
