@@ -12,11 +12,19 @@ fi
 debugging.setup
 dump_state.setup
 
-function check_node() {
+function check_node {
   if ! command -v npm >/dev/null 2>&1; then
     logger.error 'npm is required to run UI tests, install it.'
     return 51
   fi
+}
+
+function archive_cypress_artifacts {
+  pushd "$(dirname "${BASH_SOURCE[0]}")/ui/cypress" >/dev/null
+  mkdir -p "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos"
+  ln -sf "${ARTIFACTS}/ui/screenshots" .
+  ln -sf "${ARTIFACTS}/ui/videos" .
+  popd >/dev/null
 }
 
 OCP_USERNAME="${OCP_USERNAME:-uitesting}"
@@ -35,8 +43,9 @@ if [[ 'true' == "$INSTALL_SERVERLESS" ]]; then
   ensure_serverless_installed
 fi
 check_node
+archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
-pushd "$(dirname "${BASH_SOURCE[0]}")/ui"
+pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
 npm run test
