@@ -179,11 +179,12 @@ function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
   local latest_cluster_version latest_serving_version latest_eventing_version \
-    image_version image_template patch
+    image_version image_template patch channels
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
+  prepare_knative_eventing_tests
   prepare_knative_serving_tests
 
   cd "$rootdir"
@@ -196,9 +197,17 @@ function run_rolling_upgrade_tests {
 
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
+  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=upgrade -timeout=30m \
+  # Test configuration. See https://github.com/knative/eventing/tree/master/test/upgrade#probe-test-configuration
+  E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
+  E2E_UPGRADE_TESTS_SERVING_USE=true \
+  E2E_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
+  E2E_UPGRADE_TESTS_INTERVAL="50ms" \
+  SYSTEM_NAMESPACE=knative-serving \
+  go_test_e2e -tags=upgrade -timeout=30m \
     ./test/upgrade \
+    -channels="${channels}" \
     --imagetemplate "${image_template}" \
     --resolvabledomain
 

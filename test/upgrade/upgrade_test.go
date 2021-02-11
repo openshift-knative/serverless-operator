@@ -27,6 +27,7 @@ import (
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
+	eventingupgrade "knative.dev/eventing/test/upgrade"
 )
 
 func TestServerlessUpgrade(t *testing.T) {
@@ -34,8 +35,8 @@ func TestServerlessUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   servingupgrade.ServingPostUpgradeTests(),
-			Continual: servingupgrade.ContinualTests(),
+			PostUpgrade:   postUpgradeTests(),
+			Continual:     continualTests(),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{ installation.UpgradeServerless() },
@@ -52,7 +53,7 @@ func TestClusterUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   servingupgrade.ServingPostUpgradeTests(),
+			PostUpgrade:   postUpgradeTests(),
 			// Do not include continual tests as they're failing across cluster upgrades.
 		},
 		Installations: pkgupgrade.Installations{
@@ -63,14 +64,25 @@ func TestClusterUpgrade(t *testing.T) {
 }
 
 func preUpgradeTests() []pkgupgrade.Operation {
+	tests := []pkgupgrade.Operation { eventingupgrade.PreUpgradeTest() }
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
 	// and OCP upgrades. This allows for more variants of tests, with different
 	// order of upgrades.
-	if os.Getenv("SKIP_PRE_UPGRADE") == "true" {
-		return nil
+	if os.Getenv("SKIP_SERVING_PRE_UPGRADE") == "true" {
+		return tests
 	}
-	return servingupgrade.ServingPreUpgradeTests()
+	return append(tests, servingupgrade.ServingPreUpgradeTests()...)
+}
+
+func postUpgradeTests() []pkgupgrade.Operation {
+	tests := servingupgrade.ServingPostUpgradeTests()
+	return append(tests, eventingupgrade.PostUpgradeTest())
+}
+
+func continualTests() []pkgupgrade.BackgroundOperation {
+	tests := servingupgrade.ContinualTests()
+	return append(tests, eventingupgrade.ContinualTest())
 }
 
 func newUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
@@ -79,4 +91,8 @@ func newUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
 		t.Fatal(err)
 	}
 	return pkgupgrade.Configuration{T: t, Log: log}
+}
+
+func TestMain(m *testing.M) {
+	eventingupgrade.RunMainTest(m)
 }
