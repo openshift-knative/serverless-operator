@@ -21,7 +21,8 @@ describe('OCP UI for Serverless', () => {
           const req = {
             method: 'OPTIONS',
             url: href,
-            retryOnStatusCodeFailure: true
+            retryOnStatusCodeFailure: true,
+            failOnStatusCode: true
           }
           cy.request(req).then((response) => {
             expect(response.status).to.eq(200)
@@ -63,6 +64,7 @@ describe('OCP UI for Serverless', () => {
     }
 
     removeApp() {
+      cy.visit('/dev-monitoring')
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.app).click()
@@ -100,17 +102,11 @@ describe('OCP UI for Serverless', () => {
       showcaseKsvc.checkScale(1)
       cy.wait(60_000) // 60sec.
 
-      // TODO: below 2 operations shouldn't be neccesery, but they are as 
-      //       apparent slowness of UI was observed.
-      cy.reload()
       showcaseKsvc.showServiceDetails()
       cy.contains('All Revisions are autoscaled to 0')
       showcaseKsvc.checkScale(0)
       showcaseKsvc.makeRequest()
       
-      // TODO: below 2 operations shouldn't be neccesery, but they are as 
-      //       apparent slowness of UI was observed.
-      cy.reload()
       showcaseKsvc.showServiceDetails()
       showcaseKsvc.checkScale(1)
     })
