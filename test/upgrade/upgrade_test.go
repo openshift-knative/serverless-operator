@@ -68,7 +68,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	// and OCP upgrades. This allows for more variants of tests, with different
 	// order of upgrades.
 	if os.Getenv("SKIP_PRE_UPGRADE") == "true" {
-		return []pkgupgrade.Operation{}
+		return nil
 	}
 	return servingupgrade.ServingPreUpgradeTests()
 }
