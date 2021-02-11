@@ -161,7 +161,7 @@ function start_serving_prober {
 
   image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=probe \
+  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=probe -parallel=3 \
     -timeout=30m \
     ./test/upgrade \
     -probe.success_fraction=${probe_fraction} \
