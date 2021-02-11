@@ -19,35 +19,21 @@ function check_node() {
   fi
 }
 
+OCP_USERNAME="${OCP_USERNAME:-uitesting}"
+OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
+OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
+CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpath='{.status.ingress[].host}')"
+export OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
+
 scale_up_workers
 create_namespaces
-create_htpasswd_users
+add_user "$OCP_USERNAME" "$OCP_PASSWORD"
+oc adm policy add-role-to-user edit "$OCP_USERNAME" -n "$TEST_NAMESPACE"
 install_catalogsource
 ensure_serverless_installed
 check_node
-export OCP_USERNAME="${OCP_USERNAME:-user1}"
-oc apply -f - <<EOF
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: ${OCP_USERNAME}-edit
-  namespace: ${TEST_NAMESPACE}
-subjects:
-  - kind: User
-    apiGroup: rbac.authorization.k8s.io
-    name: ${OCP_USERNAME}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: edit
-EOF
 logger.success '🚀 Cluster prepared for testing.'
 
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui"
 npm install
-
-env OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}" \
-  OCP_PASSWORD="${OCP_PASSWORD:-password1}" \
-  CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console \
-  -o jsonpath='{.status.ingress[].host}')" \
-  npm run test
+npm run test
