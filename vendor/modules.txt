@@ -98,8 +98,7 @@ github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/evanphx/json-patch v4.9.0+incompatible
 github.com/evanphx/json-patch
-# github.com/evanphx/json-patch/v5 v5.1.0
-## explicit
+# github.com/evanphx/json-patch/v5 v5.2.0
 github.com/evanphx/json-patch/v5
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
@@ -187,10 +186,10 @@ github.com/mailru/easyjson/jwriter
 # github.com/manifestival/client-go-client v0.4.0
 github.com/manifestival/client-go-client
 github.com/manifestival/client-go-client/pkg/dynamic
-# github.com/manifestival/controller-runtime-client v0.3.0
+# github.com/manifestival/controller-runtime-client v0.4.0
 ## explicit
 github.com/manifestival/controller-runtime-client
-# github.com/manifestival/manifestival v0.6.1
+# github.com/manifestival/manifestival v0.7.0
 ## explicit
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/internal/overlay
