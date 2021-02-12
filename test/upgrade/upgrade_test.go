@@ -36,7 +36,11 @@ func TestServerlessUpgrade(t *testing.T) {
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
 			PostUpgrade:   postUpgradeTests(),
-			Continual:     continualTests(),
+			Continual:     []pkgupgrade.BackgroundOperation{
+				servingupgrade.AutoscaleSustainingTest(),
+				servingupgrade.ProbeTest(),
+				eventingupgrade.ContinualTest(),
+			},
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{ installation.UpgradeServerless() },
@@ -78,11 +82,6 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests() []pkgupgrade.Operation {
 	tests := servingupgrade.ServingPostUpgradeTests()
 	return append(tests, eventingupgrade.PostUpgradeTest())
-}
-
-func continualTests() []pkgupgrade.BackgroundOperation {
-	tests := servingupgrade.ContinualTests()
-	return append(tests, eventingupgrade.ContinualTest())
 }
 
 func newUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
