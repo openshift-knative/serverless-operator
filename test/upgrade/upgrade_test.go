@@ -37,6 +37,7 @@ func TestServerlessUpgrade(t *testing.T) {
 			PostUpgrade:   servingupgrade.ServingPostUpgradeTests(),
 			Continual: []pkgupgrade.BackgroundOperation{
 				servingupgrade.AutoscaleSustainingTest(),
+				servingupgrade.AutoscaleSustainingWithTBCTest(),
 				servingupgrade.ProbeTest(),
 			},
 		},
