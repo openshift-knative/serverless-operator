@@ -1,8 +1,8 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml
 new file mode 100644
 index 00000000..37558cd9
 --- /dev/null
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/0-rbac-proxy.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml
 @@ -0,0 +1,314 @@
 +---
 +apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -318,11 +318,11 @@ index 00000000..37558cd9
 +  selector:
 +    matchLabels:
 +      name: webhook-sm-service
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-index 3c213343..9417537c 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/2-serving-core.yaml
-@@ -2226,6 +2226,8 @@ spec:
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/2-serving-core.yaml
+index 8e15a4d8..81dbd549 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/2-serving-core.yaml
+@@ -2216,6 +2216,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/internal/serving
@@ -331,7 +331,7 @@ index 3c213343..9417537c 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2257,6 +2259,26 @@ spec:
+@@ -2247,6 +2249,26 @@ spec:
                    value: "activator"
              failureThreshold: 12
              initialDelaySeconds: 15
@@ -358,7 +358,7 @@ index 3c213343..9417537c 100644
        # The activator (often) sits on the dataplane, and may proxy long (e.g.
        # streaming, websockets) requests.  We give a long grace period for the
        # activator to "lame duck" and drain outstanding requests before we
-@@ -2371,6 +2393,8 @@ spec:
+@@ -2361,6 +2383,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -367,7 +367,7 @@ index 3c213343..9417537c 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2398,6 +2422,26 @@ spec:
+@@ -2388,6 +2412,26 @@ spec:
                  - name: k-kubelet-probe
                    value: "autoscaler"
              failureThreshold: 6
@@ -394,7 +394,7 @@ index 3c213343..9417537c 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2495,6 +2539,8 @@ spec:
+@@ -2485,6 +2529,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/internal/serving
@@ -403,7 +403,7 @@ index 3c213343..9417537c 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2507,6 +2553,26 @@ spec:
+@@ -2497,6 +2543,26 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -430,16 +430,16 @@ index 3c213343..9417537c 100644
  ---
  apiVersion: v1
  kind: Service
-@@ -2655,6 +2721,8 @@ spec:
+@@ -2647,6 +2713,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
-               value: knative.dev/serving
+               value: knative.dev/internal/serving
 +            - name: METRICS_PROMETHEUS_HOST
 +              value: "127.0.0.1"
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -2681,6 +2749,26 @@ spec:
+@@ -2673,6 +2741,26 @@ spec:
              !!merge <<: *probe
              failureThreshold: 6
              initialDelaySeconds: 20
@@ -466,10 +466,10 @@ index 3c213343..9417537c 100644
        # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
        # high value that we respect whatever value it has configured for the lame duck grace period.
        terminationGracePeriodSeconds: 300
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-index 83b88232..abe895f0 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/3-serving-hpa.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/3-serving-hpa.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/3-serving-hpa.yaml
+index 5c2ae1d5..4cc33302 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/3-serving-hpa.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/3-serving-hpa.yaml
 @@ -67,6 +67,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
@@ -479,7 +479,7 @@ index 83b88232..abe895f0 100644
            securityContext:
              allowPrivilegeEscalation: false
              readOnlyRootFilesystem: true
-@@ -79,6 +81,27 @@ spec:
+@@ -79,6 +81,26 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -503,15 +503,23 @@ index 83b88232..abe895f0 100644
 +        - name: secret-autoscaler-hpa-sm-service-tls
 +          secret:
 +            secretName: autoscaler-hpa-sm-service-tls
-+
  ---
  apiVersion: v1
  kind: Service
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-index d0b8b2bb..253e0509 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.19.0/5-serving-domainmapping.yaml
-@@ -187,6 +187,26 @@ spec:
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/5-serving-domainmapping.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/5-serving-domainmapping.yaml
+index a980952f..bcee5d5d 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/5-serving-domainmapping.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/5-serving-domainmapping.yaml
+@@ -175,6 +175,8 @@ spec:
+             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+             - name: METRICS_DOMAIN
+               value: knative.dev/serving
++            - name: METRICS_PROMETHEUS_HOST
++              value: "127.0.0.1"
+           securityContext:
+             allowPrivilegeEscalation: false
+             readOnlyRootFilesystem: true
+@@ -187,6 +189,26 @@ spec:
                containerPort: 9090
              - name: profiling
                containerPort: 8008
@@ -538,7 +546,7 @@ index d0b8b2bb..253e0509 100644
  
  ---
  # Copyright 2020 The Knative Authors
-@@ -265,6 +285,8 @@ spec:
+@@ -265,6 +287,8 @@ spec:
              # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
              - name: METRICS_DOMAIN
                value: knative.dev/serving
@@ -547,7 +555,7 @@ index d0b8b2bb..253e0509 100644
            securityContext:
              allowPrivilegeEscalation: false
            ports:
-@@ -286,6 +308,26 @@ spec:
+@@ -286,6 +310,26 @@ spec:
              !!merge <<: *probe
              failureThreshold: 6
              initialDelaySeconds: 20

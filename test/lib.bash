@@ -178,145 +178,72 @@ function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
   local latest_cluster_version latest_serving_version latest_eventing_version \
-    rootdir scope serving_in_scope eventing_in_scope serving_prober_pid \
-    eventing_prober_pid prev_serving_version prev_eventing_version retcode \
-    channels
-
-  scope="${1:?Provide an upgrade scope as arg[1]}"
-  serving_in_scope="$(echo "${scope}" | grep -c serving)"
-  eventing_in_scope="$(echo "${scope}" | grep -c eventing)"
-
-  prev_serving_version="$(actual_serving_version)"
-  prev_eventing_version="$(actual_eventing_version)"
-
-  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
+    image_version image_template patch channels
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-  if (( eventing_in_scope )); then
-    prepare_knative_eventing_tests
-  fi
-  if (( serving_in_scope )); then
-    prepare_knative_serving_tests
-  fi
-
-  logger.info 'Testing with pre upgrade tests'
-
-  if (( serving_in_scope )); then
-    run_serving_preupgrade_test
-  fi
-  if (( eventing_in_scope )); then
-    run_eventing_preupgrade_test "${channels}"
-  fi
-
-  logger.info 'Starting prober tests'
-
-  if (( serving_in_scope )); then
-    start_serving_prober "${prev_serving_version}" /tmp/prober-pid
-    serving_prober_pid=$(cat /tmp/prober-pid)
-  fi
-  if (( eventing_in_scope )); then
-    start_eventing_prober /tmp/prober-pid
-    eventing_prober_pid=$(cat /tmp/prober-pid)
-  fi
-
-  if (( serving_in_scope )); then
-    wait_for_serving_prober_ready
-  fi
-  if (( eventing_in_scope )); then
-    wait_for_eventing_prober_ready
-  fi
-
-  if [[ $UPGRADE_SERVERLESS == true ]]; then
-    latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
-    latest_eventing_version="${KNATIVE_EVENTING_VERSION/v/}"
-
-    logger.info "Updating Serverless to ${CURRENT_CSV}"
-    logger.debug "Serving version: ${prev_serving_version} -> ${latest_serving_version}"
-    logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
-
-    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
-    if (( serving_in_scope )); then
-      check_serving_upgraded "${latest_serving_version}"
-    fi
-    if (( eventing_in_scope )); then
-      check_eventing_upgraded "${latest_eventing_version}"
-    fi
-  fi
-
-  # Might not work in OpenShift CI but we want it here so that we can consume
-  # this script later and re-use
-  if [[ $UPGRADE_CLUSTER == true ]]; then
-    # End the prober test now before we start cluster upgrade, up until now we
-    # should have zero failed requests. Cluster upgrade will fail probers as
-    # stuff is moved around.
-    if (( serving_in_scope )); then
-      end_serving_prober "${serving_prober_pid}"
-    fi
-    if (( eventing_in_scope )); then
-      end_eventing_prober "${eventing_prober_pid}"
-    fi
-
-    upgrade_ocp_cluster "${UPGRADE_OCP_IMAGE:-}"
-  fi
-
-  if (( serving_in_scope )); then
-    wait_for_serving_test_services_settle
-  fi
-
-  logger.info "Running postupgrade tests"
-
-  if (( serving_in_scope )); then
-    run_serving_postupgrade_test
-  fi
-  if (( eventing_in_scope )); then
-    run_eventing_postupgrade_test "${channels}"
-  fi
-
-  if (( serving_in_scope )); then
-    end_serving_prober "${serving_prober_pid}"
-  fi
-  if (( eventing_in_scope )); then
-    end_eventing_prober "${eventing_prober_pid}"
-  fi
-
-  if (( serving_in_scope )); then
-    cleanup_serving_test_services
-  fi
+  prepare_knative_eventing_tests
+  prepare_knative_serving_tests
 
   cd "$rootdir"
+
+  # Ensure the generated test case names are short enough for Kubernetes.
+  # The upgrade framework prefixes the base names and the generated
+  # OpenShift Route hostname exceeds the 63-char limit.
+  patch="${KNATIVE_SERVING_HOME}/openshift/patches/001-object.patch"
+  git apply "${patch}"
+
+  image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
+  image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
+  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
+
+  # Test configuration. See https://github.com/knative/eventing/tree/master/test/upgrade#probe-test-configuration
+  # TODO(ksuszyns): remove E2E_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
+  E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
+  E2E_UPGRADE_TESTS_SERVING_USE=true \
+  E2E_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
+  E2E_UPGRADE_TESTS_INTERVAL="50ms" \
+  SYSTEM_NAMESPACE=knative-serving \
+  go_test_e2e -tags=upgrade -timeout=30m \
+    ./test/upgrade \
+    -channels="${channels}" \
+    --imagetemplate "${image_template}" \
+    --resolvabledomain
+
+  git apply -R "${patch}"
+
+  logger.success 'Upgrade tests passed'
 }
 
-function end_prober {
-  local prober_pid prober_signal retcode title piddir
-  title=${1:?Pass a title as arg[1]}
-  prober_pid=${2:?Pass a pid as a arg[2]}
-  prober_signal=${3:-/tmp/prober-signal}
-  piddir="${piddir:-/tmp/svls-probes/$$}"
+function upgrade_serverless {
+  logger.info "Upgrade Serverless/Cluster"
 
-  mkdir -p "${piddir}"
+  local latest_serving_version latest_eventing_version \
+    prev_serving_version prev_eventing_version
 
-  if [ -f "${piddir}/${prober_pid}" ]; then
-    logger.info "Prober of PID ${prober_pid} is closed already."
-    return 0
-  fi
-  logger.info "Waiting for ${title} prober test to finish"
-  echo 'done' > "${prober_signal}"
+  prev_serving_version="$(actual_serving_version)"
+  prev_eventing_version="$(actual_eventing_version)"
 
-  wait "${prober_pid}"
-  echo 'done' > "${piddir}/${prober_pid}"
-  logger.success "${title} prober passed"
+  latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
+  latest_eventing_version="${KNATIVE_EVENTING_VERSION/v/}"
+
+  logger.info "Updating Serverless to ${CURRENT_CSV}"
+  logger.debug "Serving version: ${prev_serving_version} -> ${latest_serving_version}"
+  logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
+
+  approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
+  check_serving_upgraded "${latest_serving_version}"
+  check_eventing_upgraded "${latest_eventing_version}"
 }
 
 function upgrade_ocp_cluster {
-  local upgrade_ocp_image latest_cluster_version
-  upgrade_ocp_image="${1:-}"
+  local latest_cluster_version
 
-  if [[ -n "$upgrade_ocp_image" ]]; then
+  if [[ -n "${UPGRADE_OCP_IMAGE}" ]]; then
     oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
       --force=true --allow-explicit-upgrade
-    timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${upgrade_ocp_image}\")].state}') != Completed ]]"
+    timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${UPGRADE_OCP_IMAGE}\")].state}') != Completed ]]"
   else
     latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
       | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
@@ -327,6 +254,8 @@ function upgrade_ocp_cluster {
 
   logger.success "New cluster version: $(oc get clusterversion \
     version -o jsonpath='{.status.desired.version}')"
+
+  wait_for_serving_test_services_settle
 }
 
 function teardown {

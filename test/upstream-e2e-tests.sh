@@ -26,7 +26,7 @@ fi
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   install_serverless_previous
-  run_rolling_upgrade_tests "${UPGRADE_TEST_SCOPE:-serving,eventing}"
+  run_rolling_upgrade_tests
   trigger_gc_and_print_knative
   # Call teardown only if E2E tests follow.
   if [[ $TEST_KNATIVE_E2E == true ]]; then
