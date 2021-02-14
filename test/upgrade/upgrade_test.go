@@ -35,12 +35,8 @@ func TestServerlessUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(),
-			Continual:     []pkgupgrade.BackgroundOperation{
-				// TODO(mgencur): SRVKS-698 Investigate failing Autoscale tests.
-				servingupgrade.ProbeTest(),
-				eventingupgrade.ContinualTest(),
-			},
+			PostUpgrade:   append(servingupgrade.ServingPostUpgradeTests(), eventingupgrade.PostUpgradeTest()),
+			Continual:     append(servingupgrade.ContinualTests(), eventingupgrade.ContinualTest()),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{ installation.UpgradeServerless() },
@@ -57,7 +53,7 @@ func TestClusterUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(),
+			PostUpgrade:   append(servingupgrade.ServingPostUpgradeTests(), eventingupgrade.PostUpgradeTest()),
 			// Do not include continual tests as they're failing across cluster upgrades.
 		},
 		Installations: pkgupgrade.Installations{
@@ -77,11 +73,6 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		return tests
 	}
 	return append(tests, servingupgrade.ServingPreUpgradeTests()...)
-}
-
-func postUpgradeTests() []pkgupgrade.Operation {
-	tests := servingupgrade.ServingPostUpgradeTests()
-	return append(tests, eventingupgrade.PostUpgradeTest())
 }
 
 func newUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
