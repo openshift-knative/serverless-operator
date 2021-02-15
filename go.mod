@@ -5,7 +5,6 @@ go 1.14
 require (
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/aws/aws-sdk-go v1.36.15 // indirect
-	github.com/evanphx/json-patch/v5 v5.1.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-logr/logr v0.4.0
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -13,8 +12,8 @@ require (
 	github.com/go-openapi/swag v0.19.12 // indirect
 	github.com/google/go-cmp v0.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
-	github.com/manifestival/controller-runtime-client v0.3.0
-	github.com/manifestival/manifestival v0.6.1
+	github.com/manifestival/controller-runtime-client v0.4.0
+	github.com/manifestival/manifestival v0.7.0
 	github.com/openshift/api v0.0.0-20210202165416-a9e731090f5e
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/operator-framework/api v0.5.1
