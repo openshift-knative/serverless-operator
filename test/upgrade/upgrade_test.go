@@ -36,7 +36,12 @@ func TestServerlessUpgrade(t *testing.T) {
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
 			PostUpgrade:   append(servingupgrade.ServingPostUpgradeTests(), eventingupgrade.PostUpgradeTest()),
-			Continual:     append(servingupgrade.ContinualTests(), eventingupgrade.ContinualTest()),
+			Continual:     []pkgupgrade.BackgroundOperation{
+				// TODO: SRVKS-698 Investigate AutoscaleSustainingWithTBCTest flakiness and re-enable.
+				servingupgrade.ProbeTest(),
+				servingupgrade.AutoscaleSustainingTest(),
+				eventingupgrade.ContinualTest(),
+			},
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{ installation.UpgradeServerless() },
