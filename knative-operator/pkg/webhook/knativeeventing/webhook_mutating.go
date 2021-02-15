@@ -15,6 +15,13 @@ type Configurator struct {
 	decoder *admission.Decoder
 }
 
+// NewConfigurator creates a new Configurator instance to configure KnativeEventing CRs.
+func NewConfigurator(decoder *admission.Decoder) *Configurator {
+	return &Configurator{
+		decoder: decoder,
+	}
+}
+
 // Implement admission.Handler so the controller can handle admission request.
 var _ admission.Handler = (*Configurator)(nil)
 
@@ -35,14 +42,4 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
-}
-
-// Configurator implements inject.Decoder.
-// A decoder will be automatically injected.
-var _ admission.DecoderInjector = (*Configurator)(nil)
-
-// InjectDecoder injects the decoder.
-func (v *Configurator) InjectDecoder(d *admission.Decoder) error {
-	v.decoder = d
-	return nil
 }

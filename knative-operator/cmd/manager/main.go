@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -99,14 +100,20 @@ func main() {
 	hookServer.KeyName = "apiserver.key"
 	hookServer.CertName = "apiserver.crt"
 
+	decoder, err := admission.NewDecoder(mgr.GetScheme())
+	if err != nil {
+		log.Error(err, "failed to create decoder")
+		os.Exit(1)
+	}
+
 	// Serving Webhooks
-	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: &knativeserving.Configurator{}})
-	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: &knativeserving.Validator{}})
+	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(mgr.GetClient(), decoder)})
+	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: knativeserving.NewValidator(mgr.GetClient(), decoder)})
 	// Eventing Webhooks
-	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Configurator{}})
-	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Validator{}})
+	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewConfigurator(decoder)})
+	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewValidator(mgr.GetClient(), decoder)})
 	// Kafka Webhooks
-	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{}})
+	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewValidator(mgr.GetClient(), decoder)})
 
 	if err := setupMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")

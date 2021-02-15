@@ -9,7 +9,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -17,6 +16,14 @@ import (
 type Validator struct {
 	client  client.Client
 	decoder *admission.Decoder
+}
+
+// NewValidator creates a new Valicator instance to validate KnativeEventing CRs.
+func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+	return &Validator{
+		client:  client,
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -59,26 +66,6 @@ func (v *Validator) validate(ctx context.Context, ke *eventingv1alpha1.KnativeEv
 		}
 	}
 	return
-}
-
-// Validator implements inject.Client.
-// A client will be automatically injected.
-var _ inject.Client = (*Validator)(nil)
-
-// InjectClient injects the client.
-func (v *Validator) InjectClient(c client.Client) error {
-	v.client = c
-	return nil
-}
-
-// Validator implements inject.Decoder.
-// A decoder will be automatically injected.
-var _ admission.DecoderInjector = (*Validator)(nil)
-
-// InjectDecoder injects the decoder.
-func (v *Validator) InjectDecoder(d *admission.Decoder) error {
-	v.decoder = d
-	return nil
 }
 
 // validate required namespace, if any
