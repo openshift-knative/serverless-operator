@@ -5,7 +5,7 @@ index 00000000..37558cd9
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml
 @@ -0,0 +1,314 @@
 +---
-+apiVersion: rbac.authorization.k8s.io/v1beta1
++apiVersion: rbac.authorization.k8s.io/v1
 +kind: ClusterRole
 +metadata:
 +  name: rbac-proxy-metrics-prom
@@ -13,7 +13,7 @@ index 00000000..37558cd9
 +  - nonResourceURLs: ["/metrics"]
 +    verbs: ["get"]
 +---
-+apiVersion: rbac.authorization.k8s.io/v1beta1
++apiVersion: rbac.authorization.k8s.io/v1
 +kind: ClusterRoleBinding
 +metadata:
 +  name: rbac-proxy-metrics-prom-rb
