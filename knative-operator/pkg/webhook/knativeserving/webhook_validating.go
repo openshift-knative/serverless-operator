@@ -9,14 +9,13 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // Validator validates KnativeServing CR's
 type Validator struct {
-	client  client.Client
-	decoder *admission.Decoder
+	Client  client.Client
+	Decoder *admission.Decoder
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -26,7 +25,7 @@ var _ admission.Handler = (*Validator)(nil)
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ks := &servingv1alpha1.KnativeServing{}
 
-	err := v.decoder.Decode(req, ks)
+	err := v.Decoder.Decode(req, ks)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
@@ -61,26 +60,6 @@ func (v *Validator) validate(ctx context.Context, ks *servingv1alpha1.KnativeSer
 	return
 }
 
-// Validator implements inject.Client.
-// A client will be automatically injected.
-var _ inject.Client = (*Validator)(nil)
-
-// InjectClient injects the client.
-func (v *Validator) InjectClient(c client.Client) error {
-	v.client = c
-	return nil
-}
-
-// Validator implements inject.Decoder.
-// A decoder will be automatically injected.
-var _ admission.DecoderInjector = (*Validator)(nil)
-
-// InjectDecoder injects the decoder.
-func (v *Validator) InjectDecoder(d *admission.Decoder) error {
-	v.decoder = d
-	return nil
-}
-
 // validate required namespace, if any
 func (v *Validator) validateNamespace(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_SERVING_NAMESPACE")
@@ -93,7 +72,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ks *servingv1alpha1.K
 // validate this is the only KS in this namespace
 func (v *Validator) validateLoneliness(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	list := &servingv1alpha1.KnativeServingList{}
-	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ks.Namespace}); err != nil {
+	if err := v.Client.List(ctx, list, &client.ListOptions{Namespace: ks.Namespace}); err != nil {
 		return false, "Unable to list KnativeServings", err
 	}
 	for _, v := range list.Items {

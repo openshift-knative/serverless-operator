@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -99,14 +100,34 @@ func main() {
 	hookServer.KeyName = "apiserver.key"
 	hookServer.CertName = "apiserver.crt"
 
+	decoder, err := admission.NewDecoder(mgr.GetScheme())
+	if err != nil {
+		log.Error(err, "failed to create decoder")
+		os.Exit(1)
+	}
+
 	// Serving Webhooks
-	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: &knativeserving.Configurator{}})
-	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: &knativeserving.Validator{}})
+	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: &knativeserving.Configurator{
+		Client:  mgr.GetClient(),
+		Decoder: decoder,
+	}})
+	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: &knativeserving.Validator{
+		Client:  mgr.GetClient(),
+		Decoder: decoder,
+	}})
 	// Eventing Webhooks
-	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Configurator{}})
-	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Validator{}})
+	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Configurator{
+		Decoder: decoder,
+	}})
+	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Validator{
+		Client:  mgr.GetClient(),
+		Decoder: decoder,
+	}})
 	// Kafka Webhooks
-	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{}})
+	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{
+		Client:  mgr.GetClient(),
+		Decoder: decoder,
+	}})
 
 	if err := setupMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")
