@@ -14,8 +14,16 @@ import (
 
 // Validator validates KnativeServing CR's
 type Validator struct {
-	Client  client.Client
-	Decoder *admission.Decoder
+	client  client.Client
+	decoder *admission.Decoder
+}
+
+// NewValidator creates a new Validator instance to validate KnativeServing CRs.
+func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+	return &Validator{
+		client:  client,
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -25,7 +33,7 @@ var _ admission.Handler = (*Validator)(nil)
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ks := &servingv1alpha1.KnativeServing{}
 
-	err := v.Decoder.Decode(req, ks)
+	err := v.decoder.Decode(req, ks)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
@@ -72,7 +80,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ks *servingv1alpha1.K
 // validate this is the only KS in this namespace
 func (v *Validator) validateLoneliness(ctx context.Context, ks *servingv1alpha1.KnativeServing) (bool, string, error) {
 	list := &servingv1alpha1.KnativeServingList{}
-	if err := v.Client.List(ctx, list, &client.ListOptions{Namespace: ks.Namespace}); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ks.Namespace}); err != nil {
 		return false, "Unable to list KnativeServings", err
 	}
 	for _, v := range list.Items {

@@ -13,8 +13,16 @@ import (
 
 // Configurator annotates Kss
 type Configurator struct {
-	Client  client.Client
-	Decoder *admission.Decoder
+	client  client.Client
+	decoder *admission.Decoder
+}
+
+// NewConfigurator creates a new Configurator instance to configure KnativeServing CRs.
+func NewConfigurator(client client.Client, decoder *admission.Decoder) *Configurator {
+	return &Configurator{
+		client:  client,
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -25,12 +33,12 @@ var _ admission.Handler = (*Configurator)(nil)
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ks := &servingv1alpha1.KnativeServing{}
 
-	err := v.Decoder.Decode(req, ks)
+	err := v.decoder.Decode(req, ks)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	err = common.Mutate(ks, v.Client)
+	err = common.Mutate(ks, v.client)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}

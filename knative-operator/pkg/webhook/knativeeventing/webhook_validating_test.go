@@ -38,9 +38,7 @@ func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_EVENTING_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-	}
+	validator := NewValidator(nil, decoder)
 
 	req, err := testutil.RequestFor(ke1)
 	if err != nil {
@@ -56,10 +54,7 @@ func TestInvalidNamespace(t *testing.T) {
 func TestLoneliness(t *testing.T) {
 	os.Clearenv()
 
-	validator := Validator{
-		Client:  fake.NewClientBuilder().WithObjects(ke2).Build(),
-		Decoder: decoder,
-	}
+	validator := NewValidator(fake.NewClientBuilder().WithObjects(ke2).Build(), decoder)
 
 	req, err := testutil.RequestFor(ke1)
 	if err != nil {

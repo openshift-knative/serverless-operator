@@ -12,7 +12,14 @@ import (
 
 // Configurator annotates KEs
 type Configurator struct {
-	Decoder *admission.Decoder
+	decoder *admission.Decoder
+}
+
+// NewConfigurator creates a new Configurator instance to configure KnativeEventing CRs.
+func NewConfigurator(decoder *admission.Decoder) *Configurator {
+	return &Configurator{
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -23,7 +30,7 @@ var _ admission.Handler = (*Configurator)(nil)
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ke := &eventingv1alpha1.KnativeEventing{}
 
-	err := v.Decoder.Decode(req, ke)
+	err := v.decoder.Decode(req, ke)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}

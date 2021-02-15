@@ -15,8 +15,16 @@ import (
 
 // Validator validates KnativeKafka CR's
 type Validator struct {
-	Client  client.Client
-	Decoder *admission.Decoder
+	client  client.Client
+	decoder *admission.Decoder
+}
+
+// NewValidator creates a new Valicator instance to validate KnativeKafka CRs.
+func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+	return &Validator{
+		client:  client,
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -26,7 +34,7 @@ var _ admission.Handler = (*Validator)(nil)
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ke := &operatorv1alpha1.KnativeKafka{}
 
-	err := v.Decoder.Decode(req, ke)
+	err := v.decoder.Decode(req, ke)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
@@ -75,7 +83,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.
 // validate this is the only KE in this namespace
 func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
 	list := &operatorv1alpha1.KnativeKafkaList{}
-	if err := v.Client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeKafkas", err
 	}
 	for _, v := range list.Items {
@@ -104,7 +112,7 @@ func (v *Validator) validateShape(_ context.Context, ke *operatorv1alpha1.Knativ
 func (v *Validator) validateDependencies(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
 	// check to see if we can find KnativeEventing
 	list := &eventingv1alpha1.KnativeEventingList{}
-	if err := v.Client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventing instance", err
 	}
 	if len(list.Items) == 0 {

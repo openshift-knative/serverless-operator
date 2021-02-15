@@ -107,27 +107,13 @@ func main() {
 	}
 
 	// Serving Webhooks
-	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: &knativeserving.Configurator{
-		Client:  mgr.GetClient(),
-		Decoder: decoder,
-	}})
-	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: &knativeserving.Validator{
-		Client:  mgr.GetClient(),
-		Decoder: decoder,
-	}})
+	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(mgr.GetClient(), decoder)})
+	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: knativeserving.NewValidator(mgr.GetClient(), decoder)})
 	// Eventing Webhooks
-	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Configurator{
-		Decoder: decoder,
-	}})
-	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: &knativeeventing.Validator{
-		Client:  mgr.GetClient(),
-		Decoder: decoder,
-	}})
+	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewConfigurator(decoder)})
+	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewValidator(mgr.GetClient(), decoder)})
 	// Kafka Webhooks
-	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: &knativekafka.Validator{
-		Client:  mgr.GetClient(),
-		Decoder: decoder,
-	}})
+	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewValidator(mgr.GetClient(), decoder)})
 
 	if err := setupMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")

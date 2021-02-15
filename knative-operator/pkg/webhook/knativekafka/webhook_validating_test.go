@@ -128,10 +128,9 @@ func TestHappy(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-		Client:  fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build(),
-	}
+	validator := NewValidator(
+		fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build(),
+		decoder)
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {
@@ -148,10 +147,9 @@ func TestInvalidNamespace(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-		Client:  fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build(),
-	}
+	validator := NewValidator(
+		fake.NewClientBuilder().WithObjects(validKnativeEventingCR).Build(),
+		decoder)
 
 	req, err := testutil.RequestFor(invalidNamespaceCR)
 	if err != nil {
@@ -168,10 +166,9 @@ func TestLoneliness(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-		Client:  fake.NewClientBuilder().WithObjects(duplicateCR, validKnativeEventingCR).Build(),
-	}
+	validator := NewValidator(
+		fake.NewClientBuilder().WithObjects(duplicateCR, validKnativeEventingCR).Build(),
+		decoder)
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {
@@ -188,10 +185,9 @@ func TestInvalidShape(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-		Client:  fake.NewClientBuilder().WithObjects(duplicateCR, validKnativeEventingCR).Build(),
-	}
+	validator := NewValidator(
+		fake.NewClientBuilder().WithObjects(duplicateCR, validKnativeEventingCR).Build(),
+		decoder)
 
 	for _, cr := range invalidShapeCRs {
 		req, err := testutil.RequestFor(&cr)
@@ -210,10 +206,7 @@ func TestValidateDeps(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("REQUIRED_KAFKA_NAMESPACE", "knative-eventing")
 
-	validator := Validator{
-		Decoder: decoder,
-		Client:  fake.NewClientBuilder().Build(),
-	}
+	validator := NewValidator(fake.NewClientBuilder().Build(), decoder)
 
 	req, err := testutil.RequestFor(defaultCR)
 	if err != nil {

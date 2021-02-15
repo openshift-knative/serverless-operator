@@ -14,8 +14,16 @@ import (
 
 // Validator validates KnativeEventing CR's
 type Validator struct {
-	Client  client.Client
-	Decoder *admission.Decoder
+	client  client.Client
+	decoder *admission.Decoder
+}
+
+// NewValidator creates a new Valicator instance to validate KnativeEventing CRs.
+func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+	return &Validator{
+		client:  client,
+		decoder: decoder,
+	}
 }
 
 // Implement admission.Handler so the controller can handle admission request.
@@ -25,7 +33,7 @@ var _ admission.Handler = (*Validator)(nil)
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ke := &eventingv1alpha1.KnativeEventing{}
 
-	err := v.Decoder.Decode(req, ke)
+	err := v.decoder.Decode(req, ke)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
@@ -72,7 +80,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *eventingv1alpha1.
 // validate this is the only KE in this namespace
 func (v *Validator) validateLoneliness(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) (bool, string, error) {
 	list := &eventingv1alpha1.KnativeEventingList{}
-	if err := v.Client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
+	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventings", err
 	}
 	for _, v := range list.Items {
