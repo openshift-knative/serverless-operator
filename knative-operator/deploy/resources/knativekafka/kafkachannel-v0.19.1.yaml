@@ -589,6 +589,7 @@ webhooks:
       namespace: knative-eventing
   failurePolicy: Fail
   name: defaulting.webhook.kafka.messaging.knative.dev
+  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -605,6 +606,7 @@ webhooks:
       namespace: knative-eventing
   failurePolicy: Fail
   name: validation.webhook.kafka.messaging.knative.dev
+  sideEffects: None
 ---
 apiVersion: v1
 kind: Secret
