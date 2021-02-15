@@ -374,7 +374,7 @@ spec:
   selector:
     control-plane: kafka-controller-manager
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.sources.knative.dev
@@ -390,7 +390,7 @@ webhooks:
   failurePolicy: Fail
   name: defaulting.webhook.kafka.sources.knative.dev
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: kafkabindings.webhook.kafka.sources.knative.dev
@@ -406,7 +406,7 @@ webhooks:
   failurePolicy: Fail
   name: kafkabindings.webhook.kafka.sources.knative.dev
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.sources.knative.dev
@@ -422,7 +422,7 @@ webhooks:
   failurePolicy: Fail
   name: validation.webhook.kafka.sources.knative.dev
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.kafka.sources.knative.dev

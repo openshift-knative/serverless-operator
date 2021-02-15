@@ -574,7 +574,7 @@ spec:
     messaging.knative.dev/channel: kafka-channel
     messaging.knative.dev/role: dispatcher
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.messaging.knative.dev
@@ -590,7 +590,7 @@ webhooks:
   failurePolicy: Fail
   name: defaulting.webhook.kafka.messaging.knative.dev
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.messaging.knative.dev
