@@ -10,7 +10,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
-	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -27,14 +26,12 @@ func NewExtension(ctx context.Context) operator.Extension {
 	return &extension{
 		ocpclient:  ocpclient.Get(ctx),
 		kubeclient: kubeclient.Get(ctx),
-		logger:     logging.FromContext(ctx),
 	}
 }
 
 type extension struct {
 	ocpclient  versioned.Interface
 	kubeclient kubernetes.Interface
-	logger     *zap.SugaredLogger
 }
 
 func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
@@ -96,11 +93,11 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		}
 	}
 
-	e.logger.Info("Installing Serving Monitoring Requirements")
-	if err := monitoring.SetupServingMonitoring(e.kubeclient, ks, e.logger); err != nil {
+	logger := logging.FromContext(ctx)
+	logger.Info("Installing Serving Monitoring Requirements")
+	if err := monitoring.SetupServingMonitoring(ctx, e.kubeclient, ks); err != nil {
 		return err
 	}
-
 	return nil
 }
 
