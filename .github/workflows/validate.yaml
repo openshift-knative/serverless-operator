@@ -29,7 +29,6 @@ jobs:
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
-          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
       - name: Checkout
         uses: actions/checkout@v2
