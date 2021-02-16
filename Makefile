@@ -74,8 +74,12 @@ test-upstream-upgrade:
 # Alias.
 test-upgrade: test-upstream-upgrade
 
+# Run Console UI e2e tests.
+test-ui-e2e:
+  ./test/ui-e2e-tests.sh
+
 # Run all E2E tests. Used by periodic CI jobs.
-test-all-e2e: test-e2e test-upstream-e2e
+test-all-e2e: test-e2e test-upstream-e2e test-ui-e2e
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:

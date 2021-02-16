@@ -122,7 +122,7 @@ describe('OCP UI for Serverless', () => {
     describe('deploy kservice from image', () => {
       showcaseKsvc.deployImage()
     })
-    describe('adding two revisions to traffic distribution', () => {
+    describe('add two revisions to traffic distribution', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.name).click()
