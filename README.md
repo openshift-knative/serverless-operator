@@ -15,7 +15,7 @@ build images from code)
 
 ## Install an unreleased version
 
-To install an unreleased version (either **nightly** from master or the respective version
+To install an unreleased version (either **nightly** from HEAD or the respective version
 from an already cut branch), you can follow these steps. You can replace the `crc start`
 step with whatever cluster you might want to use. Also make sure to check out the respective
 branch of the version you want to install first.
@@ -129,8 +129,8 @@ make release-files
 #### Individual tests from knative-serving and knative-eventing
 
 There are targets for running individual tests in both
-[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/master/Makefile) and
-[Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/master/Makefile).
+[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/main/Makefile) and
+[Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/main/Makefile).
 
 Example targets that can be run from the respective repositories (these targets all requires a running OCP 
 cluster and pre-installed Serverless):
