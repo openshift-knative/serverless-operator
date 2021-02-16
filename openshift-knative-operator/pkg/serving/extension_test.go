@@ -306,9 +306,8 @@ func TestMonitoring(t *testing.T) {
 func toggleEnvVar(toggle string) (bool, error) {
 	if err := os.Setenv(monitoring.EnableMonitoringEnvVar, toggle); err != nil {
 		return false, nil
-	} else {
-		return true, nil
 	}
+	return true, nil
 }
 
 func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
