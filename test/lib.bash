@@ -331,7 +331,12 @@ function create_htpasswd_users {
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
     --dry-run=client -o yaml | kubectl apply -f -
-  oc apply -f openshift/identity/htpasswd.yaml
+
+  if oc get oauth.config.openshift.io cluster > /dev/null 2>&1; then
+    oc replace -f openshift/identity/htpasswd.yaml
+  else
+    oc apply -f openshift/identity/htpasswd.yaml
+  fi
 
   logger.info 'Generate kubeconfig for each user'
   for i in $(seq 1 "$num_users"); do
