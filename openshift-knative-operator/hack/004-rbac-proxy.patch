@@ -1,9 +1,37 @@
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml
 new file mode 100644
-index 00000000..37558cd9
+index 00000000..83c826d2
 --- /dev/null
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.20.0/0-rbac-proxy.yaml
-@@ -0,0 +1,314 @@
+@@ -0,0 +1,342 @@
++apiVersion: rbac.authorization.k8s.io/v1
++kind: Role
++metadata:
++  name: knative-serving-prometheus-k8s
++rules:
++  - apiGroups:
++      - ""
++    resources:
++      - services
++      - endpoints
++      - pods
++    verbs:
++      - get
++      - list
++      - watch
++---
++apiVersion: rbac.authorization.k8s.io/v1
++kind: RoleBinding
++metadata:
++  name: knative-serving-prometheus-k8s
++roleRef:
++  apiGroup: rbac.authorization.k8s.io
++  kind: Role
++  name: knative-serving-prometheus-k8s
++subjects:
++  - kind: ServiceAccount
++    name: prometheus-k8s
++    namespace: openshift-monitoring
 +---
 +apiVersion: rbac.authorization.k8s.io/v1
 +kind: ClusterRole
@@ -543,7 +571,7 @@ index a980952f..bcee5d5d 100644
 +        - name: secret-domain-mapping-sm-service-tls
 +          secret:
 +            secretName: domain-mapping-sm-service-tls
- 
+
  ---
  # Copyright 2020 The Knative Authors
 @@ -265,6 +287,8 @@ spec:
