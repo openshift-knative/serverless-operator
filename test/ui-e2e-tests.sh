@@ -32,6 +32,8 @@ OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $
 OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
 CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpath='{.status.ingress[].host}')"
 INSTALL_SERVERLESS="${INSTALL_SERVERLESS:-true}"
+# use cypress:open to run test development UI
+NPM_TARGET="${NPM_TARGET:-test}"
 export OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 scale_up_workers
@@ -48,4 +50,4 @@ logger.success '🚀 Cluster prepared for testing.'
 
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
-npm run test
+npm run "${NPM_TARGET}"

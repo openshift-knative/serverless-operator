@@ -11,25 +11,26 @@ describe('OCP UI for Serverless', () => {
       }
     }
 
-    makeRequest() {
-      cy.get('a.co-external-link')
+    url() {
+      return cy.get('a.co-external-link')
         .last()
         .scrollIntoView()
         .should('have.attr', 'href')
         .and('include', 'showcase')
-        .then((href) => {
-          const req = {
-            method: 'OPTIONS',
-            url: href,
-            retryOnStatusCodeFailure: true,
-            failOnStatusCode: true
-          }
-          cy.request(req).then((response) => {
-            expect(response.status).to.eq(200)
-            expect(response.body).to.have.property('version')
-            expect(JSON.stringify(response.body)).to.include('knative-serving-showcase')
-          })
-        })
+    }
+
+    makeRequest(baseUrl) {
+      const req = {
+        method: 'OPTIONS',
+        url: baseUrl,
+        retryOnStatusCodeFailure: true,
+        failOnStatusCode: true
+      }
+      cy.request(req).then((response) => {
+        expect(response.status).to.eq(200)
+        expect(response.body).to.have.property('version')
+        expect(JSON.stringify(response.body)).to.include('knative-serving-showcase')
+      })
     }
 
     checkScale(scale) {
@@ -98,17 +99,19 @@ describe('OCP UI for Serverless', () => {
     })
     describe('check automatic scaling of kservice', () => {
       showcaseKsvc.showServiceDetails()
-      showcaseKsvc.makeRequest()
-      showcaseKsvc.checkScale(1)
-      cy.wait(60_000) // 60sec.
+      showcaseKsvc.url().then((url) => {
+        showcaseKsvc.makeRequest(url)
+        showcaseKsvc.checkScale(1)
+        cy.wait(60_000) // 60sec.
 
-      showcaseKsvc.showServiceDetails()
-      cy.contains('All Revisions are autoscaled to 0')
-      showcaseKsvc.checkScale(0)
-      showcaseKsvc.makeRequest()
-      
-      showcaseKsvc.showServiceDetails()
-      showcaseKsvc.checkScale(1)
+        showcaseKsvc.showServiceDetails()
+        cy.contains('All Revisions are autoscaled to 0')
+        showcaseKsvc.checkScale(0)
+        showcaseKsvc.makeRequest(url)
+
+        showcaseKsvc.showServiceDetails()
+        showcaseKsvc.checkScale(1)
+      })
     })
     describe('remove kservice', () => {
       showcaseKsvc.removeApp()
@@ -157,9 +160,11 @@ describe('OCP UI for Serverless', () => {
     })
     describe('check traffic distribution works', () => {
       cy.contains('Location:')
-      for (let i = 0; i < 8; i++) {
-        showcaseKsvc.makeRequest()
-      }
+      showcaseKsvc.url().then((url) => {
+        for (let i = 0; i < 8; i++) {
+          showcaseKsvc.makeRequest(url)
+        }
+      })
     })
     describe('remove kservice', () => {
       showcaseKsvc.removeApp()
