@@ -6,6 +6,7 @@ describe('OCP UI for Serverless', () => {
       this.name = ops.name || 'showcase'
       this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
       this.image = ops.image || {
+        // TODO(ksuszyns): SRVCOM-1235 donate those apps to openshift-knative
         regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
         updated: 'quay.io/cardil/knative-serving-showcase-js'
       }
