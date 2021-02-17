@@ -162,7 +162,6 @@ func TestMonitoring(t *testing.T) {
 	cases := []struct {
 		name     string
 		in       *v1alpha1.KnativeServing
-		objs     []runtime.Object
 		expected *v1alpha1.KnativeServing
 		// Returns the expected status for monitoring
 		setupMonitoringToggle func() (bool, error)
@@ -201,7 +200,7 @@ func TestMonitoring(t *testing.T) {
 		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
 		in:                    &v1alpha1.KnativeServing{},
 		expected:              ks(),
-		setupMonitoringToggle: func() (bool, error) { return toggleEnvVar("true") },
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
 	}, {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
 		in: &v1alpha1.KnativeServing{
@@ -214,7 +213,9 @@ func TestMonitoring(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return toggleEnvVar("true") },
+		setupMonitoringToggle: func() (bool, error) {
+			return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
+		},
 	}, {
 		name: "disable monitoring when monitoring toggle is on, backend is `none`",
 		in: &v1alpha1.KnativeServing{
@@ -228,8 +229,7 @@ func TestMonitoring(t *testing.T) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
-			_, err := toggleEnvVar("true")
-			return false, err
+			return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is not defined",
@@ -237,7 +237,7 @@ func TestMonitoring(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return toggleEnvVar("false") },
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
 		in: &v1alpha1.KnativeServing{
@@ -250,7 +250,7 @@ func TestMonitoring(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return toggleEnvVar("false") },
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
 		in: &v1alpha1.KnativeServing{
@@ -263,15 +263,12 @@ func TestMonitoring(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return toggleEnvVar("false") },
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			objs := c.objs
-			if objs == nil {
-				objs = []runtime.Object{defaultIngress, &servingNamespace}
-			}
+			objs := []runtime.Object{defaultIngress, &servingNamespace}
 			ks := c.in.DeepCopy()
 			ks.Namespace = "knative-serving"
 			c.expected.Namespace = ks.Namespace
@@ -294,20 +291,13 @@ func TestMonitoring(t *testing.T) {
 			}
 			ns, err := kube.CoreV1().Namespaces().Get(context.Background(), ks.Namespace, metav1.GetOptions{})
 			if err != nil {
-				t.Errorf("Namespace %s not found %w", ns, err)
+				t.Errorf("Failed to get namespace %s: %v", ns, err)
 			}
-			if len(ns.Labels) != 1 && ns.Labels[monitoring.EnableMonitoringLabel] != strconv.FormatBool(shouldEnableMonitoring) {
+			if ns.Labels[monitoring.EnableMonitoringLabel] != strconv.FormatBool(shouldEnableMonitoring) {
 				t.Errorf("Label is missing for namespace %s ", ks.Namespace)
 			}
 		})
 	}
-}
-
-func toggleEnvVar(toggle string) (bool, error) {
-	if err := os.Setenv(monitoring.EnableMonitoringEnvVar, toggle); err != nil {
-		return false, nil
-	}
-	return true, nil
 }
 
 func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {

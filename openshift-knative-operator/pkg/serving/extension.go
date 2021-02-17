@@ -16,7 +16,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/logging"
 )
 
 const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
@@ -92,10 +91,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Type: "ConfigMap",
 		}
 	}
-
-	logger := logging.FromContext(ctx)
-	logger.Info("Installing Serving Monitoring Requirements")
-	if err := monitoring.SetupServingMonitoring(ctx, e.kubeclient, ks); err != nil {
+	if err := monitoring.ReconcileServingMonitoring(ctx, e.kubeclient, ks); err != nil {
 		return err
 	}
 	return nil

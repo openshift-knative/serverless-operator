@@ -29,17 +29,18 @@ const (
 	prometheusClusterRoleName = "rbac-proxy-metrics-prom"
 )
 
-func SetupServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
+func ReconcileServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
 	backend, isSet := ks.Spec.CommonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
+	log := logging.FromContext(ctx)
 	if shouldEnableMonitoring(backend) {
-		log := logging.FromContext(ctx)
 		log.Info("Enabling Serving monitoring")
-		if err := setMonitoringLabelToNamespace(ctx, ks.Namespace, api, true); err != nil {
+		if err := reconcileMonitoringLabelOnNamespace(ctx, ks.Namespace, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
 		}
 		return nil
 	}
-	if err := setMonitoringLabelToNamespace(ctx, ks.Namespace, api, false); err != nil {
+	log.Info("Disabling Serving monitoring")
+	if err := reconcileMonitoringLabelOnNamespace(ctx, ks.Namespace, api, false); err != nil {
 		return err
 	}
 	if !isSet {
@@ -49,25 +50,28 @@ func SetupServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v
 }
 
 func shouldEnableMonitoring(backend string) bool {
+	if backend == "none" {
+		return false
+	}
 	enable, present := os.LookupEnv(EnableMonitoringEnvVar)
-	// Skip setup from env if feature toggle is off, use whatever the user defines in the Serving CR.
-	if !present && backend != "none" {
+	// Skip setup from env if feature toggle is not present, use whatever the user defines in the Serving CR.
+	if !present {
 		return true
 	}
-	parsedEnable, _ := strconv.ParseBool(enable)
+	parsedEnable := strings.EqualFold(enable, "true")
 	// Let the user enable monitoring with a proper backend value even if feature toggle is off.
-	if !parsedEnable && backend != "none" && backend != "" {
+	if !parsedEnable && backend != "" {
 		return true
 	}
 	return parsedEnable
 }
 
-func setMonitoringLabelToNamespace(ctx context.Context, namespace string, api kubernetes.Interface, enable bool) error {
+func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, api kubernetes.Interface, enable bool) error {
 	ns, err := api.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	if shouldSkipSettingLabel(ns.Labels) {
+	if ns.Labels[EnableMonitoringLabel] == strconv.FormatBool(enable) {
 		return nil
 	}
 	if ns.Labels == nil {
@@ -78,15 +82,6 @@ func setMonitoringLabelToNamespace(ctx context.Context, namespace string, api ku
 		return fmt.Errorf("could not add label %q to namespace %q: %w", EnableMonitoringLabel, namespace, err)
 	}
 	return nil
-}
-
-func shouldSkipSettingLabel(labels map[string]string) bool {
-	if labelVal, found := labels[EnableMonitoringLabel]; found {
-		if parsedLabelVal, _ := strconv.ParseBool(labelVal); parsedLabelVal {
-			return parsedLabelVal
-		}
-	}
-	return false
 }
 
 // InjectNamespaceWithSubject uses a custom transformation to avoid operator overriding everything with the current namespace including

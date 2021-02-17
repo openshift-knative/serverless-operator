@@ -10,7 +10,7 @@ import (
 
 const servingNamespace = "knative-serving"
 
-func TestSetupServingRbacTrasfmormation(t *testing.T) {
+func TestSetupServingRbacTransformation(t *testing.T) {
 	client := fake.New()
 	manifest, err := mf.NewManifest("../testdata/rbac.yaml", mf.UseClient(client))
 	if err != nil {
