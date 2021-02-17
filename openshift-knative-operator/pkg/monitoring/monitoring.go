@@ -30,22 +30,17 @@ const (
 )
 
 func ReconcileServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
-	backend, isSet := ks.Spec.CommonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
-	log := logging.FromContext(ctx)
+	backend := ks.Spec.CommonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
 	if shouldEnableMonitoring(backend) {
-		log.Info("Enabling Serving monitoring")
 		if err := reconcileMonitoringLabelOnNamespace(ctx, ks.Namespace, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
 		}
 		return nil
 	}
-	log.Info("Disabling Serving monitoring")
 	if err := reconcileMonitoringLabelOnNamespace(ctx, ks.Namespace, api, false); err != nil {
-		return err
+		return fmt.Errorf("failed to disable monitoring %w ", err)
 	}
-	if !isSet {
-		common.Configure(&ks.Spec.CommonSpec, ObservabilityCMName, ObservabilityBackendKey, "none")
-	}
+	common.Configure(&ks.Spec.CommonSpec, ObservabilityCMName, ObservabilityBackendKey, "none")
 	return nil
 }
 
@@ -74,11 +69,17 @@ func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, 
 	if ns.Labels[EnableMonitoringLabel] == strconv.FormatBool(enable) {
 		return nil
 	}
+	log := logging.FromContext(ctx)
+	if enable {
+		log.Info("Enabling Serving monitoring")
+	} else {
+		log.Info("Disabling Serving monitoring")
+	}
 	if ns.Labels == nil {
 		ns.Labels = make(map[string]string, 1)
 	}
 	ns.Labels[EnableMonitoringLabel] = strconv.FormatBool(enable)
-	if _, err := api.CoreV1().Namespaces().Update(context.Background(), ns, metav1.UpdateOptions{}); err != nil {
+	if _, err := api.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 		return fmt.Errorf("could not add label %q to namespace %q: %w", EnableMonitoringLabel, namespace, err)
 	}
 	return nil
