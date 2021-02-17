@@ -47,7 +47,7 @@ function go_test_e2e {
     [[ -n "$arg" ]] && go_test_args+=("$arg")
   done
   set +Eeuo pipefail
-  report_go_test -race -count=1 "${go_test_args[@]}"
+  report_go_test -count=1 "${go_test_args[@]}"
   retcode=$?
   set -Eeuo pipefail
 
@@ -77,7 +77,7 @@ function serverless_operator_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+  go_test_e2e -race -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -96,7 +96,7 @@ function serverless_operator_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
+  go_test_e2e -race -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -116,7 +116,7 @@ function downstream_serving_e2e_tests {
   # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
   add_systemnamespace_label
 
-  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e \
+  go_test_e2e -race -failfast -timeout=60m -parallel=1 ./test/servinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -133,7 +133,7 @@ function downstream_eventing_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
+  go_test_e2e -race -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -150,7 +150,7 @@ function downstream_knative_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
+  go_test_e2e -race -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -167,7 +167,7 @@ function downstream_monitoring_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
+  go_test_e2e -race -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
