@@ -204,6 +204,7 @@ function run_rolling_upgrade_tests {
   E2E_UPGRADE_TESTS_SERVING_USE=true \
   E2E_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
   E2E_UPGRADE_TESTS_INTERVAL="50ms" \
+  GO_TEST_VERBOSITY=standard-verbose \
   SYSTEM_NAMESPACE=knative-serving \
   go_test_e2e -tags=upgrade -timeout=30m \
     ./test/upgrade \
