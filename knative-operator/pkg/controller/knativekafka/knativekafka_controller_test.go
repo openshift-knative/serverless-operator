@@ -83,12 +83,12 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewClientBuilder().WithObjects(test.instance).Build()
 
-			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkachannel-latest.yaml"))
+			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/1-channel-consolidated.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaChannel manifest: %v", err)
 			}
 
-			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/kafkasource-latest.yaml"))
+			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/2-source.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaSource manifest: %v", err)
 			}

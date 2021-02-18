@@ -19,10 +19,10 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path  string
 		fails bool
 	}{{
-		path:  "./kafkachannel-latest.yaml",
+		path:  "./1-channel-consolidated.yaml",
 		fails: false,
 	}, {
-		path:  "./kafkasource-latest.yaml",
+		path:  "./2-source.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",
