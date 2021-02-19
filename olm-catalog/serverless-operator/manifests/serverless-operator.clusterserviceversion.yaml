@@ -514,6 +514,7 @@ spec:
                       - name: "IMAGE_KN_CLI_ARTIFACTS"
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:kn-cli-artifacts"
                       - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-source-controller"
                       - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-receive-adapter"
@@ -525,6 +526,19 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-webhook"
+=======
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-source-controller"
+                      - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-receive-adapter"
+                      - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-consolidated-controller"
+                      - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-consolidated-dispatcher"
+                      - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-consolidated-dispatcher"
+                      - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
+                        value: "registry.svc.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-kafka-webhook"
+>>>>>>> 82f004ba... Bump knative-kafka to v0.20.0, update generated-files
         - name: knative-openshift-ingress
           spec:
             replicas: 1
