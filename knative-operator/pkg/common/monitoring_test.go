@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
@@ -30,6 +31,7 @@ var (
 func init() {
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
 	os.Setenv(TestRolePath, "testdata/role-service-monitor.yaml")
+	os.Setenv(operatorServiceMonitorNameEnvKey, "knative-openshift-metrics-3")
 }
 
 func TestSetupMonitoringRequirements(t *testing.T) {
@@ -71,5 +73,73 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	}
 	if sub.Namespace != "openshift-monitoring" {
 		t.Errorf("got %q, want %q", sub.Namespace, "openshift-monitoring")
+	}
+}
+
+func TestRemoveOldServiceMonitorResources(t *testing.T) {
+	oldSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "knative-openshift-metrics-2",
+		},
+	}
+	oldSMService := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "knative-openshift-metrics-2",
+		},
+	}
+	newSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "knative-openshift-metrics-3",
+		},
+	}
+	newSMService := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "knative-openshift-metrics-3",
+		},
+	}
+	randomSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "random",
+		},
+	}
+	randomService := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: operatorNamespace.Name,
+			Name:      "random",
+		},
+	}
+	initObjs := []client.Object{&operatorNamespace, &oldSM, &oldSMService, &newSM, &newSMService, &randomSM, &randomService}
+	cl := fake.NewClientBuilder().WithObjects(initObjs...).Build()
+	if err := RemoveOldServiceMonitorResources(operatorNamespace.Name, cl); err != nil {
+		t.Errorf("Failed to remove old service monitor resources: %w", err)
+	}
+	smList := monitoringv1.ServiceMonitorList{}
+	if err := cl.List(context.TODO(), &smList, client.InNamespace(operatorNamespace.Name)); err != nil {
+		t.Errorf("Failed to list available service monitors: %w", err)
+	}
+	if len(smList.Items) != 2 {
+		t.Errorf("got %d, want %d", len(smList.Items), 2)
+	}
+	for _, sm := range smList.Items {
+		if sm.Name != "knative-openshift-metrics-3" && sm.Name != "random" {
+			t.Errorf("got %q, want %q", sm.Name, "knative-openshift-metrics-3 or random")
+		}
+	}
+	smServiceList := corev1.ServiceList{}
+	if err := cl.List(context.TODO(), &smServiceList, client.InNamespace(operatorNamespace.Name)); err != nil {
+		t.Errorf("Failed to list available services: %w", err)
+	}
+	if len(smServiceList.Items) != 2 {
+		t.Errorf("got %d, want %d", len(smServiceList.Items), 2)
+	}
+	for _, sv := range smServiceList.Items {
+		if sv.Name != "knative-openshift-metrics-3" && sv.Name != "random" {
+			t.Errorf("got %q, want %q", sv.Name, "knative-openshift-metrics-3 or random")
+		}
 	}
 }

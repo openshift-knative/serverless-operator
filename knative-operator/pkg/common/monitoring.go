@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,9 +23,11 @@ const (
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
-	monitoringLabel = "openshift.io/cluster-monitoring"
-	rolePath        = "deploy/resources/monitoring/role-service-monitor.yaml"
-	TestRolePath    = "TEST_ROLE_PATH"
+	monitoringLabel                   = "openshift.io/cluster-monitoring"
+	rolePath                          = "deploy/resources/monitoring/role-service-monitor.yaml"
+	TestRolePath                      = "TEST_ROLE_PATH"
+	operatorServiceMonitorNameEnvKey  = "OPERATOR_SERVICE_MONITOR_NAME"
+	operatorServiceMonitorDefaultName = "knative-openshift-metrics-3"
 )
 
 func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
@@ -32,6 +38,36 @@ func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
 	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), getRolePath(), api)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func RemoveOldServiceMonitorResources(namespace string, api client.Client) error {
+	currentSMName := os.Getenv(operatorServiceMonitorNameEnvKey)
+	if currentSMName == "" {
+		currentSMName = operatorServiceMonitorDefaultName
+	}
+	smList := monitoringv1.ServiceMonitorList{}
+	if err := api.List(context.TODO(), &smList, client.InNamespace(namespace)); err != nil {
+		return err
+	}
+	for _, sm := range smList.Items {
+		// Skip the sm that is being installed with the current operator version
+		if sm.Name != currentSMName && strings.HasPrefix(sm.Name, "knative-openshift-metrics-") {
+			// Delete service monitor and the related service monitor service, skip error if not found
+			if err := api.Delete(context.TODO(), sm); err != nil && !errors.IsNotFound(err) {
+				return err
+			}
+			service := v1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: namespace,
+					Name:      sm.Name,
+				},
+			}
+			if err := api.Delete(context.TODO(), &service); err != nil && !errors.IsNotFound(err) {
+				return err
+			}
+		}
 	}
 	return nil
 }
