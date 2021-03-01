@@ -12,7 +12,7 @@ registry="registry.svc.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
-rbac_proxy="quay.io/brancz/kube-rbac-proxy:v0.8.0"
+rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 
 declare -a images
 declare -A images_addresses
