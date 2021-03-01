@@ -50,7 +50,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --type=merge \
     --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
 
-  image_template="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
 
   local parallel=3
 
@@ -74,7 +74,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --enable-alpha
 
   # Run the helloworld test with an image pulled into the internal registry.
-  oc tag -n serving-tests "registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
+  oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"

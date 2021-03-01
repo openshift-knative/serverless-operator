@@ -9,7 +9,7 @@ readonly EVENTING_PROBER_FILE="/tmp/eventing-prober-signal"
 function upstream_knative_eventing_e2e {
   logger.info 'Running eventing tests'
 
-  export TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
   cd "${KNATIVE_EVENTING_HOME}"
 
