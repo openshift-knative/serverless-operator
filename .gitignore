@@ -1,7 +1,6 @@
 _output/
-user*.kubeconfig
+*.kubeconfig
 users.htpasswd
-puller.kubeconfig
 # certs created by hack/lib/mesh.bash
 example.com.*
 custom.example.com.*

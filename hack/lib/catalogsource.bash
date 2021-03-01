@@ -66,6 +66,7 @@ function install_catalogsource {
     mkdir -p "${rootdir}/_output"
     find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/serverless-bundle.sha1sum"
+    oc -n "${OLM_NAMESPACE}" delete configmap serverless-bundle-sha1sums --ignore-not-found=true
     oc -n "${OLM_NAMESPACE}" create configmap serverless-bundle-sha1sums \
       --from-file="${rootdir}/_output/serverless-bundle.sha1sum"
     rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
@@ -172,6 +173,11 @@ function add_user {
   local name pass
   name=${1:?Pass a username as arg[1]}
   pass=${2:?Pass a password as arg[2]}
+
+  if oc get user "$name" >/dev/null 2>&1; then
+    logger.success "User ${name} already exists."
+    return 0
+  fi
 
   logger.info "Creating user $name:***"
   if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
