@@ -364,7 +364,7 @@ index 8e15a4d8..81dbd549 100644
              failureThreshold: 12
              initialDelaySeconds: 15
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-activator-sm-service-tls
@@ -400,7 +400,7 @@ index 8e15a4d8..81dbd549 100644
                    value: "autoscaler"
              failureThreshold: 6
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-autoscaler-sm-service-tls
@@ -436,7 +436,7 @@ index 8e15a4d8..81dbd549 100644
              - name: profiling
                containerPort: 8008
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-controller-sm-service-tls
@@ -472,7 +472,7 @@ index 8e15a4d8..81dbd549 100644
              failureThreshold: 6
              initialDelaySeconds: 20
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-webhook-sm-service-tls
@@ -512,7 +512,7 @@ index 5c2ae1d5..4cc33302 100644
              - name: profiling
                containerPort: 8008
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-autoscaler-hpa-sm-service-tls
@@ -552,7 +552,7 @@ index a980952f..bcee5d5d 100644
              - name: profiling
                containerPort: 8008
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-domain-mapping-sm-service-tls
@@ -588,7 +588,7 @@ index a980952f..bcee5d5d 100644
              failureThreshold: 6
              initialDelaySeconds: 20
 +        - name: kube-rbac-proxy
-+          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
++          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
 +          volumeMounts:
 +            - mountPath: /etc/tls/private
 +              name: secret-domainmapping-webhook-sm-service-tls

@@ -2250,7 +2250,7 @@ spec:
             failureThreshold: 12
             initialDelaySeconds: 15
         - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-activator-sm-service-tls
@@ -2413,7 +2413,7 @@ spec:
                   value: "autoscaler"
             failureThreshold: 6
         - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-autoscaler-sm-service-tls
@@ -2544,7 +2544,7 @@ spec:
             - name: profiling
               containerPort: 8008
         - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-controller-sm-service-tls
@@ -2742,7 +2742,7 @@ spec:
             failureThreshold: 6
             initialDelaySeconds: 20
         - name: kube-rbac-proxy
-          image: quay.io/brancz/kube-rbac-proxy:v0.8.0
+          image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
           volumeMounts:
             - mountPath: /etc/tls/private
               name: secret-webhook-sm-service-tls
