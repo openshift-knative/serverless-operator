@@ -38,7 +38,7 @@ require (
 	knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
 	knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9
 	knative.dev/operator v0.20.2
-	knative.dev/pkg v0.0.0-20210107022335-51c72e24c179
+	knative.dev/pkg v0.0.0-20210217160502-b7d7ff183788
 	knative.dev/serving v0.20.0
 	sigs.k8s.io/controller-runtime v0.8.1
 	sigs.k8s.io/yaml v1.2.0
