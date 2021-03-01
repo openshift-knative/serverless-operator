@@ -874,8 +874,8 @@ github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47 h1:+TEY29DK0Xh
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47/go.mod h1:u7NRAjtYVAKokiI9LouzTv4mhds8P4S1TwdVAfbjKSk=
 github.com/openshift/knative-eventing v0.99.1-0.20210212083459-1f8c3e444cf5 h1:Zwuj4m0QWbWwgLzIjTXnT+kikkhjOHL8cTFZ7MRIMhY=
 github.com/openshift/knative-eventing v0.99.1-0.20210212083459-1f8c3e444cf5/go.mod h1:7KjOHRQTPqsH0y1NbQLnboZeWJWVTztQVd/0lFCmz7A=
-github.com/openshift/knative-serving v0.10.1-0.20210127081219-6330eae520d2 h1:73MxYyGe1wQJro6nNDXa0oH989GxCvm8vk+RVVDc3TQ=
-github.com/openshift/knative-serving v0.10.1-0.20210127081219-6330eae520d2/go.mod h1:357cOGGPTY1aNqbDeyr35/LvYn1yc0WCe0EQLTNN8Mc=
+github.com/openshift/knative-serving v0.10.1-0.20210301102056-4e0f782522f1 h1:IwdTDL+7L9Wi+I2lwIXmaOhGIuMCifglZQ5/Q3n8miU=
+github.com/openshift/knative-serving v0.10.1-0.20210301102056-4e0f782522f1/go.mod h1:CjfTUUhh2KCQaUV3epHFu3SHPCMRRYh6VBn+C3QbSmk=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing/basictracer-go v1.0.0/go.mod h1:QfBfYuafItcjQuMwinw9GhYKwFXS9KnPs5lxoYwgW74=
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
@@ -1723,6 +1723,8 @@ knative.dev/operator v0.20.1/go.mod h1:84arZGjkCDZzOY6oumgAPI/ffaOmJoNma9HptEKMI
 knative.dev/pkg v0.0.0-20201224024804-27db5ac24cfb/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179 h1:lkrgrv69iUk2qhOG9symy15kJUaJZmMybSloi7C3gIw=
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
+knative.dev/pkg v0.0.0-20210217160502-b7d7ff183788 h1:cAJhicFIoAcL/oMR2HpNz9rOXBJjPPCRS+h5oVe07Ak=
+knative.dev/pkg v0.0.0-20210217160502-b7d7ff183788/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
 knative.dev/reconciler-test v0.0.0-20210108100436-db4d65735605/go.mod h1:rmQpZseeqDpg6/ToFzIeV5hTRkOJujaXBCK7iYL7M4E=
 pgregory.net/rapid v0.3.3 h1:jCjBsY4ln4Atz78QoBWxUEvAHaFyNDQg9+WU62aCn1U=
 pgregory.net/rapid v0.3.3/go.mod h1:UYpPVyjFHzYBGHIxLFoupi8vwk6rXNzRY9OMvVxFIOU=
