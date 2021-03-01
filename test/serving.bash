@@ -63,7 +63,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template"
+    --imagetemplate "$image_template" \
     --enable-beta \
     --enable-alpha
 
