@@ -19,12 +19,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// This needs to remain "knative-eventing-openshift" to be compatible with earlier versions.
-const finalizerName = "knative-eventing-openshift"
+const (
+	// This needs to remain "knative-eventing-openshift" to be compatible with earlier versions.
+	finalizerName = "knative-eventing-openshift"
+
+	requiredNsKey = "REQUIRED_EVENTING_NAMESPACE"
+)
 
 var log = common.Log.WithName("controller")
 
@@ -39,7 +44,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
-	if ns, required := os.LookupEnv("REQUIRED_EVENTING_NAMESPACE"); required {
+	if ns, required := os.LookupEnv(requiredNsKey); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		}})
@@ -60,7 +65,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeEventing
-	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
+	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+		requiredNs := os.Getenv(requiredNsKey)
+		if requiredNs == "" {
+			return true
+		}
+		return obj.GetNamespace() == requiredNs
+	}))
 }
 
 // blank assignment to verify that ReconcileKnativeEventing implements reconcile.Reconciler
@@ -77,6 +88,13 @@ type ReconcileKnativeEventing struct {
 // Reconcile reads that state of the cluster for a KnativeEventing
 func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+
+	// Immediately abort reconcilation if not in the correct namespace.
+	requiredNs := os.Getenv(requiredNsKey)
+	if requiredNs != "" && request.Namespace != requiredNs {
+		return reconcile.Result{}, nil
+	}
+
 	reqLogger.Info("Reconciling KnativeEventing")
 
 	// Fetch the KnativeEventing instance
