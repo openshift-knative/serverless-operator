@@ -22,9 +22,9 @@ const (
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
-	monitoringLabel                   = "openshift.io/cluster-monitoring"
-	rolePath                          = "deploy/resources/monitoring/role-service-monitor.yaml"
-	TestRolePath                      = "TEST_ROLE_PATH"
+	monitoringLabel = "openshift.io/cluster-monitoring"
+	rolePath        = "deploy/resources/monitoring/role-service-monitor.yaml"
+	TestRolePath    = "TEST_ROLE_PATH"
 )
 
 func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
@@ -43,7 +43,7 @@ func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client
 	oldSM := monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
-			Name:     "knative-openshift-metrics",
+			Name:      "knative-openshift-metrics",
 		},
 	}
 	oldService := v1.Service{
