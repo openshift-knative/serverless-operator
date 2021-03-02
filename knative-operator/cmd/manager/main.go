@@ -143,10 +143,9 @@ func setupMonitoring(cfg *rest.Config) error {
 		return err
 	}
 
-	// OLM does not handle old service monitor resources during upgrade
-	// so we have to remove them manually. If the resources are not removed Prometheus
-	// scrapes all services leading to a storm of errors, check SRVCOM-1237 for more
-	if err = common.RemoveOldServiceMonitorResources(namespace, cl); err != nil {
+	// If we upgrade from an old version we need to remove the old Service Monitor
+	// that is not managed by OLM. See SRVCOM-1237 for more.
+	if err = common.RemoveOldServiceMonitorResourcesIfExist(namespace, cl); err != nil {
 		return err
 	}
 

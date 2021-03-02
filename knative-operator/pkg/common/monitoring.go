@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
@@ -26,8 +25,6 @@ const (
 	monitoringLabel                   = "openshift.io/cluster-monitoring"
 	rolePath                          = "deploy/resources/monitoring/role-service-monitor.yaml"
 	TestRolePath                      = "TEST_ROLE_PATH"
-	operatorServiceMonitorNameEnvKey  = "OPERATOR_SERVICE_MONITOR_NAME"
-	operatorServiceMonitorDefaultName = "knative-openshift-metrics-3"
 )
 
 func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
@@ -42,32 +39,24 @@ func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
 	return nil
 }
 
-func RemoveOldServiceMonitorResources(namespace string, api client.Client) error {
-	currentSMName := os.Getenv(operatorServiceMonitorNameEnvKey)
-	if currentSMName == "" {
-		currentSMName = operatorServiceMonitorDefaultName
+func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client) error {
+	oldSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:     "knative-openshift-metrics",
+		},
 	}
-	smList := monitoringv1.ServiceMonitorList{}
-	if err := api.List(context.TODO(), &smList, client.InNamespace(namespace)); err != nil {
+	oldService := v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      oldSM.Name,
+		},
+	}
+	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
-	for _, sm := range smList.Items {
-		// Skip the sm that is being installed with the current operator version
-		if sm.Name != currentSMName && strings.HasPrefix(sm.Name, "knative-openshift-metrics-") {
-			// Delete service monitor and the related service monitor service, skip error if not found
-			if err := api.Delete(context.TODO(), sm); err != nil && !errors.IsNotFound(err) {
-				return err
-			}
-			service := v1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
-					Name:      sm.Name,
-				},
-			}
-			if err := api.Delete(context.TODO(), &service); err != nil && !errors.IsNotFound(err) {
-				return err
-			}
-		}
+	if err := api.Delete(context.Background(), &oldService); err != nil && !errors.IsNotFound(err) {
+		return err
 	}
 	return nil
 }

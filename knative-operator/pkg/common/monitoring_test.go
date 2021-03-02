@@ -31,7 +31,6 @@ var (
 func init() {
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
 	os.Setenv(TestRolePath, "testdata/role-service-monitor.yaml")
-	os.Setenv(operatorServiceMonitorNameEnvKey, "knative-openshift-metrics-3")
 }
 
 func TestSetupMonitoringRequirements(t *testing.T) {
@@ -80,13 +79,13 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 	oldSM := monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: operatorNamespace.Name,
-			Name:      "knative-openshift-metrics-2",
+			Name:      "knative-openshift-metrics",
 		},
 	}
 	oldSMService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: operatorNamespace.Name,
-			Name:      "knative-openshift-metrics-2",
+			Name:      "knative-openshift-metrics",
 		},
 	}
 	newSM := monitoringv1.ServiceMonitor{
@@ -115,7 +114,7 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 	}
 	initObjs := []client.Object{&operatorNamespace, &oldSM, &oldSMService, &newSM, &newSMService, &randomSM, &randomService}
 	cl := fake.NewClientBuilder().WithObjects(initObjs...).Build()
-	if err := RemoveOldServiceMonitorResources(operatorNamespace.Name, cl); err != nil {
+	if err := RemoveOldServiceMonitorResourcesIfExist(operatorNamespace.Name, cl); err != nil {
 		t.Errorf("Failed to remove old service monitor resources: %w", err)
 	}
 	smList := monitoringv1.ServiceMonitorList{}
