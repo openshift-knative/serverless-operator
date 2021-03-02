@@ -18,6 +18,10 @@ func NewExtension(ctx context.Context) operator.Extension {
 
 type extension struct{}
 
+func (e *extension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
+	return nil, nil
+}
+
 func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 	return nil
 }

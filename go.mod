@@ -37,7 +37,7 @@ require (
 	knative.dev/eventing-kafka v0.20.1-0.20210202112232-900179eb4a86
 	knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
 	knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9
-	knative.dev/operator v0.20.1
+	knative.dev/operator v0.20.2
 	knative.dev/pkg v0.0.0-20210217160502-b7d7ff183788
 	knative.dev/serving v0.20.0
 	sigs.k8s.io/controller-runtime v0.8.1

@@ -328,6 +328,7 @@ github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153/go.mod h1:/Zj4wYkgs4iZTTu3o/KG3Itv/qCCa8VVMlb3i9OVuzc=
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
+github.com/emicklei/go-restful v2.9.5+incompatible h1:spTtZBk5DYEvbxMVutUuTyh1Ao2r4iyvLdACqsl/Ljk=
 github.com/emicklei/go-restful v2.9.5+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/emicklei/go-restful v2.11.1+incompatible h1:CjKsv3uWcCMvySPQYKxO8XX3f9zD4FeZRsW4G0B4ffE=
 github.com/emicklei/go-restful v2.11.1+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
@@ -741,7 +742,6 @@ github.com/manifestival/client-go-client v0.4.0/go.mod h1:owh5niEChTR28jc8hJVGnX
 github.com/manifestival/controller-runtime-client v0.4.0 h1:AK+nTZ1rhPTfAc3upnSe3TiOvAWuRmxi1vjEr55dSUM=
 github.com/manifestival/controller-runtime-client v0.4.0/go.mod h1:DrsviSegfdlpVsynTUZonKE5gFkMQupenlzVmDbC6S0=
 github.com/manifestival/manifestival v0.6.0/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
-github.com/manifestival/manifestival v0.6.1 h1:sq7bo3j3NdPsswM4IGoq5qyiKjMsNHK2OEj9BP4v0jI=
 github.com/manifestival/manifestival v0.6.1/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
 github.com/manifestival/manifestival v0.7.0 h1:8JC8CUCmjCst9mQUivrhW+TWu4JsptNrXK99ee23acA=
 github.com/manifestival/manifestival v0.7.0/go.mod h1:yn71DeI/zZKgYZmbu6mvliEWo4175gmz3ihK8ZmXfhI=
@@ -1718,8 +1718,8 @@ knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24 h1:kIztWfvnIFV8Lhlea02K3YO2m
 knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9 h1:7SXik2ulHr7URICeDYHPVdnyuT72RW9GouJ97XRkWbo=
 knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9/go.mod h1:N123KICErXy+bPo1oBszM6TVYGG0Za2wMmnEqX4MlFg=
-knative.dev/operator v0.20.1 h1:MA2LG0mUTpUpYesxmsljGO5GG8FlvxB9s9amIGyMEV0=
-knative.dev/operator v0.20.1/go.mod h1:84arZGjkCDZzOY6oumgAPI/ffaOmJoNma9HptEKMIGs=
+knative.dev/operator v0.20.2 h1:RCG7Kterpvhqbs2s7JUy1xElUWNvKU3yj56mbi+Uehw=
+knative.dev/operator v0.20.2/go.mod h1:84arZGjkCDZzOY6oumgAPI/ffaOmJoNma9HptEKMIGs=
 knative.dev/pkg v0.0.0-20201224024804-27db5ac24cfb/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179 h1:lkrgrv69iUk2qhOG9symy15kJUaJZmMybSloi7C3gIw=
 knative.dev/pkg v0.0.0-20210107022335-51c72e24c179/go.mod h1:hckgW978SdzPA2H5EDvRPY8xsnPuDZLJLbPf8Jte7Q0=
