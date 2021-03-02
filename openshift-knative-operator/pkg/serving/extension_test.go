@@ -43,6 +43,7 @@ func init() {
 	os.Setenv("IMAGE_foo", "bar")
 	os.Setenv("IMAGE_default", "bar2")
 	os.Setenv("IMAGE_queue-proxy", "baz")
+	os.Setenv(requiredNsKey, servingNamespace.Name)
 }
 
 func TestReconcile(t *testing.T) {
@@ -134,10 +135,24 @@ func TestReconcile(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
 		}),
+	}, {
+		name: "wrong namespace",
+		in: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Namespace = "foo"
+		}),
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Namespace = "foo"
+			ks.Status.MarkInstallFailed(`Knative Serving must be installed into the namespace "knative-serving"`)
+		}),
 	}}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			// Default the namespace to the correct one if not set for brevity.
+			if c.in.Namespace == "" {
+				c.in.Namespace = servingNamespace.Name
+			}
+
 			objs := c.objs
 			if objs == nil {
 				objs = []runtime.Object{defaultIngress}
@@ -270,7 +285,7 @@ func TestMonitoring(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			objs := []runtime.Object{defaultIngress, &servingNamespace}
 			ks := c.in.DeepCopy()
-			ks.Namespace = "knative-serving"
+			ks.Namespace = servingNamespace.Name
 			c.expected.Namespace = ks.Namespace
 			ctx, _ := ocpfake.With(context.Background(), objs...)
 			ctx, kube := kubefake.With(ctx, &servingNamespace)
@@ -302,6 +317,9 @@ func TestMonitoring(t *testing.T) {
 
 func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 	base := &v1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: servingNamespace.Name,
+		},
 		Spec: v1alpha1.KnativeServingSpec{
 			CommonSpec: v1alpha1.CommonSpec{
 				Config: v1alpha1.ConfigMapData{

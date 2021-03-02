@@ -2,6 +2,7 @@ package eventing
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	mf "github.com/manifestival/manifestival"
@@ -9,7 +10,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
+	"knative.dev/pkg/controller"
 )
+
+const requiredNsKey = "REQUIRED_EVENTING_NAMESPACE"
 
 // NewExtension creates a new extension for a Knative Eventing controller.
 func NewExtension(ctx context.Context) operator.Extension {
@@ -28,6 +32,12 @@ func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ke := comp.(*v1alpha1.KnativeEventing)
+
+	requiredNs := os.Getenv(requiredNsKey)
+	if requiredNs != "" && ke.Namespace != requiredNs {
+		ke.Status.MarkInstallFailed(fmt.Sprintf("Knative Eventing must be installed into the namespace %q", requiredNs))
+		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ke.Namespace))
+	}
 
 	// Override images.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.

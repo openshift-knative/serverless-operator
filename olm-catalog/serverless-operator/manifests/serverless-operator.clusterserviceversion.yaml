@@ -300,6 +300,10 @@ spec:
                             fieldPath: metadata.namespace
                       - name: METRICS_DOMAIN
                         value: knative.dev/serving-operator
+                      - name: REQUIRED_SERVING_NAMESPACE
+                        value: "knative-serving"
+                      - name: REQUIRED_EVENTING_NAMESPACE
+                        value: "knative-eventing"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-serving-queue"
                       - name: "IMAGE_activator"

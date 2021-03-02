@@ -300,6 +300,10 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
+                - name: REQUIRED_SERVING_NAMESPACE
+                  value: "knative-serving"
+                - name: REQUIRED_EVENTING_NAMESPACE
+                  value: "knative-eventing"
                 # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                 image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
                 imagePullPolicy: IfNotPresent

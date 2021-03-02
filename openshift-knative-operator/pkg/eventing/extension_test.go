@@ -8,13 +8,18 @@ import (
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/apis"
 )
+
+const requiredNs = "knative-eventing"
 
 func TestReconcile(t *testing.T) {
 	os.Setenv("IMAGE_foo", "bar")
 	os.Setenv("IMAGE_default", "bar2")
+	os.Setenv(requiredNsKey, requiredNs)
 
 	cases := []struct {
 		name     string
@@ -54,16 +59,35 @@ func TestReconcile(t *testing.T) {
 		expected: ke(func(ke *v1alpha1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "inclusion"
 		}),
+	}, {
+		name: "Wrong namespace",
+		in: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Namespace = "foo"
+		}),
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Namespace = "foo"
+			ke.Status.MarkInstallFailed(`Knative Eventing must be installed into the namespace "knative-eventing"`)
+		}),
 	}}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			// Default the namespace to the correct one if not set for brevity.
+			if c.in.Namespace == "" {
+				c.in.Namespace = requiredNs
+			}
+
 			ks := c.in.DeepCopy()
 			ext := NewExtension(context.Background())
 			ext.Reconcile(context.Background(), ks)
 
-			if !cmp.Equal(ks, c.expected) {
-				t.Errorf("Got = %v, want: %v, diff:\n%s", ks, c.expected, cmp.Diff(ks, c.expected))
+			// Ignore time differences.
+			opt := cmp.Comparer(func(apis.VolatileTime, apis.VolatileTime) bool {
+				return true
+			})
+
+			if !cmp.Equal(ks, c.expected, opt) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", ks, c.expected, cmp.Diff(ks, c.expected, opt))
 			}
 		})
 	}
@@ -71,6 +95,9 @@ func TestReconcile(t *testing.T) {
 
 func ke(mods ...func(*v1alpha1.KnativeEventing)) *v1alpha1.KnativeEventing {
 	base := &v1alpha1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: requiredNs,
+		},
 		Spec: v1alpha1.KnativeEventingSpec{
 			SinkBindingSelectionMode: "inclusion",
 			CommonSpec: v1alpha1.CommonSpec{
