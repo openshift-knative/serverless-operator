@@ -9,25 +9,37 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
 
 const (
-	EnableMonitoringEnvVar       = "ENABLE_SERVING_MONITORING_BY_DEFAULT"
-	EnableMonitoringLabel        = "openshift.io/cluster-monitoring"
-	ObservabilityCMName          = "observability"
-	ObservabilityBackendKey      = "metrics.backend-destination"
-	OpenshiftMonitoringNamespace = "openshift-monitoring"
+	EnableMonitoringEnvVar        = "ENABLE_SERVING_MONITORING_BY_DEFAULT"
+	EnableMonitoringLabel         = "openshift.io/cluster-monitoring"
+	ObservabilityCMName           = "observability"
+	ObservabilityBackendKey       = "metrics.backend-destination"
+	OpenshiftMonitoringNamespace  = "openshift-monitoring"
+	prometheusRoleName            = "knative-serving-prometheus-k8s"
+	prometheusClusterRoleName     = "rbac-proxy-metrics-prom"
+	servingSMRbacManifestPath     = "SERVING_SM_RBAC_MANIFEST_PATH"
+	servingSMResourceManifestPath = "SERVING_SM_RESOURCE_MANIFEST_PATH"
 )
 
-const (
-	prometheusRoleName        = "knative-serving-prometheus-k8s"
-	prometheusClusterRoleName = "rbac-proxy-metrics-prom"
+var (
+	servingComponents = []string{"activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook"}
 )
+
+func init() {
+	builder := runtime.NewSchemeBuilder(monitoringv1.AddToScheme)
+	_ = builder.AddToScheme(scheme.Scheme)
+}
 
 func ReconcileServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
 	backend := ks.Spec.CommonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
@@ -105,6 +117,77 @@ func InjectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 					m["namespace"] = subjectNamespace
 				}
 			}
+		}
+		return nil
+	}
+}
+
+func LoadServingMonitoringPlatformManifests() ([]mf.Manifest, error) {
+	rbacPath := os.Getenv(servingSMRbacManifestPath)
+	if rbacPath == "" {
+		return nil, fmt.Errorf("failed to get the Serving sm rbac manifest path")
+	}
+	rbacManifest, err := mf.NewManifest(rbacPath)
+	if err != nil {
+		return nil, err
+	}
+	resourcePath := os.Getenv(servingSMResourceManifestPath)
+	if resourcePath == "" {
+		return nil, fmt.Errorf("failed to get the Serving sm resource manifest path")
+	}
+	smBlueprint, err := mf.NewManifest(resourcePath)
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range servingComponents {
+		smManifest, err := constructServiceMonitorResourceManifests(c, smBlueprint.Resources())
+		if err != nil {
+			return nil, err
+		}
+		if smManifest != nil {
+			rbacManifest = rbacManifest.Append(*smManifest)
+		}
+	}
+	return []mf.Manifest{rbacManifest}, nil
+}
+
+func constructServiceMonitorResourceManifests(component string, resources []unstructured.Unstructured) (*mf.Manifest, error) {
+	smManifest, err := mf.ManifestFrom(mf.Slice(resources))
+	if err != nil {
+		return nil, err
+	}
+	transforms := []mf.Transformer{transformSMResources(component)}
+	if smManifest, err = smManifest.Transform(transforms...); err != nil {
+		return nil, fmt.Errorf("unable to transform service monitor resource manifest: %w", err)
+	}
+	return &smManifest, nil
+}
+
+func transformSMResources(component string) mf.Transformer {
+	prefix := "component"
+	certAnnotation := "service.beta.openshift.io/serving-cert-secret-name"
+	return func(u *unstructured.Unstructured) error {
+		kind := strings.ToLower(u.GetKind())
+		switch kind {
+		case "servicemonitor":
+			var sm = &monitoringv1.ServiceMonitor{}
+			if err := scheme.Scheme.Convert(u, sm, nil); err != nil {
+				return err
+			}
+			sm.Name = strings.Replace(sm.Name, prefix, component, 1)
+			sm.Spec.Endpoints[0].TLSConfig.ServerName = strings.Replace(sm.Spec.Endpoints[0].TLSConfig.ServerName, prefix, component, 1)
+			sm.Spec.Selector.MatchLabels["name"] = strings.Replace(sm.Spec.Selector.MatchLabels["name"], prefix, component, 1)
+			return scheme.Scheme.Convert(sm, u, nil)
+		case "service":
+			var sv = &corev1.Service{}
+			if err := scheme.Scheme.Convert(u, sv, nil); err != nil {
+				return err
+			}
+			sv.Name = strings.Replace(sv.Name, prefix, component, 1)
+			sv.Labels["name"] = strings.Replace(sv.Labels["name"], prefix, component, 1)
+			sv.Annotations[certAnnotation] = strings.Replace(sv.Annotations[certAnnotation], prefix, component, 1)
+			sv.Spec.Selector["app"] = strings.Replace(sv.Spec.Selector["app"], prefix, component, 1)
+			return scheme.Scheme.Convert(sv, u, nil)
 		}
 		return nil
 	}
