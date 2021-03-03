@@ -7,8 +7,11 @@ import (
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,6 +34,28 @@ func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
 	}
 	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), getRolePath(), api)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client) error {
+	oldSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      "knative-openshift-metrics",
+		},
+	}
+	oldService := v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      oldSM.Name,
+		},
+	}
+	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	if err := api.Delete(context.Background(), &oldService); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 	return nil
