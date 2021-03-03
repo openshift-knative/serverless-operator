@@ -16,9 +16,13 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/controller"
 )
 
-const loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+const (
+	loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+	requiredNsEnvName  = "REQUIRED_SERVING_NAMESPACE"
+)
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context) operator.Extension {
@@ -43,6 +47,13 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
+
+	// Make sure Knative Serving is always installed in the defined namespace.
+	requiredNs := os.Getenv(requiredNsEnvName)
+	if requiredNs != "" && ks.Namespace != requiredNs {
+		ks.Status.MarkInstallFailed(fmt.Sprintf("Knative Serving must be installed into the namespace %q", requiredNs))
+		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ks.Namespace))
+	}
 
 	// Mark the Kourier dependency as installing to avoid race conditions with readiness.
 	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsUnknown() {

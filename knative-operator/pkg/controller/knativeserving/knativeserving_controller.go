@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -45,6 +46,8 @@ const (
 	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
 	// controller's PodTemplate to make it redeploy on certificate changes.
 	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
+
+	requiredNsEnvName = "REQUIRED_SERVING_NAMESPACE"
 )
 
 var log = common.Log.WithName("controller")
@@ -60,7 +63,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
-	if ns, required := os.LookupEnv("REQUIRED_SERVING_NAMESPACE"); required {
+	if ns, required := os.LookupEnv(requiredNsEnvName); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		}})
@@ -80,8 +83,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to primary resource KnativeServing
-	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
+	requiredNs := os.Getenv(requiredNsEnvName)
+	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+		if requiredNs == "" {
+			return true
+		}
+		return obj.GetNamespace() == requiredNs
+	}))
 	if err != nil {
 		return err
 	}
