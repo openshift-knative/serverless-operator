@@ -21,7 +21,7 @@ import (
 
 const (
 	loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
-	requiredNsKey      = "REQUIRED_SERVING_NAMESPACE"
+	requiredNsEnvName  = "REQUIRED_SERVING_NAMESPACE"
 )
 
 // NewExtension creates a new extension for a Knative Serving controller.
@@ -49,7 +49,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	ks := comp.(*v1alpha1.KnativeServing)
 
 	// Make sure Knative Serving is always installed in the defined namespace.
-	requiredNs := os.Getenv(requiredNsKey)
+	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ks.Namespace != requiredNs {
 		ks.Status.MarkInstallFailed(fmt.Sprintf("Knative Serving must be installed into the namespace %q", requiredNs))
 		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ks.Namespace))

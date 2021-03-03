@@ -43,7 +43,7 @@ func init() {
 	os.Setenv("IMAGE_foo", "bar")
 	os.Setenv("IMAGE_default", "bar2")
 	os.Setenv("IMAGE_queue-proxy", "baz")
-	os.Setenv(requiredNsKey, servingNamespace.Name)
+	os.Setenv(requiredNsEnvName, servingNamespace.Name)
 }
 
 func TestReconcile(t *testing.T) {

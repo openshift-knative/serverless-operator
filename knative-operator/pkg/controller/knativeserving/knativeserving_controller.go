@@ -47,7 +47,7 @@ const (
 	// controller's PodTemplate to make it redeploy on certificate changes.
 	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
 
-	requiredNsKey = "REQUIRED_SERVING_NAMESPACE"
+	requiredNsEnvName = "REQUIRED_SERVING_NAMESPACE"
 )
 
 var log = common.Log.WithName("controller")
@@ -63,7 +63,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
-	if ns, required := os.LookupEnv(requiredNsKey); required {
+	if ns, required := os.LookupEnv(requiredNsEnvName); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		}})
@@ -84,8 +84,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
+	requiredNs := os.Getenv(requiredNsEnvName)
 	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
-		requiredNs := os.Getenv(requiredNsKey)
 		if requiredNs == "" {
 			return true
 		}

@@ -19,7 +19,7 @@ const requiredNs = "knative-eventing"
 func TestReconcile(t *testing.T) {
 	os.Setenv("IMAGE_foo", "bar")
 	os.Setenv("IMAGE_default", "bar2")
-	os.Setenv(requiredNsKey, requiredNs)
+	os.Setenv(requiredNsEnvName, requiredNs)
 
 	cases := []struct {
 		name     string

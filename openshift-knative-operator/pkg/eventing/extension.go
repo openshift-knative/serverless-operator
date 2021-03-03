@@ -13,7 +13,7 @@ import (
 	"knative.dev/pkg/controller"
 )
 
-const requiredNsKey = "REQUIRED_EVENTING_NAMESPACE"
+const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
 
 // NewExtension creates a new extension for a Knative Eventing controller.
 func NewExtension(ctx context.Context) operator.Extension {
@@ -33,7 +33,7 @@ func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ke := comp.(*v1alpha1.KnativeEventing)
 
-	requiredNs := os.Getenv(requiredNsKey)
+	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ke.Namespace != requiredNs {
 		ke.Status.MarkInstallFailed(fmt.Sprintf("Knative Eventing must be installed into the namespace %q", requiredNs))
 		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ke.Namespace))

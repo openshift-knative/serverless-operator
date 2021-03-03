@@ -28,7 +28,7 @@ const (
 	// This needs to remain "knative-eventing-openshift" to be compatible with earlier versions.
 	finalizerName = "knative-eventing-openshift"
 
-	requiredNsKey = "REQUIRED_EVENTING_NAMESPACE"
+	requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
 )
 
 var log = common.Log.WithName("controller")
@@ -44,7 +44,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	// Create required namespace first.
-	if ns, required := os.LookupEnv(requiredNsKey); required {
+	if ns, required := os.LookupEnv(requiredNsEnvName); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		}})
@@ -65,8 +65,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource KnativeEventing
+	requiredNs := os.Getenv(requiredNsEnvName)
 	return c.Watch(&source.Kind{Type: &eventingv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
-		requiredNs := os.Getenv(requiredNsKey)
 		if requiredNs == "" {
 			return true
 		}
