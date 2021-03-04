@@ -26,7 +26,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if err := manifest.Apply(); err != nil {
 		t.Errorf("Unable to apply the test manifest %w", err)
 	}
-	u := createDeployment("activator", "knative-serving")
+	u := createDeployment("activator", servingNamespace)
 	depU, err := client.Get(u)
 	if err != nil {
 		t.Errorf("Unable to get the deployment %w", err)
@@ -35,7 +35,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if err := scheme.Scheme.Convert(depU, deployment, nil); err != nil {
 		t.Errorf("Unable to convert deployment %w", err)
 	}
-	// Respect existing volumes (eg. controller gets extra volumes due to custom certs)
+	// Make sure we respect existing volumes (eg. controller gets extra volumes due to custom certs)
 	if len(deployment.Spec.Template.Spec.Volumes) != 2 {
 		t.Errorf("Got %d, want %d", len(deployment.Spec.Template.Spec.Volumes), 2)
 	}
@@ -49,6 +49,10 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	}
 	if rbacContainer.Image != fallbackImage {
 		t.Errorf("Got %q, want %q", rbacContainer.Image, fallbackImage)
+	}
+	// Make sure we define requests otherwise K8s hpa will complain
+	if len(rbacContainer.Resources.Requests) != 2 {
+		t.Errorf("Got %q, want %q", len(rbacContainer.Resources.Requests), 2)
 	}
 }
 func envToString(vars []v1.EnvVar) string {

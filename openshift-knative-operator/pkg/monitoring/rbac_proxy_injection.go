@@ -23,7 +23,6 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related deployments
 		joinedComp := strings.Join(servingComponents, ",")
-
 		if kind == "deployment" && strings.Contains(joinedComp, u.GetName()) {
 			var dep = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
