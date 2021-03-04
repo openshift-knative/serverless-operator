@@ -161,7 +161,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 		for _, cond := range s.Status.Conditions {
 			// After global proxy update every call goes through proxy server
 			// Here it give unable to pull image because it tries to connect to not running http server
-			if strings.Contains(cond.Message, "failed to fetch image information") && strings.Contains(cond.Message, proxyIP) {
+			if strings.Contains(cond.Message, "failed to resolve image to digest") {
 				return true, nil
 			}
 		}
