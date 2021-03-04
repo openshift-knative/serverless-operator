@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activator
+  namespace: knative-serving
+  labels:
+    serving.knative.dev/release: "v0.20.0"
+spec:
+  selector:
+    matchLabels:
+      app: activator
+      role: activator
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+      labels:
+        app: activator
+        role: activator
+        serving.knative.dev/release: "v0.20.0"
+    spec:
+      serviceAccountName: controller
+      volumes:
+        - name: secret-foo
+          secret:
+            secretName: foo
+      containers:
+        - name: activator
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:cbeb1cdcdde8b3b44bc5eb1c5a07512a36f4bd7fbee5e9677e8789ee2459b6ed
+          # The numbers are based on performance test results from
+          # https://github.com/knative/serving/issues/1625#issuecomment-511930023
+          resources:
+            requests:
+              cpu: 300m
+              memory: 60Mi
+            limits:
+              cpu: 1000m
+              memory: 600Mi
+          env:
+            # Run Activator with GC collection when newly generated memory is 500%.
+            - name: GOGC
+              value: "500"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
+            - name: METRICS_DOMAIN
+              value: knative.dev/internal/serving
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
+          volumeMounts:
+            - mountPath: /foo
+              name: secret-foo
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+            - name: http1
+              containerPort: 8012
+            - name: h2c
+              containerPort: 8013
+          readinessProbe:
+            httpGet:
+              port: 8012
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "activator"
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              port: 8012
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "activator"
+            failureThreshold: 12
+            initialDelaySeconds: 15
+      # The activator (often) sits on the dataplane, and may proxy long (e.g.
+      # streaming, websockets) requests.  We give a long grace period for the
+      # activator to "lame duck" and drain outstanding requests before we
+      # forcibly terminate the pod (and outstanding connections).  This value
+      # should be at least as large as the upper bound on the Revision's
+      # timeoutSeconds property to avoid servicing events disrupting
+      # connections.
+      terminationGracePeriodSeconds: 600

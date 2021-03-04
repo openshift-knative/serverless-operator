@@ -304,6 +304,10 @@ spec:
                         value: "knative-serving"
                       - name: REQUIRED_EVENTING_NAMESPACE
                         value: "knative-eventing"
+                      - name: SERVING_SM_RBAC_MANIFEST_PATH
+                        value: "/var/run/ko/monitoring/rbac-proxy.yaml"
+                      - name: SERVING_SM_RESOURCE_MANIFEST_PATH
+                        value: "/var/run/ko/monitoring/serving-sm-resources.yaml"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -366,13 +370,9 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.20.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KN_CLI_ARTIFACTS"
                         value: "registry.ci.openshift.org/openshift/knative-v0.19.1:kn-cli-artifacts"
-                      - name: SERVING_SM_RBAC_MANIFEST_PATH
-                        value: "/var/run/ko/monitoring/rbac-proxy.yaml"
-                      - name: SERVING_SM_RESOURCE_MANIFEST_PATH
-                        value: "/var/run/ko/monitoring/serving-sm-resources.yaml"
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
-                    imagePullPolicy: Always
+                    imagePullPolicy: IfNotPresent
                     name: knative-operator
                     ports:
                       - containerPort: 9090

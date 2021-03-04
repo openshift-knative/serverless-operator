@@ -42,7 +42,10 @@ func (e *extension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
 }
 
 func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
-	return []mf.Transformer{monitoring.InjectNamespaceWithSubject(ks.GetNamespace(), monitoring.OpenshiftMonitoringNamespace)}
+	return []mf.Transformer{
+		monitoring.InjectNamespaceWithSubject(ks.GetNamespace(), monitoring.OpenshiftMonitoringNamespace),
+		monitoring.InjectRbacProxyContainerToDeployments(),
+	}
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
