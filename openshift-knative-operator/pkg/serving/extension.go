@@ -37,8 +37,8 @@ type extension struct {
 	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
-	return monitoring.LoadServingMonitoringPlatformManifests()
+func (e *extension) Manifests(ks v1alpha1.KComponent) ([]mf.Manifest, error) {
+	return monitoring.LoadServingMonitoringPlatformManifests(ks.GetNamespace())
 }
 
 func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {

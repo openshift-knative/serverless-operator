@@ -22,8 +22,7 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related deployments
-		joinedComp := strings.Join(servingComponents, ",")
-		if kind == "deployment" && strings.Contains(joinedComp, u.GetName()) {
+		if kind == "deployment" && servingComponents.Has(u.GetName()) {
 			var dep = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
 				return err
@@ -49,27 +48,27 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 }
 
 func makeRbacProxyContainer(depName string) corev1.Container {
-	c := corev1.Container{}
-	c.Name = rbacContainerName
-	c.Image = getRbacProxyImage(depName)
-	c.VolumeMounts = []corev1.VolumeMount{{
-		Name:      fmt.Sprintf("secret-%s-sm-service-tls", depName),
-		MountPath: "/etc/tls/private",
-	}}
-	c.Resources = corev1.ResourceRequirements{
-		Requests: corev1.ResourceList{
-			"memory": resource.MustParse("20Mi"),
-			"cpu":    resource.MustParse("10m"),
-		}}
-	c.Args = []string{
-		"--secure-listen-address=0.0.0.0:8444",
-		"--upstream=http://127.0.0.1:9090/",
-		"--tls-cert-file=/etc/tls/private/tls.crt",
-		"--tls-private-key-file=/etc/tls/private/tls.key",
-		"--logtostderr=true",
-		"--v=10",
+	return corev1.Container{
+		Name:  rbacContainerName,
+		Image: getRbacProxyImage(depName),
+		VolumeMounts: []corev1.VolumeMount{{
+			Name:      fmt.Sprintf("secret-%s-sm-service-tls", depName),
+			MountPath: "/etc/tls/private",
+		}},
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				"memory": resource.MustParse("20Mi"),
+				"cpu":    resource.MustParse("10m"),
+			}},
+		Args: []string{
+			"--secure-listen-address=0.0.0.0:8444",
+			"--upstream=http://127.0.0.1:9090/",
+			"--tls-cert-file=/etc/tls/private/tls.crt",
+			"--tls-private-key-file=/etc/tls/private/tls.key",
+			"--logtostderr=true",
+			"--v=10",
+		},
 	}
-	return c
 }
 
 func getRbacProxyImage(depName string) string {

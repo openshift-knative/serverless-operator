@@ -2,20 +2,17 @@ package monitoring
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
-	"github.com/manifestival/manifestival/fake"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
-	client := fake.New()
-	manifest, err := mf.NewManifest("../testdata/serving-core-deployment.yaml", mf.UseClient(client))
+	manifest, err := mf.NewManifest("../testdata/serving-core-deployment.yaml")
 	if err != nil {
 		t.Errorf("Unable to load test manifest: %w", err)
 	}
@@ -23,24 +20,19 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		t.Errorf("Unable to transform test manifest: %w", err)
 	}
-	if err := manifest.Apply(); err != nil {
-		t.Errorf("Unable to apply the test manifest %w", err)
-	}
-	u := createDeployment("activator", servingNamespace)
-	depU, err := client.Get(u)
-	if err != nil {
-		t.Errorf("Unable to get the deployment %w", err)
+	if len(manifest.Resources()) != 1 {
+		t.Errorf("Got %d, want %d", len(manifest.Resources()), 1)
 	}
 	deployment := &appsv1.Deployment{}
-	if err := scheme.Scheme.Convert(depU, deployment, nil); err != nil {
-		t.Errorf("Unable to convert deployment %w", err)
+	if err := scheme.Scheme.Convert(&manifest.Resources()[0], deployment, nil); err != nil {
+		t.Errorf("Unable to convert to deployment %w", err)
 	}
 	// Make sure we respect existing volumes (eg. controller gets extra volumes due to custom certs)
 	if len(deployment.Spec.Template.Spec.Volumes) != 2 {
 		t.Errorf("Got %d, want %d", len(deployment.Spec.Template.Spec.Volumes), 2)
 	}
 	cContainer := deployment.Spec.Template.Spec.Containers[0]
-	if !strings.Contains(envToString(cContainer.Env), `"METRICS_PROMETHEUS_HOST":"127.0.0.1"`) {
+	if !envToString(cContainer.Env).Has("METRICS_PROMETHEUS_HOST:127.0.0.1") {
 		t.Error("Component container does not set up the prometheus host to localhost")
 	}
 	rbacContainer := deployment.Spec.Template.Spec.Containers[1]
@@ -55,18 +47,10 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 		t.Errorf("Got %q, want %q", len(rbacContainer.Resources.Requests), 2)
 	}
 }
-func envToString(vars []v1.EnvVar) string {
-	builder := strings.Builder{}
+func envToString(vars []v1.EnvVar) sets.String {
+	sVars := sets.String{}
 	for _, v := range vars {
-		builder.WriteString(fmt.Sprintf("%q:%q,", v.Name, v.Value))
+		sVars.Insert(fmt.Sprintf("%s:%s", v.Name, v.Value))
 	}
-	return builder.String()
-}
-func createDeployment(name string, ns string) *unstructured.Unstructured {
-	u := &unstructured.Unstructured{}
-	u.SetKind("Deployment")
-	u.SetAPIVersion("apps/v1")
-	u.SetName(name)
-	u.SetNamespace(ns)
-	return u
+	return sVars
 }
