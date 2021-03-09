@@ -13,7 +13,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -33,13 +32,11 @@ const (
 )
 
 var (
-	servingComponents = sets.String{}
+	servingComponents = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook")
 )
 
 func init() {
-	builder := runtime.NewSchemeBuilder(monitoringv1.AddToScheme)
-	_ = builder.AddToScheme(scheme.Scheme)
-	servingComponents.Insert([]string{"activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook"}...)
+	_ = monitoringv1.AddToScheme(scheme.Scheme)
 }
 
 func ReconcileServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
@@ -147,12 +144,12 @@ func LoadServingMonitoringPlatformManifests(ns string) ([]mf.Manifest, error) {
 func constructServiceMonitorResourceManifests(component string, ns string) (*mf.Manifest, error) {
 	var smU = &unstructured.Unstructured{}
 	var svU = &unstructured.Unstructured{}
-	sm := createServiceMonitor(component, ns)
-	if err := scheme.Scheme.Convert(&sm, smU, nil); err != nil {
-		return nil, err
-	}
 	sms := createServiceMonitorService(component)
 	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
+		return nil, err
+	}
+	sm := createServiceMonitor(component, ns, sms.Name)
+	if err := scheme.Scheme.Convert(&sm, smU, nil); err != nil {
 		return nil, err
 	}
 	smManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*smU, *svU}))
@@ -162,41 +159,41 @@ func constructServiceMonitorResourceManifests(component string, ns string) (*mf.
 	return &smManifest, nil
 }
 
-func createServiceMonitor(component string, ns string) monitoringv1.ServiceMonitor {
+func createServiceMonitor(component string, ns string, serviceName string) monitoringv1.ServiceMonitor {
 	return monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("%s-sm", component),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
-			Endpoints: []monitoringv1.Endpoint{
-				{
-					BearerTokenFile:   "/var/run/secrets/kubernetes.io/serviceaccount/token",
-					BearerTokenSecret: corev1.SecretKeySelector{Key: ""},
-					Port:              "https",
-					Scheme:            "https",
-					TLSConfig: &monitoringv1.TLSConfig{
-						CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
-						SafeTLSConfig: monitoringv1.SafeTLSConfig{
-							ServerName: fmt.Sprintf("%s-sm-service.knative-serving.svc", component),
-						},
+			Endpoints: []monitoringv1.Endpoint{{
+				BearerTokenFile:   "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				BearerTokenSecret: corev1.SecretKeySelector{Key: ""},
+				Port:              "https",
+				Scheme:            "https",
+				TLSConfig: &monitoringv1.TLSConfig{
+					CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
+					SafeTLSConfig: monitoringv1.SafeTLSConfig{
+						ServerName: fmt.Sprintf("%s.knative-serving.svc", serviceName),
 					},
 				},
+			},
 			},
 			NamespaceSelector: monitoringv1.NamespaceSelector{
 				MatchNames: []string{ns},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: map[string]string{"name": fmt.Sprintf("%s-sm-service", component)},
+				MatchLabels: map[string]string{"name": serviceName},
 			},
 		}}
 }
 
 func createServiceMonitorService(component string) corev1.Service {
+	serviceName := fmt.Sprintf("%s-sm-service", component)
 	return corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%s-sm-service", component),
-			Labels:      map[string]string{"name": fmt.Sprintf("%s-sm-service", component)},
-			Annotations: map[string]string{"service.beta.openshift.io/serving-cert-secret-name": fmt.Sprintf("%s-sm-service-tls", component)},
+			Name:        serviceName,
+			Labels:      map[string]string{"name": serviceName},
+			Annotations: map[string]string{"service.beta.openshift.io/serving-cert-secret-name": fmt.Sprintf("%s-tls", serviceName)},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{{
