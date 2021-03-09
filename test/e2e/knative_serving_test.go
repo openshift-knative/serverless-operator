@@ -33,7 +33,7 @@ func TestKnativeServing(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
+		if _, err := test.WithOperatorReady(caCtx, test.Flags.Subscription); err != nil {
 			t.Fatal("Failed", err)
 		}
 	})

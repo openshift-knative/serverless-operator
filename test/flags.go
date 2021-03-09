@@ -13,9 +13,15 @@ var Flags = initializeFlags()
 
 // FlagsStruct is struct that defines testing options
 type FlagsStruct struct {
-	Kubeconfigs   string // Path to .kube/config
-	CatalogSource string // CatalogSource in the openshift-marketplace namespace for the serverless-operator Subscription
-	Channel       string // serverless-operator Subscription channel
+	Kubeconfigs     string // Path to .kube/config
+	CatalogSource   string // CatalogSource in the openshift-marketplace namespace for the Serverless operator Subscription
+	Channel         string // Serverless operator Subscription channel
+	Subscription    string // Serverless operator Subscription name
+	UpgradeChannel  string // Target OLM channel for upgrades
+	CSV             string // Target CSV for upgrades
+	ServingVersion  string // Target Serving version for upgrades
+	EventingVersion string // Target Eventing version for upgrades
+	OpenShiftImage  string // Target OpenShift image for upgrades
 }
 
 func initializeFlags() *FlagsStruct {
@@ -28,9 +34,21 @@ func initializeFlags() *FlagsStruct {
 	flag.StringVar(&f.Kubeconfigs, "kubeconfigs", defaultKubeconfig,
 		"Provide the path to the `kubeconfig` file you'd like to use for these tests. The `current-context` will be used.")
 	flag.StringVar(&f.CatalogSource, "catalogsource", "serverless-operator",
-		"CatalogSource in the openshift-marketplace namespace for the serverless-operator Subscription, \"serverless-operator\" by default")
-	flag.StringVar(&f.Channel, "channel", "4.3",
-		"serverless-operator Subscription channel, \"4.3\" by default.")
+		"CatalogSource in the openshift-marketplace namespace for the Serverless operator Subscription, \"serverless-operator\" by default")
+	flag.StringVar(&f.Channel, "channel", "",
+		"Serverless operator Subscription channel, empty by default.")
+	flag.StringVar(&f.Subscription, "subscription", "serverless-operator",
+		"Serverless operator Subscription name, \"serverless-operator\" by default.")
+	flag.StringVar(&f.UpgradeChannel, "upgradechannel", "",
+		"OLM channel to be used during upgrades, empty by default.")
+	flag.StringVar(&f.CSV, "csv", "",
+		"Target ClusterServiceVersion for upgrade tests, empty by default.")
+	flag.StringVar(&f.ServingVersion, "servingversion", "",
+		"Target Serving version for upgrade tests, empty by default.")
+	flag.StringVar(&f.EventingVersion, "eventingversion", "",
+		"Target Eventing version for upgrade tests, empty by default.")
+	flag.StringVar(&f.OpenShiftImage, "openshiftimage", "",
+		"Target OpenShift image for cluster upgrades, empty by default.")
 
 	return &f
 }

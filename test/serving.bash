@@ -111,31 +111,3 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch \
     '{"spec": {"maxReplicas": '"${max_replicas}"', "minReplicas": '"${min_replicas}"'}}'
 }
-
-function actual_serving_version {
-  oc get knativeserving.operator.knative.dev \
-    knative-serving -n "${SERVING_NAMESPACE}" -o=jsonpath="{.status.version}"
-}
-
-function check_serving_upgraded {
-  local latest_serving_version
-  latest_serving_version="${1:?Pass a target serving version as arg[1]}"
-
-  logger.debug 'Check KnativeServing has the latest version with Ready status'
-  timeout 300 "[[ ! ( \$(oc get knativeserving.operator.knative.dev \
-    knative-serving -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.version}') \
-    == ${latest_serving_version} && \$(oc get knativeserving.operator.knative.dev \
-    knative-serving -n ${SERVING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') == True ) ]]"
-}
-
-function wait_for_serving_test_services_settle {
-  # Wait for all services to become ready again. Exclude the upgrade-probe as
-  # that'll be removed by the prober test above.
-  for kservice in $(oc get ksvc -n serving-tests --no-headers -o name | grep -v 'upgrade-probe'); do
-    timeout 900 "[[ \$(oc get ${kservice} -n serving-tests -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
-  done
-
-  # Give time to settle things down
-  sleep 30
-}

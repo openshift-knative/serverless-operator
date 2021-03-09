@@ -44,7 +44,7 @@ type Clients struct {
 	Dynamic            dynamic.Interface
 	Config             *rest.Config
 	Route              routev1.RouteV1Interface
-	ProxyConfig        configV1.ConfigV1Interface
+	ConfigClient       configV1.ConfigV1Interface
 	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
 	MonitoringClient   monclientv1.MonitoringV1Interface
 	Kafka              *kafkaversioned.Clientset
@@ -128,7 +128,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Serving = servingversioned.NewForConfigOrDie(cfg)
 	clients.Eventing = eventingversioned.NewForConfigOrDie(cfg)
 	clients.Route = routev1.NewForConfigOrDie(cfg)
-	clients.ProxyConfig = configV1.NewForConfigOrDie(cfg)
+	clients.ConfigClient = configV1.NewForConfigOrDie(cfg)
 	clients.Kafka = kafkaversioned.NewForConfigOrDie(cfg)
 
 	clients.OLM, err = client.NewClient(kubeconfig)

@@ -177,8 +177,7 @@ function downstream_monitoring_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local latest_cluster_version latest_serving_version latest_eventing_version \
-    image_version image_template patch channels
+  local image_version image_template patch channels
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -209,54 +208,18 @@ function run_rolling_upgrade_tests {
   go_test_e2e -tags=upgrade -timeout=30m \
     ./test/upgrade \
     -channels="${channels}" \
+    --kubeconfigs "${KUBECONFIG}" \
     --imagetemplate "${image_template}" \
+    --channel="${OLM_UPGRADE_CHANNEL}" \
+    --csv="${CURRENT_CSV}" \
+    --servingversion="${KNATIVE_SERVING_VERSION}" \
+    --eventingversion="${KNATIVE_EVENTING_VERSION}" \
+    --openshiftimage="${UPGRADE_OCP_IMAGE}" \
     --resolvabledomain
 
   git apply -R "${patch}"
 
   logger.success 'Upgrade tests passed'
-}
-
-function upgrade_serverless {
-  logger.info "Upgrade Serverless/Cluster"
-
-  local latest_serving_version latest_eventing_version \
-    prev_serving_version prev_eventing_version
-
-  prev_serving_version="$(actual_serving_version)"
-  prev_eventing_version="$(actual_eventing_version)"
-
-  latest_serving_version="${KNATIVE_SERVING_VERSION/v/}"
-  latest_eventing_version="${KNATIVE_EVENTING_VERSION/v/}"
-
-  logger.info "Updating Serverless to ${CURRENT_CSV}"
-  logger.debug "Serving version: ${prev_serving_version} -> ${latest_serving_version}"
-  logger.debug "Eventing version: ${prev_eventing_version} -> ${latest_eventing_version}"
-
-  approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
-  check_serving_upgraded "${latest_serving_version}"
-  check_eventing_upgraded "${latest_eventing_version}"
-}
-
-function upgrade_ocp_cluster {
-  local latest_cluster_version
-
-  if [[ -n "${UPGRADE_OCP_IMAGE}" ]]; then
-    oc adm upgrade --to-image="${UPGRADE_OCP_IMAGE}" \
-      --force=true --allow-explicit-upgrade
-    timeout 7200 "[[ \$(oc get clusterversion version -o jsonpath='{.status.history[?(@.image==\"${UPGRADE_OCP_IMAGE}\")].state}') != Completed ]]"
-  else
-    latest_cluster_version=$(oc adm upgrade | sed -ne '/VERSION/,$ p' \
-      | grep -v VERSION | awk '{print $1}' | sort -r | head -n 1)
-    [[ $latest_cluster_version != "" ]]
-    oc adm upgrade --to-latest=true --force=true
-    timeout 7200 "[[ \$(oc get clusterversion version -o=jsonpath='{.status.history[?(@.version==\"${latest_cluster_version}\")].state}') != Completed ]]"
-  fi
-
-  logger.success "New cluster version: $(oc get clusterversion \
-    version -o jsonpath='{.status.desired.version}')"
-
-  wait_for_serving_test_services_settle
 }
 
 function teardown {

@@ -1114,7 +1114,6 @@ knative.dev/eventing-kafka/pkg/common/constants
 # knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
 ## explicit
 knative.dev/hack
-knative.dev/hack/shell
 # knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9
 ## explicit
 knative.dev/networking/pkg
