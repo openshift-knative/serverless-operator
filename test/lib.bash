@@ -198,7 +198,7 @@ function run_rolling_upgrade_tests {
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
   channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
-  # Test configuration. See https://github.com/knative/eventing/tree/master/test/upgrade#probe-test-configuration
+  # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove E2E_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
   E2E_UPGRADE_TESTS_SERVING_USE=true \
