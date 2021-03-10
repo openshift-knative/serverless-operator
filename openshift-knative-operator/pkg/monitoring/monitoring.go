@@ -9,9 +9,13 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
@@ -22,12 +26,18 @@ const (
 	ObservabilityCMName          = "observability"
 	ObservabilityBackendKey      = "metrics.backend-destination"
 	OpenshiftMonitoringNamespace = "openshift-monitoring"
+	prometheusRoleName           = "knative-serving-prometheus-k8s"
+	prometheusClusterRoleName    = "rbac-proxy-metrics-prom"
+	servingSMRbacManifestPath    = "SERVING_SERVICE_MONITOR_RBAC_MANIFEST_PATH"
 )
 
-const (
-	prometheusRoleName        = "knative-serving-prometheus-k8s"
-	prometheusClusterRoleName = "rbac-proxy-metrics-prom"
+var (
+	servingComponents = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook")
 )
+
+func init() {
+	_ = monitoringv1.AddToScheme(scheme.Scheme)
+}
 
 func ReconcileServingMonitoring(ctx context.Context, api kubernetes.Interface, ks *v1alpha1.KnativeServing) error {
 	backend := ks.Spec.CommonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
@@ -108,4 +118,88 @@ func InjectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 		}
 		return nil
 	}
+}
+
+func LoadServingMonitoringPlatformManifests(ns string) ([]mf.Manifest, error) {
+	rbacPath := os.Getenv(servingSMRbacManifestPath)
+	if rbacPath == "" {
+		return nil, fmt.Errorf("failed to get the Serving sm rbac manifest path")
+	}
+	rbacManifest, err := mf.NewManifest(rbacPath)
+	if err != nil {
+		return nil, err
+	}
+	for c := range servingComponents {
+		smManifest, err := constructServiceMonitorResourceManifests(c, ns)
+		if err != nil {
+			return nil, err
+		}
+		if smManifest != nil {
+			rbacManifest = rbacManifest.Append(*smManifest)
+		}
+	}
+	return []mf.Manifest{rbacManifest}, nil
+}
+
+func constructServiceMonitorResourceManifests(component string, ns string) (*mf.Manifest, error) {
+	var smU = &unstructured.Unstructured{}
+	var svU = &unstructured.Unstructured{}
+	sms := createServiceMonitorService(component)
+	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
+		return nil, err
+	}
+	sm := createServiceMonitor(component, ns, sms.Name)
+	if err := scheme.Scheme.Convert(&sm, smU, nil); err != nil {
+		return nil, err
+	}
+	smManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*smU, *svU}))
+	if err != nil {
+		return nil, err
+	}
+	return &smManifest, nil
+}
+
+func createServiceMonitor(component string, ns string, serviceName string) monitoringv1.ServiceMonitor {
+	return monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("%s-sm", component),
+		},
+		Spec: monitoringv1.ServiceMonitorSpec{
+			Endpoints: []monitoringv1.Endpoint{{
+				BearerTokenFile:   "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				BearerTokenSecret: corev1.SecretKeySelector{Key: ""},
+				Port:              "https",
+				Scheme:            "https",
+				TLSConfig: &monitoringv1.TLSConfig{
+					CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
+					SafeTLSConfig: monitoringv1.SafeTLSConfig{
+						ServerName: fmt.Sprintf("%s.knative-serving.svc", serviceName),
+					},
+				},
+			},
+			},
+			NamespaceSelector: monitoringv1.NamespaceSelector{
+				MatchNames: []string{ns},
+			},
+			Selector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"name": serviceName},
+			},
+		}}
+}
+
+func createServiceMonitorService(component string) corev1.Service {
+	serviceName := fmt.Sprintf("%s-sm-service", component)
+	return corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        serviceName,
+			Labels:      map[string]string{"name": serviceName},
+			Annotations: map[string]string{"service.beta.openshift.io/serving-cert-secret-name": fmt.Sprintf("%s-tls", serviceName)},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Name: "https",
+				Port: 8444,
+			}},
+			Selector: map[string]string{"app": component},
+		}}
 }

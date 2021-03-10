@@ -1,6 +1,8 @@
 package monitoring
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -9,6 +11,10 @@ import (
 )
 
 const servingNamespace = "knative-serving"
+
+func init() {
+	os.Setenv(servingSMRbacManifestPath, "../testdata/rbac-proxy.yaml")
+}
 
 func TestSetupServingRbacTransformation(t *testing.T) {
 	client := fake.New()
@@ -64,12 +70,39 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 	}
 }
 
+func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
+	manifests, err := LoadServingMonitoringPlatformManifests(servingNamespace)
+	if err != nil {
+		t.Errorf("Unable to load serving monitoring platform manifests: %w", err)
+	}
+	if len(manifests) != 1 {
+		t.Errorf("Got %d, want %d", len(manifests), 1)
+	}
+	resources := manifests[0].Resources()
+	if len(resources) != 20 {
+		t.Errorf("Got %d, want %d", len(resources), 20)
+	}
+	for _, u := range resources {
+		kind := strings.ToLower(u.GetKind())
+		switch kind {
+		case "servicemonitor":
+			if !servingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
+				t.Errorf("Service monitor with name %q not found", u.GetName())
+			}
+		case "service":
+			if !servingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
+				t.Errorf("Service with name %q not found", u.GetName())
+			}
+		}
+	}
+}
+
 func checkSubjects(t *testing.T, object map[string]interface{}, ns string) {
 	subjects, _, _ := unstructured.NestedFieldNoCopy(object, "subjects")
 	subjs := subjects.([]interface{})
 	m := subjs[0].(map[string]interface{})
 	if m["namespace"] != ns {
-		t.Errorf("got %q, want %q", m["namespace"], ns)
+		t.Errorf("Got %q, want %q", m["namespace"], ns)
 	}
 }
 
