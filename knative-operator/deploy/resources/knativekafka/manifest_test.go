@@ -45,7 +45,7 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		}
 		manifest = manifest.Filter(notAllowed)
 		if len(manifest.Resources()) > 0 && !test.fails {
-			t.Fatalf("Manifest at path '%s' has unallowed resources", test.path)
+			t.Fatalf("Manifest at path '%s' has unallowed resources: %+v", test.path, manifest.Resources())
 		}
 		if len(manifest.Resources()) == 0 && test.fails {
 			t.Fatalf("Manifest at path '%s' should have unallowed resources, but it does not. Perhaps the check for unallowed resources is not working?", test.path)
