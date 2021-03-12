@@ -3,8 +3,8 @@ describe('OCP UI for Serverless', () => {
   class ShowcaseKservice {
     constructor(ops = {}) {
       this.counter = ops.counter || 0
-      this.app = ops.app || 'demoapp'
-      this.name = ops.name || 'showcase'
+      this.__app = ops.app || 'demoapp'
+      this.__name = ops.name || 'showcase'
       this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
       this.image = ops.image || {
         // TODO(ksuszyns): SRVCOM-1235 donate those apps to openshift-knative
@@ -14,11 +14,11 @@ describe('OCP UI for Serverless', () => {
     }
 
     app() {
-      return `${this.app}-${this.counter}`
+      return `${this.__app}-${this.counter}`
     }
 
     name() {
-      return `${this.name}-${this.counter}`
+      return `${this.__name}-${this.counter}`
     }
 
     url() {
