@@ -2,6 +2,7 @@ describe('OCP UI for Serverless', () => {
 
   class ShowcaseKservice {
     constructor(ops = {}) {
+      this.counter = ops.counter || 0
       this.app = ops.app || 'demoapp'
       this.name = ops.name || 'showcase'
       this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
@@ -10,6 +11,14 @@ describe('OCP UI for Serverless', () => {
         regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
         updated: 'quay.io/cardil/knative-serving-showcase-js'
       }
+    }
+
+    app() {
+      return `${this.app}-${this.counter}`
+    }
+
+    name() {
+      return `${this.name}-${this.counter}`
     }
 
     url() {
@@ -45,6 +54,7 @@ describe('OCP UI for Serverless', () => {
     }
 
     deployImage(kind = 'regular') {
+      showcaseKsvc.counter++
       cy.visit(`/add/ns/${showcaseKsvc.namespace}`)
       cy.contains('Knative Channel')
       cy.contains('Event Source')
@@ -56,26 +66,26 @@ describe('OCP UI for Serverless', () => {
       cy.get('input#form-checkbox-route-create-field').check()
       cy.get('input#form-input-application-name-field')
         .clear()
-        .type(showcaseKsvc.app)
+        .type(showcaseKsvc.app())
       cy.get('input#form-input-name-field')
         .clear()
-        .type(showcaseKsvc.name)
+        .type(showcaseKsvc.name())
       cy.get('button[type=submit]').click()
       cy.url().should('include', `/topology/ns/${showcaseKsvc.namespace}`)
-      cy.contains(showcaseKsvc.app)
+      cy.contains(showcaseKsvc.app())
     }
 
     removeApp() {
       cy.visit('/dev-monitoring')
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.app).click()
+        .contains(showcaseKsvc.app()).click()
       cy.contains('Actions').click()
       cy.contains('Delete Application')
         .should('not.have.class', 'pf-m-disabled')
         .click()
       cy.get('input#form-input-resourceName-field')
-        .type(showcaseKsvc.app)
+        .type(showcaseKsvc.app())
       cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
       cy.contains('No resources found')
     }
@@ -83,7 +93,7 @@ describe('OCP UI for Serverless', () => {
     showServiceDetails() {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
+        .contains(showcaseKsvc.name()).click()
       cy.contains('Location:')
         .scrollIntoView()
     }
@@ -129,19 +139,19 @@ describe('OCP UI for Serverless', () => {
     describe('add two revisions to traffic distribution', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
+        .contains(showcaseKsvc.name()).click()
       cy.contains('Actions').click()
-      cy.contains(`Edit ${showcaseKsvc.name}`).click()
+      cy.contains(`Edit ${showcaseKsvc.name()}`).click()
       cy.get('input[name=searchTerm]')
         .clear()
         .type(showcaseKsvc.image.updated)
       cy.contains('Validated')
       cy.get('button[type=submit]').click()
       cy.url().should('include', showcaseKsvc.namespace)
-      cy.contains(showcaseKsvc.app)
+      cy.contains(showcaseKsvc.app())
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
+        .contains(showcaseKsvc.name()).click()
       cy.contains('Set traffic distribution', { matchCase: false }).click()
       cy.get('input[name="trafficSplitting.0.percent"]')
         .clear()
