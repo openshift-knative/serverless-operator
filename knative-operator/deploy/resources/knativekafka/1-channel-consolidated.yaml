@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: kafka-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -51,7 +51,7 @@ kind: ClusterRole
 metadata:
   name: kafka-channelable-manipulator
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -88,7 +88,7 @@ kind: ClusterRole
 metadata:
   name: kafka-ch-controller
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -204,7 +204,7 @@ metadata:
   name: kafka-ch-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -226,7 +226,7 @@ kind: ClusterRole
 metadata:
   name: kafka-ch-dispatcher
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -311,7 +311,7 @@ metadata:
   name: kafka-ch-dispatcher
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -333,7 +333,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -434,7 +434,7 @@ metadata:
   name: kafka-webhook
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -456,7 +456,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-ch-controller
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 subjects:
   - kind: ServiceAccount
     name: kafka-ch-controller
@@ -471,7 +471,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-ch-dispatcher
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 subjects:
   - kind: ServiceAccount
     name: kafka-ch-dispatcher
@@ -501,7 +501,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook
@@ -531,7 +531,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -641,7 +641,7 @@ metadata:
   name: kafka-webhook
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
     role: kafka-webhook
 spec:
   ports:
@@ -672,7 +672,7 @@ metadata:
   name: kafka-ch-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 spec:
   replicas: 1
   selector:
@@ -686,7 +686,7 @@ spec:
       serviceAccountName: kafka-ch-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/controller@sha256:50e59d03a0f2220ffec22adaaed8040d8e3b66ad9792d41eefea8425e9420ac5
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/controller@sha256:3c8c2b4affb1a016434e694dae8e6db17d3d45670706704c0876196cc7029a72
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -703,7 +703,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election
             - name: DISPATCHER_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:91077fc39852f4043d43dfdf771c300d49f17bb23d97b301f05fe8da8fd0e206
+              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:0a77a4569387b82865d29277ce3cb54b0d4ab50844cc22e641933c0f1dca48c8
           ports:
             - containerPort: 9090
               name: metrics
@@ -736,7 +736,7 @@ metadata:
   name: kafka-ch-dispatcher
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 spec:
   # this deployment is going to be scaled up by the
   # controller when the very first KafkaChannel is created
@@ -750,11 +750,11 @@ spec:
       labels:
         messaging.knative.dev/channel: kafka-channel
         messaging.knative.dev/role: dispatcher
-        kafka.eventing.knative.dev/release: "v0.20.0"
+        kafka.eventing.knative.dev/release: "v0.21.0"
     spec:
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:91077fc39852f4043d43dfdf771c300d49f17bb23d97b301f05fe8da8fd0e206
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:0a77a4569387b82865d29277ce3cb54b0d4ab50844cc22e641933c0f1dca48c8
           env:
             - name: SYSTEM_NAMESPACE
               value: ''
@@ -777,6 +777,9 @@ spec:
           ports:
             - containerPort: 9090
               name: metrics
+              protocol: TCP
+            - containerPort: 8081
+              name: sub-status
               protocol: TCP
           volumeMounts:
             - name: config-kafka
@@ -801,6 +804,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 8080
+    - name: http-sub-status
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
   selector:
     messaging.knative.dev/channel: kafka-channel
     messaging.knative.dev/role: dispatcher
@@ -825,7 +832,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -841,7 +848,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -873,7 +880,7 @@ metadata:
   name: kafka-webhook
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 spec:
   replicas: 1
   selector:
@@ -890,7 +897,7 @@ spec:
       containers:
         - name: kafka-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/webhook@sha256:46c94c8d196b751c2d11b16de34d5a60a0a14d1572afd563444bec26b1db8aba
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/webhook@sha256:6d15f4eecc6fab2ea0b66f388b3bda002372431b795bf1c697a183209a356c75
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -929,6 +936,57 @@ spec:
       terminationGracePeriodSeconds: 300
 
 ---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kafka-webhook
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: devel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kafka-webhook
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 100
+---
+# Webhook PDB.
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-webhook
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: devel
+spec:
+  minAvailable: 80%
+  selector:
+    matchLabels:
+      app: kafka-webhook
+
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -949,7 +1007,7 @@ metadata:
   name: messaging-webhook-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.20.0"
+    kafka.eventing.knative.dev/release: "v0.21.0"
 # The data is populated at install time.
 
 ---
