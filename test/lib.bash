@@ -13,7 +13,6 @@ NAMESPACES+=("serverless-tests3")
 NAMESPACES+=("serverless-tests-mesh")
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
-source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing-kafka.bash"
 
 # == Lifefycle
@@ -266,7 +265,6 @@ function teardown {
   fi
   logger.warn "Teardown 💀"
   teardown_serverless
-  teardown_tracing
   delete_namespaces
   delete_catalog_source
   delete_users

@@ -22,11 +22,11 @@ function upstream_knative_eventing_kafka_e2e {
   export CONFIG_TRACING_CONFIG
   CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
 
-  logger.info 'Installing Tracing'
-  install_tracing
-
   # shellcheck disable=SC1090
   source "${KNATIVE_EVENTING_KAFKA_HOME}/openshift/e2e-common.sh"
+
+  logger.info 'Installing Tracing'
+  install_tracing
 
   # run_e2e_tests defined in eventing-kafka
   logger.info 'Starting eventing-kafka tests'
