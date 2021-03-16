@@ -30,7 +30,7 @@ func InjectEnvironmentIntoDeployment(deploymentName, containerName string, env m
 	})
 }
 
-// upserts updates the env var if the key already exists or inserts it if it didn't
+// upsert updates the env var if the key already exists or inserts it if it didn't
 // exist.
 func upsert(orgEnv []corev1.EnvVar, key, value string) []corev1.EnvVar {
 	// Set the value if the key is already present.

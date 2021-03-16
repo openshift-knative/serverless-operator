@@ -120,7 +120,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			}
 
 			if err := InjectEnvironmentIntoDeployment(test.deployment, test.container, test.env)(u); err != nil {
-				t.Fatal("Unexpecetd error from transformer", err)
+				t.Fatal("Unexpected error from transformer", err)
 			}
 
 			got := &appsv1.Deployment{}
