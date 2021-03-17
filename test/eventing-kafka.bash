@@ -17,6 +17,8 @@ function upstream_knative_eventing_kafka_e2e {
     | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)"
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"${randomns}"}"
   export SYSTEM_NAMESPACE
+  KNATIVE_DEFAULT_NAMESPACE=$SYSTEM_NAMESPACE
+  export KNATIVE_DEFAULT_NAMESPACE
 
   # Config tracing config.
   export CONFIG_TRACING_CONFIG
