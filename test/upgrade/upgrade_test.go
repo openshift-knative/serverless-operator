@@ -21,7 +21,6 @@ package upgrade
 import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
-	"os"
 	"testing"
 
 	"go.uber.org/zap"
@@ -61,8 +60,8 @@ func TestServerlessUpgrade(t *testing.T) {
 
 func TestClusterUpgrade(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
-	if os.Getenv("UPGRADE_CLUSTER") != "true" {
-		t.Skip("Cluster upgrade tests disabled unless UPGRADE_CLUSTER=true env var defined.")
+	if ! test.Flags.UpgradeOpenShift {
+		t.Skip("Cluster upgrade tests disabled unless enabled by a flag.")
 	}
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
@@ -90,7 +89,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	// from the previous run. For example, to let them survive both Serverless
 	// and OCP upgrades. This allows for more variants of tests, with different
 	// order of upgrades.
-	if os.Getenv("SKIP_SERVING_PRE_UPGRADE") == "true" {
+	if test.Flags.SkipServingPreUpgrade {
 		return tests
 	}
 	return append(tests, servingupgrade.ServingPreUpgradeTests()...)
