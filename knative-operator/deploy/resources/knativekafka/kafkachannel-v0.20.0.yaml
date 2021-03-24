@@ -497,7 +497,7 @@ metadata:
   labels:
     kafka.eventing.knative.dev/release: "v0.20.0"
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       messaging.knative.dev/channel: kafka-channel
