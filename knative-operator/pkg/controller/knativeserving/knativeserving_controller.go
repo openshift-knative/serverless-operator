@@ -180,7 +180,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.ensureCustomCertsConfigMap,
 		r.installKourier,
 		r.installDashboard,
-		r.ensureProxySettings,
 		r.installQuickstarts,
 		r.installKnConsoleCLIDownload,
 	}
@@ -208,16 +207,6 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
 	}
 	return nil
-}
-
-// ensureProxySettings updates the proxy settings on the KnativeServing controller.
-func (r *ReconcileKnativeServing) ensureProxySettings(instance *servingv1alpha1.KnativeServing) error {
-	proxyEnv := map[string]string{
-		"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
-		"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
-		"NO_PROXY":    os.Getenv("NO_PROXY"),
-	}
-	return common.ApplyEnvironmentToDeployment(instance.Namespace, "controller", proxyEnv, r.client)
 }
 
 // set a finalizer to clean up service mesh when instance is deleted

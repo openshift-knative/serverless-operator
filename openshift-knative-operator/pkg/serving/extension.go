@@ -45,6 +45,11 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 	return []mf.Transformer{
 		monitoring.InjectNamespaceWithSubject(ks.GetNamespace(), monitoring.OpenshiftMonitoringNamespace),
 		monitoring.InjectRbacProxyContainerToDeployments(),
+		common.InjectEnvironmentIntoDeployment("controller", "controller", map[string]string{
+			"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
+			"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
+			"NO_PROXY":    os.Getenv("NO_PROXY"),
+		}),
 	}
 }
 
