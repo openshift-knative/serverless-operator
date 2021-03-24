@@ -51,7 +51,7 @@ func installsCSVFromSource(installPlan v1alpha1.InstallPlan, csvName, olmSource 
 func ApproveInstallPlan(ctx *Context, name string) error {
 	patch := []byte(`{"spec":{"approved":true}}`)
 	_, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(OperatorsNamespace).
-		Patch(context.Background(), name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}

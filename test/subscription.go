@@ -98,7 +98,7 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*v1alpha1.Subscription, error) {
 	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
 	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
-		Patch(context.Background(), name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
 }
 
 func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *v1alpha1.ClusterServiceVersion, err error) (bool, error)) (*v1alpha1.ClusterServiceVersion, error) {
