@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -32,7 +33,10 @@ func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource strin
 }
 
 func installsCSVFromSource(installPlan v1alpha1.InstallPlan, csvName, olmSource string) bool {
-	if installPlan.Status.BundleLookups[0].CatalogSourceRef.Name != olmSource {
+	if installPlan.Status.BundleLookups == nil ||
+			len(installPlan.Status.BundleLookups) == 0 ||
+			installPlan.Status.BundleLookups[0].CatalogSourceRef == nil ||
+			installPlan.Status.BundleLookups[0].CatalogSourceRef.Name != olmSource {
 		return false
 	}
 	for _, name := range installPlan.Spec.ClusterServiceVersionNames {
@@ -44,12 +48,9 @@ func installsCSVFromSource(installPlan v1alpha1.InstallPlan, csvName, olmSource 
 }
 
 func ApproveInstallPlan(ctx *Context, name string) error {
-	plan, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(OperatorsNamespace).Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	plan.Spec.Approved = true
-	_, err = ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(OperatorsNamespace).Update(context.Background(), plan, metav1.UpdateOptions{})
+	patch := []byte(`{"spec":{"approved":true}}`)
+	_, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(OperatorsNamespace).
+		Patch(context.Background(), name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}

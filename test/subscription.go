@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"time"
 
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -94,13 +95,9 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 }
 
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*v1alpha1.Subscription, error) {
-	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	subs.Spec.Channel = channel
-	subs.Spec.CatalogSource = source
-	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Update(context.Background(), subs, metav1.UpdateOptions{})
+	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
+	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
+		Patch(context.Background(), name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 }
 
 func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *v1alpha1.ClusterServiceVersion, err error) (bool, error)) (*v1alpha1.ClusterServiceVersion, error) {

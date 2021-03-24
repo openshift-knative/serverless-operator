@@ -16,7 +16,7 @@ import (
 )
 
 func UpgradeOpenShift(ctx *test.Context) error {
-	clusterVersionName := "version"
+	const clusterVersionName = "version"
 	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
 	if err != nil {
 		return err
