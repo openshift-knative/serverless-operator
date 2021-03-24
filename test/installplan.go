@@ -3,8 +3,9 @@ package test
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
 	"time"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 
@@ -34,9 +35,9 @@ func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource strin
 
 func installsCSVFromSource(installPlan v1alpha1.InstallPlan, csvName, olmSource string) bool {
 	if installPlan.Status.BundleLookups == nil ||
-			len(installPlan.Status.BundleLookups) == 0 ||
-			installPlan.Status.BundleLookups[0].CatalogSourceRef == nil ||
-			installPlan.Status.BundleLookups[0].CatalogSourceRef.Name != olmSource {
+		len(installPlan.Status.BundleLookups) == 0 ||
+		installPlan.Status.BundleLookups[0].CatalogSourceRef == nil ||
+		installPlan.Status.BundleLookups[0].CatalogSourceRef.Name != olmSource {
 		return false
 	}
 	for _, name := range installPlan.Spec.ClusterServiceVersionNames {
