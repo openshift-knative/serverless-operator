@@ -119,7 +119,7 @@ spec:
         - -c
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.8.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.9.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.11.0:serverless-bundle,registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.12.0:serverless-bundle,registry.ci.openshift.org/openshift/openshift-serverless-v1.13.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-bundle:1.7.2,quay.io/openshift-knative/serverless-bundle:1.8.0,quay.io/openshift-knative/serverless-bundle:1.9.0,quay.io/openshift-knative/serverless-bundle:1.10.0,quay.io/openshift-knative/serverless-bundle:1.10.1,quay.io/openshift-knative/serverless-bundle:1.11.0,registry.ci.openshift.org/openshift/openshift-serverless-v1.12.0:serverless-bundle,registry.ci.openshift.org/openshift/openshift-serverless-v1.13.0:serverless-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
 ---
 apiVersion: v1
