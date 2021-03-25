@@ -8,7 +8,7 @@ target="${2:?Provide a target CSV file as arg[2]}"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
-registry="registry.svc.ci.openshift.org/openshift"
+registry="registry.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"

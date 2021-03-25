@@ -48,7 +48,7 @@ type testCase struct {
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
 	helloworldImage              = "gcr.io/knative-samples/helloworld-go"
-	httpProxyImage               = "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
+	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
 	istioInjectKey               = "sidecar.istio.io/inject"
 )
 
