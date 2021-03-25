@@ -46,6 +46,7 @@ function install_strimzi_cluster {
           transaction.state.log.replication.factor: 3
           transaction.state.log.min.isr: 2
           log.message.format.version: "2.6"
+          auto.create.topics.enable: "false"
         storage:
           type: jbod
           volumes:
