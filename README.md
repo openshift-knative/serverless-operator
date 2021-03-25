@@ -300,7 +300,7 @@ changed usually are `project.version`, `olm.replaces` and `olm.skipRange`.
 
 Next, add the now outdated version of serverless-operator to the CatalogSource deployment
 in [catalogsource.bash](./hack/lib/catalogsource.bash). The image to be added usually has
-the following format: `registry.svc.ci.openshift.org/openshift/openshift-serverless-$OLD_VERSION:serverless-bundle`.
+the following format: `registry.ci.openshift.org/openshift/openshift-serverless-$OLD_VERSION:serverless-bundle`.
 Add it before the "current" image, which is `image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle`.
 
 After the changes are done, commit them and run `make generated-files`. All manifests

@@ -9,7 +9,7 @@ readonly EVENTING_PROBER_FILE="/tmp/eventing-prober-signal"
 function upstream_knative_eventing_e2e {
   logger.info 'Running eventing tests'
 
-  export TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
   cd "${KNATIVE_EVENTING_HOME}"
 
@@ -37,7 +37,7 @@ function run_eventing_preupgrade_test {
   cd "${KNATIVE_EVENTING_HOME}"
 
   local image_template
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
   SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=preupgrade \
     -timeout=10m ./test/upgrade \
@@ -58,7 +58,7 @@ function start_eventing_prober {
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
   cd "${KNATIVE_EVENTING_HOME}"
 
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   # FIXME: knative/operator#297 Restore scale to zero setting
@@ -112,7 +112,7 @@ function run_eventing_postupgrade_test {
 
   cd "${KNATIVE_EVENTING_HOME}"
 
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
   SYSTEM_NAMESPACE=$EVENTING_NAMESPACE go_test_e2e -tags=postupgrade \
     -timeout=10m ./test/upgrade \
