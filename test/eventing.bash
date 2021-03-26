@@ -8,7 +8,7 @@ function upstream_knative_eventing_e2e {
 
   local failed=0
 
-  export TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
@@ -39,7 +39,7 @@ function run_eventing_preupgrade_test {
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
   local image_template
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=preupgrade \
@@ -63,7 +63,7 @@ function start_eventing_prober {
   rm -fv "${EVENTING_PROBER_FILE}" "${EVENTING_READY_FILE}"
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   # FIXME: knative/operator#297 Restore scale to zero setting
@@ -117,7 +117,7 @@ function run_eventing_postupgrade_test {
 
   cd "${KNATIVE_EVENTING_HOME}" || return $?
 
-  # FIXME: SRVKE-606 use registry.svc.ci.openshift.org image
+  # FIXME: SRVKE-606 use registry.ci.openshift.org image
   image_template="quay.io/openshift-knative/{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   go_test_e2e -tags=postupgrade \
