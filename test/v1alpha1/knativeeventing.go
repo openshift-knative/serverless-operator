@@ -59,7 +59,7 @@ func DeleteKnativeEventing(ctx *test.Context, name, namespace string) error {
 	return err
 }
 
-func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inState func(s *eventingoperatorv1alpha1.KnativeEventing, err error) (bool, error)) (*eventingoperatorv1alpha1.KnativeEventing, error) {
+func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inState EventingInStateFunc) (*eventingoperatorv1alpha1.KnativeEventing, error) {
 	var (
 		lastState *eventingoperatorv1alpha1.KnativeEventing
 		err       error
@@ -75,6 +75,14 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 	return lastState, nil
 }
 
-func IsKnativeEventingReady(s *eventingoperatorv1alpha1.KnativeEventing, err error) (bool, error) {
-	return s.Status.IsReady(), err
+func IsKnativeEventingReady(e *eventingoperatorv1alpha1.KnativeEventing, err error) (bool, error) {
+	return e.Status.IsReady(), err
+}
+
+type EventingInStateFunc func(e *eventingoperatorv1alpha1.KnativeEventing, err error) (bool, error)
+
+func IsKnativeEventingWithVersionReady(version string) EventingInStateFunc {
+	return func(e *eventingoperatorv1alpha1.KnativeEventing, err error) (bool, error) {
+		return e.Status.Version == version && e.Status.IsReady(), err
+	}
 }
