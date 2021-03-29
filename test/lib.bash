@@ -210,7 +210,7 @@ function run_rolling_upgrade_tests {
     -channels="${channels}" \
     --kubeconfigs "${KUBECONFIG}" \
     --imagetemplate "${image_template}" \
-    --channel="${OLM_UPGRADE_CHANNEL}" \
+    --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
     --csv="${CURRENT_CSV}" \
     --servingversion="${KNATIVE_SERVING_VERSION}" \
     --eventingversion="${KNATIVE_EVENTING_VERSION}" \
