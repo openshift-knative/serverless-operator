@@ -8,8 +8,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
-
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -66,11 +64,11 @@ func WaitForClusterVersionState(ctx *test.Context, name string, inState func(s *
 	var err error
 	waitErr := wait.PollImmediate(30*time.Second, 2*time.Hour, func() (bool, error) {
 		lastState, err = ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), name, metav1.GetOptions{})
-		if apierrs.IsUnauthorized(err) {
-			// These errors happen when resetting the proxy.
+		if err != nil {
+			ctx.T.Log("Ignoring error while waiting for ClusterVersion state:", err)
 			return false, nil
 		}
-		return inState(lastState), err
+		return inState(lastState), nil
 	})
 	if waitErr != nil {
 		return lastState, fmt.Errorf("clusterversion %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
