@@ -62,7 +62,7 @@ func UpgradeOpenShift(ctx *test.Context) error {
 func WaitForClusterVersionState(ctx *test.Context, name string, inState func(s *configv1.ClusterVersion) bool) (*configv1.ClusterVersion, error) {
 	var lastState *configv1.ClusterVersion
 	var err error
-	waitErr := wait.PollImmediate(30*time.Second, 2*time.Hour, func() (bool, error) {
+	waitErr := wait.PollImmediate(30*time.Second, 3*time.Hour, func() (bool, error) {
 		lastState, err = ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			ctx.T.Log("Ignoring error while waiting for ClusterVersion state:", err)
