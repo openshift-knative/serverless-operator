@@ -65,7 +65,6 @@ rules:
   - apiGroups:
       - "" # Core API group.
     resources:
-      - services
       - configmaps
       - secrets
     verbs:
@@ -77,6 +76,7 @@ rules:
       - "" # Core API group.
     resources:
       - services
+      - serviceaccounts
     verbs: &everything
       - get
       - list
@@ -101,17 +101,10 @@ rules:
       - patch
       - update
   - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
       - "" # Core API group.
     resources:
       - endpoints
+      - pods
     verbs:
       - get
       - list
@@ -121,11 +114,6 @@ rules:
     resources:
       - deployments
       - deployments/status
-    verbs: *everything
-  - apiGroups:
-      - "" # Core API group.
-    resources:
-      - serviceaccounts
     verbs: *everything
   - apiGroups:
       - rbac.authorization.k8s.io
@@ -505,7 +493,9 @@ spec:
   template:
     metadata:
       labels:
+        # Do not change. Used by the controller for probing.
         messaging.knative.dev/channel: kafka-channel
+        # Do not change. Used by the controller for probing.
         messaging.knative.dev/role: dispatcher
         kafka.eventing.knative.dev/release: "v0.20.0"
     spec:
@@ -535,6 +525,9 @@ spec:
         - containerPort: 9090
           name: metrics
           protocol: TCP
+        - containerPort: 8081
+          name: sub-status
+          protocol: TCP
         volumeMounts:
         - name: config-kafka
           mountPath: /etc/config-kafka
@@ -558,6 +551,10 @@ spec:
     port: 80
     protocol: TCP
     targetPort: 8080
+  - name: http-sub-status
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
   selector:
     messaging.knative.dev/channel: kafka-channel
     messaging.knative.dev/role: dispatcher
