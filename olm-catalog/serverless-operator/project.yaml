@@ -7,10 +7,9 @@ olm:
   replaces: 1.13.0
   skipRange: '>=1.13.0 <1.14.0'
   channels:
-    default: '4.6'
+    default: 'stable'
     list:
-      - '4.6'
-      - '4.7'
+      - 'stable'
 
 requirements:
   kube:
@@ -19,6 +18,7 @@ requirements:
   nodejs: 14.x
   ocp:
     - '4.6'
+    - '4.7'
 
 dependencies:
   serving: 0.20.0
