@@ -59,7 +59,7 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 			t.Fatalf("failed to HEAD request for URL %s, error: %v", link.Href, err)
 		}
 		if h.ContentLength < 1024*1024*10 {
-			t.Fatalf("failed to verify kn CCD, kn artifact %s size less than 10MB", link.Href)
+			t.Errorf("failed to verify kn CCD, kn artifact %s size %d less than 10MB", link.Href, h.ContentLength)
 		}
 	}
 }
