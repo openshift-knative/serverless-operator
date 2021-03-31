@@ -3,6 +3,7 @@ package servinge2e
 import (
 	"context"
 	"crypto/tls"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -60,6 +61,18 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 		}
 		if h.ContentLength < 1024*1024*10 {
 			t.Errorf("failed to verify kn CCD, kn artifact %s size %d less than 10MB", link.Href, h.ContentLength)
+			if h.ContentLength < 5000 {
+				g, err := client.Get(link.Href)
+				if err != nil {
+					t.Errorf("http get: %s", err)
+					defer g.Body.Close()
+					bytes, err := ioutil.ReadAll(g.Body)
+					if err != nil {
+						t.Errorf(err)
+					}
+					t.Errorf("%s", string(g.Body))
+				}
+			}
 		}
 	}
 }
