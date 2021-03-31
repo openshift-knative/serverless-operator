@@ -68,9 +68,9 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 					defer g.Body.Close()
 					bytes, err := ioutil.ReadAll(g.Body)
 					if err != nil {
-						t.Errorf(err)
+						t.Errorf("%s", err.Error())
 					}
-					t.Errorf("%s", string(g.Body))
+					t.Errorf("%s", string(bytes))
 				}
 			}
 		}
