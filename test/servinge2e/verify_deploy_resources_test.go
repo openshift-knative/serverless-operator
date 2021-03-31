@@ -65,13 +65,13 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 				g, err := client.Get(link.Href)
 				if err != nil {
 					t.Errorf("http get: %s", err)
-					defer g.Body.Close()
-					bytes, err := ioutil.ReadAll(g.Body)
-					if err != nil {
-						t.Errorf("%s", err.Error())
-					}
-					t.Errorf("%s", string(bytes))
 				}
+				defer g.Body.Close()
+				bytes, err := ioutil.ReadAll(g.Body)
+				if err != nil {
+					t.Errorf("%s", err.Error())
+				}
+				t.Errorf("%s", string(bytes))
 			}
 		}
 	}
