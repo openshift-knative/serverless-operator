@@ -47,7 +47,7 @@ const (
 	// A test namespace that is part of the ServiceMesh (setup by "make install-mesh")
 	serviceMeshTestNamespaceName = "default"
 	helloworldImage              = "gcr.io/knative-samples/helloworld-go"
-	httpProxyImage               = "registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
+	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
 	istioInjectKey               = "sidecar.istio.io/inject"
 )
 
