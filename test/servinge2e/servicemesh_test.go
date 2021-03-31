@@ -601,7 +601,8 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 		// Create a test ksvc, should be accessible only via proper JWT token
 		testKsvc := test.Service("jwt-test", testNamespace, image, map[string]string{
-			"sidecar.istio.io/inject": "true",
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
 		testKsvc = withServiceReadyOrFail(ctx, testKsvc)
 
