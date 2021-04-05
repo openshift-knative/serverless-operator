@@ -31,7 +31,7 @@ const (
 	// A test namespace that is part of the ServiceMesh (setup by "make install-mesh")
 	serviceMeshTestNamespaceName = "default"
 	serviceMeshTestImage         = "gcr.io/knative-samples/helloworld-go"
-	serviceMeshTestProxyImage    = "registry.svc.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-test-httpproxy"
+	serviceMeshTestProxyImage    = "registry.ci.openshift.org/openshift/knative-v0.15.2:knative-serving-test-httpproxy"
 )
 
 func isServiceMeshInstalled(ctx *test.Context) bool {
