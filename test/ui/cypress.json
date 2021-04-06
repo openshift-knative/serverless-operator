@@ -1,3 +1,8 @@
 {
-  "defaultCommandTimeout": 60000
+  "defaultCommandTimeout": 60000,
+  "reporter": "junit",
+  "reporterOptions": {
+    "mochaFile": "results/junit-[hash].xml",
+    "toConsole": true
+  }
 }

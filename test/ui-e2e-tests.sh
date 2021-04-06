@@ -20,10 +20,12 @@ function check_node {
 }
 
 function archive_cypress_artifacts {
+  mkdir -p "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos" "${ARTIFACTS}/ui/results"
   pushd "$(dirname "${BASH_SOURCE[0]}")/ui/cypress" >/dev/null
-  mkdir -p "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos"
-  ln -sf "${ARTIFACTS}/ui/screenshots" .
-  ln -sf "${ARTIFACTS}/ui/videos" .
+  ln -sf "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos" .
+  popd >/dev/null
+  pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
+  ln -sf "${ARTIFACTS}/ui/results" .
   popd >/dev/null
 }
 
