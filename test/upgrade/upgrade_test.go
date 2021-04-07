@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upgrade
+package upgrade_test
 
 import (
 	"testing"
@@ -31,6 +31,8 @@ import (
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 )
+
+// FIXME: https://github.com/knative/eventing/issues/5176 `config.toml` in this directory is required
 
 func TestServerlessUpgrade(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
