@@ -1,8 +1,7 @@
 {
   "defaultCommandTimeout": 60000,
-  "reporter": "junit",
+  "reporter": "cypress-multi-reporters",
   "reporterOptions": {
-    "mochaFile": "results/junit-[hash].xml",
-    "toConsole": true
+    "configFile": "reporter-config.json"
   }
 }
