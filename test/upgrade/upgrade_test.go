@@ -16,19 +16,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upgrade
+package upgrade_test
 
 import (
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+
 	"go.uber.org/zap"
+	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 )
+
+// FIXME: https://github.com/knative/eventing/issues/5176 `config.toml` in this directory is required
 
 func TestServerlessUpgrade(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
@@ -43,6 +47,7 @@ func TestServerlessUpgrade(t *testing.T) {
 				servingupgrade.ProbeTest(),
 				servingupgrade.AutoscaleSustainingTest(),
 				eventingupgrade.ContinualTest(),
+				kafkaupgrade.ChannelContinualTest(),
 			},
 		},
 		Installations: pkgupgrade.Installations{
@@ -60,7 +65,7 @@ func TestServerlessUpgrade(t *testing.T) {
 
 func TestClusterUpgrade(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
-	if ! test.Flags.UpgradeOpenShift {
+	if !test.Flags.UpgradeOpenShift {
 		t.Skip("Cluster upgrade tests disabled unless enabled by a flag.")
 	}
 	cfg := newUpgradeConfig(t)
@@ -84,7 +89,10 @@ func TestClusterUpgrade(t *testing.T) {
 }
 
 func preUpgradeTests() []pkgupgrade.Operation {
-	tests := []pkgupgrade.Operation{eventingupgrade.PreUpgradeTest()}
+	tests := []pkgupgrade.Operation{
+		eventingupgrade.PreUpgradeTest(),
+		kafkaupgrade.ChannelPreUpgradeTest(),
+	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
 	// and OCP upgrades. This allows for more variants of tests, with different
@@ -98,8 +106,9 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 	var tests []pkgupgrade.Operation
 	tests = append(tests, waitForServicesReady(ctx))
-	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	tests = append(tests, eventingupgrade.PostUpgradeTest())
+	tests = append(tests, kafkaupgrade.ChannelPostUpgradeTest())
+	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
 
