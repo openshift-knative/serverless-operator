@@ -210,12 +210,14 @@ add_trap "cleanup_per_selfsigned_namespace_auto_tls" SIGKILL SIGTERM SIGQUIT
 go_test_e2e -timeout=10m ./test/e2e/autotls/ || failed=1
 cleanup_per_selfsigned_namespace_auto_tls
 
-subheader "Auto TLS test for per-ksvc certificate provision using HTTP01 challenge"
-setup_http01_auto_tls
-add_trap "delete_dns_record" SIGKILL SIGTERM SIGQUIT
-go_test_e2e -timeout=10m ./test/e2e/autotls/ || failed=1
-kubectl delete -f ${TMP_DIR}/test/config/autotls/certmanager/http01/
-delete_dns_record
+# TODO(#10486): resume the HTTP01 E2E tests after figuring out the DNS setup failure.
+
+# subheader "Auto TLS test for per-ksvc certificate provision using HTTP01 challenge"
+# setup_http01_auto_tls
+# add_trap "delete_dns_record" SIGKILL SIGTERM SIGQUIT
+# go_test_e2e -timeout=10m ./test/e2e/autotls/ || failed=1
+# kubectl delete -f ${TMP_DIR}/test/config/autotls/certmanager/http01/
+# delete_dns_record
 
 (( failed )) && fail_test
 
@@ -224,5 +226,5 @@ cleanup_auto_tls_common
 
 # Remove the kail log file if the test flow passes.
 # This is for preventing too many large log files to be uploaded to GCS in CI.
-rm "${KAIL_LOG_FILE}"
+rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 success
