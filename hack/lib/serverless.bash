@@ -44,7 +44,6 @@ function install_serverless_previous {
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
     deploy_knativekafka_cr
-    ensure_kafka_channel_default
   fi
 
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
@@ -62,7 +61,6 @@ function install_serverless_latest {
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
     deploy_knativekafka_cr
-    ensure_kafka_channel_default
   fi
 
   logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
