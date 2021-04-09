@@ -44,6 +44,7 @@ function install_serverless_previous {
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
     deploy_knativekafka_cr
+    ensure_kafka_channel_default
   fi
 
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
@@ -61,6 +62,7 @@ function install_serverless_latest {
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
     deploy_knativekafka_cr
+    ensure_kafka_channel_default
   fi
 
   logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
@@ -215,6 +217,27 @@ EOF
 
   logger.success 'Knative Kafka has been installed sucessfully.'
 }
+
+function ensure_kafka_channel_default {
+  logger.info 'Set KafkaChannel as default'
+
+  oc patch knativeeventing knative-eventing -n "${EVENTING_NAMESPACE}" --type merge \
+    --patch '{
+  "spec": {
+    "config": {
+      "default-ch-webhook": {
+        "default-ch-config": "clusterDefault: \n  apiVersion: messaging.knative.dev/v1beta1\n  kind: KafkaChannel\n"
+      },
+      "config-br-default-channel": {
+        "channelTemplateSpec": "apiVersion: messaging.knative.dev/v1beta1\nkind: KafkaChannel\n"
+      }
+    }
+  }
+}'
+
+  logger.success 'KafkaChannel is set as default.'
+}
+
 
 function ensure_kafka_no_auth {
   logger.info 'Ensure Knative Kafka using no Kafka auth'
