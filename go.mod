@@ -16,8 +16,8 @@ require (
 	github.com/manifestival/manifestival v0.7.0
 	github.com/openshift/api v0.0.0-20210202165416-a9e731090f5e
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
-	github.com/operator-framework/api v0.5.1
-	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210204051820-4b67acc560a7
+	github.com/operator-framework/api v0.6.0
+	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210325180801-44f92b8a8e6d
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.45.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.45.0
 	github.com/prometheus/client_golang v1.9.0
@@ -33,7 +33,7 @@ require (
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.20.1
-	knative.dev/eventing-kafka v0.20.1-0.20210202112232-900179eb4a86
+	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20210317214554-58edbdc42966
 	knative.dev/networking v0.0.0-20210324061918-44a3b919bce1
 	knative.dev/operator v0.20.2
@@ -44,6 +44,7 @@ require (
 )
 
 replace (
+	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
 	// Kubernetes v1.19.7
 	k8s.io/api => k8s.io/api v0.19.7
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
@@ -51,7 +52,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210212083459-1f8c3e444cf5
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210406112945-bc5e764e21e7
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210301102056-4e0f782522f1
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406160751-ea335983df85
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210408170221-7f92a63cf408
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210324141628-22fed7ffb872
 )
