@@ -12,10 +12,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-0.20"
-EVENTING_VERSION="release-v0.20.0"
+KN_VERSION="release-0.21"
+EVENTING_VERSION="release-v0.21.0"
 EVENTING_KAFKA_VERSION="release-v0.20.0"
-SERVING_VERSION="release-v0.20.0"
+SERVING_VERSION="release-v0.21.0"
 
 # Controls the version of OCP related dependencies.
 OCP_VERSION="release-4.7"
