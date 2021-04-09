@@ -82,9 +82,9 @@ type RevisionSpec struct {
 	// +optional
 	ContainerConcurrency *int64 `json:"containerConcurrency,omitempty"`
 
-	// TimeoutSeconds holds the max duration the instance is allowed for
-	// responding to a request.  If unspecified, a system default will
-	// be provided.
+	// TimeoutSeconds is the maximum duration in seconds that the request routing
+	// layer will wait for a request delivered to a container to begin replying
+	// (send network traffic). If unspecified, a system default will be provided.
 	// +optional
 	TimeoutSeconds *int64 `json:"timeoutSeconds,omitempty"`
 }
@@ -124,6 +124,10 @@ type RevisionStatus struct {
 
 	// ServiceName holds the name of a core Kubernetes Service resource that
 	// load balances over the pods backing this Revision.
+	// Deprecated: revision service name is effectively equal to the revision name,
+	// as per #10540.
+	// 0.23 — stop populating
+	// 0.25 — remove.
 	// +optional
 	ServiceName string `json:"serviceName,omitempty"`
 

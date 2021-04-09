@@ -4,12 +4,7 @@ go 1.14
 
 require (
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
-	github.com/aws/aws-sdk-go v1.36.15 // indirect
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-logr/logr v0.4.0
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/spec v0.19.14 // indirect
-	github.com/go-openapi/swag v0.19.12 // indirect
 	github.com/google/go-cmp v0.5.5
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/manifestival/controller-runtime-client v0.4.0
@@ -24,21 +19,16 @@ require (
 	github.com/prometheus/common v0.19.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
-	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
-	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
-	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.20.1
+	knative.dev/eventing v0.21.3
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20210317214554-58edbdc42966
 	knative.dev/networking v0.0.0-20210324061918-44a3b919bce1
-	knative.dev/operator v0.20.2
+	knative.dev/operator v0.21.2
 	knative.dev/pkg v0.0.0-20210323202917-b558677ab034
-	knative.dev/serving v0.20.0
+	knative.dev/serving v0.21.0
 	sigs.k8s.io/controller-runtime v0.8.1
 	sigs.k8s.io/yaml v1.2.0
 )
@@ -52,7 +42,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406160751-ea335983df85
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406161751-80f49379d45d
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210408170221-7f92a63cf408
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210324141628-22fed7ffb872
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210407235722-8dcbb1fd500a
 )

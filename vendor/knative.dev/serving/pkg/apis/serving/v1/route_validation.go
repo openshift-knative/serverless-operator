@@ -19,7 +19,6 @@ package v1
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation"
 	network "knative.dev/networking/pkg"
@@ -30,7 +29,10 @@ import (
 // Validate makes sure that Route is properly configured.
 func (r *Route) Validate(ctx context.Context) *apis.FieldError {
 	errs := serving.ValidateObjectMetadata(ctx, r.GetObjectMeta()).Also(
-		r.validateLabels().ViaField("labels")).ViaField("metadata")
+		r.validateLabels().ViaField("labels"))
+	errs = errs.Also(serving.ValidateRolloutDurationAnnotation(
+		r.GetAnnotations()).ViaField("annotations"))
+	errs = errs.ViaField("metadata")
 	errs = errs.Also(r.Spec.Validate(apis.WithinSpec(ctx)).ViaField("spec"))
 
 	if apis.IsInUpdate(ctx) {
@@ -191,26 +193,23 @@ func (tt *TrafficTarget) validateURL(ctx context.Context, errs *apis.FieldError)
 	return errs
 }
 
-func validateClusterVisibilityLabel(label string) (errs *apis.FieldError) {
+func validateClusterVisibilityLabel(label string) *apis.FieldError {
 	if label != serving.VisibilityClusterLocal {
-		errs = apis.ErrInvalidValue(label, network.VisibilityLabelKey)
+		return apis.ErrInvalidValue(label, network.VisibilityLabelKey)
 	}
-	return
+
+	return nil
 }
 
 // validateLabels function validates route labels.
 func (r *Route) validateLabels() (errs *apis.FieldError) {
-	for key, val := range r.GetLabels() {
-		switch key {
-		case serving.VisibilityLabelKeyObsolete, network.VisibilityLabelKey:
-			errs = errs.Also(validateClusterVisibilityLabel(val))
-		case serving.ServiceLabelKey:
-			errs = errs.Also(verifyLabelOwnerRef(val, serving.ServiceLabelKey, "Service", r.GetOwnerReferences()))
-		default:
-			if strings.HasPrefix(key, serving.GroupNamePrefix) {
-				errs = errs.Also(apis.ErrInvalidKeyName(key, apis.CurrentField))
-			}
-		}
+	if val, ok := r.Labels[network.VisibilityLabelKey]; ok {
+		errs = errs.Also(validateClusterVisibilityLabel(val))
 	}
-	return
+
+	if val, ok := r.Labels[serving.ServiceLabelKey]; ok {
+		errs = errs.Also(verifyLabelOwnerRef(val, serving.ServiceLabelKey, "Service", r.GetOwnerReferences()))
+	}
+
+	return errs
 }
