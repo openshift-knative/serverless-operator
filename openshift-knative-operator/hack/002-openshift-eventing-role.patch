@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.20.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.20.0/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
 index a6f1de61..8e4ec0cf 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.20.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.20.0/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
 @@ -4503,3 +4503,31 @@ webhooks:
      timeoutSeconds: 2
  
