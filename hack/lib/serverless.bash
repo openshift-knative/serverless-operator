@@ -216,6 +216,27 @@ EOF
   logger.success 'Knative Kafka has been installed sucessfully.'
 }
 
+function ensure_kafka_channel_default {
+  logger.info 'Set KafkaChannel as default'
+
+  oc patch knativeeventing knative-eventing -n "${EVENTING_NAMESPACE}" --type merge \
+    --patch '{
+  "spec": {
+    "config": {
+      "default-ch-webhook": {
+        "default-ch-config": "clusterDefault: \n  apiVersion: messaging.knative.dev/v1beta1\n  kind: KafkaChannel\n"
+      },
+      "config-br-default-channel": {
+        "channelTemplateSpec": "apiVersion: messaging.knative.dev/v1beta1\nkind: KafkaChannel\n"
+      }
+    }
+  }
+}'
+
+  logger.success 'KafkaChannel is set as default.'
+}
+
+
 function ensure_kafka_no_auth {
   logger.info 'Ensure Knative Kafka using no Kafka auth'
 
