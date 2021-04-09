@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -452,7 +452,7 @@ kind: CustomResourceDefinition
 metadata:
   name: brokers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -490,7 +490,7 @@ spec:
                       description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
                       type: string
                 delivery:
-                  description: 'Delivery is the delivery specification for Events within the Broker mesh. This includes things like retries, DLQ, etc.'
+                  description: 'Delivery contains the delivery spec for each trigger to this Broker. Each trigger delivery spec, if any, overrides this global delivery spec.'
                   type: object
                   properties:
                     backoffDelay:
@@ -630,7 +630,7 @@ kind: CustomResourceDefinition
 metadata:
   name: channels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -852,7 +852,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1129,7 +1129,7 @@ kind: CustomResourceDefinition
 metadata:
   name: eventtypes.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -1273,7 +1273,7 @@ kind: CustomResourceDefinition
 metadata:
   name: parallels.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1541,7 +1541,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1682,7 +1682,7 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       schema:
         openAPIV3Schema:
           type: object
@@ -1791,7 +1791,7 @@ spec:
     - !!merge <<: *version
       name: v1beta2
       served: true
-      storage: false
+      storage: true
       schema:
         openAPIV3Schema:
           type: object
@@ -1818,7 +1818,7 @@ spec:
                   description: 'Data is data used as the body of the event posted to the sink. Default is empty. Mutually exclusive with `dataBase64`.'
                   type: string
                 dataBase64:
-                  description: 'DataBase64 is base64 encoded binary data used as the body of the event posted to the sink. Default is empty. Mutually exclusive with `data`.'
+                  description: "DataBase64 is the base64-encoded string of the actual event's body posted to the sink. Default is empty. Mutually exclusive with `data`."
                   type: string
                 schedule:
                   description: 'Schedule is the cron schedule. Defaults to `* * * * *`.'
@@ -1939,7 +1939,7 @@ kind: CustomResourceDefinition
 metadata:
   name: sequences.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2170,7 +2170,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
@@ -2391,7 +2391,7 @@ kind: CustomResourceDefinition
 metadata:
   name: subscriptions.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
 spec:
   group: messaging.knative.dev
@@ -2628,7 +2628,7 @@ kind: CustomResourceDefinition
 metadata:
   name: triggers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.20.0"
+    eventing.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -2702,6 +2702,43 @@ spec:
                     uri:
                       type: string
                       description: 'the target URI or, if ref is provided, a relative URI reference that will be combined with ref to produce a target URI.'
+                delivery:
+                  description: 'Delivery contains the delivery spec for this specific trigger.'
+                  type: object
+                  properties:
+                    backoffDelay:
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      type: string
+                    backoffPolicy:
+                      description: ' BackoffPolicy is the retry backoff policy (linear, exponential).'
+                      type: string
+                    deadLetterSink:
+                      description: 'DeadLetterSink is the sink receiving event that could not be sent to a destination.'
+                      type: object
+                      properties:
+                        ref:
+                          description: 'Ref points to an Addressable.'
+                          type: object
+                          properties:
+                            apiVersion:
+                              description: 'API version of the referent.'
+                              type: string
+                            kind:
+                              description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                              type: string
+                            namespace:
+                              description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                              type: string
+                        uri:
+                          description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
+                          type: string
+                    retry:
+                      description: 'Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.'
+                      type: integer
+                      format: int32
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true

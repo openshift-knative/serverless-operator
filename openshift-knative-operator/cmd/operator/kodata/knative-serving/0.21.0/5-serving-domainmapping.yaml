@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -66,7 +66,7 @@ kind: CustomResourceDefinition
 metadata:
   name: domainmappings.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -127,7 +127,7 @@ metadata:
   name: domain-mapping
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
 spec:
   selector:
     matchLabels:
@@ -138,7 +138,7 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: domain-mapping
-        serving.knative.dev/release: "v0.20.0"
+        serving.knative.dev/release: "v0.21.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -155,7 +155,7 @@ spec:
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:fda8fc125f832538f3b8979e0fe4b7ec28be0913a76d06fa6155c85cd5f21812
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:fe908979157875e8f961e5b01a6e8ffa99b82afab15e711f748c3d0319d7b58f
           resources:
             requests:
               cpu: 30m
@@ -209,7 +209,7 @@ metadata:
   name: domainmapping-webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
 spec:
   selector:
     matchLabels:
@@ -222,7 +222,7 @@ spec:
       labels:
         app: domainmapping-webhook
         role: domainmapping-webhook
-        serving.knative.dev/release: "v0.20.0"
+        serving.knative.dev/release: "v0.21.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -239,7 +239,7 @@ spec:
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:d1ec4d09b48bbebfeee135934a6064d26c6980452fc31cbf73d331ec409aa506
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:53f862bc60ceb1eee12f45e8be144b288385d4fe3cc71129c94d10e6224642a2
           resources:
             requests:
               cpu: 100m
@@ -295,7 +295,7 @@ kind: Service
 metadata:
   labels:
     role: domainmapping-webhook
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
   name: domainmapping-webhook
   namespace: knative-serving
 spec:
@@ -333,7 +333,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -366,7 +366,7 @@ metadata:
   name: domainmapping-webhook-certs
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
 # The data is populated at install time.
 
 ---
@@ -389,7 +389,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    serving.knative.dev/release: "v0.21.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
