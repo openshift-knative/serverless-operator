@@ -9,12 +9,20 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/apis"
+	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
 )
 
 const requiredNs = "knative-eventing"
+
+var (
+	eventingNamespace = corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: requiredNs,
+		},
+	}
+)
 
 func TestReconcile(t *testing.T) {
 	os.Setenv("IMAGE_foo", "bar")
@@ -78,7 +86,8 @@ func TestReconcile(t *testing.T) {
 			}
 
 			ks := c.in.DeepCopy()
-			ext := NewExtension(context.Background())
+			ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
+			ext := NewExtension(ctx)
 			ext.Reconcile(context.Background(), ks)
 
 			// Ignore time differences.

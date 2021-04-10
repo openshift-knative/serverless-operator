@@ -7,13 +7,18 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/manifestival/manifestival/fake"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-const servingNamespace = "knative-serving"
+const (
+	servingNamespace  = "knative-serving"
+	eventingNamespace = "knative-eventing"
+)
 
 func init() {
-	os.Setenv(servingSMRbacManifestPath, "../testdata/rbac-proxy.yaml")
+	os.Setenv(smRbacManifestPath, "../testdata/rbac-proxy.yaml")
 }
 
 func TestSetupServingRbacTransformation(t *testing.T) {
@@ -71,7 +76,7 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 }
 
 func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
-	manifests, err := LoadServingMonitoringPlatformManifests(servingNamespace)
+	manifests, err := GetCompMonitoringPlatformManifests(&v1alpha1.KnativeServing{ObjectMeta: v1.ObjectMeta{Namespace: servingNamespace}})
 	if err != nil {
 		t.Errorf("Unable to load serving monitoring platform manifests: %w", err)
 	}
@@ -92,6 +97,47 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 		case "service":
 			if !servingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
 				t.Errorf("Service with name %q not found", u.GetName())
+			}
+		case "clusterrolebinding":
+			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
+				continue
+			}
+			if strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "controller" {
+				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
+			}
+		}
+	}
+}
+
+func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
+	manifests, err := GetCompMonitoringPlatformManifests(&v1alpha1.KnativeEventing{ObjectMeta: v1.ObjectMeta{Namespace: eventingNamespace}})
+	if err != nil {
+		t.Errorf("Unable to load eventing monitoring platform manifests: %w", err)
+	}
+	if len(manifests) != 1 {
+		t.Errorf("Got %d, want %d", len(manifests), 1)
+	}
+	resources := manifests[0].Resources()
+	if len(resources) != 26 {
+		t.Errorf("Got %d, want %d", len(resources), 26)
+	}
+	for _, u := range resources {
+		kind := strings.ToLower(u.GetKind())
+		switch kind {
+		case "servicemonitor":
+			if !eventingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
+				t.Errorf("Service monitor with name %q not found", u.GetName())
+			}
+		case "service":
+			if !eventingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
+				t.Errorf("Service with name %q not found", u.GetName())
+			}
+		case "clusterrolebinding":
+			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
+				continue
+			}
+			if !eventingComponents.Has(strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-")) {
+				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
 			}
 		}
 	}

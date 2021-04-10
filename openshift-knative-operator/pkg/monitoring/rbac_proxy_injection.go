@@ -22,7 +22,7 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related deployments
-		if kind == "deployment" && servingComponents.Has(u.GetName()) {
+		if kind == "deployment" && (servingComponents.Has(u.GetName()) || eventingComponents.Has(u.GetName())) {
 			var dep = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
 				return err
@@ -32,7 +32,7 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 			// Make sure we export metrics only locally
 			firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: "METRICS_PROMETHEUS_HOST", Value: "127.0.0.1"})
 			// Order is important here as there is an assumption elsewhere about the first container being the component one
-			dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers, makeRbacProxyContainer(depName))
+			dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers, makeRbacProxyContainer(depName, getDefaultMetricsPort(u.GetName())))
 			dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, []corev1.Volume{{
 				Name: fmt.Sprintf("secret-%s-sm-service-tls", depName),
 				VolumeSource: corev1.VolumeSource{
@@ -47,7 +47,7 @@ func InjectRbacProxyContainerToDeployments() mf.Transformer {
 	}
 }
 
-func makeRbacProxyContainer(depName string) corev1.Container {
+func makeRbacProxyContainer(depName string, prometheusPort string) corev1.Container {
 	return corev1.Container{
 		Name:  rbacContainerName,
 		Image: getRbacProxyImage(depName),
@@ -62,7 +62,7 @@ func makeRbacProxyContainer(depName string) corev1.Container {
 			}},
 		Args: []string{
 			"--secure-listen-address=0.0.0.0:8444",
-			"--upstream=http://127.0.0.1:9090/",
+			fmt.Sprintf("--upstream=http://127.0.0.1:%s/", prometheusPort),
 			"--tls-cert-file=/etc/tls/private/tls.crt",
 			"--tls-private-key-file=/etc/tls/private/tls.key",
 			"--logtostderr=true",

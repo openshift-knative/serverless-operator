@@ -14,38 +14,20 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/kmeta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	EventingBrokerServiceMonitorPath     = "deploy/resources/monitoring/broker-service-monitors.yaml"
-	EventingSourceServiceMonitorPath     = "deploy/resources/monitoring/source-service-monitor.yaml"
-	EventingSourcePath                   = "deploy/resources/monitoring/source-service.yaml"
-	SourceLabel                          = "eventing.knative.dev/source"
-	SourceNameLabel                      = "eventing.knative.dev/sourceName"
-	SourceRoleLabel                      = "sources.knative.dev/role"
-	TestEventingBrokerServiceMonitorPath = "TEST_EVENTING_BROKER_SERVICE_MONITOR_PATH"
-	TestMonitor                          = "TEST_MONITOR"
-	TestSourceServiceMonitorPath         = "TEST_SOURCE_SERVICE_MONITOR_PATH"
-	TestSourceServicePath                = "TEST_SOURCE_SERVICE_PATH"
+	EventingSourceServiceMonitorPath = "deploy/resources/monitoring/source-service-monitor.yaml"
+	EventingSourcePath               = "deploy/resources/monitoring/source-service.yaml"
+	SourceLabel                      = "eventing.knative.dev/source"
+	SourceNameLabel                  = "eventing.knative.dev/sourceName"
+	SourceRoleLabel                  = "sources.knative.dev/role"
+	TestMonitor                      = "TEST_MONITOR"
+	TestSourceServiceMonitorPath     = "TEST_SOURCE_SERVICE_MONITOR_PATH"
+	TestSourceServicePath            = "TEST_SOURCE_SERVICE_PATH"
 )
-
-func SetupEventingBrokerServiceMonitors(client client.Client, instance *eventingv1alpha1.KnativeEventing) error {
-	manifest, err := mf.NewManifest(getMonitorPath(TestEventingBrokerServiceMonitorPath, EventingBrokerServiceMonitorPath), mf.UseClient(mfclient.NewClient(client)))
-	if err != nil {
-		return fmt.Errorf("unable to parse broker service monitors: %w", err)
-	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance), mf.InjectNamespace(instance.Namespace)}
-	if manifest, err = manifest.Transform(transforms...); err != nil {
-		return fmt.Errorf("unable to transform broker service monitors manifest: %w", err)
-	}
-	if err := manifest.Apply(); err != nil {
-		return err
-	}
-	return nil
-}
 
 func SetupSourceServiceMonitor(client client.Client, instance *appsv1.Deployment) error {
 	labels := instance.Spec.Selector.MatchLabels

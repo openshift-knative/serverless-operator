@@ -125,7 +125,6 @@ func (r *ReconcileKnativeEventing) reconcileKnativeEventing(instance *eventingv1
 	stages := []func(*eventingv1alpha1.KnativeEventing) error{
 		r.configure,
 		r.ensureFinalizers,
-		r.installServiceMonitors,
 		r.installDashboards,
 	}
 	for _, stage := range stages {
@@ -162,18 +161,6 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 	log.Info("Adding finalizer")
 	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
 	return r.client.Update(context.TODO(), instance)
-}
-
-// installServiceMonitors installs service monitors for eventing dashboards
-func (r *ReconcileKnativeEventing) installServiceMonitors(instance *eventingv1alpha1.KnativeEventing) error {
-	log.Info("Installing Eventing Service Monitors")
-	if err := common.SetupMonitoringRequirements(r.client, instance); err != nil {
-		return err
-	}
-	if err := common.SetupEventingBrokerServiceMonitors(r.client, instance); err != nil {
-		return err
-	}
-	return nil
 }
 
 // installDashboard installs dashboard for OpenShift webconsole

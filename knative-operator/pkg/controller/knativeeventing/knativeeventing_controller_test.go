@@ -8,7 +8,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,7 +46,6 @@ func init() {
 	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
 	os.Setenv(common.TestRolePath, "../dashboard/testdata/role-service-monitor.yaml")
-	os.Setenv(common.TestEventingBrokerServiceMonitorPath, "../dashboard/testdata/broker-service-monitors.yaml")
 	os.Setenv(common.TestMonitor, "true")
 
 	apis.AddToScheme(scheme.Scheme)
@@ -81,7 +79,6 @@ func TestEventingReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewClientBuilder().WithObjects(ke, dashboardNamespace, eventingNamespace).Build()
 			r := &ReconcileKnativeEventing{client: cl, scheme: scheme.Scheme}
-
 			// Reconcile to initialize
 			if _, err := r.Reconcile(context.Background(), req); err != nil {
 				t.Fatalf("reconcile: (%v)", err)
@@ -102,17 +99,6 @@ func TestEventingReconcile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
-			// Check if the eventing service monitors are installed
-			smFilter := &monitoringv1.ServiceMonitor{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-filter", Namespace: eventingNamespace.Name}, smFilter)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
-			smIngress := &monitoringv1.ServiceMonitor{}
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-ingress", Namespace: eventingNamespace.Name}, smIngress)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
 			// Delete Dashboard configmaps.
 			err = cl.Delete(context.TODO(), resourcesCM)
 			if err != nil {
@@ -123,15 +109,6 @@ func TestEventingReconcile(t *testing.T) {
 				t.Fatalf("delete: (%v)", err)
 			}
 			err = cl.Delete(context.TODO(), sourceCM)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
-			}
-			// Delete service monitors
-			err = cl.Delete(context.TODO(), smFilter)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
-			}
-			err = cl.Delete(context.TODO(), smIngress)
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
 			}
@@ -161,12 +138,6 @@ func TestEventingReconcile(t *testing.T) {
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: dashboardNamespace.Name}, brokerCM)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-source", Namespace: dashboardNamespace.Name}, sourceCM)
-			checkError(t, err)
-
-			// Check again if the eventing service monitors are available
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-filter", Namespace: eventingNamespace.Name}, smFilter)
-			checkError(t, err)
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-eventing-metrics-broker-ingress", Namespace: eventingNamespace.Name}, smIngress)
 			checkError(t, err)
 		})
 	}
