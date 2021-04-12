@@ -38,6 +38,10 @@ func (t *Trigger) Validate(ctx context.Context) *apis.FieldError {
 	errs := t.Spec.Validate(ctx).ViaField("spec")
 	errs = t.validateAnnotation(errs, DependencyAnnotation, t.validateDependencyAnnotation)
 	errs = t.validateAnnotation(errs, InjectionAnnotation, t.validateInjectionAnnotation)
+	if apis.IsInUpdate(ctx) {
+		original := apis.GetBaseline(ctx).(*Trigger)
+		errs = errs.Also(t.CheckImmutableFields(ctx, original))
+	}
 	return errs
 }
 
@@ -63,6 +67,12 @@ func (ts *TriggerSpec) Validate(ctx context.Context) *apis.FieldError {
 
 	if fe := ts.Subscriber.Validate(ctx); fe != nil {
 		errs = errs.Also(fe.ViaField("subscriber"))
+	}
+
+	if ts.Delivery != nil {
+		if de := ts.Delivery.Validate(ctx); de != nil {
+			errs = errs.Also(de.ViaField("delivery"))
+		}
 	}
 
 	return errs

@@ -69,8 +69,10 @@ func TestReconcile(t *testing.T) {
 		name: "different HA settings",
 		in: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				HighAvailability: &v1alpha1.HighAvailability{
-					Replicas: 3,
+				CommonSpec: v1alpha1.CommonSpec{
+					HighAvailability: &v1alpha1.HighAvailability{
+						Replicas: 3,
+					},
 				},
 			},
 		},
@@ -322,6 +324,9 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 		},
 		Spec: v1alpha1.KnativeServingSpec{
 			CommonSpec: v1alpha1.CommonSpec{
+				HighAvailability: &v1alpha1.HighAvailability{
+					Replicas: 2,
+				},
 				Config: v1alpha1.ConfigMapData{
 					"deployment": map[string]string{
 						"queueSidecarImage": "baz",
@@ -354,9 +359,6 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 			ControllerCustomCerts: v1alpha1.CustomCerts{
 				Type: "ConfigMap",
 				Name: "config-service-ca",
-			},
-			HighAvailability: &v1alpha1.HighAvailability{
-				Replicas: 2,
 			},
 		},
 	}

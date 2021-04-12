@@ -42,6 +42,7 @@ func Service(name, namespace string, so ...ServiceOption) *v1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
+			UID:       "cccccccc-cccc-cccc-cccc-cccccccccccc",
 		},
 	}
 	for _, opt := range so {
@@ -178,13 +179,6 @@ func WithRevisionTimeoutSeconds(revisionTimeoutSeconds int64) ServiceOption {
 func WithServiceAccountName(serviceAccountName string) ServiceOption {
 	return func(service *v1.Service) {
 		service.Spec.Template.Spec.ServiceAccountName = serviceAccountName
-	}
-}
-
-// WithContainerConcurrency sets the given Service's concurrency.
-func WithContainerConcurrency(cc int64) ServiceOption {
-	return func(svc *v1.Service) {
-		svc.Spec.Template.Spec.ContainerConcurrency = &cc
 	}
 }
 

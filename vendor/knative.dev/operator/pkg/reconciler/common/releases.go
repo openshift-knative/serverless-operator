@@ -38,6 +38,8 @@ const (
 	VersionVariable = "${VERSION}"
 	// COMMA is the character comma
 	COMMA = ","
+	// LATEST_VERSION is the special version Knative Operator support, besides all semantic versions of Knative.
+	LATEST_VERSION = "latest"
 )
 
 var cache = map[string]mf.Manifest{}
@@ -52,7 +54,7 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 			return latestRelease(instance)
 		}
 
-		if sanitizeSemver(version) == semver.MajorMinor(sanitizeSemver(version)) {
+		if SanitizeSemver(version) == semver.MajorMinor(SanitizeSemver(version)) {
 			return getLatestRelease(instance, version)
 		}
 	}
@@ -74,14 +76,18 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	if len(instance.GetStatus().GetManifests()) == 0 && current == "" {
 		return TargetManifest(instance)
 	}
-	return fetch(installedManifestPath(current, instance))
+	return FetchManifest(installedManifestPath(current, instance))
 }
 
 // IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
 // manifest is able to upgrade or downgrade to the target manifest.
 func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	var err error
-	target := sanitizeSemver(TargetVersion(instance))
+	targetVersion := TargetVersion(instance)
+	if targetVersion == LATEST_VERSION {
+		return nil
+	}
+	target := SanitizeSemver(targetVersion)
 	if !semver.IsValid(target) {
 		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
 	}
@@ -92,11 +98,12 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 
 	current := instance.GetStatus().GetVersion()
 	// If there is no manifest installed, return nil, because the target manifest is able to install.
-	if current == "" {
+	// If the installed manifest is versioned with latest, we allow any version to upgrade to or from it.
+	if current == "" || current == LATEST_VERSION {
 		return nil
 	}
 
-	current = sanitizeSemver(current)
+	current = SanitizeSemver(current)
 	currentMajor := semver.Major(current)
 	targetMajor := semver.Major(target)
 	if currentMajor != targetMajor {
@@ -137,7 +144,7 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 
 func getManifestWithVersionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
 	manifestsPath := targetManifestPath(version, instance)
-	manifests, err := fetch(manifestsPath)
+	manifests, err := FetchManifest(manifestsPath)
 	if err != nil {
 		if len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0 {
 			// If we cannot access the manifests, there is no need to check whether the versions match.
@@ -154,12 +161,13 @@ func getManifestWithVersionValidation(version string, instance v1alpha1.KCompone
 		return manifests, fmt.Errorf("There is no resource available in the target manifests %s.", manifestsPath)
 	}
 
-	if version == "" {
-		// If target version is empty, there is no need to check whether the versions match.
+	if version == "" || version == LATEST_VERSION {
+		// If target version is empty or equal to the special latest version, there is no need to check whether
+		// the versions match.
 		return manifests, nil
 	}
 
-	targetVersion := sanitizeSemver(version)
+	targetVersion := SanitizeSemver(version)
 	key := getVersionKey(instance)
 	for _, u := range manifests.Resources() {
 		// Check the labels of the resources one by one to see if the version matches the target version in terms of
@@ -181,7 +189,9 @@ func abs(x int) int {
 	return x
 }
 
-func fetch(path string) (mf.Manifest, error) {
+// FetchManifest returns the manifest by either getting it from the cache, or reading them from the path.
+// The manifest is saved in the cache, if it is not available.
+func FetchManifest(path string) (mf.Manifest, error) {
 	if m, ok := cache[path]; ok {
 		return m, nil
 	}
@@ -256,10 +266,10 @@ func installedManifestPath(version string, instance v1alpha1.KComponent) string 
 	return ""
 }
 
-// sanitizeSemver always adds `v` in front of the version.
+// SanitizeSemver always adds `v` in front of the version.
 // x.y.z is the standard format we use as the semantic version for Knative. The letter `v` is added for
 // comparison purpose.
-func sanitizeSemver(version string) string {
+func SanitizeSemver(version string) string {
 	return fmt.Sprintf("v%s", version)
 }
 
@@ -291,7 +301,7 @@ func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 	// This function makes sure the versions are sorted in a descending order.
 	sort.Slice(releaseTags, func(i, j int) bool {
 		// The index i is the one after the index j. If i is more recent than j, return true to swap.
-		return semver.Compare(sanitizeSemver(releaseTags[i]), sanitizeSemver(releaseTags[j])) == 1
+		return semver.Compare(SanitizeSemver(releaseTags[i]), SanitizeSemver(releaseTags[j])) == 1
 	})
 
 	return releaseTags, nil
@@ -317,7 +327,7 @@ func getLatestRelease(instance v1alpha1.KComponent, version string) string {
 
 	for _, val := range vers {
 		if strings.HasPrefix(val, version) &&
-			semver.MajorMinor(sanitizeSemver(val)) == semver.MajorMinor(sanitizeSemver(version)) {
+			semver.MajorMinor(SanitizeSemver(val)) == semver.MajorMinor(SanitizeSemver(version)) {
 			// If spec.version is set in the format of major.minor, we return the latest version matching
 			// spec.version.
 			return val
