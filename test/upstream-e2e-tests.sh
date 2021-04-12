@@ -26,6 +26,10 @@ fi
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   install_serverless_previous
+  # Set KafkaChannel as default for upgrade tests.
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    ensure_kafka_channel_default
+  fi
   run_rolling_upgrade_tests
   trigger_gc_and_print_knative
   # Call teardown only if E2E tests follow.
