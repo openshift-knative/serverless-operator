@@ -6,7 +6,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 )
 
-func TestKnativeServingControlPlaneMetrics(t *testing.T) {
+func TestKnativeControlPlaneMetrics(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, caCtx)
@@ -15,8 +15,15 @@ func TestKnativeServingControlPlaneMetrics(t *testing.T) {
 	defer cleanup()
 	t.Run("verify Serving control plane metrics work correctly", func(t *testing.T) {
 		// Serving control plane metrics should work
-		if err := VerifyServingControlPlaneMetrics(caCtx); err != nil {
-			t.Fatal("Failed to verify that control plane metrics work correctly", err)
+		if err := VerifyControlPlaneMetrics(caCtx, servingMetricQueries); err != nil {
+			t.Fatal("Failed to verify that Serving control plane metrics work correctly", err)
+		}
+	})
+
+	t.Run("verify Eventing control plane metrics work correctly", func(t *testing.T) {
+		// Eventing control plane metrics should work
+		if err := VerifyControlPlaneMetrics(caCtx, eventingMetricQueries); err != nil {
+			t.Fatal("Failed to verify that Eventing control plane metrics work correctly", err)
 		}
 	})
 }

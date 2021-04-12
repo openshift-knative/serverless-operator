@@ -105,6 +105,15 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 			if strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "controller" {
 				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
 			}
+		case "role":
+			if u.GetName() != "knative-prometheus-k8s" {
+				t.Errorf("Uknown role %q", u.GetName())
+			}
+		case "rolebinding":
+			if u.GetName() != "knative-prometheus-k8s" {
+				t.Errorf("Uknown rolebinding %q", u.GetName())
+			}
+			checkSubjects(t, u.Object, OpenshiftMonitoringNamespace)
 		}
 	}
 }
@@ -118,8 +127,8 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 		t.Errorf("Got %d, want %d", len(manifests), 1)
 	}
 	resources := manifests[0].Resources()
-	if len(resources) != 26 {
-		t.Errorf("Got %d, want %d", len(resources), 26)
+	if len(resources) != 28 {
+		t.Errorf("Got %d, want %d", len(resources), 28)
 	}
 	for _, u := range resources {
 		kind := strings.ToLower(u.GetKind())
@@ -139,6 +148,15 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 			if !eventingComponents.Has(strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-")) {
 				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
 			}
+		case "role":
+			if u.GetName() != "knative-prometheus-k8s" {
+				t.Errorf("Uknown role %q", u.GetName())
+			}
+		case "rolebinding":
+			if u.GetName() != "knative-prometheus-k8s" {
+				t.Errorf("Uknown rolebinding %q", u.GetName())
+			}
+			checkSubjects(t, u.Object, OpenshiftMonitoringNamespace)
 		}
 	}
 }
