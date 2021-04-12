@@ -93,13 +93,13 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 	newSM := monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: operatorNamespace.Name,
-			Name:      "knative-openshift-metrics-3",
+			Name:      "knative-openshift-metrics-2",
 		},
 	}
 	newSMService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: operatorNamespace.Name,
-			Name:      "knative-openshift-metrics-3",
+			Name:      "knative-openshift-metrics-2",
 		},
 	}
 	randomSM := monitoringv1.ServiceMonitor{
@@ -114,8 +114,8 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 			Name:      "random",
 		},
 	}
-	initObjs := []client.Object{&operatorNamespace, &oldSM, &oldSMService, &newSM, &newSMService, &randomSM, &randomService}
-	cl := fake.NewClientBuilder().WithObjects(initObjs...).Build()
+	initObjs := []runtime.Object{&operatorNamespace, &oldSM, &oldSMService, &newSM, &newSMService, &randomSM, &randomService}
+	cl := fake.NewFakeClient(initObjs...)
 	if err := RemoveOldServiceMonitorResourcesIfExist(operatorNamespace.Name, cl); err != nil {
 		t.Errorf("Failed to remove old service monitor resources: %w", err)
 	}
@@ -127,8 +127,8 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 		t.Errorf("got %d, want %d", len(smList.Items), 2)
 	}
 	for _, sm := range smList.Items {
-		if sm.Name != "knative-openshift-metrics-3" && sm.Name != "random" {
-			t.Errorf("got %q, want %q", sm.Name, "knative-openshift-metrics-3 or random")
+		if sm.Name != "knative-openshift-metrics-2" && sm.Name != "random" {
+			t.Errorf("got %q, want %q", sm.Name, "knative-openshift-metrics-2 or random")
 		}
 	}
 	smServiceList := corev1.ServiceList{}
@@ -139,8 +139,8 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 		t.Errorf("got %d, want %d", len(smServiceList.Items), 2)
 	}
 	for _, sv := range smServiceList.Items {
-		if sv.Name != "knative-openshift-metrics-3" && sv.Name != "random" {
-			t.Errorf("got %q, want %q", sv.Name, "knative-openshift-metrics-3 or random")
+		if sv.Name != "knative-openshift-metrics-2" && sv.Name != "random" {
+			t.Errorf("got %q, want %q", sv.Name, "knative-openshift-metrics-2 or random")
 		}
 	}
 }
