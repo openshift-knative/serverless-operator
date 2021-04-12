@@ -48,6 +48,7 @@ func TestServerlessUpgrade(t *testing.T) {
 				servingupgrade.AutoscaleSustainingTest(),
 				eventingupgrade.ContinualTest(),
 				kafkaupgrade.ChannelContinualTest(),
+				kafkaupgrade.SourceContinualTest(),
 			},
 		},
 		Installations: pkgupgrade.Installations{
@@ -92,6 +93,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{
 		eventingupgrade.PreUpgradeTest(),
 		kafkaupgrade.ChannelPreUpgradeTest(),
+		kafkaupgrade.SourcePreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
@@ -104,10 +106,12 @@ func preUpgradeTests() []pkgupgrade.Operation {
 }
 
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
-	var tests []pkgupgrade.Operation
-	tests = append(tests, waitForServicesReady(ctx))
-	tests = append(tests, eventingupgrade.PostUpgradeTest())
-	tests = append(tests, kafkaupgrade.ChannelPostUpgradeTest())
+	tests := []pkgupgrade.Operation{
+		waitForServicesReady(ctx),
+		eventingupgrade.PostUpgradeTest(),
+		kafkaupgrade.ChannelPostUpgradeTest(),
+		kafkaupgrade.SourcePostUpgradeTest(),
+	}
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
