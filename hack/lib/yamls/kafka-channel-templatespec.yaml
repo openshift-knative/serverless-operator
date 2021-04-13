@@ -1,0 +1,9 @@
+apiVersion: messaging.knative.dev/v1beta1
+kind: KafkaChannel
+spec:
+  numPartitions: 6
+  replicationFactor: 3
+  delivery:
+    retry: 12
+    backoffPolicy: exponential
+    backoffDelay: PT1S
