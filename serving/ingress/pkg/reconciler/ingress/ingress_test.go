@@ -182,21 +182,6 @@ func TestReconcile(t *testing.T) {
 		WantEvents: []string{
 			Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
 		},
-	}, {
-		// The new downstream label (OpenShiftIngressLabelKey) was introduced but Routes with old labels still should be reconciled.
-		Name:                    "reconcile only old labels",
-		SkipNamespaceValidation: true,
-		Key:                     key,
-		Objects: []runtime.Object{
-			ing(ingNamespace, ingName),
-			route(ingressNamespace, routeName, func(r *routev1.Route) {
-				delete(r.Labels, resources.OpenShiftIngressLabelKey)
-				delete(r.Labels, resources.OpenShiftIngressNamespaceLabelKey)
-			}), // Test without downstream labels.
-		},
-		WantUpdates: []clientgotesting.UpdateActionImpl{{
-			Object: route(ingressNamespace, routeName),
-		}},
 	}}
 
 	table.Test(t, MakeFactory(func(ctx context.Context, listers *Listers, cmw configmap.Watcher) controller.Reconciler {
