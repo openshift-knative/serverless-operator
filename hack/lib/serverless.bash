@@ -220,8 +220,8 @@ function ensure_kafka_channel_default {
   logger.info 'Set KafkaChannel as default'
   local defaultChConfig channelTemplateSpec yamls patchfile
   yamls="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/yamls"
-  read.in defaultChConfig < "${yamls}/kafka-default-ch-config.yaml"
-  read.in channelTemplateSpec < "${yamls}/kafka-channel-templatespec.yaml"
+  defaultChConfig="$(cat "${yamls}/kafka-default-ch-config.yaml")"
+  channelTemplateSpec="$(cat "${yamls}/kafka-channel-templatespec.yaml")"
   patchfile="$(mktemp -t kafka-dafault-XXXXX.json)"
   echo '{
   "spec": {
