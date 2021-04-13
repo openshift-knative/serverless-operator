@@ -218,20 +218,27 @@ EOF
 
 function ensure_kafka_channel_default {
   logger.info 'Set KafkaChannel as default'
-
-  oc patch knativeeventing knative-eventing -n "${EVENTING_NAMESPACE}" --type merge \
-    --patch '{
+  local defaultChConfig channelTemplateSpec yamls patchfile
+  yamls="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/yamls"
+  read.in defaultChConfig < "${yamls}/kafka-default-ch-config.yaml"
+  read.in channelTemplateSpec < "${yamls}/kafka-channel-templatespec.yaml"
+  patchfile="$(mktemp -t kafka-dafault-XXXXX.json)"
+  echo '{
   "spec": {
     "config": {
       "default-ch-webhook": {
-        "default-ch-config": "clusterDefault: \n  apiVersion: messaging.knative.dev/v1beta1\n  kind: KafkaChannel\n"
+        "default-ch-config": "'"${defaultChConfig//$'\n'/'\n'}"'"
       },
       "config-br-default-channel": {
-        "channelTemplateSpec": "apiVersion: messaging.knative.dev/v1beta1\nkind: KafkaChannel\n"
+        "channelTemplateSpec": "'"${channelTemplateSpec//$'\n'/'\n'}"'"
       }
     }
   }
-}'
+}' > "${patchfile}"
+  oc patch knativeeventing knative-eventing \
+    -n "${EVENTING_NAMESPACE}" \
+    --type merge --patch "$(cat "${patchfile}")"
+  rm -f "${patchfile}"
 
   logger.success 'KafkaChannel is set as default.'
 }

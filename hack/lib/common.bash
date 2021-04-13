@@ -78,3 +78,24 @@ function versions.major_minor {
   # Ref: https://regex101.com/r/Po1HA3/1
   echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\1.\2/'
 }
+
+# Reads stdin into a variable, accounting for trailing newlines. Avoids
+# needing a subshell or command substitution.
+# Note that NUL bytes are still unsupported, as Bash variables don't allow NULs.
+# See https://stackoverflow.com/a/22607352/113632
+function read.in {
+  # Use unusual variable names to avoid colliding with a variable name
+  # the user might pass in (notably "contents")
+  : "${1:?Must provide a variable to read into}"
+  if [[ "$1" == '_line' || "$1" == '_contents' ]]; then
+    echo "Cannot store contents to $1, use a different name." >&2
+    return 1
+  fi
+
+  local _line _contents=()
+  while IFS='' read -r _line; do
+    _contents+=("$_line"$'\n')
+  done
+  # include $_line once more to capture any content after the last newline
+  printf -v "$1" '%s' "${_contents[@]}" "$_line"
+}
