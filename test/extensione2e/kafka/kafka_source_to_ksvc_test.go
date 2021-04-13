@@ -3,8 +3,10 @@ package knativekafkae2e
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
+	"strings"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -134,6 +136,10 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
 		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+		// Jobs and Pods are sometimes left in the namespace.
+		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
+		deleteJobs(t, client, testNamespace, cronJobName)
+		deletePods(t, client, testNamespace, cronJobName)
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
 		removePullSecretFromSA(t, client, testNamespace, serviceAccount, tlsSecret)
@@ -275,14 +281,41 @@ func removePullSecretFromSA(t *testing.T, ctx *test.Context, namespace, serviceA
 		t.Error("Unable to get ServiceAccount", serviceAccount)
 	}
 	for i, secret := range sa.ImagePullSecrets {
-		patch := []byte(fmt.Sprintf(`[{"op": "remove", "path": "/imagePullSecrets/%d"}]`, i))
 		if secret.Name == secretName {
+			patch := []byte(fmt.Sprintf(`[{"op": "remove", "path": "/imagePullSecrets/%d"}]`, i))
 			_, err = ctx.Clients.Kube.CoreV1().ServiceAccounts(namespace).
 				Patch(context.Background(), serviceAccount, types.JSONPatchType, patch, metav1.PatchOptions{})
 			if err != nil {
 				t.Errorf("Patch failed on NS/SA (%s/%s): %s", namespace, serviceAccount, err)
 			}
-			return
+		}
+	}
+}
+
+func deleteJobs(t *testing.T, ctx *test.Context, namespace, name string) {
+	t.Helper()
+	jobList, err := ctx.Clients.Kube.BatchV1().Jobs(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error("Unable to list jobs in namespace:", namespace)
+	}
+	for _, job := range jobList.Items {
+		if strings.Contains(job.Name, name) {
+			ctx.Clients.Kube.BatchV1().Jobs(namespace).
+				Delete(context.Background(), job.Name, metav1.DeleteOptions{})
+		}
+	}
+}
+
+func deletePods(t *testing.T, ctx *test.Context, namespace, name string) {
+	t.Helper()
+	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error("Unable to list pods in namespace:", namespace)
+	}
+	for _, pod := range podList.Items {
+		if strings.Contains(pod.Name, name) {
+			ctx.Clients.Kube.CoreV1().Pods(namespace).
+				Delete(context.Background(), pod.Name, metav1.DeleteOptions{})
 		}
 	}
 }
