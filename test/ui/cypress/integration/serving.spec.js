@@ -101,7 +101,10 @@ describe('OCP UI for Serverless', () => {
 
   const showcaseKsvc = new ShowcaseKservice()
 
-  it('can deploy kservice and scale it', () => {
+  it('can deploy kservice and scale it',
+    // TODO: Remove the increased timeout when https://issues.redhat.com/browse/ODC-5685 is fixed.
+    { defaultCommandTimeout: 300000 },
+    () => {
     describe('with authenticated via Web Console', () => {
       cy.login()
     })
