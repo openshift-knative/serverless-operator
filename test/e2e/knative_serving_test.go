@@ -33,7 +33,7 @@ func TestKnativeServing(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		if _, err := test.WithOperatorReady(caCtx, "serverless-operator-subscription"); err != nil {
+		if _, err := test.WithOperatorReady(caCtx, test.Flags.Subscription); err != nil {
 			t.Fatal("Failed", err)
 		}
 	})
@@ -161,7 +161,7 @@ func testKnativeServingForGlobalProxy(t *testing.T, caCtx *test.Context) {
 		for _, cond := range s.Status.Conditions {
 			// After global proxy update every call goes through proxy server
 			// Here it give unable to pull image because it tries to connect to not running http server
-			if strings.Contains(cond.Message, "failed to fetch image information") && strings.Contains(cond.Message, proxyIP) {
+			if strings.Contains(cond.Message, "failed to resolve image to digest") {
 				return true, nil
 			}
 		}

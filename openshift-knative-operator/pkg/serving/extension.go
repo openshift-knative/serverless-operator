@@ -45,6 +45,11 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 	return []mf.Transformer{
 		monitoring.InjectNamespaceWithSubject(ks.GetNamespace(), monitoring.OpenshiftMonitoringNamespace),
 		monitoring.InjectRbacProxyContainerToDeployments(),
+		common.InjectEnvironmentIntoDeployment("controller", "controller", map[string]string{
+			"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
+			"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
+			"NO_PROXY":    os.Getenv("NO_PROXY"),
+		}),
 	}
 }
 
@@ -79,7 +84,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	// Override images.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	images := common.ImageMapFromEnvironment(os.Environ())
-	ks.Spec.Registry.Override = common.ImageMapFromEnvironment(os.Environ())
+	ks.Spec.Registry.Override = images
 	ks.Spec.Registry.Default = images["default"]
 	common.Configure(&ks.Spec.CommonSpec, "deployment", "queueSidecarImage", images["queue-proxy"])
 

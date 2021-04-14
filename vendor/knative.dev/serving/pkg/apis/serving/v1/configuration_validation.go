@@ -18,7 +18,6 @@ package v1
 
 import (
 	"context"
-	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -63,27 +62,18 @@ func (cs *ConfigurationSpec) Validate(ctx context.Context) *apis.FieldError {
 
 // validateLabels function validates configuration labels
 func (c *Configuration) validateLabels() (errs *apis.FieldError) {
-	for key, val := range c.GetLabels() {
-		switch key {
-		case serving.RouteLabelKey, serving.VisibilityLabelKeyObsolete:
-			// Known valid labels.
-		case serving.ServiceLabelKey:
-			errs = errs.Also(verifyLabelOwnerRef(val, serving.ServiceLabelKey, "Service", c.GetOwnerReferences()))
-		default:
-			if strings.HasPrefix(key, serving.GroupNamePrefix) {
-				errs = errs.Also(apis.ErrInvalidKeyName(key, apis.CurrentField))
-			}
-		}
+	if val, ok := c.Labels[serving.ServiceLabelKey]; ok {
+		errs = errs.Also(verifyLabelOwnerRef(val, serving.ServiceLabelKey, "Service", c.GetOwnerReferences()))
 	}
-	return
+	return errs
 }
 
 // verifyLabelOwnerRef function verifies the owner references of resource with label key has val value.
 func verifyLabelOwnerRef(val, label, resource string, ownerRefs []metav1.OwnerReference) (errs *apis.FieldError) {
 	for _, ref := range ownerRefs {
-		if ref.Kind == resource && val == ref.Name {
-			return
+		if ref.Kind == resource && ref.Name == val {
+			return nil
 		}
 	}
-	return errs.Also(apis.ErrMissingField(label))
+	return apis.ErrMissingField(label)
 }

@@ -216,6 +216,27 @@ EOF
   logger.success 'Knative Kafka has been installed sucessfully.'
 }
 
+function ensure_kafka_channel_default {
+  logger.info 'Set KafkaChannel as default'
+
+  oc patch knativeeventing knative-eventing -n "${EVENTING_NAMESPACE}" --type merge \
+    --patch '{
+  "spec": {
+    "config": {
+      "default-ch-webhook": {
+        "default-ch-config": "clusterDefault: \n  apiVersion: messaging.knative.dev/v1beta1\n  kind: KafkaChannel\n"
+      },
+      "config-br-default-channel": {
+        "channelTemplateSpec": "apiVersion: messaging.knative.dev/v1beta1\nkind: KafkaChannel\n"
+      }
+    }
+  }
+}'
+
+  logger.success 'KafkaChannel is set as default.'
+}
+
+
 function ensure_kafka_no_auth {
   logger.info 'Ensure Knative Kafka using no Kafka auth'
 
@@ -309,16 +330,16 @@ function teardown_serverless {
   if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
     oc delete namespace "${INGRESS_NAMESPACE}"
   fi
-
+  # KnativeKafka must be deleted before KnativeEventing due to https://issues.redhat.com/browse/SRVKE-667
+  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeKafka CR'
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
+  fi
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
     # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
     oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
-  fi
-  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeKafka CR'
-    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
   fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
   timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"

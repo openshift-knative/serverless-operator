@@ -139,6 +139,20 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 	return lastState, nil
 }
 
+func WaitForReadyServices(ctx *Context, namespace string) error {
+	services, err := ctx.Clients.Serving.ServingV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, svc := range services.Items {
+		_, err = WaitForServiceState(ctx, svc.Name, namespace, IsServiceReady)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func WaitForDomainMappingState(ctx *Context, name, namespace string, inState func(dm *servingv1alpha1.DomainMapping, err error) (bool, error)) (*servingv1alpha1.DomainMapping, error) {
 	var (
 		lastState *servingv1alpha1.DomainMapping

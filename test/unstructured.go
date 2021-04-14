@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,7 +62,7 @@ func WaitForUnstructuredState(ctx *Context, schema schema.GroupVersionResource, 
 		lastState *unstructured.Unstructured
 		err       error
 	)
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
 		lastState, err = ctx.Clients.Dynamic.Resource(schema).Namespace(namespace).Get(context.Background(), name, meta.GetOptions{})
 		return inState(lastState, err)
 	})

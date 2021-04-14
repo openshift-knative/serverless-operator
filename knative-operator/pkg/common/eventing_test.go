@@ -75,8 +75,7 @@ func TestEventingWebhookInclusionMode(t *testing.T) {
 			name: "No mode specified",
 			ke: &operatorv1alpha1.KnativeEventing{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "no-mode-specified",
-					Namespace: namespace,
+					Name: "no-mode-specified",
 				},
 			},
 			wanted: "inclusion",
@@ -85,8 +84,7 @@ func TestEventingWebhookInclusionMode(t *testing.T) {
 			name: "Inclusion Mode Specified",
 			ke: &operatorv1alpha1.KnativeEventing{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "inclusion-specified",
-					Namespace: namespace,
+					Name: "inclusion-specified",
 				},
 				Spec: operatorv1alpha1.KnativeEventingSpec{
 					SinkBindingSelectionMode: "inclusion",
@@ -98,8 +96,7 @@ func TestEventingWebhookInclusionMode(t *testing.T) {
 			name: "Exclusion Mode Specified",
 			ke: &operatorv1alpha1.KnativeEventing{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "exclusion-specified",
-					Namespace: namespace,
+					Name: "exclusion-specified",
 				},
 				Spec: operatorv1alpha1.KnativeEventingSpec{
 					SinkBindingSelectionMode: "exclusion",

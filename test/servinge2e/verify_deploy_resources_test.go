@@ -37,8 +37,8 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 		t.Fatalf("unable to GET kn ConsoleCLIDownload CO 'kn': %v", err)
 	}
 	// Verify the links in kn CCD CO
-	if len(ccd.Spec.Links) != 3 {
-		t.Fatalf("expecting 3 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
+	if len(ccd.Spec.Links) != 6 {
+		t.Fatalf("expecting 6 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
 	}
 	// Verify if individual link starts with correct route
 	protocol := "https://"
@@ -59,7 +59,7 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 			t.Fatalf("failed to HEAD request for URL %s, error: %v", link.Href, err)
 		}
 		if h.ContentLength < 1024*1024*10 {
-			t.Fatalf("failed to verify kn CCD, kn artifact %s size less than 10MB", link.Href)
+			t.Errorf("failed to verify kn CCD, kn artifact %s size %d less than 10MB", link.Href, h.ContentLength)
 		}
 	}
 }

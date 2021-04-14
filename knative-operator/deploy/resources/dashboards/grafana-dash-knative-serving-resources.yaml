@@ -168,7 +168,7 @@ data:
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total Memory Usage (rate per minute)",
+          "title": "Total Memory Usage (bytes)",
           "tooltip": {
             "shared": true,
             "sort": 2,

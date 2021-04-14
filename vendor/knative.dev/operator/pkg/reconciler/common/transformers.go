@@ -29,9 +29,11 @@ func transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer
 		mf.InjectOwner(obj),
 		mf.InjectNamespace(obj.GetNamespace()),
 		JobTransform(obj),
+		HighAvailabilityTransform(obj, logger),
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj.GetSpec().GetResources(), logger),
+		DeploymentsTransform(obj, logger),
 	}
 }
 

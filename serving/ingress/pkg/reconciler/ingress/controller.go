@@ -11,7 +11,6 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
-	"knative.dev/serving/pkg/apis/serving"
 
 	routeclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	routeinformer "github.com/openshift-knative/serverless-operator/pkg/client/injection/informers/route/v1/route"
@@ -47,15 +46,6 @@ func NewController(
 	ingressInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: reconciler.AnnotationFilterFunc(networking.IngressClassAnnotationKey, kourierIngressClassName, false),
 		Handler:    controller.HandleAll(impl.Enqueue),
-	})
-
-	// We started using OpenShiftIngressLabelKey labels below but still handle resources with this labels for safety.
-	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: reconciler.LabelExistsFilterFunc(networking.IngressLabelKey),
-		Handler: controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
-			serving.RouteNamespaceLabelKey,
-			networking.IngressLabelKey,
-		)),
 	})
 
 	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{

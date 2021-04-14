@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/apimachinery/pkg/types"
+
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
+
 	"github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -91,6 +95,12 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 	return lastState, nil
 }
 
+func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*v1alpha1.Subscription, error) {
+	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
+	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
+		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
+}
+
 func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *v1alpha1.ClusterServiceVersion, err error) (bool, error)) (*v1alpha1.ClusterServiceVersion, error) {
 	var lastState *v1alpha1.ClusterServiceVersion
 	var err error
@@ -98,7 +108,6 @@ func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inS
 		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
-
 	if waitErr != nil {
 		return lastState, fmt.Errorf("clusterserviceversion %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
@@ -106,6 +115,10 @@ func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inS
 }
 
 func IsCSVSucceeded(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) {
+	// The CSV might not exist yet.
+	if apierrs.IsNotFound(err) {
+		return false, nil
+	}
 	return c.Status.Phase == "Succeeded", err
 }
 

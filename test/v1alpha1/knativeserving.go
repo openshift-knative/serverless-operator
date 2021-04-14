@@ -59,7 +59,7 @@ func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 	return err
 }
 
-func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)) (*servingoperatorv1alpha1.KnativeServing, error) {
+func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState ServingInStateFunc) (*servingoperatorv1alpha1.KnativeServing, error) {
 	var (
 		lastState *servingoperatorv1alpha1.KnativeServing
 		err       error
@@ -77,4 +77,12 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 
 func IsKnativeServingReady(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
 	return s.Status.IsReady(), err
+}
+
+type ServingInStateFunc func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error)
+
+func IsKnativeServingWithVersionReady(version string) ServingInStateFunc {
+	return func(s *servingoperatorv1alpha1.KnativeServing, err error) (bool, error) {
+		return s.Status.Version == version && s.Status.IsReady(), err
+	}
 }

@@ -8,12 +8,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"knative.dev/networking/pkg/apis/networking"
 	"knative.dev/networking/pkg/apis/networking/v1alpha1"
 	ingressreconciler "knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
-	"knative.dev/serving/pkg/apis/serving"
 
 	routev1client "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/route/v1"
 	routev1lister "github.com/openshift-knative/serverless-operator/pkg/client/listers/route/v1"
@@ -117,23 +115,8 @@ func (r *Reconciler) reconcileRoute(ctx context.Context, desired *routev1.Route)
 func (r *Reconciler) routeList(ing *v1alpha1.Ingress) (map[string]*routev1.Route, error) {
 	routes := make(map[string]*routev1.Route)
 
-	ingressLabels := ing.GetLabels()
-	// List routes by upstream label. We started using OpenShiftIngressLabelKey labels but
-	// still use the labels for safety.
-	rs, err := r.routeLister.List(labels.SelectorFromSet(map[string]string{
-		networking.IngressLabelKey:     ing.GetName(),
-		serving.RouteLabelKey:          ingressLabels[serving.RouteLabelKey],
-		serving.RouteNamespaceLabelKey: ingressLabels[serving.RouteNamespaceLabelKey],
-	}))
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range rs {
-		routes[r.Name] = r
-	}
-
 	// List routes by the downstream label.
-	rs, err = r.routeLister.List(labels.SelectorFromSet(map[string]string{
+	rs, err := r.routeLister.List(labels.SelectorFromSet(map[string]string{
 		resources.OpenShiftIngressLabelKey:          ing.GetName(),
 		resources.OpenShiftIngressNamespaceLabelKey: ing.GetNamespace(),
 	}))

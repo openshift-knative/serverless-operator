@@ -63,6 +63,12 @@ type KComponentSpec interface {
 	GetManifests() []Manifest
 	// GetAdditionalManifests gets the list of additional manifests, which should be installed
 	GetAdditionalManifests() []Manifest
+
+	// GetHighAvailability returns means to set the number of desired replicas
+	GetHighAvailability() *HighAvailability
+
+	// GetDeploymentOverride gets the deployment configurations to override.
+	GetDeploymentOverride() []DeploymentOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -119,9 +125,13 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Override containers' resource requirements
+	// Resources overrides containers' resource requirements.
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// DeploymentOverride overrides Deploymeet configurations such as resources and replicas.
+	// +optional
+	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
 
 	// Override containers' resource requirements
 	// +optional
@@ -134,6 +144,10 @@ type CommonSpec struct {
 	// A means to specify the additional manifests to install
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
+
+	// HighAvailability allows specification of HA control plane.
+	// +optional
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -166,6 +180,16 @@ func (c *CommonSpec) GetAdditionalManifests() []Manifest {
 	return c.AdditionalManifests
 }
 
+// GetHighAvailability implements KComponentSpec.
+func (c *CommonSpec) GetHighAvailability() *HighAvailability {
+	return c.HighAvailability
+}
+
+// GetDeploymentOverride implements KComponentSpec.
+func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
+	return c.DeploymentOverride
+}
+
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
 // level key is the key to the ConfigMap itself (i.e. "logging") while the second level
 // is the data to be filled into the respective ConfigMap.
@@ -192,6 +216,25 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
+// DeploymentOverride defines the configurations of deployments to override.
+type DeploymentOverride struct {
+	// Name is the name of the deployment to override.
+	Name string `json:"name"`
+
+	// Labels overrides labels for the deployment and its template.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations overrides labels for the deployment and its template.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	// +optional
+	Replicas int32 `json:"replicas,omitempty"`
+}
+
 // ResourceRequirementsOverride enables the user to override any container's
 // resource requests/limits specified in the embedded manifest
 type ResourceRequirementsOverride struct {
@@ -205,4 +248,13 @@ type ResourceRequirementsOverride struct {
 type Manifest struct {
 	// The link of the manifest URL
 	Url string `json:"URL"`
+}
+
+// HighAvailability specifies options for deploying Knative Serving control
+// plane in a highly available manner. Note that HighAvailability is still in
+// progress and does not currently provide a completely HA control plane.
+type HighAvailability struct {
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	Replicas int32 `json:"replicas"`
 }

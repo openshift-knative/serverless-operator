@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
@@ -52,18 +53,21 @@ func (ks *KnativeServing) GetStatus() KComponentStatus {
 type KnativeServingSpec struct {
 	CommonSpec `json:",inline"`
 
-	// A means to override the knative-ingress-gateway
-	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+	// DEPRECATED.
+	// DeprecatedKnativeIngressGateway is to override the knative-ingress-gateway.
+	// +optional
+	DeprecatedKnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
 
-	// A means to override the cluster-local-gateway
-	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+	// DEPRECATED.
+	// DeprecatedClusterLocalGateway is to override the cluster-local-gateway.
+	// +optional
+	DeprecatedClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
 
 	// Enables controller to trust registries with self-signed certificates
 	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
 
-	// Allows specification of HA control plane
-	// +optional
-	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+	// Ingress allows configuration of different ingress adapters to be shipped.
+	Ingress *IngressConfigs `json:"ingress,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
@@ -87,9 +91,9 @@ type KnativeServingList struct {
 	Items           []KnativeServing `json:"items"`
 }
 
-// IstioGatewayOverride override the knative-ingress-gateway and cluster-local-gateway
+// IstioGatewayOverride override the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 type IstioGatewayOverride struct {
-	// A map of values to replace the "selector" values in the knative-ingress-gateway and cluster-local-gateway
+	// A map of values to replace the "selector" values in the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
@@ -103,11 +107,35 @@ type CustomCerts struct {
 	Name string `json:"name"`
 }
 
-// HighAvailability specifies options for deploying Knative Serving control
-// plane in a highly available manner. Note that HighAvailability is still in
-// progress and does not currently provide a completely HA control plane.
-type HighAvailability struct {
-	// Replicas is the number of replicas that HA parts of the control plane
-	// will be scaled to.
-	Replicas int32 `json:"replicas"`
+// IngressConfigs specifies options for the ingresses.
+type IngressConfigs struct {
+	Istio   IstioIngressConfiguration   `json:"istio"`
+	Kourier KourierIngressConfiguration `json:"kourier"`
+	Contour ContourIngressConfiguration `json:"contour"`
+}
+
+// IstioIngressConfiguration specifies options for the istio ingresses.
+type IstioIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
+
+	// KnativeIngressGateway overrides the knative-ingress-gateway.
+	// +optional
+	KnativeIngressGateway *IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+
+	// KnativeLocalGateway overrides the knative-local-gateway.
+	// +optional
+	KnativeLocalGateway *IstioGatewayOverride `json:"knative-local-gateway,omitempty"`
+}
+
+// KourierIngressConfiguration specifies whether to enable the kourier ingresses.
+type KourierIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
+
+	// ServiceType specifies the service type for kourier gateway.
+	ServiceType v1.ServiceType `json:"service-type,omitempty"`
+}
+
+// ContourIngressConfiguration specifies whether to enable the contour ingresses.
+type ContourIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
 }
