@@ -227,10 +227,10 @@ function ensure_kafka_channel_default {
   "spec": {
     "config": {
       "default-ch-webhook": {
-        "default-ch-config": "'"${defaultChConfig//$'\n'/'\n'}"'"
+        "default-ch-config": "'"${defaultChConfig//$'\n'/\\n}"'"
       },
       "config-br-default-channel": {
-        "channelTemplateSpec": "'"${channelTemplateSpec//$'\n'/'\n'}"'"
+        "channelTemplateSpec": "'"${channelTemplateSpec//$'\n'/\\n}"'"
       }
     }
   }
