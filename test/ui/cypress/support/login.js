@@ -5,6 +5,9 @@ Cypress.Commands.add('login', () => {
   const namespace = Cypress.env('TEST_NAMESPACE')
   expect(password).to.match(/^.{3,}$/)
 
+  cy.on('uncaught:exception', () => {
+    return false
+  })
   cy.visit('/')
   cy.url().should('include', '/oauth/authorize')
   cy.contains('Log in with')
@@ -28,5 +31,5 @@ Cypress.Commands.add('login', () => {
       cy.contains('Skip tour').click()
     }
   })
-  
+
 })
