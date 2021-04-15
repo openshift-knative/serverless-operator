@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO(ksuszyns): Remove this before merging
-exec "$(dirname "${BASH_SOURCE[0]}")/ui-e2e-tests.sh"
-
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/lib.bash"
 
