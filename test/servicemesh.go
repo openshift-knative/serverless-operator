@@ -189,8 +189,8 @@ func IstioGatewayV1WithTLS(name, namespace string, host, privateKeyPath, serverC
 
 // IstioGatewayWithTLS creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
 // for a specific host with a custom domain and secret(certificates).
-// The secret must exist in the same namespace.
-func IstioGatewayWithTLS(name, namespace string, host, secret string) *unstructured.Unstructured {
+// The secret must exist in the same namespace with SMCP.
+func IstioGatewayWithTLS(name, namespace string, host, secretName string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "networking.istio.io/v1alpha3",
@@ -222,7 +222,7 @@ func IstioGatewayWithTLS(name, namespace string, host, secret string) *unstructu
 						},
 						"tls": map[string]interface{}{
 							"mode":           "SIMPLE",
-							"credentialName": secret,
+							"credentialName": secretName,
 						},
 						"hosts": []string{
 							host,
