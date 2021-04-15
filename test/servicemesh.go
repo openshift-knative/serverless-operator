@@ -139,10 +139,10 @@ func IstioGateway(name, namespace string) *unstructured.Unstructured {
 	}
 }
 
-// IstioGatewayWithTLS creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
+// IstioGatewayV1WithTLS creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
 // for a specific host with a custom domain and certificates.
 // The certificate/privateKey must be already mounted on the istio-ingressgateway on the given paths
-func IstioGatewayWithTLS(name, namespace string, host, privateKeyPath, serverCertificatePath string) *unstructured.Unstructured {
+func IstioGatewayV1WithTLS(name, namespace string, host, privateKeyPath, serverCertificatePath string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "networking.istio.io/v1alpha3",
@@ -176,6 +176,53 @@ func IstioGatewayWithTLS(name, namespace string, host, privateKeyPath, serverCer
 							"mode":              "SIMPLE",
 							"privateKey":        privateKeyPath,
 							"serverCertificate": serverCertificatePath,
+						},
+						"hosts": []string{
+							host,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// IstioGatewayWithTLS creates an Istio Gateway for HTTPS traffic via istio-ingressgateway
+// for a specific host with a custom domain and secret(certificates).
+// The secret must exist in the same namespace.
+func IstioGatewayWithTLS(name, namespace string, host, secret string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "networking.istio.io/v1alpha3",
+			"kind":       "Gateway",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": namespace,
+			},
+			"spec": map[string]interface{}{
+				"selector": map[string]interface{}{
+					"istio": "ingressgateway",
+				},
+				"servers": []map[string]interface{}{
+					{
+						"port": map[string]interface{}{
+							"number":   80,
+							"name":     "http",
+							"protocol": "HTTP",
+						},
+						"hosts": []string{
+							"*",
+						},
+					},
+					{
+						"port": map[string]interface{}{
+							"number":   443,
+							"name":     "https",
+							"protocol": "HTTPS",
+						},
+						"tls": map[string]interface{}{
+							"mode":           "SIMPLE",
+							"credentialName": secret,
 						},
 						"hosts": []string{
 							host,
