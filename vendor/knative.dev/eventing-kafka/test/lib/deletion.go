@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package installation
+package lib
 
-import pkgupgrade "knative.dev/pkg/test/upgrade"
+import (
+	"context"
 
-// LatestStable installs the latest stable eventing kafka.
-func LatestStable() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("LatestStable", func(c pkgupgrade.Context) {
-		runShellFunc("install_released_consolidated_channel", c)
-		runShellFunc("install_released_consolidated_source", c)
-	})
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	testlib "knative.dev/eventing/test/lib"
+)
+
+func DeleteResourceOrFail(ctx context.Context, c *testlib.Client, name string, gvr schema.GroupVersionResource) {
+	unstructured := c.Dynamic.Resource(gvr).Namespace(c.Namespace)
+	if err := unstructured.Delete(ctx, name, metav1.DeleteOptions{}); err != nil {
+		c.T.Fatalf("Failed to delete the resource %q : %v", name, err)
+	}
 }
