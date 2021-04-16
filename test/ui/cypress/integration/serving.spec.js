@@ -46,11 +46,18 @@ describe('OCP UI for Serverless', () => {
     checkScale(scale) {
       const selector = 'div.pf-topology-container__with-sidebar ' +
         'div.odc-revision-deployment-list__pod svg tspan'
-      cy.get(selector)
-        .invoke('text')
-        .should((text) => {
+      const timeout = Cypress.config().defaultCommandTimeout
+      try {
+        // TODO: Remove the increased timeout when https://issues.redhat.com/browse/ODC-5685 is fixed.
+        Cypress.config('defaultCommandTimeout', 300_000)
+        cy.get(selector)
+          .invoke('text')
+          .should((text) => {
           expect(text).to.eq(`${scale}`)
         })
+      } finally {
+        Cypress.config('defaultCommandTimeout', timeout)
+      }
     }
 
     deployImage(kind = 'regular') {
@@ -101,10 +108,7 @@ describe('OCP UI for Serverless', () => {
 
   const showcaseKsvc = new ShowcaseKservice()
 
-  it('can deploy kservice and scale it',
-    // TODO: Remove the increased timeout when https://issues.redhat.com/browse/ODC-5685 is fixed.
-    { defaultCommandTimeout: 300000 },
-    () => {
+  it('can deploy kservice and scale it', () => {
     describe('with authenticated via Web Console', () => {
       cy.login()
     })
