@@ -113,9 +113,9 @@ func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, 
 	}
 	log := logging.FromContext(ctx)
 	if enable {
-		log.Info(fmt.Sprintf("Enabling %s monitoring", cType))
+		log.Infof("Enabling %s monitoring", cType)
 	} else {
-		log.Info(fmt.Sprintf("Disabling %s monitoring", cType))
+		log.Infof("Disabling %s monitoring", cType)
 	}
 	if ns.Labels == nil {
 		ns.Labels = make(map[string]string, 1)
@@ -170,12 +170,8 @@ func getMonitoringPlarformNanifests(ns string, cType KComponentType) ([]mf.Manif
 		}
 		rbacManifest = rbacManifest.Append(*crbM)
 		for c := range servingComponents {
-			smManifest, err := constructServiceMonitorResourceManifests(c, ns)
-			if err != nil {
+			if err := appendManifestsForComponent(c, ns, &rbacManifest); err != nil {
 				return nil, err
-			}
-			if smManifest != nil {
-				rbacManifest = rbacManifest.Append(*smManifest)
 			}
 		}
 	case Eventing:
@@ -191,17 +187,24 @@ func getMonitoringPlarformNanifests(ns string, cType KComponentType) ([]mf.Manif
 			rbacManifest = rbacManifest.Append(*crbM)
 		}
 		for c := range eventingComponents {
-			smManifest, err := constructServiceMonitorResourceManifests(c, ns)
-			if err != nil {
+			if err := appendManifestsForComponent(c, ns, &rbacManifest); err != nil {
 				return nil, err
-			}
-			if smManifest != nil {
-				rbacManifest = rbacManifest.Append(*smManifest)
 			}
 		}
 	}
 
 	return []mf.Manifest{rbacManifest}, nil
+}
+
+func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest) error {
+	smManifest, err := constructServiceMonitorResourceManifests(c, ns)
+	if err != nil {
+		return err
+	}
+	if smManifest != nil {
+		*rbacManifest = rbacManifest.Append(*smManifest)
+	}
+	return nil
 }
 
 func GetCompMonitoringPlatformManifests(comp v1alpha1.KComponent) ([]mf.Manifest, error) {
@@ -315,6 +318,7 @@ func createClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf
 
 // getDefaultMetricsPort returns the expected metrics port under the assumption that this will not change
 // This is static information since observability cm does not allow any changes for the prometheus config
+// TODO(skonto): fix this upstream so ports are aligned if possible
 func getDefaultMetricsPort(name string) string {
 	if servingComponents.Has(name) {
 		return "9090"
@@ -325,6 +329,9 @@ func getDefaultMetricsPort(name string) string {
 	return "9090"
 }
 
+// getSelectorLabels returns the correct deployment label to use with the service monitor service.
+// The component is any Serving, Eventing component name eg. activator. Each component's deployment
+// has either a label "app" or some special label or a set of labels that are unique to the component.
 func getSelectorLabels(component string) map[string]string {
 	labels := map[string]string{}
 	switch component {
