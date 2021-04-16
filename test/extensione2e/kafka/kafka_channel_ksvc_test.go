@@ -22,6 +22,7 @@ const (
 	channelAPIVersion = "messaging.knative.dev/v1beta1"
 	kafkaChannelKind  = "KafkaChannel"
 	subscriptionName  = "smoke-test-kafka-subscription"
+	serviceAccount    = "default"
 )
 
 var (
