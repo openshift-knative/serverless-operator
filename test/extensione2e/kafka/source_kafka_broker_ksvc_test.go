@@ -98,6 +98,8 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
+		removePullSecretFromSA(t, client, testNamespace, serviceAccount, tlsSecret)
+		removePullSecretFromSA(t, client, testNamespace, serviceAccount, saslSecret)
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
