@@ -49,35 +49,32 @@ func init() {
 	_ = monitoringv1.AddToScheme(scheme.Scheme)
 }
 
-func ReconcileMonitoringForKComponent(ctx context.Context, api kubernetes.Interface, comp v1alpha1.KComponent) error {
-	commonSpec, cType := getCommonSpec(comp)
-	if shouldEnableMonitoring(commonSpec, cType) {
-		if err := reconcileMonitoringLabelOnNamespace(ctx, comp.GetNamespace(), api, true, cType); err != nil {
+func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, ns string) error {
+	return reconcileMonitoring(ctx, api, config, spec, Serving, ns)
+}
+
+func ReconcileMonitoringForEventing(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, ns string) error {
+	return reconcileMonitoring(ctx, api, config, spec, Eventing, ns)
+}
+
+func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, cType KComponentType, ns string) error {
+	if shouldEnableMonitoring(config, cType) {
+		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true, cType); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
 		}
 		return nil
 	}
 	// If "opencensus" is used we still dont want to scrape from a Serverless controlled namespace
 	// user can always push to an agent collector in some other namespace and then integrate with OCP monitoring stack
-	if err := reconcileMonitoringLabelOnNamespace(ctx, comp.GetNamespace(), api, false, cType); err != nil {
+	if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, false, cType); err != nil {
 		return fmt.Errorf("failed to disable monitoring %w ", err)
 	}
-	common.Configure(commonSpec, ObservabilityCMName, ObservabilityBackendKey, "none")
+	common.Configure(spec, ObservabilityCMName, ObservabilityBackendKey, "none")
 	return nil
 }
 
-func getCommonSpec(comp v1alpha1.KComponent) (*v1alpha1.CommonSpec, KComponentType) {
-	switch c := comp.(type) {
-	case *v1alpha1.KnativeServing:
-		return &c.Spec.CommonSpec, Serving
-	case *v1alpha1.KnativeEventing:
-		return &c.Spec.CommonSpec, Eventing
-	}
-	return nil, ""
-}
-
-func shouldEnableMonitoring(commonSpec *v1alpha1.CommonSpec, comp KComponentType) bool {
-	backend := commonSpec.Config[ObservabilityCMName][ObservabilityBackendKey]
+func shouldEnableMonitoring(config v1alpha1.ConfigMapData, comp KComponentType) bool {
+	backend := config[ObservabilityCMName][ObservabilityBackendKey]
 	if backend == "none" || backend == "opencensus" {
 		return false
 	}
@@ -207,19 +204,17 @@ func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest)
 	return nil
 }
 
-func GetCompMonitoringPlatformManifests(comp v1alpha1.KComponent) ([]mf.Manifest, error) {
-	cSpec, cType := getCommonSpec(comp)
-	if shouldEnableMonitoring(cSpec, cType) {
-		return getMonitoringPlarformNanifests(comp.GetNamespace(), cType)
+func GetComponentMonitoringPlatformManifests(config v1alpha1.ConfigMapData, cType KComponentType, ns string) ([]mf.Manifest, error) {
+	if shouldEnableMonitoring(config, cType) {
+		return getMonitoringPlarformNanifests(ns, cType)
 	}
 	return []mf.Manifest{}, nil
 }
 
-func GetCompTransformers(comp v1alpha1.KComponent) []mf.Transformer {
-	cSpec, cType := getCommonSpec(comp)
-	if shouldEnableMonitoring(cSpec, cType) {
+func GetComponentTransformers(config v1alpha1.ConfigMapData, cType KComponentType, ns string) []mf.Transformer {
+	if shouldEnableMonitoring(config, cType) {
 		return []mf.Transformer{
-			InjectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace),
+			InjectNamespaceWithSubject(ns, OpenshiftMonitoringNamespace),
 			InjectRbacProxyContainerToDeployments(),
 		}
 	}

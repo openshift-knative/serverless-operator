@@ -38,7 +38,7 @@ type extension struct {
 }
 
 func (e *extension) Manifests(ks v1alpha1.KComponent) ([]mf.Manifest, error) {
-	return monitoring.GetCompMonitoringPlatformManifests(ks)
+	return monitoring.GetComponentMonitoringPlatformManifests(ks.GetSpec().GetConfig(), monitoring.Serving, ks.GetNamespace())
 }
 
 func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
@@ -48,7 +48,7 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 			"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
 			"NO_PROXY":    os.Getenv("NO_PROXY"),
 		}),
-	}, monitoring.GetCompTransformers(ks)...)
+	}, monitoring.GetComponentTransformers(ks.GetSpec().GetConfig(), monitoring.Serving, ks.GetNamespace())...)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
@@ -112,7 +112,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Type: "ConfigMap",
 		}
 	}
-	if err := monitoring.ReconcileMonitoringForKComponent(ctx, e.kubeclient, comp); err != nil {
+	if err := monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks.GetSpec().GetConfig(), &ks.Spec.CommonSpec, ks.GetNamespace()); err != nil {
 		return err
 	}
 	return nil

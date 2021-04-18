@@ -7,7 +7,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/manifestival/manifestival/fake"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -76,7 +75,7 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 }
 
 func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
-	manifests, err := GetCompMonitoringPlatformManifests(&v1alpha1.KnativeServing{ObjectMeta: v1.ObjectMeta{Namespace: servingNamespace}})
+	manifests, err := GetComponentMonitoringPlatformManifests(v1alpha1.ConfigMapData{}, Serving, servingNamespace)
 	if err != nil {
 		t.Errorf("Unable to load serving monitoring platform manifests: %w", err)
 	}
@@ -119,7 +118,7 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 }
 
 func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
-	manifests, err := GetCompMonitoringPlatformManifests(&v1alpha1.KnativeEventing{ObjectMeta: v1.ObjectMeta{Namespace: eventingNamespace}})
+	manifests, err := GetComponentMonitoringPlatformManifests(v1alpha1.ConfigMapData{}, Eventing, eventingNamespace)
 	if err != nil {
 		t.Errorf("Unable to load eventing monitoring platform manifests: %w", err)
 	}
