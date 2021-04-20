@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
@@ -18,11 +19,11 @@ const (
 	fallbackImage     = "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 )
 
-func InjectRbacProxyContainerToDeployments() mf.Transformer {
+func injectRbacProxyContainerToDeployments(deployments sets.String) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related deployments
-		if kind == "deployment" && (servingComponents.Has(u.GetName()) || eventingComponents.Has(u.GetName())) {
+		if kind == "deployment" && deployments.Has(u.GetName()) {
 			var dep = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
 				return err

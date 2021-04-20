@@ -30,11 +30,11 @@ type extension struct {
 }
 
 func (e *extension) Manifests(ke v1alpha1.KComponent) ([]mf.Manifest, error) {
-	return monitoring.GetComponentMonitoringPlatformManifests(ke.GetSpec().GetConfig(), monitoring.Eventing, ke.GetNamespace())
+	return monitoring.GetEventingMonitoringPlatformManifests(ke)
 }
 
 func (e *extension) Transformers(ke v1alpha1.KComponent) []mf.Transformer {
-	return monitoring.GetComponentTransformers(ke.GetSpec().GetConfig(), monitoring.Eventing, ke.GetNamespace())
+	return monitoring.GetEventingTransformers(ke)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
@@ -60,7 +60,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		ke.Spec.SinkBindingSelectionMode = "inclusion"
 	}
 
-	if err := monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke.GetSpec().GetConfig(), &ke.Spec.CommonSpec, ke.GetNamespace()); err != nil {
+	if err := monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke); err != nil {
 		return err
 	}
 	return nil

@@ -2,13 +2,11 @@ package monitoring
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/manifestival/manifestival/fake"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
@@ -26,7 +24,7 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to load test manifest: %w", err)
 	}
-	transforms := []mf.Transformer{InjectNamespaceWithSubject(servingNamespace, OpenshiftMonitoringNamespace)}
+	transforms := []mf.Transformer{injectNamespaceWithSubject(servingNamespace, OpenshiftMonitoringNamespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		t.Errorf("Unable to transform test manifest: %w", err)
 	}
@@ -71,92 +69,6 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 	_, err = client.Get(u)
 	if err != nil {
 		t.Errorf("Unable to get the service %w", err)
-	}
-}
-
-func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
-	manifests, err := GetComponentMonitoringPlatformManifests(v1alpha1.ConfigMapData{}, Serving, servingNamespace)
-	if err != nil {
-		t.Errorf("Unable to load serving monitoring platform manifests: %w", err)
-	}
-	if len(manifests) != 1 {
-		t.Errorf("Got %d, want %d", len(manifests), 1)
-	}
-	resources := manifests[0].Resources()
-	if len(resources) != 20 {
-		t.Errorf("Got %d, want %d", len(resources), 20)
-	}
-	for _, u := range resources {
-		kind := strings.ToLower(u.GetKind())
-		switch kind {
-		case "servicemonitor":
-			if !servingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
-				t.Errorf("Service monitor with name %q not found", u.GetName())
-			}
-		case "service":
-			if !servingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
-				t.Errorf("Service with name %q not found", u.GetName())
-			}
-		case "clusterrolebinding":
-			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
-				continue
-			}
-			if strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "controller" {
-				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
-			}
-		case "role":
-			if u.GetName() != "knative-prometheus-k8s" {
-				t.Errorf("Uknown role %q", u.GetName())
-			}
-		case "rolebinding":
-			if u.GetName() != "knative-prometheus-k8s" {
-				t.Errorf("Uknown rolebinding %q", u.GetName())
-			}
-			checkSubjects(t, u.Object, OpenshiftMonitoringNamespace)
-		}
-	}
-}
-
-func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
-	manifests, err := GetComponentMonitoringPlatformManifests(v1alpha1.ConfigMapData{}, Eventing, eventingNamespace)
-	if err != nil {
-		t.Errorf("Unable to load eventing monitoring platform manifests: %w", err)
-	}
-	if len(manifests) != 1 {
-		t.Errorf("Got %d, want %d", len(manifests), 1)
-	}
-	resources := manifests[0].Resources()
-	if len(resources) != 28 {
-		t.Errorf("Got %d, want %d", len(resources), 28)
-	}
-	for _, u := range resources {
-		kind := strings.ToLower(u.GetKind())
-		switch kind {
-		case "servicemonitor":
-			if !eventingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
-				t.Errorf("Service monitor with name %q not found", u.GetName())
-			}
-		case "service":
-			if !eventingComponents.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
-				t.Errorf("Service with name %q not found", u.GetName())
-			}
-		case "clusterrolebinding":
-			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
-				continue
-			}
-			if !eventingComponents.Has(strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-")) {
-				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
-			}
-		case "role":
-			if u.GetName() != "knative-prometheus-k8s" {
-				t.Errorf("Uknown role %q", u.GetName())
-			}
-		case "rolebinding":
-			if u.GetName() != "knative-prometheus-k8s" {
-				t.Errorf("Uknown rolebinding %q", u.GetName())
-			}
-			checkSubjects(t, u.Object, OpenshiftMonitoringNamespace)
-		}
 	}
 }
 

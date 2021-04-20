@@ -152,7 +152,7 @@ func TestMonitoring(t *testing.T) {
 		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
 		in:                    &v1alpha1.KnativeEventing{},
 		expected:              ke(),
-		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "true") },
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
 	}, {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
 		in: &v1alpha1.KnativeEventing{
@@ -166,7 +166,7 @@ func TestMonitoring(t *testing.T) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
-			return true, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "true")
+			return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is on, backend is `none`",
@@ -181,7 +181,7 @@ func TestMonitoring(t *testing.T) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
-			return false, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "true")
+			return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is not defined",
@@ -189,7 +189,7 @@ func TestMonitoring(t *testing.T) {
 		expected: ke(func(ke *v1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "false") },
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
 		in: &v1alpha1.KnativeEventing{
@@ -202,7 +202,7 @@ func TestMonitoring(t *testing.T) {
 		expected: ke(func(ke *v1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "false") },
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
 		in: &v1alpha1.KnativeEventing{
@@ -215,7 +215,7 @@ func TestMonitoring(t *testing.T) {
 		expected: ke(func(ke *v1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
-		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableEventingMonitoringEnvVar, "false") },
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}}
 
 	for _, c := range cases {

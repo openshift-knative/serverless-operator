@@ -14,7 +14,6 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -22,112 +21,24 @@ import (
 )
 
 const (
-	EnableServingMonitoringEnvVar  = "ENABLE_SERVING_MONITORING_BY_DEFAULT"
-	EnableEventingMonitoringEnvVar = "ENABLE_EVENTING_MONITORING_BY_DEFAULT"
-	EnableMonitoringLabel          = "openshift.io/cluster-monitoring"
-	ObservabilityCMName            = "observability"
-	ObservabilityBackendKey        = "metrics.backend-destination"
-	OpenshiftMonitoringNamespace   = "openshift-monitoring"
-	prometheusRoleName             = "knative-prometheus-k8s"
-	prometheusClusterRoleName      = "rbac-proxy-metrics-prom"
-	smRbacManifestPath             = "SERVICE_MONITOR_RBAC_MANIFEST_PATH"
-)
-
-type KComponentType string
-
-const (
-	Serving  KComponentType = "Serving"
-	Eventing KComponentType = "Eventing"
-)
-
-var (
-	servingComponents  = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook")
-	eventingComponents = sets.NewString("eventing-controller", "eventing-webhook", "imc-controller", "imc-dispatcher", "mt-broker-controller", "mt-broker-filter", "mt-broker-ingress", "sugar-controller")
+	EnableMonitoringEnvVar       = "ENABLE_MONITORING_BY_DEFAULT"
+	EnableMonitoringLabel        = "openshift.io/cluster-monitoring"
+	ObservabilityCMName          = "observability"
+	ObservabilityBackendKey      = "metrics.backend-destination"
+	OpenshiftMonitoringNamespace = "openshift-monitoring"
+	prometheusRoleName           = "knative-prometheus-k8s"
+	prometheusClusterRoleName    = "rbac-proxy-metrics-prom"
+	smRbacManifestPath           = "SERVICE_MONITOR_RBAC_MANIFEST_PATH"
 )
 
 func init() {
 	_ = monitoringv1.AddToScheme(scheme.Scheme)
 }
 
-func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, ns string) error {
-	return reconcileMonitoring(ctx, api, config, spec, Serving, ns)
-}
-
-func ReconcileMonitoringForEventing(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, ns string) error {
-	return reconcileMonitoring(ctx, api, config, spec, Eventing, ns)
-}
-
-func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, config v1alpha1.ConfigMapData, spec *v1alpha1.CommonSpec, cType KComponentType, ns string) error {
-	if shouldEnableMonitoring(config, cType) {
-		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true, cType); err != nil {
-			return fmt.Errorf("failed to enable monitoring %w ", err)
-		}
-		return nil
-	}
-	// If "opencensus" is used we still dont want to scrape from a Serverless controlled namespace
-	// user can always push to an agent collector in some other namespace and then integrate with OCP monitoring stack
-	if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, false, cType); err != nil {
-		return fmt.Errorf("failed to disable monitoring %w ", err)
-	}
-	common.Configure(spec, ObservabilityCMName, ObservabilityBackendKey, "none")
-	return nil
-}
-
-func shouldEnableMonitoring(config v1alpha1.ConfigMapData, comp KComponentType) bool {
-	backend := config[ObservabilityCMName][ObservabilityBackendKey]
-	if backend == "none" || backend == "opencensus" {
-		return false
-	}
-	var enable string
-	var present bool
-
-	switch comp {
-	case Serving:
-		enable, present = os.LookupEnv(EnableServingMonitoringEnvVar)
-	case Eventing:
-		enable, present = os.LookupEnv(EnableEventingMonitoringEnvVar)
-	}
-
-	// Skip setup from env if feature toggle is not present, use whatever the user defines in the comp CR.
-	if !present {
-		return true
-	}
-	parsedEnable := strings.EqualFold(enable, "true")
-	// Let the user enable monitoring with a proper backend value even if feature toggle is off.
-	if !parsedEnable && backend != "" {
-		return true
-	}
-	return parsedEnable
-}
-
-func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, api kubernetes.Interface, enable bool, cType KComponentType) error {
-	ns, err := api.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if ns.Labels[EnableMonitoringLabel] == strconv.FormatBool(enable) {
-		return nil
-	}
-	log := logging.FromContext(ctx)
-	if enable {
-		log.Infof("Enabling %s monitoring", cType)
-	} else {
-		log.Infof("Disabling %s monitoring", cType)
-	}
-	if ns.Labels == nil {
-		ns.Labels = make(map[string]string, 1)
-	}
-	ns.Labels[EnableMonitoringLabel] = strconv.FormatBool(enable)
-	if _, err = api.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-		return fmt.Errorf("could not add label %q to namespace %q: %w", EnableMonitoringLabel, namespace, err)
-	}
-	return nil
-}
-
-// InjectNamespaceWithSubject uses a custom transformation to avoid operator overriding everything with the current namespace including
+// injectNamespaceWithSubject uses a custom transformation to avoid operator overriding everything with the current namespace including
 // subjects ns. Here we break the assumption of the operator about all resources being in the same namespace
 // since we need to setup RBAC for the prometheus-k8s account which resides in openshift-monitoring ns.
-func InjectNamespaceWithSubject(resourceNamespace string, subjectNamespace string) mf.Transformer {
+func injectNamespaceWithSubject(resourceNamespace string, subjectNamespace string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related manifests.
@@ -149,48 +60,66 @@ func InjectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 	}
 }
 
-func getMonitoringPlarformNanifests(ns string, cType KComponentType) ([]mf.Manifest, error) {
-	rbacPath := os.Getenv(smRbacManifestPath)
-	if rbacPath == "" {
-		return nil, fmt.Errorf("failed to get the Serving sm rbac manifest path")
+func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *v1alpha1.CommonSpec, ns string) error {
+	if shouldEnableMonitoring(spec.GetConfig()) {
+		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true); err != nil {
+			return fmt.Errorf("failed to enable monitoring %w ", err)
+		}
+		return nil
 	}
-	rbacManifest, err := mf.NewManifest(rbacPath)
-	if err != nil {
-		return nil, err
+	// If "opencensus" is used we still dont want to scrape from a Serverless controlled namespace
+	// user can always push to an agent collector in some other namespace and then integrate with OCP monitoring stack
+	if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, false); err != nil {
+		return fmt.Errorf("failed to disable monitoring %w ", err)
 	}
-	switch cType {
-	case Serving:
-		// Serving has one common sa for all pods
-		crbM, err := createClusterRoleBindingManifest("controller", ns)
-		if err != nil {
-			return nil, err
-		}
-		rbacManifest = rbacManifest.Append(*crbM)
-		for c := range servingComponents {
-			if err := appendManifestsForComponent(c, ns, &rbacManifest); err != nil {
-				return nil, err
-			}
-		}
-	case Eventing:
-		// Only mt-broker-controller has a different than its name sa (eventing-controller)
-		for sa := range eventingComponents {
-			if sa == "mt-broker-controller" {
-				continue
-			}
-			crbM, err := createClusterRoleBindingManifest(sa, ns)
-			if err != nil {
-				return nil, err
-			}
-			rbacManifest = rbacManifest.Append(*crbM)
-		}
-		for c := range eventingComponents {
-			if err := appendManifestsForComponent(c, ns, &rbacManifest); err != nil {
-				return nil, err
-			}
-		}
+	common.Configure(spec, ObservabilityCMName, ObservabilityBackendKey, "none")
+	return nil
+}
+
+func shouldEnableMonitoring(config v1alpha1.ConfigMapData) bool {
+	backend := config[ObservabilityCMName][ObservabilityBackendKey]
+	if backend == "none" || backend == "opencensus" {
+		return false
 	}
 
-	return []mf.Manifest{rbacManifest}, nil
+	var enable string
+	var present bool
+
+	enable, present = os.LookupEnv(EnableMonitoringEnvVar)
+	// Skip setup from env if feature toggle is not present, use whatever the user defines in the comp CR.
+	if !present {
+		return true
+	}
+	parsedEnable := strings.EqualFold(enable, "true")
+	// Let the user enable monitoring with a proper backend value even if feature toggle is off.
+	if !parsedEnable && backend != "" {
+		return true
+	}
+	return parsedEnable
+}
+
+func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, api kubernetes.Interface, enable bool) error {
+	ns, err := api.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if ns.Labels[EnableMonitoringLabel] == strconv.FormatBool(enable) {
+		return nil
+	}
+	log := logging.FromContext(ctx)
+	if enable {
+		log.Infof("Enabling monitoring")
+	} else {
+		log.Infof("Disabling monitoring")
+	}
+	if ns.Labels == nil {
+		ns.Labels = make(map[string]string, 1)
+	}
+	ns.Labels[EnableMonitoringLabel] = strconv.FormatBool(enable)
+	if _, err = api.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("could not add label %q to namespace %q: %w", EnableMonitoringLabel, namespace, err)
+	}
+	return nil
 }
 
 func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest) error {
@@ -202,23 +131,6 @@ func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest)
 		*rbacManifest = rbacManifest.Append(*smManifest)
 	}
 	return nil
-}
-
-func GetComponentMonitoringPlatformManifests(config v1alpha1.ConfigMapData, cType KComponentType, ns string) ([]mf.Manifest, error) {
-	if shouldEnableMonitoring(config, cType) {
-		return getMonitoringPlarformNanifests(ns, cType)
-	}
-	return []mf.Manifest{}, nil
-}
-
-func GetComponentTransformers(config v1alpha1.ConfigMapData, cType KComponentType, ns string) []mf.Transformer {
-	if shouldEnableMonitoring(config, cType) {
-		return []mf.Transformer{
-			InjectNamespaceWithSubject(ns, OpenshiftMonitoringNamespace),
-			InjectRbacProxyContainerToDeployments(),
-		}
-	}
-	return []mf.Transformer{}
 }
 
 func constructServiceMonitorResourceManifests(component string, ns string) (*mf.Manifest, error) {
@@ -315,9 +227,6 @@ func createClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf
 // This is static information since observability cm does not allow any changes for the prometheus config
 // TODO(skonto): fix this upstream so ports are aligned if possible
 func getDefaultMetricsPort(name string) string {
-	if servingComponents.Has(name) {
-		return "9090"
-	}
 	if name == "mt-broker-ingress" || name == "mt-broker-filter" {
 		return "9092"
 	}
@@ -346,4 +255,13 @@ func getSelectorLabels(component string) map[string]string {
 		labels["app"] = component
 	}
 	return labels
+}
+
+func getRBACManifest() (mf.Manifest, error) {
+	rbacPath := os.Getenv(smRbacManifestPath)
+	if rbacPath == "" {
+		return mf.Manifest{}, fmt.Errorf("failed to get the Serving sm rbac manifest path")
+	}
+	rbacManifest, err := mf.NewManifest(rbacPath)
+	return rbacManifest, err
 }
