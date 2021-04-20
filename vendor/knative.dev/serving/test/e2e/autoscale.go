@@ -29,8 +29,10 @@ import (
 
 	"knative.dev/pkg/test/logging"
 
+	"github.com/davecgh/go-spew/spew"
 	vegeta "github.com/tsenart/vegeta/v12/lib"
 	"golang.org/x/sync/errgroup"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,7 +43,6 @@ import (
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	resourcenames "knative.dev/serving/pkg/reconciler/revision/resources/names"
-	"knative.dev/serving/pkg/resources"
 	rtesting "knative.dev/serving/pkg/testing/v1"
 	"knative.dev/serving/test"
 	v1test "knative.dev/serving/test/v1"
@@ -287,25 +288,24 @@ func assertScaleDown(ctx *TestContext) {
 	ctx.logf("Scaled down.")
 }
 
-func numberOfReadyPods(ctx *TestContext) (float64, error) {
-	// SKS name matches that of revision.
-	n := ctx.resources.Revision.Name
-	sks, err := ctx.clients.NetworkingClient.ServerlessServices.Get(context.Background(), n, metav1.GetOptions{})
+func numberOfReadyPods(ctx *TestContext) (float64, *appsv1.Deployment, error) {
+	n := resourcenames.Deployment(ctx.resources.Revision)
+	deploy, err := ctx.clients.KubeClient.AppsV1().Deployments(test.ServingNamespace).Get(
+		context.Background(), n, metav1.GetOptions{})
 	if err != nil {
-		ctx.logf("Error getting SKS %q: %v", n, err)
-		return 0, fmt.Errorf("error retrieving sks %q: %w", n, err)
+		return 0, nil, fmt.Errorf("failed to get deployment %s: %w", n, err)
 	}
-	if sks.Status.PrivateServiceName == "" {
-		ctx.logf("SKS %s has not yet reconciled", n)
-		// Not an error, but no pods either.
-		return 0, nil
+
+	if isInRollout(deploy) {
+		// Ref: #11092
+		// The deployment was updated and the update is being rolled out so we defensively
+		// pick the desired replicas to assert the autoscaling decisions.
+		// TODO: Drop this once we solved the underscale issue.
+		ctx.t.Logf("Deployment is being rolled, picking spec.replicas=%d", *deploy.Spec.Replicas)
+		return float64(*deploy.Spec.Replicas), deploy, nil
 	}
-	eps, err := ctx.clients.KubeClient.CoreV1().Endpoints(test.ServingNamespace).Get(
-		context.Background(), sks.Status.PrivateServiceName, metav1.GetOptions{})
-	if err != nil {
-		return 0, fmt.Errorf("failed to get endpoints %s: %w", sks.Status.PrivateServiceName, err)
-	}
-	return float64(resources.ReadyAddressCount(eps)), nil
+	// Otherwise we pick the ready pods to assert maximum consistency for ramp up tests.
+	return float64(deploy.Status.ReadyReplicas), deploy, nil
 }
 
 func checkPodScale(ctx *TestContext, targetPods, minPods, maxPods float64, done <-chan time.Time, quick bool) error {
@@ -313,16 +313,26 @@ func checkPodScale(ctx *TestContext, targetPods, minPods, maxPods float64, done 
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
+	originalMaxPods := maxPods
 	for {
 		select {
 		case <-ticker.C:
 			// Each 2 second, check that the number of pods is at least `minPods`. `minPods` is increasing
 			// to verify that the number of pods doesn't go down while we are scaling up.
-			got, err := numberOfReadyPods(ctx)
+			got, d, err := numberOfReadyPods(ctx)
 			if err != nil {
 				return err
 			}
-			mes := fmt.Sprintf("revision %q #replicas: %v, want at least: %v", ctx.resources.Revision.Name, got, minPods)
+
+			if isInRollout(d) {
+				// Ref: #11092
+				// Allow for a higher scale if the deployment is being rolled as that
+				// might be skewing metrics in the autoscaler.
+				maxPods = math.Ceil(originalMaxPods * 1.2)
+			}
+
+			mes := fmt.Sprintf("revision %q #replicas: %v, want at least: %v\ndeployment state: %s",
+				ctx.resources.Revision.Name, got, minPods, spew.Sdump(d))
 			ctx.logf(mes)
 			// verify that the number of pods doesn't go down while we are scaling up.
 			if got < minPods {
@@ -342,12 +352,20 @@ func checkPodScale(ctx *TestContext, targetPods, minPods, maxPods float64, done 
 		case <-done:
 			// The test duration is over. Do a last check to verify that the number of pods is at `targetPods`
 			// (with a little room for de-flakiness).
-			got, err := numberOfReadyPods(ctx)
+			got, d, err := numberOfReadyPods(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to fetch number of ready pods: %w", err)
 			}
-			mes := fmt.Sprintf("got %v replicas, expected between [%v, %v] replicas for revision %s",
-				got, targetPods-1, maxPods, ctx.resources.Revision.Name)
+
+			if isInRollout(d) {
+				// Ref: #11092
+				// Allow for a higher scale if the deployment is being rolled as that
+				// might be skewing metrics in the autoscaler.
+				maxPods = math.Ceil(originalMaxPods * 1.2)
+			}
+
+			mes := fmt.Sprintf("got %v replicas, expected between [%v, %v] replicas for revision %s\ndeployment state: %s",
+				got, targetPods-1, maxPods, ctx.resources.Revision.Name, spew.Sdump(d))
 			ctx.logf(mes)
 			if got < targetPods-1 || got > maxPods {
 				return errors.New("final scale didn't fulfill constraints: " + mes)
@@ -398,4 +416,26 @@ func AutoscaleUpToNumPods(ctx *TestContext, curPods, targetPods float64, done <-
 	})
 
 	return grp.Wait
+}
+
+// isInRollout is a loose copy of the kubectl function handling rollouts.
+// See: https://github.com/kubernetes/kubectl/blob/0149779a03735a5d483115ca4220a7b6c861430c/pkg/polymorphichelpers/rollout_status.go#L75-L91
+func isInRollout(deploy *appsv1.Deployment) bool {
+	if deploy.Generation > deploy.Status.ObservedGeneration {
+		// Waiting for update to be observed.
+		return true
+	}
+	if deploy.Spec.Replicas != nil && deploy.Status.UpdatedReplicas < *deploy.Spec.Replicas {
+		// Not enough replicas updated yet.
+		return true
+	}
+	if deploy.Status.Replicas > deploy.Status.UpdatedReplicas {
+		// Old replicas are being terminated.
+		return true
+	}
+	if deploy.Status.AvailableReplicas < deploy.Status.UpdatedReplicas {
+		// Not enough available yet.
+		return true
+	}
+	return false
 }

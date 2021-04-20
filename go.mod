@@ -12,7 +12,7 @@ require (
 	github.com/openshift/api v0.0.0-20210202165416-a9e731090f5e
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/operator-framework/api v0.6.0
-	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210325180801-44f92b8a8e6d
+	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210415175807-cdf51cddb619
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.45.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.45.0
 	github.com/prometheus/client_golang v1.9.0
@@ -43,6 +43,6 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406161751-80f49379d45d
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210409180158-9af73e780563
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210407235722-8dcbb1fd500a
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210420075609-dbcba4bee3ce
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a
 )
