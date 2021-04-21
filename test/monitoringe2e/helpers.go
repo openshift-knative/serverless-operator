@@ -20,7 +20,28 @@ import (
 	prommodel "github.com/prometheus/common/model"
 )
 
-var prometheusTargetTimeout = 20 * time.Minute
+var (
+	prometheusTargetTimeout = 20 * time.Minute
+	servingMetricQueries    = []string{
+		"activator_go_mallocs",
+		"autoscaler_go_mallocs",
+		"hpaautoscaler_go_mallocs",
+		"controller_go_mallocs{namespace=\"knative-serving\"}",
+		"domainmapping_go_mallocs",
+		"domainmapping_webhook_go_mallocs",
+		"webhook_go_mallocs",
+	}
+	eventingMetricQueries = []string{
+		"controller_go_mallocs{namespace=\"knative-eventing\"}",
+		"eventing_webhook_go_mallocs",
+		"inmemorychannel_controller_go_mallocs",
+		"inmemorychannel_dispatcher_go_mallocs",
+		"mt_broker_controller_go_mallocs",
+		"mt_broker_filter_go_mallocs",
+		"mt_broker_ingress_go_mallocs",
+		"sugar_controller_go_mallocs",
+	}
+)
 
 type authRoundtripper struct {
 	authorization string
@@ -95,22 +116,13 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 	return nil
 }
 
-func VerifyServingControlPlaneMetrics(caCtx *test.Context) error {
+func VerifyControlPlaneMetrics(caCtx *test.Context, metricQueries []string) error {
 	pc, err := newPrometheusClient(caCtx)
 	if err != nil {
 		return err
 	}
 
-	servingMetrics := []string{
-		"activator_go_mallocs",
-		"autoscaler_go_mallocs",
-		"hpaautoscaler_go_mallocs",
-		"controller_go_mallocs",
-		"domainmapping_go_mallocs",
-		"domainmapping_webhook_go_mallocs",
-		"webhook_go_mallocs",
-	}
-	for _, metric := range servingMetrics {
+	for _, metric := range metricQueries {
 		if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
 			value, _, err := pc.Query(context.Background(), metric, time.Time{})
 			if err != nil {

@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: knative-serving-prometheus-k8s
+  name: knative-prometheus-k8s
 rules:
   - apiGroups:
       - ""
@@ -17,11 +17,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: knative-serving-prometheus-k8s
+  name: knative-prometheus-k8s
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: knative-serving-prometheus-k8s
+  name: knative-prometheus-k8s
 subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
@@ -61,16 +61,4 @@ rules:
     resources:
       - subjectaccessreviews
     verbs: ["create"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: rbac-proxy-reviews-prom-rb
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: rbac-proxy-reviews-prom
-subjects:
-  - kind: ServiceAccount
-    name: controller
-    namespace: knative-serving
+

@@ -16,7 +16,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to load test manifest: %w", err)
 	}
-	transforms := []mf.Transformer{InjectRbacProxyContainerToDeployments()}
+	transforms := []mf.Transformer{injectRbacProxyContainerToDeployments(servingDeployments)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		t.Errorf("Unable to transform test manifest: %w", err)
 	}

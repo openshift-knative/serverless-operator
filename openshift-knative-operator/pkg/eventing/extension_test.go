@@ -3,23 +3,39 @@ package eventing
 import (
 	"context"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/apis"
+	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
 )
 
 const requiredNs = "knative-eventing"
 
-func TestReconcile(t *testing.T) {
+var (
+	eventingNamespace = corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: requiredNs,
+		},
+	}
+)
+
+func init() {
 	os.Setenv("IMAGE_foo", "bar")
 	os.Setenv("IMAGE_default", "bar2")
 	os.Setenv(requiredNsEnvName, requiredNs)
+}
+
+func TestReconcile(t *testing.T) {
 
 	cases := []struct {
 		name     string
@@ -77,17 +93,162 @@ func TestReconcile(t *testing.T) {
 				c.in.Namespace = requiredNs
 			}
 
-			ks := c.in.DeepCopy()
-			ext := NewExtension(context.Background())
-			ext.Reconcile(context.Background(), ks)
+			ke := c.in.DeepCopy()
+			ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
+			ext := NewExtension(ctx)
+			ext.Reconcile(context.Background(), ke)
 
 			// Ignore time differences.
 			opt := cmp.Comparer(func(apis.VolatileTime, apis.VolatileTime) bool {
 				return true
 			})
 
-			if !cmp.Equal(ks, c.expected, opt) {
-				t.Errorf("Got = %v, want: %v, diff:\n%s", ks, c.expected, cmp.Diff(ks, c.expected, opt))
+			if !cmp.Equal(ke, c.expected, opt) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", ke, c.expected, cmp.Diff(ke, c.expected, opt))
+			}
+		})
+	}
+}
+
+func TestMonitoring(t *testing.T) {
+	cases := []struct {
+		name     string
+		in       *v1alpha1.KnativeEventing
+		expected *v1alpha1.KnativeEventing
+		// Returns the expected status for monitoring
+		setupMonitoringToggle func() (bool, error)
+	}{{
+		name:                  "enable monitoring when monitoring toggle is not defined, backend is not defined",
+		in:                    &v1alpha1.KnativeEventing{},
+		expected:              ke(),
+		setupMonitoringToggle: func() (bool, error) { return true, nil },
+	}, {
+		name: "enable monitoring when monitoring toggle = not defined, backend = defined and not `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
+		}),
+		setupMonitoringToggle: func() (bool, error) { return true, nil },
+	}, {
+		name: "disable monitoring when monitoring toggle is not defined, backend is `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+		}),
+		setupMonitoringToggle: func() (bool, error) { return false, nil },
+	}, {
+		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
+		in:                    &v1alpha1.KnativeEventing{},
+		expected:              ke(),
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
+	}, {
+		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
+		}),
+		setupMonitoringToggle: func() (bool, error) {
+			return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
+		},
+	}, {
+		name: "disable monitoring when monitoring toggle is on, backend is `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+		}),
+		setupMonitoringToggle: func() (bool, error) {
+			return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
+		},
+	}, {
+		name: "disable monitoring when monitoring toggle is off, backend is not defined",
+		in:   &v1alpha1.KnativeEventing{},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+		}),
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
+	}, {
+		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
+		}),
+		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
+	}, {
+		name: "disable monitoring when monitoring toggle is off, backend is `none`",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+		}),
+		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
+	}}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			objs := []runtime.Object{&eventingNamespace}
+			ke := c.in.DeepCopy()
+			if ke.Namespace == "" {
+				ke.Namespace = requiredNs
+			}
+			c.expected.Namespace = ke.Namespace
+			ctx, _ := ocpfake.With(context.Background(), objs...)
+			ctx, kube := kubefake.With(ctx, &eventingNamespace)
+			ext := NewExtension(ctx)
+			shouldEnableMonitoring, err := c.setupMonitoringToggle()
+
+			if err != nil {
+				t.Errorf("Failed to setup the monitoring toggle %w", err)
+			}
+			ext.Reconcile(context.Background(), ke)
+
+			// Ignore time differences.
+			opt := cmp.Comparer(func(apis.VolatileTime, apis.VolatileTime) bool {
+				return true
+			})
+			if !cmp.Equal(ke, c.expected, opt) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", ke, c.expected, cmp.Diff(ke, c.expected, opt))
+			}
+			ns, err := kube.CoreV1().Namespaces().Get(context.Background(), ke.Namespace, metav1.GetOptions{})
+			if err != nil {
+				t.Errorf("Failed to get namespace %s: %v", ns, err)
+			}
+			if ns.Labels[monitoring.EnableMonitoringLabel] != strconv.FormatBool(shouldEnableMonitoring) {
+				t.Errorf("Label is missing for namespace %s ", ke.Namespace)
 			}
 		})
 	}

@@ -308,7 +308,7 @@ spec:
                         value: "knative-serving"
                       - name: REQUIRED_EVENTING_NAMESPACE
                         value: "knative-eventing"
-                      - name: SERVING_SERVICE_MONITOR_RBAC_MANIFEST_PATH
+                      - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.0:knative-serving-queue"

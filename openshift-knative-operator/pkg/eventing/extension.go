@@ -7,9 +7,12 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
 )
 
@@ -17,17 +20,21 @@ const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
 
 // NewExtension creates a new extension for a Knative Eventing controller.
 func NewExtension(ctx context.Context) operator.Extension {
-	return &extension{}
+	return &extension{
+		kubeclient: kubeclient.Get(ctx),
+	}
 }
 
-type extension struct{}
-
-func (e *extension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
-	return nil, nil
+type extension struct {
+	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Transformers(v1alpha1.KComponent) []mf.Transformer {
-	return nil
+func (e *extension) Manifests(ke v1alpha1.KComponent) ([]mf.Manifest, error) {
+	return monitoring.GetEventingMonitoringPlatformManifests(ke)
+}
+
+func (e *extension) Transformers(ke v1alpha1.KComponent) []mf.Transformer {
+	return monitoring.GetEventingTransformers(ke)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
@@ -53,6 +60,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		ke.Spec.SinkBindingSelectionMode = "inclusion"
 	}
 
+	if err := monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke); err != nil {
+		return err
+	}
 	return nil
 }
 
