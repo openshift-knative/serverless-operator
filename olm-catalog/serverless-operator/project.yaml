@@ -27,3 +27,4 @@ dependencies:
   kourier: 0.21.0
   cli: 0.20.0
   maistra: 2.0.0
+  operator: 0.21.2
