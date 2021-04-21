@@ -110,6 +110,7 @@ generated-files: release-files
 	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)
 	(cd openshift-knative-operator && ./hack/update-manifests.sh)
+	(cd olm-catalog/serverless-operator && ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
 # Runs the lints Github Actions do too.
