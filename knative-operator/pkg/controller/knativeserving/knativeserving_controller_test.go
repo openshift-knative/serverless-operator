@@ -27,10 +27,22 @@ import (
 )
 
 var (
+	gwLabels = map[string]string{"gwlabel": "foo"}
+	gwAnnos  = map[string]string{"gwanno": "bar"}
+
 	defaultKnativeServing = v1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-serving",
 			Namespace: "knative-serving",
+		},
+		Spec: v1alpha1.KnativeServingSpec{
+			CommonSpec: v1alpha1.CommonSpec{
+				DeploymentOverride: []v1alpha1.DeploymentOverride{{
+					Name:        "3scale-kourier-gateway",
+					Labels:      gwLabels,
+					Annotations: gwAnnos,
+				}},
+			},
 		},
 		Status: v1alpha1.KnativeServingStatus{
 			Status: duckv1.Status{
@@ -126,8 +138,8 @@ func init() {
 	apis.AddToScheme(scheme.Scheme)
 }
 
-// TestKourierReconcile runs Reconcile to verify if expected Kourier resources are deleted.
-func TestKourierReconcile(t *testing.T) {
+// TestExtraResourcesReconcile runs Reconcile to verify if extra resources such as Kourier and ConsoleCLIDownload are reconciled.
+func TestExtraResourcesReconcile(t *testing.T) {
 	tests := []struct {
 		name           string
 		ownerName      string
@@ -175,6 +187,15 @@ func TestKourierReconcile(t *testing.T) {
 			err := cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
+			}
+
+			// Check if Kourier labels and annotations are added.
+			if deploy.GetLabels()["gwlabel"] != gwLabels["gwlabel"] {
+				t.Fatalf("got = %v, want = %v", deploy.GetLabels()["gwlabel"], gwLabels["gwlabel"])
+			}
+
+			if deploy.GetAnnotations()["gwanno"] != gwAnnos["gwanno"] {
+				t.Fatalf("got = %v, want = %v", deploy.GetAnnotations()["gwanno"], gwAnnos["gwanno"])
 			}
 
 			// Check kn ConsoleCLIDownload CR
@@ -232,6 +253,15 @@ func TestKourierReconcile(t *testing.T) {
 			// Check again if Kourier deployment is created after reconcile.
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
 			checkError(t, err)
+
+			// Check again if Kourier labels and annotations are added.
+			if deploy.GetLabels()["gwlabel"] != gwLabels["gwlabel"] {
+				t.Fatalf("got = %v, want = %v", deploy.GetLabels()["gwlabel"], gwLabels["gwlabel"])
+			}
+
+			if deploy.GetAnnotations()["gwanno"] != gwAnnos["gwanno"] {
+				t.Fatalf("got = %v, want = %v", deploy.GetAnnotations()["gwanno"], gwAnnos["gwanno"])
+			}
 
 			// Check again if Serving dashboard configmap is available.
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
