@@ -14,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	opcommon "knative.dev/operator/pkg/reconciler/common"
+	"knative.dev/pkg/logging"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -172,6 +174,7 @@ func manifest(namespace string, apiclient client.Client, instance *servingv1alph
 		}),
 		replaceDeploymentInstanceCount(instance.Spec.HighAvailability, scheme),
 		replaceEnvValue(namespace, scheme),
+		opcommon.DeploymentsTransform(instance, logging.FromContext(context.Background())),
 	}
 	return manifest.Transform(transforms...)
 }
