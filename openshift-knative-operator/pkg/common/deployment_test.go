@@ -27,13 +27,13 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		in         *appsv1.Deployment
 		deployment string
 		container  string
-		env        map[string]string
+		envs       []corev1.EnvVar
 		want       *appsv1.Deployment
 	}{{
 		name:       "ignore",
 		deployment: "foo",
 		container:  "container1",
-		env:        map[string]string{"foo": "bar"},
+		envs:       []corev1.EnvVar{envVar("foo", "bar")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -56,7 +56,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		name:       "append",
 		deployment: "test",
 		container:  "container1",
-		env:        map[string]string{"foo": "bar"},
+		envs:       []corev1.EnvVar{envVar("foo", "bar")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -85,7 +85,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		name:       "update",
 		deployment: "test",
 		container:  "container2",
-		env:        map[string]string{"2": "bar"},
+		envs:       []corev1.EnvVar{envVar("2", "bar")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -119,7 +119,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 				t.Fatal("Failed to convert deployment to unstructured", err)
 			}
 
-			if err := InjectEnvironmentIntoDeployment(test.deployment, test.container, test.env)(u); err != nil {
+			if err := InjectEnvironmentIntoDeployment(test.deployment, test.container, test.envs...)(u); err != nil {
 				t.Fatal("Unexpected error from transformer", err)
 			}
 
@@ -165,7 +165,7 @@ func TestUpsert(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := upsert(test.in, test.add.Name, test.add.Value)
+			got := upsert(test.in, test.add)
 			if !cmp.Equal(got, test.want) {
 				t.Errorf("Got = %v, want: %v, diff:\n%s", got, test.want, cmp.Diff(got, test.want))
 			}

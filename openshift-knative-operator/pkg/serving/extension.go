@@ -10,6 +10,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -43,11 +44,11 @@ func (e *extension) Manifests(ks v1alpha1.KComponent) ([]mf.Manifest, error) {
 
 func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 	return append([]mf.Transformer{
-		common.InjectEnvironmentIntoDeployment("controller", "controller", map[string]string{
-			"HTTP_PROXY":  os.Getenv("HTTP_PROXY"),
-			"HTTPS_PROXY": os.Getenv("HTTPS_PROXY"),
-			"NO_PROXY":    os.Getenv("NO_PROXY"),
-		}),
+		common.InjectEnvironmentIntoDeployment("controller", "controller",
+			corev1.EnvVar{Name: "HTTP_PROXY", Value: os.Getenv("HTTP_PROXY")},
+			corev1.EnvVar{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
+			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
+		),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
