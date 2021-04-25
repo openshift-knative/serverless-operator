@@ -17,10 +17,53 @@ import (
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 )
 
-const kourierIngressClassName = "kourier.ingress.networking.knative.dev"
+const (
+	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
+	istioIngressClassName   = "istio.ingress.networking.knative.dev"
+)
 
-// NewController returns a new Ingress controller for Ingress on Openshift.
-func NewController(
+// NewIstioController returns a new Ingress controller for Ingress on Openshift.
+func NewIstioController(
+	ctx context.Context,
+	cmw configmap.Watcher,
+) *controller.Impl {
+	logger := logging.FromContext(ctx)
+
+	ingressInformer := ingressinformer.Get(ctx)
+	routeInformer := routeinformer.Get(ctx)
+
+	c := &Reconciler{
+		routeLister: routeInformer.Lister(),
+		routeClient: routeclient.Get(ctx).RouteV1(),
+	}
+
+	impl := ingressreconciler.NewImpl(ctx, c, istioIngressClassName, func(impl *controller.Impl) controller.Options {
+		return controller.Options{
+			SkipStatusUpdates: true,
+			FinalizerName:     "ocp-ingress",
+		}
+	})
+
+	logger.Info("Setting up event handlers")
+
+	ingressInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: reconciler.AnnotationFilterFunc(networking.IngressClassAnnotationKey, istioIngressClassName, false),
+		Handler:    controller.HandleAll(impl.Enqueue),
+	})
+
+	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: reconciler.LabelExistsFilterFunc(networking.IngressLabelKey),
+		Handler: controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(
+			resources.OpenShiftIngressNamespaceLabelKey,
+			resources.OpenShiftIngressLabelKey,
+		)),
+	})
+
+	return impl
+}
+
+// NewKourierController returns a new Ingress controller for Ingress on Openshift.
+func NewKourierController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {

@@ -37,14 +37,24 @@ function download {
   done
 }
 
-download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
-
-# Create an empty ingress directory.
 # TODO: Investigate moving Kourier into here rather than "manually" installing it via
 #       knative-openshift.
-ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
-mkdir -p "$ingress_dir"
-touch "$ingress_dir/.gitkeep"
+function download_ingress {
+  component=$1
+  version=$2
+
+  ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+  mkdir -p "$ingress_dir"
+
+  url="https://github.com/knative-sandbox/net-istio/releases/download/$version/net-$component.yaml"
+  wget --no-check-certificate "$url" -O "$ingress_dir/net-$component.yaml"
+}
+
+download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
+
+istio_version=${ISTIO_VERSION:-v$(metadata.get dependencies.istio)}
+# TODO: Remove istio-webhook and Gateway.
+download_ingress istio $istio_version
 
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
