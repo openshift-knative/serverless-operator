@@ -232,6 +232,13 @@ spec:
     # Add namespace you want to include mesh.
 ```
 
+and add `knative.openshift.io/system-namespace` label to system namespaces.
+
+```
+oc label namespace knative-serving knative.openshift.io/system-namespace=true
+oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true
+```
+
 and add `NetworkPolicy` in your namespace.
 
 ```
@@ -270,9 +277,6 @@ spec:
       containers:
       - image: gcr.io/knative-samples/helloworld-go
         name: user-container
-  traffic:
-  - latestRevision: true
-    percent: 100
 EOF
 ```
 
