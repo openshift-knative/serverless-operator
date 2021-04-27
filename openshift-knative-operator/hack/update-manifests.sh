@@ -66,3 +66,5 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.pat
 git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 
 download eventing-kafka "$KNATIVE_EVENTING_KAFKA_VERSION" "knative-sandbox" "${kafka_files[@]}"
+# For Backport of v1alpha1 hacks, we change the storage versions:
+git apply "$root/openshift-knative-operator/hack/006-kafkachannel-storage-beta1.patch"
