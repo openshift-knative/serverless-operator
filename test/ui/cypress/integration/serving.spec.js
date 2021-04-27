@@ -79,7 +79,10 @@ describe('OCP UI for Serverless', () => {
         .type(showcaseKsvc.name())
       cy.get('button[type=submit]').click()
       cy.url().should('include', `/topology/ns/${showcaseKsvc.namespace}`)
-      cy.contains(showcaseKsvc.app())
+      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
+      cy.get('div.pf-topology-content').contains(showcaseKsvc.name()).click()
+      // Make sure the app is running before proceeding.
+      cy.contains('Running')
     }
 
     removeApp() {
