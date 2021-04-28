@@ -25,6 +25,7 @@ dependencies:
   eventing: 0.21.0
   eventing_kafka: 0.20.0
   kourier: 0.21.0
+  istio: 0.21.0
   cli: 0.20.0
   maistra: 2.0.0
   operator: 0.21.2
