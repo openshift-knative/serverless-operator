@@ -46,6 +46,20 @@ func TestReconcile(t *testing.T) {
 		in:       &v1alpha1.KnativeEventing{},
 		expected: ke(),
 	}, {
+		name: "different HA settings",
+		in: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					HighAvailability: &v1alpha1.HighAvailability{
+						Replicas: 3,
+					},
+				},
+			},
+		},
+		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+			ke.Spec.HighAvailability.Replicas = 3
+		}),
+	},{
 		name: "With inclusion sinkbinding setting",
 		in: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
@@ -262,6 +276,9 @@ func ke(mods ...func(*v1alpha1.KnativeEventing)) *v1alpha1.KnativeEventing {
 		Spec: v1alpha1.KnativeEventingSpec{
 			SinkBindingSelectionMode: "inclusion",
 			CommonSpec: v1alpha1.CommonSpec{
+				HighAvailability: &v1alpha1.HighAvailability{
+					Replicas: 2,
+				},
 				Registry: v1alpha1.Registry{
 					Default: "bar2",
 					Override: map[string]string{
