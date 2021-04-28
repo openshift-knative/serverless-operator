@@ -59,7 +59,7 @@ func TestReconcile(t *testing.T) {
 		expected: ke(func(ke *v1alpha1.KnativeEventing) {
 			ke.Spec.HighAvailability.Replicas = 3
 		}),
-	},{
+	}, {
 		name: "With inclusion sinkbinding setting",
 		in: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
