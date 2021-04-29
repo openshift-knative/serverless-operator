@@ -2,11 +2,17 @@ package main
 
 import (
 	// This defines the shared main for injected controllers.
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/injection/sharedmain"
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress"
 )
 
+var ctors = []injection.ControllerConstructor{
+	ingress.NewIstioController,
+	ingress.NewKourierController,
+}
+
 func main() {
-	sharedmain.Main("openshift-ingress-controller", ingress.NewController)
+	sharedmain.Main("openshift-ingress-controller", ctors...)
 }
