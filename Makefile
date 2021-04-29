@@ -9,6 +9,9 @@ images:
 install:
 	./hack/install.sh
 
+install-operator:
+	INSTALL_SERVING="false" INSTALL_EVENTING="false" ./hack/install.sh
+
 install-all: install-strimzi
 	INSTALL_KAFKA="true" ./hack/install.sh
 
