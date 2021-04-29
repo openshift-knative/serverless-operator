@@ -37,24 +37,38 @@ function download {
   done
 }
 
+# TODO: Add 400-webhook-peer-authentication.yaml but it must install Istio beforehand.
+istio_files=(200-clusterrole config controller)
+
 # TODO: Investigate moving Kourier into here rather than "manually" installing it via
 #       knative-openshift.
 function download_ingress {
   component=$1
   version=$2
+  shift
+  shift
+
+  files=("$@")
 
   ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+  rm -r "$ingress_dir"
   mkdir -p "$ingress_dir"
 
-  url="https://github.com/knative-sandbox/net-istio/releases/download/$version/net-$component.yaml"
-  wget --no-check-certificate "$url" -O "$ingress_dir/net-$component.yaml"
+  for (( i=0; i<${#files[@]}; i++ ));
+  do
+    index=$(( i+1 ))
+    file="${files[$i]}.yaml"
+    ingress_target_file="$ingress_dir/$index-$file"
+    url="https://raw.githubusercontent.com/knative-sandbox/net-${component}/${version}/config/${file}"
+    wget --no-check-certificate "$url" -O "$ingress_target_file"
+  done
 }
 
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
 istio_version=${ISTIO_VERSION:-v$(metadata.get dependencies.istio)}
 # TODO: Remove istio-webhook and Gateway.
-download_ingress istio "$istio_version"
+download_ingress istio "$istio_version" "${istio_files[@]}"
 
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
