@@ -225,10 +225,6 @@ func verifyNetworkConfig(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	if actual := network["domainTemplate"]; actual != common.DefaultDomainTemplate {
 		t.Errorf("got %q, want %q", actual, common.DefaultDomainTemplate)
 	}
-
-	if actual := network["ingress.class"]; actual != common.DefaultIngressClass {
-		t.Errorf("got %q, want %q", actual, common.DefaultIngressClass)
-	}
 }
 
 func verifyQueueProxySidecarImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {

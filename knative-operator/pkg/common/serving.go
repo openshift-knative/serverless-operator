@@ -19,9 +19,6 @@ const (
 	// defaultDomainTemplate is a value for domainTemplate in config-network.
 	// As Knative on OpenShift uses OpenShift's wildcard cert the domain level must have "<sub>.domain", not "<sub1>.<sub2>.domain".
 	DefaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
-
-	// defaultIngressClass is a value for ingress.class in config-network.
-	DefaultIngressClass = "kourier.ingress.networking.knative.dev"
 )
 
 func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
@@ -31,7 +28,6 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 
 	configureLogURLTemplate(ks, c)
 	domainTemplate(ks)
-	ingressClass(ks)
 	ensureCustomCerts(ks)
 	imagesFromEnviron(ks)
 	ensureServingWebhookMemoryLimit(ks)
@@ -53,10 +49,6 @@ func ensureServingWebhookMemoryLimit(ks *servingv1alpha1.KnativeServing) {
 
 func domainTemplate(ks *servingv1alpha1.KnativeServing) {
 	Configure(ks, "network", "domainTemplate", DefaultDomainTemplate)
-}
-
-func ingressClass(ks *servingv1alpha1.KnativeServing) {
-	Configure(ks, "network", "ingress.class", DefaultIngressClass)
 }
 
 // configure ingress

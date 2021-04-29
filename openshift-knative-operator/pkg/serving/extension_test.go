@@ -130,6 +130,22 @@ func TestReconcile(t *testing.T) {
 		},
 		expected: ks(),
 	}, {
+		name: "override ingress class",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: v1alpha1.ConfigMapData{
+						"network": map[string]string{
+							"ingress.class": "foo",
+						},
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "foo")
+		}),
+	}, {
 		name: "respects different status",
 		in: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()

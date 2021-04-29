@@ -94,9 +94,8 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		}
 	}
 
-	// Use Kourier.
-	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
-	common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
+	// Use Kourier by default but allow a manual override.
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
