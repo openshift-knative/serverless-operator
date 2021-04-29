@@ -56,6 +56,8 @@ image "storage-version-migration-serving-serving-$(metadata.get dependencies.ser
 image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "3scale-kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
+image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.istio):net-istio-controller"
+
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
