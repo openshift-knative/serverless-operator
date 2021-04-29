@@ -67,7 +67,6 @@ function download_ingress {
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
 istio_version=${ISTIO_VERSION:-v$(metadata.get dependencies.istio)}
-# TODO: Remove istio-webhook and Gateway.
 download_ingress istio "$istio_version" "${istio_files[@]}"
 
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
