@@ -45,7 +45,7 @@ image "autoscaler-hpa" "${serving}-autoscaler-hpa"
 image "autoscaler-hpa__kube-rbac-proxy"  "$rbac_proxy"
 image "controller"     "${serving}-controller"
 image "controller__kube-rbac-proxy"  "$rbac_proxy"
-image "webhook"        "${serving}-webhook"
+image "webhook__webhook" "${serving}-webhook"
 image "webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "domain-mapping" "${serving}-domain-mapping"
 image "domain-mapping__kube-rbac-proxy"  "$rbac_proxy"
@@ -55,6 +55,9 @@ image "storage-version-migration-serving-serving-$(metadata.get dependencies.ser
 
 image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "3scale-kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+
+image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
+image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"

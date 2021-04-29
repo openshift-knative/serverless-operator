@@ -13,6 +13,10 @@ source "$root/hack/lib/__sources__.bash"
 serving_files=(serving-crds serving-core serving-hpa serving-domainmapping-crds serving-domainmapping serving-post-install-jobs)
 eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
 
+# This excludes the gateways and peerauthentication settings as we want customers to do
+# manipulate those.
+istio_files=(200-clusterrole 500-mutating-webhook 500-validating-webhook config controller webhook-deployment webhook-service)
+
 function download {
   component=$1
   version=$2
@@ -37,7 +41,31 @@ function download {
   done
 }
 
+function download_ingress {
+  component=$1
+  version=$2
+  shift
+  shift
+
+  files=("$@")
+
+  ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+  rm -r "$ingress_dir"
+  mkdir -p "$ingress_dir"
+
+  for (( i=0; i<${#files[@]}; i++ ));
+  do
+    index=$(( i+1 ))
+    file="${files[$i]}.yaml"
+    ingress_target_file="$ingress_dir/$index-$file"
+    url="https://raw.githubusercontent.com/openshift-knative/${component}/${version}/config/${file}"
+    wget --no-check-certificate "$url" -O "$ingress_target_file"
+  done
+}
+
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
+
+download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
 # Create an empty ingress directory.
 # TODO: Investigate moving Kourier into here rather than "manually" installing it via

@@ -146,6 +146,24 @@ func TestReconcile(t *testing.T) {
 			common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "foo")
 		}),
 	}, {
+		name: "override ingress config",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Istio: v1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+				Istio: v1alpha1.IstioIngressConfiguration{
+					Enabled: true,
+				},
+			}
+		}),
+	}, {
 		name: "respects different status",
 		in: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
@@ -375,6 +393,11 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 			ControllerCustomCerts: v1alpha1.CustomCerts{
 				Type: "ConfigMap",
 				Name: "config-service-ca",
+			},
+			Ingress: &v1alpha1.IngressConfigs{
+				Kourier: v1alpha1.KourierIngressConfiguration{
+					Enabled: true,
+				},
 			},
 		},
 	}
