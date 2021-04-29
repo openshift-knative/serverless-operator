@@ -18,6 +18,9 @@ function upstream_knative_eventing_e2e {
 
   # run_e2e_tests defined in knative-eventing
   run_e2e_tests
+
+  # run_conformance_tests defined in knative-eventing
+  run_conformance_tests
 }
 
 function prepare_knative_eventing_tests {
