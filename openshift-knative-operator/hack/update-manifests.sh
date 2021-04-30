@@ -67,13 +67,6 @@ download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
-# Create an empty ingress directory.
-# TODO: Investigate moving Kourier into here rather than "manually" installing it via
-#       knative-openshift.
-ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
-mkdir -p "$ingress_dir"
-touch "$ingress_dir/.gitkeep"
-
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
