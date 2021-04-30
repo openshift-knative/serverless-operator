@@ -6,7 +6,7 @@ function upstream_knative_eventing_e2e {
 
   local failed=0
 
-  TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
 
   cd "$KNATIVE_EVENTING_HOME" || return $?
 
