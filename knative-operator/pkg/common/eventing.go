@@ -12,6 +12,15 @@ func MutateEventing(ke *eventingv1alpha1.KnativeEventing) {
 	eventingImagesFromEnviron(ke)
 	ensureEventingWebhookMemoryLimit(ke)
 	ensureEventingWebhookInclusionMode(ke)
+	defaultToEventingHa(ke)
+}
+
+func defaultToEventingHa(ke *eventingv1alpha1.KnativeEventing) {
+	if ke.Spec.HighAvailability == nil {
+		ke.Spec.HighAvailability = &eventingv1alpha1.HighAvailability{
+			Replicas: 2,
+		}
+	}
 }
 
 // eventingImagesFromEnviron overrides registry images

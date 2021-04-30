@@ -50,7 +50,7 @@ func TestKnativeEventing(t *testing.T) {
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		// Check the status of scaled deployments in the knative eventing namespace
-		for _, deployment := range knativeEventingControlPlaneDeploymentNames {
+		for _, deployment := range []string{"eventing-controller", "eventing-webhook", "imc-controller", "imc-dispatcher", "mt-broker-controller", "sugar-controller"} {
 			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment, eventingHaReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings for `%s`: %v", deployment, err)
 			}

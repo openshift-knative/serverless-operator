@@ -31,6 +31,7 @@ func TestMutateEventing(t *testing.T) {
 
 	// Mutate for OpenShift
 	common.MutateEventing(ke)
+	verifyEventingHA(t, ke, 2)
 	verifyImageOverride(t, &ke.Spec.Registry, "foo", image1)
 	verifyImageOverride(t, &ke.Spec.Registry, "bar/baz", image2)
 }
@@ -112,5 +113,16 @@ func TestEventingWebhookInclusionMode(t *testing.T) {
 				t.Errorf(`Name: %s\n Expected "%s", Got: "%s"`, tc.name, tc.wanted, tc.ke.Spec.SinkBindingSelectionMode)
 			}
 		})
+	}
+}
+
+func verifyEventingHA(t *testing.T, ke *operatorv1alpha1.KnativeEventing, replicas int32) {
+	if ke.Spec.HighAvailability == nil {
+		t.Error("Missing HA")
+		return
+	}
+
+	if ke.Spec.HighAvailability.Replicas != replicas {
+		t.Errorf("Wrong ha replica size: expected%v, got %v", replicas, ke.Spec.HighAvailability.Replicas)
 	}
 }
