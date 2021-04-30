@@ -97,6 +97,17 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	// Use Kourier by default but allow a manual override.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 
+	// Apply an Ingress config with Kourier enabled if nothing else is defined.
+	// Also handle the (buggy) case, where all Ingresses are disabled.
+	// See https://github.com/knative/operator/issues/568.
+	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
+		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+			Kourier: v1alpha1.KourierIngressConfiguration{
+				Enabled: true,
+			},
+		}
+	}
+
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
 	common.Configure(&ks.Spec.CommonSpec, "network", "domainTemplate", "{{.Name}}-{{.Namespace}}.{{.Domain}}")
