@@ -12,7 +12,6 @@ const (
 	eventingName       = "knative-eventing"
 	eventingNamespace  = "knative-eventing"
 	eventingHaReplicas = 2
-
 )
 
 var knativeEventingControlPlaneDeploymentNames = []string{
