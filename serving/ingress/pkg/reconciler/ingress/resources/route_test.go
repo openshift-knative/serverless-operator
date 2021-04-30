@@ -74,7 +74,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHTTPPort),
+						TargetPort: intstr.FromString(HTTPPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -125,7 +125,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHTTPPort),
+						TargetPort: intstr.FromString(HTTPPort),
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationEdge,
@@ -156,7 +156,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHTTPPort),
+						TargetPort: intstr.FromString(HTTPPort),
 					},
 
 					TLS: &routev1.TLSConfig{
@@ -196,7 +196,7 @@ func TestMakeRoute(t *testing.T) {
 						Weight: ptr.Int32(100),
 					},
 					Port: &routev1.RoutePort{
-						TargetPort: intstr.FromString(KourierHTTPPort),
+						TargetPort: intstr.FromString(HTTPPort),
 					},
 
 					TLS: &routev1.TLSConfig{
@@ -213,6 +213,45 @@ func TestMakeRoute(t *testing.T) {
 				rule(withHosts([]string{localDomain, externalDomain}))),
 			),
 			wantErr: ErrNoValidLoadbalancerDomain,
+		},
+		{
+			name: "valid, passthrough",
+			ingress: ingress(withPassthroughAnnotation, withRules(
+				rule(withHosts([]string{localDomain, externalDomain}))),
+			),
+			want: []*routev1.Route{{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
+					},
+					Annotations: map[string]string{
+						TimeoutAnnotation:                DefaultTimeout,
+						EnablePassthroughRouteAnnotation: "true",
+					},
+					Namespace: lbNamespace,
+					Name:      routeName0,
+				},
+				Spec: routev1.RouteSpec{
+					Host: externalDomain,
+					To: routev1.RouteTargetReference{
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString(HTTPSPort),
+					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
+				},
+			}},
 		},
 	}
 
@@ -284,6 +323,15 @@ func withDisabledAnnotation(ing *networkingv1alpha1.Ingress) {
 		annos = map[string]string{}
 	}
 	annos[DisableRouteAnnotation] = ""
+	ing.SetAnnotations(annos)
+}
+
+func withPassthroughAnnotation(ing *networkingv1alpha1.Ingress) {
+	annos := ing.GetAnnotations()
+	if annos == nil {
+		annos = map[string]string{}
+	}
+	annos[EnablePassthroughRouteAnnotation] = "true"
 	ing.SetAnnotations(annos)
 }
 

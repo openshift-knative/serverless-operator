@@ -446,7 +446,7 @@ func route(ns, name string, opts ...routeOption) *routev1.Route {
 		Spec: routev1.RouteSpec{
 			Host: domainName,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(resources.KourierHTTPPort),
+				TargetPort: intstr.FromString(resources.HTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind:   "Service",
@@ -486,7 +486,7 @@ func routeIstio(ns, name string, opts ...routeOption) *routev1.Route {
 		Spec: routev1.RouteSpec{
 			Host: domainName,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(resources.KourierHTTPPort),
+				TargetPort: intstr.FromString(resources.HTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind:   "Service",
