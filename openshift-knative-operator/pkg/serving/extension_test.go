@@ -164,6 +164,30 @@ func TestReconcile(t *testing.T) {
 			}
 		}),
 	}, {
+		name: "fix 'wrong' ingress config", // https://github.com/knative/operator/issues/568
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Istio: v1alpha1.IstioIngressConfiguration{
+						Enabled: false,
+					},
+					Kourier: v1alpha1.KourierIngressConfiguration{
+						Enabled: false,
+					},
+					Contour: v1alpha1.ContourIngressConfiguration{
+						Enabled: false,
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+				Kourier: v1alpha1.KourierIngressConfiguration{
+					Enabled: true,
+				},
+			}
+		}),
+	}, {
 		name: "respects different status",
 		in: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()

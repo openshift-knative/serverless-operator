@@ -98,7 +98,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", "kourier.ingress.networking.knative.dev")
 
 	// Apply an Ingress config with Kourier enabled if nothing else is defined.
-	if ks.Spec.Ingress == nil {
+	// Also handle the (buggy) case, where all Ingresses are disabled.
+	// See https://github.com/knative/operator/issues/568.
+	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
 		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
 			Kourier: v1alpha1.KourierIngressConfiguration{
 				Enabled: true,
