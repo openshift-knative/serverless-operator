@@ -17,9 +17,12 @@ import (
 )
 
 const (
-	TimeoutAnnotation      = "haproxy.router.openshift.io/timeout"
-	DisableRouteAnnotation = "serving.knative.openshift.io/disableRoute"
-	KourierHTTPPort        = "http2"
+	TimeoutAnnotation                = "haproxy.router.openshift.io/timeout"
+	DisableRouteAnnotation           = "serving.knative.openshift.io/disableRoute"
+	EnablePassthroughRouteAnnotation = "serving.knative.openshift.io/enablePassthrough"
+
+	HTTPPort  = "http2"
+	HTTPSPort = "https"
 
 	OpenShiftIngressLabelKey          = "serving.knative.openshift.io/ingressName"
 	OpenShiftIngressNamespaceLabelKey = "serving.knative.openshift.io/ingressNamespace"
@@ -118,7 +121,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		Spec: routev1.RouteSpec{
 			Host: host,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(KourierHTTPPort),
+				TargetPort: intstr.FromString(HTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind:   "Service",
@@ -132,6 +135,14 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
 	}
+
+	// If the passthrough annotation is set, target the HTTPS port and configure passthrough.
+	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok {
+		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
+		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
+		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyNone
+	}
+
 	return route, nil
 }
 

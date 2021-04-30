@@ -62,7 +62,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 		Spec: routev1.RouteSpec{
 			Host: ksvc.Status.URL.Host,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(resources.KourierHTTPPort),
+				TargetPort: intstr.FromString(resources.HTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
@@ -135,7 +135,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 		Spec: routev1.RouteSpec{
 			Host: dm.Status.URL.Host,
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(resources.KourierHTTPPort),
+				TargetPort: intstr.FromString(resources.HTTPPort),
 			},
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
