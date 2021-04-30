@@ -9,11 +9,13 @@ import (
 )
 
 const (
-	eventingName      = "knative-eventing"
-	eventingNamespace = "knative-eventing"
+	eventingName       = "knative-eventing"
+	eventingNamespace  = "knative-eventing"
+	eventingHaReplicas = 2
+
 )
 
-var knativeControlPlaneDeploymentNames = []string{
+var knativeEventingControlPlaneDeploymentNames = []string{
 	"eventing-controller",
 	"eventing-webhook",
 	"imc-controller",
@@ -48,10 +50,16 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
-		for i := range knativeControlPlaneDeploymentNames {
-			deploymentName := knativeControlPlaneDeploymentNames[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, eventingNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
+		// Check the status of scaled deployments in the knative eventing namespace
+		for _, deployment := range knativeEventingControlPlaneDeploymentNames {
+			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment, eventingHaReplicas); err != nil {
+				t.Fatalf("Failed to verify default HA settings: %v", err)
+			}
+		}
+		// Check the status of deployments in the knative eventing namespace
+		for _, deployment := range knativeEventingControlPlaneDeploymentNames {
+			if _, err := test.WithDeploymentReady(caCtx, deployment, eventingNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
 	})
@@ -65,8 +73,8 @@ func TestKnativeEventing(t *testing.T) {
 			t.Fatal("Failed to remove Knative Eventing", err)
 		}
 
-		for i := range knativeControlPlaneDeploymentNames {
-			deploymentName := knativeControlPlaneDeploymentNames[i]
+		for i := range knativeEventingControlPlaneDeploymentNames {
+			deploymentName := knativeEventingControlPlaneDeploymentNames[i]
 			if err := test.WithDeploymentGone(caCtx, deploymentName, eventingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
 			}
