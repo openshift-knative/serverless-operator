@@ -247,7 +247,7 @@ func TestMakeRoute(t *testing.T) {
 					},
 					TLS: &routev1.TLSConfig{
 						Termination:                   routev1.TLSTerminationPassthrough,
-						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyNone,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
 					},
 					WildcardPolicy: routev1.WildcardPolicyNone,
 				},

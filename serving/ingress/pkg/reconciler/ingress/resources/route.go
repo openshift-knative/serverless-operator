@@ -140,7 +140,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok {
 		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
 		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
-		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyNone
+		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
 	}
 
 	return route, nil
