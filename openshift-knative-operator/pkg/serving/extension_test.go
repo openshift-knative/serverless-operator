@@ -393,8 +393,8 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 						"routing.example.com": "",
 					},
 					"network": map[string]string{
-						"domainTemplate": "{{.Name}}-{{.Namespace}}.{{.Domain}}",
-						"ingress.class":  "kourier.ingress.networking.knative.dev",
+						"domainTemplate": defaultDomainTemplate,
+						"ingress.class":  kourierIngressClassName,
 					},
 				},
 				Registry: v1alpha1.Registry{
