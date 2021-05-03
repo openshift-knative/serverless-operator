@@ -16,10 +16,15 @@ function upstream_knative_eventing_e2e {
   # shellcheck disable=SC1090
   source "${KNATIVE_EVENTING_HOME}/openshift/e2e-common.sh"
 
+  logger.info 'Installing Tracing'
+  install_tracing
+
   # run_e2e_tests defined in knative-eventing
+  logger.info 'Starting eventing e2e tests'
   run_e2e_tests
 
   # run_conformance_tests defined in knative-eventing
+  logger.info 'Starting eventing conformance tests'
   run_conformance_tests
 }
 
