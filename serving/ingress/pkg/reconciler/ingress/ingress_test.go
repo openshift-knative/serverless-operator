@@ -440,7 +440,7 @@ func route(ns, name string, opts ...routeOption) *routev1.Route {
 			},
 			Annotations: map[string]string{
 				resources.TimeoutAnnotation:          resources.DefaultTimeout,
-				networking.IngressClassAnnotationKey: "kourier.ingress.networking.knative.dev",
+				networking.IngressClassAnnotationKey: kourierIngressClassName,
 			},
 		},
 		Spec: routev1.RouteSpec{
@@ -480,7 +480,7 @@ func routeIstio(ns, name string, opts ...routeOption) *routev1.Route {
 			},
 			Annotations: map[string]string{
 				resources.TimeoutAnnotation:          resources.DefaultTimeout,
-				networking.IngressClassAnnotationKey: "istio.ingress.networking.knative.dev",
+				networking.IngressClassAnnotationKey: istioIngressClassName,
 			},
 		},
 		Spec: routev1.RouteSpec{
