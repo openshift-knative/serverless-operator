@@ -34,8 +34,8 @@ metadata:
       of serverless applications and functions.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: ">=1.9.0 <1.10.1"
-  name: serverless-operator.v1.10.1
+    olm.skipRange: ">=1.9.0 <1.10.2"
+  name: serverless-operator.v1.10.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -612,5 +612,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-broker-cleanup"
     - name: "IMAGE_sugar-controller__controller"
       image: "registry.ci.openshift.org/openshift/knative-v0.16.0:knative-eventing-sugar-controller"
-  replaces: serverless-operator.v1.10.0
-  version: 1.10.1
+  replaces: serverless-operator.v1.10.1
+  version: 1.10.2
