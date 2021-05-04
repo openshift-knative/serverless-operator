@@ -27,7 +27,7 @@ dependencies:
   maistra: 2.0.0
 
   eventing: 0.21.0
-  eventing_kafka: 0.20.0
-
+  eventing_kafka: 0.21.1
+  kourier: 0.21.0
   cli: 0.20.0
   operator: 0.21.2

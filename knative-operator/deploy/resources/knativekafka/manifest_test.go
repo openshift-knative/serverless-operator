@@ -19,10 +19,10 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path  string
 		fails bool
 	}{{
-		path:  "./kafkachannel-latest.yaml",
+		path:  "./1-channel-consolidated.yaml",
 		fails: false,
 	}, {
-		path:  "./kafkasource-latest.yaml",
+		path:  "./2-source.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",
@@ -45,7 +45,7 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		}
 		manifest = manifest.Filter(notAllowed)
 		if len(manifest.Resources()) > 0 && !test.fails {
-			t.Fatalf("Manifest at path '%s' has unallowed resources", test.path)
+			t.Fatalf("Manifest at path '%s' has unallowed resources: %+v", test.path, manifest.Resources())
 		}
 		if len(manifest.Resources()) == 0 && test.fails {
 			t.Fatalf("Manifest at path '%s' should have unallowed resources, but it does not. Perhaps the check for unallowed resources is not working?", test.path)

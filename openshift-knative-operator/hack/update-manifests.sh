@@ -29,7 +29,7 @@ function download {
   target_dir="${component_dir}/${version:1}"
   rm -r "$component_dir"
   mkdir -p "$target_dir"
-  
+
   for (( i=0; i<${#files[@]}; i++ ));
   do
     index=$(( i+1 ))
