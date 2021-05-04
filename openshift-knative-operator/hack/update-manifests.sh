@@ -41,6 +41,28 @@ function download {
   done
 }
 
+function download_ingress {
+  component=$1
+  version=$2
+  shift
+  shift
+
+  files=("$@")
+
+  ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+  rm -r "$ingress_dir"
+  mkdir -p "$ingress_dir"
+
+  for (( i=0; i<${#files[@]}; i++ ));
+  do
+    index=$(( i+1 ))
+    file="${files[$i]}.yaml"
+    ingress_target_file="$ingress_dir/$index-$file"
+    url="https://raw.githubusercontent.com/openshift-knative/${component}/${version}/config/${file}"
+    wget --no-check-certificate "$url" -O "$ingress_target_file"
+  done
+}
+
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
