@@ -59,16 +59,22 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		return nil, fmt.Errorf("failed to load KafkaChannel manifest: %w", err)
 	}
 
+	kafkaChannelPostInstallManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACHANNEL_POST_INSTALL_MANIFEST_PATH")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaChannel Post Install manifest: %w", err)
+	}
+
 	kafkaSourceManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASOURCE_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
 	reconcileKnativeKafka := ReconcileKnativeKafka{
-		client:                  mgr.GetClient(),
-		scheme:                  mgr.GetScheme(),
-		rawKafkaChannelManifest: kafkaChannelManifest,
-		rawKafkaSourceManifest:  kafkaSourceManifest,
+		client:                             mgr.GetClient(),
+		scheme:                             mgr.GetScheme(),
+		rawKafkaChannelManifest:            kafkaChannelManifest,
+		rawKafkaChannelPostInstallManifest: kafkaChannelPostInstallManifest,
+		rawKafkaSourceManifest:             kafkaSourceManifest,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -106,10 +112,11 @@ var _ reconcile.Reconciler = &ReconcileKnativeKafka{}
 type ReconcileKnativeKafka struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client                  client.Client
-	scheme                  *runtime.Scheme
-	rawKafkaChannelManifest mf.Manifest
-	rawKafkaSourceManifest  mf.Manifest
+	client                             client.Client
+	scheme                             *runtime.Scheme
+	rawKafkaChannelManifest            mf.Manifest
+	rawKafkaChannelPostInstallManifest mf.Manifest
+	rawKafkaSourceManifest             mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -363,6 +370,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
+		resources = append(resources, r.rawKafkaChannelPostInstallManifest.Resources()...)
 	}
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
