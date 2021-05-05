@@ -375,7 +375,7 @@ spec:
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KN_CLI_ARTIFACTS"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.20.0:kn-cli-artifacts"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.21.0:kn-cli-artifacts"
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
                     imagePullPolicy: IfNotPresent
@@ -512,7 +512,7 @@ spec:
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KN_CLI_ARTIFACTS"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.20.0:kn-cli-artifacts"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.21.0:kn-cli-artifacts"
                       - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-source-controller"
                       - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
@@ -807,7 +807,7 @@ spec:
     - name: "IMAGE_DISPATCHER_IMAGE"
       image: "registry.ci.openshift.org/openshift/knative-v0.21.0:knative-eventing-channel-dispatcher"
     - name: "IMAGE_KN_CLI_ARTIFACTS"
-      image: "registry.ci.openshift.org/openshift/knative-v0.20.0:kn-cli-artifacts"
+      image: "registry.ci.openshift.org/openshift/knative-v0.21.0:kn-cli-artifacts"
     - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
       image: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-source-controller"
     - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
