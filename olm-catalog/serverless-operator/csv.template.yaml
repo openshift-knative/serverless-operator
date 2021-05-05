@@ -267,7 +267,7 @@ spec:
                       fieldPath: metadata.namespace
                 - name: METRICS_DOMAIN
                   value: knative.dev/serving-operator
-                image: registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
+                image: registry.ci.openshift.org/openshift/knative-v0.16.0:knative-operator
                 imagePullPolicy: IfNotPresent
                 name: knative-operator
                 ports:
@@ -290,7 +290,7 @@ spec:
               containers:
                 - name: knative-openshift
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-operator
+                  image: registry.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-operator
                   command:
                   - knative-openshift
                   imagePullPolicy: Always
@@ -338,7 +338,7 @@ spec:
               containers:
                 - name: knative-openshift-ingress
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-openshift-ingress
+                  image: registry.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-openshift-ingress
                   command:
                   - knative-openshift-ingress
                   imagePullPolicy: Always
@@ -434,9 +434,9 @@ spec:
   relatedImages:
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-operator
+      image: registry.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-operator
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-openshift-ingress
+      image: registry.ci.openshift.org/openshift/openshift-serverless-v1.10.0:knative-openshift-ingress
   replaces: serverless-operator.v1.10.0
   version: 1.10.1

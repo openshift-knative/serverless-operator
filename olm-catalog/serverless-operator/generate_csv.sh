@@ -7,7 +7,7 @@ target="${2:?Provide a target CSV file as arg[2]}"
 
 source "$(dirname "${BASH_SOURCE[0]}")/../../hack/lib/vars.bash"
 
-registry="registry.svc.ci.openshift.org/openshift"
+registry="registry.ci.openshift.org/openshift"
 serving="${registry}/knative-$KNATIVE_SERVING_VERSION:knative-serving"
 eventing="${registry}/knative-$KNATIVE_EVENTING_VERSION:knative-eventing"
 
