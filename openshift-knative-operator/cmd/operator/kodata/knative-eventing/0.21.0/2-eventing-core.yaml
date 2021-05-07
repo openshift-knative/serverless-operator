@@ -827,7 +827,7 @@ metadata:
   labels:
     eventing.knative.dev/release: "v0.21.0"
 spec:
-  minAvailable: 80%
+  minAvailable: 1
   selector:
     matchLabels:
       app: eventing-webhook
