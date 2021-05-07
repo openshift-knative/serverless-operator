@@ -136,6 +136,12 @@ func setupMonitoring(cfg *rest.Config) error {
 		return err
 	}
 
+	// If we upgrade from an old version we need to remove the old Service Monitor
+	// that is not managed by OLM. See SRVCOM-1237 for more.
+	if err = common.RemoveOldServiceMonitorResourcesIfExist(namespace, cl); err != nil {
+		return err
+	}
+
 	if err = common.SetupMonitoringRequirements(cl, operatorDeployment); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
