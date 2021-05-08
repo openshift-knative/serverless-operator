@@ -1,11 +1,11 @@
 ---
 project:
   name: serverless-operator
-  version: 1.14.0
+  version: 1.14.1
 
 olm:
-  replaces: 1.13.0
-  skipRange: '>=1.13.0 <1.14.0'
+  replaces: 1.14.0
+  skipRange: '>=1.13.0 <1.14.1'
   channels:
     default: 'stable'
     list:
@@ -14,7 +14,7 @@ olm:
 requirements:
   kube:
     minVersion: 1.15.0
-  golang: '1.14'
+  golang: '1.15'
   nodejs: 14.x
   ocp:
     - '4.6'

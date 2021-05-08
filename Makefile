@@ -102,6 +102,15 @@ release-files:
 	./hack/generate/dockerfile.sh \
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/knative-operator.Dockerfile \
+		knative-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/openshift-knative-operator.Dockerfile \
+		openshift-knative-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/serving-ingress.Dockerfile \
+		serving/ingress/Dockerfile
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
