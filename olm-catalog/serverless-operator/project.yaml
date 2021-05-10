@@ -28,6 +28,5 @@ dependencies:
 
   eventing: 0.21.0
   eventing_kafka: 0.21.1
-  kourier: 0.21.0
   cli: 0.21.0
   operator: 0.21.2
