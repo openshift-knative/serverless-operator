@@ -66,15 +66,6 @@ fi
 go mod tidy
 go mod vendor
 
-# Remove files conflicting due to logr.
-rm -f vendor/knative.dev/pkg/test/logging/tlogger.go \
-  vendor/knative.dev/pkg/test/logging/zapr.go \
-  vendor/knative.dev/pkg/test/logging/sugar.go \
-  vendor/knative.dev/pkg/test/logging/error.go \
-  vendor/knative.dev/pkg/test/logging/spew_encoder.go \
-  vendor/knative.dev/pkg/test/logging/memory_encoder.go \
-  vendor/knative.dev/pkg/test/logging/logger.go
-
 # Remove unnecessary files.
 find vendor/ \( -name "OWNERS" \
   -o -name "OWNERS_ALIASES" \
