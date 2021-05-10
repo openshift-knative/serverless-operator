@@ -27,26 +27,18 @@ import (
 )
 
 var (
-	gwLabels = map[string]string{"gwlabel": "foo"}
-	gwAnnos  = map[string]string{"gwanno": "bar"}
-
 	defaultKnativeServing = v1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-serving",
 			Namespace: "knative-serving",
 		},
-		Spec: v1alpha1.KnativeServingSpec{
-			CommonSpec: v1alpha1.CommonSpec{
-				DeploymentOverride: []v1alpha1.DeploymentOverride{{
-					Name:        "3scale-kourier-gateway",
-					Labels:      gwLabels,
-					Annotations: gwAnnos,
-				}},
-			},
-		},
 		Status: v1alpha1.KnativeServingStatus{
 			Status: duckv1.Status{
 				Conditions: []pkgapis.Condition{
+					{
+						Status: "True",
+						Type:   "Ready",
+					},
 					{
 						Status: "True",
 						Type:   "DeploymentsAvailable",
@@ -131,14 +123,13 @@ var (
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
 	os.Setenv(quickstart.EnvKey, "../../../deploy/resources/quickstart/serverless-application-quickstart.yaml")
 	os.Setenv(dashboard.ServingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-serving-resources.yaml")
 	os.Setenv("TEST_ROLE_PATH", "../dashboard/testdata/role-service-monitor.yaml")
 	apis.AddToScheme(scheme.Scheme)
 }
 
-// TestExtraResourcesReconcile runs Reconcile to verify if extra resources such as Kourier and ConsoleCLIDownload are reconciled.
+// TestExtraResourcesReconcile runs Reconcile to verify if extra resources are reconciled.
 func TestExtraResourcesReconcile(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -182,24 +173,8 @@ func TestExtraResourcesReconcile(t *testing.T) {
 				t.Fatalf("reconcile: (%v)", err)
 			}
 
-			// Check if Kourier is deployed.
-			deploy := &appsv1.Deployment{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
-			if err != nil {
-				t.Fatalf("get: (%v)", err)
-			}
-
-			// Check if Kourier labels and annotations are added.
-			if deploy.GetLabels()["gwlabel"] != gwLabels["gwlabel"] {
-				t.Fatalf("got = %v, want = %v", deploy.GetLabels()["gwlabel"], gwLabels["gwlabel"])
-			}
-
-			if deploy.GetAnnotations()["gwanno"] != gwAnnos["gwanno"] {
-				t.Fatalf("got = %v, want = %v", deploy.GetAnnotations()["gwanno"], gwAnnos["gwanno"])
-			}
-
 			// Check kn ConsoleCLIDownload CR
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kn", Namespace: ""}, ccd)
+			err := cl.Get(context.TODO(), types.NamespacedName{Name: "kn", Namespace: ""}, ccd)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
@@ -209,12 +184,6 @@ func TestExtraResourcesReconcile(t *testing.T) {
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
-			}
-
-			// Delete Kourier deployment.
-			err = cl.Delete(context.TODO(), deploy)
-			if err != nil {
-				t.Fatalf("delete: (%v)", err)
 			}
 
 			// Delete ConsoleCLIDownload CR
@@ -248,19 +217,6 @@ func TestExtraResourcesReconcile(t *testing.T) {
 						t.Fatalf("get: (%v)", err)
 					}
 				}
-			}
-
-			// Check again if Kourier deployment is created after reconcile.
-			err = cl.Get(context.TODO(), types.NamespacedName{Name: "3scale-kourier-gateway", Namespace: "knative-serving-ingress"}, deploy)
-			checkError(t, err)
-
-			// Check again if Kourier labels and annotations are added.
-			if deploy.GetLabels()["gwlabel"] != gwLabels["gwlabel"] {
-				t.Fatalf("got = %v, want = %v", deploy.GetLabels()["gwlabel"], gwLabels["gwlabel"])
-			}
-
-			if deploy.GetAnnotations()["gwanno"] != gwAnnos["gwanno"] {
-				t.Fatalf("got = %v, want = %v", deploy.GetAnnotations()["gwanno"], gwAnnos["gwanno"])
 			}
 
 			// Check again if Serving dashboard configmap is available.
@@ -396,44 +352,6 @@ func TestCustomCertsConfigMap(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-// TestKnativeServingStatus tests KnativeServing CR status with Kourier's installation failure.
-func TestKnativeServingStatus(t *testing.T) {
-	cl := fake.NewClientBuilder().
-		WithObjects(&defaultKnativeServing, &defaultIngress, &defaultKnService, &servingNamespace).
-		Build()
-
-	r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
-
-	// Test with invalid Kourier manifest file.
-	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/non-exist-file")
-	if _, err := r.Reconcile(context.Background(), defaultRequest); err == nil {
-		t.Fatalf("reconcile does not fail with invalid manifest path")
-	}
-
-	failedKs := &v1alpha1.KnativeServing{}
-	err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving", Namespace: "knative-serving"}, failedKs)
-	if err != nil {
-		t.Fatalf("get: (%v)", err)
-	}
-	if failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled).Status != corev1.ConditionFalse {
-		t.Fatalf("status: (%v)", failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled))
-	}
-
-	// Reconcile with correct Kourier manifest file.
-	os.Setenv("KOURIER_MANIFEST_PATH", "kourier/testdata/kourier-latest.yaml")
-	if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {
-		t.Fatalf("reconcile: (%v)", err)
-	}
-	successKs := &v1alpha1.KnativeServing{}
-	err = cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving", Namespace: "knative-serving"}, successKs)
-	if err != nil {
-		t.Fatalf("get: (%v)", err)
-	}
-	if successKs.Status.GetCondition(v1alpha1.DependenciesInstalled).Status != corev1.ConditionTrue {
-		t.Fatalf("status: (%v)", failedKs.Status.GetCondition(v1alpha1.DependenciesInstalled))
 	}
 }
 

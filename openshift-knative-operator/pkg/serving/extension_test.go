@@ -426,8 +426,6 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 		},
 	}
 
-	base.Status.MarkDependencyInstalling("Kourier")
-
 	for _, mod := range mods {
 		mod(base)
 	}

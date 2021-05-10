@@ -11,6 +11,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -52,6 +53,7 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 			corev1.EnvVar{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
+		overrideKourierNamespace(kourierNamespace(ks.GetNamespace())),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
@@ -65,9 +67,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ks.Namespace))
 	}
 
-	// Mark the Kourier dependency as installing to avoid race conditions with readiness.
-	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsUnknown() {
-		ks.Status.MarkDependencyInstalling("Kourier")
+	// Mark failed dependencies as succeeded since we're no longer using that mechanism anyway.
+	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsFalse() {
+		ks.Status.MarkDependenciesInstalled()
 	}
 
 	// Set the default host to the cluster's host.
@@ -132,7 +134,13 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	return nil
 }
 
-func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {
+func (e *extension) Finalize(ctx context.Context, ks v1alpha1.KComponent) error {
+	// Delete the ingress namespaces (manifestival doesn't delete namespaces)
+	err := e.kubeclient.CoreV1().Namespaces().Delete(ctx, kourierNamespace(ks.GetNamespace()), metav1.DeleteOptions{})
+	if err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to remove ingress namespace: %w", err)
+	}
+
 	return nil
 }
 

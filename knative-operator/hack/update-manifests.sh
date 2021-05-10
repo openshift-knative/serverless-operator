@@ -32,21 +32,6 @@ function download_kafka {
   done
 }
 
-
-version=${KOURIER_VERSION:-v$(metadata.get dependencies.kourier)}
-
-target_dir="$root/knative-operator/deploy/resources/kourier"
-rm -rf "$target_dir"
-mkdir -p "$target_dir"
-
-target_file="$target_dir/kourier-latest.yaml"
-
-url="https://github.com/knative-sandbox/net-kourier/releases/download/$version/kourier.yaml"
-wget --no-check-certificate "$url" -O "$target_file"
-
-# TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
-sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g' "$target_file"
-
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 # For Backport of v1alpha1 hacks, we change the storage versions:
 git apply "$root/knative-operator/hack/006-kafkachannel-storage-beta1.patch"

@@ -53,8 +53,8 @@ image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
 image "domainmapping-webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
-image "3scale-kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-image "3scale-kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
+image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
 image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
 image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
