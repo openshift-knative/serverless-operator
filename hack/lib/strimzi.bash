@@ -16,7 +16,7 @@ function install_strimzi_operator {
 function install_strimzi_cluster {
   header "Applying Strimzi Cluster file"
   cat <<-EOF | oc apply -f -
-    apiVersion: kafka.strimzi.io/v1beta1
+    apiVersion: kafka.strimzi.io/v1beta2
     kind: Kafka
     metadata:
       name: my-cluster
@@ -46,6 +46,7 @@ function install_strimzi_cluster {
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
           transaction.state.log.min.isr: 2
+          inter.broker.protocol.version: "2.7"
           log.message.format.version: "2.7"
           auto.create.topics.enable: "false"
         storage:
@@ -73,7 +74,7 @@ EOF
 function install_strimzi_users {
   header "Applying Strimzi TLS Admin user"
   cat <<-EOF | oc apply -f -
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaUser
 metadata:
   name: my-tls-user
@@ -87,7 +88,7 @@ EOF
 
   header "Applying Strimzi SASL Admin User"
   cat <<-EOF | oc apply -f -
-apiVersion: kafka.strimzi.io/v1beta1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaUser
 metadata:
   name: my-sasl-user
