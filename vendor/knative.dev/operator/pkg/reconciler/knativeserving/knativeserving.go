@@ -58,6 +58,9 @@ var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 
+	// Clean up the cache, if the Serving CR is deleted.
+	common.ClearCache()
+
 	// List all KnativeServings to determine if cluster-scoped resources should be deleted.
 	kss, err := r.operatorClientSet.OperatorV1alpha1().KnativeServings("").List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -107,6 +110,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	stages := common.Stages{
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
+		common.AppendAdditionalManifests,
 		r.filterDisabledIngresses,
 		r.appendExtensionManifests,
 		r.transform,
@@ -143,7 +147,8 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.transform}
+	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
+		r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

@@ -971,10 +971,10 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20210216013537-daa996f87cb1
+# knative.dev/caching v0.0.0-20210331063521-5691bb38d441
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.21.3 => github.com/openshift/knative-eventing v0.99.1-0.20210511123704-aead04e00ecc
+# knative.dev/eventing v0.22.0 => github.com/openshift/knative-eventing v0.99.1-0.20210511123704-aead04e00ecc
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/configs
@@ -1116,11 +1116,11 @@ knative.dev/eventing-kafka/test/lib
 knative.dev/eventing-kafka/test/lib/resources
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/hack v0.0.0-20210317214554-58edbdc42966
+# knative.dev/hack v0.0.0-20210325223819-b6ab329907d3
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20210324061918-44a3b919bce1
+# knative.dev/networking v0.0.0-20210331064822-999a7708876c
 ## explicit
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1140,7 +1140,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.21.2
+# knative.dev/operator v0.22.2-0.20210511163746-93d2a51a7907
 ## explicit
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -1164,7 +1164,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing/common
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20210323202917-b558677ab034
+# knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1237,7 +1237,7 @@ knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics
-# knative.dev/serving v0.21.0 => github.com/openshift/knative-serving v0.10.1-0.20210430092304-bc7d8997be0d
+# knative.dev/serving v0.22.0 => github.com/openshift/knative-serving v0.10.1-0.20210511123518-503694bc711c
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1319,4 +1319,4 @@ sigs.k8s.io/yaml
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 # knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210511123704-aead04e00ecc
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210504074514-a18051f72852
-# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210430092304-bc7d8997be0d
+# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210511123518-503694bc711c

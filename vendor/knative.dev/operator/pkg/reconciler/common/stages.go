@@ -18,6 +18,7 @@ package common
 
 import (
 	"context"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -57,6 +58,21 @@ func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.
 	return nil
 }
 
+// AppendAdditionalManifests mutates the passed manifest by appending the manifests specified with the
+// field spec.additionalManifests.
+func AppendAdditionalManifests(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	m, err := TargetAdditionalManifest(instance)
+	if err != nil {
+		instance.GetStatus().MarkInstallFailed(err.Error())
+		return err
+	}
+	// If we get the same resource in the additional manifests, we will remove the one in the existing manifest.
+	if len(m.Resources()) != 0 {
+		*manifest = manifest.Filter(mf.Not(mf.In(m))).Append(m)
+	}
+	return nil
+}
+
 // AppendInstalled mutates the passed manifest by appending one
 // appropriate for the passed KComponent, which may not be the one
 // corresponding to status.version
@@ -85,8 +101,9 @@ type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*m
 // instance status, e.g. Install.
 func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, fetch ManifestFetcher) Stage {
 	version := TargetVersion(instance)
-	if version == instance.GetStatus().GetVersion() &&
-		targetManifestPath(version, instance) == installedManifestPath(version, instance) {
+	if version == instance.GetStatus().GetVersion() && len(instance.GetSpec().GetAdditionalManifests()) == 0 &&
+		len(instance.GetSpec().GetManifests()) == 0 &&
+		targetManifestPath(instance) == strings.Join(installedManifestPath(version, instance), COMMA) {
 		return NoOp
 	}
 	logger := logging.FromContext(ctx)
