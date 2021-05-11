@@ -235,10 +235,6 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 					Href: baseURL + "/s390x/linux/kn-linux-s390x.tar.gz",
 				},
 				{
-					Text: "Download kn for Linux for ARM 64 (unsupported)",
-					Href: baseURL + "/arm64/linux/kn-linux-arm64.tar.gz",
-				},
-				{
 					Text: "Download kn for macOS",
 					Href: baseURL + "/amd64/macos/kn-macos-amd64.tar.gz",
 				},
