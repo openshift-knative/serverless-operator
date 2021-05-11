@@ -34,7 +34,7 @@ const (
 	ksvcAPIVersion      = "serving.knative.dev/v1"
 	ksvcKind            = "Service"
 	kafkaTopicKind      = "KafkaTopic"
-	kafkaAPIVersion     = "kafka.strimzi.io/v1beta2"
+	kafkaAPIVersion     = "kafka.strimzi.io/v1beta1"
 	clusterName         = "my-cluster" // there should be a way to get this from test setup
 	strimziClusterLabel = "strimzi.io/cluster"
 	cronJobName         = "smoke-cronjob"
@@ -47,7 +47,7 @@ var (
 	saslBootstrapServer  = clusterName + baseURI + "9094"
 	tlsSecret            = "my-tls-secret"
 	saslSecret           = "my-sasl-secret"
-	kafkaGVR             = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta2", Resource: "kafkatopics"}
+	kafkaGVR             = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
 )
 
 func createCronJobObj(name, topic, server string) *batchv1beta1.CronJob {

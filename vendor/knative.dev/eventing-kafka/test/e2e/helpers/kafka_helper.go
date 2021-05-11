@@ -43,7 +43,7 @@ import (
 
 const (
 	strimziApiGroup      = "kafka.strimzi.io"
-	strimziApiVersion    = "v1beta2"
+	strimziApiVersion    = "v1beta1"
 	strimziTopicResource = "kafkatopics"
 	interval             = 3 * time.Second
 	timeout              = 30 * time.Second
