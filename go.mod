@@ -43,6 +43,6 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406161751-80f49379d45d
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210420075609-dbcba4bee3ce
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.21.0
 	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a
 )
