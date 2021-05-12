@@ -37,8 +37,8 @@ func TestConsoleCLIDownloadAndDeploymentResources(t *testing.T) {
 		t.Fatalf("unable to GET kn ConsoleCLIDownload CO 'kn': %v", err)
 	}
 	// Verify the links in kn CCD CO
-	if len(ccd.Spec.Links) != 6 {
-		t.Fatalf("expecting 6 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
+	if len(ccd.Spec.Links) != 5 {
+		t.Fatalf("expecting 5 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
 	}
 	// Verify if individual link starts with correct route
 	protocol := "https://"
