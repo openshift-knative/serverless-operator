@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 function install_strimzi {
-  strimzi_version=`curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null`
+  
+  strimzi_version=0.22.1
   header "Strimzi install"
   oc create namespace kafka
   curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml" \
@@ -19,7 +20,7 @@ function install_strimzi {
 }
 
 function uninstall_strimzi {
-  strimzi_version=`curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null`
+  strimzi_version=0.22.1
 
   header "Deleting Kafka instance"
   oc -n kafka delete -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/${strimzi_version}/examples/kafka/kafka-persistent.yaml"
