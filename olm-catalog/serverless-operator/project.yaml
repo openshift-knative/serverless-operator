@@ -21,9 +21,9 @@ requirements:
     - '4.7'
 
 dependencies:
-  serving: 0.21.0
-  kourier: 0.21.0
-  net_istio: 0.21.0
+  serving: 0.22.0
+  kourier: 0.22.0
+  net_istio: 0.22.0
   maistra: 2.0.0
 
   eventing: 0.21.0
