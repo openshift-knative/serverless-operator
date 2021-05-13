@@ -34,4 +34,3 @@ func TestKnativeMetrics(t *testing.T) {
 		}
 	})
 }
-
