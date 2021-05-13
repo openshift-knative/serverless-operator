@@ -23,11 +23,11 @@ CERT_MANAGER_VERSION="latest"
 # Since default is istio, make default ingress as istio
 INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 ISTIO_VERSION=""
-GLOO_VERSION=""
 KOURIER_VERSION=""
 AMBASSADOR_VERSION=""
 CONTOUR_VERSION=""
 CERTIFICATE_CLASS=""
+export RUN_HTTP01_AUTO_TLS_TESTS=0
 # Only build linux/amd64 bit images
 KO_FLAGS="--platform=linux/amd64"
 
@@ -80,6 +80,10 @@ function parse_flags() {
       readonly CERTIFICATE_CLASS="cert-manager.certificate.networking.knative.dev"
       return 2
       ;;
+    --run-http01-auto-tls-tests)
+      readonly RUN_HTTP01_AUTO_TLS_TESTS=1
+      return 1
+      ;;
     --mesh)
       readonly MESH=1
       return 1
@@ -97,13 +101,6 @@ function parse_flags() {
       # Expect a list of comma-separated YAMLs.
       INSTALL_CUSTOM_YAMLS="${2//,/ }"
       readonly INSTALL_CUSTOM_YAMLS
-      return 2
-      ;;
-    --gloo-version)
-      # currently, the value of --gloo-version is ignored
-      # latest version of Gloo pinned in third_party will be installed
-      readonly GLOO_VERSION=$2
-      readonly INGRESS_CLASS="gloo.ingress.networking.knative.dev"
       return 2
       ;;
     --kourier-version)
@@ -237,9 +234,7 @@ function install_knative_serving_standard() {
 
   if [[ -z "${REUSE_INGRESS:-}" ]]; then
     echo ">> Installing Ingress"
-    if [[ -n "${GLOO_VERSION:-}" ]]; then
-      install_gloo || return 1
-    elif [[ -n "${KOURIER_VERSION:-}" ]]; then
+    if [[ -n "${KOURIER_VERSION:-}" ]]; then
       install_kourier || return 1
     elif [[ -n "${AMBASSADOR_VERSION:-}" ]]; then
       install_ambassador || return 1
@@ -279,7 +274,7 @@ function install_knative_serving_standard() {
   UNINSTALL_LIST+=( "${CERT_YAML_NAME}" )
 
   echo ">> Installing Knative serving"
-  HA_COMPONENTS+=( "controller" "webhook" "autoscaler-hpa" "autoscaler" "domainmapping-webhook" )
+  HA_COMPONENTS+=( "controller" "webhook" "autoscaler-hpa" "autoscaler" "domain-mapping" "domainmapping-webhook" )
   if [[ "$1" == "HEAD" ]]; then
     local CORE_YAML_NAME=${TMP_DIR}/${SERVING_CORE_YAML##*/}
     sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${SYSTEM_NAMESPACE}/g" ${SERVING_CORE_YAML} > ${CORE_YAML_NAME}
@@ -419,6 +414,10 @@ function test_setup() {
     kubectl label namespace serving-tests istio-injection=enabled
     kubectl label namespace serving-tests-alt istio-injection=enabled
   fi
+
+  # Setting deadline progress to a shorter value.
+  kubectl patch cm "config-deployment" -n "${SYSTEM_NAMESPACE}" \
+    -p '{"data":{"progressDeadline":"120s"}}'
 
   echo ">> Uploading test images..."
   ${REPO_ROOT_DIR}/test/upload-test-images.sh || return 1

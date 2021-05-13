@@ -122,11 +122,11 @@ go_test_e2e -timeout=2m ./test/e2e/initscale || failed=1
 toggle_feature allow-zero-initial-scale false config-autoscaler || fail_test
 
 toggle_feature responsive-revision-gc Enabled
-GC_CONFIG=$(kubectl get cm "config-gc" -n "${SYSTEM_NAMESPACE}" -o yaml)
-add_trap "kubectl patch cm 'config-gc' -n ${SYSTEM_NAMESPACE} -p ${GC_CONFIG}" SIGKILL SIGTERM SIGQUIT
+kubectl get cm "config-gc" -n "${SYSTEM_NAMESPACE}" -o yaml > ${TMP_DIR}/config-gc.yaml
+add_trap "kubectl replace cm 'config-gc' -n ${SYSTEM_NAMESPACE} -f ${TMP_DIR}/config-gc.yaml" SIGKILL SIGTERM SIGQUIT
 immediate_gc
 go_test_e2e -timeout=2m ./test/e2e/gc || failed=1
-kubectl patch cm "config-gc" -n ${SYSTEM_NAMESPACE} -p ${GC_CONFIG}
+kubectl replace cm "config-gc" -n ${SYSTEM_NAMESPACE} -f ${TMP_DIR}/config-gc.yaml
 toggle_feature responsive-revision-gc Disabled
 
 # Run scale tests.
@@ -138,6 +138,8 @@ go_test_e2e -timeout=20m -parallel=300 ./test/scale || failed=1
 # Run HA tests separately as they're stopping core Knative Serving pods.
 # Define short -spoofinterval to ensure frequent probing while stopping pods.
 go_test_e2e -timeout=25m -failfast -parallel=1 ./test/ha \
+            ${alpha} \
+            --enable-beta \
 	    -replicas="${REPLICAS:-1}" -buckets="${BUCKETS:-1}" -spoofinterval="10ms" || failed=1
 
 (( failed )) && fail_test
