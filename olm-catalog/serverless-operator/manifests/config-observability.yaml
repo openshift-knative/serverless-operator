@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: openshift-serverless
+data:
+  metrics.backend-destination: prometheus

@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    name: knative-operator
+  name: knative-operator-metrics
+spec:
+  endpoints:
+    - port: metrics
+  namespaceSelector: {}
+  selector:
+    matchLabels:
+      name: knative-operator
