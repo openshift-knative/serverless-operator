@@ -73,8 +73,10 @@ in `knative-eventing` namespace by default. Requires to install a Strimzi cluste
   version.
 - `make install-strimzi`: Install the latest Strimzi operator and a kafka cluster instance in `kafka` namespace by default.
 - `make unistall-strimzi`: Uninstall the Strimzi operator and any existing kafka cluster instance. 
-- `make install-mesh`: Install service mesh operator and enable sidecar injections.
-- `make uninstall-mesh `: Uninstall service mesh operator and disable sidecar injection.
+- `make install-mesh`: Install service mesh operator.
+- `make uninstall-mesh `: Uninstall service mesh operator.
+- `make install-full-mesh`: Install service mesh operator, Istio Gateway and PeerAuthentication to use Knative Serving for secure traffic.
+- `make uninstall-full-mesh `: Uninstall service mesh operator, Istio Gateway and PeerAuthentication.
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.
@@ -197,94 +199,6 @@ spec:
 ```
 
 After a few minutes, operators will be upgraded automatically.
-
-### Test serverless-operator with Istio sidecar injection
-
-To install service mesh operator, run `make install-mesh`
-
-```
-make install-mesh
-```
-
-and create a `ServiceMeshControlPlane`.
-
-```
-apiVersion: maistra.io/v2
-kind: ServiceMeshControlPlane
-metadata:
-  name: basic
-  namespace: istio-system
-spec:
-  version: v2.0
-```
-
-Then, add your namespace to `ServiceMeshMemberRoll`
-
-```
-apiVersion: maistra.io/v1
-kind: ServiceMeshMemberRoll
-metadata:
-  name: default
-  namespace: istio-system
-spec:
-  members:
-    - $NAMESPACE_YOU_WANT_TO_ADD
-    # Add namespace you want to include mesh.
-```
-
-and add `knative.openshift.io/system-namespace` label to system namespaces.
-
-```
-oc label namespace knative-serving knative.openshift.io/system-namespace=true
-oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true
-```
-
-and add `NetworkPolicy` in your namespace.
-
-```
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-from-serving-system-namespace
-  namespace: $NAMESPACE_YOU_WANT_TO_ADD
-spec:
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          knative.openshift.io/system-namespace: "true"
-  podSelector: {}
-  policyTypes:
-  - Ingress
-```
-
-Then, create Knative Service with `sidecar.istio.io/inject: "true"` annotation in your namespace,
-which is one of the namespaces in the `ServiceMeshMemberRoll`.
-
-```sh
-cat <<EOF | oc apply -n $NAMESPACE_YOU_WANT_TO_ADD -f -
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  name: hello-example
-spec:
-  template:
-    metadata:
-      name: hello-example-1
-      annotations:
-        sidecar.istio.io/inject: "true"
-    spec:
-      containers:
-      - image: gcr.io/knative-samples/helloworld-go
-        name: user-container
-EOF
-```
-
-To uninstall service mesh operator, run `make uninstall-mesh`.
-
-```
-make uninstall-mesh
-```
 
 ## Contributing
 
