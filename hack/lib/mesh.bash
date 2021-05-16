@@ -22,7 +22,7 @@ function uninstall_mesh {
 
 function deploy_servicemesh_operators {
   logger.info "Installing service mesh operators in namespace openshift-operators"
-  oc apply -f ${resources_dir}/subscription.yaml || return $?
+  oc apply -f "${resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until service mesh operators are available"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments[*]} --no-headers | wc -l) != 3 ]]" || return 1
@@ -54,49 +54,50 @@ function undeploy_servicemeshcontrolplane {
 }
 
 function deploy_gateways {
-  oc apply -f ${resources_dir}/smmr.yaml || return $?
-
-  local out_dir=$(mktemp -d /tmp/certs-XXX)
+  oc apply -f "${resources_dir}"/smmr.yaml || return $?
 
   # Generate wildcard certs with cluster's subdomain.
 
-  oc extract -n openshift-apiserver configmap/config --to=${out_dir}
-  subdomain=$(yq read ${out_dir}/config.yaml "routingConfig.subdomain")
+  local out_dir
+  out_dir="$(mktemp -d /tmp/certs-XXX)"
+
+  oc extract -n openshift-apiserver configmap/config --to="${out_dir}"
+  subdomain=$(yq read "${out_dir}"/config.yaml "routingConfig.subdomain")
 
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
-    -subj "/O=Example Inc./CN=$subdomain" \
-    -keyout ${out_dir}/root.key \
-    -out ${out_dir}/root.crt
+    -subj "/O=Example Inc./CN=${subdomain}" \
+    -keyout "${out_dir}"/root.key \
+    -out "${out_dir}"/root.crt
 
   openssl req -nodes -newkey rsa:2048 \
       -subj "/CN=*.${subdomain}/O=Example Inc." \
-      -keyout ${out_dir}/wildcard.key \
-      -out ${out_dir}/wildcard.csr
+      -keyout "${out_dir}"/wildcard.key \
+      -out "${out_dir}"/wildcard.csr
 
   openssl x509 -req -days 365 -set_serial 0 \
-      -CA ${out_dir}/root.crt \
-      -CAkey ${out_dir}/root.key \
-      -in ${out_dir}/wildcard.csr \
-      -out ${out_dir}/wildcard.crt
+      -CA "${out_dir}"/root.crt \
+      -CAkey "${out_dir}"/root.key \
+      -in "${out_dir}"/wildcard.csr \
+      -out "${out_dir}"/wildcard.crt
 
   oc create -n istio-system secret tls wildcard-certs \
-      --key=${out_dir}/wildcard.key \
-      --cert=${out_dir}/wildcard.crt --dry-run=client -o yaml | oc apply -f - 
+      --key="${out_dir}"/wildcard.key \
+      --cert="${out_dir}"/wildcard.crt --dry-run=client -o yaml | oc apply -f - 
 
   # ca-key-pair secret in cert-manager namespace needs for upstream e2e test with https option.
   oc get ns cert-manager || oc create namespace cert-manager
   oc create -n cert-manager secret tls ca-key-pair \
-      --key=${out_dir}/wildcard.key \
-      --cert=${out_dir}/wildcard.crt --dry-run=client -o yaml | oc apply -f -
+      --key="${out_dir}"/wildcard.key \
+      --cert="${out_dir}"/wildcard.crt --dry-run=client -o yaml | oc apply -f -
 
-  oc apply -f ${resources_dir}/gateway.yaml || return $?
-  oc apply -f ${resources_dir}/peerauthentication.yaml || return $?
+  oc apply -f "${resources_dir}"/gateway.yaml || return $?
+  oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
 }
 
 function undeploy_gateways {
-  oc delete -f ${resources_dir}/peerauthentication.yaml --ignore-not-found || return $?
-  oc delete -f ${resources_dir}/gateway.yaml --ignore-not-found || return $?
-  oc delete -f ${resources_dir}/smmr.yaml --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/gateway.yaml --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/smmr.yaml --ignore-not-found || return $?
   oc delete -n cert-manager secret ca-key-pair  --ignore-not-found || return $?
   oc delete -n istio-system secret wildcard-certs --ignore-not-found || return $?
 }
