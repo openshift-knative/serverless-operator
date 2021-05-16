@@ -20,9 +20,6 @@ gateway.networking.istio.io/knative-local-gateway     135m
 NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/knative-local-gateway   ClusterIP   172.30.73.137   <none>        80/TCP    135m
 
-NAME                                                  VERSION   READY   REASON
-knativeserving.operator.knative.dev/knative-serving   0.21.0    True    
-
 NAME                                           AGE
 peerauthentication.security.istio.io/default   137m
 

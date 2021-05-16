@@ -100,11 +100,3 @@ function undeploy_gateways {
   oc delete -n cert-manager secret ca-key-pair  --ignore-not-found || return $?
   oc delete -n istio-system secret wildcard-certs --ignore-not-found || return $?
 }
-
-function deploy_net_istio {
-  oc apply -f ${resources_dir}/knativeserving.yaml || return $?
-}
-
-function undeploy_net_istio {
-  oc delete -f ${resources_dir}/knativeserving.yaml --ignore-not-found || return $?
-}
