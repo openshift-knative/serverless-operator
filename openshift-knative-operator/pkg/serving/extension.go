@@ -103,15 +103,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", kourierIngressClassName)
 
 	// Apply an Ingress config with Kourier enabled if nothing else is defined.
-	// Also handle the (buggy) case, where all Ingresses are disabled.
-	// See https://github.com/knative/operator/issues/568.
-	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
-		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
-			Kourier: v1alpha1.KourierIngressConfiguration{
-				Enabled: true,
-			},
-		}
-	}
+	defaultToKourier(ks)
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
@@ -134,12 +126,18 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	return nil
 }
 
-func (e *extension) Finalize(ctx context.Context, ks v1alpha1.KComponent) error {
-	// Delete the ingress namespaces (manifestival doesn't delete namespaces)
+func (e *extension) Finalize(ctx context.Context, comp v1alpha1.KComponent) error {
+	ks := comp.(*v1alpha1.KnativeServing)
+
+	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.
+	// See: https://github.com/manifestival/manifestival/issues/85
 	err := e.kubeclient.CoreV1().Namespaces().Delete(ctx, kourierNamespace(ks.GetNamespace()), metav1.DeleteOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to remove ingress namespace: %w", err)
 	}
+
+	// Also default to Kourier here to pick the right manifest to uninstall.
+	defaultToKourier(ks)
 
 	return nil
 }
@@ -161,4 +159,17 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
+}
+
+// defaultToKourier applies an Ingress config with Kourier enabled if nothing else is defined.
+// Also handles the (buggy) case, where all Ingresses are disabled.
+// See https://github.com/knative/operator/issues/568.
+func defaultToKourier(ks *v1alpha1.KnativeServing) {
+	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
+		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+			Kourier: v1alpha1.KourierIngressConfiguration{
+				Enabled: true,
+			},
+		}
+	}
 }
