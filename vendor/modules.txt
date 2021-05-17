@@ -253,7 +253,7 @@ github.com/operator-framework/api/pkg/operators
 github.com/operator-framework/api/pkg/operators/v1
 github.com/operator-framework/api/pkg/operators/v1alpha1
 github.com/operator-framework/api/pkg/operators/v1alpha2
-# github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210429230424-48aea63e3aa0
+# github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210514182438-eaf3ca9bbd84
 ## explicit
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned
@@ -974,7 +974,7 @@ k8s.io/utils/trace
 # knative.dev/caching v0.0.0-20210331063521-5691bb38d441
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.22.0 => github.com/openshift/knative-eventing v0.99.1-0.20210511123704-aead04e00ecc
+# knative.dev/eventing v0.22.1 => github.com/openshift/knative-eventing v0.99.1-0.20210517133419-5b03e75ed3a7
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/configs
@@ -1140,7 +1140,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.22.2-0.20210511163746-93d2a51a7907
+# knative.dev/operator v0.22.2-0.20210512202047-38b6790875cb
 ## explicit
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -1317,6 +1317,6 @@ sigs.k8s.io/yaml
 # k8s.io/client-go => k8s.io/client-go v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210511123704-aead04e00ecc
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210517133419-5b03e75ed3a7
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210504074514-a18051f72852
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210511123518-503694bc711c
