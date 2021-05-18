@@ -67,6 +67,12 @@ download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
+url="https://github.com/knative-sandbox/net-kourier/releases/download/$version/kourier.yaml"
+kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
+wget --no-check-certificate "$url" -O "$kourier_file"
+# TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
+sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g' "$kourier_file"
+
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"

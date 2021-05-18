@@ -11,6 +11,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -52,6 +53,7 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 			corev1.EnvVar{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
+		overrideKourierNamespace(kourierNamespace(ks.GetNamespace())),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
@@ -65,9 +67,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ks.Namespace))
 	}
 
-	// Mark the Kourier dependency as installing to avoid race conditions with readiness.
-	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsUnknown() {
-		ks.Status.MarkDependencyInstalling("Kourier")
+	// Mark failed dependencies as succeeded since we're no longer using that mechanism anyway.
+	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsFalse() {
+		ks.Status.MarkDependenciesInstalled()
 	}
 
 	// Set the default host to the cluster's host.
@@ -101,15 +103,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", kourierIngressClassName)
 
 	// Apply an Ingress config with Kourier enabled if nothing else is defined.
-	// Also handle the (buggy) case, where all Ingresses are disabled.
-	// See https://github.com/knative/operator/issues/568.
-	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
-		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
-			Kourier: v1alpha1.KourierIngressConfiguration{
-				Enabled: true,
-			},
-		}
-	}
+	defaultToKourier(ks)
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
@@ -132,7 +126,19 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	return nil
 }
 
-func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {
+func (e *extension) Finalize(ctx context.Context, comp v1alpha1.KComponent) error {
+	ks := comp.(*v1alpha1.KnativeServing)
+
+	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.
+	// See: https://github.com/manifestival/manifestival/issues/85
+	err := e.kubeclient.CoreV1().Namespaces().Delete(ctx, kourierNamespace(ks.GetNamespace()), metav1.DeleteOptions{})
+	if err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to remove ingress namespace: %w", err)
+	}
+
+	// Also default to Kourier here to pick the right manifest to uninstall.
+	defaultToKourier(ks)
+
 	return nil
 }
 
@@ -153,4 +159,17 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
+}
+
+// defaultToKourier applies an Ingress config with Kourier enabled if nothing else is defined.
+// Also handles the (buggy) case, where all Ingresses are disabled.
+// See https://github.com/knative/operator/issues/568.
+func defaultToKourier(ks *v1alpha1.KnativeServing) {
+	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
+		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+			Kourier: v1alpha1.KourierIngressConfiguration{
+				Enabled: true,
+			},
+		}
+	}
 }

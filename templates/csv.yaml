@@ -373,8 +373,6 @@ spec:
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-source.yaml"
                     - name: EVENTING_BROKER_DASHBOARD_MANIFEST_PATH
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-broker.yaml"
-                    - name: KOURIER_MANIFEST_PATH
-                      value: deploy/resources/kourier/kourier-latest.yaml
                     - name: KAFKACHANNEL_MANIFEST_PATH
                       value: deploy/resources/knativekafka/1-channel-consolidated.yaml
                     - name: KAFKACHANNEL_POST_INSTALL_MANIFEST_PATH

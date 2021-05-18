@@ -8,7 +8,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/kourier"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -104,17 +104,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Load Kourier resources to watch them
-	kourierManifest, err := kourier.RawManifest(mgr.GetClient())
-	if err != nil {
-		return err
+	gvkToResource := map[schema.GroupVersionKind]client.Object{
+		consolev1.GroupVersion.WithKind("ConsoleCLIDownload"): &consolev1.ConsoleCLIDownload{},
 	}
-
-	gvkToResource := common.BuildGVKToResourceMap(kourierManifest)
-
-	// append ConsoleCLIDownload type as well to Watch for kn CCD CO
-	gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
-
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace))
 		if err != nil {
@@ -178,7 +170,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
-		r.installKourier,
 		r.installDashboard,
 		r.installQuickstarts,
 		r.installKnConsoleCLIDownload,
@@ -335,17 +326,6 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.K
 	return cm, nil
 }
 
-// Install Kourier Ingress Gateway
-func (r *ReconcileKnativeServing) installKourier(instance *servingv1alpha1.KnativeServing) error {
-	// install Kourier
-	if err := kourier.Apply(instance, r.client, r.scheme); err != nil {
-		instance.Status.MarkDependencyInstalling("Kourier")
-		return err
-	}
-	instance.Status.MarkDependenciesInstalled()
-	return nil
-}
-
 func (r *ReconcileKnativeServing) installQuickstarts(instance *servingv1alpha1.KnativeServing) error {
 	if err := quickstart.Apply(instance, r.client); err != nil {
 		return err
@@ -377,11 +357,6 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	log.Info("Deleting kn ConsoleCLIDownload")
 	if err := consoleclidownload.Delete(instance, r.client, r.scheme); err != nil {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
-	}
-
-	log.Info("Deleting kourier")
-	if err := kourier.Delete(instance, r.client, r.scheme); err != nil {
-		return fmt.Errorf("failed to delete kourier: %w", err)
 	}
 
 	log.Info("Deleting dashboard")
