@@ -1,9 +1,9 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
-index a6f1de61..8e4ec0cf 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
-@@ -4503,3 +4503,31 @@ webhooks:
-     timeoutSeconds: 2
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+index 674c9463..3eaa0fd3 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+@@ -4938,3 +4938,31 @@ webhooks:
+     timeoutSeconds: 10
  
  ---
 +kind: Role
@@ -34,3 +34,4 @@ index a6f1de61..8e4ec0cf 100644
 +  apiGroup: rbac.authorization.k8s.io
 +  kind: Role
 +  name: openshift-serverless-view-eventing-configmaps
+\ No newline at end of file

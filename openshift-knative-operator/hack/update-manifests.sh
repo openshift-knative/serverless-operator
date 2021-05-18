@@ -75,6 +75,7 @@ download eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
+
 # For SRVKE-629 we disable HPA:
 git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 
