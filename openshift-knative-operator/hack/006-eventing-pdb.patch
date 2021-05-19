@@ -1,13 +1,26 @@
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
-index b51c50a7..7ed34c73 100644
+index b51c50a7..4edc18ab 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.21.0/2-eventing-core.yaml
-@@ -827,7 +827,7 @@ metadata:
-   labels:
-     eventing.knative.dev/release: "v0.21.0"
- spec:
+@@ -818,21 +818,6 @@ spec:
+           type: Utilization
+           averageUtilization: 100
+ ---
+-# Webhook PDB.
+-apiVersion: policy/v1beta1
+-kind: PodDisruptionBudget
+-metadata:
+-  name: eventing-webhook
+-  namespace: knative-eventing
+-  labels:
+-    eventing.knative.dev/release: "v0.21.0"
+-spec:
 -  minAvailable: 80%
-+  minAvailable: 1
-   selector:
-     matchLabels:
-       app: eventing-webhook
+-  selector:
+-    matchLabels:
+-      app: eventing-webhook
+-
+----
+ # Copyright 2018 The Knative Authors
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
