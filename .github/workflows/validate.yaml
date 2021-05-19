@@ -101,7 +101,7 @@ jobs:
             -not -path '*vendor*' | xargs -r shellcheck --format=checkstyle \
             | reviewdog -f=checkstyle \
                 -name="shellcheck" \
-                -reporter="github-pr-review" \
+                -reporter="github-pr-check" \
                 -filter-mode="added" \
                 -fail-on-error="true" \
                 -level="error"
