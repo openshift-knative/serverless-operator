@@ -33,5 +33,3 @@ function download_kafka {
 }
 
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
-# For Backport of v1alpha1 hacks, we change the storage versions:
-git apply "$root/knative-operator/hack/006-kafkachannel-storage-beta1.patch"
