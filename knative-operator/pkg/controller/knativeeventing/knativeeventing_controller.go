@@ -172,10 +172,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.
 	if err := dashboard.Apply(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
 		return err
 	}
-	if err := dashboard.Apply(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return err
-	}
-	return nil
+	return dashboard.Apply(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.

@@ -120,10 +120,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 			Type: "ConfigMap",
 		}
 	}
-	if err := monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks); err != nil {
-		return err
-	}
-	return nil
+	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
 func (e *extension) Finalize(ctx context.Context, comp v1alpha1.KComponent) error {

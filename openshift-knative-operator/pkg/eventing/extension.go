@@ -60,10 +60,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		ke.Spec.SinkBindingSelectionMode = "inclusion"
 	}
 
-	if err := monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke); err != nil {
-		return err
-	}
-	return nil
+	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 
 func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {

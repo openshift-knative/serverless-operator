@@ -48,10 +48,7 @@ func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, sc
 	if !service.IsReady() {
 		return fmt.Errorf("knative service %q/%q not ready yet", knConsoleCLIDownloadService, instance.GetNamespace())
 	}
-	if err := reconcileKnConsoleCLIDownload(apiclient, instance, service); err != nil {
-		return err
-	}
-	return nil
+	return reconcileKnConsoleCLIDownload(apiclient, instance, service)
 }
 
 // reconcileKnCCDResources reconciles required resources viz Knative Service

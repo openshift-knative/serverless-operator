@@ -61,10 +61,6 @@ func transformDeployment(name string, f func(*appsv1.Deployment) error) mf.Trans
 			return err
 		}
 
-		if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
-			return err
-		}
-
-		return nil
+		return scheme.Scheme.Convert(deployment, u, nil)
 	}
 }

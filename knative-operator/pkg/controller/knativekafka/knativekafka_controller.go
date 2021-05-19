@@ -170,10 +170,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 		return err
 	}
 	// delete the components that are disabled
-	if err := r.executeDeleteStages(instance); err != nil {
-		return err
-	}
-	return nil
+	return r.executeDeleteStages(instance)
 }
 
 func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {

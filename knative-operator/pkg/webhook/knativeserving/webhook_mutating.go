@@ -28,8 +28,7 @@ func NewConfigurator(client client.Client, decoder *admission.Decoder) *Configur
 // Implement admission.Handler so the controller can handle admission request.
 var _ admission.Handler = (*Configurator)(nil)
 
-// Configurator adds an annotation to every incoming
-// KnativeServing CR.
+// Handle implements the Handler interface.
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ks := &servingv1alpha1.KnativeServing{}
 
