@@ -25,8 +25,7 @@ const (
 	loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
 	requiredNsEnvName  = "REQUIRED_SERVING_NAMESPACE"
 
-	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
-	defaultDomainTemplate   = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )
 
 // NewExtension creates a new extension for a Knative Serving controller.
@@ -99,11 +98,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		}
 	}
 
-	// Use Kourier by default but allow a manual override.
-	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", kourierIngressClassName)
-
 	// Apply an Ingress config with Kourier enabled if nothing else is defined.
 	defaultToKourier(ks)
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
@@ -159,17 +156,4 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
-}
-
-// defaultToKourier applies an Ingress config with Kourier enabled if nothing else is defined.
-// Also handles the (buggy) case, where all Ingresses are disabled.
-// See https://github.com/knative/operator/issues/568.
-func defaultToKourier(ks *v1alpha1.KnativeServing) {
-	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
-		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
-			Kourier: v1alpha1.KourierIngressConfiguration{
-				Enabled: true,
-			},
-		}
-	}
 }
