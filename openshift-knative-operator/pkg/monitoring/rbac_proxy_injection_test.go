@@ -2,6 +2,7 @@ package monitoring
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -13,6 +14,8 @@ import (
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	manifest, err := mf.NewManifest("../testdata/serving-core-deployment.yaml")
+	rbacImage := "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+	os.Setenv(rbacProxyImageEnvVar, rbacImage)
 	if err != nil {
 		t.Errorf("Unable to load test manifest: %w", err)
 	}
@@ -39,8 +42,8 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if rbacContainer.Name != rbacContainerName {
 		t.Errorf("Got %q, want %q", rbacContainer.Name, rbacContainerName)
 	}
-	if rbacContainer.Image != fallbackImage {
-		t.Errorf("Got %q, want %q", rbacContainer.Image, fallbackImage)
+	if rbacContainer.Image != rbacImage {
+		t.Errorf("Got %q, want %q", rbacContainer.Image, rbacImage)
 	}
 	// Make sure we define requests otherwise K8s hpa will complain
 	if len(rbacContainer.Resources.Requests) != 2 {

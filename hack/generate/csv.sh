@@ -38,19 +38,12 @@ function kafka_image {
 
 image "queue-proxy"    "${serving}-queue"
 image "activator"      "${serving}-activator"
-image "activator__kube-rbac-proxy"  "$rbac_proxy"
 image "autoscaler"     "${serving}-autoscaler"
-image "autoscaler__kube-rbac-proxy"  "$rbac_proxy"
 image "autoscaler-hpa" "${serving}-autoscaler-hpa"
-image "autoscaler-hpa__kube-rbac-proxy"  "$rbac_proxy"
 image "controller"     "${serving}-controller"
-image "controller__kube-rbac-proxy"  "$rbac_proxy"
 image "webhook__webhook" "${serving}-webhook"
-image "webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "domain-mapping" "${serving}-domain-mapping"
-image "domain-mapping__kube-rbac-proxy"  "$rbac_proxy"
 image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
-image "domainmapping-webhook__kube-rbac-proxy"  "$rbac_proxy"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
 image "kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
@@ -60,22 +53,14 @@ image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_i
 image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
-image "eventing-controller__eventing-controller__kube-rbac-proxy"    "$rbac_proxy"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"
-image "sugar-controller__controller__kube-rbac-proxy"               "$rbac_proxy"
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
-image "eventing-webhook__eventing-webhook__kube-rbac-proxy"          "$rbac_proxy"
 image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
 image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
-image "mt-broker-controller__mt-broker-controller__kube-rbac-proxy"  "$rbac_proxy"
 image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
-image "mt-broker-filter__filter__kube-rbac-proxy"                    "$rbac_proxy"
 image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
-image "mt-broker-ingress__ingress__kube-rbac-proxy"                  "$rbac_proxy"
 image "imc-controller__controller"                  "${eventing}-channel-controller"
-image "imc-controller__controller__kube-rbac-proxy"                 "$rbac_proxy"
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
-image "imc-dispatcher__dispatcher__kube-rbac-proxy"                  "$rbac_proxy"
 image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
@@ -88,6 +73,8 @@ kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidat
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
+
+image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
