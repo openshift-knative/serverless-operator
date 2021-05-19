@@ -5,7 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-const providerLabel = "networking.knative.dev/ingress-provider"
+const (
+	providerLabel           = "networking.knative.dev/ingress-provider"
+	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
+)
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
 // the -ingress suffix to be backwards compatible.
