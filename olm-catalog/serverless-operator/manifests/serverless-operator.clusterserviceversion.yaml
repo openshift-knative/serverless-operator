@@ -547,7 +547,7 @@ spec:
                         name: metrics
                     env:
                       - name: METRICS_DOMAIN
-                        value: knative.dev/serving-ingress
+                        value: knative.dev/serving
                       - name: WATCH_NAMESPACE
                         value: "" # watch all namespaces for ClusterIngress
                       - name: POD_NAME
