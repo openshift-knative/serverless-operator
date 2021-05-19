@@ -71,7 +71,7 @@ jobs:
       - name: Install Tools
         working-directory: ./src/github.com/${{ github.repository }}
         env:
-          WOKE_VERSION: v0.4.1
+          WOKE_VERSION: v0.8.0
           OSDK_VERSION: v1.3.0
         run: |
           TEMP_PATH="$(mktemp -d)"
