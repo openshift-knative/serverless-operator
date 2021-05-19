@@ -8,12 +8,17 @@ const istioIngressClassName = "istio.ingress.networking.knative.dev"
 // Also handles the (buggy) case, where all Ingresses are disabled.
 // See https://github.com/knative/operator/issues/568.
 func defaultToKourier(ks *v1alpha1.KnativeServing) {
-	if ks.Spec.Ingress == nil || (!ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled) {
+	if ks.Spec.Ingress == nil {
 		ks.Spec.Ingress = &v1alpha1.IngressConfigs{
 			Kourier: v1alpha1.KourierIngressConfiguration{
 				Enabled: true,
 			},
 		}
+		return
+	}
+
+	if !ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled {
+		ks.Spec.Ingress.Kourier.Enabled = true
 	}
 }
 
