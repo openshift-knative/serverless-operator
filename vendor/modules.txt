@@ -246,7 +246,7 @@ github.com/openzipkin/zipkin-go/model
 github.com/openzipkin/zipkin-go/propagation
 github.com/openzipkin/zipkin-go/reporter
 github.com/openzipkin/zipkin-go/reporter/http
-# github.com/operator-framework/api v0.6.0
+# github.com/operator-framework/api v0.8.1
 ## explicit
 github.com/operator-framework/api/pkg/lib/version
 github.com/operator-framework/api/pkg/operators
@@ -267,16 +267,16 @@ github.com/pelletier/go-toml
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.45.0
+# github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.1
 ## explicit
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1
-# github.com/prometheus-operator/prometheus-operator/pkg/client v0.45.0
+# github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.1
 ## explicit
 github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/scheme
 github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1
-# github.com/prometheus/client_golang v1.9.0
+# github.com/prometheus/client_golang v1.10.0
 ## explicit
 github.com/prometheus/client_golang/api
 github.com/prometheus/client_golang/api/prometheus/v1
@@ -285,13 +285,13 @@ github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
 # github.com/prometheus/client_model v0.2.0
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.19.0
+# github.com/prometheus/common v0.25.0
 ## explicit
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/log
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.2.0
+# github.com/prometheus/procfs v0.6.0
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
@@ -383,7 +383,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+# golang.org/x/sys v0.0.0-20210309074719-68d13333faf2
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -974,7 +974,7 @@ k8s.io/utils/trace
 # knative.dev/caching v0.0.0-20210331063521-5691bb38d441
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.22.1 => github.com/openshift/knative-eventing v0.99.1-0.20210517133419-5b03e75ed3a7
+# knative.dev/eventing v0.22.1 => github.com/openshift/knative-eventing v0.99.1-0.20210518171156-3b8745c96673
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/configs
@@ -1266,7 +1266,7 @@ knative.dev/serving/test/defaultsystem
 knative.dev/serving/test/e2e
 knative.dev/serving/test/upgrade
 knative.dev/serving/test/v1
-# sigs.k8s.io/controller-runtime v0.8.1
+# sigs.k8s.io/controller-runtime v0.8.3
 ## explicit
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/cache/internal
@@ -1310,13 +1310,12 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
-# github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.8.1
 # k8s.io/api => k8s.io/api v0.19.7
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
 # k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
 # k8s.io/client-go => k8s.io/client-go v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210517133419-5b03e75ed3a7
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210518171156-3b8745c96673
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210504074514-a18051f72852
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210511123518-503694bc711c
