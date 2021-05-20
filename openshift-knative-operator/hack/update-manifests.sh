@@ -65,7 +65,7 @@ function download_ingress {
 
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 
-download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
+download_ingress net-istio "v$(metadata.get '.dependencies.net_istio')" "${istio_files[@]}"
 
 url="https://github.com/knative-sandbox/net-kourier/releases/download/$version/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"

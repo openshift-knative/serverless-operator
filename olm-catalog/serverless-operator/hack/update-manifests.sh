@@ -8,7 +8,7 @@ root="$(dirname "${BASH_SOURCE[0]}")/../../.."
 # shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
-version=${OPERATOR_VERSION:-v$(metadata.get dependencies.operator)}
+version=${OPERATOR_VERSION:-v$(metadata.get '.dependencies.operator')}
 
 target_dir="$root/olm-catalog/serverless-operator/manifests/"
 target_serving_file="$target_dir/operator_v1alpha1_knativeserving_crd.yaml"

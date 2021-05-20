@@ -16,5 +16,5 @@ function metadata.get {
   local matadata_file
   matadata_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/project.yaml"
 
-  yq read "${matadata_file}" "${1}"
+  yq e "${1}" "${matadata_file}"
 }
