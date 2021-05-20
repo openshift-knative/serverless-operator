@@ -43,7 +43,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ke.Namespace != requiredNs {
 		ke.Status.MarkInstallFailed(fmt.Sprintf("Knative Eventing must be installed into the namespace %q", requiredNs))
-		return controller.NewPermanentError(fmt.Errorf("deployed Knative Serving into unsupported namespace %q", ke.Namespace))
+		return controller.NewPermanentError(fmt.Errorf("deployed Knative Eventing into unsupported namespace %q", ke.Namespace))
 	}
 
 	// Override images.
