@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	rbacContainerName = "kube-rbac-proxy"
-	fallbackImage     = "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+	rbacContainerName    = "kube-rbac-proxy"
+	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
 )
 
 func injectRbacProxyContainerToDeployments(deployments sets.String) mf.Transformer {
@@ -51,7 +51,7 @@ func injectRbacProxyContainerToDeployments(deployments sets.String) mf.Transform
 func makeRbacProxyContainer(depName string, prometheusPort string) corev1.Container {
 	return corev1.Container{
 		Name:  rbacContainerName,
-		Image: getRbacProxyImage(depName),
+		Image: getRbacProxyImage(),
 		VolumeMounts: []corev1.VolumeMount{{
 			Name:      fmt.Sprintf("secret-%s-sm-service-tls", depName),
 			MountPath: "/etc/tls/private",
@@ -72,10 +72,9 @@ func makeRbacProxyContainer(depName string, prometheusPort string) corev1.Contai
 	}
 }
 
-func getRbacProxyImage(depName string) string {
-	image := os.Getenv(fmt.Sprintf("IMAGE_%s__kube-rbac-proxy", depName))
-	if image == "" {
-		return fallbackImage
-	}
+func getRbacProxyImage() string {
+	// If it is empty let it crash to avoid issues hidden by a default value
+	// eg. passing the wrong env var name at the csv level
+	image := os.Getenv(rbacProxyImageEnvVar)
 	return image
 }
