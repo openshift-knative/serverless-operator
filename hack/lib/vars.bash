@@ -12,14 +12,14 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
 
 # Adjust these when upgrading the knative versions.
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
-export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
-export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get .dependencies.serving)}"
+export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get .dependencies.eventing)}"
+export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get .dependencies.eventing_kafka)}"
 
-CURRENT_VERSION="$(metadata.get project.version)"
-PREVIOUS_VERSION="$(metadata.get olm.replaces)"
-CURRENT_CSV="$(metadata.get project.name).v$CURRENT_VERSION"
-PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
+CURRENT_VERSION="$(metadata.get .project.version)"
+PREVIOUS_VERSION="$(metadata.get .olm.replaces)"
+CURRENT_CSV="$(metadata.get .project.name).v$CURRENT_VERSION"
+PREVIOUS_CSV="$(metadata.get .project.name).v$PREVIOUS_VERSION"
 export CURRENT_VERSION PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
@@ -56,7 +56,7 @@ export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
 
 
 # Using first channel on the list, instead of default one
-OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get 'olm.channels.list[*]' | head -n 1)}"
+OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get '.olm.channels.list[]' | head -n 1)}"
 export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"

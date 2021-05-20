@@ -7,7 +7,7 @@ ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
 
 RUN yum install -y kubectl ansible httpd-tools
 
-RUN GO111MODULE=on go get github.com/mikefarah/yq/v3 \
+RUN GO111MODULE=on go get github.com/mikefarah/yq/v4 \
   knative.dev/test-infra/kntest/cmd/kntest \
   github.com/k14s/ytt/cmd/ytt
 

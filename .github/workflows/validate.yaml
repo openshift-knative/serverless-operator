@@ -23,13 +23,12 @@ jobs:
         with:
           go-version: 1.15.x
 
-      - name: Install prerequisites
-        env:
-          YQ_VERSION: 3.4.0
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          sudo mv /usr/bin/yq /usr/local/bin/yq
+      - name: Install YQ
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "github"
+          github_pat: ${{ github.token }}
+          yq: "4.11.2"
 
       - name: Checkout
         uses: actions/checkout@v2
