@@ -108,7 +108,7 @@ func EnsureContainerMemoryLimit(s *operatorv1alpha1.CommonSpec, containerName st
 	})
 }
 
-// common function to enqueue reconcile requests for resources
+// EnqueueRequestByOwnerAnnotations is a common function to enqueue reconcile requests for resources.
 func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
 		annotations := obj.GetAnnotations()

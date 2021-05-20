@@ -146,7 +146,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	return clients, nil
 }
 
-// Cleanup for all contexts
+// CleanupAll cleans up all contexts
 func CleanupAll(t *testing.T, contexts ...*Context) {
 	for _, ctx := range contexts {
 		ctx.Cleanup(t)

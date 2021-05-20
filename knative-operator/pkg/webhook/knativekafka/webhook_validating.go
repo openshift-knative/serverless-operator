@@ -30,7 +30,7 @@ func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
 // Implement admission.Handler so the controller can handle admission request.
 var _ admission.Handler = (*Validator)(nil)
 
-// What makes us a webhook
+// Handle implements the Handler interface.
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	ke := &operatorv1alpha1.KnativeKafka{}
 

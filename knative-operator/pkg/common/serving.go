@@ -16,7 +16,7 @@ import (
 var log = Log
 
 const (
-	// defaultDomainTemplate is a value for domainTemplate in config-network.
+	// DefaultDomainTemplate is a value for domainTemplate in config-network.
 	// As Knative on OpenShift uses OpenShift's wildcard cert the domain level must have "<sub>.domain", not "<sub1>.<sub2>.domain".
 	DefaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )

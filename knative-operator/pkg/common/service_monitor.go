@@ -60,10 +60,7 @@ func SetupSourceServiceMonitor(client client.Client, instance *appsv1.Deployment
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
-	if err := manifest.Apply(); err != nil {
-		return err
-	}
-	return nil
+	return manifest.Apply()
 }
 
 func getMonitorPath(envVar string, defaultVal string) string {

@@ -327,10 +327,7 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.K
 }
 
 func (r *ReconcileKnativeServing) installQuickstarts(instance *servingv1alpha1.KnativeServing) error {
-	if err := quickstart.Apply(instance, r.client); err != nil {
-		return err
-	}
-	return nil
+	return quickstart.Apply(instance, r.client)
 }
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link

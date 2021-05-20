@@ -12,10 +12,10 @@ linters:
     - asciicheck
     - gofmt
     - goimports
-    - golint
     - gosec
     - misspell
     - prealloc
+    - revive
     - stylecheck
     - unconvert
     - unparam
@@ -28,3 +28,7 @@ issues:
       linters:
         - gosec
         - unparam
+
+    - text: "should have comment"
+      linters:
+        - revive
