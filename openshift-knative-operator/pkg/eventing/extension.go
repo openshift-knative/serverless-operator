@@ -60,6 +60,13 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		ke.Spec.SinkBindingSelectionMode = "inclusion"
 	}
 
+	// Default to 2 replicas.
+	if ke.Spec.HighAvailability == nil {
+		ke.Spec.HighAvailability = &v1alpha1.HighAvailability{
+			Replicas: 2,
+		}
+	}
+
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 
