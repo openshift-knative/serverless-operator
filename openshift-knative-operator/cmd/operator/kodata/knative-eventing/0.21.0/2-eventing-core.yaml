@@ -818,21 +818,6 @@ spec:
           type: Utilization
           averageUtilization: 100
 ---
-# Webhook PDB.
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: eventing-webhook
-  namespace: knative-eventing
-  labels:
-    eventing.knative.dev/release: "v0.21.0"
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: eventing-webhook
-
----
 # Copyright 2018 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

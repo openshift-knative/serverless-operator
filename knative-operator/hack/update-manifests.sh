@@ -50,3 +50,6 @@ sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ing
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 # For Backport of v1alpha1 hacks, we change the storage versions:
 git apply "$root/knative-operator/hack/006-kafkachannel-storage-beta1.patch"
+
+# This is for  SRVKe-807.
+git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
