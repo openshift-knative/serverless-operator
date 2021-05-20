@@ -13,8 +13,8 @@ yq > /dev/null || exit 127
 #   Writes metadata value on STDOUT
 #######################################
 function metadata.get {
-  local matadata_file
-  matadata_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/project.yaml"
+  local metadata_file
+  metadata_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/project.yaml"
 
-  yq read "${matadata_file}" "${1}"
+  yq read "${metadata_file}" "${1}"
 }

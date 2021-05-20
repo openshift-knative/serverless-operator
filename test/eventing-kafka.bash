@@ -6,16 +6,16 @@ set -e
 function upstream_knative_eventing_kafka_e2e {
   logger.info 'Running eventing-kafka tests'
 
-  local randomns
+  local random_ns
 
   export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_KAFKA_VERSION}:knative-eventing-kafka-test-{{.Name}}"
 
   cd "$KNATIVE_EVENTING_KAFKA_HOME"
 
   # This the namespace used to install and test Knative Eventing-Kafka.
-  randomns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2> /dev/null \
+  random_ns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2> /dev/null \
     | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)"
-  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"${randomns}"}"
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"${random_ns}"}"
   export SYSTEM_NAMESPACE
 
   # Config tracing config.
