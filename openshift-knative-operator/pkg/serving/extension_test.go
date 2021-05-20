@@ -189,6 +189,26 @@ func TestReconcile(t *testing.T) {
 			}
 		}),
 	}, {
+		name: "respect kourier settings",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Kourier: v1alpha1.KourierIngressConfiguration{
+						// Enabled: true omitted explicitly.
+						ServiceType: corev1.ServiceTypeClusterIP,
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+				Kourier: v1alpha1.KourierIngressConfiguration{
+					Enabled:     true,
+					ServiceType: corev1.ServiceTypeClusterIP,
+				},
+			}
+		}),
+	}, {
 		name: "respects different status",
 		in: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
