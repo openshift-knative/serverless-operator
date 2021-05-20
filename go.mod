@@ -9,18 +9,18 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.0
-	github.com/openshift/api v0.0.0-20210202165416-a9e731090f5e
+	github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/operator-framework/api v0.6.0
-	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210415175807-cdf51cddb619
+	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210514182438-eaf3ca9bbd84
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.45.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.45.0
 	github.com/prometheus/client_golang v1.9.0
 	github.com/prometheus/common v0.19.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
-	k8s.io/api v0.20.2
-	k8s.io/apimachinery v0.20.2
+	k8s.io/api v0.20.6
+	k8s.io/apimachinery v0.20.6
 	k8s.io/client-go v12.0.0+incompatible
 	knative.dev/eventing v0.21.3
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
@@ -42,7 +42,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210406161751-80f49379d45d
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210420075609-dbcba4bee3ce
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210519154554-d922e1fca5ff
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210504074514-a18051f72852
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210518193655-11283037d615
 )
