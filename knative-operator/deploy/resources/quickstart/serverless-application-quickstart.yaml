@@ -96,7 +96,7 @@ spec:
           Is the Pod ring autoscaled to zero?
       summary:
         failed: Try the steps again.
-        success: You just scaled up your application to accomodate a traffic request!
+        success: You just scaled up your application to accommodate a traffic request!
       title: Demoing scalability
     - description: >-
         ### To connect an event source to your Knative Service:

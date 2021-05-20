@@ -213,7 +213,7 @@ EOF
     knative-kafka -n ${EVENTING_NAMESPACE} \
     -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
-  logger.success 'Knative Kafka has been installed sucessfully.'
+  logger.success 'Knative Kafka has been installed successfully.'
 }
 
 function ensure_kafka_channel_default {
@@ -265,7 +265,7 @@ EOF
   # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Kafka has been set to use no auth sucessfully.'
+  logger.success 'Knative Kafka has been set to use no auth successfully.'
 }
 
 function ensure_kafka_tls_auth {
@@ -291,7 +291,7 @@ EOF
   # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Kafka has been set to use TLS auth sucessfully.'
+  logger.success 'Knative Kafka has been set to use TLS auth successfully.'
 }
 
 function ensure_kafka_sasl_auth {
@@ -317,7 +317,7 @@ EOF
   # shellcheck disable=SC2016
   timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
 
-  logger.success 'Knative Kafka has been set to use SASL auth sucessfully.'
+  logger.success 'Knative Kafka has been set to use SASL auth successfully.'
 }
 
 function teardown_serverless {
