@@ -351,3 +351,4 @@ The required linters for that are:
 - [`golangci-lint`](https://golangci-lint.run/) to lint golang code
 - [`shellcheck`](https://www.shellcheck.net/) to lint shell files
 - [`operator-sdk`](https://sdk.operatorframework.io/docs/installation/) to lint the bundle files
+- [`misspell`](https://github.com/client9/misspell) to lint typos
