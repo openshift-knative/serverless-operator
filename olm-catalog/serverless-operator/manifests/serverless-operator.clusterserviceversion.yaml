@@ -518,7 +518,12 @@ spec:
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
                     imagePullPolicy: Always
+                    ports:
+                      - containerPort: 9090
+                        name: metrics
                     env:
+                      - name: METRICS_DOMAIN
+                        value: knative.dev/serving
                       - name: WATCH_NAMESPACE
                         value: "" # watch all namespaces for ClusterIngress
                       - name: POD_NAME

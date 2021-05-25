@@ -41,6 +41,15 @@ var (
 		"mt_broker_ingress_go_mallocs",
 		"sugar_controller_go_mallocs",
 	}
+
+	serverlessComponentQueries = []string{
+		// Checks if openshift-knative-operator metrics are served
+		"knative_operator_go_mallocs",
+		// Checks if knative-openshift metrics are served
+		"controller_runtime_active_workers{controller=\"knativeserving-controller\"}",
+		// Checks if knative-openshift-ingress metrics are served
+		"openshift_ingress_controller_go_mallocs",
+	}
 )
 
 type authRoundtripper struct {
@@ -116,7 +125,7 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 	return nil
 }
 
-func VerifyControlPlaneMetrics(caCtx *test.Context, metricQueries []string) error {
+func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 	pc, err := newPrometheusClient(caCtx)
 	if err != nil {
 		return err
