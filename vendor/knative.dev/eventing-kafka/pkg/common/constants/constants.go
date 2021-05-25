@@ -21,4 +21,17 @@ const (
 	// KafkaChannel Spec Defaults
 	DefaultNumPartitions     = 1
 	DefaultReplicationFactor = 1
+
+	// The name of the configmap used to hold eventing-kafka settings
+	SettingsConfigMapName = "config-kafka"
+	SettingsSecretName    = "kafka-cluster"
+
+	// Mount path of the configmap used to hold eventing-kafka settings
+	SettingsConfigMapMountPath = "/etc/" + SettingsConfigMapName
+
+	// Config key of the config in the configmap used to hold eventing-kafka settings
+	EventingKafkaSettingsConfigKey = "eventing-kafka"
+
+	// The name of the keys in the Data section of the eventing-kafka configmap that holds Sarama and Eventing-Kafka configuration YAML
+	SaramaSettingsConfigKey = "sarama"
 )

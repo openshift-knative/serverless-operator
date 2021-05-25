@@ -23,6 +23,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+	"knative.dev/eventing-kafka/test/upgrade/continual"
 
 	"go.uber.org/zap"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
@@ -32,7 +33,8 @@ import (
 	servingupgrade "knative.dev/serving/test/upgrade"
 )
 
-// FIXME: https://github.com/knative/eventing/issues/5176 `config.toml` in this directory is required
+// FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
+//        this directory are required, so that kafkaupgrade tests will see them.
 
 func TestServerlessUpgrade(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
@@ -42,14 +44,16 @@ func TestServerlessUpgrade(t *testing.T) {
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
 			PostUpgrade: postUpgradeTests(ctx),
-			Continual: []pkgupgrade.BackgroundOperation{
-				servingupgrade.ProbeTest(),
-				servingupgrade.AutoscaleSustainingWithTBCTest(),
-				servingupgrade.AutoscaleSustainingTest(),
-				eventingupgrade.ContinualTest(),
-				kafkaupgrade.ChannelContinualTest(),
-				kafkaupgrade.SourceContinualTest(),
-			},
+			Continual: merge(
+				[]pkgupgrade.BackgroundOperation{
+					servingupgrade.ProbeTest(),
+					servingupgrade.AutoscaleSustainingWithTBCTest(),
+					servingupgrade.AutoscaleSustainingTest(),
+					eventingupgrade.ContinualTest(),
+				},
+				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
+				kafkaupgrade.SourceContinualTests(continual.SourceTestOptions{}),
+			),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{
@@ -87,6 +91,18 @@ func TestClusterUpgrade(t *testing.T) {
 		},
 	}
 	suite.Execute(cfg)
+}
+
+func merge(slices ...[]pkgupgrade.BackgroundOperation) []pkgupgrade.BackgroundOperation {
+	l := 0
+	for _, slice := range slices {
+		l += len(slice)
+	}
+	result := make([]pkgupgrade.BackgroundOperation, 0, l)
+	for _, slice := range slices {
+		result = append(result, slice...)
+	}
+	return result
 }
 
 func preUpgradeTests() []pkgupgrade.Operation {

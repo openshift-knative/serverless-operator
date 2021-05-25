@@ -17,96 +17,25 @@ limitations under the License.
 package upgrade
 
 import (
-	"context"
-	"fmt"
-	"time"
-
-	"github.com/kelseyhightower/envconfig"
-	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	testlib "knative.dev/eventing/test/lib"
-	"knative.dev/eventing/test/upgrade/prober"
+	"knative.dev/eventing-kafka/test/upgrade/continual"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 )
 
-// ChannelContinualTest tests channel operation in continual manner during the
-// whole upgrade and downgrade process asserting that all event are propagated
-// well.
-func ChannelContinualTest() pkgupgrade.BackgroundOperation {
-	ctx := context.Background()
-	var client *testlib.Client
-	var probe prober.Prober
-	setup := func(c pkgupgrade.Context) {
-		// setup
-		client = testlib.Setup(c.T, false)
-		configureKafkaChannelAsDefault(c, ctx, client)
-		config := prober.NewConfig(client.Namespace)
-		// TODO: knative/eventing#5176 - this is cumbersome
-		config.ConfigTemplate = "../../../../../../test/upgrade/config.toml"
-		config.FailOnErrors = true
-		config.Interval = 2 * time.Millisecond
-		// envconfig.Process invocation is repeated from within prober.NewConfig to
-		// make sure every knob is configurable, but using defaults from Eventing
-		// Kafka instead of Core.
-		err := envconfig.Process("e2e_upgrade_tests", config)
-		assert.NoError(c.T, err)
-
-		probe = prober.RunEventProber(ctx, c.Log, client, config)
+// ChannelContinualTests returns background operations to test channel
+// functionality in continual manner during the whole upgrade and downgrade
+// process asserting that all events are propagated well.
+func ChannelContinualTests(opts continual.ChannelTestOptions) []pkgupgrade.BackgroundOperation {
+	return []pkgupgrade.BackgroundOperation{
+		continual.ChannelTest(opts),
+		continual.BrokerBackedByChannelTest(opts),
 	}
-	verify := func(c pkgupgrade.Context) {
-		// verify
-		if client != nil {
-			defer testlib.TearDown(client)
-		}
-		if probe != nil {
-			prober.AssertEventProber(ctx, c.T, probe)
-		}
-	}
-	return pkgupgrade.NewBackgroundVerification(
-		"ChannelContinualTest", setup, verify)
 }
 
-// SourceContinualTest tests source operation in continual manner during the
-// whole upgrade and downgrade process asserting that all event are propagated
+// SourceContinualTests tests source operation in continual manner during the
+// whole upgrade and downgrade process asserting that all events are propagated
 // well.
-func SourceContinualTest() pkgupgrade.BackgroundOperation {
-	setup := func(c pkgupgrade.Context) {
-		// TODO: not yet implemented
-		c.Log.Warn("TODO: not yet implemented")
+func SourceContinualTests(opts continual.SourceTestOptions) []pkgupgrade.BackgroundOperation {
+	return []pkgupgrade.BackgroundOperation{
+		continual.SourceTest(opts),
 	}
-	verify := func(c pkgupgrade.Context) {
-		// TODO: not yet implemented
-		c.Log.Warn("TODO: not yet implemented")
-	}
-	return pkgupgrade.NewBackgroundVerification(
-		"SourceContinualTest", setup, verify)
-}
-
-func configureKafkaChannelAsDefault(
-	c pkgupgrade.Context,
-	ctx context.Context,
-	client *testlib.Client,
-) {
-	systemNs := "knative-eventing"
-	configmaps := client.Kube.CoreV1().ConfigMaps(systemNs)
-	cm := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: systemNs,
-			Name:      "config-br-default-channel",
-		},
-		Data: map[string]string{
-			"channelTemplateSpec": fmt.Sprintf("apiVersion: %s\nkind: %s\n",
-				defaultChannelType.APIVersion, defaultChannelType.Kind,
-			),
-		},
-	}
-	cm, err := configmaps.Update(ctx, cm, metav1.UpdateOptions{})
-
-	if !assert.NoError(c.T, err) {
-		c.T.FailNow()
-	}
-
-	c.Log.Info("Updated config-br-default-channel in ns knative-eventing"+
-		" to eq: ", cm.Data)
 }
