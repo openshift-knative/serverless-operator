@@ -28,7 +28,7 @@ func TestKnativeMetrics(t *testing.T) {
 	})
 
 	t.Run("verify Knative operators and Openshift ingress metrics work correctly", func(t *testing.T) {
-		// Eventing control plane metrics should work
+		// Knative operators and Openshift ingress metrics should work
 		if err := VerifyMetrics(caCtx, serverlessComponentQueries); err != nil {
 			t.Fatal("Failed to verify that Knative operators and Openshift ingress metrics work correctly", err)
 		}

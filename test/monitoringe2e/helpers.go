@@ -45,7 +45,7 @@ var (
 	serverlessComponentQueries = []string{
 		// Checks if openshift-knative-operator metrics are served
 		"knative_operator_go_mallocs",
-		// Checks if knative-opeshift metrics are served
+		// Checks if knative-openshift metrics are served
 		"controller_runtime_active_workers{controller=\"knativeserving-controller\"}",
 		// Checks if knative-openshift-ingress metrics are served
 		"openshift_ingress_controller_go_mallocs",
