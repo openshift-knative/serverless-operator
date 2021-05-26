@@ -33,3 +33,6 @@ function download_kafka {
 }
 
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
+
+# This is for  SRVKE-807.
+git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
