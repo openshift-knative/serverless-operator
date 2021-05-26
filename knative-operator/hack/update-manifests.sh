@@ -53,3 +53,6 @@ git apply "$root/knative-operator/hack/006-kafkachannel-storage-beta1.patch"
 
 # This is for  SRVKe-807.
 git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
+
+# This is for SRVKE-814
+git apply "$root/knative-operator/hack/008-eventing-kafka-hpa.patch"
