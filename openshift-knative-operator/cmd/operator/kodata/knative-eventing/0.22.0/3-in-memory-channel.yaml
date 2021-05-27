@@ -690,7 +690,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:4f035b5037826141b04ffb5a3341c8382a749f8d1f4cc08d6fe7b840490a3f57
+          image: TO_BE_REPLACED
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -760,7 +760,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:6d6fe3f22de31580147b3b58b31dc27ddbd53a7cbb214dfea3a9542c605fc759
+          image: TO_BE_REPLACED
           readinessProbe: &probe
             failureThreshold: 3
             httpGet:

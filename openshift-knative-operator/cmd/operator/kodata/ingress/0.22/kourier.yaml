@@ -222,7 +222,7 @@ spec:
         app: 3scale-kourier-control
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:7f10e56399b567a59bac93e8c59912acd073d9a1e3b3c0f763284083d0707e47
+        - image: TO_BE_REPLACED
           name: kourier-control
           env:
             - name: CERTS_SECRET_NAMESPACE
@@ -308,7 +308,7 @@ spec:
             - --log-level info
           command:
             - /usr/local/bin/envoy
-          image: docker.io/envoyproxy/envoy:v1.16-latest
+          image: TO_BE_REPLACED
           name: kourier-gateway
           ports:
             - name: http2-external
