@@ -559,6 +559,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-webhook"
+                      - name: "KAFKA_IMAGE_v0.21-kafka-storage-version-migration__migrate"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-storage-version-migration"
         - name: knative-openshift-ingress
           spec:
             replicas: 1
@@ -870,5 +872,7 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-consolidated-dispatcher"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
       image: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-webhook"
+    - name: "KAFKA_IMAGE_v0.21-kafka-storage-version-migration__migrate"
+      image: "registry.ci.openshift.org/openshift/knative-v0.21.1:knative-eventing-kafka-storage-version-migration"
   replaces: serverless-operator.v1.14.0
   version: 1.15.0
