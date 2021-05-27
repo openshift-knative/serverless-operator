@@ -88,6 +88,7 @@ kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidat
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
+kafka_image "v0.21-kafka-storage-version-migration__migrate" "${eventing_kafka}-storage-version-migration"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
