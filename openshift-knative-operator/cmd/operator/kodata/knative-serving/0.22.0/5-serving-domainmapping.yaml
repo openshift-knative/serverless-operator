@@ -155,7 +155,7 @@ spec:
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:2253b4d5d42853a8e5d88c5fe7ea44d9f59f42ee4e4a4144c7d68df850362cd4
+          image: TO_BE_REPLACED
           resources:
             requests:
               cpu: 30m
@@ -239,7 +239,7 @@ spec:
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:43aa1e03b450307e5fd45b5c6f1b705dc8fe13119ea79933ae81c1257e885cde
+          image: TO_BE_REPLACED
           resources:
             requests:
               cpu: 100m

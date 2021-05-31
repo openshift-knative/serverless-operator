@@ -29,6 +29,9 @@ function download_kafka {
     url="https://github.com/knative-sandbox/eventing-kafka/releases/download/$version/$file"
 
     wget --no-check-certificate "$url" -O "$target_file"
+
+    # Break all image references so we know our overrides work correctly.
+    yaml.break_image_references "$target_file"
   done
 }
 

@@ -31,7 +31,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/sugar_controller@sha256:8ae0e243a1d31c0c57f8152fe83ddff1d1f62f9e38f4f13a75806023c200fb8b
+          image: TO_BE_REPLACED
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging

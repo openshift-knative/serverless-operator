@@ -674,7 +674,7 @@ spec:
       serviceAccountName: kafka-ch-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/controller@sha256:9a5a69b557e1513cc91dd7f69c0d0b54091820ae0b65561916418e76c11e33e2
+          image: TO_BE_REPLACED
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -744,7 +744,7 @@ spec:
     spec:
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:329f0efd4c266467bcd669218beb7bde8020d6e5316a90375de113e38f833f13
+          image: TO_BE_REPLACED
           env:
             - name: SYSTEM_NAMESPACE
               value: ''
@@ -887,7 +887,7 @@ spec:
       containers:
         - name: kafka-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/webhook@sha256:44225c21dff1fb38ad343b80a212e8a3541fa5952fa8c087f9ce59c3973841bc
+          image: TO_BE_REPLACED
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

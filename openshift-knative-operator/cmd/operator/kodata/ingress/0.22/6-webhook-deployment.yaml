@@ -39,7 +39,7 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://knative.dev/net-istio/cmd/webhook
+        image: TO_BE_REPLACED
 
         resources:
           requests:

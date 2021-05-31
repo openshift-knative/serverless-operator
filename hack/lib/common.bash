@@ -78,3 +78,9 @@ function versions.major_minor {
   # Ref: https://regex101.com/r/Po1HA3/1
   echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\1.\2/'
 }
+
+# Breaks all image references in the passed YAML file.
+function yaml.break_image_references {
+  sed -i "s,image: .*,image: TO_BE_REPLACED," "$1"
+  sed -i "s,queueSidecarImage: .*,queueSidecarImage: TO_BE_REPLACED," "$1"
+}

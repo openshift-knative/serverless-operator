@@ -466,7 +466,7 @@ spec:
       serviceAccountName: kafka-controller-manager
       containers:
         - name: manager
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/source/controller@sha256:6a00b749fce9efd721bf5c1c834cd0129594d0edf3fdaf25e10f6566ffe4577e
+          image: TO_BE_REPLACED
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

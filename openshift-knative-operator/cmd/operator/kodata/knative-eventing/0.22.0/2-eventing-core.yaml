@@ -671,7 +671,7 @@ spec:
       containers:
         - name: eventing-controller
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:b02cfc6d0858de1ae6d5d5acbe1ac2ed1c5411f2adcec417c2b113b3b3274e4a
+          image: TO_BE_REPLACED
           resources:
             requests:
               cpu: 100m
@@ -751,7 +751,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:ac30b62fa390b01c24a9bb891c4b8aa7a8c6c747a5182592d81af58d65eaa65c
+          image: TO_BE_REPLACED
           env:
             - name: SYSTEM_NAMESPACE
               value: ''
@@ -887,7 +887,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:5f037fe6755fb85fb0a155f9892c8519a058dbf395d2d04b2c6769ffd2d68950
+          image: TO_BE_REPLACED
           resources:
             requests:
               # taken from serving.
