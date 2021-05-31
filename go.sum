@@ -221,8 +221,6 @@ github.com/bugsnag/panicwrap v0.0.0-20151223152923-e2c28503fcd0/go.mod h1:D/8v3k
 github.com/bugsnag/panicwrap v1.2.0/go.mod h1:D/8v3kj0zr8ZAKg1AQ6crr+5VwKN5eIywRkfhyM/+dE=
 github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae/go.mod h1:S/7n9copUssQ56c7aAgHqftWO4LTf4xY6CGWt8Bc+3M=
 github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee/go.mod h1:S/7n9copUssQ56c7aAgHqftWO4LTf4xY6CGWt8Bc+3M=
-github.com/cardil/eventing v0.11.1-0.20210531092830-25887d82fd23 h1:PZ/TtNcMQQfbwO+MpR7YwuSXfeT6Dc4VTMTtVmPw2Qc=
-github.com/cardil/eventing v0.11.1-0.20210531092830-25887d82fd23/go.mod h1:A1wk4Jjl6UuMLESLoxkQ7AKVfoUaFct9MmxJGER2ODk=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -925,6 +923,8 @@ github.com/openshift/build-machinery-go v0.0.0-20200917070002-f171684f77ab/go.mo
 github.com/openshift/client-go v0.0.0-20200326155132-2a6cd50aedd0/go.mod h1:uUQ4LClRO+fg5MF/P6QxjMCb1C9f7Oh4RKepftDnEJE=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47 h1:+TEY29DK0XhqB7HFC9OfV8qf3wffSyi7MWv3AP28DGQ=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47/go.mod h1:u7NRAjtYVAKokiI9LouzTv4mhds8P4S1TwdVAfbjKSk=
+github.com/openshift/knative-eventing v0.99.1-0.20210531143233-6e76ef9f2ce0 h1:/i4DuoEByqzQjJgDFY++gOTcVUVnoVlLoXhXrFKVtRs=
+github.com/openshift/knative-eventing v0.99.1-0.20210531143233-6e76ef9f2ce0/go.mod h1:A1wk4Jjl6UuMLESLoxkQ7AKVfoUaFct9MmxJGER2ODk=
 github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a h1:5TNwxoTO7ecDNX6F4f5T7XdILOflYfB9WvQInyUA+a8=
 github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a/go.mod h1:PU9k1Y6YMG27XQldEu5agNkcebvSafUXKXPircQYCsE=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
