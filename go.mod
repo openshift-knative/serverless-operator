@@ -42,7 +42,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210526121953-4c434bbf8650
+	knative.dev/eventing => github.com/cardil/eventing v0.11.1-0.20210531092830-25887d82fd23
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.21.1-0.20210526142120-91eb12066b84
 	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210420084308-e1193e08522a
 )

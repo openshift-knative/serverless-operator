@@ -109,7 +109,6 @@ func (b *BrokerAndTriggers) fetchURL(ctx Context) *apis.URL {
 }
 
 func (b *BrokerAndTriggers) deployTriggers(ctx Context, dest duckv1.Destination) {
-	triggers := make([]*eventingv1beta1.Trigger, 0, len(b.Triggers.Types))
 	for _, eventType := range b.Triggers.Types {
 		name := fmt.Sprintf("%s-%s", b.Name, eventType)
 		subscriberOption := resources.WithSubscriberDestinationV1Beta1(func(t *eventingv1beta1.Trigger) duckv1.Destination {
@@ -117,7 +116,7 @@ func (b *BrokerAndTriggers) deployTriggers(ctx Context, dest duckv1.Destination)
 		})
 		ctx.Log.Debugf("Creating trigger \"%s\" for type %s to route to %#v",
 			name, eventType, dest)
-		trgr := ctx.Client.CreateTriggerOrFailV1Beta1(
+		_ = ctx.Client.CreateTriggerOrFailV1Beta1(
 			name,
 			resources.WithBrokerV1Beta1(b.Name),
 			resources.WithAttributesTriggerFilterV1Beta1(
@@ -127,15 +126,5 @@ func (b *BrokerAndTriggers) deployTriggers(ctx Context, dest duckv1.Destination)
 			),
 			subscriberOption,
 		)
-		triggers = append(triggers, trgr)
-	}
-	for _, trgr := range triggers {
-		meta := resources.NewMetaResource(
-			trgr.Name, trgr.Namespace, testlib.TriggerTypeMeta,
-		)
-		err := duck.WaitForResourceReady(ctx.Client.Dynamic, meta)
-		if err != nil {
-			ctx.T.Fatal(err)
-		}
 	}
 }
