@@ -70,7 +70,17 @@ function download_ingress {
   done
 }
 
+#
+# DOWNLOAD SERVING
+#
 download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
+
+# Drop namespace from manifest.
+git apply "$root/openshift-knative-operator/hack/001-serving-namespace-deletion.patch"
+
+# TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
+# See also https://issues.redhat.com/browse/SRVKS-670.
+git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
@@ -82,11 +92,14 @@ sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ing
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
-# TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
-# See also https://issues.redhat.com/browse/SRVKS-670.
-git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
-
+#
+# DOWNLOAD EVENTING
+#
 download eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
+
+# Drop namespace from manifest.
+git apply "$root/openshift-knative-operator/hack/001-eventing-namespace-deletion.patch"
+
 # Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
