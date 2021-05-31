@@ -78,7 +78,6 @@ func TestMutate(t *testing.T) {
 			t.Error(err)
 		}
 
-		verifyNetworkConfig(t, ks)
 		verifyIngress(t, ks, domain)
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
@@ -91,7 +90,6 @@ func TestMutate(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		verifyNetworkConfig(t, ks)
 		verifyIngress(t, ks, domain)
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
@@ -100,13 +98,14 @@ func TestMutate(t *testing.T) {
 		tc.ha(t, ks)
 
 		// Force a change and rerun
-		ks.Spec.Config["network"]["ingress.class"] = "foo"
-		ks.Spec.Config["network"]["domainTemplate"] = "{{.Name}}.{{.Namespace}}.{{Domain}}"
+		ks.Spec.Config["network"] = map[string]string{
+			"ingress.class":  "foo",
+			"domainTemplate": "{{.Name}}.{{.Namespace}}.{{Domain}}",
+		}
 		err = common.Mutate(ks, client)
 		if err != nil {
 			t.Error(err)
 		}
-		verifyNetworkConfig(t, ks)
 		verifyIngress(t, ks, domain)
 		verifyImageOverride(t, &ks.Spec.Registry, "queue-proxy", image)
 		verifyQueueProxySidecarImageOverride(t, ks, image)
@@ -216,14 +215,6 @@ func verifyIngress(t *testing.T, ks *servingv1alpha1.KnativeServing, expected st
 	domain := ks.Spec.Config["domain"]
 	if actual, ok := domain[expected]; !ok || actual != "" {
 		t.Errorf("Missing %v, domain=%v", expected, domain)
-	}
-}
-
-func verifyNetworkConfig(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	network := ks.Spec.Config["network"]
-
-	if actual := network["domainTemplate"]; actual != common.DefaultDomainTemplate {
-		t.Errorf("got %q, want %q", actual, common.DefaultDomainTemplate)
 	}
 }
 
