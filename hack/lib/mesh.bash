@@ -61,8 +61,7 @@ function deploy_gateways {
   local out_dir
   out_dir="$(mktemp -d /tmp/certs-XXX)"
 
-  oc extract -n openshift-apiserver configmap/config --to="${out_dir}"
-  subdomain=$(yq read "${out_dir}"/config.yaml "routingConfig.subdomain")
+  subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
 
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
     -subj "/O=Example Inc./CN=${subdomain}" \
