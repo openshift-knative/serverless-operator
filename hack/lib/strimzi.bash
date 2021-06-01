@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 function install_strimzi_operator {
-#  strimzi_version=$(curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null)
-  strimzi_version=0.22.1
+  strimzi_version=$(curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null)
   header "Installing Strimzi Kafka operator"
   oc create namespace kafka
   curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml" \
