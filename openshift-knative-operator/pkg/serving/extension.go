@@ -103,8 +103,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
-	// TODO(SRVCOM-1069): Rethink overriding behavior and/or error surfacing.
-	common.Configure(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
 
 	// Ensure webhook has 1G of memory.
 	common.EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "webhook", resource.MustParse("1024Mi"))
