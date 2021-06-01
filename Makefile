@@ -39,6 +39,12 @@ install-mesh:
 uninstall-mesh:
 	UNINSTALL_MESH="true" ./hack/mesh.sh
 
+install-full-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+
+uninstall-full-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
+
 teardown:
 	./hack/teardown.sh
 
