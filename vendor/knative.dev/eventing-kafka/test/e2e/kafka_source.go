@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	. "github.com/cloudevents/sdk-go/v2/test"
@@ -50,6 +52,10 @@ const (
 
 	kafkaSASLSecret = "strimzi-sasl-secret"
 	kafkaTLSSecret  = "strimzi-tls-secret"
+)
+
+var (
+	testMtSource = os.Getenv("TEST_MT_SOURCE")
 )
 
 // SourceTestScope returns true if we should proceed with given
@@ -373,7 +379,7 @@ func testKafkaSource(t *testing.T, name string, version string, messageKey strin
 			t.Fatalf("could not copy secret(%s): %v", kafkaTLSSecret, err)
 		}
 	}
-	helpers.MustCreateTopic(client, kafkaClusterName, kafkaClusterNamespace, kafkaTopicName)
+	helpers.MustCreateTopic(client, kafkaClusterName, kafkaClusterNamespace, kafkaTopicName, 10)
 	if len(recordEventPodName) > 63 {
 		recordEventPodName = recordEventPodName[:63]
 	}
@@ -413,6 +419,11 @@ func testKafkaSource(t *testing.T, name string, version string, messageKey strin
 	}
 
 	client.WaitForAllTestResourcesReadyOrFail(context.Background())
+
+	// See https://github.com/knative-sandbox/eventing-kafka/issues/411
+	if testMtSource == "1" {
+		time.Sleep(20 * time.Second)
+	}
 
 	helpers.MustPublishKafkaMessage(client, kafkaBootstrapUrlPlain, kafkaTopicName, messageKey, messageHeaders, messagePayload)
 
