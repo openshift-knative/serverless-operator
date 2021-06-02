@@ -20,3 +20,6 @@ eventing_url="https://raw.githubusercontent.com/knative/operator/$version/config
 
 wget --no-check-certificate "$serving_url" -O "$target_serving_file"
 wget --no-check-certificate "$eventing_url" -O "$target_eventing_file"
+
+# For SRVKE-755 state the actual default for Openshift Serverless disable HPA:
+git apply "$root/olm-catalog/serverless-operator/hack/001-eventing-sinkbinding-default-override"
