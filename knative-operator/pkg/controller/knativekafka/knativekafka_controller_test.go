@@ -2,6 +2,7 @@ package knativekafka
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,12 +10,16 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -81,7 +86,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cl := fake.NewClientBuilder().WithObjects(test.instance).Build()
+			cl := fake.NewClientBuilder().WithObjects(test.instance, &eventingv1alpha1.KnativeEventing{}).Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/1-channel-consolidated.yaml"))
 			if err != nil {
@@ -109,6 +114,31 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			for _, d := range test.exists {
 				deployment := &appsv1.Deployment{}
 				err := cl.Get(context.TODO(), d, deployment)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
+				// Check if rbac proxy is injected
+				if len(deployment.Spec.Template.Spec.Containers) != 2 {
+					t.Fatal("rbac proxy not injected")
+				}
+
+				// Check if the service monitor for the Kafka deployment is created
+				sm := &monitoringv1.ServiceMonitor{}
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm", deployment.Name), Namespace: "knative-eventing"}, sm)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
+
+				// Check if the service monitor service for the Kafka deployment is created
+				sms := &corev1.Service{}
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm-service", deployment.Name), Namespace: "knative-eventing"}, sms)
+				if err != nil {
+					t.Fatalf("get: (%v)", err)
+				}
+
+				// Check if the clusterrolebinding for the Kafka deployment is created
+				crb := &v1.ClusterRoleBinding{}
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", deployment.Name)}, crb)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
