@@ -180,7 +180,7 @@ spec:
                   If the value is `inclusion`, only namespaces/objects labelled as
                   `bindings.knative.dev/include:true` will be considered. If `exclusion`
                   is selected, only `bindings.knative.dev/exclude:true` label is checked
-                  and these will NOT be considered. The default is `exclusion`.
+                  and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
                 type: string
               version:
                 description: The version of Knative Eventing to be installed
