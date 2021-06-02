@@ -60,7 +60,6 @@ readonly CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
 # Strimzi Kafka Cluster Brokers URL (base64 encoded value for k8s secret)
 readonly STRIMZI_KAFKA_NAMESPACE="kafka" # Installation Namespace
 readonly STRIMZI_KAFKA_CLUSTER_BROKERS="my-cluster-kafka-bootstrap.kafka.svc:9092"
-readonly STRIMZI_KAFKA_CLUSTER_BROKERS_ENCODED="bXktY2x1c3Rlci1rYWZrYS1ib290c3RyYXAua2Fma2Euc3ZjOjkwOTI=" # Simple base64 encoding of STRIMZI_KAFKA_CLUSTER_BROKERS
 
 # Eventing Kafka main config path from HEAD.
 readonly KAFKA_CRD_CONFIG_TEMPLATE_DIR="./config/channel"
@@ -102,9 +101,13 @@ readonly KAFKA_CRD_CONFIG_DIR="$(mktemp -d "${ARTIFACTS}/channel-crd-XXXXX")"
 # Real Kafka Source CRD config, generated from the template directory and
 # modified template file.
 readonly KAFKA_SOURCE_CRD_CONFIG_DIR="$(mktemp -d "${ARTIFACTS}/source-crd-XXXXX")"
+# A target directory where post install scripts are gets created.
+readonly KAFKA_POST_INSTALL_DIR="$(mktemp -d "${ARTIFACTS}/post-install-XXXXX")"
+readonly KAFKA_POST_INSTALL_TEMPLATE_DIR="config/post-install"
 
-# Kafka channel CRD config template directory.
-readonly KAFKA_SOURCE_TEMPLATE_DIR="config/source"
+# Kafka ST and MT Source CRD config template directory
+readonly KAFKA_SOURCE_TEMPLATE_DIR="config/source/single"
+readonly KAFKA_MT_SOURCE_TEMPLATE_DIR="config/source/multi"
 
 # Namespaces where we install Eventing components
 # This is the namespace of knative-eventing itself
@@ -168,22 +171,22 @@ function knative_setup() {
 }
 
 function install_knative_eventing {
-  if is_release_branch; then
-    echo ">> Install Knative Eventing from ${KNATIVE_EVENTING_RELEASE}"
-    kubectl apply -f ${KNATIVE_EVENTING_RELEASE}
-  else
-    echo ">> Install Knative Eventing from HEAD"
-    pushd .
-    cd ${GOPATH} && mkdir -p src/knative.dev && cd src/knative.dev
-    git clone https://github.com/knative/eventing
-    cd eventing
-    ko apply -f "${EVENTING_CONFIG}"
-    # Install MT Channel Based Broker
-    ko apply -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
-    # Install IMC
-    ko apply -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
-    popd
-  fi
+  # if is_release_branch; then
+    echo ">> Install Knative Eventing from https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml"
+    kubectl apply -f https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml
+  # else
+  #   echo ">> Install Knative Eventing from HEAD"
+  #   pushd .
+  #   cd ${GOPATH} && mkdir -p src/knative.dev && cd src/knative.dev
+  #   git clone https://github.com/knative/eventing
+  #   cd eventing
+  #   ko apply -f "${EVENTING_CONFIG}"
+  #   # Install MT Channel Based Broker
+  #   ko apply -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
+  #   # Install IMC
+  #   ko apply -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
+  #   popd
+  # fi
   wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Knative Eventing did not come up"
 
   install_zipkin
@@ -208,21 +211,21 @@ function uninstall_zipkin() {
 
 function knative_teardown() {
   echo ">> Stopping Knative Eventing"
-  if is_release_branch; then
-    echo ">> Uninstalling Knative Eventing from ${KNATIVE_EVENTING_RELEASE}"
-    kubectl delete -f "${KNATIVE_EVENTING_RELEASE}"
-  else
-    echo ">> Uninstalling Knative Eventing from HEAD"
-    pushd .
-    cd ${GOPATH}/src/knative.dev/eventing
-    # Remove IMC
-    ko delete -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
-    # Remove MT Channel Based Broker
-    ko delete -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
-    # Remove eventing
-    ko delete -f "${EVENTING_CONFIG}"
-    popd
-  fi
+  # if is_release_branch; then
+    echo ">> Uninstalling Knative Eventing from https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml"
+    kubectl delete -f https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml
+  # else
+  #   echo ">> Uninstalling Knative Eventing from HEAD"
+  #   pushd .
+  #   cd ${GOPATH}/src/knative.dev/eventing
+  #   # Remove IMC
+  #   ko delete -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
+  #   # Remove MT Channel Based Broker
+  #   ko delete -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
+  #   # Remove eventing
+  #   ko delete -f "${EVENTING_CONFIG}"
+  #   popd
+  # fi
   wait_until_object_does_not_exist namespaces "${EVENTING_NAMESPACE}"
 }
 
@@ -289,6 +292,7 @@ function install_consolidated_channel_crds {
     sed -i "s/REPLACE_WITH_CLUSTER_URL/${KAFKA_CLUSTER_URL}/" \
       "${KAFKA_CRD_CONFIG_DIR}/${KAFKA_CRD_CONFIG_TEMPLATE}"
     ko apply -f "${KAFKA_CRD_CONFIG_DIR}"
+    run_postinstall_jobs
   elif [[ "${source}" == 'latest-release' ]]; then
     ver="${LATEST_RELEASE_VERSION}"
     echo "Installing consolidated Kafka Channel CRD (from latest release: ${ver})"
@@ -345,7 +349,17 @@ function install_consolidated_sources_crds() {
     return 56
   fi
 
+  run_postinstall_jobs
   wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Failed to install the consolidated Kafka Source CRD"
+}
+
+function run_postinstall_jobs {
+  echo "Running post-install jobs using ${KAFKA_POST_INSTALL_DIR}"
+  rm -rf "${KAFKA_POST_INSTALL_DIR}" && mkdir -p "${KAFKA_POST_INSTALL_DIR}"
+  cp "${KAFKA_POST_INSTALL_TEMPLATE_DIR}/"*yaml "${KAFKA_POST_INSTALL_DIR}"
+  sed -i "s/namespace: knative-eventing/namespace: ${SYSTEM_NAMESPACE}/g" \
+    "${KAFKA_POST_INSTALL_DIR}/"*yaml
+  ko apply -f "${KAFKA_POST_INSTALL_DIR}"
 }
 
 # Uninstall The eventing-kafka KafkaChannel Implementation Via Ko
@@ -371,8 +385,8 @@ function install_distributed_channel_crds() {
   cp "${DISTRIBUTED_TEMPLATE_DIR}/"*yaml "${KAFKA_CRD_CONFIG_DIR}"
   sed -i "s/namespace: knative-eventing/namespace: ${SYSTEM_NAMESPACE}/g" "${KAFKA_CRD_CONFIG_DIR}/"*yaml
 
-  # Update The Kafka Secret With Strimzi Kafka Cluster Brokers (No Authentication)
-  sed -i "s/brokers: \"\"/brokers: ${STRIMZI_KAFKA_CLUSTER_BROKERS_ENCODED}/" "${KAFKA_CRD_CONFIG_DIR}/${EVENTING_KAFKA_SECRET_TEMPLATE}"
+  # Update The ConfigMap With Strimzi Kafka Cluster Brokers (No Authentication)
+  sed -i "s/REPLACE_WITH_CLUSTER_URL/${KAFKA_CLUSTER_URL}/" ${KAFKA_CRD_CONFIG_DIR}/${EVENTING_KAFKA_CONFIG_TEMPLATE}
 
   # Update the config-kafka configmap to disable SASL/TLS for the tests
   sed -i '/^ *TLS:/{n;s/true/false/};/^ *SASL:/{n;s/true/false/}' "${KAFKA_CRD_CONFIG_DIR}/${EVENTING_KAFKA_CONFIG_TEMPLATE}"
@@ -383,7 +397,27 @@ function install_distributed_channel_crds() {
    # Add The kn-eventing-test-pull-secret (If Present) To ServiceAccount & Restart eventing-kafka Deployment
   add_kn_eventing_test_pull_secret "${SYSTEM_NAMESPACE}" eventing-kafka-channel-controller eventing-kafka-channel-controller
 
+  run_postinstall_jobs
+
   wait_until_pods_running "${SYSTEM_NAMESPACE}" || fail_test "Failed to install the distributed Kafka Channel CRD"
+}
+
+function install_mt_source() {
+  echo "Installing multi-tenant Kafka Source"
+  rm -rf "${KAFKA_SOURCE_CRD_CONFIG_DIR}" && mkdir -p "${KAFKA_SOURCE_CRD_CONFIG_DIR}"
+  cp "${KAFKA_MT_SOURCE_TEMPLATE_DIR}/"*yaml "${KAFKA_SOURCE_CRD_CONFIG_DIR}"
+  sed -i "s/namespace: knative-eventing/namespace: ${SYSTEM_NAMESPACE}/g" "${KAFKA_SOURCE_CRD_CONFIG_DIR}/"*yaml
+  ko apply -f "${KAFKA_SOURCE_CRD_CONFIG_DIR}" || return 1
+
+  # FIXME: integration-test-mt-source fails if post-install scripts are executed (knative-sandbox/eventing-kafka#495)
+  # run_postinstall_jobs
+
+  wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Failed to install the multi-tenant Kafka Source"
+}
+
+function uninstall_mt_source() {
+  echo "Uninstalling  multi-tenant Kafka Source CRD"
+  ko delete --ignore-not-found=true --now --timeout 180s -f "${KAFKA_SOURCE_CRD_CONFIG_DIR}"
 }
 
 function kafka_setup() {
@@ -455,8 +489,8 @@ function test_consolidated_channel_plain() {
   install_consolidated_channel_crds || return 1
   install_consolidated_sources_crds || return 1
 
-  go_test_e2e -tags=e2e,source -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1alpha1:KafkaChannel,messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
-  go_test_e2e -tags=e2e,source -timeout=5m -test.parallel=${TEST_PARALLEL} ./test/conformance -channels=messaging.knative.dev/v1beta1:KafkaChannel -sources=sources.knative.dev/v1beta1:KafkaSource || fail_test
+  go_test_e2e -tags=e2e,consolidated,source -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
+  go_test_e2e -tags=e2e,consolidated,source -timeout=5m -test.parallel=${TEST_PARALLEL} ./test/conformance -channels=messaging.knative.dev/v1beta1:KafkaChannel -sources=sources.knative.dev/v1beta1:KafkaSource || fail_test
 
   uninstall_sources_crds || return 1
   uninstall_channel_crds || return 1
@@ -472,7 +506,7 @@ function test_consolidated_channel_tls() {
 
   install_consolidated_channel_crds || return 1
 
-  go_test_e2e -tags=e2e -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
+  go_test_e2e -tags=e2e,consolidated -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
 
   uninstall_channel_crds || return 1
 }
@@ -487,7 +521,7 @@ function test_consolidated_channel_sasl() {
 
   install_consolidated_channel_crds || return 1
 
-  go_test_e2e -tags=e2e -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
+  go_test_e2e -tags=e2e,consolidated -timeout=40m -test.parallel=${TEST_PARALLEL} ./test/e2e -channels=messaging.knative.dev/v1beta1:KafkaChannel  || fail_test
 
   uninstall_channel_crds || return 1
 }
@@ -504,6 +538,30 @@ function test_distributed_channel() {
 
   uninstall_channel_crds || return 1
 }
+
+# Installs the resources necessary to test the multi-tenant source, runs those tests, and then cleans up those resources
+function test_mt_source() {
+  echo "Testing the multi-tenant source"
+  install_mt_source || return 1
+
+  export TEST_MT_SOURCE
+  go_test_e2e -tags=source,mtsource -timeout=20m -test.parallel=${TEST_PARALLEL} ./test/e2e/...  || fail_test
+
+  # wait for all KafkaSources to be deleted
+  local iterations=0
+  local progress="Waiting for KafkaSources to be deleted..."
+  while [[ "$(kubectl get kafkasources --all-namespaces)" != "" && $iterations -lt 60 ]]
+  do
+    echo -ne "${progress}\r"
+    progress="${progress}."
+    iterations=$((iterations + 1))
+    kubectl get kafkasources --all-namespaces -oyaml
+    sleep 3
+  done
+
+  uninstall_mt_source || return 1
+}
+
 
 function parse_flags() {
   # This function will be called repeatedly by initialize() with one fewer
@@ -525,6 +583,10 @@ function parse_flags() {
       ;;
     --consolidated-sasl)
       TEST_CONSOLIDATED_CHANNEL_SASL=1
+      return 1
+      ;;
+    --mt-source)
+      TEST_MT_SOURCE=1
       return 1
       ;;
   esac

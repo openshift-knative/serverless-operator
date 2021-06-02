@@ -379,42 +379,60 @@ func WithDependencyAnnotationTriggerV1Beta1(dependencyAnnotation string) Trigger
 
 // WithSubscriberServiceRefForTriggerV1Beta1 returns an option that adds a Subscriber Knative Service Ref for the given v1beta1 Trigger.
 func WithSubscriberServiceRefForTriggerV1Beta1(name string) TriggerOptionV1Beta1 {
-	return func(t *eventingv1beta1.Trigger) {
-		if name != "" {
-			t.Spec.Subscriber = duckv1.Destination{
-				Ref: KnativeRefForService(name, t.Namespace),
-			}
+	return WithSubscriberDestinationV1Beta1(func(t *eventingv1beta1.Trigger) duckv1.Destination {
+		return duckv1.Destination{
+			Ref: KnativeRefForService(name, t.Namespace),
 		}
-	}
+	})
 }
 
 // WithSubscriberServiceRefForTriggerV1 returns an option that adds a Subscriber Knative Service Ref for the given v1 Trigger.
 func WithSubscriberServiceRefForTriggerV1(name string) TriggerOptionV1 {
-	return func(t *eventingv1.Trigger) {
-		if name != "" {
-			t.Spec.Subscriber = duckv1.Destination{
-				Ref: KnativeRefForService(name, t.Namespace),
-			}
+	return WithSubscriberDestinationV1(func(t *eventingv1.Trigger) duckv1.Destination {
+		return duckv1.Destination{
+			Ref: KnativeRefForService(name, t.Namespace),
 		}
-	}
+	})
 }
 
 // WithSubscriberURIForTriggerV1Beta1 returns an option that adds a Subscriber URI for the given v1beta1 Trigger.
 func WithSubscriberURIForTriggerV1Beta1(uri string) TriggerOptionV1Beta1 {
-	apisURI, _ := apis.ParseURL(uri)
-	return func(t *eventingv1beta1.Trigger) {
-		t.Spec.Subscriber = duckv1.Destination{
+	return WithSubscriberDestinationV1Beta1(func(t *eventingv1beta1.Trigger) duckv1.Destination {
+		apisURI, _ := apis.ParseURL(uri)
+		return duckv1.Destination{
 			URI: apisURI,
 		}
-	}
+	})
 }
 
 // WithSubscriberURIForTriggerV1 returns an option that adds a Subscriber URI for the given v1 Trigger.
 func WithSubscriberURIForTriggerV1(uri string) TriggerOptionV1 {
-	apisURI, _ := apis.ParseURL(uri)
-	return func(t *eventingv1.Trigger) {
-		t.Spec.Subscriber = duckv1.Destination{
+	return WithSubscriberDestinationV1(func(t *eventingv1.Trigger) duckv1.Destination {
+		apisURI, _ := apis.ParseURL(uri)
+		return duckv1.Destination{
 			URI: apisURI,
+		}
+	})
+}
+
+// WithSubscriberDestinationV1Beta1 returns an option that adds a Subscriber for given
+// duckv1.Destination.
+func WithSubscriberDestinationV1Beta1(destFactory func(t *eventingv1beta1.Trigger) duckv1.Destination) TriggerOptionV1Beta1 {
+	return func(t *eventingv1beta1.Trigger) {
+		dest := destFactory(t)
+		if dest.Ref != nil || dest.URI != nil {
+			t.Spec.Subscriber = dest
+		}
+	}
+}
+
+// WithSubscriberDestinationV1 returns an option that adds a Subscriber for given
+// duckv1.Destination.
+func WithSubscriberDestinationV1(destFactory func(t *eventingv1.Trigger) duckv1.Destination) TriggerOptionV1 {
+	return func(t *eventingv1.Trigger) {
+		dest := destFactory(t)
+		if dest.Ref != nil || dest.URI != nil {
+			t.Spec.Subscriber = dest
 		}
 	}
 }
