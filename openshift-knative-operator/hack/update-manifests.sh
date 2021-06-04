@@ -15,7 +15,7 @@ eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker 
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
-istio_files=(200-clusterrole 500-mutating-webhook 500-validating-webhook config controller webhook-deployment webhook-service)
+istio_files=(200-clusterrole 500-mutating-webhook 500-validating-webhook 500-webhook-secret config controller webhook-deployment webhook-service)
 
 function download {
   component=$1
