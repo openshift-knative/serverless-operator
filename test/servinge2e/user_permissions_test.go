@@ -41,12 +41,11 @@ func init() {
 }
 
 func TestUserPermissions(t *testing.T) {
-	caCtx := test.SetupClusterAdmin(t)
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx) })
-	defer test.CleanupAll(t, caCtx, paCtx, editCtx, viewCtx)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
+	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
 	serviceGVR := servingv1.SchemeGroupVersion.WithResource("services")
 	ingressGVR := networkingv1alpha1.SchemeGroupVersion.WithResource("ingresses")
