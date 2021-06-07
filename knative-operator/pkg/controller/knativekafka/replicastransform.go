@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller"}
+	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller-manager"}
 )
 
 func checkHAComponent(name string) bool {
