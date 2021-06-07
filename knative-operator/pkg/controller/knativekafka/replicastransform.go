@@ -7,7 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 var (
@@ -25,7 +24,7 @@ func checkHAComponent(name string) bool {
 
 // replicasTransform makes kafka-ch-dispatcher keep its current replica count set by controller
 // based on vendor/knative.dev/operator/pkg/reconciler/knativeeventing/common/replicasenvvarstransform.go
-func replicasTransform(client mf.Client, ha *v1alpha1.HighAvailability) mf.Transformer {
+func replicasTransform(client mf.Client, ha *int32) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && checkHAComponent(u.GetName()) {
 			_, err := client.Get(u)
@@ -39,7 +38,7 @@ func replicasTransform(client mf.Client, ha *v1alpha1.HighAvailability) mf.Trans
 			if err := scheme.Scheme.Convert(u, apply, nil); err != nil {
 				return err
 			}
-			apply.Spec.Replicas = &ha.Replicas
+			apply.Spec.Replicas = ha
 			if err := scheme.Scheme.Convert(apply, u, nil); err != nil {
 				return err
 			}
@@ -48,7 +47,7 @@ func replicasTransform(client mf.Client, ha *v1alpha1.HighAvailability) mf.Trans
 			u.SetCreationTimestamp(metav1.Time{})
 		}
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-ch-dispatcher" {
-			currentUnstructured, err := client.Get(u)
+			currentU, err := client.Get(u)
 			if errors.IsNotFound(err) {
 				return nil
 			}
@@ -61,7 +60,7 @@ func replicasTransform(client mf.Client, ha *v1alpha1.HighAvailability) mf.Trans
 			}
 
 			current := &appsv1.Deployment{}
-			if err := scheme.Scheme.Convert(currentUnstructured, current, nil); err != nil {
+			if err := scheme.Scheme.Convert(currentU, current, nil); err != nil {
 				return err
 			}
 

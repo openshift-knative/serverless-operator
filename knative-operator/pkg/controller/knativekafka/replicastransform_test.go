@@ -19,7 +19,7 @@ func TestCheckHAComponent(t *testing.T) {
 		shouldFail:     false,
 	}, {
 		name:           "kafka source controller",
-		deploymentName: "kafka-controller",
+		deploymentName: "kafka-controller-manager",
 		shouldFail:     false,
 	}, {
 		name:           "kafka channel dispatcher",
