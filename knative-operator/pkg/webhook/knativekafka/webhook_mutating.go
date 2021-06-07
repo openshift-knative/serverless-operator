@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	commonv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -50,8 +49,6 @@ func MutateKafka(ke *operatorv1alpha1.KnativeKafka) {
 
 func defaultToHa(ke *operatorv1alpha1.KnativeKafka) {
 	if ke.Spec.HighAvailability == nil {
-		log := common.Log.WithName("mutate")
-		log.Info("HEEEEEEEEEEEEEEEEEEEEERE")
 		ke.Spec.HighAvailability = &commonv1alpha1.HighAvailability{
 			Replicas: 2,
 		}
