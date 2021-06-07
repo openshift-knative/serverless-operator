@@ -47,6 +47,8 @@ func (source *KafkaSource) ConvertTo(ctx context.Context, obj apis.Convertible) 
 		}
 		source.Status.Status.DeepCopyInto(&sink.Status.Status)
 		sink.Status.Consumers = source.Status.Consumers
+		sink.Status.Selector = source.Status.Selector
+		source.Status.Placeable.DeepCopyInto(&sink.Status.Placeable)
 
 		// Optionals
 		if source.Spec.Sink != nil {
@@ -94,6 +96,8 @@ func (sink *KafkaSource) ConvertFrom(ctx context.Context, obj apis.Convertible) 
 
 		source.Status.Status.DeepCopyInto(&sink.Status.Status)
 		sink.Status.Consumers = source.Status.Consumers
+		sink.Status.Selector = source.Status.Selector
+		source.Status.Placeable.DeepCopyInto(&sink.Status.Placeable)
 
 		// Optionals
 		if source.Status.SinkURI != nil {
