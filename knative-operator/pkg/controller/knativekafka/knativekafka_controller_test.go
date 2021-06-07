@@ -436,6 +436,9 @@ func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
 			},
+			HighAvailability: &eventingv1alpha1.HighAvailability{
+				Replicas: 2,
+			},
 		},
 	}
 	for _, mod := range mods {
