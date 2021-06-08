@@ -11,7 +11,7 @@ import (
 
 // replicasTransform makes kafka-ch-dispatcher keep its current replica count set by controller
 // based on vendor/knative.dev/operator/pkg/reconciler/knativeeventing/common/replicasenvvarstransform.go
-func replicasTransform(client mf.Client, ha *int32) mf.Transformer {
+func replicasTransform(client mf.Client) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-ch-dispatcher" {
 			currentU, err := client.Get(u)

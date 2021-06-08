@@ -242,7 +242,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
 		setAuthSecret(instance.Spec.Channel.AuthSecretNamespace, instance.Spec.Channel.AuthSecretName),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
-		replicasTransform(manifest.Client, &instance.Spec.HighAvailability.Replicas),
+		replicasTransform(manifest.Client),
 		rbacProxyTranform,
 	)
 	if err != nil {
