@@ -78,7 +78,7 @@ func TestKnativeKafka(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		_ = caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), "", metav1.DeleteOptions{})
+		_ = caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), ch.Name, metav1.DeleteOptions{})
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
