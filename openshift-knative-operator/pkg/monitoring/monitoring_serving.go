@@ -18,13 +18,12 @@ func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface
 }
 
 func GetServingTransformers(comp v1alpha1.KComponent) []mf.Transformer {
-	if shouldEnableMonitoring(comp.GetSpec().GetConfig()) {
-		return []mf.Transformer{
-			injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace),
-			injectRbacProxyContainerToDeployments(servingDeployments),
-		}
+	// When monitoring is off we keep around the required resources, only rbac-proxy is removed
+	transformers := []mf.Transformer{injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace)}
+	if ShouldEnableMonitoring(comp.GetSpec().GetConfig()) {
+		transformers = append(transformers, InjectRbacProxyContainerToDeployments(servingDeployments))
 	}
-	return []mf.Transformer{}
+	return transformers
 }
 
 func GetServingMonitoringPlatformManifests(ks v1alpha1.KComponent) ([]mf.Manifest, error) {
@@ -33,13 +32,13 @@ func GetServingMonitoringPlatformManifests(ks v1alpha1.KComponent) ([]mf.Manifes
 		return nil, err
 	}
 	// Serving has one common sa for all pods
-	crbM, err := createClusterRoleBindingManifest("controller", ks.GetNamespace())
+	crbM, err := CreateClusterRoleBindingManifest("controller", ks.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 	rbacManifest = rbacManifest.Append(*crbM)
 	for c := range servingDeployments {
-		if err := appendManifestsForComponent(c, ks.GetNamespace(), &rbacManifest); err != nil {
+		if err := AppendManifestsForComponent(c, ks.GetNamespace(), &rbacManifest); err != nil {
 			return nil, err
 		}
 	}

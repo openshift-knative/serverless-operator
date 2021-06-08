@@ -42,6 +42,13 @@ var (
 		"sugar_controller_go_mallocs",
 	}
 
+	KafkaQueries = []string{
+		"kafkachannel_controller_go_mallocs",
+		"kafka_controller_go_mallocs",
+		"kafkachannel_webhook_go_mallocs",
+		"kafkachannel_dispatcher_go_mallocs",
+	}
+
 	serverlessComponentQueries = []string{
 		// Checks if openshift-knative-operator metrics are served
 		"knative_operator_go_mallocs",

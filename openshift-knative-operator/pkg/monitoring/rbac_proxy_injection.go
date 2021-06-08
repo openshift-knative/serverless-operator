@@ -19,7 +19,7 @@ const (
 	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
 )
 
-func injectRbacProxyContainerToDeployments(deployments sets.String) mf.Transformer {
+func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		kind := strings.ToLower(u.GetKind())
 		// Only touch the related deployments

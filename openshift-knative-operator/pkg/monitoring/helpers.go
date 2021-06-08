@@ -61,7 +61,7 @@ func injectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 }
 
 func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *v1alpha1.CommonSpec, ns string) error {
-	if shouldEnableMonitoring(spec.GetConfig()) {
+	if ShouldEnableMonitoring(spec.GetConfig()) {
 		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
 		}
@@ -76,7 +76,7 @@ func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *v1
 	return nil
 }
 
-func shouldEnableMonitoring(config v1alpha1.ConfigMapData) bool {
+func ShouldEnableMonitoring(config v1alpha1.ConfigMapData) bool {
 	backend := config[ObservabilityCMName][ObservabilityBackendKey]
 	if backend == "none" || backend == "opencensus" {
 		return false
@@ -122,7 +122,7 @@ func reconcileMonitoringLabelOnNamespace(ctx context.Context, namespace string, 
 	return nil
 }
 
-func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest) error {
+func AppendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest) error {
 	smManifest, err := constructServiceMonitorResourceManifests(c, ns)
 	if err != nil {
 		return err
@@ -136,7 +136,7 @@ func appendManifestsForComponent(c string, ns string, rbacManifest *mf.Manifest)
 func constructServiceMonitorResourceManifests(component string, ns string) (*mf.Manifest, error) {
 	var smU = &unstructured.Unstructured{}
 	var svU = &unstructured.Unstructured{}
-	sms := createServiceMonitorService(component)
+	sms := createServiceMonitorService(component, ns)
 	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
 		return nil, err
 	}
@@ -154,7 +154,8 @@ func constructServiceMonitorResourceManifests(component string, ns string) (*mf.
 func createServiceMonitor(component string, ns string, serviceName string) monitoringv1.ServiceMonitor {
 	return monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%s-sm", component),
+			Name:      fmt.Sprintf("%s-sm", component),
+			Namespace: ns,
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
@@ -179,11 +180,12 @@ func createServiceMonitor(component string, ns string, serviceName string) monit
 		}}
 }
 
-func createServiceMonitorService(component string) corev1.Service {
+func createServiceMonitorService(component string, ns string) corev1.Service {
 	serviceName := fmt.Sprintf("%s-sm-service", component)
 	return corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        serviceName,
+			Namespace:   ns,
 			Labels:      map[string]string{"name": serviceName},
 			Annotations: map[string]string{"service.beta.openshift.io/serving-cert-secret-name": fmt.Sprintf("%s-tls", serviceName)},
 		},
@@ -196,7 +198,7 @@ func createServiceMonitorService(component string) corev1.Service {
 		}}
 }
 
-func createClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf.Manifest, error) {
+func CreateClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf.Manifest, error) {
 	crb := v1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", serviceAccountName),
@@ -251,6 +253,14 @@ func getSelectorLabels(component string) map[string]string {
 		labels["eventing.knative.dev/brokerRole"] = "filter"
 	case "mt-broker-ingress":
 		labels["eventing.knative.dev/brokerRole"] = "ingress"
+	case "kafka-controller-manager":
+		labels["control-plane"] = "kafka-controller-manager"
+	case "kafka-ch-controller":
+		labels["messaging.knative.dev/channel"] = "kafka-channel"
+		labels["messaging.knative.dev/role"] = "controller"
+	case "kafka-ch-dispatcher":
+		labels["messaging.knative.dev/channel"] = "kafka-channel"
+		labels["messaging.knative.dev/role"] = "dispatcher"
 	default:
 		labels["app"] = component
 	}

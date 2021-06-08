@@ -18,13 +18,12 @@ func ReconcileMonitoringForEventing(ctx context.Context, api kubernetes.Interfac
 }
 
 func GetEventingTransformers(comp v1alpha1.KComponent) []mf.Transformer {
-	if shouldEnableMonitoring(comp.GetSpec().GetConfig()) {
-		return []mf.Transformer{
-			injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace),
-			injectRbacProxyContainerToDeployments(eventingDeployments),
-		}
+	// When monitoring is off we keep around the required resources, only rbac-proxy is removed
+	transformers := []mf.Transformer{injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace)}
+	if ShouldEnableMonitoring(comp.GetSpec().GetConfig()) {
+		transformers = append(transformers, InjectRbacProxyContainerToDeployments(eventingDeployments))
 	}
-	return []mf.Transformer{}
+	return transformers
 }
 
 func GetEventingMonitoringPlatformManifests(ke v1alpha1.KComponent) ([]mf.Manifest, error) {
@@ -37,17 +36,16 @@ func GetEventingMonitoringPlatformManifests(ke v1alpha1.KComponent) ([]mf.Manife
 		if sa == "mt-broker-controller" {
 			continue
 		}
-		crbM, err := createClusterRoleBindingManifest(sa, ke.GetNamespace())
+		crbM, err := CreateClusterRoleBindingManifest(sa, ke.GetNamespace())
 		if err != nil {
 			return nil, err
 		}
 		rbacManifest = rbacManifest.Append(*crbM)
 	}
 	for c := range eventingDeployments {
-		if err := appendManifestsForComponent(c, ke.GetNamespace(), &rbacManifest); err != nil {
+		if err := AppendManifestsForComponent(c, ke.GetNamespace(), &rbacManifest); err != nil {
 			return nil, err
 		}
 	}
-
 	return []mf.Manifest{rbacManifest}, nil
 }

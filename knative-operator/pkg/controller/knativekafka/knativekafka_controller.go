@@ -210,6 +210,10 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
+	rbacProxyTranform, err := getRBACProxyInjectTransformer(r.client)
+	if err != nil {
+		return err
+	}
 	m, err := manifest.Transform(
 		mf.InjectOwner(instance),
 		common.SetAnnotations(map[string]string{
@@ -220,6 +224,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 		setAuthSecret(instance.Spec.Channel.AuthSecretNamespace, instance.Spec.Channel.AuthSecretName),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
+		rbacProxyTranform,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
@@ -359,10 +364,20 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 	var resources []unstructured.Unstructured
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
+		channelRBACProxy, err := addRBACProxySupportToManifest(instance, kafkaChannelComponents)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, channelRBACProxy.Resources()...)
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
+		sourceRBACProxy, err := addRBACProxySupportToManifest(instance, kafkaSourceComponents)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, sourceRBACProxy.Resources()...)
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
