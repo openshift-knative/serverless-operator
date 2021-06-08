@@ -38,6 +38,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
+	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller-manager"}
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -173,6 +174,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 	}
 
 	stages := []stage{
+		r.configure,
 		r.ensureFinalizers,
 		r.transform,
 		r.apply,
@@ -194,6 +196,22 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.K
 	}
 
 	return executeStages(instance, manifest, stages)
+}
+
+// set defaults for Openshift
+func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+	before := instance.DeepCopy()
+	common.MutateKafka(instance)
+	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
+		return nil
+	}
+
+	// Only apply the update if something changed.
+	log.Info("Updating KnativeKafka with mutated state for Openshift")
+	if err := r.client.Update(context.TODO(), instance); err != nil {
+		return fmt.Errorf("failed to update KnativeKafka with mutated state: %w", err)
+	}
+	return nil
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
@@ -220,6 +238,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
+		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
 		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
 		setAuthSecret(instance.Spec.Channel.AuthSecretNamespace, instance.Spec.Channel.AuthSecretName),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
@@ -413,6 +432,27 @@ func setAuthSecret(secretNamespace, secretName string) mf.Transformer {
 				return err
 			}
 			if err := unstructured.SetNestedField(u.Object, secretName, "data", "authSecretName"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+func checkHAComponent(name string) bool {
+	for _, component := range KafkaHAComponents {
+		if name == component {
+			return true
+		}
+	}
+	return false
+}
+
+func setKafkaDeployments(replicas int32) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" && checkHAComponent(u.GetName()) {
+			log.Info("Setting Kafka HA component", "deployment", u.GetName(), "replicas", replicas)
+			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "replicas"); err != nil {
 				return err
 			}
 		}
