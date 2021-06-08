@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
+	eventingduckv1beta1 "knative.dev/eventing/pkg/apis/duck/v1beta1"
 	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/lib/resources"
 	"knative.dev/eventing/test/upgrade/prober"
@@ -37,14 +37,14 @@ var (
 		config.FailOnErrors = true
 		config.Interval = 2 * time.Millisecond
 		config.BrokerOpts = append(config.BrokerOpts,
-			resources.WithDeliveryForBroker(&eventingduckv1.DeliverySpec{
+			resources.WithDeliveryForBrokerV1Beta1(&eventingduckv1beta1.DeliverySpec{
 				Retry:         &retryCount,
 				BackoffPolicy: &backoffPolicy,
 				BackoffDelay:  &backoffDelay,
 			}))
 	}
 	retryCount    = int32(12)
-	backoffPolicy = eventingduckv1.BackoffPolicyExponential
+	backoffPolicy = eventingduckv1beta1.BackoffPolicyExponential
 	backoffDelay  = "PT1S"
 )
 
@@ -116,7 +116,7 @@ type ReplicationOptions struct {
 // RetryOptions holds options for retries.
 type RetryOptions struct {
 	RetryCount    int
-	BackoffPolicy eventingduckv1.BackoffPolicyType
+	BackoffPolicy eventingduckv1beta1.BackoffPolicyType
 	BackoffDelay  string
 }
 
