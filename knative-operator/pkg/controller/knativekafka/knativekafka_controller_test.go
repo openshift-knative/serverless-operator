@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -86,7 +86,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cl := fake.NewClientBuilder().WithObjects(test.instance, &eventingv1alpha1.KnativeEventing{}).Build()
+			cl := fake.NewClientBuilder().WithObjects(test.instance, &operatorv1alpha1.KnativeEventing{}).Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/1-channel-consolidated.yaml"))
 			if err != nil {
@@ -436,7 +436,7 @@ func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
 			},
-			HighAvailability: &eventingv1alpha1.HighAvailability{
+			HighAvailability: &operatorv1alpha1.HighAvailability{
 				Replicas: 2,
 			},
 		},
