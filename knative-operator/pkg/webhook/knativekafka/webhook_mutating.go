@@ -10,12 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-// Configurator annotates KEs
+// Configurator annotates KKs
 type Configurator struct {
 	decoder *admission.Decoder
 }
 
-// NewConfigurator creates a new Configurator instance to configure KnativeEventing CRs.
+// NewConfigurator creates a new Configurator instance to configure KnativeKafka CRs.
 func NewConfigurator(decoder *admission.Decoder) *Configurator {
 	return &Configurator{
 		decoder: decoder,
@@ -27,16 +27,16 @@ var _ admission.Handler = (*Configurator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ke := &operatorv1alpha1.KnativeKafka{}
+	kk := &operatorv1alpha1.KnativeKafka{}
 
-	err := v.decoder.Decode(req, ke)
+	err := v.decoder.Decode(req, kk)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	common.MutateKafka(ke)
+	common.MutateKafka(kk)
 
-	marshaled, err := json.Marshal(ke)
+	marshaled, err := json.Marshal(kk)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
