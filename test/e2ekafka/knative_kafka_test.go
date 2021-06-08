@@ -22,7 +22,6 @@ const (
 var knativeKafkaChannelControlPlaneDeploymentNames = []string{
 	"kafka-ch-controller",
 	"kafka-webhook",
-	"kafka-ch-dispatcher",
 }
 
 var knativeKafkaSourceControlPlaneDeploymentNames = []string{
