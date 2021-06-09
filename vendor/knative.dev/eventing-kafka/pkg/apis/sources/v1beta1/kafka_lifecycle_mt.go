@@ -17,23 +17,23 @@ limitations under the License.
 package v1beta1
 
 import (
-	"context"
-
-	"github.com/google/uuid"
-	"k8s.io/utils/pointer"
+	"knative.dev/pkg/apis"
 )
 
 const (
-	uuidPrefix = "knative-kafka-source-"
+
+	// KafkaConditionScheduled is True when all KafkaSource consumers has been scheduled
+	KafkaConditionScheduled apis.ConditionType = "Scheduled"
 )
 
-// SetDefaults ensures KafkaSource reflects the default values.
-func (k *KafkaSource) SetDefaults(ctx context.Context) {
-	if k.Spec.ConsumerGroup == "" {
-		k.Spec.ConsumerGroup = uuidPrefix + uuid.New().String()
-	}
+var (
+	KafkaMTSourceCondSet = apis.NewLivingConditionSet(KafkaConditionSinkProvided, KafkaConditionScheduled)
+)
 
-	if k.Spec.Consumers == nil {
-		k.Spec.Consumers = pointer.Int32Ptr(1)
-	}
+func (s *KafkaSourceStatus) MarkScheduled() {
+	KafkaSourceCondSet.Manage(s).MarkTrue(KafkaConditionScheduled)
+}
+
+func (s *KafkaSourceStatus) MarkNotScheduled(reason, messageFormat string, messageA ...interface{}) {
+	KafkaSourceCondSet.Manage(s).MarkFalse(KafkaConditionScheduled, reason, messageFormat, messageA...)
 }
