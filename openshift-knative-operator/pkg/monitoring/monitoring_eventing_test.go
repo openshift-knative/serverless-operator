@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -25,10 +24,9 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 	}
 	for _, u := range resources {
 		kind := strings.ToLower(u.GetKind())
-		oldServiceMonitors := sets.NewString("knative-eventing-metrics-broker-filter", "knative-eventing-metrics-broker-ingr")
 		switch kind {
 		case "servicemonitor":
-			if !eventingDeployments.Has(strings.TrimSuffix(u.GetName(), "-sm")) && !oldServiceMonitors.Has(u.GetName()) {
+			if !eventingDeployments.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
 				t.Errorf("Service monitor with name %q not found", u.GetName())
 			}
 		case "service":
