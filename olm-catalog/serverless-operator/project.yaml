@@ -19,6 +19,7 @@ requirements:
   ocp:
     - '4.6'
     - '4.7'
+    - '4.8'
 
 dependencies:
   serving: 0.22.0
