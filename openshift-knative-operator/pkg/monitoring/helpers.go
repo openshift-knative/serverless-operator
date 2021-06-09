@@ -154,7 +154,7 @@ func constructServiceMonitorResourceManifests(component string, ns string) (*mf.
 func createServiceMonitor(component string, ns string, serviceName string) monitoringv1.ServiceMonitor {
 	return monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%s-sm", component),
+			Name: getServiceMonitorName(component),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
@@ -177,6 +177,17 @@ func createServiceMonitor(component string, ns string, serviceName string) monit
 				MatchLabels: map[string]string{"name": serviceName},
 			},
 		}}
+}
+
+func getServiceMonitorName(component string) string {
+	// Keep the old service monitor names to avoid failures during upgrades.
+	switch component {
+	case "mt-broker-filter":
+		return "knative-eventing-metrics-broker-filter"
+	case "mt-broker-ingress":
+		return "knative-eventing-metrics-broker-ingr"
+	}
+	return fmt.Sprintf("%s-sm", component)
 }
 
 func createServiceMonitorService(component string) corev1.Service {
