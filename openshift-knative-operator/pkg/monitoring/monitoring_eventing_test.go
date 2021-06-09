@@ -1,11 +1,11 @@
 package monitoring
 
 import (
-	"k8s.io/apimachinery/pkg/util/sets"
 	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
