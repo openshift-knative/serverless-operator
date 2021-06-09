@@ -14,7 +14,7 @@ cd "${ROOT_DIR}"
 # This controls the knative release version we track.
 KN_VERSION="release-0.22"
 EVENTING_VERSION="release-v0.22.0"
-#EVENTING_KAFKA_VERSION="release-v0.22.0"
+EVENTING_KAFKA_VERSION="release-v0.22.0"
 SERVING_VERSION="release-v0.22.0"
 
 # Controls the version of OCP related dependencies.
@@ -34,7 +34,7 @@ FLOATING_DEPS=(
 )
 
 FLOATING_FORK_DEPS=(
-  #"knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
+  "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
   "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
   "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
 )
@@ -52,6 +52,7 @@ done
 readonly GO_GET
 
 if (( GO_GET )); then
+  export GOPROXY="https://proxy.golang.org,direct"
   # Treat forks specifically due to https://github.com/golang/go/issues/32721
   for dep in "${FLOATING_FORK_DEPS[@]}"; do
     go mod edit -replace "${dep}"
