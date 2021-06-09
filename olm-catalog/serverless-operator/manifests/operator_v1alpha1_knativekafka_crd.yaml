@@ -66,6 +66,15 @@ spec:
                 required:
                 - enabled
                 type: object
+              high-availability:
+                description: Allows specification of HA control plane
+                properties:
+                  replicas:
+                    description: The number of replicas that HA parts of the control
+                      plane will be scaled to
+                    minimum: 1
+                    type: integer
+                type: object
           status:
             type: object
             description: 'KnativeKafkaStatus defines the observed state of KnativeKafka (from the controller).'

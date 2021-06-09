@@ -562,6 +562,25 @@ spec:
       - knativeservings
     sideEffects: None
     webhookPath: /mutate-knativeservings
+  - generateName: mutating.knativekafkas.operator.serverless.openshift.io
+    type: MutatingAdmissionWebhook
+    deploymentName: knative-openshift
+    admissionReviewVersions:
+      - v1beta1
+    containerPort: 9876
+    failurePolicy: Ignore
+    rules:
+      - apiGroups:
+          - operator.serverless.openshift.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - knativekafkas
+    sideEffects: None
+    webhookPath: /mutate-knativekafkas
   installModes:
   - supported: false
     type: OwnNamespace
