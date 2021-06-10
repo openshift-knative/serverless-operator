@@ -26,7 +26,15 @@ if [[ $TEST_KNATIVE_KAFKA == true ]]; then
   install_strimzi
   serverless_operator_kafka_e2e_tests
 fi
-ensure_serverless_installed
+
+if [[ $FULL_MESH == "true" ]]; then
+  UNINSTALL_MESH="false" install_mesh
+  ensure_serverless_installed
+  enable_net_istio
+else
+  ensure_serverless_installed
+fi
+
 # Run Knative Serving & Eventing downstream E2E tests.
 downstream_serving_e2e_tests
 downstream_eventing_e2e_tests

@@ -116,7 +116,18 @@ function downstream_serving_e2e_tests {
   # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
   add_systemnamespace_label
 
-  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e \
+  if [[ $FULL_MESH == "true" ]]; then
+    export GODEBUG="x509ignoreCN=0"
+    #go_test_e2e -timeout=60m -parallel=1 ./test/servinge2e/ \
+    go_test_e2e -timeout=60m -parallel=1 ./test/servinge2e/ \
+      --kubeconfig "${kubeconfigs[0]}" \
+      --kubeconfigs "${kubeconfigs_str}" \
+      "$@"
+  fi
+
+  # DO_NOT_SUBBMIT: TODO: Revert this change and add `failfast` option.
+  #go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
+  go_test_e2e -timeout=60m -parallel=1 ./test/servinge2e/... \
     --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
