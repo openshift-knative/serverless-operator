@@ -70,10 +70,18 @@ test-upstream-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
+# Run upstream E2E tests with net-istio and sidecar.
+# TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
+test-upstream-e2e-mesh:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	# This is to run with FULL_MESH to verify the PR. Remove this and use "test-upstream-e2e-mesh".
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	# INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade:

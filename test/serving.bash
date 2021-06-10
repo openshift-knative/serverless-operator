@@ -48,11 +48,27 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain"
 
+  if [[ $FULL_MESH == "true" ]]; then
+    subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
+    OPENSHIFT_TEST_OPTIONS+=" --https --customdomain=$subdomain"
+
+    # Use x509ignoreCN=0.
+    # This should not be necesssary if we could ceate certs with SAN. However, openssl command in the CI
+    # seems old version and so it does not have "-addext" option to add SAN.
+    export GODEBUG="x509ignoreCN=0"
+
+    # TODO: SRVKS-211: Can not run grpc and http2 tests.
+    rm ./test/e2e/grpc_test.go
+    rm ./test/e2e/http2_test.go
+    # Remove h2c test
+    sed -ie '46,50d' ./test/conformance/runtime/protocol_test.go
+  fi
+
   local parallel=3
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
-    rm ./test/e2e/grpc_test.go
+    rm -f ./test/e2e/grpc_test.go
     parallel=2
   fi
 

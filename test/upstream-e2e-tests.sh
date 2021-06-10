@@ -19,6 +19,11 @@ logger.success '🚀 Cluster prepared for testing.'
 
 scale_up_workers
 
+# Install ServiceMesh and enable mTLS.
+if [[ $FULL_MESH == true ]]; then
+   UNINSTALL_MESH="false" install_mesh
+fi
+
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   install_serverless_previous
