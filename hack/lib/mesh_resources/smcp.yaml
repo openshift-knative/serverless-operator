@@ -7,6 +7,11 @@ spec:
   profiles:
   - default
   proxy:
+    networking:
+      trafficControl:
+        inbound:
+          excludedPorts:
+          - 8444
     accessLogging:
       file:
         name: /dev/stdout

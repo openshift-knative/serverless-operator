@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-openshift-monitoring-ns
+  namespace: knative-serving
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: "openshift-monitoring"
+  podSelector: {}
+  policyTypes:
+  - Ingress
