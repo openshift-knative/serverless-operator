@@ -125,7 +125,6 @@ func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv(quickstart.EnvKey, "../../../deploy/resources/quickstart/serverless-application-quickstart.yaml")
 	os.Setenv(dashboard.ServingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-serving-resources.yaml")
-	os.Setenv("TEST_ROLE_PATH", "../dashboard/testdata/role-service-monitor.yaml")
 	apis.AddToScheme(scheme.Scheme)
 }
 

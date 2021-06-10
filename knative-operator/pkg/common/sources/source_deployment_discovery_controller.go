@@ -82,7 +82,7 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 	if err := common.SetupMonitoringRequirements(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
-	if err := common.SetupSourceServiceMonitor(r.client, dep); err != nil {
+	if err := common.SetupSourceServiceMonitorResources(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
 	return reconcile.Result{}, nil
