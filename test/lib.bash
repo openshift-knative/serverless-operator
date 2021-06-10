@@ -193,8 +193,7 @@ function run_rolling_upgrade_tests {
   patch="${KNATIVE_SERVING_HOME}/openshift/patches/001-object.patch"
   git apply "${patch}"
 
-  # FIXME(ksuszyns): remove static version resolving
-  image_version=0.21
+  image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
   channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
