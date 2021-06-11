@@ -726,9 +726,7 @@ metadata:
   labels:
     kafka.eventing.knative.dev/release: "v0.22.3"
 spec:
-  # this deployment is going to be scaled up by the
-  # controller when the very first KafkaChannel is created
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       messaging.knative.dev/channel: kafka-channel
