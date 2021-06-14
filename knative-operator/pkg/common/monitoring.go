@@ -58,6 +58,16 @@ func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client
 	if err := api.Delete(context.Background(), &oldService); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
+	// Delete old sms to avoid alerting for target being down, SRVKE-838
+	oldSM.SetNamespace("knative-eventing")
+	oldSM.SetName("knative-eventing-metrics-broker-filter")
+	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	oldSM.SetName("knative-eventing-metrics-broker-ingr")
+	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
 	return nil
 }
 
