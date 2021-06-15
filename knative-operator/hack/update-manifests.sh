@@ -37,8 +37,5 @@ function download_kafka {
 
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 
-# We set the replica to 1, for now, while upstream has it 0.
-git apply "$root/knative-operator/hack/001-eventing-kafkachannel_replicas1.patch"
-
 # This is for  SRVKE-807.
 git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
