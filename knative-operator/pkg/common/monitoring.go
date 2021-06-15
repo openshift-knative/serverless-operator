@@ -141,13 +141,13 @@ func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.M
 	}
 	rb := rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      role.Name,
+			Name:      "knative-serving-prometheus-k8s",
 			Namespace: ns,
 		},
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "Role",
-			Name:     "knative-serving-prometheus-k8s",
+			Name:     role.Name,
 		},
 		Subjects: []rbacv1.Subject{{
 			Kind:      "ServiceAccount",
