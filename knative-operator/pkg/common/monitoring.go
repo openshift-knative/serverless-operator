@@ -10,11 +10,13 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -23,8 +25,6 @@ const (
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
 	// service monitor created successfully when monitoringLabel added to namespace
 	monitoringLabel = "openshift.io/cluster-monitoring"
-	rolePath        = "deploy/resources/monitoring/role-service-monitor.yaml"
-	TestRolePath    = "TEST_ROLE_PATH"
 )
 
 func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
@@ -32,7 +32,7 @@ func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
 	if err != nil {
 		return err
 	}
-	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), getRolePath(), api)
+	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), api)
 	if err != nil {
 		return err
 	}
@@ -94,15 +94,6 @@ func GetServerlessOperatorDeployment(api client.Client, namespace string) (*apps
 	return deployment, nil
 }
 
-func getRolePath() string {
-	// meant for testing only
-	ns, found := os.LookupEnv(TestRolePath)
-	if found {
-		return ns
-	}
-	return rolePath
-}
-
 func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
 	ns := &v1.Namespace{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
@@ -118,19 +109,63 @@ func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
 	return nil
 }
 
-func createRoleAndRoleBinding(instance mf.Owner, namespace, path string, client client.Client) error {
-	manifest, err := mf.NewManifest(path, mf.UseClient(mfclient.NewClient(client)))
+func createRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
+	clientOptions := mf.UseClient(mfclient.NewClient(client))
+	rbacManifest, err := createRBACManifestForPrometheusAccount(namespace, clientOptions)
 	if err != nil {
-		return fmt.Errorf("unable to create role and roleBinding ServiceMonitor install manifest: %w", err)
+		return err
 	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance), injectNameSpace(namespace)}
-	if manifest, err = manifest.Transform(transforms...); err != nil {
-		return fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest: %w", err)
+	transforms := []mf.Transformer{mf.InjectOwner(instance)}
+	if *rbacManifest, err = rbacManifest.Transform(transforms...); err != nil {
+		return fmt.Errorf("unable to transform role and roleBinding manifest for Prometheus account: %w", err)
 	}
-	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("unable to create role and roleBinding for ServiceMonitor %w", err)
+	if err := rbacManifest.Apply(); err != nil {
+		return fmt.Errorf("unable to create role and roleBinding for Prometheus account %w", err)
 	}
 	return nil
+}
+
+func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.Manifest, error) {
+	var roleU = &unstructured.Unstructured{}
+	var rbU = &unstructured.Unstructured{}
+	role := rbacv1.Role{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-serving-prometheus-k8s",
+			Namespace: ns,
+		},
+		Rules: []rbacv1.PolicyRule{{
+			APIGroups: []string{""},
+			Resources: []string{"services", "endpoints", "pods"},
+			Verbs:     []string{"get", "list", "watch"},
+		}},
+	}
+	rb := rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-serving-prometheus-k8s",
+			Namespace: ns,
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "Role",
+			Name:     role.Name,
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      "prometheus-k8s",
+			Namespace: "openshift-monitoring",
+		}},
+	}
+	if err := scheme.Scheme.Convert(&role, roleU, nil); err != nil {
+		return nil, err
+	}
+	if err := scheme.Scheme.Convert(&rb, rbU, nil); err != nil {
+		return nil, err
+	}
+	rbacManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*roleU, *rbU}), options)
+	if err != nil {
+		return nil, err
+	}
+	return &rbacManifest, nil
 }
 
 func getOperatorDeploymentName() (string, error) {
@@ -139,16 +174,4 @@ func getOperatorDeploymentName() (string, error) {
 		return "", fmt.Errorf("the environment variable %q must be set", operatorDeploymentNameEnvKey)
 	}
 	return ns, nil
-}
-
-// Use a custom transformation otherwise if mf.InjectNameSpace was used
-// it would wrongly update rolebinding subresource namespace as well
-func injectNameSpace(namespace string) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		kind := u.GetKind()
-		if kind == "Role" || kind == "RoleBinding" {
-			u.SetNamespace(namespace)
-		}
-		return nil
-	}
 }

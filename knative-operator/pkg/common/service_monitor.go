@@ -1,9 +1,7 @@
 package common
 
 import (
-	"context"
 	"fmt"
-	"os"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
@@ -12,97 +10,76 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/pkg/kmeta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	EventingSourceServiceMonitorPath = "deploy/resources/monitoring/source-service-monitor.yaml"
-	EventingSourcePath               = "deploy/resources/monitoring/source-service.yaml"
-	SourceLabel                      = "eventing.knative.dev/source"
-	SourceNameLabel                  = "eventing.knative.dev/sourceName"
-	SourceRoleLabel                  = "sources.knative.dev/role"
-	TestMonitor                      = "TEST_MONITOR"
-	TestSourceServiceMonitorPath     = "TEST_SOURCE_SERVICE_MONITOR_PATH"
-	TestSourceServicePath            = "TEST_SOURCE_SERVICE_PATH"
+	SourceLabel     = "eventing.knative.dev/source"
+	SourceNameLabel = "eventing.knative.dev/sourceName"
+	SourceRoleLabel = "sources.knative.dev/role"
 )
 
-func SetupSourceServiceMonitor(client client.Client, instance *appsv1.Deployment) error {
+func SetupSourceServiceMonitorResources(client client.Client, instance *appsv1.Deployment) error {
 	labels := instance.Spec.Selector.MatchLabels
-
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
-	// create service for the deployment
-	manifest, err := mf.NewManifest(getMonitorPath(TestSourceServicePath, EventingSourcePath), clientOptions)
+	// Create service monitor resources for source
+	smManifest, err := createServiceMonitorManifest(labels, instance.Name, instance.Namespace, clientOptions)
 	if err != nil {
-		return fmt.Errorf("unable to parse source service manifest: %w", err)
-	}
-	transforms := []mf.Transformer{updateService(labels, instance.Name), mf.InjectOwner(instance), mf.InjectNamespace(instance.Namespace)}
-	if manifest, err = manifest.Transform(transforms...); err != nil {
-		return fmt.Errorf("unable to transform source service manifest: %w", err)
-	}
-	if err := manifest.Apply(); err != nil {
 		return err
 	}
-
-	// get service back, needed for the UID and setting owner refs
-	srv := &v1.Service{}
-	if err := client.Get(context.TODO(), types.NamespacedName{Name: instance.Name, Namespace: instance.Namespace}, srv); err != nil {
-		return err
-	}
-	// create service monitor for source
-	manifest, err = mf.NewManifest(getMonitorPath(TestSourceServiceMonitorPath, EventingSourceServiceMonitorPath), clientOptions)
-	if err != nil {
-		return fmt.Errorf("unable to parse source service monitor manifest: %w", err)
-	}
-	transforms = []mf.Transformer{updateServiceMonitor(labels, instance.Name), mf.InjectOwner(srv), mf.InjectNamespace(instance.Namespace)}
-	if manifest, err = manifest.Transform(transforms...); err != nil {
+	if *smManifest, err = smManifest.Transform(mf.InjectOwner(instance)); err != nil {
 		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
-	return manifest.Apply()
+	return smManifest.Apply()
 }
 
-func getMonitorPath(envVar string, defaultVal string) string {
-	path := os.Getenv(envVar)
-	if path == "" {
-		return defaultVal
+func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
+	var svU = &unstructured.Unstructured{}
+	var smU = &unstructured.Unstructured{}
+	sms := v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: ns,
+			Labels:    kmeta.CopyMap(labels),
+		},
+		Spec: v1.ServiceSpec{
+			Ports: []v1.ServicePort{{
+				Name:       "http-metrics",
+				Port:       9090,
+				TargetPort: intstr.FromInt(9090),
+				Protocol:   "TCP",
+			}},
+			Selector: kmeta.CopyMap(labels),
+		}}
+	sms.Labels["name"] = sms.Name
+	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
+		return nil, err
 	}
-	return path
-}
-
-func updateService(labels map[string]string, depName string) mf.Transformer {
-	return func(resource *unstructured.Unstructured) error {
-		if resource.GetKind() != "Service" {
-			return nil
-		}
-		var svc = &v1.Service{}
-		if err := scheme.Scheme.Convert(resource, svc, nil); err != nil {
-			return err
-		}
-		svc.Name = depName
-		svc.Labels = kmeta.CopyMap(labels)
-		svc.Spec.Selector = kmeta.CopyMap(labels)
-		svc.Labels["name"] = svc.Name
-		return scheme.Scheme.Convert(svc, resource, nil)
+	sm := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: ns,
+			Labels:    kmeta.CopyMap(labels),
+		},
+		Spec: monitoringv1.ServiceMonitorSpec{
+			Endpoints: []monitoringv1.Endpoint{{Port: "http-metrics"}},
+			NamespaceSelector: monitoringv1.NamespaceSelector{
+				MatchNames: []string{ns},
+			},
+			Selector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"name": depName},
+			},
+		}}
+	sm.Labels["name"] = sm.Name
+	if err := scheme.Scheme.Convert(&sm, smU, nil); err != nil {
+		return nil, err
 	}
-}
-
-func updateServiceMonitor(labels map[string]string, depName string) mf.Transformer {
-	return func(resource *unstructured.Unstructured) error {
-		if resource.GetKind() != "ServiceMonitor" {
-			return nil
-		}
-		var sm = &monitoringv1.ServiceMonitor{}
-		if err := scheme.Scheme.Convert(resource, sm, nil); err != nil {
-			return err
-		}
-		sm.Name = depName
-		sm.Labels = kmeta.CopyMap(labels)
-		sm.Spec.Selector = metav1.LabelSelector{
-			MatchLabels: map[string]string{"name": sm.Name},
-		}
-		sm.Labels["name"] = sm.Name
-		return scheme.Scheme.Convert(sm, resource, nil)
+	smManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*svU, *smU}), options)
+	if err != nil {
+		return nil, err
 	}
+	return &smManifest, nil
 }

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -45,8 +44,6 @@ func init() {
 	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
 	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
-	os.Setenv(common.TestRolePath, "../dashboard/testdata/role-service-monitor.yaml")
-	os.Setenv(common.TestMonitor, "true")
 
 	apis.AddToScheme(scheme.Scheme)
 }

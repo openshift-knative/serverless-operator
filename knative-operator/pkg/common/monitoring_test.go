@@ -30,7 +30,6 @@ var (
 
 func init() {
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
-	os.Setenv(TestRolePath, "testdata/role-service-monitor.yaml")
 }
 
 func TestSetupMonitoringRequirements(t *testing.T) {
