@@ -45,9 +45,24 @@ func TestKnativeKafka(t *testing.T) {
 		}
 	})
 
-	t.Run("deploy knativekafka cr and wait for it to be ready", func(t *testing.T) {
+	ch := &v1beta1.KafkaChannel{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "testchannel",
+			Namespace: knativeKafkaNamespace,
+		},
+		Spec: v1beta1.KafkaChannelSpec{
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		},
+	}
+
+	t.Run("deploy knativekafka and channel cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := v1a1test.WithKnativeKafkaReady(caCtx, knativeKafkaName, eventingNamespace); err != nil {
 			t.Fatal("Failed to deploy KnativeKafka", err)
+		}
+
+		if _, err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Create(context.Background(), ch, metav1.CreateOptions{}); err != nil {
+			t.Fatal("Failed to create channel to trigger the dispatcher deployment", err)
 		}
 	})
 
@@ -60,25 +75,6 @@ func TestKnativeKafka(t *testing.T) {
 		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for KnativeKafka", err)
 		}
-	})
-
-	ch := &v1beta1.KafkaChannel{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testchannel",
-			Namespace: knativeKafkaNamespace,
-		},
-		Spec: v1beta1.KafkaChannelSpec{
-			NumPartitions:     1,
-			ReplicationFactor: 1,
-		},
-	}
-
-	if _, err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Create(context.Background(), ch, metav1.CreateOptions{}); err != nil {
-		t.Fatal("Failed to create channel to trigger the dispatcher deployment", err)
-	}
-
-	t.Cleanup(func() {
-		_ = caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), "", metav1.DeleteOptions{})
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
@@ -110,7 +106,11 @@ func TestKnativeKafka(t *testing.T) {
 		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaNamespace)
 	})
 
-	t.Run("remove knativekafka cr", func(t *testing.T) {
+	t.Run("remove knativekafka and channel cr", func(t *testing.T) {
+		if err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), ch.Name, metav1.DeleteOptions{}); err != nil {
+			t.Fatal("Failed to remove Knative Channel", err)
+		}
+
 		if err := v1a1test.DeleteKnativeKafka(caCtx, knativeKafkaName, eventingNamespace); err != nil {
 			t.Fatal("Failed to remove Knative Kafka", err)
 		}
