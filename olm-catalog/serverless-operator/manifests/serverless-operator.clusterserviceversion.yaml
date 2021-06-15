@@ -46,8 +46,7 @@ metadata:
     certified: "false"
     createdAt: "2020-04-20T17:00:00Z"
     description: |-
-      Provides a collection of API's based on Knative to support deploying and serving
-      of serverless applications and functions.
+      Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
     olm.skipRange: '>=1.15.0 <1.16.0'
