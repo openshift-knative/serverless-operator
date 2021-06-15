@@ -189,9 +189,6 @@ func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretN
 			name: "v2",
 			smcpCreationFunc: func(ctx *test.Context) {
 				smcp := test.ServiceMeshControlPlaneV2(smcpName, serviceMeshTestNamespaceName)
-				if customSecretName != "" {
-					test.AddServiceMeshControlPlaneV2IngressGatewaySecretVolume(smcp, secretVolumeName, customSecretName, secretVolumeMountPath)
-				}
 				test.CreateServiceMeshControlPlaneV2(ctx, smcp)
 			},
 		},
@@ -908,21 +905,34 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 		}
 		ksvc = withServiceReadyOrFail(ctx, ksvc)
 
-		// Create the Istio Gateway for traffic via istio-ingressgateway
-		// The secret and its mounts are specified in the example SMCP in hack/lib/mesh.bash
-		//
-		//       istio-ingressgateway:
-		//        secretVolumes:
-		//        - mountPath: /custom.example.com
-		//          name: custom-example-com
-		//          secretName: custom.example.com
-		//
-		defaultGateway := test.IstioGatewayWithTLS("default-gateway",
-			testNamespace,
-			customDomain,
-			secretVolumeMountPath+"/tls.key",
-			secretVolumeMountPath+"/tls.crt",
-		)
+		smcpVersion, _, _ := test.GetServiceMeshControlPlaneVersion(ctx, "basic", serviceMeshTestNamespaceName)
+
+		var defaultGateway *unstructured.Unstructured
+		// If "version" exists and is a v1, Gateway uses File Mount (https://istio.io/v1.5/pt-br/docs/tasks/traffic-management/ingress/secure-ingress-mount/) to mount certs.
+		if strings.HasPrefix(smcpVersion, "v1.") {
+			// Create the Istio Gateway for traffic via istio-ingressgateway
+			// The secret and its mounts are specified in the example SMCP in hack/lib/mesh.bash
+			//
+			//       istio-ingressgateway:
+			//        secretVolumes:
+			//        - mountPath: /custom.example.com
+			//          name: custom-example-com
+			//          secretName: custom.example.com
+			//
+			defaultGateway = test.IstioGatewayV1WithTLS("default-gateway",
+				testNamespace,
+				customDomain,
+				secretVolumeMountPath+"/tls.key",
+				secretVolumeMountPath+"/tls.crt",
+			)
+		} else {
+			defaultGateway = test.IstioGatewayWithTLS("default-gateway",
+				testNamespace,
+				customDomain,
+				customSecretName,
+			)
+		}
+
 		defaultGateway = test.CreateIstioGateway(ctx, defaultGateway)
 
 		// Create the Istio VirtualService to rewrite the host header of a custom domain with the ksvc's svc hostname
