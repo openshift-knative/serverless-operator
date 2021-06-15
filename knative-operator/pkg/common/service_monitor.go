@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"fmt"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
@@ -11,7 +10,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/pkg/kmeta"
@@ -27,37 +25,20 @@ const (
 func SetupSourceServiceMonitorResources(client client.Client, instance *appsv1.Deployment) error {
 	labels := instance.Spec.Selector.MatchLabels
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
-	// Create service monitor service for source
-	smsManifest, err := createServiceMonitorServiceManifest(labels, instance.Name, instance.Namespace, clientOptions)
-	if err != nil {
-		return err
-	}
-
-	if *smsManifest, err = smsManifest.Transform(mf.InjectOwner(instance)); err != nil {
-		return fmt.Errorf("unable to transform source service manifest: %w", err)
-	}
-	if err := smsManifest.Apply(); err != nil {
-		return err
-	}
-	// Get service back, needed for the UID and setting owner refs
-	srv := &v1.Service{}
-	if err := client.Get(context.TODO(), types.NamespacedName{Name: instance.Name, Namespace: instance.Namespace}, srv); err != nil {
-		return err
-	}
-	// Create service monitor for source
+	// Create service monitor resources for source
 	smManifest, err := createServiceMonitorManifest(labels, instance.Name, instance.Namespace, clientOptions)
 	if err != nil {
 		return err
 	}
-
-	if *smManifest, err = smManifest.Transform(mf.InjectOwner(srv)); err != nil {
-		return fmt.Errorf("unable to transform source service manifest: %w", err)
+	if *smManifest, err = smManifest.Transform(mf.InjectOwner(instance)); err != nil {
+		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
 	return smManifest.Apply()
 }
 
-func createServiceMonitorServiceManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
+func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
 	var svU = &unstructured.Unstructured{}
+	var smU = &unstructured.Unstructured{}
 	sms := v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
@@ -77,15 +58,6 @@ func createServiceMonitorServiceManifest(labels map[string]string, depName strin
 	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
 		return nil, err
 	}
-	smsManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*svU}), options)
-	if err != nil {
-		return nil, err
-	}
-	return &smsManifest, nil
-}
-
-func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
-	var smU = &unstructured.Unstructured{}
 	sm := monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
@@ -105,7 +77,7 @@ func createServiceMonitorManifest(labels map[string]string, depName string, ns s
 	if err := scheme.Scheme.Convert(&sm, smU, nil); err != nil {
 		return nil, err
 	}
-	smManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*smU}), options)
+	smManifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*svU, *smU}), options)
 	if err != nil {
 		return nil, err
 	}
