@@ -13,7 +13,7 @@ olm:
 
 requirements:
   kube:
-    minVersion: 1.15.0
+    minVersion: 1.19.0
   golang: '1.15'
   nodejs: 14.x
   ocp:

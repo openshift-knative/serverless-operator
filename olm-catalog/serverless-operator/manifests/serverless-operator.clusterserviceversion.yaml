@@ -89,7 +89,7 @@ spec:
         kind: KnativeKafka
         name: knativekafkas.operator.serverless.openshift.io
         version: v1alpha1
-  minKubeVersion: 1.15.0
+  minKubeVersion: 1.19.0
   description: |-
     The Red Hat OpenShift Serverless operator provides a collection of APIs that
     enables containers, microservices and functions to run "serverless".
