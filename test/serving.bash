@@ -27,6 +27,8 @@ function prepare_knative_serving_tests {
 
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config
+  # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
+  oc adm policy add-scc-to-user anyuid -z default -n serving-tests
   # Add networkpolicy to test namespace and label to serving namespaces for testing under the strict networkpolicy.
   add_networkpolicy "serving-tests"
   add_networkpolicy "serving-tests-alt"
