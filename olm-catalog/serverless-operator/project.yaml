@@ -30,4 +30,4 @@ dependencies:
   eventing: 0.22.0
   eventing_kafka: 0.22.3
   cli: 0.22.0
-  operator: 0.21.2
+  operator: 0.22.0
