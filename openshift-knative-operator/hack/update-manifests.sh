@@ -110,3 +110,6 @@ git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # This is the eventing counterpart of SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
+
+# Add networkpolicy for webhook when net-istio is enabled.
+git apply "$root/openshift-knative-operator/hack/007-webhook-servicemesh.patch"

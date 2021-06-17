@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: webhook
+  labels:
+    app: webhook
+    serving.knative.dev/release: devel
+    networking.knative.dev/ingress-provider: istio
+spec:
+  podSelector:
+    matchLabels:
+      app: webhook
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istio-webhook
+  labels:
+    app: istio-webhook
+    serving.knative.dev/release: devel
+    networking.knative.dev/ingress-provider: istio
+spec:
+  podSelector:
+    matchLabels:
+      app: istio-webhook
+  ingress:
+  - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: domainmapping-webhook
+  labels:
+    app: domainmapping-webhook
+    serving.knative.dev/release: devel
+    networking.knative.dev/ingress-provider: istio
+spec:
+  podSelector:
+    matchLabels:
+      app: domainmapping-webhook
+  ingress:
+  - {}
+---
