@@ -18,4 +18,3 @@ spec:
   - knative-serving
   - serving-tests
   - serving-tests-alt
-  - default
