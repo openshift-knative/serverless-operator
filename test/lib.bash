@@ -270,6 +270,22 @@ function gather_knative_state {
     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
 
+function check_serverless_alerts {
+  logger.info 'Checking Serverless alerts'
+  local alerts_file monitoring_route num_alerts
+  alerts_file="${ARTIFACT_DIR:-/tmp}/alerts.json"
+  monitoring_route=$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')
+  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" \
+    "https://${monitoring_route}/api/v1/alerts" | \
+    jq -c '.data | map(select(.labels.namespace == "'"${OPERATORS_NAMESPACE}"'" or .labels.namespace == "'"${EVENTING_NAMESPACE}"'" or .labels.namespace == "'"${SERVING_NAMESPACE}"'" or .labels.namespace == "'"${INGRESS_NAMESPACE}"'"))' > "${alerts_file}"
+
+  num_alerts=$(jq 'length' "${alerts_file}")
+  if [ ! "${num_alerts}" = "0" ]; then
+    echo -e "\n\nERROR: Non-zero number of alerts: ${num_alerts}. Check ${alerts_file}\n"
+    exit 1
+  fi
+}
+
 # == Test users
 
 function create_htpasswd_users {
