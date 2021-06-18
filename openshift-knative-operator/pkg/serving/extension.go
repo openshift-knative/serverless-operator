@@ -119,7 +119,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Temporary fix for SRVKS-743
 	if ks.Spec.Ingress.Istio.Enabled {
-		common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
