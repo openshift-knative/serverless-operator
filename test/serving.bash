@@ -63,7 +63,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" \
-    --customdomain="$subdomain"
+    --customdomain="$subdomain" \
     --enable-beta \
     --enable-alpha
 
