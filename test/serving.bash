@@ -49,6 +49,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
 
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
 
   local parallel=3
 
@@ -62,6 +63,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     --resolvabledomain --kubeconfig "$KUBECONFIG" \
     --imagetemplate "$image_template" \
+    --customdomain="$subdomain"
     --enable-beta \
     --enable-alpha
 
