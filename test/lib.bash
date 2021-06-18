@@ -273,7 +273,7 @@ function gather_knative_state {
 function check_serverless_alerts {
   logger.info 'Checking Serverless alerts'
   local alerts_file monitoring_route num_alerts
-  alerts_file="${ARTIFACT_DIR:-/tmp}/alerts.json"
+  alerts_file="${ARTIFACTS:-/tmp}/alerts.json"
   monitoring_route=$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')
   curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s)" \
     "https://${monitoring_route}/api/v1/alerts" | \
