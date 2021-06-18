@@ -16,9 +16,11 @@ export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get depen
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
 export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
 
-CURRENT_CSV="$(metadata.get project.name).v$(metadata.get project.version)"
-PREVIOUS_CSV="$(metadata.get project.name).v$(metadata.get olm.replaces)"
-export CURRENT_CSV PREVIOUS_CSV
+CURRENT_VERSION="$(metadata.get project.version)"
+PREVIOUS_VERSION="$(metadata.get olm.replaces)"
+CURRENT_CSV="$(metadata.get project.name).v$CURRENT_VERSION"
+PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
+export CURRENT_VERSION PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
