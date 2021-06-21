@@ -163,6 +163,7 @@ func TestReconcile(t *testing.T) {
 				},
 			}
 			common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", istioIngressClassName)
+			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 	}, {
 		name: "fix 'wrong' ingress config", // https://github.com/knative/operator/issues/568
