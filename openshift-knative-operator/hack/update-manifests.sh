@@ -78,6 +78,9 @@ download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
 # Drop namespace from manifest.
 git apply "$root/openshift-knative-operator/hack/001-serving-namespace-deletion.patch"
 
+# Extra role for downstream, so that users can get the autoscaling CM to fetch defaults.
+git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patch"
+
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
