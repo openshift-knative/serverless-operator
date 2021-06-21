@@ -48,4 +48,6 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   upstream_knative_eventing_e2e
 fi
 
+[ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
+
 success

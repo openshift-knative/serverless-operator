@@ -40,4 +40,6 @@ if [[ $TEST_KNATIVE_KAFKA == true ]]; then
   # downstream_knative_kafka_e2e_tests
 fi
 
+[ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
+
 success
