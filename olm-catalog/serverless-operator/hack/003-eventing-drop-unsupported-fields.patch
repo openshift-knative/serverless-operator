@@ -1,0 +1,77 @@
+diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
+index ef7efd15..553b03a4 100644
+--- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
++++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
+@@ -44,17 +44,8 @@ spec:
+             type: object
+           spec:
+             description: Spec defines the desired state of KnativeEventing
++            x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
+             properties:
+-              additionalManifests:
+-                description: A list of the additional eventing manifests, which will
+-                  be installed by the operator
+-                items:
+-                  properties:
+-                    URL:
+-                      description: The link of the additional manifest URL
+-                      type: string
+-                  type: object
+-                type: array
+               config:
+                 additionalProperties:
+                   additionalProperties:
+@@ -99,43 +90,6 @@ spec:
+                       description: The number of replicas that HA parts of the control plane will be scaled to
+                       type: integer
+                       minimum: 1
+-              manifests:
+-                description: A list of eventing manifests, which will be installed
+-                  by the operator
+-                items:
+-                  properties:
+-                    URL:
+-                      description: The link of the manifest URL
+-                      type: string
+-                  type: object
+-                type: array
+-              registry:
+-                description: A means to override the corresponding deployment images
+-                  in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+-                properties:
+-                  default:
+-                    description: The default image reference template to use for all
+-                      knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+-                    type: string
+-                  imagePullSecrets:
+-                    description: A list of secrets to be used when pulling the knative
+-                      images. The secret must be created in the same namespace as
+-                      the knative-eventing deployments, and not the namespace of this
+-                      resource.
+-                    items:
+-                      properties:
+-                        name:
+-                          description: The name of the secret.
+-                          type: string
+-                      type: object
+-                    type: array
+-                  override:
+-                    additionalProperties:
+-                      type: string
+-                    description: A map of a container name or image name to the full
+-                      image location of the individual knative image.
+-                    type: object
+-                type: object
+               resources:
+                 description: A mapping of deployment name to resource requirements
+                 items:
+@@ -182,9 +136,6 @@ spec:
+                   is selected, only `bindings.knative.dev/exclude:true` label is checked
+                   and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
+                 type: string
+-              version:
+-                description: The version of Knative Eventing to be installed
+-                type: string
+             type: object
+           status:
+             properties:
