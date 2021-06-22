@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-readonly ROOT_DIR=$(dirname "$0")/..
+ROOT_DIR=$(dirname "$0")/..
+readonly ROOT_DIR
 
 # shellcheck disable=SC1091,SC1090
 source "${ROOT_DIR}/vendor/knative.dev/hack/library.sh"

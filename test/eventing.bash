@@ -10,7 +10,7 @@ function upstream_knative_eventing_e2e {
 
   cd "${KNATIVE_EVENTING_HOME}"
 
-  # shellcheck disable=SC1090
+  # shellcheck disable=SC1091
   source "${KNATIVE_EVENTING_HOME}/openshift/e2e-common.sh"
 
   logger.info 'Installing Tracing'
