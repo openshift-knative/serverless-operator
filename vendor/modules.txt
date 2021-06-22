@@ -13,7 +13,7 @@ cloud.google.com/go/trace/apiv2
 cloud.google.com/go/storage
 # contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d
 contrib.go.opencensus.io/exporter/ocagent
-# contrib.go.opencensus.io/exporter/prometheus v0.2.1-0.20200609204449-6bcf6f8577f0
+# contrib.go.opencensus.io/exporter/prometheus v0.3.0
 contrib.go.opencensus.io/exporter/prometheus
 # contrib.go.opencensus.io/exporter/stackdriver v0.13.5
 contrib.go.opencensus.io/exporter/stackdriver
@@ -148,7 +148,7 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.4.3
+# github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/internal/gengogrpc
 github.com/golang/protobuf/jsonpb
@@ -170,7 +170,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.4.1-0.20210128200529-19c2b639fab1
+# github.com/google/go-containerregistry v0.5.0
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/gofuzz v1.2.0
 github.com/google/gofuzz
@@ -364,7 +364,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/prometheus/statsd_exporter v0.15.0
+# github.com/prometheus/statsd_exporter v0.20.0
 github.com/prometheus/statsd_exporter/pkg/mapper
 github.com/prometheus/statsd_exporter/pkg/mapper/fsm
 # github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
@@ -430,17 +430,17 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/internal/ztest
 go.uber.org/zap/zapcore
 go.uber.org/zap/zaptest
-# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+# golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/lint v0.0.0-20200302205851-738671d3881b
+# golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5
 golang.org/x/lint
 golang.org/x/lint/golint
 # golang.org/x/mod v0.4.1
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+# golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -452,14 +452,14 @@ golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20210126194326-f9ce19ea3013
+# golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 golang.org/x/oauth2
 golang.org/x/oauth2/google
 golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
@@ -472,13 +472,13 @@ golang.org/x/sys/windows/registry
 golang.org/x/sys/windows/svc/eventlog
 # golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 golang.org/x/term
-# golang.org/x/text v0.3.5
+# golang.org/x/text v0.3.6
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
+# golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 golang.org/x/time/rate
 # golang.org/x/tools v0.1.0
 golang.org/x/tools/cmd/goimports
@@ -529,7 +529,7 @@ google.golang.org/appengine/internal/socket
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d
+# google.golang.org/genproto v0.0.0-20210416161957-9910b6c460de
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/distribution
@@ -546,7 +546,7 @@ google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/type/calendarperiod
 google.golang.org/genproto/googleapis/type/expr
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.36.0
+# google.golang.org/grpc v1.37.0
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -580,6 +580,7 @@ google.golang.org/grpc/internal/buffer
 google.golang.org/grpc/internal/channelz
 google.golang.org/grpc/internal/credentials
 google.golang.org/grpc/internal/envconfig
+google.golang.org/grpc/internal/googlecloud
 google.golang.org/grpc/internal/grpclog
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
@@ -602,7 +603,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.26.0-rc.1
+# google.golang.org/protobuf v1.26.0
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/protojson
@@ -1048,10 +1049,10 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20210331063521-5691bb38d441
+# knative.dev/caching v0.0.0-20210512050647-922782660f7c
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.22.1 => github.com/openshift/knative-eventing v0.99.1-0.20210610143215-480365c6cb7c
+# knative.dev/eventing v0.23.2 => github.com/openshift/knative-eventing v0.99.1-0.20210615095610-6ba6287e0d43
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1161,7 +1162,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210610191316-8ce9b2e6d6c5
+# knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210622064103-4b37bbac41a7
 ## explicit
 knative.dev/eventing-kafka/pkg/apis/bindings
 knative.dev/eventing-kafka/pkg/apis/bindings/v1alpha1
@@ -1202,11 +1203,11 @@ knative.dev/eventing-kafka/test/lib/resources
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/continual
 knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/hack v0.0.0-20210325223819-b6ab329907d3
+# knative.dev/hack v0.0.0-20210602212444-509255f29a24
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20210331064822-999a7708876c
+# knative.dev/networking v0.0.0-20210608114541-4b1712c029b7
 ## explicit
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1226,7 +1227,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.22.2-0.20210512202047-38b6790875cb
+# knative.dev/operator v0.23.2
 ## explicit
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -1250,7 +1251,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing/common
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0
+# knative.dev/pkg v0.0.0-20210510175900-4564797bf3b7
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1323,7 +1324,7 @@ knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics
-# knative.dev/serving v0.22.0 => github.com/openshift/knative-serving v0.10.1-0.20210526160136-40b6f2a655b1
+# knative.dev/serving v0.23.1 => github.com/openshift/knative-serving v0.10.1-0.20210622082206-e5d94ec4da95
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1402,6 +1403,6 @@ sigs.k8s.io/yaml
 # k8s.io/client-go => k8s.io/client-go v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210610143215-480365c6cb7c
-# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210610191316-8ce9b2e6d6c5
-# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210526160136-40b6f2a655b1
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210615095610-6ba6287e0d43
+# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210622064103-4b37bbac41a7
+# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210622082206-e5d94ec4da95

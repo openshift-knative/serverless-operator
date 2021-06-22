@@ -20,6 +20,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
@@ -40,11 +41,17 @@ func ingressFilter(name string) mf.Predicate {
 	}
 }
 
+// noneFilter drops all ingresses but allows everything else.
+func noneFilter(u *unstructured.Unstructured) bool {
+	_, hasLabel := u.GetLabels()[providerLabel]
+	return !hasLabel
+}
+
 // Filters makes sure the disabled ingress resources are removed from the manifest.
 func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	var filters []mf.Predicate
 	if ks.Spec.Ingress == nil {
-		return mf.Any(istioFilter)
+		return istioFilter
 	}
 	if ks.Spec.Ingress.Istio.Enabled {
 		filters = append(filters, istioFilter)
@@ -54,6 +61,9 @@ func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	}
 	if ks.Spec.Ingress.Contour.Enabled {
 		filters = append(filters, contourFilter)
+	}
+	if len(filters) == 0 {
+		return noneFilter
 	}
 	return mf.Any(filters...)
 }
@@ -83,7 +93,13 @@ func getIngress(version string, manifest *mf.Manifest) error {
 	}
 	koDataDir := os.Getenv(common.KoEnvKey)
 	// Ingresses are saved in the directory named major.minor. We remove the patch number.
-	ingressVersion := semver.MajorMinor(common.SanitizeSemver(version))[1:]
+	ingressVersion := common.LATEST_VERSION
+	if !strings.EqualFold(version, common.LATEST_VERSION) {
+		ingressVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
+	}
+
+	// This line can make sure a valid available ingress version is returned.
+	ingressVersion = common.GetLatestIngressRelease(ingressVersion)
 	ingressPath := filepath.Join(koDataDir, "ingress", ingressVersion)
 	m, err := common.FetchManifest(ingressPath)
 	if err != nil {
