@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -66,7 +66,7 @@ kind: CustomResourceDefinition
 metadata:
   name: domainmappings.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -127,7 +127,7 @@ metadata:
   name: domain-mapping
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 spec:
   selector:
     matchLabels:
@@ -138,7 +138,7 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: domain-mapping
-        serving.knative.dev/release: "v0.22.0"
+        serving.knative.dev/release: "v0.23.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -209,7 +209,7 @@ metadata:
   name: domainmapping-webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 spec:
   selector:
     matchLabels:
@@ -222,7 +222,7 @@ spec:
       labels:
         app: domainmapping-webhook
         role: domainmapping-webhook
-        serving.knative.dev/release: "v0.22.0"
+        serving.knative.dev/release: "v0.23.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -300,7 +300,7 @@ kind: Service
 metadata:
   labels:
     role: domainmapping-webhook
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
   name: domainmapping-webhook
   namespace: knative-serving
 spec:
@@ -338,7 +338,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -349,6 +349,17 @@ webhooks:
     sideEffects: None
     name: webhook.domainmapping.serving.knative.dev
     timeoutSeconds: 10
+    rules:
+      - apiGroups:
+          - serving.knative.dev
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        scope: "*"
+        resources:
+          - domainmappings
 
 ---
 # Copyright 2020 The Knative Authors
@@ -371,7 +382,7 @@ metadata:
   name: domainmapping-webhook-certs
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 # The data is populated at install time.
 
 ---
@@ -394,7 +405,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -405,5 +416,17 @@ webhooks:
     sideEffects: None
     name: validation.webhook.domainmapping.serving.knative.dev
     timeoutSeconds: 10
+    rules:
+      - apiGroups:
+          - serving.knative.dev
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        scope: "*"
+        resources:
+          - domainmappings
 
 ---
