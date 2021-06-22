@@ -21,6 +21,7 @@ const ConfigManagedNamespace = "openshift-config-managed"
 const EventingResourceDashboardPathEnvVar = "EVENTING_RESOURCES_DASHBOARD_MANIFEST_PATH"
 const EventingBrokerDashboardPathEnvVar = "EVENTING_BROKER_DASHBOARD_MANIFEST_PATH"
 const EventingSourceDashboardPathEnvVar = "EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH"
+const EventingChannelDashboardPathEnvVar = "EVENTING_CHANNEL_DASHBOARD_MANIFEST_PATH"
 const ServingResourceDashboardPathEnvVar = "SERVING_RESOURCES_DASHBOARD_MANIFEST_PATH"
 
 // Apply applies dashboard resources.
