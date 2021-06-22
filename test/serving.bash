@@ -3,17 +3,6 @@
 # For SC2164
 set -e
 
-function wait_for_knative_serving_ingress_ns_deleted {
-  local NS="${SERVING_NAMESPACE}-ingress"
-  timeout 180 "[[ \$(oc get ns $NS --no-headers | wc -l) == 1 ]]" || true
-  # Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1798282 on Azure - if loadbalancer status is empty
-  # it's safe to remove the finalizer.
-  if oc -n "$NS" get svc kourier >/dev/null 2>&1 && [ "$(oc -n "$NS" get svc kourier -ojsonpath="{.status.loadBalancer.*}")" = "" ]; then
-    oc -n "$NS" patch services/kourier --type=json --patch='[{"op":"replace","path":"/metadata/finalizers","value":[]}]'
-  fi
-  timeout 180 "[[ \$(oc get ns $NS --no-headers | wc -l) == 1 ]]"
-}
-
 function prepare_knative_serving_tests {
   logger.debug 'Preparing Serving tests'
 
