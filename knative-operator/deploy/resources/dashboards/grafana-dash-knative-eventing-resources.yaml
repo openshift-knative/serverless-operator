@@ -21,7 +21,7 @@ data:
       "annotations": {
         "list": []
       },
-      "description": "Knative Eventing - Revision CPU and Memory Usage",
+      "description": "Knative Eventing - Source CPU and Memory Usage",
       "editable": false,
       "gnetId": null,
       "graphTooltip": 0,
