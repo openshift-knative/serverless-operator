@@ -61,7 +61,7 @@ function download_ingress {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/openshift-knative/${component}/${version}/config/${file}"
+    url="https://raw.githubusercontent.com/knative-sandbox/${component}/${version}/config/${file}"
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
@@ -87,7 +87,7 @@ git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
-url="https://github.com/knative-sandbox/net-kourier/releases/download/$version/kourier.yaml"
+url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get dependencies.kourier)/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
