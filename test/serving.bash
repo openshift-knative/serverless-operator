@@ -15,7 +15,10 @@ function prepare_knative_serving_tests {
   rm -fv test/config/config-deployment.yaml
 
   # Create test resources (namespaces, configMaps, secrets)
-  oc apply -f test/config
+  ytt \
+    -f "test/config/ytt/lib" \
+    -f "test/config/ytt/values.yaml" \
+    -f test/config/ytt/core/resources.yaml | oc apply -f -
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
   # Add networkpolicy to test namespace and label to serving namespaces for testing under the strict networkpolicy.
