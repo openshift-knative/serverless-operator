@@ -210,6 +210,22 @@ func TestReconcile(t *testing.T) {
 			}
 		}),
 	}, {
+		name: "override autocreateClusterDomainClaims config",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: v1alpha1.ConfigMapData{
+						"network": map[string]string{
+							"autocreateClusterDomainClaims": "false",
+						},
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			common.Configure(&ks.Spec.CommonSpec, "network", "autocreateClusterDomainClaims", "false")
+		}),
+	}, {
 		name: "respects different status",
 		in: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
@@ -415,8 +431,9 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 						"routing.example.com": "",
 					},
 					"network": map[string]string{
-						"domainTemplate": defaultDomainTemplate,
-						"ingress.class":  kourierIngressClassName,
+						"domainTemplate":                defaultDomainTemplate,
+						"ingress.class":                 kourierIngressClassName,
+						"autocreateClusterDomainClaims": "true",
 					},
 				},
 				Registry: v1alpha1.Registry{

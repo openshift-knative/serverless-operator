@@ -117,6 +117,10 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 		}
 	}
 
+	// Explicitly set autocreateClusterDomainClaims to true if not otherwise set to be
+	// independent from upstream default changes.
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "autocreateClusterDomainClaims", "true")
+
 	// Temporary fix for SRVKS-743
 	if ks.Spec.Ingress.Istio.Enabled {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
