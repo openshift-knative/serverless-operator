@@ -202,7 +202,12 @@ function add_user {
   fi
 
   logger.debug 'Generate kubeconfig'
-  cp "${KUBECONFIG}" "$name.kubeconfig"
-  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --username=${name} --password=${pass} > /dev/null'"
+  
+  ctx=$(oc config current-context)
+  cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
+  server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
+  logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+
+  occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --insecure-skip-tls-verify=true --username=${name} --password=${pass} ${server} > /dev/null'"
   timeout 180 "${occmd}"
 }
