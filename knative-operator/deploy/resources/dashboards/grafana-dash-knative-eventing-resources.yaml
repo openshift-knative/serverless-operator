@@ -64,7 +64,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$pod\", container != \"POD\", container != \"\"}[1m])) by (container)",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$pod|k8s_POD_pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}[1m])) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -144,7 +144,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$pod\", container != \"POD\", container != \"\"}) by (container)",
+              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$pod|k8s_POD_pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -229,14 +229,14 @@ data:
             "steppedLine": false,
             "targets": [
              {
-                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "received bytes",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "legendFormat": "transmitted bytes",
                 "refId": "B"
               }
@@ -324,14 +324,14 @@ data:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat":  "receive errors",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "instant": false,
                 "legendFormat": "transmit errors",
@@ -490,7 +490,7 @@ data:
             "allValue": null,
             "current": {},
             "datasource": "prometheus",
-            "hide": 0,
+            "hide": 1,
             "includeAll": false,
             "label": "SourcePodName",
             "multi": false,
