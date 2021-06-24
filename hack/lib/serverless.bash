@@ -352,10 +352,6 @@ function teardown_serverless {
   oc delete subscriptions.operators.coreos.com \
     -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
     --ignore-not-found
-  for ip in $(set +o pipefail && oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
-      | grep serverless-operator | cut -f1 -d' '); do
-    oc delete installplan -n "${OPERATORS_NAMESPACE}" "$ip"
-  done
   for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
       | grep serverless-operator | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
