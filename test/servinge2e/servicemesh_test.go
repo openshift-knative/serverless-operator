@@ -628,10 +628,10 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			payload map[string]interface{}
 		}{{
 			// A valid token
-			"valid",
-			true,
-			privateKey,
-			map[string]interface{}{
+			name:  "valid",
+			valid: true,
+			key:   privateKey,
+			payload: map[string]interface{}{
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
@@ -640,16 +640,16 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			},
 		}, {
 			// No token (request will be done without the Authorization header)
-			"no_token",
-			false,
-			nil,
-			nil,
+			name:    "no_token",
+			valid:   false,
+			key:     nil,
+			payload: nil,
 		}, {
 			// Unsigned token
-			"unsigned",
-			false,
-			nil,
-			map[string]interface{}{
+			name:  "unsigned",
+			valid: false,
+			key:   nil,
+			payload: map[string]interface{}{
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
@@ -658,10 +658,10 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			},
 		}, {
 			// A token with "exp" time in the past
-			"expired",
-			false,
-			privateKey,
-			map[string]interface{}{
+			name:  "expired",
+			valid: false,
+			key:   privateKey,
+			payload: map[string]interface{}{
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
@@ -671,10 +671,10 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			},
 		}, {
 			// A token signed by a different key
-			"bad_key",
-			false,
-			wrongKey,
-			map[string]interface{}{
+			name:  "bad_key",
+			valid: false,
+			key:   wrongKey,
+			payload: map[string]interface{}{
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
@@ -683,10 +683,10 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			},
 		}, {
 			// A token with an issuer set to a different principal than the one specified in the Policy
-			"bad_iss",
-			false,
-			privateKey,
-			map[string]interface{}{
+			name:  "bad_iss",
+			valid: false,
+			key:   privateKey,
+			payload: map[string]interface{}{
 				"iss": wrongIssuer,
 				"sub": subject,
 				"foo": "bar",
