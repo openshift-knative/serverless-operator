@@ -628,75 +628,72 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			payload map[string]interface{}
 		}{{
 			// A valid token
-			"valid",
-			true,
-			privateKey,
-			map[string]interface{}{
+			name:  "valid",
+			valid: true,
+			key:   privateKey,
+			payload: map[string]interface{}{
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
 				"iat": time.Now().Unix(),
 				"exp": time.Now().Unix() + 3600,
 			},
-		},
-			{
-				// No token (request will be done without the Authorization header)
-				"no_token",
-				false,
-				nil,
-				nil,
+		}, {
+			// No token (request will be done without the Authorization header)
+			name:    "no_token",
+			valid:   false,
+			key:     nil,
+			payload: nil,
+		}, {
+			// Unsigned token
+			name:  "unsigned",
+			valid: false,
+			key:   nil,
+			payload: map[string]interface{}{
+				"iss": issuer,
+				"sub": subject,
+				"foo": "bar",
+				"iat": time.Now().Unix(),
+				"exp": time.Now().Unix() + 3600,
 			},
-			{
-				// Unsigned token
-				"unsigned",
-				false,
-				nil,
-				map[string]interface{}{
-					"iss": issuer,
-					"sub": subject,
-					"foo": "bar",
-					"iat": time.Now().Unix(),
-					"exp": time.Now().Unix() + 3600,
-				},
+		}, {
+			// A token with "exp" time in the past
+			name:  "expired",
+			valid: false,
+			key:   privateKey,
+			payload: map[string]interface{}{
+				"iss": issuer,
+				"sub": subject,
+				"foo": "bar",
+				// as if generated before an hour, expiring 10 seconds ago
+				"iat": time.Now().Unix() - 3600,
+				"exp": time.Now().Unix() - 10,
 			},
-			{
-				// A token with "exp" time in the past
-				"expired",
-				false,
-				privateKey,
-				map[string]interface{}{
-					"iss": issuer,
-					"sub": subject,
-					"foo": "bar",
-					// as if generated before an hour, expiring 10 seconds ago
-					"iat": time.Now().Unix() - 3600,
-					"exp": time.Now().Unix() - 10,
-				},
-			}, {
-				// A token signed by a different key
-				"bad_key",
-				false,
-				wrongKey,
-				map[string]interface{}{
-					"iss": issuer,
-					"sub": subject,
-					"foo": "bar",
-					"iat": time.Now().Unix(),
-					"exp": time.Now().Unix() + 3600,
-				},
-			}, {
-				// A token with an issuer set to a different principal than the one specified in the Policy
-				"bad_iss",
-				false,
-				privateKey,
-				map[string]interface{}{
-					"iss": wrongIssuer,
-					"sub": subject,
-					"foo": "bar",
-					"iat": time.Now().Unix(),
-					"exp": time.Now().Unix() + 3600,
-				},
-			}}
+		}, {
+			// A token signed by a different key
+			name:  "bad_key",
+			valid: false,
+			key:   wrongKey,
+			payload: map[string]interface{}{
+				"iss": issuer,
+				"sub": subject,
+				"foo": "bar",
+				"iat": time.Now().Unix(),
+				"exp": time.Now().Unix() + 3600,
+			},
+		}, {
+			// A token with an issuer set to a different principal than the one specified in the Policy
+			name:  "bad_iss",
+			valid: false,
+			key:   privateKey,
+			payload: map[string]interface{}{
+				"iss": wrongIssuer,
+				"sub": subject,
+				"foo": "bar",
+				"iat": time.Now().Unix(),
+				"exp": time.Now().Unix() + 3600,
+			},
+		}}
 
 		for _, scenario := range tests {
 			scenario := scenario
