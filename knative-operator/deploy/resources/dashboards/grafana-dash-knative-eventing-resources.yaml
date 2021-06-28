@@ -28,6 +28,20 @@ data:
       "links": [],
       "panels": [
         {
+          "collapsed": true,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "panels": [],
+          "repeat": null,
+          "title": "Eventing Source Resources",
+          "type": "row"
+        },
+        {
           "aliasColors": {},
           "bars": false,
           "dashLength": 10,
@@ -64,7 +78,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+|pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}[1m])) by (container)",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"$pod|k8s_POD_pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}[1m])) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -144,7 +158,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$sprefix-$source-.+|pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}) by (container)",
+              "expr": "sum(container_memory_usage_bytes{namespace=\"$namespace\", pod=~\"$pod|k8s_POD_pingsource-mt-adapter-.+\", container != \"POD\", container != \"\"}) by (container)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{container}}",
@@ -229,14 +243,14 @@ data:
             "steppedLine": false,
             "targets": [
              {
-                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "received bytes",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "legendFormat": "transmitted bytes",
                 "refId": "B"
               }
@@ -324,14 +338,14 @@ data:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_receive_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat":  "receive errors",
                 "refId": "A"
               },
               {
-                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$sprefix-$source-.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
+                "expr": "sum(rate(container_network_transmit_errors_total{namespace=\"$namespace\", container=\"POD\", name=~\"k8s_POD_$pod.+|k8s_POD_pingsource-mt-adapter-.+\"}[1m]))",
                 "format": "time_series",
                 "instant": false,
                 "legendFormat": "transmit errors",
@@ -434,9 +448,9 @@ data:
             "includeAll": false,
             "label": "Source Type",
             "multi": false,
-            "name": "Source Type",
+            "name": "SourceType",
             "options": [],
-            "query": "label_values(label_replace(kube_pod_labels{namespace=\"$namespace\", label_eventing_knative_dev_source=~\".+\"}, \"label_eventing_knative_dev_source\", \"$1$2\", \"label_eventing_knative_dev_source\", \"(.+)-(.+)-(controller)\"), label_eventing_knative_dev_source)",
+            "query": "label_values(label_replace(kube_pod_labels{namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, \"label_eventing_knative_dev_source\", \"$1$2\", \"label_eventing_knative_dev_source\", \"(.+)-(.+)-(controller)\"), label_eventing_knative_dev_source)",
             "refresh": 2,
             "regex": "",
             "sort": 1,
@@ -456,7 +470,7 @@ data:
             "multi": false,
             "name": "sprefix",
             "options": [],
-            "query": "label_values(label_replace(kube_pod_labels{namespace=\"$namespace\", label_eventing_knative_dev_source=~\".+\"}, \"label_eventing_knative_dev_source\", \"$1$2\", \"label_eventing_knative_dev_source\", \"(.+)-(.+)-(controller)\"), label_eventing_knative_dev_source)",
+            "query": "label_values(label_replace(kube_pod_labels{namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, \"label_eventing_knative_dev_source\", \"$1$2\", \"label_eventing_knative_dev_source\", \"(.+)-(.+)-(controller)\"), label_eventing_knative_dev_source)",
             "refresh": 2,
             "regex": "",
             "sort": 1,
@@ -474,9 +488,49 @@ data:
             "includeAll": false,
             "label": "SourceName",
             "multi": false,
-            "name": "source",
+            "name": "nameofSource",
             "options": [],
-            "query": "label_values(kube_pod_labels{label_eventing_knative_dev_source=~\".+\", label_eventing_knative_dev_sourceName=~\".+\", namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, label_eventing_knative_dev_sourceName)",
+            "query": "label_values(kube_pod_labels{label_eventing_knative_dev_sourceName=~\".+\", label_eventing_knative_dev_source_name=\"\", namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, label_eventing_knative_dev_sourceName)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 2,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {},
+            "datasource": "prometheus",
+            "hide": 0,
+            "includeAll": false,
+            "label": "SourceName",
+            "multi": false,
+            "name": "sourceName",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_eventing_knative_dev_source_name=~\".+\", label_eventing_knative_dev_sourceName=\"\", namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, label_eventing_knative_dev_source_name)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 2,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {},
+            "datasource": "prometheus",
+            "hide": 1,
+            "includeAll": false,
+            "label": "SourcePodName",
+            "multi": false,
+            "name": "pod",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_eventing_knative_dev_source_name=\"$sourceName\", label_eventing_knative_dev_sourceName=\"\", namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"} or kube_pod_labels{label_eventing_knative_dev_sourceName=\"$nameofSource\", label_eventing_knative_dev_source_name=\"\", namespace=\"$namespace\", label_eventing_knative_dev_source=\"$scontroller\"}, pod)",
             "refresh": 2,
             "regex": "",
             "sort": 2,
