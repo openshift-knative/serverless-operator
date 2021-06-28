@@ -23,12 +23,12 @@ jobs:
         with:
           go-version: 1.15.x
 
-      - name: Install prerequisites
-        env:
-          YQ_VERSION: 3.4.0
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
+      - name: Install YQ
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "github"
+          github_pat: ${{ github.token }}
+          yq: "3.4.1"
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -68,11 +68,17 @@ jobs:
         with:
           path: ./src/github.com/${{ github.repository }}
 
+      - name: Install operator-sdk
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "github"
+          github_pat: ${{ github.token }}
+          operator-sdk: "1.7.2"
+
       - name: Install Tools
         working-directory: ./src/github.com/${{ github.repository }}
         env:
           WOKE_VERSION: v0.8.0
-          OSDK_VERSION: v1.7.2
         run: |
           TEMP_PATH="$(mktemp -d)"
           cd $TEMP_PATH
@@ -88,10 +94,6 @@ jobs:
           echo '::group:: Installing woke ... https://github.com/get-woke/woke'
           curl -sfL https://raw.githubusercontent.com/get-woke/woke/main/install.sh | sh -s -- -b "${TEMP_PATH}" "${WOKE_VERSION}" 2>&1
           echo '::endgroup::'
-
-          echo '::group:: Installing operator-sdk ... https://github.com/operator-framework/operator-sdk/'
-          curl -sfL https://github.com/operator-framework/operator-sdk/releases/download/${OSDK_VERSION}/operator-sdk_linux_amd64 -o "${TEMP_PATH}/operator-sdk"
-          chmod +x "${TEMP_PATH}/operator-sdk"
 
           echo "${TEMP_PATH}" >> $GITHUB_PATH
 
