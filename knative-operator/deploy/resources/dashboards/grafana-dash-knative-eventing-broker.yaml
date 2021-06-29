@@ -1220,7 +1220,7 @@ data:
       "refresh": false,
       "schemaVersion": 19,
       "style": "dark",
-      "tags": [],
+      "tags": ["Knative"],
       "templating": {
         "list": [
           {
