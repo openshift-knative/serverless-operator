@@ -2,7 +2,7 @@ describe('OCP UI for Serverless', () => {
 
   class ShowcaseKservice {
     constructor(ops = {}) {
-      this.counter = ops.counter || 0
+      this.counter = ops.counter || Math.floor(Math.random() * 10_000);
       this.__app = ops.app || 'demoapp'
       this.__name = ops.name || 'showcase'
       this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
@@ -53,14 +53,14 @@ describe('OCP UI for Serverless', () => {
         cy.get(selector)
           .invoke('text')
           .should((text) => {
-          expect(text).to.eq(`${scale}`)
-        })
+            expect(text).to.eq(`${scale}`)
+          })
       } finally {
         Cypress.config('defaultCommandTimeout', timeout)
       }
     }
 
-    deployImage(kind = 'regular') {
+    deployImage({kind = 'regular', clusterLocal = false} = {}) {
       showcaseKsvc.counter++
       cy.visit(`/add/ns/${showcaseKsvc.namespace}`)
       cy.contains('Knative Channel')
@@ -77,6 +77,10 @@ describe('OCP UI for Serverless', () => {
       cy.get('input#form-input-name-field')
         .clear()
         .type(showcaseKsvc.name())
+      if (clusterLocal) {
+        cy.get('input#form-checkbox-route-create-field')
+          .uncheck()
+      }
       cy.get('button[type=submit]').click()
       cy.url().should('include', `/topology/ns/${showcaseKsvc.namespace}`)
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
@@ -112,12 +116,8 @@ describe('OCP UI for Serverless', () => {
   const showcaseKsvc = new ShowcaseKservice()
 
   it('can deploy kservice and scale it', () => {
-    describe('with authenticated via Web Console', () => {
-      cy.login()
-    })
-    describe('deploy kservice from image', () => {
-      showcaseKsvc.deployImage()
-    })
+    describe('with authenticated via Web Console', cy.login)
+    describe('deploy kservice from image', showcaseKsvc.deployImage)
     describe('check automatic scaling of kservice', () => {
       showcaseKsvc.showServiceDetails()
       showcaseKsvc.url().then((url) => {
@@ -134,18 +134,12 @@ describe('OCP UI for Serverless', () => {
         showcaseKsvc.checkScale(1)
       })
     })
-    describe('remove kservice', () => {
-      showcaseKsvc.removeApp()
-    })
+    describe('remove kservice', showcaseKsvc.removeApp)
   })
 
   it('can route traffic to multiple revisions', () => {
-    describe('with authenticated via Web Console', () => {
-      cy.login()
-    })
-    describe('deploy kservice from image', () => {
-      showcaseKsvc.deployImage()
-    })
+    describe('with authenticated via Web Console', cy.login)
+    describe('deploy kservice from image', showcaseKsvc.deployImage)
     describe('add two revisions to traffic distribution', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
@@ -162,7 +156,7 @@ describe('OCP UI for Serverless', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
         .contains(showcaseKsvc.name()).click()
-      cy.contains('Set traffic distribution', { matchCase: false }).click()
+      cy.contains('Set traffic distribution', {matchCase: false}).click()
       cy.get('input[name="trafficSplitting.0.percent"]')
         .clear()
         .type('51')
@@ -173,7 +167,7 @@ describe('OCP UI for Serverless', () => {
         .type('49')
       cy.get('input[name="trafficSplitting.1.tag"]')
         .type('v1')
-      cy.contains('Select a Revision', { matchCase: false }).click()
+      cy.contains('Select a Revision', {matchCase: false}).click()
       cy.get('ul.pf-c-dropdown__menu button').click()
       cy.get('button[type=submit]').click()
       cy.contains('51%')
@@ -187,8 +181,18 @@ describe('OCP UI for Serverless', () => {
         }
       })
     })
-    describe('remove kservice', () => {
-      showcaseKsvc.removeApp()
+    describe('remove kservice', showcaseKsvc.removeApp)
+  })
+
+  it('can deploy a cluster-local service', () => {
+    describe('with authenticated via Web Console', cy.login)
+    describe('deploy kservice from image', () => {
+      showcaseKsvc.deployImage({clusterLocal: true})
     })
+    describe('check if URL contains cluster.local', () => {
+      showcaseKsvc.url()
+        .and('include', 'cluster.local')
+    })
+    describe('remove kservice', showcaseKsvc.removeApp)
   })
 })
