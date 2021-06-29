@@ -47,7 +47,7 @@ image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
 image "kourier-gateway" "docker.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "kourier-control" "docker.io/markusthoemmes/kourier-b74c3918b7eee585f87df62ccd297dc8@sha256:abeff30a73fbae65ce3ec6418a4d77dff8c3c3567ced2a0ded4a9df48b9d9074"
 
 image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
 image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
