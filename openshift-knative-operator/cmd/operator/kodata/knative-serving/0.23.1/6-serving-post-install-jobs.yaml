@@ -1,6 +1,6 @@
 
 ---
-# /tmp/tmp.RbHieG51Kb/serving-storage-version-migration.yaml
+# /tmp/tmp.EtwRLaDhgZ/serving-storage-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ metadata:
   namespace: knative-serving
   labels:
     app: "storage-version-migration-serving"
-    serving.knative.dev/release: "v0.22.0"
+    serving.knative.dev/release: "v0.23.1"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10

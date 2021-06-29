@@ -172,7 +172,6 @@ flags:
   - [`--ingressendpoint`](#using-a-custom-ingress-endpoint)
 - [`--resolvabledomain`](#using-a-resolvable-domain)
 - [`--https`](#using-https)
-- [`--ingressClass`](#using-ingress-class)
 
 ### Overriding docker repo
 
@@ -231,7 +230,7 @@ If you have configured your cluster to use a resolvable domain, you can use the
 `--resolvabledomain` flag to indicate that the test should make requests
 directly against `Route.Status.Domain` and does not need to spoof the `Host`.
 
-### Overriding the gateway used for spoofing
+### Overriding the gateway used for spoofing
 
 If you are using an ingress provider other than Istio, and have not set up a
 resolvable domain (above), you will also need to set the `GATEWAY_OVERRIDE` and
@@ -246,8 +245,3 @@ export GATEWAY_NAMESPACE_OVERRIDE=kourier-system
 ### Using https
 
 You can use the `--https` flag to have all tests run with https.
-
-### Using ingress class
-
-The `--ingressClass` argument lets you specify the ingress class. The default
-value is `istio.ingress.networking.knative.dev`.

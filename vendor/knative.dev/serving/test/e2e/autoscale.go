@@ -18,7 +18,6 @@ package e2e
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -102,11 +101,11 @@ func (ctx *TestContext) SetLogger(logf logging.FormatLogger) {
 	ctx.logf = logf
 }
 
-func getVegetaTarget(kubeClientset kubernetes.Interface, domain, endpointOverride string, resolvable bool) (vegeta.Target, error) {
+func getVegetaTarget(kubeClientset kubernetes.Interface, domain, endpointOverride string, resolvable bool, paramName string, paramValue int) (vegeta.Target, error) {
 	if resolvable {
 		return vegeta.Target{
 			Method: http.MethodGet,
-			URL:    fmt.Sprintf("http://%s?sleep=%d", domain, autoscaleSleep),
+			URL:    fmt.Sprintf("http://%s?%s=%d", domain, paramName, paramValue),
 		}, nil
 	}
 
@@ -120,7 +119,7 @@ func getVegetaTarget(kubeClientset kubernetes.Interface, domain, endpointOverrid
 
 	return vegeta.Target{
 		Method: http.MethodGet,
-		URL:    fmt.Sprintf("http://%s:%s?sleep=%d", endpoint, mapper("80"), autoscaleSleep),
+		URL:    fmt.Sprintf("http://%s:%s?%s=%d", endpoint, mapper("80"), paramName, paramValue),
 		Header: http.Header{"Host": []string{domain}},
 	}, nil
 }
@@ -129,13 +128,8 @@ func generateTraffic(
 	ctx *TestContext,
 	attacker *vegeta.Attacker,
 	pacer vegeta.Pacer,
-	stopChan chan struct{}) error {
-
-	target, err := getVegetaTarget(
-		ctx.clients.KubeClient, ctx.resources.Route.Status.URL.URL().Hostname(), pkgTest.Flags.IngressEndpoint, test.ServingFlags.ResolvableDomain)
-	if err != nil {
-		return fmt.Errorf("error creating vegeta target: %w", err)
-	}
+	stopChan chan struct{},
+	target vegeta.Target) error {
 
 	// The 0 duration means that the attack will only be controlled by the `Stop` function.
 	results := attacker.Attack(vegeta.NewStaticTargeter(target), pacer, 0, "load-test")
@@ -177,17 +171,27 @@ func generateTrafficAtFixedConcurrency(ctx *TestContext, concurrency int, stopCh
 		vegeta.Timeout(0), // No timeout is enforced at all.
 		vegeta.Workers(uint64(concurrency)),
 		vegeta.MaxWorkers(uint64(concurrency)))
+	target, err := getVegetaTarget(
+		ctx.clients.KubeClient, ctx.resources.Route.Status.URL.URL().Hostname(), pkgTest.Flags.IngressEndpoint, test.ServingFlags.ResolvableDomain, "sleep", autoscaleSleep)
+	if err != nil {
+		return fmt.Errorf("error creating vegeta target: %w", err)
+	}
 
 	ctx.logf("Maintaining %d concurrent requests.", concurrency)
-	return generateTraffic(ctx, attacker, pacer, stopChan)
+	return generateTraffic(ctx, attacker, pacer, stopChan, target)
 }
 
 func generateTrafficAtFixedRPS(ctx *TestContext, rps int, stopChan chan struct{}) error {
 	pacer := vegeta.ConstantPacer{Freq: rps, Per: time.Second}
 	attacker := vegeta.NewAttacker(vegeta.Timeout(0)) // No timeout is enforced at all.
+	target, err := getVegetaTarget(
+		ctx.clients.KubeClient, ctx.resources.Route.Status.URL.URL().Hostname(), pkgTest.Flags.IngressEndpoint, test.ServingFlags.ResolvableDomain, "sleep", autoscaleSleep)
+	if err != nil {
+		return fmt.Errorf("error creating vegeta target: %w", err)
+	}
 
 	ctx.logf("Maintaining %v RPS.", rps)
-	return generateTraffic(ctx, attacker, pacer, stopChan)
+	return generateTraffic(ctx, attacker, pacer, stopChan, target)
 }
 
 func toPercentageString(f float64) string {
@@ -332,12 +336,11 @@ func checkPodScale(ctx *TestContext, targetPods, minPods, maxPods float64, done 
 				maxPods = math.Ceil(originalMaxPods * 1.2)
 			}
 
-			mes := fmt.Sprintf("revision %q #replicas: %v, want at least: %v\ndeployment state: %s",
-				ctx.resources.Revision.Name, got, minPods, spew.Sdump(d))
+			mes := fmt.Sprintf("revision %q #replicas: %v, want at least: %v", ctx.resources.Revision.Name, got, minPods)
 			ctx.logf(mes)
 			// verify that the number of pods doesn't go down while we are scaling up.
 			if got < minPods {
-				return errors.New("interim scale didn't fulfill constraints: " + mes)
+				return fmt.Errorf("interim scale didn't fulfill constraints: %s\ndeployment state: %s", mes, spew.Sdump(d))
 			}
 			// A quick test succeeds when the number of pods scales up to `targetPods`
 			// (and, as an extra check, no more than `maxPods`).
@@ -365,11 +368,10 @@ func checkPodScale(ctx *TestContext, targetPods, minPods, maxPods float64, done 
 				maxPods = math.Ceil(originalMaxPods * 1.2)
 			}
 
-			mes := fmt.Sprintf("got %v replicas, expected between [%v, %v] replicas for revision %s\ndeployment state: %s",
-				got, targetPods-1, maxPods, ctx.resources.Revision.Name, spew.Sdump(d))
+			mes := fmt.Sprintf("revision %q #replicas: %v, want between [%v, %v]", ctx.resources.Revision.Name, got, targetPods-1, maxPods)
 			ctx.logf(mes)
 			if got < targetPods-1 || got > maxPods {
-				return errors.New("final scale didn't fulfill constraints: " + mes)
+				return fmt.Errorf("final scale didn't fulfill constraints: %s\ndeployment state: %s", mes, spew.Sdump(d))
 			}
 			return nil
 		}

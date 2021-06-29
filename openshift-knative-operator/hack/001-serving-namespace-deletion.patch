@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.22.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.22.0/2-serving-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
 index e7f8e0d5..aa68ca9e 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.22.0/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.22.0/2-serving-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
 @@ -1,25 +1,3 @@
 -# Copyright 2018 The Knative Authors
 -#
@@ -22,7 +22,7 @@ index e7f8e0d5..aa68ca9e 100644
 -metadata:
 -  name: knative-serving
 -  labels:
--    serving.knative.dev/release: "v0.22.0"
+-    serving.knative.dev/release: "v0.23.1"
 -
 ----
  # Copyright 2019 The Knative Authors

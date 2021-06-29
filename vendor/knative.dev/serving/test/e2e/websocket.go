@@ -46,20 +46,33 @@ func connect(t *testing.T, clients *test.Clients, domain string) (*websocket.Con
 		address string
 	)
 
-	address, mapper, err := ingress.GetIngressEndpoint(context.Background(), clients.KubeClient, pkgTest.Flags.IngressEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	if test.ServingFlags.ResolvableDomain {
-		address = domain
-		mapper = func(in string) string { return in }
+	address = domain
+	mapper := func(in string) string { return in }
+	if !test.ServingFlags.ResolvableDomain {
+		address, mapper, err = ingress.GetIngressEndpoint(context.Background(), clients.KubeClient, pkgTest.Flags.IngressEndpoint)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	u := url.URL{Scheme: "ws", Host: net.JoinHostPort(address, mapper("80")), Path: "/"}
+	if test.ServingFlags.HTTPS {
+		u = url.URL{Scheme: "wss", Host: net.JoinHostPort(address, mapper("443")), Path: "/"}
+	}
+
 	var conn *websocket.Conn
 	waitErr := wait.PollImmediate(connectRetryInterval, connectTimeout, func() (bool, error) {
 		t.Logf("Connecting using websocket: url=%s, host=%s", u.String(), domain)
-		c, resp, err := websocket.DefaultDialer.Dial(u.String(), http.Header{"Host": {domain}})
+		dialer := &websocket.Dialer{
+			Proxy:            http.ProxyFromEnvironment,
+			HandshakeTimeout: 45 * time.Second,
+		}
+		if test.ServingFlags.HTTPS {
+			dialer.TLSClientConfig = test.TLSClientConfig(context.Background(), t.Logf, clients)
+			dialer.TLSClientConfig.ServerName = domain // Set ServerName for pseudo hostname with TLS.
+		}
+
+		c, resp, err := dialer.Dial(u.String(), http.Header{"Host": {domain}})
 		if err == nil {
 			t.Log("WebSocket connection established.")
 			conn = c
