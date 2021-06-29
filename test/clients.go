@@ -155,6 +155,10 @@ func CleanupAll(t *testing.T, contexts ...*Context) {
 
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
 func (ctx *Context) Cleanup(t *testing.T) {
+	if t.Failed() {
+		// Do not clean up resources when test failed for debug.
+		return
+	}
 	for _, f := range ctx.CleanupList {
 		if err := f(); err != nil {
 			t.Logf("Failed to clean up: %v", err)
