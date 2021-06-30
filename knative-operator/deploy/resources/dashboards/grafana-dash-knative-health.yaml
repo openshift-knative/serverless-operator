@@ -398,7 +398,7 @@ data:
      ],
      "schemaVersion": 26,
      "style": "dark",
-      "tags": [],
+      "tags": ["Knative"],
       "templating": {
          "list": [
           {
