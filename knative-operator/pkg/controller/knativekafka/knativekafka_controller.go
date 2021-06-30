@@ -38,7 +38,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller-manager"}
+	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
