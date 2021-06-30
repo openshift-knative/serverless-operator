@@ -326,7 +326,7 @@ function create_htpasswd_users {
 
   for i in $(seq 1 "$num_users"); do
     occmd="bash -c '! oc login --insecure-skip-tls-verify=true --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} ${server} > /dev/null'"
-    timeout 180 "${occmd}"
+    timeout 600 "${occmd}"
   done
 
   logger.success "${num_users} htpasswd users created"

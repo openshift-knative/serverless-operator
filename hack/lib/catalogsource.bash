@@ -209,5 +209,5 @@ function add_user {
   logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
 
   occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --insecure-skip-tls-verify=true --username=${name} --password=${pass} ${server} > /dev/null'"
-  timeout 180 "${occmd}"
+  timeout 600 "${occmd}"
 }
