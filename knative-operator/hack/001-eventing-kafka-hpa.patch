@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index 3b36d8ac..6884a62e 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -957,7 +957,7 @@ spec:
+     apiVersion: apps/v1
+     kind: Deployment
+     name: kafka-webhook
+-  minReplicas: 1
++  minReplicas: 2
+   maxReplicas: 5
+   metrics:
+     - type: Resource
