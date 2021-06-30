@@ -1187,7 +1187,7 @@ data:
       "refresh": false,
       "schemaVersion": 19,
       "style": "dark",
-      "tags": [],
+      "tags": ["Knative"],
       "time": {
         "from": "now-6h",
         "to": "now"
