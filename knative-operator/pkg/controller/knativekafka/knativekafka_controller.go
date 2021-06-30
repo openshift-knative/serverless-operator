@@ -34,11 +34,12 @@ const (
 )
 
 var (
-	log               = logf.Log.WithName("controller_knativekafka")
-	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller-manager"}
+	log                = logf.Log.WithName("controller_knativekafka")
+	role               = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding        = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	roleOrRoleBinding  = mf.Any(role, rolebinding)
+	KafkaHAComponents  = []string{"kafka-ch-controller", "kafka-controller-manager"}
+	KafkaHPAComponents = []string{"kafka-webhook"}
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -448,11 +449,26 @@ func checkHAComponent(name string) bool {
 	return false
 }
 
+func checkHPAComponent(name string) bool {
+	for _, component := range KafkaHPAComponents {
+		if name == component {
+			return true
+		}
+	}
+	return false
+}
+
 func setKafkaDeployments(replicas int32) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && checkHAComponent(u.GetName()) {
 			log.Info("Setting Kafka HA component", "deployment", u.GetName(), "replicas", replicas)
 			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "replicas"); err != nil {
+				return err
+			}
+		}
+		if u.GetKind() == "HorizontalPodAutoscaler" && checkHPAComponent(u.GetName()) {
+			log.Info("Setting Kafka HPA component", "HorizontalPodAutoscaler", u.GetName(), "minReplicas", replicas)
+			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "minReplicas"); err != nil {
 				return err
 			}
 		}

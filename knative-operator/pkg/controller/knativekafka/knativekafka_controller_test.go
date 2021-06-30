@@ -472,7 +472,7 @@ func TestCheckHAComponent(t *testing.T) {
 	}, {
 		name:           "kafka webhook",
 		deploymentName: "kafka-webhook",
-		shouldFail:     false,
+		shouldFail:     true,
 	}, {
 		name:           "kafka source controller",
 		deploymentName: "kafka-controller-manager",
@@ -485,6 +485,38 @@ func TestCheckHAComponent(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := checkHAComponent(tc.deploymentName)
+			if result == tc.shouldFail {
+				t.Errorf("Got: %v, want: %v\n", result, tc.shouldFail)
+			}
+		})
+	}
+}
+
+func TestCheckHPAComponent(t *testing.T) {
+	cases := []struct {
+		name       string
+		hpaName    string
+		shouldFail bool
+	}{{
+		name:       "kafka channel controller",
+		hpaName:    "kafka-ch-controller",
+		shouldFail: true,
+	}, {
+		name:       "kafka webhook",
+		hpaName:    "kafka-webhook",
+		shouldFail: false,
+	}, {
+		name:       "kafka source controller",
+		hpaName:    "kafka-controller-manager",
+		shouldFail: true,
+	}, {
+		name:       "kafka channel dispatcher",
+		hpaName:    "kafka-ch-dispatcher",
+		shouldFail: true,
+	}}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := checkHPAComponent(tc.hpaName)
 			if result == tc.shouldFail {
 				t.Errorf("Got: %v, want: %v\n", result, tc.shouldFail)
 			}
