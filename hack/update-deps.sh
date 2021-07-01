@@ -18,16 +18,9 @@ EVENTING_VERSION="release-v0.22.0"
 EVENTING_KAFKA_VERSION="release-v0.22.0"
 SERVING_VERSION="release-v0.23.1"
 
-# Controls the version of OCP related dependencies.
-OCP_VERSION="release-4.7"
-
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "github.com/openshift/api@${OCP_VERSION}"
-  "github.com/openshift/client-go@${OCP_VERSION}"
-  "github.com/operator-framework/operator-lifecycle-manager@${OCP_VERSION}"
-
   "knative.dev/hack@${KN_VERSION}"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
