@@ -187,6 +187,13 @@ describe('OCP UI for Serverless', () => {
   })
 
   it('can deploy a cluster-local service', () => {
+    const ocpVersion = Cypress.env('OCP_VERSION')
+    cy.semver(ocpVersion).then((semver) => {
+      // TODO: provide 4.6.x version when https://bugzilla.redhat.com/show_bug.cgi?id=1978159
+      //       gets targeted in advisory.
+      const range = '>= 4.8 || >= 4.7.18'
+      cy.onlyOn(semver.satisfies(range))
+    })
     describe('with authenticated via Web Console', cy.login)
     describe('deploy kservice from image', () => {
       showcaseKsvc.deployImage({clusterLocal: true})
