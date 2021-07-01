@@ -76,17 +76,16 @@ func manifest(path string, owner mf.Transformer, apiclient client.Client) (mf.Ma
 }
 
 func getAnnotationsFromInstance(instance operatorv1alpha1.KComponent) mf.Transformer {
-	var value interface{} = instance
-	switch v := value.(type) {
-	case operatorv1alpha1.KnativeEventing:
+	switch instance.(type) {
+	case *operatorv1alpha1.KnativeEventing:
 		return common.SetAnnotations(map[string]string{
-			common.EventingOwnerName:      v.Name,
-			common.EventingOwnerNamespace: v.Namespace,
+			common.EventingOwnerName:      instance.GetName(),
+			common.EventingOwnerNamespace: instance.GetNamespace(),
 		})
-	case operatorv1alpha1.KnativeServing:
+	case *operatorv1alpha1.KnativeServing:
 		return common.SetAnnotations(map[string]string{
-			common.ServingOwnerName:      v.Name,
-			common.ServingOwnerNamespace: v.Namespace,
+			common.ServingOwnerName:      instance.GetName(),
+			common.ServingOwnerNamespace: instance.GetNamespace(),
 		})
 	}
 	return nil
