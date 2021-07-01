@@ -58,12 +58,11 @@ spec:
     - knative-serving
     - serving-tests
     - serving-tests-alt
-    - default
     - $NAMESPACE_YOU_WANT_TO_ADD
-    # Add namespace you want to include mesh. `serving-tests`, `serving-tests-alt` and `default` are added by default for e2e test. You can drop them if you like.
+    # Add namespace you want to include mesh. `serving-tests` and `serving-tests-alt` are added by default for e2e test. You can drop them if you like.
 ```
 
-Then, create or update KnativeuServing with the following options.
+Then, create or update KnativeServing with the following options.
 
 ```shell
 cat <<EOF | oc apply -f -
@@ -73,9 +72,6 @@ metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
-  config:
-    network:
-      "ingress.class": "istio.ingress.networking.knative.dev"
   ingress:
     istio:
       enabled: true
@@ -100,6 +96,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: hello-example
+  namespace: $NAMESPACE_YOU_WANT_TO_ADD
   annotations:
     serving.knative.openshift.io/enablePassthrough: "true"
 spec:
