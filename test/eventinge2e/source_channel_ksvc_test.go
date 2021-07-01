@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
+	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -72,12 +72,12 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
-	ps := &eventingsourcesv1beta1.PingSource{
+	ps := &eventingsourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1beta1.PingSourceSpec{
+		Spec: eventingsourcesv1.PingSourceSpec{
 			JsonData: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
