@@ -26,7 +26,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
@@ -43,7 +43,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			Namespace: testNamespace,
 		},
 		Spec: eventingsourcesv1.PingSourceSpec{
-			JsonData: helloWorldText,
+			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -55,7 +55,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
