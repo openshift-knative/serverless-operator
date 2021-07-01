@@ -17,7 +17,7 @@ limitations under the License.
 package continual
 
 import (
-	eventingduckv1beta1 "knative.dev/eventing/pkg/apis/duck/v1beta1"
+	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	"knative.dev/eventing/test/upgrade/prober"
 	"knative.dev/eventing/test/upgrade/prober/sut"
 )
@@ -31,7 +31,7 @@ type ReplicationOptions struct {
 // RetryOptions holds options for retries.
 type RetryOptions struct {
 	RetryCount    int
-	BackoffPolicy eventingduckv1beta1.BackoffPolicyType
+	BackoffPolicy eventingduckv1.BackoffPolicyType
 	BackoffDelay  string
 }
 
