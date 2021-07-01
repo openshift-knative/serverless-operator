@@ -64,7 +64,7 @@ var (
 			Namespace: testNamespace,
 		},
 		Spec: eventingsourcesv1.PingSourceSpec{
-			JsonData: helloWorldText,
+			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -84,7 +84,7 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 		test.CleanupAll(t, client)
 		client.Clients.Kafka.MessagingV1beta1().KafkaChannels(testNamespace).Delete(context.Background(), kafkaChannelName, metav1.DeleteOptions{})
 		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
@@ -108,7 +108,7 @@ func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
 	}
 
 	// Create source (channel as sink)
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: ", err)
 	}
