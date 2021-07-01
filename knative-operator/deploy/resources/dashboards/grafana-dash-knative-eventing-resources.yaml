@@ -88,7 +88,7 @@ data:
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total CPU Usage (rate per minute)",
+          "title": "Total CPU Usage (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -259,7 +259,7 @@ data:
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Total Network I/O (rate per minute)",
+            "title": "Total Network I/O (avg/sec, over 1m window)",
             "tooltip": {
               "shared": true,
               "sort": 2,
@@ -302,7 +302,7 @@ data:
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Network I/O errors (rate per minute)",
+            "description": "Network I/O errors (avg/sec, over 1m window)",
             "fill": 1,
             "fillGradient": 0,
             "gridPos": {
@@ -356,7 +356,7 @@ data:
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Total Network Errors (rate per minute)",
+            "title": "Total Network Errors (avg/sec, over 1m window)",
             "tooltip": {
               "shared": true,
               "sort": 2,

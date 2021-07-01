@@ -127,7 +127,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count (rate per minute)",
+          "title": "Broker (broker-ingress): Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Success Rate  (2xx Event, rate per minute)",
+          "title": "Broker (broker-ingress): Success Rate  (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -283,7 +283,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count by Event Type (rate per minute)",
+          "title": "Broker (broker-ingress): Event Count by Event Type (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -377,7 +377,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count by Response Code Class (rate per minute)",
+          "title": "Broker (broker-ingress): Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -492,7 +492,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Failure Rate (non-2xx Event, fraction of rate per minute)",
+          "title": "Broker (broker-ingress): Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -706,7 +706,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Count (rate per minute)",
+          "title": "Trigger (broker-filter): Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -794,7 +794,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Success Rate  (2xx Event, fraction rate per minute)",
+          "title": "Trigger (broker-filter): Success Rate  (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -862,7 +862,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Broker (broker-filter): Event Count by Event Type (rate per minute)",
+          "title": "Broker (broker-filter): Event Count by Event Type (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -956,7 +956,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Count by Response Code Class (rate per minute)",
+          "title": "Trigger (broker-filter): Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1071,7 +1071,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Failure Rate (non-2xx Event, fraction rate per minute)",
+          "title": "Trigger (broker-filter): Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
