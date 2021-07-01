@@ -74,7 +74,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 			Namespace: testNamespace,
 		},
 		Spec: eventingsourcesv1.PingSourceSpec{
-			JsonData: helloWorldText,
+			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -93,7 +93,7 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	cleanup := func() {
 		test.CleanupAll(t, client)
 		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), kafkaBrokerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
@@ -138,7 +138,7 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	}
 
 	// Create the source
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), brokerps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), brokerps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create pingsource: ", err)
 	}
