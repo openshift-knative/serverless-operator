@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
+	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/pkg/utils"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
@@ -68,12 +68,12 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 		},
 	}
 
-	brokerps = &eventingsourcesv1beta1.PingSource{
+	brokerps = &eventingsourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1beta1.PingSourceSpec{
+		Spec: eventingsourcesv1.PingSourceSpec{
 			JsonData: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
