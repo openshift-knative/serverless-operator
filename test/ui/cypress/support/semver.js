@@ -2,12 +2,14 @@ const semver = require('semver')
 
 class SemverResolver {
   constructor(version) {
-    this.version = version
+    this.version = semver.coerce(version)
   }
 
   satisfies(range) {
     const r = new semver.Range(range)
-    return r.test(this.version)
+    const result = r.test(this.version)
+    console.log(`Version '${this.version}' matches range '${range}': ${result}`)
+    return result
   }
 }
 
