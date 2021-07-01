@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# disable SC2086(Double quote to prevent globbing and word splitting)
+# as go_test_e2e wants to split OPENSHIFT_TEST_OPTIONS by space.
+#
+# shellcheck disable=SC2086
+
 # For SC2164
 set -e
 
@@ -41,6 +46,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
 
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain"
 
   local parallel=3
 
@@ -52,15 +58,13 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
-    --resolvabledomain --kubeconfig "$KUBECONFIG" \
-    --imagetemplate "$image_template" \
-    --enable-beta \
-    --enable-alpha
+    ${OPENSHIFT_TEST_OPTIONS} \
+    --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
   oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
-    --resolvabledomain --kubeconfig "$KUBECONFIG" \
+    ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
   
   # Prevent HPA from scaling to make HA tests more stable
@@ -93,8 +97,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Define short -spoofinterval to ensure frequent probing while stopping pods
   SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
-    --resolvabledomain \
-    --kubeconfig "$KUBECONFIG" \
+    ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
   # Restore the original maxReplicas for any tests running after this test suite
