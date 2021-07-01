@@ -29,7 +29,7 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 		test.CleanupAll(t, client)
 		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), brokerName, metav1.DeleteOptions{})
 		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
@@ -99,7 +99,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			Namespace: testNamespace,
 		},
 		Spec: eventingsourcesv1.PingSourceSpec{
-			JsonData: helloWorldText,
+			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -111,7 +111,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
