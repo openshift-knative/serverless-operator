@@ -16,7 +16,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 rules:
   # Configs resources and status we care about.
   - apiGroups:
@@ -57,7 +57,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 rules:
   - apiGroups:
       - eventing.knative.dev
@@ -97,7 +97,7 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -118,7 +118,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 rules:
   - apiGroups:
       - eventing.knative.dev
@@ -157,7 +157,7 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -179,7 +179,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -209,7 +209,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 subjects:
   - kind: ServiceAccount
     name: mt-broker-filter
@@ -239,7 +239,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 subjects:
   - kind: ServiceAccount
     name: mt-broker-ingress
@@ -270,7 +270,7 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 spec:
   selector:
     matchLabels:
@@ -279,7 +279,7 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: filter
-        eventing.knative.dev/release: "v0.22.0"
+        eventing.knative.dev/release: "v0.23.0"
     spec:
       serviceAccountName: mt-broker-filter
       enableServiceLinks: false
@@ -344,7 +344,7 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: filter
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
   name: broker-filter
   namespace: knative-eventing
 spec:
@@ -381,7 +381,7 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 spec:
   selector:
     matchLabels:
@@ -390,7 +390,7 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: ingress
-        eventing.knative.dev/release: "v0.22.0"
+        eventing.knative.dev/release: "v0.23.0"
     spec:
       serviceAccountName: mt-broker-ingress
       enableServiceLinks: false
@@ -455,7 +455,7 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: ingress
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
   name: broker-ingress
   namespace: knative-eventing
 spec:
@@ -492,7 +492,7 @@ metadata:
   name: mt-broker-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.22.0"
+    eventing.knative.dev/release: "v0.23.0"
 spec:
   selector:
     matchLabels:
@@ -501,7 +501,7 @@ spec:
     metadata:
       labels:
         app: mt-broker-controller
-        eventing.knative.dev/release: "v0.22.0"
+        eventing.knative.dev/release: "v0.23.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
