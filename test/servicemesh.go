@@ -69,29 +69,6 @@ func AddServiceMeshControlPlaneV1IngressGatewaySecretVolume(smcp *unstructured.U
 	return unstructured.SetNestedSlice(smcp.Object, secretVolumes, "spec", "istio", "gateways", "istio-ingressgateway", "secretVolumes")
 }
 
-func AddServiceMeshControlPlaneV2IngressGatewaySecretVolume(smcp *unstructured.Unstructured, name, secretName, mountPath string) error {
-	secretVolume := make(map[string]interface{})
-
-	// Ignoring SetNestedField errors, as we're adding into an empty map we just created
-	_ = unstructured.SetNestedField(secretVolume, secretName, "volume", "secret", "secretName")
-	_ = unstructured.SetNestedField(secretVolume, name, "volumeMount", "name")
-	_ = unstructured.SetNestedField(secretVolume, mountPath, "volumeMount", "mountPath")
-
-	volumes, found, err := unstructured.NestedSlice(smcp.Object, "spec", "gateways", "ingress", "volumes")
-	if err != nil {
-		return err
-	}
-
-	if found {
-		volumes = append(volumes, secretVolume)
-	} else {
-		volumes = make([]interface{}, 1)
-		volumes[0] = secretVolume
-	}
-
-	return unstructured.SetNestedSlice(smcp.Object, volumes, "spec", "gateways", "ingress", "volumes")
-}
-
 func ServiceMeshMemberRollV1(name, namespace string, members ...string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{

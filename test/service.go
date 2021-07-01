@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -72,34 +70,6 @@ func CreateService(ctx *Context, name, namespace, image string) (*servingv1.Serv
 	return service, nil
 }
 
-func WaitForControllerEnvironment(ctx *Context, ns, envName, envValue string) error {
-	return wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
-		pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), metav1.ListOptions{
-			LabelSelector: "app=controller",
-		})
-		if apierrs.IsUnauthorized(err) {
-			// These errors happen when resetting the proxy value. Just retry.
-			return false, nil
-		} else if err != nil {
-			return false, err
-		}
-		for _, pod := range pods.Items {
-			if !isPodReady(pod) {
-				return false, nil
-			}
-			for _, container := range pod.Spec.Containers {
-				for _, e := range container.Env {
-					if e.Name == envName && e.Value == envValue {
-						return true, nil
-					}
-				}
-
-			}
-		}
-		return false, nil
-	})
-}
-
 func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 	d, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
@@ -109,18 +79,6 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", d.Status.ReadyReplicas, scale)
 	}
 	return nil
-}
-
-func isPodReady(pod corev1.Pod) bool {
-	if pod.DeletionTimestamp != nil || pod.Status.PodIP == "" {
-		return false
-	}
-	for _, cond := range pod.Status.Conditions {
-		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
-			return true
-		}
-	}
-	return false
 }
 
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1.Service, err error) (bool, error)) (*servingv1.Service, error) {
@@ -175,6 +133,9 @@ func WaitForOperatorDepsDeleted(ctx *Context) error {
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(context.Background(), metav1.ListOptions{})
+		if err != nil {
+			return true, err
+		}
 		for _, deployment := range existingDeployments.Items {
 			for _, serverlessDep := range serverlessDependencies {
 				if strings.Contains(deployment.Name, serverlessDep) {
