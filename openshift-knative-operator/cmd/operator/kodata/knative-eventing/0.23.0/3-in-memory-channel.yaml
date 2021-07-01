@@ -1,4 +1,4 @@
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,167 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: kafka-addressable-resolver
+  name: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-    duck.knative.dev/addressable: "true"
-# Do not use this role directly. These rules will be added to the "addressable-resolver" role.
-rules:
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels
-      - kafkachannels/status
-    verbs:
-      - get
-      - list
-      - watch
+    eventing.knative.dev/release: "v0.23.0"
 
 ---
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kafka-channelable-manipulator
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-    duck.knative.dev/channelable: "true"
-# Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
-rules:
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels
-      - kafkachannels/status
-    verbs:
-      - create
-      - get
-      - list
-      - watch
-      - update
-      - patch
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kafka-ch-controller
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-rules:
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels
-      - kafkachannels/status
-    verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - "" # Core API group.
-    resources:
-      - configmaps
-      - secrets
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-  - apiGroups:
-      - "" # Core API group.
-    resources:
-      - services
-      - serviceaccounts
-    verbs: &everything
-      - get
-      - list
-      - watch
-      - create
-      - patch
-      - update
-  - apiGroups:
-      - "" # Core API Group.
-    resources:
-      - configmaps
-    resourceNames:
-      - kafka-ch-dispatcher
-    verbs:
-      - update
-  - apiGroups:
-      - "" # Core API Group.
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-      - update
-  - apiGroups:
-      - "" # Core API group.
-    resources:
-      - endpoints
-      - pods
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - apps
-    resources:
-      - deployments
-      - deployments/status
-    verbs: *everything
-  - apiGroups:
-      - rbac.authorization.k8s.io
-    resources:
-      - rolebindings
-    verbs: *everything
-  - apiGroups:
-      - "coordination.k8s.io"
-    resources:
-      - leases
-    verbs: *everything
-
----
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -189,97 +37,44 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kafka-ch-controller
+  name: imc-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-
+    eventing.knative.dev/release: "v0.23.0"
 ---
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: ClusterRoleBinding
 metadata:
-  name: kafka-ch-dispatcher
+  name: imc-controller
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-rules:
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels
-    verbs:
-      - get
-      - list
-      - watch
-      - patch
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels/status
-    verbs:
-      - get
-      - update
-      - patch
-  - apiGroups:
-      - "" # Core API group.
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-      - update
-  - apiGroups:
-      - messaging.knative.dev
-    resources:
-      - kafkachannels
-    verbs:
-      - get
-      - list
-      - watch
-      - patch
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-      - secrets
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - "" # Core API Group.
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-      - patch
-      - update
+    eventing.knative.dev/release: "v0.23.0"
+subjects:
+  - kind: ServiceAccount
+    name: imc-controller
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: imc-controller
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: knative-eventing
+  name: imc-controller
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+subjects:
+  - kind: ServiceAccount
+    name: imc-controller
+    namespace: knative-eventing
+roleRef:
+  kind: Role
+  name: knative-inmemorychannel-webhook
+  apiGroup: rbac.authorization.k8s.io
 
 ---
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -296,110 +91,25 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kafka-ch-dispatcher
+  name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-
+    eventing.knative.dev/release: "v0.23.0"
 ---
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: ClusterRoleBinding
 metadata:
-  name: kafka-webhook
+  name: imc-dispatcher
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-rules:
-  # For watching logging configuration and getting certs.
-  - apiGroups:
-      - ""
-    resources:
-      - "configmaps"
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
-  # For manipulating certs into secrets.
-  - apiGroups:
-      - ""
-    resources:
-      - "secrets"
-    verbs:
-      - "get"
-      - "create"
-      - "list"
-      - "watch"
-      - "update"
-  # For getting our Deployment so we can decorate with ownerref.
-  - apiGroups:
-      - "apps"
-    resources:
-      - "deployments"
-    verbs:
-      - "get"
-  - apiGroups:
-      - "apps"
-    resources:
-      - "deployments/finalizers"
-    verbs:
-      - update
-  # For actually registering our webhook.
-  - apiGroups:
-      - "admissionregistration.k8s.io"
-    resources:
-      - "mutatingwebhookconfigurations"
-      - "validatingwebhookconfigurations"
-    verbs: &everything
-      - "get"
-      - "list"
-      - "create"
-      - "update"
-      - "delete"
-      - "patch"
-      - "watch"
-  # Our own resources and statuses we care about.
-  - apiGroups:
-      - "messaging.knative.dev"
-    resources:
-      - "kafkachannels"
-      - "kafkachannels/status"
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
-  # For leader election
-  - apiGroups:
-      - "coordination.k8s.io"
-    resources:
-      - "leases"
-    verbs: *everything
-  # Necessary for conversion webhook. These are copied from the serving
-  # TODO: Do we really need all these permissions?
-  - apiGroups:
-      - "apiextensions.k8s.io"
-    resources:
-      - "customresourcedefinitions"
-    verbs:
-      - "get"
-      - "list"
-      - "create"
-      - "update"
-      - "delete"
-      - "patch"
-      - "watch"
+    eventing.knative.dev/release: "v0.23.0"
+subjects:
+  - kind: ServiceAccount
+    name: imc-dispatcher
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: imc-dispatcher
+  apiGroup: rbac.authorization.k8s.io
 
 ---
 # Copyright 2020 The Knative Authors
@@ -408,7 +118,7 @@ rules:
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -417,12 +127,151 @@ rules:
 # limitations under the License.
 
 apiVersion: v1
-kind: ServiceAccount
+kind: ConfigMap
 metadata:
-  name: kafka-webhook
+  name: config-imc-event-dispatcher
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
+    eventing.knative.dev/release: "v0.23.0"
+data:
+  MaxIdleConnections: "1000"
+  MaxIdleConnectionsPerHost: "100"
+
+---
+# Copyright 2021 The Knative Authors
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+    knative.dev/config-propagation: original
+    knative.dev/config-category: eventing
+  annotations:
+    knative.dev/example-checksum: "f46cf09d"
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # metrics.backend-destination field specifies the system metrics destination.
+    # It supports either prometheus (the default) or stackdriver.
+    # Note: Using stackdriver will incur additional charges
+    metrics.backend-destination: prometheus
+
+    # metrics.request-metrics-backend-destination specifies the request metrics
+    # destination. If non-empty, it enables queue proxy to send request metrics.
+    # Currently supported values: prometheus, stackdriver.
+    metrics.request-metrics-backend-destination: prometheus
+
+    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
+    # field is optional. When running on GCE, application default credentials will be
+    # used if this field is not provided.
+    metrics.stackdriver-project-id: "<your stackdriver project id>"
+
+    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
+    # Stackdriver using "global" resource type and custom metric type if the
+    # metrics are not supported by "knative_broker", "knative_trigger", and "knative_source" resource types.
+    # Setting this flag to "true" could cause extra Stackdriver charge.
+    # If metrics.backend-destination is not Stackdriver, this is ignored.
+    metrics.allow-stackdriver-custom-metrics: "false"
+
+    # profiling.enable indicates whether it is allowed to retrieve runtime profiling data from
+    # the pods via an HTTP server in the format expected by the pprof visualization tool. When
+    # enabled, the Knative Eventing pods expose the profiling data on an alternate HTTP port 8008.
+    # The HTTP context root for profiling is then /debug/pprof/.
+    profiling.enable: "false"
+
+    # sink-event-error-reporting.enable whether the adapter reports a kube event to the CRD indicating
+    # a failure to send a cloud event to the sink.
+    sink-event-error-reporting.enable: "false"
+
+---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-tracing
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+    knative.dev/config-propagation: original
+    knative.dev/config-category: eventing
+  annotations:
+    knative.dev/example-checksum: "4002b4c2"
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    #
+    # This may be "zipkin" or "stackdriver", the default is "none"
+    backend: "none"
+
+    # URL to zipkin collector where traces are sent.
+    # This must be specified when backend is "zipkin"
+    zipkin-endpoint: "http://zipkin.istio-system.svc.cluster.local:9411/api/v2/spans"
+
+    # The GCP project into which stackdriver metrics will be written
+    # when backend is "stackdriver".  If unspecified, the project-id
+    # is read from GCP metadata when running on GCP.
+    stackdriver-project-id: "my-project"
+
+    # Enable zipkin debug mode. This allows all spans to be sent to the server
+    # bypassing sampling.
+    debug: "false"
+
+    # Percentage (0-1) of requests to trace
+    sample-rate: "0.1"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -439,38 +288,124 @@ metadata:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: kafka-ch-controller
+  name: imc-controller
+  namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-subjects:
-  - kind: ServiceAccount
-    name: kafka-ch-controller
-    namespace: knative-eventing
-roleRef:
-  kind: ClusterRole
-  name: kafka-ch-controller
-  apiGroup: rbac.authorization.k8s.io
+    eventing.knative.dev/release: "v0.23.0"
+    knative.dev/high-availability: "true"
+spec:
+  selector:
+    matchLabels: &labels
+      messaging.knative.dev/channel: in-memory-channel
+      messaging.knative.dev/role: controller
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      serviceAccountName: imc-controller
+      enableServiceLinks: false
+      containers:
+        - name: controller
+          image: TO_BE_REPLACED
+          env:
+            - name: WEBHOOK_NAME
+              value: inmemorychannel-webhook
+            - name: WEBHOOK_PORT
+              value: "8443"
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: METRICS_DOMAIN
+              value: knative.dev/inmemorychannel-controller
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DISPATCHER_IMAGE
+              value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:a95bef510e96e0372c8388aff384df428c2bb0d381f870075c00f83e3ac5785e
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+            - name: https-webhook
+              containerPort: 8443
+          readinessProbe: &probe
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "webhook"
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 20
+      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+      # high value that we respect whatever value it has configured for the lame duck grace period.
+      terminationGracePeriodSeconds: 300
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: v1
+kind: Service
 metadata:
-  name: kafka-ch-dispatcher
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-subjects:
-  - kind: ServiceAccount
-    name: kafka-ch-dispatcher
-    namespace: knative-eventing
-roleRef:
-  kind: ClusterRole
-  name: kafka-ch-dispatcher
-  apiGroup: rbac.authorization.k8s.io
+    eventing.knative.dev/release: "v0.23.0"
+  name: inmemorychannel-webhook
+  namespace: knative-eventing
+spec:
+  ports:
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    messaging.knative.dev/channel: in-memory-channel
+    messaging.knative.dev/role: controller
 
 ---
-# Copyright 2020 The Knative Authors
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: Service
+metadata:
+  name: imc-dispatcher
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+    messaging.knative.dev/channel: in-memory-channel
+    messaging.knative.dev/role: dispatcher
+spec:
+  selector:
+    messaging.knative.dev/channel: in-memory-channel
+    messaging.knative.dev/role: dispatcher
+  ports:
+    - name: http-dispatcher
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+
+---
+# Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -484,23 +419,78 @@ roleRef:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: kafka-webhook
+  name: imc-dispatcher
+  namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-subjects:
-  - kind: ServiceAccount
-    name: kafka-webhook
-    namespace: knative-eventing
-roleRef:
-  kind: ClusterRole
-  name: kafka-webhook
-  apiGroup: rbac.authorization.k8s.io
+    eventing.knative.dev/release: "v0.23.0"
+    knative.dev/high-availability: "true"
+spec:
+  selector:
+    matchLabels: &labels
+      messaging.knative.dev/channel: in-memory-channel
+      messaging.knative.dev/role: dispatcher
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: *labels
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      serviceAccountName: imc-dispatcher
+      enableServiceLinks: false
+      containers:
+        - name: dispatcher
+          image: TO_BE_REPLACED
+          readinessProbe: &probe
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 5
+          env:
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: METRICS_DOMAIN
+              value: knative.dev/inmemorychannel-dispatcher
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: CONTAINER_NAME
+              value: dispatcher
+            - name: MAX_IDLE_CONNS
+              value: "1000"
+            - name: MAX_IDLE_CONNS_PER_HOST
+              value: "1000"
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 9090
+              name: metrics
 
 ---
-# Copyright 2020 The Knative Authors
+# Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -513,43 +503,32 @@ roleRef:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: kafkachannels.messaging.knative.dev
+  name: inmemorychannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
+    eventing.knative.dev/release: "v0.23.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
 spec:
   group: messaging.knative.dev
   versions:
-    - name: v1beta1
+    - name: v1
       served: true
       storage: true
       subresources:
         status: {}
       schema:
         openAPIV3Schema:
-          description: 'KafkaChannel is a resource representing a Channel that is backed by a topic of an Apache Kafka cluster.'
+          description: 'InMemoryChannel is a resource representing an in memory channel'
           type: object
           properties:
             spec:
               description: Spec defines the desired state of the Channel.
               type: object
               properties:
-                numPartitions:
-                  description: NumPartitions is the number of partitions of a Kafka topic. By default, it is set to 1.
-                  type: integer
-                  format: int32
-                  default: 1
-                replicationFactor:
-                  description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 1.
-                  type: integer
-                  maximum: 32767
-                  default: 1
                 delivery:
                   description: DeliverySpec contains the default delivery spec for each subscription to this Channelable. Each subscription delivery spec, if any, overrides this global delivery spec.
                   type: object
@@ -644,15 +623,11 @@ spec:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
             status:
-              description: Status represents the current state of the KafkaChannel. This data may be out of date.
+              description: Status represents the current state of the Channel. This data may be out of date.
               type: object
-              required:
-                - address
               properties:
                 address:
                   type: object
-                  required:
-                    - url
                   properties:
                     url:
                       type: string
@@ -727,38 +702,300 @@ spec:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
       additionalPrinterColumns:
-        - name: Ready
-          type: string
-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
-        - name: Reason
-          type: string
-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
         - name: URL
           type: string
           jsonPath: .status.address.url
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
   names:
-    kind: KafkaChannel
-    plural: kafkachannels
-    singular: kafkachannel
+    kind: InMemoryChannel
+    plural: inmemorychannels
+    singular: inmemorychannel
     categories:
       - all
       - knative
       - messaging
       - channel
     shortNames:
-      - kc
+      - imc
   scope: Namespaced
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions: ["v1", "v1beta1"]
-      clientConfig:
-        service:
-          name: kafka-webhook
-          namespace: knative-eventing
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: imc-addressable-resolver
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+    duck.knative.dev/addressable: "true"
+# Do not use this role directly. These rules will be added to the "addressable-resolver" role.
+rules:
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels
+      - inmemorychannels/status
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: imc-channelable-manipulator
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+    duck.knative.dev/channelable: "true"
+# Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
+rules:
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels
+      - inmemorychannels/status
+    verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - patch
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: imc-controller
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+rules:
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels
+      - inmemorychannels/status
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels/finalizers
+      - inmemorychannels/status
+      - inmemorychannels
+    verbs:
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - serviceaccounts
+    verbs: &everything
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - rolebindings
+    verbs: *everything
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs: *everything
+  - apiGroups:
+      - apps
+    resources:
+      - deployments/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs: *everything
+  # For actually registering our webhook.
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - "mutatingwebhookconfigurations"
+      - "validatingwebhookconfigurations"
+    verbs: &everything
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "delete"
+      - "patch"
+      - "watch"
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "list"
+      - "watch"
+      - "patch"
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: imc-dispatcher
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+rules:
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels
+      - inmemorychannels/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "" # Core API group.
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+      # Updates the finalizer so we can remove our handlers when channel is deleted
+      # Patches the status.subscribers to reflect when the subscription dataplane has been
+      # configured.
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - inmemorychannels/finalizers
+      - inmemorychannels/status
+      - inmemorychannels
+    verbs:
+      - patch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
 
 ---
 # Copyright 2020 The Knative Authors
@@ -775,346 +1012,26 @@ spec:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ConfigMap
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
-  name: config-kafka
   namespace: knative-eventing
-data:
-  # Broker URL. Replace this with the URLs for your kafka cluster,
-  # which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
-  bootstrapServers: REPLACE_WITH_CLUSTER_URL
-  #authSecretName: name-of-your-secret-for-kafka-auth
-  #authSecretNamespace: namespace-of-your-secret-for-kafka-auth
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-webhook
-  namespace: knative-eventing
+  name: knative-inmemorychannel-webhook
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-    role: kafka-webhook
-spec:
-  ports:
-    - name: https-webhook
-      port: 443
-      targetPort: 8443
-  selector:
-    role: kafka-webhook
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka-ch-controller
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-spec:
-  replicas: 1
-  selector:
-    matchLabels: &labels
-      messaging.knative.dev/channel: kafka-channel
-      messaging.knative.dev/role: controller
-  template:
-    metadata:
-      labels: *labels
-    spec:
-      serviceAccountName: kafka-ch-controller
-      containers:
-        - name: controller
-          image: TO_BE_REPLACED
-          env:
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: METRICS_DOMAIN
-              value: knative.dev/eventing
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: CONFIG_LEADERELECTION_NAME
-              value: config-leader-election
-            - name: DISPATCHER_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:6ed64ca9e35a0d121a886fef50ddba542cf92c0b0511cd1e5b4e8c75efc6a398
-            # service account used in the dispatcher
-            - name: SERVICE_ACCOUNT
-              value: kafka-ch-dispatcher
-          ports:
-            - containerPort: 9090
-              name: metrics
-          volumeMounts:
-            - name: config-logging
-              mountPath: /etc/config-logging
-      volumes:
-        - name: config-logging
-          configMap:
-            name: config-logging
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka-ch-dispatcher
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-spec:
-  # this deployment is going to be scaled up by the
-  # controller when the very first KafkaChannel is created
-  replicas: 0
-  selector:
-    matchLabels:
-      messaging.knative.dev/channel: kafka-channel
-      messaging.knative.dev/role: dispatcher
-  template:
-    metadata:
-      annotations:
-        # This annotation is used by the controller to track updates
-        # to config-kafka and apply them in the dispatcher deployment
-        kafka.eventing.knative.dev/configmap-hash: ''
-      labels:
-        # Do not change. Used by the controller for probing.
-        messaging.knative.dev/channel: kafka-channel
-        # Do not change. Used by the controller for probing.
-        messaging.knative.dev/role: dispatcher
-        kafka.eventing.knative.dev/release: "v0.23.3"
-    spec:
-      containers:
-        - name: dispatcher
-          image: TO_BE_REPLACED
-          env:
-            - name: SYSTEM_NAMESPACE
-              value: ''
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: METRICS_DOMAIN
-              value: knative.dev/eventing
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: CONFIG_LEADERELECTION_NAME
-              value: config-leader-election
-            - name: CONTAINER_NAME
-              value: dispatcher
-          ports:
-            - containerPort: 9090
-              name: metrics
-              protocol: TCP
-            - containerPort: 8081
-              name: sub-status
-              protocol: TCP
-          volumeMounts:
-            - name: config-kafka
-              mountPath: /etc/config-kafka
-      serviceAccountName: kafka-ch-dispatcher
-      volumes:
-        - name: config-kafka
-          configMap:
-            name: config-kafka
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    messaging.knative.dev/channel: kafka-channel
-    messaging.knative.dev/role: dispatcher
-  name: kafka-ch-dispatcher
-  namespace: knative-eventing
-spec:
-  ports:
-    - name: http-dispatcher
-      port: 80
-      protocol: TCP
-      targetPort: 8080
-    - name: http-sub-status
-      port: 8081
-      protocol: TCP
-      targetPort: 8081
-  selector:
-    messaging.knative.dev/channel: kafka-channel
-    messaging.knative.dev/role: dispatcher
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
-metadata:
-  name: defaulting.webhook.kafka.messaging.knative.dev
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-webhooks:
-  - admissionReviewVersions: ["v1", "v1beta1"]
-    clientConfig:
-      service:
-        name: kafka-webhook
-        namespace: knative-eventing
-    sideEffects: None
-    failurePolicy: Fail
-    name: defaulting.webhook.kafka.messaging.knative.dev
----
-apiVersion: admissionregistration.k8s.io/v1
-kind: ValidatingWebhookConfiguration
-metadata:
-  name: validation.webhook.kafka.messaging.knative.dev
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-webhooks:
-  - admissionReviewVersions: ["v1", "v1beta1"]
-    clientConfig:
-      service:
-        name: kafka-webhook
-        namespace: knative-eventing
-    sideEffects: None
-    failurePolicy: Fail
-    name: validation.webhook.kafka.messaging.knative.dev
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka-webhook
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
-spec:
-  replicas: 1
-  selector:
-    matchLabels: &labels
-      app: kafka-webhook
-      role: kafka-webhook
-  template:
-    metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
-      labels: *labels
-    spec:
-      serviceAccountName: kafka-webhook
-      containers:
-        - name: kafka-webhook
-          terminationMessagePolicy: FallbackToLogsOnError
-          image: TO_BE_REPLACED
-          env:
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: METRICS_DOMAIN
-              value: knative.dev/eventing
-            - name: WEBHOOK_NAME
-              value: kafka-webhook
-            - name: WEBHOOK_PORT
-              value: "8443"
-          ports:
-            - name: https-webhook
-              containerPort: 8443
-            - name: metrics
-              containerPort: 9090
-            - name: profiling
-              containerPort: 8008
-          resources:
-            requests:
-              cpu: 100m
-              memory: 50Mi
-            limits:
-              cpu: 200m
-              memory: 1024Mi
-          readinessProbe: &probe
-            periodSeconds: 1
-            httpGet:
-              scheme: HTTPS
-              port: 8443
-              httpHeaders:
-                - name: k-kubelet-probe
-                  value: "webhook"
-          livenessProbe:
-            !!merge <<: *probe
-            initialDelaySeconds: 20
-      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
-      # high value that we respect whatever value it has configured for the lame duck grace period.
-      terminationGracePeriodSeconds: 300
+    eventing.knative.dev/release: "v0.23.0"
+rules:
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "list"
+      - "watch"
+      - "patch"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -1131,44 +1048,57 @@ spec:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
 metadata:
-  name: kafka-webhook
-  namespace: knative-eventing
+  name: inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: devel
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: kafka-webhook
-  minReplicas: 1
-  maxReplicas: 5
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 100
----
-# Webhook PDB.
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: kafka-webhook
-  namespace: knative-eventing
-  labels:
-    eventing.knative.dev/release: devel
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: kafka-webhook
+    eventing.knative.dev/release: "v0.23.0"
+webhooks:
+  - admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: inmemorychannel-webhook
+        namespace: knative-eventing
+    sideEffects: None
+    failurePolicy: Fail
+    name: inmemorychannel.eventing.knative.dev
+    timeoutSeconds: 10
 
 ---
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.inmemorychannel.eventing.knative.dev
+  labels:
+    eventing.knative.dev/release: "v0.23.0"
+webhooks:
+  - admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: inmemorychannel-webhook
+        namespace: knative-eventing
+    sideEffects: None
+    failurePolicy: Fail
+    name: validation.inmemorychannel.eventing.knative.dev
+    timeoutSeconds: 10
+
+---
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -1185,10 +1115,10 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: messaging-webhook-certs
+  name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.3"
+    eventing.knative.dev/release: "v0.23.0"
 # The data is populated at install time.
 
 ---
