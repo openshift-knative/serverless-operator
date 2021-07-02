@@ -372,6 +372,8 @@ spec:
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-source.yaml"
                     - name: EVENTING_BROKER_DASHBOARD_MANIFEST_PATH
                       value: "deploy/resources/dashboards/grafana-dash-knative-eventing-broker.yaml"
+                    - name: EVENTING_CHANNEL_DASHBOARD_MANIFEST_PATH
+                      value: "deploy/resources/dashboards/grafana-dash-knative-eventing-channel.yaml"
                     - name: KAFKACHANNEL_MANIFEST_PATH
                       value: deploy/resources/knativekafka/1-channel-consolidated.yaml
                     - name: KAFKASOURCE_MANIFEST_PATH

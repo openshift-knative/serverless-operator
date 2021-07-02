@@ -44,6 +44,7 @@ func init() {
 	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
 	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
 	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
+	os.Setenv(dashboard.EventingChannelDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-channel.yaml")
 
 	apis.AddToScheme(scheme.Scheme)
 }
@@ -96,6 +97,11 @@ func TestEventingReconcile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
 			}
+			channelCM := &corev1.ConfigMap{}
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-channel", Namespace: dashboardNamespace.Name}, channelCM)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
 			// Delete Dashboard configmaps.
 			err = cl.Delete(context.TODO(), resourcesCM)
 			if err != nil {
@@ -109,7 +115,10 @@ func TestEventingReconcile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("delete: (%v)", err)
 			}
-
+			err = cl.Delete(context.TODO(), channelCM)
+			if err != nil {
+				t.Fatalf("delete: (%v)", err)
+			}
 			// Reconcile again with test requests.
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{Namespace: test.ownerNamespace, Name: test.ownerName},
@@ -135,6 +144,8 @@ func TestEventingReconcile(t *testing.T) {
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-broker", Namespace: dashboardNamespace.Name}, brokerCM)
 			checkError(t, err)
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-source", Namespace: dashboardNamespace.Name}, sourceCM)
+			checkError(t, err)
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-eventing-channel", Namespace: dashboardNamespace.Name}, sourceCM)
 			checkError(t, err)
 		})
 	}
