@@ -47,15 +47,15 @@ func BuildImageOverrideMapFromEnviron(environ []string, prefix string) map[strin
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], prefix) {
 			// convert
-			// "IMAGE_container=docker.io/foo"
-			// "IMAGE_deployment__container=docker.io/foo2"
-			// "IMAGE_env_var=docker.io/foo3"
-			// "IMAGE_deployment__env_var=docker.io/foo4"
+			// "IMAGE_container=quay.io/foo"
+			// "IMAGE_deployment__container=quay.io/foo2"
+			// "IMAGE_env_var=quay.io/foo3"
+			// "IMAGE_deployment__env_var=quay.io/foo4"
 			// to
-			// container: docker.io/foo
-			// deployment/container: docker.io/foo2
-			// env_var: docker.io/foo3
-			// deployment/env_var: docker.io/foo4
+			// container: quay.io/foo
+			// deployment/container: quay.io/foo2
+			// env_var: quay.io/foo3
+			// deployment/env_var: quay.io/foo4
 			name := strings.TrimPrefix(pair[0], prefix)
 			name = strings.Replace(name, "__", "/", 1)
 			if pair[1] != "" {

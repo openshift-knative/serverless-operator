@@ -15,8 +15,8 @@ import (
 
 func TestMutateEventing(t *testing.T) {
 	const (
-		image1 = "docker.io/foo:tag"
-		image2 = "docker.io/baz:tag"
+		image1 = "quay.io/foo:tag"
+		image2 = "quay.io/baz:tag"
 	)
 	ke := &operatorv1alpha1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{

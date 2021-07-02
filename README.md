@@ -35,7 +35,7 @@ the CI environment), use these commands:
 
 ```
 $ crc start --cpus=6 --memory 16384
-$ export DOCKER_REPO_OVERRIDE=docker.io/username
+$ export DOCKER_REPO_OVERRIDE=quay.io/username
 $ make images test-operator
 ```
 
@@ -53,7 +53,7 @@ crc start --cpus=6 --memory 16384
 To test the Serverless Operator against your private Openshift cluster you first
 need to push the necessary images to a publicly available location. To do that,
 make sure the `DOCKER_REPO_OVERRIDE` environment variable is set to a docker
-repository you can push to, for example `docker.io/markusthoemmes`. You might
+repository you can push to, for example `quay.io/markusthoemmes`. You might
 need to run `docker login` to be able to push images. Now run
 `make images` and all images in this repository will now be built and
 pushed to your docker repository.
