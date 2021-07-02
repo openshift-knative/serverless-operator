@@ -35,7 +35,7 @@ func TestMutate(t *testing.T) {
 	const (
 		networks = "foo,bar,baz"
 		domain   = "fubar"
-		image    = "docker.io/queue:tag"
+		image    = "quay.io/queue:tag"
 	)
 	os.Setenv("IMAGE_queue-proxy", image)
 	type check func(*testing.T, *servingv1alpha1.KnativeServing)

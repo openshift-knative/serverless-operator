@@ -63,7 +63,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 
 func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc testCase) {
 	// Create a ksvc with the specified annotations and labels
-	service := test.Service(tc.name, namespace, helloworldImage, tc.annotations)
+	service := test.Service(tc.name, namespace, image, tc.annotations)
 	service.ObjectMeta.Labels = tc.labels
 
 	service = withServiceReadyOrFail(ctx, service)

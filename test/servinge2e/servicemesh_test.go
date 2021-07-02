@@ -47,7 +47,6 @@ type testCase struct {
 
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	helloworldImage              = "gcr.io/knative-samples/helloworld-go"
 	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
 	istioInjectKey               = "sidecar.istio.io/inject"
 )
@@ -446,7 +445,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), testNamespace, "openshift/hello-openshift", nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), testNamespace, "registry.ci.openshift.org/openshift/hello-openshift", nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, core.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
@@ -745,7 +744,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", testNamespace, "openshift/hello-openshift", nil)
+	aux := test.Service("aux", testNamespace, image, nil)
 	aux = withServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)
@@ -767,7 +766,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 		t := ctx.T
 
 		// Deploy a cluster-local ksvc "hello"
-		ksvc := test.Service("hello", testNamespace, "openshift/hello-openshift", nil)
+		ksvc := test.Service("hello", testNamespace, image, nil)
 		ksvc.ObjectMeta.Labels = map[string]string{
 			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
@@ -832,7 +831,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 			t.Fatalf("Error polling custom domain: %v", err)
 		}
 
-		const expectedResponse = "Hello OpenShift!"
+		const expectedResponse = "Hello World!"
 		if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
 			t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
 		}
@@ -896,7 +895,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 		t := ctx.T
 
 		// Deploy a cluster-local ksvc "hello"
-		ksvc := test.Service("hello", testNamespace, "openshift/hello-openshift", nil)
+		ksvc := test.Service("hello", testNamespace, image, nil)
 		ksvc.ObjectMeta.Labels = map[string]string{
 			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
@@ -991,7 +990,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 			t.Fatalf("Error polling custom domain: %v", err)
 		}
 
-		const expectedResponse = "Hello OpenShift!"
+		const expectedResponse = "Hello World!"
 		if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
 			t.Fatalf("Expecting an HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
 		}

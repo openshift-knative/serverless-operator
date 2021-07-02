@@ -67,14 +67,14 @@ var updateImageTests = []updateImageTest{
 		name: "NoChangeOverrideWithDifferentName",
 		containers: []corev1.Container{{
 			Name:  "image",
-			Image: "docker.io/name/image:tag2"},
+			Image: "quay.io/name/image:tag2"},
 		},
 		overrideMap: map[string]string{
 			"Unused": "new-registry.io/test/path",
 		},
 		expected: []corev1.Container{{
 			Name:  "image",
-			Image: "docker.io/name/image:tag2"},
+			Image: "quay.io/name/image:tag2"},
 		},
 	},
 	{
@@ -95,10 +95,10 @@ var updateImageTests = []updateImageTest{
 			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
 		}},
 		overrideMap: map[string]string{
-			"SOME_IMAGE": "docker.io/my/overridden-image",
+			"SOME_IMAGE": "quay.io/my/overridden-image",
 		},
 		expected: []corev1.Container{{
-			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "docker.io/my/overridden-image"}},
+			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "quay.io/my/overridden-image"}},
 		}},
 	},
 	{
@@ -107,7 +107,7 @@ var updateImageTests = []updateImageTest{
 			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
 		}},
 		overrideMap: map[string]string{
-			"OTHER_IMAGE": "docker.io/my/overridden-image",
+			"OTHER_IMAGE": "quay.io/my/overridden-image",
 		},
 		expected: []corev1.Container{{
 			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
@@ -122,12 +122,12 @@ var updateImageTests = []updateImageTest{
 		}},
 		overrideMap: map[string]string{
 			"queue":      "new-registry.io/test/path/new-value:new-override-tag",
-			"SOME_IMAGE": "docker.io/my/overridden-image",
+			"SOME_IMAGE": "quay.io/my/overridden-image",
 		},
 		expected: []corev1.Container{{
 			Name:  "queue",
 			Image: "new-registry.io/test/path/new-value:new-override-tag",
-			Env:   []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "docker.io/my/overridden-image"}},
+			Env:   []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "quay.io/my/overridden-image"}},
 		}},
 	},
 	{
