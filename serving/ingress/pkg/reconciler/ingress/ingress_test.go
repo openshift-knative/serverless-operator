@@ -74,7 +74,7 @@ func TestKourierReconcile(t *testing.T) {
 		WantDeletes: []clientgotesting.DeleteActionImpl{{
 			ActionImpl: clientgotesting.ActionImpl{
 				Namespace: ingressNamespace,
-				Resource:  routev1.SchemeGroupVersion.WithResource("routes"),
+				Resource:  routev1.GroupVersion.WithResource("routes"),
 			},
 			Name: "foo",
 		}},
@@ -168,7 +168,7 @@ func TestKourierReconcile(t *testing.T) {
 		WantDeletes: []clientgotesting.DeleteActionImpl{{
 			ActionImpl: clientgotesting.ActionImpl{
 				Namespace: ingressNamespace,
-				Resource:  routev1.SchemeGroupVersion.WithResource("routes"),
+				Resource:  routev1.GroupVersion.WithResource("routes"),
 			},
 			Name: routeName,
 		}},
@@ -237,7 +237,7 @@ func TestIstioReconcile(t *testing.T) {
 		WantDeletes: []clientgotesting.DeleteActionImpl{{
 			ActionImpl: clientgotesting.ActionImpl{
 				Namespace: ingressNamespace,
-				Resource:  routev1.SchemeGroupVersion.WithResource("routes"),
+				Resource:  routev1.GroupVersion.WithResource("routes"),
 			},
 			Name: "foo",
 		}},
@@ -331,7 +331,7 @@ func TestIstioReconcile(t *testing.T) {
 		WantDeletes: []clientgotesting.DeleteActionImpl{{
 			ActionImpl: clientgotesting.ActionImpl{
 				Namespace: ingressNamespace,
-				Resource:  routev1.SchemeGroupVersion.WithResource("routes"),
+				Resource:  routev1.GroupVersion.WithResource("routes"),
 			},
 			Name: routeName,
 		}},

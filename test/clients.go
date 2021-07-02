@@ -137,9 +137,6 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	}
 
 	clients.ConsoleCLIDownload = consolev1.NewForConfigOrDie(cfg).ConsoleCLIDownloads()
-	if err != nil {
-		return nil, err
-	}
 
 	clients.MonitoringClient = monclientv1.NewForConfigOrDie(cfg)
 

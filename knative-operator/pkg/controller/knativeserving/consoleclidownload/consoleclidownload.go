@@ -160,20 +160,19 @@ func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclie
 
 // makeKnService makes Knative Service object and its SPEC from provided image parameter
 func makeKnService(image string, instance *servingv1alpha1.KnativeServing) *servingv1.Service {
+	if instance == nil {
+		return nil
+	}
 	// OwnerReference is not used to handle ksvc cleanup due to race condition with control-plane deletion.
 	// In such a case route's finalizer blocks clean removal of resources.
-	anno := make(map[string]string)
-	if instance != nil {
-		anno = map[string]string{
-			common.ServingOwnerName:      instance.Name,
-			common.ServingOwnerNamespace: instance.Namespace,
-		}
-	}
 	service := &servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        knConsoleCLIDownloadService,
-			Namespace:   instance.Namespace,
-			Annotations: anno,
+			Name:      knConsoleCLIDownloadService,
+			Namespace: instance.Namespace,
+			Annotations: map[string]string{
+				common.ServingOwnerName:      instance.Name,
+				common.ServingOwnerNamespace: instance.Namespace,
+			},
 		},
 		Spec: servingv1.ServiceSpec{
 			ConfigurationSpec: servingv1.ConfigurationSpec{
