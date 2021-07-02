@@ -20,6 +20,7 @@ module.exports = (on, config) => {
   // `config` is the resolved Cypress config
   config.env.TEST_NAMESPACE = process.env.TEST_NAMESPACE || 'default'
   config.env.OCP_LOGIN_PROVIDER = process.env.OCP_LOGIN_PROVIDER || 'kube:admin'
+  config.env.OCP_VERSION = process.env.OCP_VERSION || '0.0.0'
   config.env.OCP_USERNAME = process.env.OCP_USERNAME || 'kube:admin'
   config.env.OCP_PASSWORD = process.env.OCP_PASSWORD
 

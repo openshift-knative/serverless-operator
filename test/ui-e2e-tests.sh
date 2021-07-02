@@ -29,6 +29,7 @@ function archive_cypress_artifacts {
   popd >/dev/null
 }
 
+OCP_VERSION="$(oc get clusterversion version -o jsonpath='{.status.desired.version}')"
 OCP_USERNAME="${OCP_USERNAME:-uitesting}"
 OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
 OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
@@ -36,7 +37,7 @@ CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpat
 INSTALL_SERVERLESS="${INSTALL_SERVERLESS:-true}"
 # use cypress:open to run test development UI
 NPM_TARGET="${NPM_TARGET:-test}"
-export OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
+export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 scale_up_workers
 create_namespaces
