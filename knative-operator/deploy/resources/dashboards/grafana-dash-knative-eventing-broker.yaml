@@ -48,7 +48,7 @@ data:
           "id": 2,
           "panels": [],
           "repeat": null,
-          "title": "Broker (broker-ingress)",
+          "title": "Broker (broker-ingress) Aggregated Metrics (per namespace)",
           "type": "row"
         },
         {
@@ -118,7 +118,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -127,7 +127,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count (rate per minute)",
+          "title": "Broker (broker-ingress): Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -206,7 +206,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Success Rate  (2xx Event, rate per minute)",
+          "title": "Broker (broker-ingress): Success Rate  (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -271,7 +271,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m])) by (event_type)",
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (event_type)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -283,7 +283,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count by Event Type (rate per minute)",
+          "title": "Broker (broker-ingress): Event Count by Event Type (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -307,6 +307,102 @@ data:
               "show": true
             },
             {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "decimals": 3,
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 9
+          },
+          "id": 33,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": true,
+            "hideEmpty": false,
+            "hideZero": false,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (response_code_class)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "{{response_code_class}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Broker (broker-ingress): Event Count by Response Code Class (avg/sec, over 1m window)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 3,
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "decimals": 3,
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -387,7 +483,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class!=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class!=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -396,7 +492,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Failure Rate (non-2xx Event, fraction of rate per minute)",
+          "title": "Broker (broker-ingress): Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -407,102 +503,6 @@ data:
             }
           ],
           "valueName": "current"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "prometheus",
-          "decimals": 3,
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 9
-          },
-          "id": 33,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": false,
-            "hideZero": false,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m])) by (response_code_class)",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{response_code_class}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Broker (broker-ingress): Event Count by Response Code Class (rate per minute)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 3,
-              "format": "ops",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "decimals": 3,
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
         },
         {
           "aliasColors": {},
@@ -550,26 +550,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -627,7 +627,7 @@ data:
           },
           "id": 14,
           "panels": [],
-          "title": "Trigger (broker-filter)",
+          "title": "Trigger (broker-filter) Aggregated Metrics (per namespace)",
           "type": "row"
         },
         {
@@ -697,7 +697,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -706,7 +706,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Count (rate per minute)",
+          "title": "Trigger (broker-filter): Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -785,7 +785,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -794,7 +794,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Success Rate  (2xx Event, fraction rate per minute)",
+          "title": "Trigger (broker-filter): Success Rate  (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -805,6 +805,99 @@ data:
             }
           ],
           "valueName": "current"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 1
+          },
+          "id": 31,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": true,
+            "hideEmpty": false,
+            "hideZero": false,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (event_type)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "{{event_type}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Broker (broker-filter): Event Count by Event Type (avg/sec, over 1m window)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
         },
         {
           "aliasColors": {},
@@ -851,7 +944,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -863,7 +956,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Trigger (broker-filter): Event Count by Response Code Class (rate per minute)",
+          "title": "Trigger (broker-filter): Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -969,7 +1062,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class!=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class!=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -978,7 +1071,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Failure Rate (non-2xx Event, fraction rate per minute)",
+          "title": "Trigger (broker-filter): Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -1036,26 +1129,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -1149,26 +1242,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -1237,7 +1330,7 @@ data:
             "includeAll": true,
             "label": "namespace",
             "multi": true,
-            "name": "namespace",
+            "name": "eventNamespace",
             "options": [],
             "query": "label_values(mt_broker_ingress_event_count{namespace_name!=\"unknown\"}, namespace_name)",
             "refresh": 1,

@@ -48,7 +48,7 @@ data:
           "id": 2,
           "panels": [],
           "repeat": null,
-          "title": "ApiServerSource",
+          "title": "ApiServer Source Aggregated Metrics (per namespace)",
           "type": "row"
         },
         {
@@ -118,7 +118,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(apiserversource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -127,7 +127,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Event Count (rate per minute)",
+          "title": "ApiServerSource: Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -206,7 +206,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(apiserversource_event_count{namespace=\"$namespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(apiserversource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Success Rate (2xx Event, fraction rate per minute)",
+          "title": "ApiServerSource: Success Rate (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -272,7 +272,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(apiserversource_event_count{namespace=\"$namespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -284,7 +284,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "ApiServerSource: Event Count by Response Code Class (rate per minute)",
+          "title": "ApiServerSource: Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -390,7 +390,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(apiserversource_event_count{namespace=\"$namespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(apiserversource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(apiserversource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -399,7 +399,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "ApiServerSource: Failure Rate (non-2xx Event, fraction rate per minute)",
+          "title": "ApiServerSource: Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -422,7 +422,7 @@ data:
           "id": 42,
           "panels": [],
           "repeat": null,
-          "title": "MT PingSource",
+          "title": "MT Ping Source Aggregated Metrics (per namespace)",
           "type": "row"
         },
         {
@@ -492,7 +492,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(pingsource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -501,7 +501,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Event Count (rate per minute)",
+          "title": "MT PingSource: Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -580,7 +580,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(pingsource_event_count{namespace=\"$namespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(pingsource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -589,7 +589,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Success Rate  (2xx Event, fraction rate per minute)",
+          "title": "MT PingSource: Success Rate  (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -646,7 +646,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(pingsource_event_count{namespace=\"$namespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -658,7 +658,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "MT PingSource: Event Count by Response Code Class (rate per minute)",
+          "title": "MT PingSource: Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -764,7 +764,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(pingsource_event_count{namespace=\"$namespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(pingsource_event_count{namespace=\"$namespace\"}[1m]))",
+              "expr": "sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(pingsource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -773,7 +773,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Failure Rate (non-2xx Event, fraction rate per minute)",
+          "title": "MT PingSource: Failure Rate (non-2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -796,7 +796,7 @@ data:
             "id": 42,
             "panels": [],
             "repeat": null,
-            "title": "KafkaSource",
+            "title": "Kafka Source Aggregated Metrics (per namespace)",
             "type": "row"
           },
           {
@@ -866,7 +866,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kafkasource_event_count{namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"
@@ -875,7 +875,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "Kafka: Event Count (rate per minute)",
+             "title": "Kafka: Event Count (avg/sec, over 1m window)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
@@ -954,7 +954,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kafkasource_event_count{namespace=\"$namespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(kafkasource_event_count{namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\", response_code_class=\"2xx\"}[1m])) / sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"
@@ -963,7 +963,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "KafkaSource: Success Rate (2xx Event, fraction rate per minute)",
+             "title": "KafkaSource: Success Rate (2xx Event, fraction rate, over 1m window)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
@@ -1020,7 +1020,7 @@ data:
              "steppedLine": false,
              "targets": [
                {
-                 "expr": "sum(rate(kafkasource_event_count{namespace=\"$namespace\"}[1m])) by (response_code_class)",
+                 "expr": "sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\"}[1m])) by (response_code_class)",
                  "format": "time_series",
                  "hide": false,
                  "instant": false,
@@ -1032,7 +1032,7 @@ data:
              "timeFrom": null,
              "timeRegions": [],
              "timeShift": null,
-             "title": "KafkaSource: Event Count by Response Code Class (rate per minute)",
+             "title": "KafkaSource: Event Count by Response Code Class (avg/sec, over 1m window)",
              "tooltip": {
                "shared": true,
                "sort": 0,
@@ -1138,7 +1138,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kafkasource_event_count{namespace=\"$namespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(kafkasource_event_count{namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\", response_code_class!=\"2xx\"}[1m])) / sum(rate(kafkasource_event_count{namespace_name=\"$eventNamespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"
@@ -1147,7 +1147,7 @@ data:
              "thresholds": "",
              "timeFrom": null,
              "timeShift": null,
-             "title": "KafkaSource: Failure Rate (non-2xx Event, fraction rate per minute)",
+             "title": "KafkaSource: Failure Rate (non-2xx Event, fraction rate, over 1m window)",
              "type": "singlestat",
              "valueFontSize": "80%",
              "valueMaps": [
@@ -1170,9 +1170,9 @@ data:
             "includeAll": false,
             "label": "Namespace",
             "multi": false,
-            "name": "namespace",
+            "name": "eventNamespace",
             "options": [],
-            "query": "label_values(kube_pod_labels{label_eventing_knative_dev_source=~\".+\"}, namespace)",
+            "query": "label_values((pingsource_event_count{} OR kafkasource_event_count{} OR apiserversource_event_count{}), namespace_name)",
             "refresh": 2,
             "regex": "",
             "sort": 1,
