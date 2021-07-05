@@ -41,10 +41,7 @@ var (
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv(dashboard.EventingSourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-source.yaml")
-	os.Setenv(dashboard.EventingBrokerDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-broker.yaml")
-	os.Setenv(dashboard.EventingResourceDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-resources.yaml")
-	os.Setenv(dashboard.EventingChannelDashboardPathEnvVar, "../dashboard/testdata/grafana-dash-knative-eventing-channel.yaml")
+	os.Setenv(dashboard.DashboardsManifestPathEnvVar, "../dashboard/testdata")
 
 	apis.AddToScheme(scheme.Scheme)
 }

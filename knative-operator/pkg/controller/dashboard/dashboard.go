@@ -3,6 +3,7 @@ package dashboard
 import (
 	"context"
 	"fmt"
+	"os"
 
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
@@ -17,15 +18,10 @@ import (
 var log = common.Log.WithName("dashboard")
 
 const ConfigManagedNamespace = "openshift-config-managed"
-
-const EventingResourceDashboardPathEnvVar = "EVENTING_RESOURCES_DASHBOARD_MANIFEST_PATH"
-const EventingBrokerDashboardPathEnvVar = "EVENTING_BROKER_DASHBOARD_MANIFEST_PATH"
-const EventingSourceDashboardPathEnvVar = "EVENTING_SOURCE_DASHBOARD_MANIFEST_PATH"
-const EventingChannelDashboardPathEnvVar = "EVENTING_CHANNEL_DASHBOARD_MANIFEST_PATH"
-const ServingResourceDashboardPathEnvVar = "SERVING_RESOURCES_DASHBOARD_MANIFEST_PATH"
+const DashboardsManifestPathEnvVar = "DASHBOARDS_ROOT_MANIFEST_PATH"
 
 // Apply applies dashboard resources.
-func Apply(path string, instance operatorv1alpha1.KComponent, api client.Client) error {
+func Apply(manifestSubPath string, instance operatorv1alpha1.KComponent, api client.Client) error {
 	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
 		log.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
@@ -33,28 +29,27 @@ func Apply(path string, instance operatorv1alpha1.KComponent, api client.Client)
 	} else if err != nil {
 		return fmt.Errorf("failed to get namespace %q: %w", ConfigManagedNamespace, err)
 	}
-	manifest, err := manifest(path, getAnnotationsFromInstance(instance), api)
+	manifest, err := manifest(getDashboardsPath(manifestSubPath), getAnnotationsFromInstance(instance), api)
 	if err != nil {
-		return fmt.Errorf("failed to load dashboard manifest: %w", err)
+		return fmt.Errorf("failed to load dashboards manifests: %w", err)
 	}
-	log.Info("Installing dashboard ", "path:", path)
+	log.Info("Installing dashboards under ", "path:", getDashboardsPath(manifestSubPath))
 	if err := manifest.Apply(); err != nil {
-		return fmt.Errorf("failed to apply dashboard manifest: %w", err)
+		return fmt.Errorf("failed to apply dashboards manifests: %w", err)
 	}
-	log.Info("Dashboard is ready")
+	log.Info("Dashboards are ready")
 	return nil
 }
 
 // Delete deletes dashboard resources.
-func Delete(path string, instance operatorv1alpha1.KComponent, api client.Client) error {
-	log.Info("Deleting dashboard")
-	manifest, err := manifest(path, getAnnotationsFromInstance(instance), api)
+func Delete(manifestSubPath string, instance operatorv1alpha1.KComponent, api client.Client) error {
+	manifest, err := manifest(getDashboardsPath(manifestSubPath), getAnnotationsFromInstance(instance), api)
 	if err != nil {
-		return fmt.Errorf("failed to load dashboard manifest: %w", err)
+		return fmt.Errorf("failed to load dashboards manifests: %w", err)
 	}
-
+	log.Info("Deleting dashboards under ", "path:", getDashboardsPath(manifestSubPath))
 	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete dashboard manifest: %w", err)
+		return fmt.Errorf("failed to delete dashboards manifests: %w", err)
 	}
 	return nil
 }
@@ -90,4 +85,12 @@ func getAnnotationsFromInstance(instance operatorv1alpha1.KComponent) mf.Transfo
 		})
 	}
 	return nil
+}
+
+func getDashboardsPath(subPath string) string {
+	path := os.Getenv(DashboardsManifestPathEnvVar)
+	if path == "" {
+		return "deploy/resources/dashboards" + "/" + subPath
+	}
+	return path + "/" + subPath
 }
