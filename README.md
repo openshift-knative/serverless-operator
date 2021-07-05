@@ -11,7 +11,7 @@ For the scripts in this repository to work properly, the following requirements 
 build images from code)
 - `bash` (4.0.0 or newer)
 - `make`
-- `yq` (3.4.0)
+- `yq` (4.0.0 or newer)
 
 ## Install an unreleased version
 

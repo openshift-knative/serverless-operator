@@ -85,9 +85,9 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patc
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
-download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
+download_ingress net-istio "v$(metadata.get .dependencies.net_istio)" "${istio_files[@]}"
 
-url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get dependencies.kourier)/kourier.yaml"
+url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get .dependencies.kourier)/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.

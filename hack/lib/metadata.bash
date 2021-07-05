@@ -16,5 +16,5 @@ function metadata.get {
   local metadata_file
   metadata_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/project.yaml"
 
-  yq read "${metadata_file}" "${1}"
+  yq e "${1}" "${metadata_file}"
 }

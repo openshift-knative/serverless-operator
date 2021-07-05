@@ -28,7 +28,7 @@ jobs:
         with:
           source: "github"
           github_pat: ${{ github.token }}
-          yq: "3.4.1"
+          yq: "4.9.6"
 
       - name: Checkout
         uses: actions/checkout@v2

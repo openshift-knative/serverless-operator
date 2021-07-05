@@ -309,60 +309,60 @@ spec:
                         value: "knative-eventing"
                       - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
-                      - name: "IMAGE_queue-proxy"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"
-                      - name: "IMAGE_activator"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator"
-                      - name: "IMAGE_autoscaler"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler"
-                      - name: "IMAGE_autoscaler-hpa"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa"
-                      - name: "IMAGE_controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller"
-                      - name: "IMAGE_webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook"
-                      - name: "IMAGE_domain-mapping"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping"
-                      - name: "IMAGE_domainmapping-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook"
-                      - name: "IMAGE_storage-version-migration-serving-serving-0.23.1__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration"
-                      - name: "IMAGE_kourier-gateway"
-                        value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
-                      - name: "IMAGE_kourier-control"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:kourier"
-                      - name: "IMAGE_networking-istio"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller"
-                      - name: "IMAGE_istio-webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook"
-                      - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller"
-                      - name: "IMAGE_sugar-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller"
-                      - name: "IMAGE_eventing-webhook__eventing-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook"
-                      - name: "IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration"
-                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker"
-                      - name: "IMAGE_mt-broker-filter__filter"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter"
-                      - name: "IMAGE_mt-broker-ingress__ingress"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress"
-                      - name: "IMAGE_imc-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller"
-                      - name: "IMAGE_imc-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping"
-                      - name: "IMAGE_APISERVER_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter"
-                      - name: "IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-                      - name: "IMAGE_KN_CLI_ARTIFACTS"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts"
-                      - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+                      - name: IMAGE_queue-proxy
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue
+                      - name: IMAGE_activator
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator
+                      - name: IMAGE_autoscaler
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler
+                      - name: IMAGE_autoscaler-hpa
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa
+                      - name: IMAGE_controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller
+                      - name: IMAGE_webhook__webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook
+                      - name: IMAGE_domain-mapping
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping
+                      - name: IMAGE_domainmapping-webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook
+                      - name: IMAGE_storage-version-migration-serving-serving-0.23.1__migrate
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration
+                      - name: IMAGE_kourier-gateway
+                        value: quay.io/openshift-knative/proxyv2-ubi8:2.0.0
+                      - name: IMAGE_kourier-control
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:kourier
+                      - name: IMAGE_networking-istio
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller
+                      - name: IMAGE_istio-webhook__webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook
+                      - name: IMAGE_eventing-controller__eventing-controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller
+                      - name: IMAGE_sugar-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller
+                      - name: IMAGE_eventing-webhook__eventing-webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook
+                      - name: IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration
+                      - name: IMAGE_mt-broker-controller__mt-broker-controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker
+                      - name: IMAGE_mt-broker-filter__filter
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter
+                      - name: IMAGE_mt-broker-ingress__ingress
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress
+                      - name: IMAGE_imc-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller
+                      - name: IMAGE_imc-dispatcher__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+                      - name: IMAGE_pingsource-mt-adapter__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping
+                      - name: IMAGE_APISERVER_RA_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter
+                      - name: IMAGE_DISPATCHER_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+                      - name: IMAGE_KN_CLI_ARTIFACTS
+                        value: registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts
+                      - name: IMAGE_KUBE_RBAC_PROXY
+                        value: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
                     imagePullPolicy: IfNotPresent
@@ -434,72 +434,72 @@ spec:
                         value: deploy/resources/knativekafka/2-source.yaml
                       - name: QUICKSTART_MANIFEST_PATH
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
-                      - name: "IMAGE_queue-proxy"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"
-                      - name: "IMAGE_activator"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator"
-                      - name: "IMAGE_autoscaler"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler"
-                      - name: "IMAGE_autoscaler-hpa"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa"
-                      - name: "IMAGE_controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller"
-                      - name: "IMAGE_webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook"
-                      - name: "IMAGE_domain-mapping"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping"
-                      - name: "IMAGE_domainmapping-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook"
-                      - name: "IMAGE_storage-version-migration-serving-serving-0.23.1__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration"
-                      - name: "IMAGE_kourier-gateway"
-                        value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
-                      - name: "IMAGE_kourier-control"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:kourier"
-                      - name: "IMAGE_networking-istio"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller"
-                      - name: "IMAGE_istio-webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook"
-                      - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller"
-                      - name: "IMAGE_sugar-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller"
-                      - name: "IMAGE_eventing-webhook__eventing-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook"
-                      - name: "IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration"
-                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker"
-                      - name: "IMAGE_mt-broker-filter__filter"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter"
-                      - name: "IMAGE_mt-broker-ingress__ingress"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress"
-                      - name: "IMAGE_imc-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller"
-                      - name: "IMAGE_imc-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping"
-                      - name: "IMAGE_APISERVER_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter"
-                      - name: "IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-                      - name: "IMAGE_KN_CLI_ARTIFACTS"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts"
-                      - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
-                      - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-source-controller"
-                      - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-receive-adapter"
-                      - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-controller"
-                      - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
-                      - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
-                      - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
+                      - name: IMAGE_queue-proxy
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue
+                      - name: IMAGE_activator
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator
+                      - name: IMAGE_autoscaler
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler
+                      - name: IMAGE_autoscaler-hpa
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa
+                      - name: IMAGE_controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller
+                      - name: IMAGE_webhook__webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook
+                      - name: IMAGE_domain-mapping
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping
+                      - name: IMAGE_domainmapping-webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook
+                      - name: IMAGE_storage-version-migration-serving-serving-0.23.1__migrate
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration
+                      - name: IMAGE_kourier-gateway
+                        value: quay.io/openshift-knative/proxyv2-ubi8:2.0.0
+                      - name: IMAGE_kourier-control
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:kourier
+                      - name: IMAGE_networking-istio
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller
+                      - name: IMAGE_istio-webhook__webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook
+                      - name: IMAGE_eventing-controller__eventing-controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller
+                      - name: IMAGE_sugar-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller
+                      - name: IMAGE_eventing-webhook__eventing-webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook
+                      - name: IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration
+                      - name: IMAGE_mt-broker-controller__mt-broker-controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker
+                      - name: IMAGE_mt-broker-filter__filter
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter
+                      - name: IMAGE_mt-broker-ingress__ingress
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress
+                      - name: IMAGE_imc-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller
+                      - name: IMAGE_imc-dispatcher__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+                      - name: IMAGE_pingsource-mt-adapter__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping
+                      - name: IMAGE_APISERVER_RA_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter
+                      - name: IMAGE_DISPATCHER_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+                      - name: IMAGE_KN_CLI_ARTIFACTS
+                        value: registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts
+                      - name: IMAGE_KUBE_RBAC_PROXY
+                        value: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
+                      - name: KAFKA_IMAGE_kafka-controller-manager__manager
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-source-controller
+                      - name: KAFKA_IMAGE_KAFKA_RA_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-receive-adapter
+                      - name: KAFKA_IMAGE_kafka-ch-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-controller
+                      - name: KAFKA_IMAGE_DISPATCHER_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher
+                      - name: KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher
+                      - name: KAFKA_IMAGE_kafka-webhook__kafka-webhook
+                        value: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook
         - name: knative-openshift-ingress
           spec:
             replicas: 1
@@ -741,71 +741,71 @@ spec:
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-    - name: "IMAGE_queue-proxy"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"
-    - name: "IMAGE_activator"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator"
-    - name: "IMAGE_autoscaler"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler"
-    - name: "IMAGE_autoscaler-hpa"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa"
-    - name: "IMAGE_controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller"
-    - name: "IMAGE_webhook__webhook"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook"
-    - name: "IMAGE_domain-mapping"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping"
-    - name: "IMAGE_domainmapping-webhook"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook"
-    - name: "IMAGE_storage-version-migration-serving-serving-0.23.1__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration"
-    - name: "IMAGE_kourier-gateway"
-      image: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
-    - name: "IMAGE_kourier-control"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:kourier"
-    - name: "IMAGE_networking-istio"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller"
-    - name: "IMAGE_istio-webhook__webhook"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook"
-    - name: "IMAGE_eventing-controller__eventing-controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller"
-    - name: "IMAGE_sugar-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller"
-    - name: "IMAGE_eventing-webhook__eventing-webhook"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook"
-    - name: "IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration"
-    - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker"
-    - name: "IMAGE_mt-broker-filter__filter"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter"
-    - name: "IMAGE_mt-broker-ingress__ingress"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress"
-    - name: "IMAGE_imc-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller"
-    - name: "IMAGE_imc-dispatcher__dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-    - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping"
-    - name: "IMAGE_APISERVER_RA_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter"
-    - name: "IMAGE_DISPATCHER_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher"
-    - name: "IMAGE_KN_CLI_ARTIFACTS"
-      image: "registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts"
-    - name: "IMAGE_KUBE_RBAC_PROXY"
-      image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
-    - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-source-controller"
-    - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-receive-adapter"
-    - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-controller"
-    - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
-    - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
-    - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
+    - name: IMAGE_queue-proxy
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue
+    - name: IMAGE_activator
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-activator
+    - name: IMAGE_autoscaler
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler
+    - name: IMAGE_autoscaler-hpa
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-autoscaler-hpa
+    - name: IMAGE_controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-controller
+    - name: IMAGE_webhook__webhook
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-webhook
+    - name: IMAGE_domain-mapping
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping
+    - name: IMAGE_domainmapping-webhook
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-domain-mapping-webhook
+    - name: IMAGE_storage-version-migration-serving-serving-0.23.1__migrate
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-storage-version-migration
+    - name: IMAGE_kourier-gateway
+      image: quay.io/openshift-knative/proxyv2-ubi8:2.0.0
+    - name: IMAGE_kourier-control
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:kourier
+    - name: IMAGE_networking-istio
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-controller
+    - name: IMAGE_istio-webhook__webhook
+      image: registry.ci.openshift.org/openshift/knative-v0.23.1:net-istio-webhook
+    - name: IMAGE_eventing-controller__eventing-controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-controller
+    - name: IMAGE_sugar-controller__controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-sugar-controller
+    - name: IMAGE_eventing-webhook__eventing-webhook
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-webhook
+    - name: IMAGE_storage-version-migration-eventing-eventing-0.23.0__migrate
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-storage-version-migration
+    - name: IMAGE_mt-broker-controller__mt-broker-controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtchannel-broker
+    - name: IMAGE_mt-broker-filter__filter
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-filter
+    - name: IMAGE_mt-broker-ingress__ingress
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtbroker-ingress
+    - name: IMAGE_imc-controller__controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-controller
+    - name: IMAGE_imc-dispatcher__dispatcher
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+    - name: IMAGE_pingsource-mt-adapter__dispatcher
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-mtping
+    - name: IMAGE_APISERVER_RA_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-apiserver-receive-adapter
+    - name: IMAGE_DISPATCHER_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-v0.23.0:knative-eventing-channel-dispatcher
+    - name: IMAGE_KN_CLI_ARTIFACTS
+      image: registry.ci.openshift.org/openshift/knative-v0.22.0:kn-cli-artifacts
+    - name: IMAGE_KUBE_RBAC_PROXY
+      image: registry.ci.openshift.org/origin/4.7:kube-rbac-proxy
+    - name: KAFKA_IMAGE_kafka-controller-manager__manager
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-source-controller
+    - name: KAFKA_IMAGE_KAFKA_RA_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-receive-adapter
+    - name: KAFKA_IMAGE_kafka-ch-controller__controller
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-controller
+    - name: KAFKA_IMAGE_DISPATCHER_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher
+    - name: KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher
+    - name: KAFKA_IMAGE_kafka-webhook__kafka-webhook
+      image: registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook
   replaces: serverless-operator.v1.16.0
   version: 1.17.0

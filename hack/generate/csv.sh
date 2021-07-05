@@ -9,9 +9,9 @@ target="${2:?Provide a target CSV file as arg[2]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 registry="registry.ci.openshift.org/openshift"
-serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
-eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
-eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
+serving="${registry}/knative-v$(metadata.get .dependencies.serving):knative-serving"
+eventing="${registry}/knative-v$(metadata.get .dependencies.eventing):knative-eventing"
+eventing_kafka="${registry}/knative-v$(metadata.get .dependencies.eventing_kafka):knative-eventing-kafka"
 rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 
 declare -a images
@@ -44,18 +44,18 @@ image "controller"     "${serving}-controller"
 image "webhook__webhook" "${serving}-webhook"
 image "domain-mapping" "${serving}-domain-mapping"
 image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
-image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
+image "storage-version-migration-serving-serving-$(metadata.get .dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
-image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get .dependencies.maistra)"
+image "kourier-control" "${registry}/knative-v$(metadata.get .dependencies.kourier):kourier"
 
-image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
-image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
+image "networking-istio" "${registry}/knative-v$(metadata.get .dependencies.net_istio):net-istio-controller"
+image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get .dependencies.net_istio):net-istio-webhook"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
-image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
+image "storage-version-migration-eventing-eventing-$(metadata.get .dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
 image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
 image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
 image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
@@ -65,7 +65,7 @@ image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
-image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get .dependencies.cli):kn-cli-artifacts"
 
 kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-controller"
 kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
@@ -77,33 +77,21 @@ kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
 image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
 
 declare -A yaml_keys
-yaml_keys[spec.version]="$(metadata.get project.version)"
-yaml_keys[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
-yaml_keys['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
-yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
-yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
+yaml_keys['.spec.version']="$(metadata.get .project.version)"
+yaml_keys['.metadata.name']="$(metadata.get .project.name).v$(metadata.get .project.version)"
+yaml_keys['.metadata.annotations["olm.skipRange"]']="$(metadata.get .olm.skipRange)"
+yaml_keys['.spec.minKubeVersion']="$(metadata.get .requirements.kube.minVersion)"
+yaml_keys['.spec.replaces']="$(metadata.get .project.name).v$(metadata.get .olm.replaces)"
 
 declare -A vars
-vars[OCP_TARGET]="$(metadata.get 'requirements.ocp.[0]')"
+vars[OCP_TARGET]="$(metadata.get '.requirements.ocp.[0]')"
 
 function add_related_image {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.relatedImages[+]
-  value:
-    name: "${2}"
-    image: "${3}"
-EOF
+  yq e --inplace ".spec.relatedImages += {\"name\": \"${2}\", \"image\": \"${3}\"}" "$1"
 }
 
 function add_downstream_operator_deployment_image {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
-  value:
-    name: "${2}"
-    value: "${3}"
-EOF
+  yq e --inplace ".spec.install.spec.deployments.[1].spec.template.spec.containers[0].env += {\"name\": \"${2}\", \"value\": \"${3}\"}" "$1"
 }
 
 # since we also parse the environment variables in the upstream (actually midstream) operator,
@@ -111,13 +99,7 @@ EOF
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
 function add_upstream_operator_deployment_image {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
-  value:
-    name: "${2}"
-    value: "${3}"
-EOF
+  yq e --inplace ".spec.install.spec.deployments.[0].spec.template.spec.containers[0].env += {\"name\": \"${2}\", \"value\": \"${3}\"}" "$1"
 }
 
 # Start fresh
@@ -139,7 +121,7 @@ done
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"
-  yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
+  yq e --inplace "$name = \"${yaml_keys[$name]}\"" "$target"
 done
 
 for name in "${!vars[@]}"; do
