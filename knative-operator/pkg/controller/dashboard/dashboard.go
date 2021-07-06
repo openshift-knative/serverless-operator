@@ -20,7 +20,7 @@ var log = common.Log.WithName("dashboard")
 const ConfigManagedNamespace = "openshift-config-managed"
 const DashboardsManifestPathEnvVar = "DASHBOARDS_ROOT_MANIFEST_PATH"
 
-// Apply applies dashboard resources.
+// Apply applies dashboard resources under the manifestSubPath directory.
 func Apply(manifestSubPath string, instance operatorv1alpha1.KComponent, api client.Client) error {
 	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
@@ -54,11 +54,11 @@ func Delete(manifestSubPath string, instance operatorv1alpha1.KComponent, api cl
 	return nil
 }
 
-// manifest returns dashboard deploymnet resources manifest
+// manifest returns dashboards resources manifest
 func manifest(path string, owner mf.Transformer, apiclient client.Client) (mf.Manifest, error) {
 	manifest, err := mfc.NewManifest(path, apiclient, mf.UseLogger(log.WithName("mf")))
 	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to read dashboard manifest: %w", err)
+		return mf.Manifest{}, fmt.Errorf("failed to read dashboards manifests: %w", err)
 	}
 
 	// set owner to watch events.
@@ -66,7 +66,7 @@ func manifest(path string, owner mf.Transformer, apiclient client.Client) (mf.Ma
 
 	manifest, err = manifest.Transform(transforms...)
 	if err != nil {
-		return mf.Manifest{}, fmt.Errorf("failed to transform kn dashboard resources manifest: %w", err)
+		return mf.Manifest{}, fmt.Errorf("failed to transform kn dashboard resource manifests: %w", err)
 	}
 	return manifest, nil
 }
@@ -89,8 +89,5 @@ func getAnnotationsFromInstance(instance operatorv1alpha1.KComponent) mf.Transfo
 
 func getDashboardsPath(subPath string) string {
 	path := os.Getenv(DashboardsManifestPathEnvVar)
-	if path == "" {
-		return "deploy/resources/dashboards" + "/" + subPath
-	}
 	return path + "/" + subPath
 }
