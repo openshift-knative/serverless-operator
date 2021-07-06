@@ -166,18 +166,7 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Dashboards")
-	if err := dashboard.Apply(os.Getenv(dashboard.EventingResourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return err
-	}
-	if err := dashboard.Apply(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
-		return err
-	}
-
-	if err := dashboard.Apply(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return err
-	}
-
-	return dashboard.Apply(os.Getenv(dashboard.EventingChannelDashboardPathEnvVar), instance, r.client)
+	return dashboard.Apply("eventing", instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
@@ -191,17 +180,8 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	}
 	log.Info("Running cleanup logic")
 	log.Info("Deleting eventing dashboards")
-	if err := dashboard.Delete(os.Getenv(dashboard.EventingResourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete resource dashboard configmap: %w", err)
-	}
-	if err := dashboard.Delete(os.Getenv(dashboard.EventingBrokerDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete broker dashboard configmap: %w", err)
-	}
-	if err := dashboard.Delete(os.Getenv(dashboard.EventingSourceDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete source dashboard configmap: %w", err)
-	}
-	if err := dashboard.Delete(os.Getenv(dashboard.EventingChannelDashboardPathEnvVar), instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete source dashboard configmap: %w", err)
+	if err := dashboard.Delete("eventing", instance, r.client); err != nil {
+		return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
 	refetched := &eventingv1alpha1.KnativeEventing{}

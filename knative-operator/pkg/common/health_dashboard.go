@@ -45,7 +45,7 @@ func InstallHealthDashboard(api client.Client) error {
 	return nil
 }
 
-// manifest returns dashboard deployment resources manifest
+// manifest returns dashboard resources manifest
 func manifest(apiclient client.Client, deploymentName string, namespace string) (mf.Manifest, error) {
 	manifest, err := mfc.NewManifest(manifestPath(), apiclient, mf.UseLogger(logh.WithName("mf")))
 	if err != nil {
@@ -70,9 +70,6 @@ func manifest(apiclient client.Client, deploymentName string, namespace string) 
 
 // manifestPath returns health dashboard resource manifest path
 func manifestPath() string {
-	path := os.Getenv("HEALTH_DASHBOARD_MANIFEST_PATH")
-	if path == "" {
-		return "deploy/resources/dashboards/grafana-dash-knative-health.yaml"
-	}
-	return path
+	path := os.Getenv("DASHBOARDS_ROOT_MANIFEST_PATH")
+	return path + "/grafana-dash-knative-health.yaml"
 }
