@@ -17,7 +17,11 @@ create_namespaces
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
-scale_up_workers
+# Need 6 worker nodes when running upgrade or upstream. Set, if not enough.
+if [[ "${SCALE_UP}" -lt 6 ]]; then
+  SCALE_UP=6
+  scale_up_workers
+fi
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
