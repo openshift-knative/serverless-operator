@@ -1,4 +1,4 @@
-package common
+package health
 
 import (
 	"context"
@@ -8,28 +8,29 @@ import (
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var logh = Log.WithName("health dashboard")
-
-const ConfigManagedNamespace = "openshift-config-managed"
+var logh = common.Log.WithName("health dashboard")
 
 func InstallHealthDashboard(api client.Client) error {
-	namespace := os.Getenv(NamespaceEnvKey)
+	namespace := os.Getenv(common.NamespaceEnvKey)
 	if namespace == "" {
 		return errors.New("NAMESPACE not provided via environment")
 	}
-	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
+	err := api.Get(context.TODO(), client.ObjectKey{Name: dashboards.ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
-		logh.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
+		logh.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", dashboards.ConfigManagedNamespace))
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("failed to get namespace %q: %w", ConfigManagedNamespace, err)
+		return fmt.Errorf("failed to get namespace %q: %w", dashboards.ConfigManagedNamespace, err)
 	}
-	deploymentName, err := getOperatorDeploymentName()
+	deploymentName, err := monitoring.GetOperatorDeploymentName()
 	if err != nil {
 		return err
 	}
@@ -52,11 +53,11 @@ func manifest(apiclient client.Client, deploymentName string, namespace string) 
 		return mf.Manifest{}, fmt.Errorf("failed to read dashboard manifest: %w", err)
 	}
 	transforms := []mf.Transformer{
-		SetAnnotations(map[string]string{
-			ServerlessOperatorOwnerName:      deploymentName,
-			ServerlessOperatorOwnerNamespace: namespace,
+		common.SetAnnotations(map[string]string{
+			common.ServerlessOperatorOwnerName:      deploymentName,
+			common.ServerlessOperatorOwnerNamespace: namespace,
 		}),
-		mf.InjectNamespace(ConfigManagedNamespace),
+		mf.InjectNamespace(dashboards.ConfigManagedNamespace),
 	}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
 		return mf.Manifest{}, fmt.Errorf("unable to transform role and roleBinding serviceMonitor manifest %w", err)

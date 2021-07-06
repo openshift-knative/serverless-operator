@@ -15,12 +15,12 @@ const (
 )
 
 func init() {
-	os.Setenv(smRbacManifestPath, "../testdata/rbac-proxy.yaml")
+	os.Setenv(smRbacManifestPath, "testdata/rbac-proxy.yaml")
 }
 
 func TestSetupServingRbacTransformation(t *testing.T) {
 	client := fake.New()
-	manifest, err := mf.NewManifest("../testdata/rbac.yaml", mf.UseClient(client))
+	manifest, err := mf.NewManifest("testdata/rbac.yaml", mf.UseClient(client))
 	if err != nil {
 		t.Errorf("Unable to load test manifest: %w", err)
 	}

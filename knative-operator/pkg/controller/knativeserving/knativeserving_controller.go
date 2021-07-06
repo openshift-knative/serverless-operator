@@ -6,9 +6,10 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -156,11 +157,11 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 		}
 	}
 
-	common.KnativeServingUpG = common.KnativeUp.WithLabelValues("serving_status")
+	monitoring.KnativeServingUpG = monitoring.KnativeUp.WithLabelValues("serving_status")
 	if instance.Status.IsReady() {
-		common.KnativeServingUpG.Set(1)
+		monitoring.KnativeServingUpG.Set(1)
 	} else {
-		common.KnativeServingUpG.Set(0)
+		monitoring.KnativeServingUpG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }
@@ -338,12 +339,12 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
 	log.Info("Installing Serving Dashboards")
-	return dashboard.Apply("serving", instance, r.client)
+	return dashboards.Apply("serving", instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
 func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
-	defer common.KnativeUp.DeleteLabelValues("serving_status")
+	defer monitoring.KnativeUp.DeleteLabelValues("serving_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
@@ -358,7 +359,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	log.Info("Deleting Serving dashboards")
-	if err := dashboard.Delete("serving", instance, r.client); err != nil {
+	if err := dashboards.Delete("serving", instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 	}
 

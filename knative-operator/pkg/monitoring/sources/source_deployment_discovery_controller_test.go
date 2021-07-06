@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -34,8 +33,8 @@ var (
 		Spec: v1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					common.SourceLabel:     "apiserver-source-controller",
-					common.SourceNameLabel: "api1",
+					SourceLabel:     "apiserver-source-controller",
+					SourceNameLabel: "api1",
 				},
 			},
 		},
@@ -48,8 +47,8 @@ var (
 		Spec: v1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					common.SourceLabel:     "ping-source-controller",
-					common.SourceRoleLabel: "adapter",
+					SourceLabel:     "ping-source-controller",
+					SourceRoleLabel: "adapter",
 				},
 			},
 		},
@@ -86,11 +85,11 @@ func TestSourceReconcile(t *testing.T) {
 	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smAPIService); err != nil {
 		t.Fatalf("get: (%v)", err)
 	}
-	if smAPIService.Spec.Selector[common.SourceLabel] != "apiserver-source-controller" {
-		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[common.SourceLabel], "apiserver-source-controller")
+	if smAPIService.Spec.Selector[SourceLabel] != "apiserver-source-controller" {
+		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[SourceLabel], "apiserver-source-controller")
 	}
-	if smAPIService.Spec.Selector[common.SourceNameLabel] != "api1" {
-		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[common.SourceNameLabel], "api1")
+	if smAPIService.Spec.Selector[SourceNameLabel] != "api1" {
+		t.Fatalf("got %q, want %q", smAPIService.Spec.Selector[SourceNameLabel], "api1")
 	}
 	smAPI := &monitoringv1.ServiceMonitor{}
 	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Name, Namespace: apiserverRequest.Namespace}, smAPI); err != nil {
@@ -108,11 +107,11 @@ func TestSourceReconcile(t *testing.T) {
 	if err := cl.Get(context.TODO(), types.NamespacedName{Name: pingsourceRequest.Name, Namespace: pingsourceRequest.Namespace}, smPingService); err != nil {
 		t.Fatalf("get: (%v)", err)
 	}
-	if smPingService.Spec.Selector[common.SourceLabel] != "ping-source-controller" {
-		t.Fatalf("got %q, want %q", smPingService.Spec.Selector[common.SourceLabel], "ping-source-controller")
+	if smPingService.Spec.Selector[SourceLabel] != "ping-source-controller" {
+		t.Fatalf("got %q, want %q", smPingService.Spec.Selector[SourceLabel], "ping-source-controller")
 	}
-	if smPingService.Spec.Selector[common.SourceRoleLabel] != "adapter" {
-		t.Fatalf("got %q, want %q", smPingService.Spec.Selector[common.SourceRoleLabel], "adapter")
+	if smPingService.Spec.Selector[SourceRoleLabel] != "adapter" {
+		t.Fatalf("got %q, want %q", smPingService.Spec.Selector[SourceRoleLabel], "adapter")
 	}
 	smPing := &monitoringv1.ServiceMonitor{}
 	if err := cl.Get(context.TODO(), types.NamespacedName{Name: pingsourceRequest.Name, Namespace: pingsourceRequest.Namespace}, smPing); err != nil {

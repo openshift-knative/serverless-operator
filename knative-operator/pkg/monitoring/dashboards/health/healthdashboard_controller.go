@@ -60,7 +60,7 @@ func (r *ReconcileHealthDashboard) Reconcile(ctx context.Context, request reconc
 	reqLogger.Info("Reconciling HealthDashboard")
 	// in any case restore the current health dashboard, since the configmap shouldnt
 	// be modified, if the configmap has not changed this will not trigger a real update
-	err := common.InstallHealthDashboard(r.client)
+	err := InstallHealthDashboard(r.client)
 	if err != nil {
 		return reconcile.Result{}, err
 	}

@@ -9,6 +9,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -147,11 +148,11 @@ func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile
 		}
 	}
 
-	common.KnativeKafkaUpG = common.KnativeUp.WithLabelValues("kafka_status")
+	monitoring.KnativeKafkaUpG = monitoring.KnativeUp.WithLabelValues("kafka_status")
 	if instance.Status.IsReady() {
-		common.KnativeKafkaUpG.Set(1)
+		monitoring.KnativeKafkaUpG.Set(1)
 	} else {
-		common.KnativeKafkaUpG.Set(0)
+		monitoring.KnativeKafkaUpG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }
@@ -326,7 +327,7 @@ func isDeploymentAvailable(d *appsv1.Deployment) bool {
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
 func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) error {
-	defer common.KnativeUp.DeleteLabelValues("kafka_status")
+	defer monitoring.KnativeUp.DeleteLabelValues("kafka_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {

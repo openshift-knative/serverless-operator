@@ -13,7 +13,7 @@ import (
 )
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
-	manifest, err := mf.NewManifest("../testdata/serving-core-deployment.yaml")
+	manifest, err := mf.NewManifest("testdata/serving-core-deployment.yaml")
 	rbacImage := "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 	os.Setenv(rbacProxyImageEnvVar, rbacImage)
 	if err != nil {

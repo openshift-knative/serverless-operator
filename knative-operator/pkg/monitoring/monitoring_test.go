@@ -1,4 +1,4 @@
-package common
+package monitoring
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -29,6 +30,7 @@ var (
 )
 
 func init() {
+	_ = monitoringv1.AddToScheme(scheme.Scheme)
 	os.Setenv(operatorDeploymentNameEnvKey, "knative-openshift")
 }
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +29,7 @@ var (
 	}
 	dashboardNamespace = &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: dashboard.ConfigManagedNamespace,
+			Name: dashboards.ConfigManagedNamespace,
 		},
 	}
 	eventingNamespace = &corev1.Namespace{
@@ -41,7 +41,7 @@ var (
 
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
-	os.Setenv(dashboard.DashboardsManifestPathEnvVar, "../dashboard/testdata")
+	os.Setenv(dashboards.DashboardsManifestPathEnvVar, "../../../deploy/resources/dashboards")
 
 	apis.AddToScheme(scheme.Scheme)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,9 +42,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
 		dep := obj.(*v1.Deployment)
-		sourceLabel := dep.Spec.Selector.MatchLabels[common.SourceLabel]
-		sourceNameLabel := dep.Spec.Selector.MatchLabels[common.SourceNameLabel]
-		sourceRoleLabel := dep.Spec.Selector.MatchLabels[common.SourceRoleLabel]
+		sourceLabel := dep.Spec.Selector.MatchLabels[SourceLabel]
+		sourceNameLabel := dep.Spec.Selector.MatchLabels[SourceNameLabel]
+		sourceRoleLabel := dep.Spec.Selector.MatchLabels[SourceRoleLabel]
 
 		if (sourceLabel != "" && sourceNameLabel != "") || (sourceLabel != "" && sourceRoleLabel != "") {
 			return []reconcile.Request{{
@@ -79,10 +80,10 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 		// the deployment does not exist anymore do nothing
 		return reconcile.Result{}, nil
 	}
-	if err := common.SetupMonitoringRequirements(r.client, dep); err != nil {
+	if err := monitoring.SetupMonitoringRequirements(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
-	if err := common.SetupSourceServiceMonitorResources(r.client, dep); err != nil {
+	if err := SetupSourceServiceMonitorResources(r.client, dep); err != nil {
 		return reconcile.Result{}, err
 	}
 	return reconcile.Result{}, nil

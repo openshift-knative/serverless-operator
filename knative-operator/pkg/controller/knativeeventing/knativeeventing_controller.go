@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -112,11 +113,11 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 			return reconcile.Result{}, fmt.Errorf("failed to update status: %w", err)
 		}
 	}
-	common.KnativeEventingUpG = common.KnativeUp.WithLabelValues("eventing_status")
+	monitoring.KnativeEventingUpG = monitoring.KnativeUp.WithLabelValues("eventing_status")
 	if instance.Status.IsReady() {
-		common.KnativeEventingUpG.Set(1)
+		monitoring.KnativeEventingUpG.Set(1)
 	} else {
-		common.KnativeEventingUpG.Set(0)
+		monitoring.KnativeEventingUpG.Set(0)
 	}
 	return reconcile.Result{}, reconcileErr
 }
@@ -166,12 +167,12 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *eventingv1alpha1.K
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *eventingv1alpha1.KnativeEventing) error {
 	log.Info("Installing Eventing Dashboards")
-	return dashboard.Apply("eventing", instance, r.client)
+	return dashboards.Apply("eventing", instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEventing) error {
-	defer common.KnativeUp.DeleteLabelValues("eventing_status")
+	defer monitoring.KnativeUp.DeleteLabelValues("eventing_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
@@ -180,7 +181,7 @@ func (r *ReconcileKnativeEventing) delete(instance *eventingv1alpha1.KnativeEven
 	}
 	log.Info("Running cleanup logic")
 	log.Info("Deleting eventing dashboards")
-	if err := dashboard.Delete("eventing", instance, r.client); err != nil {
+	if err := dashboards.Delete("eventing", instance, r.client); err != nil {
 		return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
