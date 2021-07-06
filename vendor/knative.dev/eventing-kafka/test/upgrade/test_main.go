@@ -24,13 +24,14 @@ import (
 	"knative.dev/eventing-kafka/test"
 	eventingTest "knative.dev/eventing/test"
 	testlib "knative.dev/eventing/test/lib"
+	"knative.dev/eventing/test/lib/resources"
 	"knative.dev/pkg/system"
 )
 
 var (
 	channelTestRunner  testlib.ComponentsTestRunner
 	defaultChannelType = metav1.TypeMeta{
-		APIVersion: "messaging.knative.dev/v1beta1",
+		APIVersion: resources.MessagingAPIVersion,
 		Kind:       "KafkaChannel",
 	}
 )

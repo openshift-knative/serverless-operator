@@ -38,7 +38,6 @@ import (
 )
 
 // ChannelDeadLetterSinkTestHelper is the helper function for channel_deadlettersink_test
-// Deprecated, use reconciler-test based tests.
 func ChannelDeadLetterSinkTestHelper(
 	ctx context.Context,
 	t *testing.T,
@@ -66,6 +65,14 @@ func ChannelDeadLetterSinkTestHelper(
 		// create subscriptions that subscribe to a service that does not exist
 		switch subscriptionVersion {
 		case SubscriptionV1:
+			client.CreateSubscriptionsV1OrFail(
+				subscriptionNames,
+				channelNames[0],
+				&channel,
+				resources.WithSubscriberForSubscriptionV1("does-not-exist"),
+				resources.WithDeadLetterSinkForSubscriptionV1(recordEventsPodName),
+			)
+		case SubscriptionV1beta1:
 			client.CreateSubscriptionsOrFail(
 				subscriptionNames,
 				channelNames[0],
@@ -101,7 +108,6 @@ func ChannelDeadLetterSinkTestHelper(
 }
 
 // ChannelDeadLetterDefaultSinkTestHelper is the helper function for channel_deadlettersink_test, but setting the delivery from the channel spec
-// Deprecated, use reconciler-test based tests.
 func ChannelDeadLetterSinkDefaultTestHelper(
 	ctx context.Context,
 	t *testing.T,
@@ -127,7 +133,7 @@ func ChannelDeadLetterSinkDefaultTestHelper(
 		defer testlib.TearDown(client)
 
 		// create channel
-		client.CreateChannelWithDefaultOrFail(&messagingv1.Channel{
+		client.CreateChannelV1WithDefaultOrFail(&messagingv1.Channel{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      channelName,
 				Namespace: client.Namespace,
@@ -151,11 +157,11 @@ func ChannelDeadLetterSinkDefaultTestHelper(
 		// create event logger pod and service as the subscriber
 		eventTracker, _ := recordevents.StartEventRecordOrFail(ctx, client, recordEventsPodName)
 		// create subscriptions that subscribe to a service that does not exist
-		client.CreateSubscriptionsOrFail(
+		client.CreateSubscriptionsV1OrFail(
 			subscriptionNames,
 			channelName,
 			&channel,
-			resources.WithSubscriberForSubscription("does-not-exist"),
+			resources.WithSubscriberForSubscriptionV1("does-not-exist"),
 		)
 
 		// wait for all test resources to be ready, so that we can start sending events

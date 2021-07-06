@@ -57,8 +57,16 @@ func smokeTestCases() []smokeTestCase {
 		encoding: cloudevents.EncodingBinary,
 		version:  helpers.SubscriptionV1,
 	}, {
+		name:     "BinaryV1beta1",
+		encoding: cloudevents.EncodingBinary,
+		version:  helpers.SubscriptionV1beta1,
+	}, {
 		name:     "StructuredV1",
 		encoding: cloudevents.EncodingStructured,
 		version:  helpers.SubscriptionV1,
+	}, {
+		name:     "StructuredV1beta1",
+		encoding: cloudevents.EncodingStructured,
+		version:  helpers.SubscriptionV1beta1,
 	}}
 }

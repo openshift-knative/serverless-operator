@@ -124,11 +124,10 @@ type SequenceStatus struct {
 	// Matches the Spec.Steps array in the order.
 	ChannelStatuses []SequenceChannelStatus `json:"channelStatuses"`
 
-	// Address is the starting point to this Sequence. Sending to this
+	// AddressStatus is the starting point to this Sequence. Sending to this
 	// will target the first subscriber.
 	// It generally has the form {channel}.{namespace}.svc.{cluster domain name}
-	// +optional
-	Address duckv1.Addressable `json:"address,omitempty"`
+	duckv1.AddressStatus `json:",inline"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

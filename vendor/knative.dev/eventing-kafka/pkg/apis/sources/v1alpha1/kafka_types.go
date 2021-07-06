@@ -137,11 +137,6 @@ type KafkaSourceStatus struct {
 	// For round-tripping only.
 	Consumers int32 `json:"consumers,omitempty"`
 
-	// Claims consumed by this KafkaSource instance
-	// +optional
-	// For round-tripping only.
-	Claims string `json:"claims,omitempty"`
-
 	// Use for labelSelectorPath when scaling Kafka source
 	// +optional
 	Selector string `json:"selector,omitempty"`

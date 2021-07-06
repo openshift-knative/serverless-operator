@@ -37,15 +37,12 @@ type Message struct {
 	BodyReader io.ReadCloser
 	OnFinish   func(error) error
 
-	ctx context.Context
-
 	format  format.Format
 	version spec.Version
 }
 
 // Check if http.Message implements binding.Message
 var _ binding.Message = (*Message)(nil)
-var _ binding.MessageContext = (*Message)(nil)
 var _ binding.MessageMetadataReader = (*Message)(nil)
 
 // NewMessage returns a binding.Message with header and data.
@@ -67,9 +64,7 @@ func NewMessageFromHttpRequest(req *nethttp.Request) *Message {
 	if req == nil {
 		return nil
 	}
-	message := NewMessage(req.Header, req.Body)
-	message.ctx = req.Context()
-	return message
+	return NewMessage(req.Header, req.Body)
 }
 
 // NewMessageFromHttpResponse returns a binding.Message with header and data.
@@ -150,10 +145,6 @@ func (m *Message) GetExtension(name string) interface{} {
 		return h[0]
 	}
 	return nil
-}
-
-func (m *Message) Context() context.Context {
-	return m.ctx
 }
 
 func (m *Message) Finish(err error) error {

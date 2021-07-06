@@ -70,7 +70,7 @@ type Config struct {
 	// BrokerOpts holds opts for broker.
 	// TODO(ksuszyns): Remove this opt in next release
 	// Deprecated: use Wathola.SystemUnderTest instead.
-	BrokerOpts []resources.BrokerOption
+	BrokerOpts []resources.BrokerV1Beta1Option
 	// Namespace holds namespace in which test is about to be executed.
 	// TODO(ksuszyns): Remove this opt in next release
 	// Deprecated: namespace is about to be taken from testlib.Client created by

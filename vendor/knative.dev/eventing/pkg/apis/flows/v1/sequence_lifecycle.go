@@ -122,11 +122,6 @@ func (ss *SequenceStatus) PropagateChannelStatuses(channels []*eventingduckv1.Ch
 
 	}
 	for i, c := range channels {
-		// Mark the Sequence address as the Address of the first channel.
-		if i == 0 {
-			ss.setAddress(c.Status.Address)
-		}
-
 		ss.ChannelStatuses[i] = SequenceChannelStatus{
 			Channel: corev1.ObjectReference{
 				APIVersion: c.APIVersion,
@@ -135,15 +130,19 @@ func (ss *SequenceStatus) PropagateChannelStatuses(channels []*eventingduckv1.Ch
 				Namespace:  c.Namespace,
 			},
 		}
-
-		if ready := c.Status.GetCondition(apis.ConditionReady); ready != nil {
-			ss.ChannelStatuses[i].ReadyCondition = *ready
-			if !ready.IsTrue() {
-				allReady = false
-			}
+		// TODO: Once the addressable has a real status to dig through, use that here instead of
+		// addressable, because it might be addressable but not ready.
+		address := c.Status.AddressStatus.Address
+		if address != nil {
+			ss.ChannelStatuses[i].ReadyCondition = apis.Condition{Type: apis.ConditionReady, Status: corev1.ConditionTrue}
 		} else {
-			ss.ChannelStatuses[i].ReadyCondition = apis.Condition{Type: apis.ConditionReady, Status: corev1.ConditionUnknown, Reason: "NoReady", Message: "Channel does not have Ready condition"}
+			ss.ChannelStatuses[i].ReadyCondition = apis.Condition{Type: apis.ConditionReady, Status: corev1.ConditionFalse, Reason: "NotAddressable", Message: "Channel is not addressable"}
 			allReady = false
+		}
+
+		// Mark the Sequence address as the Address of the first channel.
+		if i == 0 {
+			ss.setAddress(address)
 		}
 	}
 	if allReady {
@@ -154,23 +153,22 @@ func (ss *SequenceStatus) PropagateChannelStatuses(channels []*eventingduckv1.Ch
 }
 
 func (ss *SequenceStatus) MarkChannelsNotReady(reason, messageFormat string, messageA ...interface{}) {
-	sCondSet.Manage(ss).MarkUnknown(SequenceConditionChannelsReady, reason, messageFormat, messageA...)
+	sCondSet.Manage(ss).MarkFalse(SequenceConditionChannelsReady, reason, messageFormat, messageA...)
 }
 
 func (ss *SequenceStatus) MarkSubscriptionsNotReady(reason, messageFormat string, messageA ...interface{}) {
-	sCondSet.Manage(ss).MarkUnknown(SequenceConditionSubscriptionsReady, reason, messageFormat, messageA...)
+	sCondSet.Manage(ss).MarkFalse(SequenceConditionSubscriptionsReady, reason, messageFormat, messageA...)
 }
 
 func (ss *SequenceStatus) MarkAddressableNotReady(reason, messageFormat string, messageA ...interface{}) {
-	sCondSet.Manage(ss).MarkUnknown(SequenceConditionAddressable, reason, messageFormat, messageA...)
+	sCondSet.Manage(ss).MarkFalse(SequenceConditionAddressable, reason, messageFormat, messageA...)
 }
 
 func (ss *SequenceStatus) setAddress(address *duckv1.Addressable) {
 	if address == nil || address.URL == nil {
-		ss.Address = duckv1.Addressable{}
-		sCondSet.Manage(ss).MarkUnknown(SequenceConditionAddressable, "emptyAddress", "addressable is nil")
+		sCondSet.Manage(ss).MarkFalse(SequenceConditionAddressable, "emptyAddress", "addressable is nil")
 	} else {
-		ss.Address = duckv1.Addressable{URL: address.URL}
+		ss.AddressStatus.Address = &duckv1.Addressable{URL: address.URL}
 		sCondSet.Manage(ss).MarkTrue(SequenceConditionAddressable)
 	}
 }

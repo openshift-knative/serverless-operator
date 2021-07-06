@@ -2,14 +2,14 @@ package client
 
 import (
 	"context"
-	cecontext "github.com/cloudevents/sdk-go/v2/context"
-	thttp "github.com/cloudevents/sdk-go/v2/protocol/http"
-	"go.uber.org/zap"
 	"net/http"
+	"sync"
+
+	thttp "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
 func NewHTTPReceiveHandler(ctx context.Context, p *thttp.Protocol, fn interface{}) (*EventReceiver, error) {
-	invoker, err := newReceiveInvoker(fn, noopObservabilityService{}, nil) //TODO(slinkydeveloper) maybe not nil?
+	invoker, err := newReceiveInvoker(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -26,15 +26,20 @@ type EventReceiver struct {
 }
 
 func (r *EventReceiver) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	// Prepare to handle the message if there's one (context cancellation will ensure this closes)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		ctx := req.Context()
-		msg, respFn, err := r.p.Respond(ctx)
-		if err != nil {
-			cecontext.LoggerFrom(context.TODO()).Debugw("failed to call Respond", zap.Error(err))
-		} else if err := r.invoker.Invoke(ctx, msg, respFn); err != nil {
-			cecontext.LoggerFrom(context.TODO()).Debugw("failed to call Invoke", zap.Error(err))
-		}
+		r.p.ServeHTTP(rw, req)
+		wg.Done()
 	}()
-	r.p.ServeHTTP(rw, req)
+
+	ctx := req.Context()
+	msg, respFn, err := r.p.Respond(ctx)
+	if err != nil {
+		//lint:ignore SA9003 TODO: Branch left empty
+	} else if err := r.invoker.Invoke(ctx, msg, respFn); err != nil {
+		// TODO
+	}
+	// Block until ServeHTTP has returned
+	wg.Wait()
 }

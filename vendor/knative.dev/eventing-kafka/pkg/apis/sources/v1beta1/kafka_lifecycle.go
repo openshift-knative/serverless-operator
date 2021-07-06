@@ -130,7 +130,3 @@ func (s *KafkaSourceStatus) MarkKeyTypeCorrect() {
 func (s *KafkaSourceStatus) MarkKeyTypeIncorrect(reason, messageFormat string, messageA ...interface{}) {
 	KafkaSourceCondSet.Manage(s).MarkFalse(KafkaConditionKeyType, reason, messageFormat, messageA...)
 }
-
-func (s *KafkaSourceStatus) UpdateConsumerGroupStatus(status string) {
-	s.Claims = status
-}

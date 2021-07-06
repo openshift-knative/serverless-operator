@@ -9,6 +9,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/cloudevents/sdk-go/v2/context"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/cloudevents/sdk-go/v2/observability"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/cloudevents/sdk-go/v2/types"
@@ -83,20 +84,16 @@ var (
 
 	// Client Creation
 
-	NewClient     = client.New
-	NewClientHTTP = client.NewHTTP
-	// Deprecated: please use New with the observability options.
-	NewClientObserved = client.NewObserved
-	// Deprecated: Please use NewClientHTTP with the observability options.
+	NewClient             = client.New
+	NewClientObserved     = client.NewObserved
 	NewDefaultClient      = client.NewDefault
 	NewHTTPReceiveHandler = client.NewHTTPReceiveHandler
 
 	// Client Options
 
-	WithEventDefaulter = client.WithEventDefaulter
-	WithUUIDs          = client.WithUUIDs
-	WithTimeNow        = client.WithTimeNow
-	// Deprecated: this is now noop and will be removed in future releases.
+	WithEventDefaulter   = client.WithEventDefaulter
+	WithUUIDs            = client.WithUUIDs
+	WithTimeNow          = client.WithTimeNow
 	WithTracePropagation = client.WithTracePropagation()
 
 	// Event Creation
@@ -132,6 +129,10 @@ var (
 	// HTTP Messages
 
 	WriteHTTPRequest = http.WriteRequest
+
+	// Tracing
+
+	EnableTracing = observability.EnableTracing
 
 	// Context
 

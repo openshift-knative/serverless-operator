@@ -171,23 +171,23 @@ function knative_setup() {
 }
 
 function install_knative_eventing {
-  if is_release_branch; then
-    echo ">> Install Knative Eventing from ${KNATIVE_EVENTING_RELEASE}"
-    kubectl apply -f ${KNATIVE_EVENTING_RELEASE}
-  else
-    echo ">> Install Knative Eventing from HEAD"
-    pushd .
-    cd ${GOPATH} && mkdir -p src/knative.dev && cd src/knative.dev
-    git clone https://github.com/knative/eventing
-    cd eventing
-    ko apply -f "${EVENTING_CONFIG}"
-    # Install MT Channel Based Broker
-    ko apply -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
-    # Install IMC
-    ko apply -Rf "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
-    popd
-  fi
-   wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Knative Eventing did not come up"
+  # if is_release_branch; then
+    echo ">> Install Knative Eventing from https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml"
+    kubectl apply -f https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml
+  # else
+  #   echo ">> Install Knative Eventing from HEAD"
+  #   pushd .
+  #   cd ${GOPATH} && mkdir -p src/knative.dev && cd src/knative.dev
+  #   git clone https://github.com/knative/eventing
+  #   cd eventing
+  #   ko apply -f "${EVENTING_CONFIG}"
+  #   # Install MT Channel Based Broker
+  #   ko apply -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
+  #   # Install IMC
+  #   ko apply -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
+  #   popd
+  # fi
+  wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Knative Eventing did not come up"
 
   install_zipkin
 }
@@ -211,21 +211,21 @@ function uninstall_zipkin() {
 
 function knative_teardown() {
   echo ">> Stopping Knative Eventing"
-  if is_release_branch; then
-    echo ">> Uninstalling Knative Eventing from ${KNATIVE_EVENTING_RELEASE}"
-    kubectl delete -f "${KNATIVE_EVENTING_RELEASE}"
-  else
-    echo ">> Uninstalling Knative Eventing from HEAD"
-    pushd .
-    cd ${GOPATH}/src/knative.dev/eventing
-    # Remove IMC
-    ko delete -Rf "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
-    # Remove MT Channel Based Broker
-    ko delete -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
-    # Remove eventing
-    ko delete -f "${EVENTING_CONFIG}"
-    popd
-  fi
+  # if is_release_branch; then
+    echo ">> Uninstalling Knative Eventing from https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml"
+    kubectl delete -f https://storage.googleapis.com/knative-releases/eventing/previous/v0.22.0/eventing.yaml
+  # else
+  #   echo ">> Uninstalling Knative Eventing from HEAD"
+  #   pushd .
+  #   cd ${GOPATH}/src/knative.dev/eventing
+  #   # Remove IMC
+  #   ko delete -f "${EVENTING_IN_MEMORY_CHANNEL_CONFIG}"
+  #   # Remove MT Channel Based Broker
+  #   ko delete -f "${EVENTING_MT_CHANNEL_BROKER_CONFIG}"
+  #   # Remove eventing
+  #   ko delete -f "${EVENTING_CONFIG}"
+  #   popd
+  # fi
   wait_until_object_does_not_exist namespaces "${EVENTING_NAMESPACE}"
 }
 
@@ -353,17 +353,13 @@ function install_consolidated_sources_crds() {
   wait_until_pods_running "${EVENTING_NAMESPACE}" || fail_test "Failed to install the consolidated Kafka Source CRD"
 }
 
-function run_postinstall_jobs() {
-  # There are no post-install scripts today. This needs to be enabled if any post-install script is added
-
-  #  echo "Running post-install jobs using ${KAFKA_POST_INSTALL_DIR}"
-  #  rm -rf "${KAFKA_POST_INSTALL_DIR}" && mkdir -p "${KAFKA_POST_INSTALL_DIR}"
-  #  cp "${KAFKA_POST_INSTALL_TEMPLATE_DIR}/"*yaml "${KAFKA_POST_INSTALL_DIR}"
-  #  sed -i "s/namespace: knative-eventing/namespace: ${SYSTEM_NAMESPACE}/g" \
-  #    "${KAFKA_POST_INSTALL_DIR}/"*yaml
-  #  ko apply -f "${KAFKA_POST_INSTALL_DIR}"
-
-  echo "No postinstall jobs to run"
+function run_postinstall_jobs {
+  echo "Running post-install jobs using ${KAFKA_POST_INSTALL_DIR}"
+  rm -rf "${KAFKA_POST_INSTALL_DIR}" && mkdir -p "${KAFKA_POST_INSTALL_DIR}"
+  cp "${KAFKA_POST_INSTALL_TEMPLATE_DIR}/"*yaml "${KAFKA_POST_INSTALL_DIR}"
+  sed -i "s/namespace: knative-eventing/namespace: ${SYSTEM_NAMESPACE}/g" \
+    "${KAFKA_POST_INSTALL_DIR}/"*yaml
+  ko apply -f "${KAFKA_POST_INSTALL_DIR}"
 }
 
 # Uninstall The eventing-kafka KafkaChannel Implementation Via Ko
@@ -433,7 +429,6 @@ function kafka_setup() {
   sed "s/namespace: .*/namespace: ${STRIMZI_KAFKA_NAMESPACE}/" ${STRIMZI_INSTALLATION_CONFIG_TEMPLATE} > "${STRIMZI_INSTALLATION_CONFIG}"
 
   echo "Create The Actual Kafka Cluster Instance For The Cluster Operator To Setup using: ${STRIMZI_INSTALLATION_CONFIG}"
-  kubectl apply -f "${STRIMZI_INSTALLATION_CONFIG}" -n "${STRIMZI_KAFKA_NAMESPACE}" -l strimzi.io/crd-install=true
   kubectl apply -f "${STRIMZI_INSTALLATION_CONFIG}" -n "${STRIMZI_KAFKA_NAMESPACE}"
   kubectl apply -f "${KAFKA_INSTALLATION_CONFIG}" -n "${STRIMZI_KAFKA_NAMESPACE}"
 
@@ -550,12 +545,6 @@ function test_mt_source() {
   install_mt_source || return 1
 
   export TEST_MT_SOURCE
-
-  echo "Run rekt tests"
-  go_test_e2e -tags=e2e -timeout=20m -test.parallel=${TEST_PARALLEL} ./test/rekt/... || fail_test
-
-  # still run those since some test cases are still missing
-  echo "Run classic tests"
   go_test_e2e -tags=source,mtsource -timeout=20m -test.parallel=${TEST_PARALLEL} ./test/e2e/...  || fail_test
 
   # wait for all KafkaSources to be deleted
