@@ -99,7 +99,7 @@ EOF
 function add_downstream_operator_deployment_image {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
-  path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers[0].env[+]
+  path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
   value:
     name: "${2}"
     value: "${3}"
@@ -113,7 +113,7 @@ EOF
 function add_upstream_operator_deployment_image {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
-  path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers[0].env[+]
+  path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers(name==knative-operator).env[+]
   value:
     name: "${2}"
     value: "${3}"
