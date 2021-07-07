@@ -365,7 +365,7 @@ spec:
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
-                    imagePullPolicy: IfNotPresent
+                    imagePullPolicy: Always
                     name: knative-operator
                     ports:
                       - containerPort: 9090
