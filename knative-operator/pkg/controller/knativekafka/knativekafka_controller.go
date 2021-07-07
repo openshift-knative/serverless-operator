@@ -229,7 +229,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
-	rbacProxyTranform, err := getRBACProxyInjectTransformer(r.client)
+	rbacProxyTranform, err := monitoring.GetRBACProxyInjectTransformer(r.client)
 	if err != nil {
 		return err
 	}
@@ -384,7 +384,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 	var resources []unstructured.Unstructured
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
-		channelRBACProxy, err := addRBACProxySupportToManifest(instance, kafkaChannelComponents)
+		channelRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaChannelComponents)
 		if err != nil {
 			return nil, err
 		}
@@ -393,7 +393,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 	}
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
-		sourceRBACProxy, err := addRBACProxySupportToManifest(instance, kafkaSourceComponents)
+		sourceRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSourceComponents)
 		if err != nil {
 			return nil, err
 		}
