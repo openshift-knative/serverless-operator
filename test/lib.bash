@@ -218,6 +218,9 @@ function run_rolling_upgrade_tests {
 
   git apply -R "${patch}"
 
+  # Delete the leftover services.
+  oc delete ksvc --all -n serving-tests
+
   logger.success 'Upgrade tests passed'
 }
 
