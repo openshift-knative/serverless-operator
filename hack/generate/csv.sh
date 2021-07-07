@@ -65,7 +65,6 @@ image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
-image "KN_CLI_ARTIFACTS"     "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-controller"
 kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
@@ -136,6 +135,9 @@ for name in "${kafka_images[@]}"; do
   add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
   add_downstream_operator_deployment_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
+
+# Override the image for the CLI artifact deployment
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==cli-downloads).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"

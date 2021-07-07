@@ -331,6 +331,12 @@ spec:
             spec:
               serviceAccountName: knative-operator
               containers:
+                - name: cli-downloads
+                  image: TO_BE_REPLACED
+                  imagePullPolicy: Always
+                  ports:
+                    - name: http-cli
+                      containerPort: 8080
                 - name: knative-openshift
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                   image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator

@@ -11,6 +11,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	consolev1 "github.com/openshift/api/console/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -107,6 +108,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	gvkToResource := map[schema.GroupVersionKind]client.Object{
 		consolev1.GroupVersion.WithKind("ConsoleCLIDownload"): &consolev1.ConsoleCLIDownload{},
+		routev1.GroupVersion.WithKind("Route"):                &routev1.Route{},
 	}
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace))
