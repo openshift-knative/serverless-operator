@@ -265,8 +265,10 @@ func (b *configBuilder) Build(ctx context.Context) (*sarama.Config, error) {
 		config.ClientID = b.clientId
 	}
 
-	logger := logging.FromContext(ctx)
-	logger.Infof("Built Sarama config: %+v", config)
+	if ctx != nil {
+		logger := logging.FromContext(ctx)
+		logger.Debugf("Built Sarama config: %+v", config)
+	}
 
 	return config, nil
 }

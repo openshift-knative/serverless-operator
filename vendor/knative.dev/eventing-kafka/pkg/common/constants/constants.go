@@ -18,29 +18,24 @@ package constants
 
 const (
 
-	// DefaultNumPartitions is the KafkaChannel Spec default for the number of partitions
-	DefaultNumPartitions = 1
-	// DefaultReplicationFactor is the KafkaChannel Spec default for the replication factor
+	// KafkaChannel Spec Defaults
+	DefaultNumPartitions     = 1
 	DefaultReplicationFactor = 1
 
-	// SettingsConfigMapName is the name of the configmap used to hold eventing-kafka settings
+	// The name of the configmap used to hold eventing-kafka settings
 	SettingsConfigMapName = "config-kafka"
+	SettingsSecretName    = "kafka-cluster"
 
-	// SettingsConfigMapMountPath is the mount path of the configmap used to hold eventing-kafka settings
+	// Mount path of the configmap used to hold eventing-kafka settings
 	SettingsConfigMapMountPath = "/etc/" + SettingsConfigMapName
 
-	// EventingKafkaSettingsConfigKey is the field in the configmap used to hold eventing-kafka settings
+	// Config key of the config in the configmap used to hold eventing-kafka settings
 	EventingKafkaSettingsConfigKey = "eventing-kafka"
 
-	// SaramaSettingsConfigKey is the name of the field in the Data section of the eventing-kafka configmap that holds Sarama config YAML
+	// The name of the keys in the Data section of the eventing-kafka configmap that holds Sarama and Eventing-Kafka configuration YAML
 	SaramaSettingsConfigKey = "sarama"
 
-	// DefaultMaxIdleConns is the default values for the cloud events connection argument "MaxIdleConns", if not overridden
-	DefaultMaxIdleConns = 1000
-	// DefaultMaxIdleConnsPerHost is the default values for the cloud events connection argument "MaxIdleConnsPerHost", if not overridden
+	// Default values for the cloud events connection arguments, if not overridden
+	DefaultMaxIdleConns        = 1000
 	DefaultMaxIdleConnsPerHost = 100
-
-	// ConfigMapHashAnnotationKey is an annotation is used by the controller to track updates
-	// to config-kafka and apply them in the dispatcher deployment
-	ConfigMapHashAnnotationKey = "kafka.eventing.knative.dev/configmap-hash"
 )

@@ -36,10 +36,6 @@ func (c *FakeSourcesV1) ContainerSources(namespace string) v1.ContainerSourceInt
 	return &FakeContainerSources{c, namespace}
 }
 
-func (c *FakeSourcesV1) PingSources(namespace string) v1.PingSourceInterface {
-	return &FakePingSources{c, namespace}
-}
-
 func (c *FakeSourcesV1) SinkBindings(namespace string) v1.SinkBindingInterface {
 	return &FakeSinkBindings{c, namespace}
 }

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cloudevents/sdk-go/v2/binding"
 	cecontext "github.com/cloudevents/sdk-go/v2/context"
@@ -18,11 +17,9 @@ type Invoker interface {
 
 var _ Invoker = (*receiveInvoker)(nil)
 
-func newReceiveInvoker(fn interface{}, observabilityService ObservabilityService, inboundContextDecorators []func(context.Context, binding.Message) context.Context, fns ...EventDefaulter) (Invoker, error) {
+func newReceiveInvoker(fn interface{}, fns ...EventDefaulter) (Invoker, error) {
 	r := &receiveInvoker{
-		eventDefaulterFns:        fns,
-		observabilityService:     observabilityService,
-		inboundContextDecorators: inboundContextDecorators,
+		eventDefaulterFns: fns,
 	}
 
 	if fn, err := receiver(fn); err != nil {
@@ -35,10 +32,8 @@ func newReceiveInvoker(fn interface{}, observabilityService ObservabilityService
 }
 
 type receiveInvoker struct {
-	fn                       *receiverFn
-	observabilityService     ObservabilityService
-	eventDefaulterFns        []EventDefaulter
-	inboundContextDecorators []func(context.Context, binding.Message) context.Context
+	fn                *receiverFn
+	eventDefaulterFns []EventDefaulter
 }
 
 func (r *receiveInvoker) Invoke(ctx context.Context, m binding.Message, respFn protocol.ResponseFn) (err error) {
@@ -52,35 +47,18 @@ func (r *receiveInvoker) Invoke(ctx context.Context, m binding.Message, respFn p
 	e, eventErr := binding.ToEvent(ctx, m)
 	switch {
 	case eventErr != nil && r.fn.hasEventIn:
-		r.observabilityService.RecordReceivedMalformedEvent(ctx, eventErr)
 		return respFn(ctx, nil, protocol.NewReceipt(false, "failed to convert Message to Event: %w", eventErr))
 	case r.fn != nil:
 		// Check if event is valid before invoking the receiver function
 		if e != nil {
 			if validationErr := e.Validate(); validationErr != nil {
-				r.observabilityService.RecordReceivedMalformedEvent(ctx, validationErr)
 				return respFn(ctx, nil, protocol.NewReceipt(false, "validation error in incoming event: %w", validationErr))
 			}
 		}
 
 		// Let's invoke the receiver fn
 		var resp *event.Event
-		resp, result = func() (resp *event.Event, result protocol.Result) {
-			defer func() {
-				if r := recover(); r != nil {
-					result = fmt.Errorf("call to Invoker.Invoke(...) has panicked: %v", r)
-					cecontext.LoggerFrom(ctx).Error(result)
-				}
-			}()
-			ctx = computeInboundContext(m, ctx, r.inboundContextDecorators)
-
-			var cb func(error)
-			ctx, cb = r.observabilityService.RecordCallingInvoker(ctx, e)
-			defer cb(result)
-
-			resp, result = r.fn.invoke(ctx, e)
-			return
-		}()
+		resp, result = r.fn.invoke(ctx, e)
 
 		if respFn == nil {
 			break
@@ -93,7 +71,7 @@ func (r *receiveInvoker) Invoke(ctx context.Context, m binding.Message, respFn p
 			}
 			// Validate the event conforms to the CloudEvents Spec.
 			if vErr := resp.Validate(); vErr != nil {
-				cecontext.LoggerFrom(ctx).Errorf("cloudevent validation failed on response event: %v", vErr)
+				cecontext.LoggerFrom(ctx).Errorf("cloudevent validation failed on response event: %w", vErr)
 			}
 		}
 
@@ -118,12 +96,4 @@ func (r *receiveInvoker) IsReceiver() bool {
 
 func (r *receiveInvoker) IsResponder() bool {
 	return r.fn.hasEventOut
-}
-
-func computeInboundContext(message binding.Message, fallback context.Context, inboundContextDecorators []func(context.Context, binding.Message) context.Context) context.Context {
-	result := fallback
-	for _, f := range inboundContextDecorators {
-		result = f(result, message)
-	}
-	return result
 }

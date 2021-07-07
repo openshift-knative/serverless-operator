@@ -122,15 +122,12 @@ type SubscriptionStatus struct {
 // Subscription.
 type SubscriptionStatusPhysicalSubscription struct {
 	// SubscriberURI is the fully resolved URI for spec.subscriber.
-	// +optional
 	SubscriberURI *apis.URL `json:"subscriberUri,omitempty"`
 
 	// ReplyURI is the fully resolved URI for the spec.reply.
-	// +optional
 	ReplyURI *apis.URL `json:"replyUri,omitempty"`
 
 	// ReplyURI is the fully resolved URI for the spec.delivery.deadLetterSink.
-	// +optional
 	DeadLetterSinkURI *apis.URL `json:"deadLetterSinkUri,omitempty"`
 }
 
