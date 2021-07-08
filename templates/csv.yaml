@@ -311,7 +311,7 @@ spec:
                   value: "/var/run/ko/monitoring/rbac-proxy.yaml"
                 # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                 image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
-                imagePullPolicy: IfNotPresent
+                imagePullPolicy: Always
                 name: knative-operator
                 ports:
                 - containerPort: 9090
