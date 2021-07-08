@@ -84,7 +84,7 @@ yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
 yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
 
 declare -A vars
-vars[OCP_TARGET]="$(metadata.get 'requirements.ocp.[0]')"
+vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.min')"
 
 function add_related_image {
   cat << EOF | yq write --inplace --script - "$1"
