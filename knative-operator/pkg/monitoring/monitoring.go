@@ -1,4 +1,4 @@
-package common
+package monitoring
 
 import (
 	"context"
@@ -73,7 +73,7 @@ func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client
 
 func GetServerlessOperatorDeployment(api client.Client, namespace string) (*appsv1.Deployment, error) {
 	deployment := &appsv1.Deployment{}
-	deploymentName, err := getOperatorDeploymentName()
+	deploymentName, err := GetOperatorDeploymentName()
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.M
 	return &rbacManifest, nil
 }
 
-func getOperatorDeploymentName() (string, error) {
+func GetOperatorDeploymentName() (string, error) {
 	ns, found := os.LookupEnv(operatorDeploymentNameEnvKey)
 	if !found {
 		return "", fmt.Errorf("the environment variable %q must be set", operatorDeploymentNameEnvKey)

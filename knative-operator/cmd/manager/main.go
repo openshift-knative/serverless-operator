@@ -9,6 +9,8 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
@@ -139,22 +141,22 @@ func setupMonitoring(cfg *rest.Config) error {
 		return errors.New("NAMESPACE not provided via environment")
 	}
 
-	operatorDeployment, err := common.GetServerlessOperatorDeployment(cl, namespace)
+	operatorDeployment, err := monitoring.GetServerlessOperatorDeployment(cl, namespace)
 	if err != nil {
 		return err
 	}
 
 	// If we upgrade from an old version we need to remove the old Service Monitor
 	// that is not managed by OLM. See SRVCOM-1237 for more.
-	if err = common.RemoveOldServiceMonitorResourcesIfExist(namespace, cl); err != nil {
+	if err = monitoring.RemoveOldServiceMonitorResourcesIfExist(namespace, cl); err != nil {
 		return err
 	}
 
-	if err = common.SetupMonitoringRequirements(cl, operatorDeployment); err != nil {
+	if err = monitoring.SetupMonitoringRequirements(cl, operatorDeployment); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := common.InstallHealthDashboard(cl); err != nil {
+	if err := health.InstallHealthDashboard(cl); err != nil {
 		return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
 	}
 	return nil

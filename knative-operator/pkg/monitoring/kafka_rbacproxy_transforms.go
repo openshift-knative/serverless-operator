@@ -1,4 +1,4 @@
-package knativekafka
+package monitoring
 
 import (
 	"context"
@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	kafkaChannelComponents = []string{"kafka-ch-controller", "kafka-ch-dispatcher", "kafka-webhook"}
-	kafkaSourceComponents  = []string{"kafka-controller-manager"}
+	KafkaChannelComponents = []string{"kafka-ch-controller", "kafka-ch-dispatcher", "kafka-webhook"}
+	KafkaSourceComponents  = []string{"kafka-controller-manager"}
 )
 
-func addRBACProxySupportToManifest(instance *operatorv1alpha1.KnativeKafka, components []string) (*mf.Manifest, error) {
+func AddRBACProxySupportToManifest(instance *operatorv1alpha1.KnativeKafka, components []string) (*mf.Manifest, error) {
 	proxyManifest := mf.Manifest{}
 	// Only create the roles needed for the deployment service accounts as Prometheus has already
 	// the rights needed due to eventing that is assumed to be installed.
@@ -34,7 +34,7 @@ func addRBACProxySupportToManifest(instance *operatorv1alpha1.KnativeKafka, comp
 	return &proxyManifest, nil
 }
 
-func getRBACProxyInjectTransformer(apiClient client.Client) (mf.Transformer, error) {
+func GetRBACProxyInjectTransformer(apiClient client.Client) (mf.Transformer, error) {
 	eventingList := &eventingv1alpha1.KnativeEventingList{}
 	err := apiClient.List(context.Background(), eventingList)
 	if err != nil {
@@ -44,7 +44,7 @@ func getRBACProxyInjectTransformer(apiClient client.Client) (mf.Transformer, err
 		return nil, errors.New("eventing instance not found")
 	}
 	if monitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
-		return monitoring.InjectRbacProxyContainerToDeployments(sets.NewString(append(kafkaChannelComponents, kafkaSourceComponents...)...)), nil
+		return monitoring.InjectRbacProxyContainerToDeployments(sets.NewString(append(KafkaChannelComponents, KafkaSourceComponents...)...)), nil
 	}
 	return nil, nil
 }

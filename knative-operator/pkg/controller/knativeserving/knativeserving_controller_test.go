@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/dashboard"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -110,7 +110,7 @@ var (
 
 	dashboardNamespace = corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: dashboard.ConfigManagedNamespace,
+			Name: dashboards.ConfigManagedNamespace,
 		},
 	}
 
@@ -124,7 +124,7 @@ var (
 func init() {
 	os.Setenv("OPERATOR_NAME", "TEST_OPERATOR")
 	os.Setenv(quickstart.EnvKey, "../../../deploy/resources/quickstart/serverless-application-quickstart.yaml")
-	os.Setenv(dashboard.DashboardsManifestPathEnvVar, "../dashboard/testdata")
+	os.Setenv(dashboards.DashboardsManifestPathEnvVar, "../../../deploy/resources/dashboards")
 	apis.AddToScheme(scheme.Scheme)
 }
 
