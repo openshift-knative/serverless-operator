@@ -23,17 +23,34 @@ const (
 )
 
 func SetupSourceServiceMonitorResources(client client.Client, instance *appsv1.Deployment) error {
+	smManifest, err := sourceServiceMonitorManifest(client, instance)
+	if err != nil {
+		return err
+	}
+	return smManifest.Apply()
+}
+
+func RemoveSourceServiceMonitorResources(client client.Client, instance *appsv1.Deployment) error {
+	smManifest, err := sourceServiceMonitorManifest(client, instance)
+	if err != nil {
+		return err
+	}
+	return smManifest.Delete()
+}
+
+func sourceServiceMonitorManifest(client client.Client, instance *appsv1.Deployment) (*mf.Manifest, error) {
 	labels := instance.Spec.Selector.MatchLabels
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
 	// Create service monitor resources for source
 	smManifest, err := createServiceMonitorManifest(labels, instance.Name, instance.Namespace, clientOptions)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if *smManifest, err = smManifest.Transform(mf.InjectOwner(instance)); err != nil {
-		return fmt.Errorf("unable to transform source service monitor manifest: %w", err)
+		return nil, fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
-	return smManifest.Apply()
+
+	return smManifest, nil
 }
 
 func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {

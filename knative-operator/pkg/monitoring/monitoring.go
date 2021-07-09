@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -23,16 +25,26 @@ import (
 const (
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
-	// service monitor created successfully when monitoringLabel added to namespace
-	monitoringLabel = "openshift.io/cluster-monitoring"
 )
 
-func SetupMonitoringRequirements(api client.Client, instance mf.Owner) error {
-	err := addMonitoringLabelToNamespace(instance.GetNamespace(), api)
+func SetupClusterMonitoringRequirements(api client.Client, instance mf.Owner) error {
+	err := addClusterMonitoringLabelToNamespace(instance.GetNamespace(), api, true)
 	if err != nil {
 		return err
 	}
-	err = createRoleAndRoleBinding(instance, instance.GetNamespace(), api)
+	err = createPrometheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner) error {
+	err := addClusterMonitoringLabelToNamespace(instance.GetNamespace(), api, false)
+	if err != nil {
+		return err
+	}
+	err = deletePromeheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
 	if err != nil {
 		return err
 	}
@@ -94,35 +106,75 @@ func GetServerlessOperatorDeployment(api client.Client, namespace string) (*apps
 	return deployment, nil
 }
 
-func addMonitoringLabelToNamespace(namespace string, api client.Client) error {
+func addClusterMonitoringLabelToNamespace(namespace string, api client.Client, value bool) error {
 	ns := &v1.Namespace{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
 		return err
 	}
+	if ns.Labels[okomon.EnableMonitoringLabel] == strconv.FormatBool(value) {
+		return nil
+	}
 	if ns.Labels == nil {
 		ns.Labels = map[string]string{}
 	}
-	ns.Labels[monitoringLabel] = "true"
+	ns.Labels[okomon.EnableMonitoringLabel] = strconv.FormatBool(value)
 	if err := api.Update(context.TODO(), ns); err != nil {
-		return fmt.Errorf("could not add label %q to namespace %q: %w", monitoringLabel, namespace, err)
+		return fmt.Errorf("could not add label %q to namespace %q: %w", okomon.EnableMonitoringLabel, namespace, err)
 	}
 	return nil
 }
 
-func createRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
-	clientOptions := mf.UseClient(mfclient.NewClient(client))
-	rbacManifest, err := createRBACManifestForPrometheusAccount(namespace, clientOptions)
+//func deleteClusterMonitoringLabelFromNamespace(namespace string, api client.Client) error {
+//	ns := &v1.Namespace{}
+//	if err := api.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
+//		return err
+//	}
+//	v, ok := ns.Labels[okomon.EnableMonitoringLabel]
+//	// Already not present
+//	if !ok {
+//		return nil
+//	}
+//	parsed , err := strconv.ParseBool(v)
+//	if err != nil {
+//		return nil
+//	}
+//	// Only deal with properly previously set values
+//	if parsed {
+//		delete(ns.Labels, okomon.EnableMonitoringLabel)
+//	}
+//	if err := api.Update(context.TODO(), ns); err != nil {
+//		return fmt.Errorf("could not add label %q to namespace %q: %w", okomon.EnableMonitoringLabel, namespace, err)
+//	}
+//	return nil
+//}
+
+func createPrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
+	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
 	if err != nil {
 		return err
 	}
+	return rbacManifest.Apply()
+}
+
+func deletePromeheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
+	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
+	if err != nil {
+		return err
+	}
+	return rbacManifest.Delete()
+}
+
+func getManifestForPrometheusRoleAndRolebinding(instance mf.Owner, namespace string, client client.Client) (*mf.Manifest, error) {
+	clientOptions := mf.UseClient(mfclient.NewClient(client))
+	rbacManifest, err := createRBACManifestForPrometheusAccount(namespace, clientOptions)
+	if err != nil {
+		return nil, err
+	}
 	transforms := []mf.Transformer{mf.InjectOwner(instance)}
 	if *rbacManifest, err = rbacManifest.Transform(transforms...); err != nil {
-		return fmt.Errorf("unable to transform role and roleBinding manifest for Prometheus account: %w", err)
+		return nil, fmt.Errorf("unable to transform role and roleBinding manifest for Prometheus account: %w", err)
 	}
-	if err := rbacManifest.Apply(); err != nil {
-		return fmt.Errorf("unable to create role and roleBinding for Prometheus account %w", err)
-	}
-	return nil
+	return rbacManifest, nil
 }
 
 func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.Manifest, error) {

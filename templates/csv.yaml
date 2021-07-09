@@ -467,8 +467,10 @@ spec:
                       value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                     - name: DASHBOARDS_ROOT_MANIFEST_PATH
                       value: "deploy/resources/dashboards"
-      
-      # Openshift Ingress adapter for Knative's Ingress implementation.
+                    - name: SOURCES_USE_CLUSTER_MONITORING
+                      value: "true"
+                    - name: SOURCES_GENERATE_SERVICE_MONITORS
+                      value: "true"
       - name: knative-openshift-ingress
         spec:
           replicas: 1
