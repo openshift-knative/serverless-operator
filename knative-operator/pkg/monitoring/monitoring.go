@@ -124,30 +124,6 @@ func addClusterMonitoringLabelToNamespace(namespace string, api client.Client, v
 	return nil
 }
 
-//func deleteClusterMonitoringLabelFromNamespace(namespace string, api client.Client) error {
-//	ns := &v1.Namespace{}
-//	if err := api.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
-//		return err
-//	}
-//	v, ok := ns.Labels[okomon.EnableMonitoringLabel]
-//	// Already not present
-//	if !ok {
-//		return nil
-//	}
-//	parsed , err := strconv.ParseBool(v)
-//	if err != nil {
-//		return nil
-//	}
-//	// Only deal with properly previously set values
-//	if parsed {
-//		delete(ns.Labels, okomon.EnableMonitoringLabel)
-//	}
-//	if err := api.Update(context.TODO(), ns); err != nil {
-//		return fmt.Errorf("could not add label %q to namespace %q: %w", okomon.EnableMonitoringLabel, namespace, err)
-//	}
-//	return nil
-//}
-
 func createPrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
 	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
 	if err != nil {

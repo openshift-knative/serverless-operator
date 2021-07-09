@@ -471,6 +471,8 @@ spec:
                       value: "true"
                     - name: SOURCES_GENERATE_SERVICE_MONITORS
                       value: "true"
+                    - name: GENERATE_SERVICE_MONITORS_FOR_SOURCES_BY_DEFAULT
+                      value: "true"
       - name: knative-openshift-ingress
         spec:
           replicas: 1
