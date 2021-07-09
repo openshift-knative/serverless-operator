@@ -557,6 +557,8 @@ spec:
                         value: "true"
                       - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
+                      - name: GENERATE_SERVICE_MONITORS_FOR_SOURCES_BY_DEFAULT
+                        value: "true"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"
                       - name: "IMAGE_activator"
