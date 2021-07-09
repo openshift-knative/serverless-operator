@@ -119,7 +119,7 @@ func main() {
 	hookServer.Register("/mutate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewConfigurator(decoder)})
 	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewValidator(mgr.GetClient(), decoder)})
 
-	if err := setupMonitoring(cfg); err != nil {
+	if err := setupServerlesOperatorMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")
 	}
 
@@ -142,7 +142,7 @@ func main() {
 	}
 }
 
-func setupMonitoring(cfg *rest.Config) error {
+func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 	cl, err := client.New(cfg, client.Options{})
 	if err != nil {
 		return fmt.Errorf("failed to create a client: %w", err)
@@ -163,7 +163,7 @@ func setupMonitoring(cfg *rest.Config) error {
 		return err
 	}
 
-	if err = monitoring.SetupMonitoringRequirements(cl, operatorDeployment); err != nil {
+	if err = monitoring.SetupClusterMonitoringRequirements(cl, operatorDeployment); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 

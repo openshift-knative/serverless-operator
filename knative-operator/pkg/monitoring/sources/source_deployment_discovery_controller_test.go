@@ -6,12 +6,19 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -72,11 +79,21 @@ func init() {
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
 func TestSourceReconcile(t *testing.T) {
+	eventingInstance := &v1alpha1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-eventing",
+			Namespace: "knative-eventing",
+		},
+	}
+	keUpdate(eventingInstance, func(ke *v1alpha1.KnativeEventing) {
+		common.Configure(&ke.Spec.CommonSpec, okomon.ObservabilityCMName, okomon.ObservabilityBackendKey, "prometheus")
+	})
 	cl := fake.NewClientBuilder().
-		WithObjects(&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace).
+		WithObjects(&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace, eventingInstance).
 		Build()
-
 	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
+	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(true)
+	r.testShouldUseClusterMonitoring = ptr.Bool(true)
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
@@ -98,7 +115,6 @@ func TestSourceReconcile(t *testing.T) {
 	if smAPI.Spec.Selector.MatchLabels["name"] != "api1" {
 		t.Fatalf("got %q, want %q", smAPI.Spec.Selector.MatchLabels["name"], "api1")
 	}
-
 	// Reconcile for a ping source
 	if _, err := r.Reconcile(context.Background(), pingsourceRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
@@ -120,4 +136,108 @@ func TestSourceReconcile(t *testing.T) {
 	if smPing.Spec.Selector.MatchLabels["name"] != "ping1" {
 		t.Fatalf("got %q, want %q", smPing.Spec.Selector.MatchLabels["name"], "ping1")
 	}
+	checkPrometheusResources(cl, true, t)
+	checkSourceServiceMonitors(cl, true, apiserverRequest.Name, apiserverRequest.Namespace, t)
+}
+
+func TestSourceMonitoringReconcile(t *testing.T) {
+	eventingInstance := &v1alpha1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-eventing",
+			Namespace: "knative-eventing",
+		},
+	}
+	cl := fake.NewClientBuilder().
+		WithObjects(&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace, eventingInstance).
+		Build()
+
+	// No cluster monitoring only generate service monitors.
+	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
+	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(true)
+	r.testShouldUseClusterMonitoring = ptr.Bool(false)
+	// Reconcile for an api server source
+	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
+		t.Fatalf("reconcile: (%v)", err)
+	}
+	ns := &corev1.Namespace{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Namespace}, ns); err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if ns.Labels[okomon.EnableMonitoringLabel] != "false" {
+		t.Fatalf("got %q, want %q", ns.Labels[okomon.EnableMonitoringLabel], "false")
+	}
+	checkPrometheusResources(cl, false, t)
+	newEventingInstance := eventingInstance.DeepCopy()
+	newEventingInstance = keUpdate(newEventingInstance, func(ke *v1alpha1.KnativeEventing) {
+		common.Configure(&ke.Spec.CommonSpec, okomon.ObservabilityCMName, okomon.ObservabilityBackendKey, "none")
+	})
+	if err := cl.Update(context.TODO(), newEventingInstance); err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
+		t.Fatalf("reconcile: (%v)", err)
+	}
+	ns = &corev1.Namespace{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Namespace}, ns); err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if ns.Labels[okomon.EnableMonitoringLabel] != "false" {
+		t.Fatalf("got %q, want %q", ns.Labels[okomon.EnableMonitoringLabel], "false")
+	}
+	checkPrometheusResources(cl, false, t)
+	r = &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
+	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(false)
+	r.testShouldUseClusterMonitoring = ptr.Bool(false)
+	// Reconcile for an api server source
+	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
+		t.Fatalf("reconcile: (%v)", err)
+	}
+	ns = &corev1.Namespace{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: apiserverRequest.Namespace}, ns); err != nil {
+		t.Fatalf("get: (%v)", err)
+	}
+	if ns.Labels[okomon.EnableMonitoringLabel] != "false" {
+		t.Fatalf("got %q, want %q", ns.Labels[okomon.EnableMonitoringLabel], "false")
+	}
+	checkPrometheusResources(cl, false, t)
+	checkSourceServiceMonitors(cl, false, apiserverRequest.Name, apiserverRequest.Namespace, t)
+}
+
+func checkPrometheusResources(cl client.Client, shouldExist bool, t *testing.T) {
+	role := &rbacv1.Role{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving-prometheus-k8s", Namespace: apiserverRequest.Namespace}, role); checkError(err, shouldExist, t) {
+		t.Fatalf("get: (%v)", err)
+	}
+	roleBinding := &rbacv1.RoleBinding{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving-prometheus-k8s", Namespace: apiserverRequest.Namespace}, roleBinding); checkError(err, shouldExist, t) {
+		t.Fatalf("get: (%v)", err)
+	}
+}
+
+func checkSourceServiceMonitors(cl client.Client, shouldExist bool, name string, ns string, t *testing.T) {
+	sm := &monitoringv1.ServiceMonitor{}
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: ns}, sm); checkError(err, shouldExist, t) {
+		t.Fatalf("get: (%v)", err)
+	}
+}
+
+func checkError(err error, shouldExist bool, t *testing.T) bool {
+	if shouldExist {
+		if err != nil {
+			return true
+		}
+	} else {
+		if err != nil {
+			return !apierrors.IsNotFound(err)
+		}
+		t.Fatal("Resource should not exist")
+	}
+	return false
+}
+
+func keUpdate(instance *v1alpha1.KnativeEventing, mods ...func(*v1alpha1.KnativeEventing)) *v1alpha1.KnativeEventing {
+	for _, mod := range mods {
+		mod(instance)
+	}
+	return instance
 }
