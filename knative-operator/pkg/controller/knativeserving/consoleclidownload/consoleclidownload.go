@@ -119,7 +119,7 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *servingv1a
 // Delete deletes kn ConsoleCLIDownload CO and respective deployment resources
 func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	log.Info("Deleting kn ConsoleCLIDownload CO")
-	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", nil)); err != nil && !apierrors.IsNotFound(err) {
+	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", instance)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
 	}
 
