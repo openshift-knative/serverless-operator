@@ -109,7 +109,11 @@ func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(rclient client.Cli
 	// Setup monitoring resources only if monitoring should be on and source deployment is not being deleted
 	if shouldEnableMonitoring && !inDeletion {
 		// Setup cluster monitoring Prometheus monitoring requirements
-		if r.shouldUseClusterMonitoringForSourcesByDefault() {
+		shouldEnableClusterMonitoring, err := r.shouldUseClusterMonitoringForSourcesByDefault()
+		if err != nil {
+			return err
+		}
+		if shouldEnableClusterMonitoring {
 			if err := monitoring.SetupClusterMonitoringRequirements(rclient, dep); err != nil {
 				return err
 			}
@@ -122,7 +126,11 @@ func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(rclient client.Cli
 				}
 			}
 		}
-		if r.shouldGenerateSourceServiceMonitorsByDefault() {
+		shouldGenerateSourceMonitors, err := r.shouldGenerateSourceServiceMonitorsByDefault()
+		if err != nil {
+			return err
+		}
+		if shouldGenerateSourceMonitors {
 			if err := SetupSourceServiceMonitorResources(rclient, dep); err != nil {
 				return err
 			}
@@ -145,34 +153,18 @@ func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(rclient client.Cli
 	return nil
 }
 
-func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefault() bool {
+func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefault() (bool, error) {
 	if r.testShouldUseClusterMonitoring != nil {
-		return *r.testShouldUseClusterMonitoring
+		return *r.testShouldUseClusterMonitoring, nil
 	}
-	enable := os.Getenv(useClusterMonitoringEnvVar)
-	if enable != "" {
-		parsed, err := strconv.ParseBool(enable)
-		if err != nil {
-			// ignore value if garbage
-			return true
-		}
-		return parsed
-	}
-	return true
+	enable, err := strconv.ParseBool(os.Getenv(useClusterMonitoringEnvVar))
+	return enable, err
 }
 
-func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() bool {
+func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() (bool, error) {
 	if r.testShouldGenerateSourceServiceMonitors != nil {
-		return *r.testShouldGenerateSourceServiceMonitors
+		return *r.testShouldGenerateSourceServiceMonitors, nil
 	}
-	enable := os.Getenv(generateSourceServiceMonitorsEnvVar)
-	if enable != "" {
-		parsed, err := strconv.ParseBool(enable)
-		if err != nil {
-			// ignore value if garbage
-			return true
-		}
-		return parsed
-	}
-	return true
+	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
+	return enable, err
 }
