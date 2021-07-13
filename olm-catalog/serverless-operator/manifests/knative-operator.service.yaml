@@ -6,6 +6,10 @@ metadata:
   name: knative-openshift-metrics-3
 spec:
   ports:
+  - name: http-cli
+    port: 8080
+    protocol: TCP
+    targetPort: http-cli
   - name: http-metrics
     port: 8383
     protocol: TCP
