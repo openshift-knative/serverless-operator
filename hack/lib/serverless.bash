@@ -153,10 +153,55 @@ function deploy_knativeserving_cr {
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
   oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
 
+  if [[ $FULL_MESH == "true" ]]; then
+    enable_net_istio
+  fi
+
   timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
     -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
 
   logger.success 'Knative Serving has been installed successfully.'
+}
+
+# enable_net_istio adds patch to KnativeServing:
+# - Set ingress.istio.enbled to "true"
+# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
+# - Override observability.metrics.backend-destination to "none",
+#   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
+function enable_net_istio {
+  patchfile="$(mktemp -t knative-serving-XXXXX.yaml)"
+  cat - << EOF > "${patchfile}"
+spec:
+  ingress:
+    istio:
+      enabled: true
+  deployments:
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: activator
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: autoscaler
+  - name: domain-mapping
+    replicas: 2
+  config:
+    observability:
+      metrics.backend-destination: "none"
+EOF
+
+  oc patch knativeserving knative-serving \
+    -n "${SERVING_NAMESPACE}" \
+    --type merge --patch-file="${patchfile}"
+
+  timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
+    -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+
+  logger.success 'KnativeServing has been updated successfully.'
+
+  # metadata-webhook adds istio annotations for e2e test by webhook.
+  oc apply -f https://raw.githubusercontent.com/nak3/metadata-webhook/main/examples/release.yaml
 }
 
 function deploy_knativeeventing_cr {

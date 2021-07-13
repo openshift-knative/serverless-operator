@@ -70,6 +70,12 @@ test-upstream-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
 
+# Run upstream E2E tests with net-istio and sidecar.
+# TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
+test-upstream-e2e-mesh:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
