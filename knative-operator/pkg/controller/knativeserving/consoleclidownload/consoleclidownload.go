@@ -21,14 +21,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	knCLIDownload          = "kn"
-	deprecatedResourceName = "kn-cli-downloads"
+const knCLIDownload = "kn"
+
+var (
+	operatorNamespace = os.Getenv(common.NamespaceEnvKey)
+	log               = common.Log.WithName("consoleclidownload")
 )
-
-var operatorNamespace = os.Getenv(common.NamespaceEnvKey)
-
-var log = common.Log.WithName("consoleclidownload")
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
@@ -134,7 +132,7 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 // deleteDeprecatedResources removes deprecated resources created by previous versions
 func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client) error {
 	metaName := metav1.ObjectMeta{
-		Name:      deprecatedResourceName,
+		Name:      "kn-cli-downloads",
 		Namespace: instance.Namespace,
 	}
 	toDelete := []client.Object{
@@ -158,7 +156,7 @@ func makeRoute(instance *servingv1alpha1.KnativeServing) *routev1.Route {
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      knCLIDownload,
-			Namespace: os.Getenv("NAMESPACE"),
+			Namespace: operatorNamespace,
 			Annotations: map[string]string{
 				common.ServingOwnerName:      instance.GetName(),
 				common.ServingOwnerNamespace: instance.GetNamespace(),

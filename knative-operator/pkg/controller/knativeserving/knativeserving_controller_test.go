@@ -21,7 +21,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -66,46 +65,6 @@ var (
 
 	defaultRequest = reconcile.Request{
 		NamespacedName: types.NamespacedName{Namespace: "knative-serving", Name: "knative-serving"},
-	}
-
-	defaultKnService = servingv1.Service{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: servingv1.SchemeGroupVersion.String(),
-			Kind:       "Service",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kn-cli",
-			Namespace: "knative-serving",
-		},
-		Spec: servingv1.ServiceSpec{
-			ConfigurationSpec: servingv1.ConfigurationSpec{
-				Template: servingv1.RevisionTemplateSpec{
-					Spec: servingv1.RevisionSpec{
-						PodSpec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name:  "kn-download-server",
-									Image: "fake.example.com/openshift/kn-cli-artifacts:latest",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		Status: servingv1.ServiceStatus{
-			Status: duckv1.Status{
-				Conditions: []pkgapis.Condition{
-					{
-						Status: "True",
-						Type:   "Ready",
-					},
-				},
-			},
-			RouteStatusFields: servingv1.RouteStatusFields{
-				URL: &pkgapis.URL{Host: "kn-cli-knative-serving.example.com"},
-			},
-		},
 	}
 
 	dashboardNamespace = corev1.Namespace{
@@ -162,9 +121,8 @@ func TestExtraResourcesReconcile(t *testing.T) {
 			ingress := &defaultIngress
 			ccd := &consolev1.ConsoleCLIDownload{}
 			ns := &dashboardNamespace
-			knService := &defaultKnService
 
-			cl := fake.NewClientBuilder().WithObjects(ks, ingress, ns, &servingNamespace, knService).Build()
+			cl := fake.NewClientBuilder().WithObjects(ks, ingress, ns, &servingNamespace).Build()
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
