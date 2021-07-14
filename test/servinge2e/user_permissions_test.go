@@ -13,10 +13,6 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const (
-	testNamespace = "serverless-tests"
-)
-
 func init() {
 	servingv1.AddToScheme(scheme.Scheme)
 	networkingv1alpha1.AddToScheme(scheme.Scheme)
