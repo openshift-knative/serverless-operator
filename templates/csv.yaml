@@ -330,13 +330,15 @@ spec:
                 app: openshift-admission-server
             spec:
               serviceAccountName: knative-operator
-              containers:
-                - name: cli-downloads
+              initContainers:
+                - name: cli-artifacts
                   image: TO_BE_REPLACED
                   imagePullPolicy: Always
-                  ports:
-                    - name: http-cli
-                      containerPort: 8080
+                  command: ['sh', '-c', 'cp /usr/share/kn/**/* /cli-artifacts']
+                  volumeMounts:
+                    - mountPath: /cli-artifacts
+                      name: cli-artifacts
+              containers:
                 - name: knative-openshift
                   # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                   image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
@@ -349,6 +351,12 @@ spec:
                     httpGet:
                       path: /healthz
                       port: 8687
+                  ports:
+                    - name: http-cli
+                      containerPort: 8080
+                  volumeMounts:
+                    - mountPath: /cli-artifacts
+                      name: cli-artifacts
                   env:
                     - name: WATCH_NAMESPACE
                       value: ""
@@ -378,6 +386,9 @@ spec:
                       value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                     - name: DASHBOARDS_ROOT_MANIFEST_PATH
                       value: "deploy/resources/dashboards"
+              volumes:
+                - name: cli-artifacts
+                  emptyDir: {}
       - name: knative-openshift-ingress
         spec:
           replicas: 1
