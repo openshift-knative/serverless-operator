@@ -16,10 +16,6 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const (
-	testNamespace = "serverless-tests"
-)
-
 type allowedOperations struct {
 	get    bool
 	list   bool
