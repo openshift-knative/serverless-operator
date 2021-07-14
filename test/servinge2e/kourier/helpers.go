@@ -9,6 +9,12 @@ import (
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 )
 
+const (
+	testNamespace  = "serverless-tests"
+	image          = "gcr.io/knative-samples/helloworld-go"
+	helloworldText = "Hello World!"
+)
+
 func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *servingv1.Service {
 	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(context.Background(), service, meta.CreateOptions{})
 	if err != nil {
