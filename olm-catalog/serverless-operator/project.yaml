@@ -16,10 +16,9 @@ requirements:
     minVersion: 1.19.0
   golang: '1.15'
   nodejs: 14.x
-  ocp:
-    - '4.6'
-    - '4.7'
-    - '4.8'
+  ocpVersion:
+    min: '4.6'
+    label: 'v4.6-v4.8'
 
 dependencies:
   serving: 0.23.1
