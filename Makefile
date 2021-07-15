@@ -131,10 +131,11 @@ generated-files: release-files
 	(cd olm-catalog/serverless-operator && ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
-# Runs the lints Github Actions do too.
+# Runs the lints Github Actions do too, applies fixes where possible.
 lint:
 	woke
 	golangci-lint run
 	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck
 	operator-sdk bundle validate ./olm-catalog/serverless-operator
 	git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -error
+	prettier --write templates/*.yaml
