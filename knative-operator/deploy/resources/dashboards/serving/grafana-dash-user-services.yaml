@@ -127,7 +127,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Application: Event Count (rate per minute)",
+          "title": "Application: Event Count (avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Application: Success Rate (2xx Event, avg/sec per minute)",
+          "title": "Application: Success Rate (2xx Event, avg/sec, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -284,7 +284,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Application: Event Count by Response Code Class (rate per minute)",
+          "title": "Application: Event Count by Response Code Class (avg/sec, over 1m window)",
           "tooltip": {
             "shared": true,
             "sort": 0,
