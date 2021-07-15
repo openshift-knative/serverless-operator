@@ -632,7 +632,7 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Knative User Services (Queue Proxy metrics)",
+      "title": "Knative Serving - Revision Queue Proxy Metrics",
       "uid": "-Vr2tYtZk",
       "version": 6
     }
