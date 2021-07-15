@@ -224,84 +224,28 @@ spec:
           serviceAccountName: knative-operator
         - rules:
             - apiGroups:
-                - ""
+                - ''
               resources:
-                - pods
-                - services
-                - events
                 - configmaps
               verbs:
-                - "*"
-            - apiGroups:
-                - ""
-              resources:
-                - namespaces
-              verbs:
                 - get
-            - apiGroups:
-                - apps
-              resources:
-                - deployments
-                - replicasets
-              verbs:
-                - "*"
-            - apiGroups:
-                - apiextensions.k8s.io
-              resources:
-                - customresourcedefinitions
-              verbs:
-                - "*"
-            - apiGroups:
-                - networking.k8s.io
-              resources:
-                - networkpolicies
-              verbs:
-                - "*"
-            - apiGroups:
-                - "coordination.k8s.io"
-              resources:
-                - "leases"
-              verbs:
-                - "*"
-            - apiGroups:
-                - monitoring.coreos.com
-              resources:
-                - servicemonitors
-              verbs:
-                - get
-                - create
+                - list
+                - watch
             - apiGroups:
                 - networking.internal.knative.dev
               resources:
-                - clusteringresses
-                - clusteringresses/status
-                - clusteringresses/finalizers
                 - ingresses
-                - ingresses/status
                 - ingresses/finalizers
               verbs:
-                - "*"
+                - get
+                - list
+                - watch
+                - patch # for the finalizer
             - apiGroups:
                 - route.openshift.io
               resources:
                 - routes
                 - routes/custom-host
-                - routes/status
-                - routes/finalizers
-              verbs:
-                - "*"
-            - apiGroups:
-                - operator.knative.dev
-              resources:
-                - knativeservings
-                - knativeservings/finalizers
-              verbs:
-                - '*'
-            - apiGroups:
-                - operator.serverless.openshift.io
-              resources:
-                - knativekafkas
-                - knativekafkas/finalizers
               verbs:
                 - '*'
           serviceAccountName: knative-openshift-ingress
