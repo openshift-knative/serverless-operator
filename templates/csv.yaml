@@ -219,12 +219,147 @@ spec:
       clusterPermissions:
       - serviceAccountName: knative-operator
         rules:
+        # These are needed to create the various different resources.
+        # Upstream manifests
         - apiGroups:
-          - '*'
+          - ''
           resources:
-          - '*'
+          - configmaps
+          - events
+          - namespaces
+          - secrets
+          - serviceaccounts
+          - services
           verbs:
           - '*'
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - deployments/finalizers # For monitoring resources to set their ownerRef correctly
+          verbs:
+          - '*'
+        - apiGroups:
+          - autoscaling
+          resources:
+          - horizontalpodautoscalers
+          verbs:
+          - '*'
+        - apiGroups:
+          - batch
+          resources:
+          - jobs
+          verbs:
+          - '*'
+        - apiGroups:
+          - policy
+          resources:
+          - poddisruptionbudgets
+          verbs:
+          - '*'
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
+          - rolebindings
+          - roles
+          verbs:
+          - '*'
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resources:
+          - mutatingwebhookconfigurations
+          - validatingwebhookconfigurations
+          verbs:
+          - '*'
+        - apiGroups:
+          - networking.k8s.io
+          resources:
+          - networkpolicies
+          verbs:
+          - '*'
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - '*'
+        - apiGroups:
+          - caching.internal.knative.dev
+          resources:
+          - images
+          verbs:
+          - '*'
+        # Downstream additions
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - '*'
+        - apiGroups:
+          - console.openshift.io
+          resources:
+          - consolequickstarts
+          - consoleclidownloads
+          verbs:
+          - '*'
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          - routes/custom-host
+          verbs:
+          - '*'
+
+        # Leases are needed for leaderelection to work
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - '*'
+
+        # These are resources we own
+        - apiGroups:
+          - operator.knative.dev
+          resources:
+          - knativeservings
+          - knativeservings/status
+          - knativeservings/finalizers
+          - knativeeventings
+          - knativeeventings/status
+          - knativeeventings/finalizers
+          verbs:
+          - '*'
+        - apiGroups:
+          - operator.serverless.openshift.io
+          resources:
+          - knativekafkas
+          - knativekafkas/status
+          - knativekafkas/finalizers
+          verbs:
+          - '*'
+
+        # These resources we only read
+        - apiGroups:
+          - config.openshift.io
+          resources:
+          - ingresses
+          verbs:
+          - get
+          - list
+          - watch
+        
+        # Only needed for cleanup
+        # TODO: Drop after 1.17
+        - apiGroups:
+          - serving.knative.dev
+          resources:
+          - services
+          verbs:
+          - delete
       - serviceAccountName: knative-openshift-ingress
         rules:
         - apiGroups:
