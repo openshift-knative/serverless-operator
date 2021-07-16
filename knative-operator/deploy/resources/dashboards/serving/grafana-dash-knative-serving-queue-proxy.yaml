@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-dash-knative-serving-queue-proxy
+  name: grafana-dashboard-knative-serving-queue-proxy
   namespace: openshift-config-managed
   labels:
     console.openshift.io/dashboard: "true"
