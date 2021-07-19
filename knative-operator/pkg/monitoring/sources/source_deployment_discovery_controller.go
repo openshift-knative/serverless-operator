@@ -94,59 +94,84 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 		log.Info("Source in deletion phase")
 		inDeletion = true
 	} else if err != nil {
-		// Do nothing if can't get the source for some other error
-		return reconcile.Result{}, nil
+		return reconcile.Result{}, err
 	}
 	eventing := &v1alpha1.KnativeEventing{}
 	if err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
 		return reconcile.Result{}, err
 	}
 	shouldEnableMonitoring := okomon.ShouldEnableMonitoring(eventing.Spec.GetConfig())
-	return reconcile.Result{}, r.reconcileSourceMonitoring(r.client, dep, shouldEnableMonitoring, inDeletion)
+	return reconcile.Result{}, r.reconcileSourceMonitoring(dep, shouldEnableMonitoring, inDeletion)
 }
 
-func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(rclient client.Client, dep *v1.Deployment, shouldEnableMonitoring bool, inDeletion bool) error {
-	// Setup monitoring resources only if monitoring should be on and source deployment is not being deleted
+func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(dep *v1.Deployment, shouldEnableMonitoring bool, inDeletion bool) error {
 	if shouldEnableMonitoring && !inDeletion {
-		// Setup cluster monitoring Prometheus monitoring requirements
-		shouldEnableClusterMonitoring, err := r.shouldUseClusterMonitoringForSourcesByDefault()
-		if err != nil {
+		if err := r.setupClusterMonitoringForSources(dep); err != nil {
 			return err
 		}
-		if shouldEnableClusterMonitoring {
-			if err := monitoring.SetupClusterMonitoringRequirements(rclient, dep); err != nil {
-				return err
-			}
-		} else {
-			// Make sure we disable cluster monitoring if we have to eg. we move from a state of enabled to disabled and
-			// resources are left without cleanup. This brings us to the right state.
-			if dep.Namespace != "knative-eventing" {
-				if err := monitoring.RemoveClusterMonitoringRequirements(rclient, dep); err != nil {
-					return err
-				}
-			}
-		}
-		shouldGenerateSourceMonitors, err := r.shouldGenerateSourceServiceMonitorsByDefault()
-		if err != nil {
+		if err := r.generateSourceServiceMonitors(dep); err != nil {
 			return err
-		}
-		if shouldGenerateSourceMonitors {
-			if err := SetupSourceServiceMonitorResources(rclient, dep); err != nil {
-				return err
-			}
 		}
 	} else {
-		// Start fresh in any source adapter namespace. Try remove any service monitor resources if monitoring is off or we are in
-		// deletion phase
+		// Start fresh in any source adapter namespace.
+		if err := r.cleanUpSourceMonitoringResources(dep, inDeletion); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileSourceDeployment) generateSourceServiceMonitors(dep *v1.Deployment) error {
+	shouldGenerateSourceMonitors, err := r.shouldGenerateSourceServiceMonitorsByDefault()
+	if err != nil {
+		return err
+	}
+	if shouldGenerateSourceMonitors {
+		if err := SetupSourceServiceMonitorResources(r.client, dep); err != nil {
+			return err
+		}
+	} else {
 		if dep.Namespace != "knative-eventing" {
-			if err := monitoring.RemoveClusterMonitoringRequirements(rclient, dep); err != nil {
+			if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
 				return err
 			}
-			// No need to do anything if in deletion phase as owner references will do the reaping
-			if !inDeletion {
-				if err := RemoveSourceServiceMonitorResources(rclient, dep); err != nil {
-					return err
-				}
+		}
+	}
+	return nil
+}
+
+// Setup cluster monitoring Prometheus monitoring requirements
+func (r *ReconcileSourceDeployment) setupClusterMonitoringForSources(dep *v1.Deployment) error {
+	shouldEnableClusterMonitoring, err := r.shouldUseClusterMonitoringForSourcesByDefault()
+	if err != nil {
+		return err
+	}
+	if shouldEnableClusterMonitoring {
+		if err := monitoring.SetupClusterMonitoringRequirements(r.client, dep); err != nil {
+			return err
+		}
+	} else {
+		// Make sure we disable cluster monitoring if we have to eg. we move from a state of enabled to disabled and
+		// resources are left without cleanup. This brings us to the right state.
+		if dep.Namespace != "knative-eventing" {
+			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Remove any Source service monitor resources in any user namespace
+func (r *ReconcileSourceDeployment) cleanUpSourceMonitoringResources(dep *v1.Deployment, inDeletion bool) error {
+	if dep.Namespace != "knative-eventing" {
+		if err := monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
+			return err
+		}
+		// No need to do anything if in deletion phase as owner references will do the cleanup
+		if !inDeletion {
+			if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+				return err
 			}
 		}
 	}
