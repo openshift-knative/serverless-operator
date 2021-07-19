@@ -1,0 +1,638 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-knative-serving-queue-proxy
+  namespace: openshift-config-managed
+  labels:
+    console.openshift.io/dashboard: "true"
+data:
+  queue-proxy-dashboard.json: |+
+    {
+      "__inputs": [
+        {
+          "description": "",
+          "label": "prometheus",
+          "name": "prometheus",
+          "pluginId": "prometheus",
+          "pluginName": "Prometheus",
+          "type": "datasource"
+        }
+      ],
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": false,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": 16,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 2,
+          "panels": [],
+          "repeat": null,
+          "title": "Queue proxy",
+          "type": "row"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "#299c46",
+            "rgba(237, 129, 40, 0.89)",
+            "#d44a3a"
+          ],
+          "datasource": "prometheus",
+          "decimals": 3,
+          "description": "",
+          "format": "ops",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 4,
+            "x": 0,
+            "y": 1
+          },
+          "id": 29,
+          "interval": "",
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "pluginVersion": "6.3.3",
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true,
+            "ymax": null,
+            "ymin": null
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m]))",
+              "format": "time_series",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Application: Event Count (avg/sec, over 1m window)",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "#299c46",
+            "rgba(237, 129, 40, 0.89)",
+            "#d44a3a"
+          ],
+          "datasource": "prometheus",
+          "decimals": 2,
+          "description": "",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 1
+          },
+          "id": 28,
+          "interval": "",
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "pluginVersion": "6.3.3",
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true,
+            "ymax": null,
+            "ymin": null
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\", response_code_class=\"2xx\"}[1m])) / sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m]))",
+              "format": "time_series",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Application: Success Rate (2xx Event, fraction rate, over 1m window)",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "decimals": 3,
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 16,
+            "x": 8,
+            "y": 1
+          },
+          "id": 33,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": true,
+            "hideEmpty": false,
+            "hideZero": false,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m])) by (response_code_class)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "{{response_code_class}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Application: Event Count by Response Code Class (avg/sec, over 1m window)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 3,
+              "format": "ops",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "decimals": 3,
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "#299c46",
+            "rgba(237, 129, 40, 0.89)",
+            "#d44a3a"
+          ],
+          "datasource": "prometheus",
+          "decimals": 2,
+          "description": "",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 5
+          },
+          "id": 27,
+          "interval": "",
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "pluginVersion": "6.3.3",
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true,
+            "ymax": null,
+            "ymin": null
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\", response_code_class!=\"2xx\"}[1m])) / sum(rate(revision_app_request_count{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m]))",
+              "format": "time_series",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Application: Failure Rate (non-2xx Event, fraction rate, over 1m window)",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        }, {
+                  "aliasColors": {},
+                  "bars": false,
+                  "dashLength": 10,
+                  "dashes": false,
+                  "datasource": "prometheus",
+                  "decimals": 3,
+                  "description": "50th, 90th, 95th, 99th percentile of request latency latency over the last 1m",
+                  "fill": 1,
+                  "fillGradient": 0,
+                  "gridPos": {
+                    "h": 9,
+                    "w": 12,
+                    "x": 12,
+                    "y": 27
+                  },
+                  "id": 34,
+                  "legend": {
+                    "alignAsTable": true,
+                    "avg": true,
+                    "current": true,
+                    "hideEmpty": false,
+                    "hideZero": false,
+                    "max": false,
+                    "min": false,
+                    "rightSide": true,
+                    "show": true,
+                    "total": false,
+                    "values": true
+                  },
+                  "lines": true,
+                  "linewidth": 1,
+                  "nullPointMode": "null",
+                  "options": {
+                    "dataLinks": []
+                  },
+                  "percentage": false,
+                  "pointradius": 2,
+                  "points": false,
+                  "renderer": "flot",
+                  "seriesOverrides": [],
+                  "spaceLength": 10,
+                  "stack": false,
+                  "steppedLine": false,
+                  "targets": [
+                    {
+                      "expr": "histogram_quantile(0.50, sum(rate(revision_app_request_latencies_bucket{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m])) by (le))",
+                      "format": "time_series",
+                      "instant": false,
+                      "legendFormat": "p50",
+                      "refId": "A"
+                    },
+                    {
+                      "expr": "histogram_quantile(0.90, sum(rate(revision_app_request_latencies_bucket{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m])) by (le))",
+                      "format": "time_series",
+                      "legendFormat": "p90",
+                      "refId": "B"
+                    },
+                    {
+                      "expr": "histogram_quantile(0.95, sum(rate(revision_app_request_latencies_bucket{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m])) by (le))",
+                      "format": "time_series",
+                      "legendFormat": "p95",
+                      "refId": "C"
+                    },
+                    {
+                      "expr": "histogram_quantile(0.99, sum(rate(revision_app_request_latencies_bucket{namespace=\"$namespace\", revision_name=~\"$revision.*\", configuration_name=~\"$configuration.*\", container_name=\"queue-proxy\"}[1m])) by (le))",
+                      "format": "time_series",
+                      "legendFormat": "p99",
+                      "refId": "D"
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeFrom": null,
+                  "timeRegions": [],
+                  "timeShift": null,
+                  "title": "Application: Request processing Latency (ms)",
+                  "tooltip": {
+                    "shared": true,
+                    "sort": 0,
+                    "value_type": "individual"
+                  },
+                  "type": "graph",
+                  "xaxis": {
+                    "buckets": null,
+                    "mode": "time",
+                    "name": null,
+                    "show": true,
+                    "values": []
+                  },
+                  "yaxes": [
+                    {
+                      "decimals": 2,
+                      "format": "ms",
+                      "label": null,
+                      "logBase": 1,
+                      "max": null,
+                      "min": null,
+                      "show": true
+                    },
+                    {
+                      "format": "short",
+                      "label": null,
+                      "logBase": 1,
+                      "max": null,
+                      "min": null,
+                      "show": true
+                    }
+                  ],
+                  "yaxis": {
+                    "align": false,
+                    "alignLevel": null
+                  }
+                }
+      ],
+      "templating": {
+        "list": [
+          {
+            "allValue": null,
+            "current": {},
+            "datasource": "prometheus",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Namespace",
+            "multi": false,
+            "name": "namespace",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_serving_knative_dev_configuration=~\".+\"}, namespace)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 1,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {},
+            "datasource": "prometheus",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Configuration",
+            "multi": false,
+            "name": "configuration",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_serving_knative_dev_configuration=~\".+\", namespace=\"$namespace\"}, label_serving_knative_dev_configuration)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 1,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {},
+            "datasource": "prometheus",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Revision",
+            "multi": false,
+            "name": "revision",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_serving_knative_dev_configuration=~\".+\", namespace=\"$namespace\", label_serving_knative_dev_configuration=\"$configuration\"}, label_serving_knative_dev_revision)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 2,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "datasource": "prometheus",
+            "definition": "label_values(kube_deployment_labels{label_serving_knative_dev_configuration=~\"$configuration\", label_serving_knative_dev_revision=\"$revision\", namespace=\"$namespace\"}, deployment)",
+            "hide": 1,
+            "includeAll": false,
+            "label": "deployment",
+            "multi": false,
+            "name": "deployment",
+            "query": "label_values(kube_deployment_labels{label_serving_knative_dev_configuration=~\"$configuration\", label_serving_knative_dev_revision=\"$revision\", namespace=\"$namespace\"}, deployment)",
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 2,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          }
+
+        ]
+      },
+      "refresh": false,
+      "schemaVersion": 19,
+      "style": "dark",
+      "tags": ["Knative"],
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ]
+      },
+      "timezone": "",
+      "title": "Knative Serving - Revision Queue Proxy Metrics",
+      "uid": "-Vr2tYtZk",
+      "version": 6
+    }
