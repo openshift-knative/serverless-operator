@@ -105,15 +105,21 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 }
 
 func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(dep *v1.Deployment, shouldEnableMonitoring bool, inDeletion bool) error {
-	if shouldEnableMonitoring && !inDeletion {
-		if err := r.setupClusterMonitoringForSources(dep); err != nil {
-			return err
-		}
-		if err := r.generateSourceServiceMonitors(dep); err != nil {
-			return err
+	// If monitoring is set to on/off this triggers a global resync to source adapters.
+	// Same applies if we change any of the env vars affecting cluster monitoring or service monitor resource generation.
+	// The Serverless operator pod is restarted and local informer caches are synched.
+	if shouldEnableMonitoring {
+		// If in deletion there is nothing to be done, owner refs will remove source service monitors
+		if !inDeletion {
+			if err := r.setupClusterMonitoringForSources(dep); err != nil {
+				return err
+			}
+			if err := r.generateSourceServiceMonitors(dep); err != nil {
+				return err
+			}
 		}
 	} else {
-		// Start fresh in any source adapter namespace.
+		// Remove any relics if previously monitoring was on.
 		if err := r.cleanUpSourceMonitoringResources(dep, inDeletion); err != nil {
 			return err
 		}
