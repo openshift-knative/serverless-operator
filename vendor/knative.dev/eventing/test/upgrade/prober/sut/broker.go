@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	eventingduckv1beta1 "knative.dev/eventing/pkg/apis/duck/v1beta1"
-	eventingv1beta1 "knative.dev/eventing/pkg/apis/eventing/v1beta1"
+	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
+	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/lib/duck"
 	"knative.dev/eventing/test/lib/resources"
@@ -31,7 +31,7 @@ import (
 
 var (
 	retryCount    = int32(12)
-	backoffPolicy = eventingduckv1beta1.BackoffPolicyExponential
+	backoffPolicy = eventingduckv1.BackoffPolicyExponential
 	backoffDelay  = "PT1S"
 )
 
@@ -45,7 +45,7 @@ type BrokerAndTriggers struct {
 // Broker will hold settings for broker itself
 type Broker struct {
 	Name string
-	Opts []resources.BrokerV1Beta1Option
+	Opts []resources.BrokerOption
 }
 
 // Triggers will hold settings for triggers
@@ -59,9 +59,9 @@ func NewBrokerAndTriggers() SystemUnderTest {
 	return &BrokerAndTriggers{
 		Broker: Broker{
 			Name: "sut",
-			Opts: []resources.BrokerV1Beta1Option{
-				resources.WithDeliveryForBrokerV1Beta1(
-					&eventingduckv1beta1.DeliverySpec{
+			Opts: []resources.BrokerOption{
+				resources.WithDeliveryForBroker(
+					&eventingduckv1.DeliverySpec{
 						Retry:         &retryCount,
 						BackoffPolicy: &backoffPolicy,
 						BackoffDelay:  &backoffDelay,
@@ -82,7 +82,7 @@ func (b *BrokerAndTriggers) Deploy(ctx Context, dest duckv1.Destination) interfa
 }
 
 func (b *BrokerAndTriggers) deployBroker(ctx Context) {
-	ctx.Client.CreateBrokerV1Beta1OrFail(b.Name, b.Broker.Opts...)
+	ctx.Client.CreateBrokerOrFail(b.Name, b.Broker.Opts...)
 }
 
 func (b *BrokerAndTriggers) fetchURL(ctx Context) *apis.URL {
@@ -96,7 +96,7 @@ func (b *BrokerAndTriggers) fetchURL(ctx Context) *apis.URL {
 	if err != nil {
 		ctx.T.Fatal(err)
 	}
-	broker, err := ctx.Client.Eventing.EventingV1beta1().Brokers(namespace).Get(
+	broker, err := ctx.Client.Eventing.EventingV1().Brokers(namespace).Get(
 		ctx.Ctx, b.Name, metav1.GetOptions{},
 	)
 	if err != nil {
@@ -111,16 +111,16 @@ func (b *BrokerAndTriggers) fetchURL(ctx Context) *apis.URL {
 func (b *BrokerAndTriggers) deployTriggers(ctx Context, dest duckv1.Destination) {
 	for _, eventType := range b.Triggers.Types {
 		name := fmt.Sprintf("%s-%s", b.Name, eventType)
-		subscriberOption := resources.WithSubscriberDestinationV1Beta1(func(t *eventingv1beta1.Trigger) duckv1.Destination {
+		subscriberOption := resources.WithSubscriberDestination(func(t *eventingv1.Trigger) duckv1.Destination {
 			return dest
 		})
 		ctx.Log.Debugf("Creating trigger \"%s\" for type %s to route to %#v",
 			name, eventType, dest)
-		_ = ctx.Client.CreateTriggerOrFailV1Beta1(
+		_ = ctx.Client.CreateTriggerOrFail(
 			name,
-			resources.WithBrokerV1Beta1(b.Name),
-			resources.WithAttributesTriggerFilterV1Beta1(
-				eventingv1beta1.TriggerAnyFilter,
+			resources.WithBroker(b.Name),
+			resources.WithAttributesTriggerFilter(
+				eventingv1.TriggerAnyFilter,
 				eventType,
 				map[string]interface{}{},
 			),

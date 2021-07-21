@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 index 08010cff..8373873c 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 @@ -11,27 +11,6 @@
  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  # See the License for the specific language governing permissions and
@@ -11,7 +11,7 @@ index 08010cff..8373873c 100644
 -metadata:
 -  name: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v0.22.0"
+-    eventing.knative.dev/release: "v0.23.0"
 -
 ----
 -# Copyright 2018 The Knative Authors
