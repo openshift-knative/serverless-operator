@@ -72,7 +72,7 @@ spec:
             displayName: Conditions
             path: conditions
             x-descriptors:
-              - 'urn:alm:descriptor:io.kubernetes.conditions'
+              - "urn:alm:descriptor:io.kubernetes.conditions"
         version: v1alpha1
       - description: Represents an installation of a particular version of Knative Eventing
         displayName: Knative Eventing
@@ -186,11 +186,11 @@ spec:
       clusterPermissions:
         - rules:
             - apiGroups:
-                - '*'
+                - "*"
               resources:
-                - '*'
+                - "*"
               verbs:
-                - '*'
+                - "*"
           serviceAccountName: knative-operator
         - rules:
             - apiGroups:
@@ -266,14 +266,14 @@ spec:
                 - knativeservings
                 - knativeservings/finalizers
               verbs:
-                - '*'
+                - "*"
             - apiGroups:
                 - operator.serverless.openshift.io
               resources:
                 - knativekafkas
                 - knativekafkas/finalizers
               verbs:
-                - '*'
+                - "*"
           serviceAccountName: knative-openshift-ingress
       deployments:
         - name: knative-operator
@@ -542,7 +542,7 @@ spec:
                 - configmaps
                 - secrets
               verbs:
-                - '*'
+                - "*"
             - apiGroups:
                 - ""
               resources:
@@ -557,7 +557,7 @@ spec:
                 - replicasets
                 - statefulsets
               verbs:
-                - '*'
+                - "*"
             - apiGroups:
                 - monitoring.coreos.com
               resources:
@@ -576,9 +576,9 @@ spec:
             - apiGroups:
                 - operator.knative.dev
               resources:
-                - '*'
+                - "*"
               verbs:
-                - '*'
+                - "*"
           serviceAccountName: knative-operator
     strategy: deployment
   webhookdefinitions:

@@ -60,34 +60,34 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Represents an installation of a particular version of Knative Serving
-      displayName: Knative Serving
-      kind: KnativeServing
-      name: knativeservings.operator.knative.dev
-      statusDescriptors:
-      - description: The version of Knative Serving installed
-        displayName: Version
-        path: version
-      - description: Conditions of Knative Serving installed
-        displayName: Conditions
-        path: conditions
-        x-descriptors:
-        - 'urn:alm:descriptor:io.kubernetes.conditions'
-      version: v1alpha1
-    - description: Represents an installation of a particular version of Knative Eventing
-      displayName: Knative Eventing
-      kind: KnativeEventing
-      name: knativeeventings.operator.knative.dev
-      statusDescriptors:
-      - description: The version of Knative Eventing installed
-        displayName: Version
-        path: version
-      version: v1alpha1
-    - description: Represents an installation of a particular version of Knative Kafka components
-      displayName: Knative Kafka
-      kind: KnativeKafka
-      name: knativekafkas.operator.serverless.openshift.io
-      version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Serving
+        displayName: Knative Serving
+        kind: KnativeServing
+        name: knativeservings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Serving installed
+            displayName: Version
+            path: version
+          - description: Conditions of Knative Serving installed
+            displayName: Conditions
+            path: conditions
+            x-descriptors:
+              - "urn:alm:descriptor:io.kubernetes.conditions"
+        version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Eventing
+        displayName: Knative Eventing
+        kind: KnativeEventing
+        name: knativeeventings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Eventing installed
+            displayName: Version
+            path: version
+        version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Kafka components
+        displayName: Knative Kafka
+        kind: KnativeKafka
+        name: knativekafkas.operator.serverless.openshift.io
+        version: v1alpha1
   minKubeVersion:
   description: |-
     The Red Hat OpenShift Serverless operator provides a collection of APIs that
@@ -179,433 +179,433 @@ spec:
     started](https://access.redhat.com/documentation/en-us/openshift_container_platform/__OCP_TARGET__/html/serverless/serverless-getting-started)
   displayName: Red Hat OpenShift Serverless
   icon:
-  - base64data: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2UwMzQwMDt9LmNscy0ye2ZpbGw6I2NlMmUwMDt9LmNscy0ze2ZpbGw6bm9uZTt9LmNscy00e2ZpbGw6I2ZmZjt9LmNscy01e2ZpbGw6I2RjZGNkYzt9LmNscy02e2ZpbGw6I2FhYTt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlJlZF9IYXQtT3BlbnNoaWZ0NC1DYXRhbG9nX0ljb25zLVNlcnZlcmxlc3M8L3RpdGxlPjxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iNTAiIGN5PSI1MCIgcj0iNTAiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik04NS4zNiwxNC42NEE1MCw1MCwwLDAsMSwxNC42NCw4NS4zNloiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik00MC41Nyw0Ny40MmEzLjg5LDMuODksMCwxLDAsMy44OCwzLjg4QTMuODksMy44OSwwLDAsMCw0MC41Nyw0Ny40MloiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yMS40Miw0Ny40MkEzLjg5LDMuODksMCwxLDAsMjUuMyw1MS4zLDMuODksMy44OSwwLDAsMCwyMS40Miw0Ny40MloiLz48cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik01MC4wOSw0OC44NmgtLjE4YTQuMTEsNC4xMSwwLDAsMS0zLjI2LTEuNjMsNy42OSw3LjY5LDAsMCwwLTEyLjE2LDAsNC4xMyw0LjEzLDAsMCwxLTMuMjYsMS42M0gzMWE0LjA5LDQuMDksMCwwLDEtMy4yNS0xLjYzQTcuNjksNy42OSwwLDAsMCwxNCw1MS45M2gwVjY0LjZhMi43OSwyLjc5LDAsMCwwLDIuNzksMi43OWgxNS44TDUxLjM0LDQ4LjY2QTQsNCwwLDAsMSw1MC4wOSw0OC44NloiLz48cGF0aCBjbGFzcz0iY2xzLTUiIGQ9Ik03OC4wNSw0NC4yNWE3LjY1LDcuNjUsMCwwLDAtNS44NSwzQTQuMSw0LjEsMCwwLDEsNjksNDguODZoLS4xOWE0LjEzLDQuMTMsMCwwLDEtMy4yNi0xLjYzLDcuNjksNy42OSwwLDAsMC0xMi4xNiwwLDQuMTYsNC4xNiwwLDAsMS0yLDEuNDNMMzIuNjEsNjcuMzlIODMuMTlBMi43OSwyLjc5LDAsMCwwLDg2LDY0LjZWNTIuMDdBNy43Nyw3Ljc3LDAsMCwwLDc4LjA1LDQ0LjI1WiIvPjxwYXRoIGNsYXNzPSJjbHMtNiIgZD0iTTIxLjEsNjNoMTBhMS44MywxLjgzLDAsMSwwLDAtMy42NmgtMTBhMS44MywxLjgzLDAsMCwwLDAsMy42NloiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjQwLjU3IiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjQwLjU3IiBjeT0iMjguMjMiIHI9IjEuMzUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjU5LjcyIiBjeT0iMjguMjMiIHI9IjEuMzUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjIxLjQyIiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjUwIiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjY4Ljg5IiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjMxLjA5IiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9Ijc3Ljk0IiBjeT0iNTQuMzEiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9IjY4LjkxIiBjeT0iNTQuMzEiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9Ijc3Ljk0IiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjU5LjcyIiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjUwIiBjeT0iMzMuMSIgcj0iMy4wMSIvPjxjaXJjbGUgY2xhc3M9ImNscy00IiBjeD0iMzEuMDkiIGN5PSIzMy4xIiByPSIzLjAxIi8+PGNpcmNsZSBjbGFzcz0iY2xzLTQiIGN4PSI2OC44OSIgY3k9IjMzLjEiIHI9IjMuMDEiLz48L3N2Zz4=
-    mediatype: image/svg+xml
+    - base64data: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2UwMzQwMDt9LmNscy0ye2ZpbGw6I2NlMmUwMDt9LmNscy0ze2ZpbGw6bm9uZTt9LmNscy00e2ZpbGw6I2ZmZjt9LmNscy01e2ZpbGw6I2RjZGNkYzt9LmNscy02e2ZpbGw6I2FhYTt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlJlZF9IYXQtT3BlbnNoaWZ0NC1DYXRhbG9nX0ljb25zLVNlcnZlcmxlc3M8L3RpdGxlPjxjaXJjbGUgY2xhc3M9ImNscy0xIiBjeD0iNTAiIGN5PSI1MCIgcj0iNTAiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik04NS4zNiwxNC42NEE1MCw1MCwwLDAsMSwxNC42NCw4NS4zNloiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik00MC41Nyw0Ny40MmEzLjg5LDMuODksMCwxLDAsMy44OCwzLjg4QTMuODksMy44OSwwLDAsMCw0MC41Nyw0Ny40MloiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yMS40Miw0Ny40MkEzLjg5LDMuODksMCwxLDAsMjUuMyw1MS4zLDMuODksMy44OSwwLDAsMCwyMS40Miw0Ny40MloiLz48cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik01MC4wOSw0OC44NmgtLjE4YTQuMTEsNC4xMSwwLDAsMS0zLjI2LTEuNjMsNy42OSw3LjY5LDAsMCwwLTEyLjE2LDAsNC4xMyw0LjEzLDAsMCwxLTMuMjYsMS42M0gzMWE0LjA5LDQuMDksMCwwLDEtMy4yNS0xLjYzQTcuNjksNy42OSwwLDAsMCwxNCw1MS45M2gwVjY0LjZhMi43OSwyLjc5LDAsMCwwLDIuNzksMi43OWgxNS44TDUxLjM0LDQ4LjY2QTQsNCwwLDAsMSw1MC4wOSw0OC44NloiLz48cGF0aCBjbGFzcz0iY2xzLTUiIGQ9Ik03OC4wNSw0NC4yNWE3LjY1LDcuNjUsMCwwLDAtNS44NSwzQTQuMSw0LjEsMCwwLDEsNjksNDguODZoLS4xOWE0LjEzLDQuMTMsMCwwLDEtMy4yNi0xLjYzLDcuNjksNy42OSwwLDAsMC0xMi4xNiwwLDQuMTYsNC4xNiwwLDAsMS0yLDEuNDNMMzIuNjEsNjcuMzlIODMuMTlBMi43OSwyLjc5LDAsMCwwLDg2LDY0LjZWNTIuMDdBNy43Nyw3Ljc3LDAsMCwwLDc4LjA1LDQ0LjI1WiIvPjxwYXRoIGNsYXNzPSJjbHMtNiIgZD0iTTIxLjEsNjNoMTBhMS44MywxLjgzLDAsMSwwLDAtMy42NmgtMTBhMS44MywxLjgzLDAsMCwwLDAsMy42NloiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjQwLjU3IiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjQwLjU3IiBjeT0iMjguMjMiIHI9IjEuMzUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjU5LjcyIiBjeT0iMjguMjMiIHI9IjEuMzUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjIxLjQyIiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjUwIiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjY4Ljg5IiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjMxLjA5IiBjeT0iNDMuNDUiIHI9IjIuOTMiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9Ijc3Ljk0IiBjeT0iNTQuMzEiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNiIgY3g9IjY4LjkxIiBjeT0iNTQuMzEiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9Ijc3Ljk0IiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjU5LjcyIiBjeT0iMzcuNzMiIHI9IjIuMTUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNCIgY3g9IjUwIiBjeT0iMzMuMSIgcj0iMy4wMSIvPjxjaXJjbGUgY2xhc3M9ImNscy00IiBjeD0iMzEuMDkiIGN5PSIzMy4xIiByPSIzLjAxIi8+PGNpcmNsZSBjbGFzcz0iY2xzLTQiIGN4PSI2OC44OSIgY3k9IjMzLjEiIHI9IjMuMDEiLz48L3N2Zz4=
+      mediatype: image/svg+xml
   install:
     spec:
       clusterPermissions:
-      - rules:
-        - apiGroups:
-          - '*'
-          resources:
-          - '*'
-          verbs:
-          - '*'
-        serviceAccountName: knative-operator
-      - rules:
-        - apiGroups:
-          - ""
-          resources:
-          - pods
-          - services
-          - events
-          - configmaps
-          verbs:
-          - "*"
-        - apiGroups:
-          - ""
-          resources:
-          - namespaces
-          verbs:
-          - get
-        - apiGroups:
-          - apps
-          resources:
-          - deployments
-          - replicasets
-          verbs:
-          - "*"
-        - apiGroups:
-          - apiextensions.k8s.io
-          resources:
-          - customresourcedefinitions
-          verbs:
-          - "*"
-        - apiGroups:
-          - networking.k8s.io
-          resources:
-          - networkpolicies
-          verbs:
-          - "*"
-        - apiGroups:
-          - "coordination.k8s.io"
-          resources:
-          - "leases"
-          verbs:
-          - "*"
-        - apiGroups:
-          - monitoring.coreos.com
-          resources:
-          - servicemonitors
-          verbs:
-          - get
-          - create
-        - apiGroups:
-          - networking.internal.knative.dev
-          resources:
-          - clusteringresses
-          - clusteringresses/status
-          - clusteringresses/finalizers
-          - ingresses
-          - ingresses/status
-          - ingresses/finalizers
-          verbs:
-          - "*"
-        - apiGroups:
-          - route.openshift.io
-          resources:
-          - routes
-          - routes/custom-host
-          - routes/status
-          - routes/finalizers
-          verbs:
-          - "*"
-        - apiGroups:
-          - operator.knative.dev
-          resources:
-          - knativeservings
-          - knativeservings/finalizers
-          verbs:
-          - '*'
-        - apiGroups:
-          - operator.serverless.openshift.io
-          resources:
-          - knativekafkas
-          - knativekafkas/finalizers
-          verbs:
-          - '*'
-        serviceAccountName: knative-openshift-ingress
+        - rules:
+            - apiGroups:
+                - "*"
+              resources:
+                - "*"
+              verbs:
+                - "*"
+          serviceAccountName: knative-operator
+        - rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - events
+                - configmaps
+              verbs:
+                - "*"
+            - apiGroups:
+                - ""
+              resources:
+                - namespaces
+              verbs:
+                - get
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - replicasets
+              verbs:
+                - "*"
+            - apiGroups:
+                - apiextensions.k8s.io
+              resources:
+                - customresourcedefinitions
+              verbs:
+                - "*"
+            - apiGroups:
+                - networking.k8s.io
+              resources:
+                - networkpolicies
+              verbs:
+                - "*"
+            - apiGroups:
+                - "coordination.k8s.io"
+              resources:
+                - "leases"
+              verbs:
+                - "*"
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+              verbs:
+                - get
+                - create
+            - apiGroups:
+                - networking.internal.knative.dev
+              resources:
+                - clusteringresses
+                - clusteringresses/status
+                - clusteringresses/finalizers
+                - ingresses
+                - ingresses/status
+                - ingresses/finalizers
+              verbs:
+                - "*"
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+                - routes/custom-host
+                - routes/status
+                - routes/finalizers
+              verbs:
+                - "*"
+            - apiGroups:
+                - operator.knative.dev
+              resources:
+                - knativeservings
+                - knativeservings/finalizers
+              verbs:
+                - "*"
+            - apiGroups:
+                - operator.serverless.openshift.io
+              resources:
+                - knativekafkas
+                - knativekafkas/finalizers
+              verbs:
+                - "*"
+          serviceAccountName: knative-openshift-ingress
       deployments:
-      - name: knative-operator
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              name: knative-operator
-          template:
-            metadata:
-              annotations:
-                sidecar.istio.io/inject: "false"
-              labels:
+        - name: knative-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
                 name: knative-operator
-            spec:
-              containers:
-              - env:
-                - name: POD_NAME
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.name
-                - name: OPERATOR_NAME
-                  value: knative-operator
-                - name: SYSTEM_NAMESPACE
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.namespace
-                - name: METRICS_DOMAIN
-                  value: knative.dev/serving-operator
-                - name: REQUIRED_SERVING_NAMESPACE
-                  value: "knative-serving"
-                - name: REQUIRED_EVENTING_NAMESPACE
-                  value: "knative-eventing"
-                - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
-                  value: "/var/run/ko/monitoring/rbac-proxy.yaml"
-                # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
-                imagePullPolicy: Always
-                name: knative-operator
-                ports:
-                - containerPort: 9090
-                  name: metrics
-              serviceAccountName: knative-operator
-      - name: knative-openshift
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              name: knative-openshift
-          template:
-            metadata:
-              labels:
+            template:
+              metadata:
+                annotations:
+                  sidecar.istio.io/inject: "false"
+                labels:
+                  name: knative-operator
+              spec:
+                containers:
+                  - env:
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: knative-operator
+                      - name: SYSTEM_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
+                      - name: METRICS_DOMAIN
+                        value: knative.dev/serving-operator
+                      - name: REQUIRED_SERVING_NAMESPACE
+                        value: "knative-serving"
+                      - name: REQUIRED_EVENTING_NAMESPACE
+                        value: "knative-eventing"
+                      - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
+                        value: "/var/run/ko/monitoring/rbac-proxy.yaml"
+                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
+                    imagePullPolicy: Always
+                    name: knative-operator
+                    ports:
+                      - containerPort: 9090
+                        name: metrics
+                serviceAccountName: knative-operator
+        - name: knative-openshift
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
                 name: knative-openshift
-                app: openshift-admission-server
-            spec:
-              serviceAccountName: knative-operator
-              containers:
-                - name: cli-downloads
-                  image: TO_BE_REPLACED
-                  imagePullPolicy: Always
-                  ports:
-                    - name: http-cli
-                      containerPort: 8080
-                - name: knative-openshift
-                  # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
-                  imagePullPolicy: Always
-                  readinessProbe:
-                    httpGet:
-                      path: /readyz
-                      port: 8687
-                  livenessProbe:
-                    httpGet:
-                      path: /healthz
-                      port: 8687
-                  env:
-                    - name: WATCH_NAMESPACE
-                      value: ""
-                    - name: NAMESPACE
-                      valueFrom:
-                        fieldRef:
-                          fieldPath: metadata.namespace
-                    - name: DEPLOYMENT_NAME
-                      value: "knative-openshift"
-                    - name: POD_NAME
-                      valueFrom:
-                        fieldRef:
-                          fieldPath: metadata.name
-                    - name: OPERATOR_NAME
-                      value: "knative-openshift"
-                    - name: REQUIRED_SERVING_NAMESPACE
-                      value: "knative-serving"
-                    - name: REQUIRED_EVENTING_NAMESPACE
-                      value: "knative-eventing"
-                    - name: REQUIRED_KAFKA_NAMESPACE
-                      value: "knative-eventing"
-                    - name: KAFKACHANNEL_MANIFEST_PATH
-                      value: deploy/resources/knativekafka/1-channel-consolidated.yaml
-                    - name: KAFKASOURCE_MANIFEST_PATH
-                      value: deploy/resources/knativekafka/2-source.yaml
-                    - name: QUICKSTART_MANIFEST_PATH
-                      value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
-                    - name: DASHBOARDS_ROOT_MANIFEST_PATH
-                      value: "deploy/resources/dashboards"
-      - name: knative-openshift-ingress
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              name: knative-openshift-ingress
-          template:
-            metadata:
-              labels:
+            template:
+              metadata:
+                labels:
+                  name: knative-openshift
+                  app: openshift-admission-server
+              spec:
+                serviceAccountName: knative-operator
+                containers:
+                  - name: cli-downloads
+                    image: TO_BE_REPLACED
+                    imagePullPolicy: Always
+                    ports:
+                      - name: http-cli
+                        containerPort: 8080
+                  - name: knative-openshift
+                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+                    imagePullPolicy: Always
+                    readinessProbe:
+                      httpGet:
+                        path: /readyz
+                        port: 8687
+                    livenessProbe:
+                      httpGet:
+                        path: /healthz
+                        port: 8687
+                    env:
+                      - name: WATCH_NAMESPACE
+                        value: ""
+                      - name: NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
+                      - name: DEPLOYMENT_NAME
+                        value: "knative-openshift"
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: "knative-openshift"
+                      - name: REQUIRED_SERVING_NAMESPACE
+                        value: "knative-serving"
+                      - name: REQUIRED_EVENTING_NAMESPACE
+                        value: "knative-eventing"
+                      - name: REQUIRED_KAFKA_NAMESPACE
+                        value: "knative-eventing"
+                      - name: KAFKACHANNEL_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/1-channel-consolidated.yaml
+                      - name: KAFKASOURCE_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/2-source.yaml
+                      - name: QUICKSTART_MANIFEST_PATH
+                        value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
+                      - name: DASHBOARDS_ROOT_MANIFEST_PATH
+                        value: "deploy/resources/dashboards"
+        - name: knative-openshift-ingress
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
                 name: knative-openshift-ingress
-            spec:
-              serviceAccountName: knative-openshift-ingress
-              containers:
-                - name: knative-openshift-ingress
-                  # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                  image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
-                  imagePullPolicy: Always
-                  ports:
-                    - containerPort: 9090
-                      name: metrics
-                  env:
-                    - name: METRICS_DOMAIN
-                      value: knative.dev/serving
-                    - name: WATCH_NAMESPACE
-                      value: "" # watch all namespaces for ClusterIngress
-                    - name: POD_NAME
-                      valueFrom:
-                        fieldRef:
-                          fieldPath: metadata.name
-                    - name: OPERATOR_NAME
-                      value: "knative-openshift-ingress"
-                    - name: SYSTEM_NAMESPACE
-                      valueFrom:
-                        fieldRef:
-                          fieldPath: metadata.namespace
+            template:
+              metadata:
+                labels:
+                  name: knative-openshift-ingress
+              spec:
+                serviceAccountName: knative-openshift-ingress
+                containers:
+                  - name: knative-openshift-ingress
+                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
+                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+                    imagePullPolicy: Always
+                    ports:
+                      - containerPort: 9090
+                        name: metrics
+                    env:
+                      - name: METRICS_DOMAIN
+                        value: knative.dev/serving
+                      - name: WATCH_NAMESPACE
+                        value: "" # watch all namespaces for ClusterIngress
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: "knative-openshift-ingress"
+                      - name: SYSTEM_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
       permissions:
-      - rules:
-        - apiGroups:
-          - ""
-          resources:
-          - pods
-          - services
-          - endpoints
-          - persistentvolumeclaims
-          - events
-          - configmaps
-          - secrets
-          verbs:
-          - '*'
-        - apiGroups:
-          - ""
-          resources:
-          - namespaces
-          verbs:
-          - get
-        - apiGroups:
-          - apps
-          resources:
-          - deployments
-          - daemonsets
-          - replicasets
-          - statefulsets
-          verbs:
-          - '*'
-        - apiGroups:
-          - monitoring.coreos.com
-          resources:
-          - servicemonitors
-          verbs:
-          - get
-          - create
-        - apiGroups:
-          - apps
-          resourceNames:
-          - knative-operator
-          resources:
-          - deployments/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - operator.knative.dev
-          resources:
-          - '*'
-          verbs:
-          - '*'
-        serviceAccountName: knative-operator
+        - rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+              verbs:
+                - "*"
+            - apiGroups:
+                - ""
+              resources:
+                - namespaces
+              verbs:
+                - get
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+              verbs:
+                - "*"
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+              verbs:
+                - get
+                - create
+            - apiGroups:
+                - apps
+              resourceNames:
+                - knative-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+            - apiGroups:
+                - operator.knative.dev
+              resources:
+                - "*"
+              verbs:
+                - "*"
+          serviceAccountName: knative-operator
     strategy: deployment
   webhookdefinitions:
-  - generateName: validating.knativeeventings.operator.serverless.openshift.io
-    type: ValidatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-    - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-    - apiGroups:
-      - operator.knative.dev
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - knativeeventings
-    sideEffects: None
-    webhookPath: /validate-knativeeventings
-  - generateName: validating.knativeservings.operator.serverless.openshift.io
-    type: ValidatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-    - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-    - apiGroups:
-      - operator.knative.dev
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - knativeservings
-    sideEffects: None
-    webhookPath: /validate-knativeservings
-  - generateName: validating.knativekafkas.operator.serverless.openshift.io
-    type: ValidatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-    - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-    - apiGroups:
-      - operator.serverless.openshift.io
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - knativekafkas
-    sideEffects: None
-    webhookPath: /validate-knativekafkas
-  - generateName: mutating.knativeeventings.operator.serverless.openshift.io
-    type: MutatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-    - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-    - apiGroups:
-      - operator.knative.dev
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - knativeeventings
-    sideEffects: None
-    webhookPath: /mutate-knativeeventings
-  - generateName: mutating.knativeservings.operator.serverless.openshift.io
-    type: MutatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-    - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-    - apiGroups:
-      - operator.knative.dev
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - knativeservings
-    sideEffects: None
-    webhookPath: /mutate-knativeservings
-  - generateName: mutating.knativekafkas.operator.serverless.openshift.io
-    type: MutatingAdmissionWebhook
-    deploymentName: knative-openshift
-    admissionReviewVersions:
-      - v1beta1
-    containerPort: 9876
-    failurePolicy: Ignore
-    rules:
-      - apiGroups:
-          - operator.serverless.openshift.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - knativekafkas
-    sideEffects: None
-    webhookPath: /mutate-knativekafkas
+    - generateName: validating.knativeeventings.operator.serverless.openshift.io
+      type: ValidatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.knative.dev
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativeeventings
+      sideEffects: None
+      webhookPath: /validate-knativeeventings
+    - generateName: validating.knativeservings.operator.serverless.openshift.io
+      type: ValidatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.knative.dev
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativeservings
+      sideEffects: None
+      webhookPath: /validate-knativeservings
+    - generateName: validating.knativekafkas.operator.serverless.openshift.io
+      type: ValidatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.serverless.openshift.io
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativekafkas
+      sideEffects: None
+      webhookPath: /validate-knativekafkas
+    - generateName: mutating.knativeeventings.operator.serverless.openshift.io
+      type: MutatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.knative.dev
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativeeventings
+      sideEffects: None
+      webhookPath: /mutate-knativeeventings
+    - generateName: mutating.knativeservings.operator.serverless.openshift.io
+      type: MutatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.knative.dev
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativeservings
+      sideEffects: None
+      webhookPath: /mutate-knativeservings
+    - generateName: mutating.knativekafkas.operator.serverless.openshift.io
+      type: MutatingAdmissionWebhook
+      deploymentName: knative-openshift
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 9876
+      failurePolicy: Ignore
+      rules:
+        - apiGroups:
+            - operator.serverless.openshift.io
+          apiVersions:
+            - v1alpha1
+          operations:
+            - CREATE
+            - UPDATE
+          resources:
+            - knativekafkas
+      sideEffects: None
+      webhookPath: /mutate-knativekafkas
   installModes:
-  - supported: false
-    type: OwnNamespace
-  - supported: false
-    type: SingleNamespace
-  - supported: false
-    type: MultiNamespace
-  - supported: true
-    type: AllNamespaces
+    - supported: false
+      type: OwnNamespace
+    - supported: false
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
   keywords:
-  - serverless
-  - FaaS
-  - microservices
-  - scale to zero
-  - knative
-  - serving
-  - eventing
-  - kafka
+    - serverless
+    - FaaS
+    - microservices
+    - scale to zero
+    - knative
+    - serving
+    - eventing
+    - kafka
   links:
-  - name: Documentation
-    url: https://access.redhat.com/documentation/en-us/openshift_container_platform/__OCP_TARGET__/html/serverless/index
-  - name: Source Repository
-    url: https://github.com/openshift-knative/serverless-operator
+    - name: Documentation
+      url: https://access.redhat.com/documentation/en-us/openshift_container_platform/__OCP_TARGET__/html/serverless/index
+    - name: Source Repository
+      url: https://github.com/openshift-knative/serverless-operator
   maintainers:
-  - email: serverless-support@redhat.com
-    name: Serverless Team
+    - email: serverless-support@redhat.com
+      name: Serverless Team
   maturity: stable
   provider:
     name: Red Hat
