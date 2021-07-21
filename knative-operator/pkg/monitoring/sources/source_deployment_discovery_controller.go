@@ -3,6 +3,8 @@ package sources
 import (
 	"context"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"strconv"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -61,7 +63,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests))
+	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{})
 	if err != nil {
 		return err
 	}
@@ -198,4 +200,12 @@ func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault
 	}
 	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
 	return enable, err
+}
+
+type skipDeletePredicate struct {
+	predicate.Funcs
+}
+
+func (skipDeletePredicate) Delete(e event.DeleteEvent) bool {
+	return false
 }
