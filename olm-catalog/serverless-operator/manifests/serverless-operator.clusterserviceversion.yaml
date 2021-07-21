@@ -514,9 +514,9 @@ spec:
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH
                         value: "deploy/resources/dashboards"
-                      - name: USE_CLUSTER_MONITORING_FOR_SOURCES_BY_DEFAULT
+                      - name: SOURCES_USE_CLUSTER_MONITORING
                         value: "true"
-                      - name: GENERATE_SERVICE_MONITORS_FOR_SOURCES_BY_DEFAULT
+                      - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"

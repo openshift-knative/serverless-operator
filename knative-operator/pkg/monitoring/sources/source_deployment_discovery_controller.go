@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	generateSourceServiceMonitorsEnvVar = "GENERATE_SERVICE_MONITORS_FOR_SOURCES_BY_DEFAULT"
-	useClusterMonitoringEnvVar          = "USE_CLUSTER_MONITORING_FOR_SOURCES_BY_DEFAULT"
+	generateSourceServiceMonitorsEnvVar = "SOURCES_GENERATE_SERVICE_MONITORS"
+	useClusterMonitoringEnvVar          = "SOURCES_USE_CLUSTER_MONITORING"
 
 	log = common.Log.WithName("source-deployment-discovery-controller")
 )
