@@ -25,8 +25,7 @@ import (
 	reconcilertesting "knative.dev/eventing-kafka/pkg/channel/consolidated/reconciler/testing"
 	testlib "knative.dev/eventing-kafka/test/lib"
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
-	eventingduckv1beta1 "knative.dev/eventing/pkg/apis/duck/v1beta1"
-	messagingv1beta1 "knative.dev/eventing/pkg/apis/messaging/v1beta1"
+	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	"knative.dev/eventing/test/lib/duck"
 	"knative.dev/eventing/test/lib/resources"
 	"knative.dev/eventing/test/upgrade/prober/sut"
@@ -38,7 +37,7 @@ import (
 const (
 	channelConfigTemplatePath = "test/upgrade/continual/channel-config.toml"
 	defaultRetryCount         = 12
-	defaultBackoffPolicy      = eventingduckv1beta1.BackoffPolicyExponential
+	defaultBackoffPolicy      = eventingduckv1.BackoffPolicyExponential
 	defaultBackoffDelay       = "PT1S"
 )
 
@@ -171,14 +170,14 @@ func (k kafkaChannelSut) Deploy(ctx sut.Context, destination duckv1.Destination)
 	return sutUrl
 }
 
-func withDestinationForSubscription(destination *duckv1.Destination) resources.SubscriptionOptionV1Beta1 {
-	return func(subscription *messagingv1beta1.Subscription) {
+func withDestinationForSubscription(destination *duckv1.Destination) resources.SubscriptionOption {
+	return func(subscription *messagingv1.Subscription) {
 		subscription.Spec.Subscriber = destination
 	}
 }
 
-func (ro RetryOptions) subscriptionOption() resources.SubscriptionOptionV1Beta1 {
-	return func(subscription *messagingv1beta1.Subscription) {
+func (ro RetryOptions) subscriptionOption() resources.SubscriptionOption {
+	return func(subscription *messagingv1.Subscription) {
 		ensureSubscriptionHasDelivery(subscription)
 		r := int32(ro.RetryCount)
 		subscription.Spec.Delivery.Retry = &r
@@ -192,22 +191,9 @@ func (ro RetryOptions) channelOption() reconcilertesting.KafkaChannelOption {
 		ensureChannelHasDelivery(channel)
 		r := int32(ro.RetryCount)
 		channel.Spec.Delivery.Retry = &r
-		policy := toV1BackoffPolicy(ro.BackoffPolicy)
-		channel.Spec.Delivery.BackoffPolicy = &policy
+		channel.Spec.Delivery.BackoffPolicy = &ro.BackoffPolicy
 		channel.Spec.Delivery.BackoffDelay = &ro.BackoffDelay
 	}
-}
-
-// toV1BackoffPolicy is required as beta1 isn't used in subscription but is in
-// other types. This will be removed.
-func toV1BackoffPolicy(pt eventingduckv1beta1.BackoffPolicyType) eventingduckv1.BackoffPolicyType {
-	switch pt {
-	case eventingduckv1beta1.BackoffPolicyLinear:
-		return eventingduckv1.BackoffPolicyLinear
-	case eventingduckv1beta1.BackoffPolicyExponential:
-		return eventingduckv1.BackoffPolicyExponential
-	}
-	panic("can't get to here")
 }
 
 func (ro ReplicationOptions) channelOption() reconcilertesting.KafkaChannelOption {
@@ -223,9 +209,9 @@ func ensureChannelHasDelivery(channel *v1beta1.KafkaChannel) {
 	}
 }
 
-func ensureSubscriptionHasDelivery(subscription *messagingv1beta1.Subscription) {
+func ensureSubscriptionHasDelivery(subscription *messagingv1.Subscription) {
 	if subscription.Spec.Delivery == nil {
-		subscription.Spec.Delivery = &eventingduckv1beta1.DeliverySpec{}
+		subscription.Spec.Delivery = &eventingduckv1.DeliverySpec{}
 	}
 }
 
