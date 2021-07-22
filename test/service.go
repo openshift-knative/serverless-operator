@@ -176,7 +176,8 @@ func CreateDeployment(ctx *Context, name, namespace, image string) error {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": name,
+						"app":                     name,
+						"maistra.io/expose-route": "true",
 					},
 				},
 				Spec: corev1.PodSpec{
