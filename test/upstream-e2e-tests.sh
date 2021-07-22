@@ -33,10 +33,7 @@ if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   fi
   run_rolling_upgrade_tests
   trigger_gc_and_print_knative
-  # Call teardown only if E2E tests follow.
-  if [[ $TEST_KNATIVE_E2E == true ]]; then
-    teardown_serverless
-  fi
+  teardown_serverless
 fi
 
 # Run upstream knative serving, eventing and eventing-kafka tests
