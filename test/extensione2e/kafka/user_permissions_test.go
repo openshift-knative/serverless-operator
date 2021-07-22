@@ -2,9 +2,10 @@ package knativekafkae2e
 
 import (
 	"context"
+	"testing"
+
 	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
 	"knative.dev/pkg/tracker"
-	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
