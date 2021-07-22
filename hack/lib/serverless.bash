@@ -218,7 +218,10 @@ metadata:
   name: knative-eventing
   namespace: ${EVENTING_NAMESPACE}
 spec:
-  {}
+  config:
+    logging:
+      loglevel.controller: DEBUG
+      loglevel.webhook: DEBUG
 EOF
 
   timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
