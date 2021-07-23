@@ -1,29 +1,22 @@
-package servinge2e
+package eventinge2e
 
 import (
 	"context"
 	"testing"
 
+	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+
 	"github.com/openshift-knative/serverless-operator/test"
-	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
-	networkingv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
-	autoscalingv1alpha1 "knative.dev/serving/pkg/apis/autoscaling/v1alpha1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-)
-
-const (
-	testNamespace         = "serverless-tests"
-	testNamespace2        = "serverless-tests2"
-	image                 = "gcr.io/knative-samples/helloworld-go"
-	helloworldService     = "helloworld-go"
-	helloworldService2    = "helloworld-go2"
-	kubeHelloworldService = "kube-helloworld-go"
-	helloworldText        = "Hello World!"
+	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	eventingflowsv1 "knative.dev/eventing/pkg/apis/flows/v1"
+	eventingsourcesv1beta2 "knative.dev/eventing/pkg/apis/sources/v1beta2"
 )
 
 type allowedOperations struct {
@@ -34,52 +27,75 @@ type allowedOperations struct {
 }
 
 func init() {
-	servingv1.AddToScheme(scheme.Scheme)
-	networkingv1alpha1.AddToScheme(scheme.Scheme)
-	autoscalingv1alpha1.AddToScheme(scheme.Scheme)
+	eventingv1.AddToScheme(scheme.Scheme)
+	eventingsourcesv1beta2.AddToScheme(scheme.Scheme)
+	eventingmessagingv1.AddToScheme(scheme.Scheme)
+	eventingflowsv1.AddToScheme(scheme.Scheme)
 }
 
-func TestServingUserPermissions(t *testing.T) {
+func TestEventingUserPermissions(t *testing.T) {
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
 	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
-	serviceGVR := servingv1.SchemeGroupVersion.WithResource("services")
-	ingressGVR := networkingv1alpha1.SchemeGroupVersion.WithResource("ingresses")
-	paGVR := autoscalingv1alpha1.SchemeGroupVersion.WithResource("podautoscalers")
+	brokersGVR := eventingv1.SchemeGroupVersion.WithResource("brokers")
+	pingSourcesGVR := eventingsourcesv1beta2.SchemeGroupVersion.WithResource("pingsources")
+	channelsGVR := eventingmessagingv1.SchemeGroupVersion.WithResource("channels")
+	sequencesGVR := eventingflowsv1.SchemeGroupVersion.WithResource("sequences")
 
-	service := &servingv1.Service{
-		Spec: servingv1.ServiceSpec{
-			ConfigurationSpec: servingv1.ConfigurationSpec{
-				Template: servingv1.RevisionTemplateSpec{
-					Spec: servingv1.RevisionSpec{
-						PodSpec: corev1.PodSpec{
-							Containers: []corev1.Container{{
-								Image: "some-image",
-							}},
-						},
+	broker := &eventingv1.Broker{
+		Spec: eventingv1.BrokerSpec{},
+	}
+
+	pingSource := &eventingsourcesv1beta2.PingSource{
+		Spec: eventingsourcesv1beta2.PingSourceSpec{
+			Data: "foo",
+			SourceSpec: duckv1.SourceSpec{
+				Sink: duckv1.Destination{
+					Ref: &duckv1.KReference{
+						APIVersion: ksvcAPIVersion,
+						Kind:       ksvcKind,
+						Name:       "fakeKSVC",
 					},
 				},
 			},
 		},
 	}
-	ingress := &networkingv1alpha1.Ingress{}
-	pa := &autoscalingv1alpha1.PodAutoscaler{}
+
+	imc := &eventingmessagingv1.Channel{}
+
+	sequence := &eventingflowsv1.Sequence{
+		Spec: eventingflowsv1.SequenceSpec{
+			Steps: []eventingflowsv1.SequenceStep{
+				{
+					Destination: duckv1.Destination{
+						URI: apis.HTTP("mydomain"),
+					},
+				},
+			},
+		},
+	}
+
 	objects := map[schema.GroupVersionResource]*unstructured.Unstructured{
-		serviceGVR: {},
-		ingressGVR: {},
-		paGVR:      {},
+		brokersGVR:     {},
+		pingSourcesGVR: {},
+		channelsGVR:    {},
+		sequencesGVR:   {},
 	}
-	if err := scheme.Scheme.Convert(service, objects[serviceGVR], nil); err != nil {
-		t.Fatalf("Failed to convert Service: %v", err)
+
+	if err := scheme.Scheme.Convert(broker, objects[brokersGVR], nil); err != nil {
+		t.Fatalf("Failed to convert Broker: %v", err)
 	}
-	if err := scheme.Scheme.Convert(ingress, objects[ingressGVR], nil); err != nil {
-		t.Fatalf("Failed to convert Ingress: %v", err)
+	if err := scheme.Scheme.Convert(pingSource, objects[pingSourcesGVR], nil); err != nil {
+		t.Fatalf("Failed to convert PingSource: %v", err)
 	}
-	if err := scheme.Scheme.Convert(pa, objects[paGVR], nil); err != nil {
-		t.Fatalf("Failed to convert PodAutoscaler: %v", err)
+	if err := scheme.Scheme.Convert(imc, objects[channelsGVR], nil); err != nil {
+		t.Fatalf("Failed to convert Channel: %v", err)
+	}
+	if err := scheme.Scheme.Convert(sequence, objects[sequencesGVR], nil); err != nil {
+		t.Fatalf("Failed to convert Sequence: %v", err)
 	}
 
 	allowAll := allowedOperations{
@@ -101,25 +117,28 @@ func TestServingUserPermissions(t *testing.T) {
 		name:        "project admin user",
 		userContext: paCtx,
 		allowed: map[schema.GroupVersionResource]allowedOperations{
-			serviceGVR: allowAll,
-			ingressGVR: allowViewOnly,
-			paGVR:      allowViewOnly,
+			brokersGVR:     allowAll,
+			pingSourcesGVR: allowAll,
+			channelsGVR:    allowAll,
+			sequencesGVR:   allowAll,
 		},
 	}, {
 		name:        "edit user",
 		userContext: editCtx,
 		allowed: map[schema.GroupVersionResource]allowedOperations{
-			serviceGVR: allowAll,
-			ingressGVR: allowViewOnly,
-			paGVR:      allowViewOnly,
+			brokersGVR:     allowAll,
+			pingSourcesGVR: allowAll,
+			channelsGVR:    allowAll,
+			sequencesGVR:   allowAll,
 		},
 	}, {
 		name:        "view user",
 		userContext: viewCtx,
 		allowed: map[schema.GroupVersionResource]allowedOperations{
-			serviceGVR: allowViewOnly,
-			ingressGVR: allowViewOnly,
-			paGVR:      allowViewOnly,
+			brokersGVR:     allowViewOnly,
+			pingSourcesGVR: allowViewOnly,
+			channelsGVR:    allowViewOnly,
+			sequencesGVR:   allowViewOnly,
 		},
 	}}
 
