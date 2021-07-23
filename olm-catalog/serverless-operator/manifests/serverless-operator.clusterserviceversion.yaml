@@ -514,6 +514,10 @@ spec:
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH
                         value: "deploy/resources/dashboards"
+                      - name: SOURCES_USE_CLUSTER_MONITORING
+                        value: "true"
+                      - name: SOURCES_GENERATE_SERVICE_MONITORS
+                        value: "true"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.1:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -578,7 +582,6 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-webhook"
-        # Openshift Ingress adapter for Knative's Ingress implementation.
         - name: knative-openshift-ingress
           spec:
             replicas: 1

@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,7 +37,7 @@ func init() {
 
 func TestSetupMonitoringRequirements(t *testing.T) {
 	cl := fake.NewClientBuilder().WithObjects(&operatorNamespace, &serverlessDeployment).Build()
-	err := SetupMonitoringRequirements(cl, &serverlessDeployment)
+	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}
@@ -45,7 +46,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to get modified namespace: %w", err)
 	}
-	if actual := ns.Labels[monitoringLabel]; actual != "true" {
+	if actual := ns.Labels[okomon.EnableMonitoringLabel]; actual != "true" {
 		t.Errorf("got %q, want %q", actual, "true")
 	}
 	role := v1.Role{}
