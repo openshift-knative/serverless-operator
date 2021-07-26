@@ -214,15 +214,16 @@ spec:
     strategy: deployment
     spec:
       clusterPermissions:
-        - rules:
+        - serviceAccountName: knative-operator
+          rules:
             - apiGroups:
                 - '*'
               resources:
                 - '*'
               verbs:
                 - '*'
-          serviceAccountName: knative-operator
-        - rules:
+        - serviceAccountName: knative-openshift-ingress
+          rules:
             - apiGroups:
                 - ''
               resources:
@@ -248,58 +249,6 @@ spec:
                 - routes/custom-host
               verbs:
                 - '*'
-          serviceAccountName: knative-openshift-ingress
-      permissions:
-        - rules:
-            - apiGroups:
-                - ""
-              resources:
-                - pods
-                - services
-                - endpoints
-                - persistentvolumeclaims
-                - events
-                - configmaps
-                - secrets
-              verbs:
-                - '*'
-            - apiGroups:
-                - ""
-              resources:
-                - namespaces
-              verbs:
-                - get
-            - apiGroups:
-                - apps
-              resources:
-                - deployments
-                - daemonsets
-                - replicasets
-                - statefulsets
-              verbs:
-                - '*'
-            - apiGroups:
-                - monitoring.coreos.com
-              resources:
-                - servicemonitors
-              verbs:
-                - get
-                - create
-            - apiGroups:
-                - apps
-              resourceNames:
-                - knative-operator
-              resources:
-                - deployments/finalizers
-              verbs:
-                - update
-            - apiGroups:
-                - operator.knative.dev
-              resources:
-                - '*'
-              verbs:
-                - '*'
-          serviceAccountName: knative-operator
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
         # itself.
