@@ -1,7 +1,6 @@
 package eventinge2e
 
 import (
-	"context"
 	"testing"
 
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
@@ -9,23 +8,13 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	eventingflowsv1 "knative.dev/eventing/pkg/apis/flows/v1"
 	eventingsourcesv1beta2 "knative.dev/eventing/pkg/apis/sources/v1beta2"
 )
-
-type allowedOperations struct {
-	get    bool
-	list   bool
-	create bool
-	delete bool
-}
 
 func init() {
 	eventingv1.AddToScheme(scheme.Scheme)
@@ -99,93 +88,34 @@ func TestEventingUserPermissions(t *testing.T) {
 		t.Fatalf("Failed to convert Sequence: %v", err)
 	}
 
-	allowAll := allowedOperations{
-		get:    true,
-		list:   true,
-		create: true,
-		delete: true,
-	}
-	allowViewOnly := allowedOperations{
-		get:  true,
-		list: true,
-	}
-
-	tests := []struct {
-		name        string
-		userContext *test.Context
-		allowed     map[schema.GroupVersionResource]allowedOperations
-	}{{
-		name:        "project admin user",
-		userContext: paCtx,
-		allowed: map[schema.GroupVersionResource]allowedOperations{
-			brokersGVR:     allowAll,
-			pingSourcesGVR: allowAll,
-			channelsGVR:    allowAll,
-			sequencesGVR:   allowAll,
+	tests := []test.UserPermissionTest{{
+		Name:        "project admin user",
+		UserContext: paCtx,
+		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
+			brokersGVR:     test.AllowAll,
+			pingSourcesGVR: test.AllowAll,
+			channelsGVR:    test.AllowAll,
+			sequencesGVR:   test.AllowAll,
 		},
 	}, {
-		name:        "edit user",
-		userContext: editCtx,
-		allowed: map[schema.GroupVersionResource]allowedOperations{
-			brokersGVR:     allowAll,
-			pingSourcesGVR: allowAll,
-			channelsGVR:    allowAll,
-			sequencesGVR:   allowAll,
+		Name:        "edit user",
+		UserContext: editCtx,
+		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
+			brokersGVR:     test.AllowAll,
+			pingSourcesGVR: test.AllowAll,
+			channelsGVR:    test.AllowAll,
+			sequencesGVR:   test.AllowAll,
 		},
 	}, {
-		name:        "view user",
-		userContext: viewCtx,
-		allowed: map[schema.GroupVersionResource]allowedOperations{
-			brokersGVR:     allowViewOnly,
-			pingSourcesGVR: allowViewOnly,
-			channelsGVR:    allowViewOnly,
-			sequencesGVR:   allowViewOnly,
+		Name:        "view user",
+		UserContext: viewCtx,
+		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
+			brokersGVR:     test.AllowViewOnly,
+			pingSourcesGVR: test.AllowViewOnly,
+			channelsGVR:    test.AllowViewOnly,
+			sequencesGVR:   test.AllowViewOnly,
 		},
 	}}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for gvr, allowed := range tt.allowed {
-				client := tt.userContext.Clients.Dynamic.Resource(gvr).Namespace(testNamespace)
-
-				obj := objects[gvr].DeepCopy()
-				obj.SetName("test-" + gvr.Resource)
-
-				_, err := client.Create(context.Background(), obj, metav1.CreateOptions{})
-				if (allowed.create && err != nil) || (!allowed.create && !apierrs.IsForbidden(err)) {
-					t.Errorf("Unexpected error creating %s, allowed = %v, err = %v", gvr.String(), allowed.create, err)
-				}
-
-				err = client.Delete(context.Background(), obj.GetName(), metav1.DeleteOptions{})
-				if (allowed.delete && err != nil) || (!allowed.delete && !apierrs.IsForbidden(err)) {
-					t.Errorf("Unexpected error deleting %s, allowed = %v, err = %v", gvr.String(), allowed.delete, err)
-				}
-
-				if err != nil {
-					// If we've been able to delete the object we can assume we're able to get it as well.
-					// Some objects take a while to be deleted, so we retry a few times.
-					if err := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-						_, err = client.Get(context.Background(), obj.GetName(), metav1.GetOptions{})
-						if apierrs.IsNotFound(err) {
-							return true, nil
-						}
-						return false, err
-					}); err != nil {
-						t.Fatalf("Unexpected error waiting for %s to be deleted, err = %v", gvr.String(), err)
-					}
-				}
-
-				_, err = client.Get(context.Background(), obj.GetName(), metav1.GetOptions{})
-				// Ignore IsNotFound errors as "Forbidden" would overrule it anyway.
-				if (allowed.get && err != nil && !apierrs.IsNotFound(err)) || (!allowed.get && !apierrs.IsForbidden(err)) {
-					t.Errorf("Unexpected error getting %s, allowed = %v, err = %v", gvr.String(), allowed.get, err)
-				}
-
-				_, err = client.List(context.Background(), metav1.ListOptions{})
-				if (allowed.list && err != nil) || (!allowed.list && !apierrs.IsForbidden(err)) {
-					t.Errorf("Unexpected error listing %s, allowed = %v, err = %v", gvr.String(), allowed.list, err)
-				}
-			}
-		})
-	}
+	test.RunUserPermissionTests(t, objects, tests...)
 }
