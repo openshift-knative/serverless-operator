@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	kafkabindingsv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 )
@@ -97,10 +98,10 @@ func TestKafkaUserPermissions(t *testing.T) {
 		},
 	}}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			for gvr, allowed := range test.allowed {
-				client := test.userContext.Clients.Dynamic.Resource(gvr).Namespace(testNamespace)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for gvr, allowed := range tt.allowed {
+				client := tt.userContext.Clients.Dynamic.Resource(gvr).Namespace(testNamespace)
 
 				obj := objects[gvr].DeepCopy()
 				obj.SetName("test-" + gvr.Resource)
@@ -113,6 +114,20 @@ func TestKafkaUserPermissions(t *testing.T) {
 				err = client.Delete(context.Background(), obj.GetName(), metav1.DeleteOptions{})
 				if (allowed.delete && err != nil) || (!allowed.delete && !apierrs.IsForbidden(err)) {
 					t.Errorf("Unexpected error deleting %s, allowed = %v, err = %v", gvr.String(), allowed.delete, err)
+				}
+
+				if err != nil {
+					// If we've been able to delete the object we can assume we're able to get it as well.
+					// Some objects take a while to be deleted, so we retry a few times.
+					if err := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+						_, err = client.Get(context.Background(), obj.GetName(), metav1.GetOptions{})
+						if apierrs.IsNotFound(err) {
+							return true, nil
+						}
+						return false, err
+					}); err != nil {
+						t.Fatalf("Unexpected error waiting for %s to be deleted, err = %v", gvr.String(), err)
+					}
 				}
 
 				_, err = client.Get(context.Background(), obj.GetName(), metav1.GetOptions{})
