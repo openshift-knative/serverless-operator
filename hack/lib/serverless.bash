@@ -166,7 +166,6 @@ function deploy_knativeserving_cr {
 # enable_net_istio adds patch to KnativeServing:
 # - Set ingress.istio.enbled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
-# - Override observability.metrics.backend-destination to "none",
 #   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_net_istio {
   patchfile="$(mktemp -t knative-serving-XXXXX.yaml)"
@@ -186,9 +185,6 @@ spec:
     name: autoscaler
   - name: domain-mapping
     replicas: 2
-  config:
-    observability:
-      metrics.backend-destination: "none"
 EOF
 
   oc patch knativeserving knative-serving \
