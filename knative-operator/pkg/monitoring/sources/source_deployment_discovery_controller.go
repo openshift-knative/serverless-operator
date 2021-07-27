@@ -69,7 +69,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	enqueueRequestsRBAC := handler.MapFunc(func(obj client.Object) []reconcile.Request {
 		oLabels := obj.GetLabels()
 		if _, ok := oLabels[rbacLabelKey]; ok {
-			// Use a special request to trigger ns level reconcilation related to sources
+			// Use a special request to trigger ns level reconciliation related to sources
 			return []reconcile.Request{{
 				NamespacedName: types.NamespacedName{Namespace: obj.GetNamespace(), Name: ""},
 			}}
