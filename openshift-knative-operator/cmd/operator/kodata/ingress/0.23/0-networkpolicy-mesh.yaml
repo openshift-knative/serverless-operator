@@ -48,6 +48,9 @@ kind: NetworkPolicy
 metadata:
   name: allow-from-openshift-monitoring-ns
   namespace: knative-serving
+  labels:
+    serving.knative.dev/release: devel
+    networking.knative.dev/ingress-provider: istio
 spec:
   ingress:
   - from:
