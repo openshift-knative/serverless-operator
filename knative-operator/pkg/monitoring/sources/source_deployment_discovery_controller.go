@@ -15,10 +15,8 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -63,7 +61,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{})
+	err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests))
 	if err != nil {
 		return err
 	}
@@ -86,8 +84,8 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
 	dep := &v1.Deployment{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, dep)
 	inDeletion := false
+	err := r.client.Get(context.TODO(), request.NamespacedName, dep)
 	if apierrors.IsNotFound(err) {
 		// The deployment does not exist anymore, deletions are shown as failing reads
 		log.Info("Source in deletion phase")
@@ -119,11 +117,8 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 			if err = monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
 				return reconcile.Result{}, err
 			}
-			// No need to do anything if in deletion phase as owner references will do the cleanup
-			if !inDeletion {
-				if err = RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
-					return reconcile.Result{}, err
-				}
+			if err = RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+				return reconcile.Result{}, err
 			}
 		}
 	}
@@ -179,12 +174,4 @@ func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefaul
 func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() (bool, error) {
 	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
 	return enable, err
-}
-
-type skipDeletePredicate struct {
-	predicate.Funcs
-}
-
-func (skipDeletePredicate) Delete(e event.DeleteEvent) bool {
-	return false
 }
