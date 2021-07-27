@@ -37,7 +37,7 @@ func init() {
 
 func TestSetupMonitoringRequirements(t *testing.T) {
 	cl := fake.NewClientBuilder().WithObjects(&operatorNamespace, &serverlessDeployment).Build()
-	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment)
+	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment, serverlessDeployment.GetNamespace())
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}
@@ -50,7 +50,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Errorf("got %q, want %q", actual, "true")
 	}
 	role := v1.Role{}
-	err = cl.Get(context.TODO(), client.ObjectKey{Name: "knative-serving-prometheus-k8s", Namespace: installedNS}, &role)
+	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &role)
 	if err != nil {
 		t.Errorf("Failed to get created role: %w", err)
 	}
@@ -58,7 +58,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 		t.Error("Rules should be non empty")
 	}
 	rb := v1.RoleBinding{}
-	err = cl.Get(context.TODO(), client.ObjectKey{Name: "knative-serving-prometheus-k8s", Namespace: installedNS}, &rb)
+	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &rb)
 	if err != nil {
 		t.Errorf("Failed to get created rolebinding: %w", err)
 	}

@@ -49,7 +49,6 @@ func sourceServiceMonitorManifest(client client.Client, instance *appsv1.Deploym
 	if *smManifest, err = smManifest.Transform(mf.InjectOwner(instance)); err != nil {
 		return nil, fmt.Errorf("unable to transform source service monitor manifest: %w", err)
 	}
-
 	return smManifest, nil
 }
 

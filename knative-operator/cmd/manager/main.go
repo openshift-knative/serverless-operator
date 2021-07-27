@@ -163,7 +163,7 @@ func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 		return err
 	}
 
-	if err = monitoring.SetupClusterMonitoringRequirements(cl, operatorDeployment); err != nil {
+	if err = monitoring.SetupClusterMonitoringRequirements(cl, operatorDeployment, namespace); err != nil {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 

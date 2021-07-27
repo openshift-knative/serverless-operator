@@ -25,26 +25,27 @@ import (
 const (
 	// operatorDeploymentNameEnvKey is the name of the deployment of the Openshift serverless operator
 	operatorDeploymentNameEnvKey = "DEPLOYMENT_NAME"
+	rbacName                     = "knative-prometheus-k8s"
 )
 
-func SetupClusterMonitoringRequirements(api client.Client, instance mf.Owner) error {
-	err := addClusterMonitoringLabelToNamespace(instance.GetNamespace(), api, true)
+func SetupClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string) error {
+	err := addClusterMonitoringLabelToNamespace(ns, api, true)
 	if err != nil {
 		return err
 	}
-	err = createPrometheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
+	err = createPrometheusRoleAndRoleBinding(instance, ns, api)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner) error {
-	err := addClusterMonitoringLabelToNamespace(instance.GetNamespace(), api, false)
+func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string) error {
+	err := addClusterMonitoringLabelToNamespace(ns, api, false)
 	if err != nil {
 		return err
 	}
-	err = deletePrometheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
+	err = deletePrometheusRoleAndRoleBinding(instance, ns, api)
 	if err != nil {
 		return err
 	}
@@ -146,9 +147,11 @@ func getManifestForPrometheusRoleAndRolebinding(instance mf.Owner, namespace str
 	if err != nil {
 		return nil, err
 	}
-	transforms := []mf.Transformer{mf.InjectOwner(instance)}
-	if *rbacManifest, err = rbacManifest.Transform(transforms...); err != nil {
-		return nil, fmt.Errorf("unable to transform role and roleBinding manifest for Prometheus account: %w", err)
+	if instance != nil {
+		transforms := []mf.Transformer{mf.InjectOwner(instance)}
+		if *rbacManifest, err = rbacManifest.Transform(transforms...); err != nil {
+			return nil, fmt.Errorf("unable to transform role and roleBinding manifest for Prometheus account: %w", err)
+		}
 	}
 	return rbacManifest, nil
 }
@@ -158,7 +161,7 @@ func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.M
 	var rbU = &unstructured.Unstructured{}
 	role := rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "knative-serving-prometheus-k8s",
+			Name:      rbacName,
 			Namespace: ns,
 		},
 		Rules: []rbacv1.PolicyRule{{
@@ -169,7 +172,7 @@ func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.M
 	}
 	rb := rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "knative-serving-prometheus-k8s",
+			Name:      rbacName,
 			Namespace: ns,
 		},
 		RoleRef: rbacv1.RoleRef{

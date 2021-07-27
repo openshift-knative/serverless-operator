@@ -208,11 +208,11 @@ func TestSourceMonitoringReconcile(t *testing.T) {
 
 func checkPrometheusResources(cl client.Client, shouldExist bool, t *testing.T) {
 	role := &rbacv1.Role{}
-	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving-prometheus-k8s", Namespace: apiserverRequest.Namespace}, role); checkError(err, shouldExist, t) {
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-prometheus-k8s", Namespace: apiserverRequest.Namespace}, role); checkError(err, shouldExist, t) {
 		t.Fatalf("get: (%v)", err)
 	}
 	roleBinding := &rbacv1.RoleBinding{}
-	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-serving-prometheus-k8s", Namespace: apiserverRequest.Namespace}, roleBinding); checkError(err, shouldExist, t) {
+	if err := cl.Get(context.TODO(), types.NamespacedName{Name: "knative-prometheus-k8s", Namespace: apiserverRequest.Namespace}, roleBinding); checkError(err, shouldExist, t) {
 		t.Fatalf("get: (%v)", err)
 	}
 }
