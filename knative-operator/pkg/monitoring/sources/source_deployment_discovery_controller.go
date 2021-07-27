@@ -100,38 +100,34 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 		return reconcile.Result{}, err
 	}
 	shouldEnableMonitoring := okomon.ShouldEnableMonitoring(eventing.Spec.GetConfig())
-	return reconcile.Result{}, r.reconcileSourceMonitoring(dep, shouldEnableMonitoring, inDeletion)
-}
-
-func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(dep *v1.Deployment, shouldEnableMonitoring bool, inDeletion bool) error {
 	// If monitoring is set to on/off this triggers a global resync to source adapters.
 	// Same applies if we change any of the env vars affecting cluster monitoring or service monitor resource generation.
 	// The Serverless operator pod is restarted and local informer caches are synched.
 	if shouldEnableMonitoring {
 		// If in deletion there is nothing to be done, owner refs will remove source service monitors
 		if !inDeletion {
-			if err := r.setupClusterMonitoringForSources(dep); err != nil {
-				return err
+			if err = r.setupClusterMonitoringForSources(dep); err != nil {
+				return reconcile.Result{}, err
 			}
-			if err := r.generateSourceServiceMonitors(dep); err != nil {
-				return err
+			if err = r.generateSourceServiceMonitors(dep); err != nil {
+				return reconcile.Result{}, err
 			}
 		}
 	} else {
 		// Remove any relics if previously monitoring was on.
 		if dep.Namespace != "knative-eventing" {
-			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
-				return err
+			if err = monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
+				return reconcile.Result{}, err
 			}
 			// No need to do anything if in deletion phase as owner references will do the cleanup
 			if !inDeletion {
-				if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
-					return err
+				if err = RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+					return reconcile.Result{}, err
 				}
 			}
 		}
 	}
-	return nil
+	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileSourceDeployment) generateSourceServiceMonitors(dep *v1.Deployment) error {
