@@ -9,13 +9,11 @@ function install_mesh {
   if [[ ${FULL_MESH:-} == "true" ]]; then
      deploy_servicemeshcontrolplane
      deploy_gateways
-     deploy_networkpolicy
   fi
 }
 
 function uninstall_mesh {
   if [[ ${FULL_MESH:-} == "true" ]]; then
-     undeploy_networkpolicy
      undeploy_gateways
      undeploy_servicemeshcontrolplane
   fi
@@ -95,19 +93,10 @@ function deploy_gateways {
   oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
 }
 
-function deploy_networkpolicy {
-  oc apply -f "${resources_dir}"/networkpolicy.yaml || return $?
-}
-
 function undeploy_gateways {
   oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/gateway.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/smmr.yaml --ignore-not-found || return $?
   oc delete -n cert-manager secret ca-key-pair  --ignore-not-found || return $?
   oc delete -n istio-system secret wildcard-certs --ignore-not-found || return $?
-}
-
-
-function undeploy_networkpolicy {
-  oc delete -f "${resources_dir}"/networkpolicy.yaml --ignore-not-found || return $?
 }
