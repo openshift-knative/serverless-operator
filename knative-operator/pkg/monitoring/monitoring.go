@@ -44,7 +44,7 @@ func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner) e
 	if err != nil {
 		return err
 	}
-	err = deletePromeheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
+	err = deletePrometheusRoleAndRoleBinding(instance, instance.GetNamespace(), api)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func createPrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, cli
 	return rbacManifest.Apply()
 }
 
-func deletePromeheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
+func deletePrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
 	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
 	if err != nil {
 		return err

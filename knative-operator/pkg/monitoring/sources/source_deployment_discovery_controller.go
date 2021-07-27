@@ -79,9 +79,6 @@ type ReconcileSourceDeployment struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
-
-	testShouldUseClusterMonitoring          *bool
-	testShouldGenerateSourceServiceMonitors *bool
 }
 
 // Reconcile reads that state of the cluster for an eventing source deployment
@@ -122,8 +119,16 @@ func (r *ReconcileSourceDeployment) reconcileSourceMonitoring(dep *v1.Deployment
 		}
 	} else {
 		// Remove any relics if previously monitoring was on.
-		if err := r.cleanUpSourceMonitoringResources(dep, inDeletion); err != nil {
-			return err
+		if dep.Namespace != "knative-eventing" {
+			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
+				return err
+			}
+			// No need to do anything if in deletion phase as owner references will do the cleanup
+			if !inDeletion {
+				if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -170,34 +175,12 @@ func (r *ReconcileSourceDeployment) setupClusterMonitoringForSources(dep *v1.Dep
 	return nil
 }
 
-// Remove any Source service monitor resources in any user namespace
-func (r *ReconcileSourceDeployment) cleanUpSourceMonitoringResources(dep *v1.Deployment, inDeletion bool) error {
-	if dep.Namespace != "knative-eventing" {
-		if err := monitoring.RemoveClusterMonitoringRequirements(r.client, dep); err != nil {
-			return err
-		}
-		// No need to do anything if in deletion phase as owner references will do the cleanup
-		if !inDeletion {
-			if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefault() (bool, error) {
-	if r.testShouldUseClusterMonitoring != nil {
-		return *r.testShouldUseClusterMonitoring, nil
-	}
 	enable, err := strconv.ParseBool(os.Getenv(useClusterMonitoringEnvVar))
 	return enable, err
 }
 
 func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() (bool, error) {
-	if r.testShouldGenerateSourceServiceMonitors != nil {
-		return *r.testShouldGenerateSourceServiceMonitors, nil
-	}
 	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
 	return enable, err
 }

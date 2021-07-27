@@ -17,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	"knative.dev/pkg/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -92,8 +91,10 @@ func TestSourceReconcile(t *testing.T) {
 		WithObjects(&apiserversourceDeployment, &pingsourceDeployment, &defaultNamespace, &eventingNamespace, eventingInstance).
 		Build()
 	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
-	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(true)
-	r.testShouldUseClusterMonitoring = ptr.Bool(true)
+	_ = os.Setenv(generateSourceServiceMonitorsEnvVar, "true")
+	defer os.Unsetenv(generateSourceServiceMonitorsEnvVar)
+	_ = os.Setenv(useClusterMonitoringEnvVar, "true")
+	defer os.Unsetenv(useClusterMonitoringEnvVar)
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
@@ -153,8 +154,10 @@ func TestSourceMonitoringReconcile(t *testing.T) {
 
 	// No cluster monitoring only generate service monitors.
 	r := &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
-	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(true)
-	r.testShouldUseClusterMonitoring = ptr.Bool(false)
+	_ = os.Setenv(generateSourceServiceMonitorsEnvVar, "true")
+	defer os.Unsetenv(generateSourceServiceMonitorsEnvVar)
+	_ = os.Setenv(useClusterMonitoringEnvVar, "false")
+	defer os.Unsetenv(useClusterMonitoringEnvVar)
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
@@ -186,8 +189,8 @@ func TestSourceMonitoringReconcile(t *testing.T) {
 	}
 	checkPrometheusResources(cl, false, t)
 	r = &ReconcileSourceDeployment{client: cl, scheme: scheme.Scheme}
-	r.testShouldGenerateSourceServiceMonitors = ptr.Bool(false)
-	r.testShouldUseClusterMonitoring = ptr.Bool(false)
+	_ = os.Setenv(generateSourceServiceMonitorsEnvVar, "false")
+	_ = os.Setenv(useClusterMonitoringEnvVar, "false")
 	// Reconcile for an api server source
 	if _, err := r.Reconcile(context.Background(), apiserverRequest); err != nil {
 		t.Fatalf("reconcile: (%v)", err)
