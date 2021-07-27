@@ -9,6 +9,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	v1 "k8s.io/api/apps/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -26,6 +27,8 @@ import (
 var (
 	generateSourceServiceMonitorsEnvVar = "SOURCES_GENERATE_SERVICE_MONITORS"
 	useClusterMonitoringEnvVar          = "SOURCES_USE_CLUSTER_MONITORING"
+	rbacLabelKey                        = "serverless.monitoring"
+	sourceRbacLabels                    = map[string]string{rbacLabelKey: "true"}
 
 	log = common.Log.WithName("source-deployment-discovery-controller")
 )
@@ -62,7 +65,25 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{})
+
+	enqueueRequestsRBAC := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		oLabels := obj.GetLabels()
+		if _, ok := oLabels[rbacLabelKey]; ok {
+			// Use a special request to trigger ns level reconcilation related to sources
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{Namespace: obj.GetNamespace(), Name: ""},
+			}}
+		}
+		return nil
+	})
+
+	if err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}); err != nil {
+		return err
+	}
+	if err = c.Watch(&source.Kind{Type: &rbacv1.RoleBinding{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequestsRBAC), skipCreatePredicate{}); err != nil {
+		return err
+	}
+	return c.Watch(&source.Kind{Type: &rbacv1.Role{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequestsRBAC), skipCreatePredicate{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -78,20 +99,27 @@ type ReconcileSourceDeployment struct {
 
 // Reconcile reads that state of the cluster for an eventing source deployment
 func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+	reconcileForSource := true
+	if request.Name == "" {
+		// We will handle only rbac resources this time
+		reconcileForSource = false
+	}
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
 	dep := &v1.Deployment{}
 	inDeletion := false
-	err := r.client.Get(context.TODO(), request.NamespacedName, dep)
-	if apierrors.IsNotFound(err) {
-		// The deployment does not exist anymore, deletions are shown as failing reads
-		log.Info("Source in deletion phase")
-		inDeletion = true
-	} else if err != nil {
-		return reconcile.Result{}, err
+	if reconcileForSource {
+		err := r.client.Get(context.TODO(), request.NamespacedName, dep)
+		if apierrors.IsNotFound(err) {
+			// The deployment does not exist anymore, deletions are shown as failing reads
+			log.Info("Source in deletion phase")
+			inDeletion = true
+		} else if err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 	eventing := &v1alpha1.KnativeEventing{}
-	if err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
+	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
 		return reconcile.Result{}, err
 	}
 	// If monitoring is set to on/off this triggers a global resync to source adapters.
@@ -102,21 +130,25 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 		// Make sure we do not setup any resources if the source is being deleted
 		// A deletion event will make sure that we detect a deletion properly from cluster state
 		if !inDeletion {
-			if err = r.setupClusterMonitoringForSources(request.Namespace); err != nil {
+			if err := r.setupClusterMonitoringForSources(request.Namespace); err != nil {
 				return reconcile.Result{}, err
 			}
-			if err = r.generateSourceServiceMonitors(dep); err != nil {
-				return reconcile.Result{}, err
+			if reconcileForSource {
+				if err := r.generateSourceServiceMonitors(dep); err != nil {
+					return reconcile.Result{}, err
+				}
 			}
 		}
 	} else {
 		// Remove any relics if previously monitoring was on.
 		if dep.Namespace != "knative-eventing" {
-			if err = monitoring.RemoveClusterMonitoringRequirements(r.client, nil, dep.GetNamespace()); err != nil {
+			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, nil, dep.GetNamespace(), sourceRbacLabels); err != nil {
 				return reconcile.Result{}, err
 			}
-			if err = RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
-				return reconcile.Result{}, err
+			if reconcileForSource {
+				if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+					return reconcile.Result{}, err
+				}
 			}
 		}
 	}
@@ -149,14 +181,14 @@ func (r *ReconcileSourceDeployment) setupClusterMonitoringForSources(ns string) 
 		return err
 	}
 	if shouldEnableClusterMonitoring {
-		if err := monitoring.SetupClusterMonitoringRequirements(r.client, nil, ns); err != nil {
+		if err := monitoring.SetupClusterMonitoringRequirements(r.client, nil, ns, sourceRbacLabels); err != nil {
 			return err
 		}
 	} else {
 		// Make sure we disable cluster monitoring if we have to eg. we move from a state of enabled to disabled and
 		// resources are left without cleanup. This brings us to the right state.
 		if ns != "knative-eventing" {
-			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, nil, ns); err != nil {
+			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, nil, ns, sourceRbacLabels); err != nil {
 				return err
 			}
 		}
@@ -172,6 +204,14 @@ func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefaul
 func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() (bool, error) {
 	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
 	return enable, err
+}
+
+type skipCreatePredicate struct {
+	predicate.Funcs
+}
+
+func (skipCreatePredicate) Create(e event.CreateEvent) bool {
+	return false
 }
 
 type skipDeletePredicate struct {

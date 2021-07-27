@@ -37,7 +37,7 @@ func init() {
 
 func TestSetupMonitoringRequirements(t *testing.T) {
 	cl := fake.NewClientBuilder().WithObjects(&operatorNamespace, &serverlessDeployment).Build()
-	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment, serverlessDeployment.GetNamespace())
+	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment, serverlessDeployment.GetNamespace(), nil)
 	if err != nil {
 		t.Errorf("Failed to set up monitoring requirements: %w", err)
 	}

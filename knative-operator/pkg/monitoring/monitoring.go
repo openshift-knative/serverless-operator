@@ -28,24 +28,24 @@ const (
 	rbacName                     = "knative-prometheus-k8s"
 )
 
-func SetupClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string) error {
+func SetupClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string, labels map[string]string) error {
 	err := addClusterMonitoringLabelToNamespace(ns, api, true)
 	if err != nil {
 		return err
 	}
-	err = createPrometheusRoleAndRoleBinding(instance, ns, api)
+	err = createPrometheusRoleAndRoleBinding(instance, ns, api, labels)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string) error {
+func RemoveClusterMonitoringRequirements(api client.Client, instance mf.Owner, ns string, labels map[string]string) error {
 	err := addClusterMonitoringLabelToNamespace(ns, api, false)
 	if err != nil {
 		return err
 	}
-	err = deletePrometheusRoleAndRoleBinding(instance, ns, api)
+	err = deletePrometheusRoleAndRoleBinding(instance, ns, api, labels)
 	if err != nil {
 		return err
 	}
@@ -125,25 +125,25 @@ func addClusterMonitoringLabelToNamespace(namespace string, api client.Client, v
 	return nil
 }
 
-func createPrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
-	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
+func createPrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client, labels map[string]string) error {
+	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client, labels)
 	if err != nil {
 		return err
 	}
 	return rbacManifest.Apply()
 }
 
-func deletePrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client) error {
-	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client)
+func deletePrometheusRoleAndRoleBinding(instance mf.Owner, namespace string, client client.Client, labels map[string]string) error {
+	rbacManifest, err := getManifestForPrometheusRoleAndRolebinding(instance, namespace, client, labels)
 	if err != nil {
 		return err
 	}
 	return rbacManifest.Delete()
 }
 
-func getManifestForPrometheusRoleAndRolebinding(instance mf.Owner, namespace string, client client.Client) (*mf.Manifest, error) {
+func getManifestForPrometheusRoleAndRolebinding(instance mf.Owner, namespace string, client client.Client, labels map[string]string) (*mf.Manifest, error) {
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
-	rbacManifest, err := createRBACManifestForPrometheusAccount(namespace, clientOptions)
+	rbacManifest, err := createRBACManifestForPrometheusAccount(namespace, clientOptions, labels)
 	if err != nil {
 		return nil, err
 	}
@@ -156,13 +156,14 @@ func getManifestForPrometheusRoleAndRolebinding(instance mf.Owner, namespace str
 	return rbacManifest, nil
 }
 
-func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.Manifest, error) {
+func createRBACManifestForPrometheusAccount(ns string, options mf.Option, labels map[string]string) (*mf.Manifest, error) {
 	var roleU = &unstructured.Unstructured{}
 	var rbU = &unstructured.Unstructured{}
 	role := rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      rbacName,
 			Namespace: ns,
+			Labels:    labels,
 		},
 		Rules: []rbacv1.PolicyRule{{
 			APIGroups: []string{""},
@@ -174,6 +175,7 @@ func createRBACManifestForPrometheusAccount(ns string, options mf.Option) (*mf.M
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      rbacName,
 			Namespace: ns,
+			Labels:    labels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
