@@ -15,8 +15,10 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -60,7 +62,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests))
+	return c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -170,4 +172,12 @@ func (r *ReconcileSourceDeployment) shouldUseClusterMonitoringForSourcesByDefaul
 func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault() (bool, error) {
 	enable, err := strconv.ParseBool(os.Getenv(generateSourceServiceMonitorsEnvVar))
 	return enable, err
+}
+
+type skipDeletePredicate struct {
+	predicate.Funcs
+}
+
+func (skipDeletePredicate) Delete(e event.DeleteEvent) bool {
+	return false
 }
