@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	testNamespace         = "serverless-tests"
 	testNamespace2        = "serverless-tests2"
 	image                 = "gcr.io/knative-samples/helloworld-go"
 	helloworldService     = "helloworld-go"
