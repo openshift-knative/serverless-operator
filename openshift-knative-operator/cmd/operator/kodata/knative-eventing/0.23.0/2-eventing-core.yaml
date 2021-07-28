@@ -463,7 +463,7 @@ data:
     }
   # Log level overrides
   # For all components changes are be picked up immediately.
-  loglevel.controller: "debug"
+  loglevel.controller: "info"
   loglevel.webhook: "info"
 
 ---
