@@ -258,7 +258,10 @@ in the same file and follow the same process.
 
 ### Linting
 
-To run the linters that CI is running, you can use `make lint`.
+To run the linters that CI is running, you can use `make lint`. You can run `make fix-lint`
+to fix as many linting warnings automatically as possible. This will for example format YAML
+rather than just warn about unformatted YAML.
+
 The required linters for that are:
 
 - [`woke`](https://github.com/get-woke/woke) to detect non-inclusive language
