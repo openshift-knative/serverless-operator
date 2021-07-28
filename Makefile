@@ -59,7 +59,7 @@ test-e2e:
 	./test/e2e-tests.sh
 
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
-test-e2e-with-kafka:
+test-e2e-with-kafka: test-upstream-e2e-no-upgrade
 	# DO_NOT_SUBBMIT: TODO: Revert this change before merge.
 	FULL_MESH=true ./test/e2e-tests.sh
 	# INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
@@ -83,7 +83,7 @@ test-upstream-e2e-mesh:
 	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
-test-upstream-e2e-no-upgrade:
+test-upstream-e2e-no-upgrade: test-e2e-with-mesh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	# DO_NOT_SUBBMIT: TODO: Revert this change before merge.
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
