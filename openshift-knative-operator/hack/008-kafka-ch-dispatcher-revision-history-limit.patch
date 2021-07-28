@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index 77b11ad0..96d61158 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -911,8 +911,6 @@ spec:
+   # this deployment is going to be scaled up by the
+   # controller when the very first KafkaChannel is created
+   replicas: 0
+-  # remove all old replicasets
+-  revisionHistoryLimit: 0
+   selector:
+     matchLabels:
+       messaging.knative.dev/channel: kafka-channel
