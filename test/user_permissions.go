@@ -56,7 +56,7 @@ func RunUserPermissionTests(t *testing.T, objects map[schema.GroupVersionResourc
 					t.Errorf("Unexpected error deleting %s, allowed = %v, err = %v", gvr.String(), allowed.Delete, err)
 				}
 
-				if err != nil {
+				if allowed.Delete {
 					// If we've been able to delete the object we can assume we're able to get it as well.
 					// Some objects take a while to be deleted, so we retry a few times.
 					if err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
