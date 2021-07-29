@@ -137,7 +137,7 @@ for name in "${kafka_images[@]}"; do
 done
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==cli-downloads).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"

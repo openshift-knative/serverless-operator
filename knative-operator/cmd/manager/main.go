@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
@@ -123,6 +124,16 @@ func main() {
 	}
 
 	log.Info("Starting the Cmd.")
+
+	go func() {
+		// This web server is unimportant enough to not bother connecting its lifecycle to
+		// signal handling so the process can just tear it down with it.
+		log.Info("Serving CLI artifacts on :8080")
+		http.Handle("/", http.FileServer(http.Dir("/cli-artifacts")))
+		if err := http.ListenAndServe(":8080", nil); err != nil && err != http.ErrServerClosed {
+			log.Error(err, "Failed to launch CLI artifact server")
+		}
+	}()
 
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
