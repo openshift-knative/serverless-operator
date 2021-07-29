@@ -29,6 +29,13 @@ function archive_cypress_artifacts {
   popd >/dev/null
 }
 
+# TODO: Remove this skip after SRVKS-782 is fixed
+SKIP_SERVERLESS_UI_TESTS="${SKIP_SERVERLESS_UI_TESTS:-true}"
+if [[ 'true' == "$SKIP_SERVERLESS_UI_TESTS" ]]; then
+  logger.warn 'Skipping tests until SRVKS-782 is fixed'
+  exit 0
+fi
+
 OCP_VERSION="$(oc get clusterversion version -o jsonpath='{.status.desired.version}')"
 OCP_USERNAME="${OCP_USERNAME:-uitesting}"
 OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
