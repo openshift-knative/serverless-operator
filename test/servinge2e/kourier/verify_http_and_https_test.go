@@ -1,4 +1,4 @@
-package servinge2e
+package kourier
 
 import (
 	"crypto/tls"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 func TestKnativeServiceHTTPS(t *testing.T) {
@@ -22,7 +23,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 	}
 
 	// Implicitly checks that HTTP works.
-	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Now check that HTTPS works.
 	httpsURL := ksvc.Status.URL.DeepCopy()

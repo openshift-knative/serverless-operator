@@ -1,4 +1,4 @@
-package servinge2e
+package kourier
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,7 +50,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 			t.Fatal("Knative Service not ready", err)
 		}
 
-		WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
+		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
 		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
 		if err != nil {

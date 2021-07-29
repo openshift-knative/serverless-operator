@@ -13,16 +13,6 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const (
-	testNamespace         = "serverless-tests"
-	testNamespace2        = "serverless-tests2"
-	image                 = "gcr.io/knative-samples/helloworld-go"
-	helloworldService     = "helloworld-go"
-	helloworldService2    = "helloworld-go2"
-	kubeHelloworldService = "kube-helloworld-go"
-	helloworldText        = "Hello World!"
-)
-
 func init() {
 	servingv1.AddToScheme(scheme.Scheme)
 	networkingv1alpha1.AddToScheme(scheme.Scheme)

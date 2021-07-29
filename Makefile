@@ -62,6 +62,10 @@ test-e2e:
 test-e2e-with-kafka:
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
+# Run E2E tests from the current repo for serving+eventing+mesh
+test-e2e-with-mesh:
+	FULL_MESH=true ./test/e2e-tests.sh
+
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
@@ -72,7 +76,7 @@ test-upstream-e2e:
 
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
-test-upstream-e2e-mesh:
+test-upstream-e2e-mesh: test-e2e-with-mesh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 

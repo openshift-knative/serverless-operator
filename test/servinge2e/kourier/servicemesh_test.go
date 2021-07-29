@@ -1,4 +1,4 @@
-package servinge2e
+package kourier
 
 import (
 	"context"
