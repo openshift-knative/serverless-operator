@@ -617,6 +617,7 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
 <<<<<<< HEAD
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-webhook"
                     securityContext:
                       allowPrivilegeEscalation: false
@@ -625,12 +626,12 @@ spec:
                       capabilities:
                         drop:
                           - all
+=======
+                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
+>>>>>>> 413e453b (Fixing conflicts)
                 volumes:
                   - name: cli-artifacts
                     emptyDir: {}
-=======
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
->>>>>>> 3ff0b27d (Make generated files)
         # Openshift Ingress adapter for Knative's Ingress implementation.
         - name: knative-openshift-ingress
           spec:
