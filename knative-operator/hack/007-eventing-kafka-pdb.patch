@@ -1,13 +1,26 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-index 8e88d556..d9054745 100644
+index b193794d..0df7211b 100644
 --- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-@@ -971,7 +971,7 @@ metadata:
-   labels:
-     eventing.knative.dev/release: devel
- spec:
+@@ -1153,21 +1153,6 @@ spec:
+           type: Utilization
+           averageUtilization: 100
+ ---
+-# Webhook PDB.
+-apiVersion: policy/v1beta1
+-kind: PodDisruptionBudget
+-metadata:
+-  name: kafka-webhook
+-  namespace: knative-eventing
+-  labels:
+-    eventing.knative.dev/release: devel
+-spec:
 -  minAvailable: 80%
-+  minAvailable: 1
-   selector:
-     matchLabels:
-       app: kafka-webhook
+-  selector:
+-    matchLabels:
+-      app: kafka-webhook
+-
+----
+ # Copyright 2020 The Knative Authors
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
