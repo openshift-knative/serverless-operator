@@ -9,7 +9,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	v1 "k8s.io/api/apps/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -65,25 +64,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-
-	enqueueRequestsRBAC := handler.MapFunc(func(obj client.Object) []reconcile.Request {
-		oLabels := obj.GetLabels()
-		if _, ok := oLabels[rbacLabelKey]; ok {
-			// Use a special request to trigger ns level reconciliation related to sources
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{Namespace: obj.GetNamespace(), Name: ""},
-			}}
-		}
-		return nil
-	})
-
-	if err = c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}); err != nil {
-		return err
-	}
-	if err = c.Watch(&source.Kind{Type: &rbacv1.RoleBinding{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequestsRBAC), skipCreatePredicate{}); err != nil {
-		return err
-	}
-	return c.Watch(&source.Kind{Type: &rbacv1.Role{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequestsRBAC), skipCreatePredicate{})
+	return c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipUpdatePredicate{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -99,24 +80,17 @@ type ReconcileSourceDeployment struct {
 
 // Reconcile reads that state of the cluster for an eventing source deployment
 func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-	reconcileForSource := true
-	if request.Name == "" {
-		// We will handle only rbac resources this time
-		reconcileForSource = false
-	}
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
 	dep := &v1.Deployment{}
 	inDeletion := false
-	if reconcileForSource {
-		err := r.client.Get(context.TODO(), request.NamespacedName, dep)
-		if apierrors.IsNotFound(err) {
-			// The deployment does not exist anymore, deletions are shown as failing reads
-			log.Info("Source in deletion phase")
-			inDeletion = true
-		} else if err != nil {
-			return reconcile.Result{}, err
-		}
+	err := r.client.Get(context.TODO(), request.NamespacedName, dep)
+	if apierrors.IsNotFound(err) {
+		// The deployment does not exist anymore, deletions are shown as failing reads
+		log.Info("Source in deletion phase")
+		inDeletion = true
+	} else if err != nil {
+		return reconcile.Result{}, err
 	}
 	eventing := &v1alpha1.KnativeEventing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
@@ -133,10 +107,8 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 			if err := r.setupClusterMonitoringForSources(request.Namespace); err != nil {
 				return reconcile.Result{}, err
 			}
-			if reconcileForSource {
-				if err := r.generateSourceServiceMonitors(dep); err != nil {
-					return reconcile.Result{}, err
-				}
+			if err := r.generateSourceServiceMonitors(dep); err != nil {
+				return reconcile.Result{}, err
 			}
 		}
 	} else {
@@ -145,10 +117,8 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 			if err := monitoring.RemoveClusterMonitoringRequirements(r.client, nil, dep.GetNamespace(), sourceRbacLabels); err != nil {
 				return reconcile.Result{}, err
 			}
-			if reconcileForSource {
-				if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
-					return reconcile.Result{}, err
-				}
+			if err := RemoveSourceServiceMonitorResources(r.client, dep); err != nil {
+				return reconcile.Result{}, err
 			}
 		}
 	}
@@ -206,18 +176,21 @@ func (r *ReconcileSourceDeployment) shouldGenerateSourceServiceMonitorsByDefault
 	return enable, err
 }
 
-type skipCreatePredicate struct {
-	predicate.Funcs
-}
-
-func (skipCreatePredicate) Create(e event.CreateEvent) bool {
-	return false
-}
-
 type skipDeletePredicate struct {
 	predicate.Funcs
 }
 
 func (skipDeletePredicate) Delete(e event.DeleteEvent) bool {
 	return false
+}
+
+type skipUpdatePredicate struct {
+	predicate.Funcs
+}
+
+func (skipUpdatePredicate) Update(e event.UpdateEvent) bool {
+	// This controller does not handle source monitoring setup in knative-eventing ns when monitoring is set to off
+	// So it is safe to avoid pingsource-mt deployment updates, for example due to HPA
+	// Note that if users scale sources up and down in a user ns this will trigger source reconciliation
+	return e.ObjectOld.GetNamespace() != "knative-eventing"
 }
