@@ -152,3 +152,9 @@ jobs:
                 -filter-mode="added" \
                 -fail-on-error="true" \
                 -level="error"
+
+      - name: Prettify code
+        uses: creyD/prettier_action@v3.3
+        with:
+          dry: true
+          prettier_options: -c templates/*.yaml

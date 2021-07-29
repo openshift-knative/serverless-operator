@@ -138,3 +138,8 @@ lint:
 	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck
 	operator-sdk bundle validate ./olm-catalog/serverless-operator
 	git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -error
+	prettier -c templates/*.yaml
+
+# Runs formatters and thelike to fix potential linter warnings.
+fix-lint:
+	prettier --write templates/*.yaml
