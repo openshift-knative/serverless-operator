@@ -476,6 +476,13 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
         # Openshift specific extensions in the "old" operator format. Ships KnativeKafka and
         # other Openshift specifica that have not yet been moved to the operator above.
         - name: knative-openshift
@@ -610,6 +617,13 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-webhook"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
                 volumes:
                   - name: cli-artifacts
                     emptyDir: {}
@@ -649,6 +663,13 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.namespace
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
   webhookdefinitions:
     - generateName: validating.knativeeventings.operator.serverless.openshift.io
       type: ValidatingAdmissionWebhook

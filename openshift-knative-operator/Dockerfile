@@ -9,6 +9,8 @@ ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/openshift-knative-operator/cmd/operator
 
 FROM openshift/origin-base
+USER 65532
+
 COPY --from=builder /tmp/operator /ko-app/operator
 
 ENV KO_DATA_PATH="/var/run/ko"

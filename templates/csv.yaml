@@ -432,6 +432,13 @@ spec:
                         value: "knative-eventing"
                       - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
 
         # Openshift specific extensions in the "old" operator format. Ships KnativeKafka and
         # other Openshift specifica that have not yet been moved to the operator above.
@@ -508,6 +515,13 @@ spec:
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH
                         value: "deploy/resources/dashboards"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
                 volumes:
                   - name: cli-artifacts
                     emptyDir: {}
@@ -548,6 +562,13 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.namespace
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsNonRoot: true
+                      capabilities:
+                        drop:
+                          - all
 
   webhookdefinitions:
     - generateName: validating.knativeeventings.operator.serverless.openshift.io

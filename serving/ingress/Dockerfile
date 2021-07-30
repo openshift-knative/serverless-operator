@@ -9,6 +9,8 @@ ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/serving/ingress/cmd/controller
 
 FROM openshift/origin-base
+USER 65532
+
 COPY --from=builder /tmp/operator /ko-app/operator
 
 ENTRYPOINT ["/ko-app/operator"]
