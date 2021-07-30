@@ -618,9 +618,7 @@ spec:
                       - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
-<<<<<<< HEAD
-<<<<<<< HEAD
-                        value: "registry.ci.openshift.org/openshift/knative-v0.22.3:knative-eventing-kafka-webhook"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -628,9 +626,6 @@ spec:
                       capabilities:
                         drop:
                           - all
-=======
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.3:knative-eventing-kafka-webhook"
->>>>>>> 413e453b (Fixing conflicts)
                 volumes:
                   - name: cli-artifacts
                     emptyDir: {}
