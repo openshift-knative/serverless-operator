@@ -25,5 +25,5 @@ data:
         "callerEncoder": ""
       }
     }
-  loglevel.controller: "debug"
+  loglevel.controller: "info"
   loglevel.webhook: "info"
