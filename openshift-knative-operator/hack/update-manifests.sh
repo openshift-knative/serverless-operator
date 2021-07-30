@@ -116,6 +116,3 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
-
-# Testing if getting rid of old replicasets fix something in Kafka Channel Dispatcher
-git apply "$root/openshift-knative-operator/hack/008-kafka-ch-dispatcher-revision-history-limit.patch"
