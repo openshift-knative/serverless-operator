@@ -46,7 +46,7 @@ func configMapHashTransform(client mf.Client) mf.Transformer {
 			}
 
 			if apply.Spec.Template.ObjectMeta.Annotations == nil {
-				apply.Spec.Template.ObjectMeta.Annotations = make(map[string]string, 0)
+				apply.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
 			}
 
 			// Keep the existing value for the annotation
