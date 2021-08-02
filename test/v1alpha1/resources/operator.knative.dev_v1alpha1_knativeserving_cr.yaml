@@ -34,6 +34,9 @@ spec:
       loglevel.controller: "debug"
       loglevel.queueproxy: "debug"
       loglevel.webhook: "debug"
+      loglevel.hpaautoscaler: "debug"
+      loglevel.domainmapping: "debug"
+      loglevel.domainmapping-webhook: "debug"
     observability:
       logging.enable-var-log-collection: "false"
       metrics.backend-destination: "prometheus"
