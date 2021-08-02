@@ -32,25 +32,10 @@ func configMapHashTransform(client mf.Client) mf.Transformer {
 				return err
 			}
 
-			// if no annotations available on the current deployment, do nothing
-			if current.Spec.Template.ObjectMeta.Annotations == nil {
+			changed := doConfigMapHashTransform(current, apply)
+			if !changed {
 				return nil
 			}
-
-			// If, the annotation we're looking for doesn't exist in the current deployment,
-			// do nothing.
-			// Don't even clear it in the target deployment because during an upgrade, this annotation
-			// won't be set on the current but it will be set on the target deployment.
-			if _, ok := current.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey]; !ok {
-				return nil
-			}
-
-			if apply.Spec.Template.ObjectMeta.Annotations == nil {
-				apply.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
-			}
-
-			// Keep the existing value for the annotation
-			apply.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey] = current.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey]
 
 			if err := scheme.Scheme.Convert(apply, u, nil); err != nil {
 				return err
@@ -61,4 +46,27 @@ func configMapHashTransform(client mf.Client) mf.Transformer {
 		}
 		return nil
 	}
+}
+
+func doConfigMapHashTransform(current *appsv1.Deployment, apply *appsv1.Deployment) bool {
+	// if no annotations available on the current deployment, do nothing
+	if current.Spec.Template.ObjectMeta.Annotations == nil {
+		return false
+	}
+
+	// If, the annotation we're looking for doesn't exist in the current deployment,
+	// do nothing.
+	// Don't even clear it in the target deployment because during an upgrade, this annotation
+	// won't be set on the current but it will be set on the target deployment.
+	if _, ok := current.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey]; !ok {
+		return false
+	}
+
+	if apply.Spec.Template.ObjectMeta.Annotations == nil {
+		apply.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
+	}
+
+	// Keep the existing value for the annotation
+	apply.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey] = current.Spec.Template.ObjectMeta.Annotations[configMapHashAnnotationKey]
+	return true
 }
