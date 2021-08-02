@@ -152,7 +152,7 @@ spec:
         value: my-cluster-kafka-bootstrap.kafka.svc:9092
       - name: KAFKA_CLUSTERS_0_NAME
         value: my-cluster
-      image: docker.io/provectuslabs/kafka-ui
+      image: quay.io/openshift-knative/kafka-ui:0.1.0
       name: user-container
 EOF
 
