@@ -37,8 +37,5 @@ function download_kafka {
 
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 
-# Remove the PDB for Kafka
+# Change the minavailable pdb for kafka-webhook to 1
 git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
-
-# Remove HPA
-git apply "$root/knative-operator/hack/008-eventing-kafka-hpa.patch"
