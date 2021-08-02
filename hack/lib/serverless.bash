@@ -214,7 +214,14 @@ metadata:
   name: knative-eventing
   namespace: ${EVENTING_NAMESPACE}
 spec:
-  {}
+  config:
+    logging:
+      loglevel.controller: "debug"
+      loglevel.webhook: "debug"
+      loglevel.kafkachannel-dispatcher: "debug"
+      loglevel.kafkachannel-controller: "debug"
+      loglevel.inmemorychannel-dispatcher: "debug"
+      loglevel.mt-broker-controller: "debug"
 EOF
 
   timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
