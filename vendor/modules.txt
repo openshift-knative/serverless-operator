@@ -90,9 +90,9 @@ github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1
 github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.2.0
+# github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1
 github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2
-# github.com/cloudevents/sdk-go/v2 v2.2.0
+# github.com/cloudevents/sdk-go/v2 v2.4.1
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
 github.com/cloudevents/sdk-go/v2/binding/format
@@ -104,8 +104,6 @@ github.com/cloudevents/sdk-go/v2/event/datacodec
 github.com/cloudevents/sdk-go/v2/event/datacodec/json
 github.com/cloudevents/sdk-go/v2/event/datacodec/text
 github.com/cloudevents/sdk-go/v2/event/datacodec/xml
-github.com/cloudevents/sdk-go/v2/extensions
-github.com/cloudevents/sdk-go/v2/observability
 github.com/cloudevents/sdk-go/v2/protocol
 github.com/cloudevents/sdk-go/v2/protocol/http
 github.com/cloudevents/sdk-go/v2/test
@@ -259,9 +257,6 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/snappy
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac
-github.com/lightstep/tracecontext.go/traceparent
-github.com/lightstep/tracecontext.go/tracestate
 # github.com/mailru/easyjson v0.7.6
 github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
@@ -1052,7 +1047,7 @@ k8s.io/utils/trace
 # knative.dev/caching v0.0.0-20210512050647-922782660f7c
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.23.2 => github.com/openshift/knative-eventing v0.99.1-0.20210628141718-a84d0554b961
+# knative.dev/eventing v0.23.2 => github.com/openshift/knative-eventing v0.99.1-0.20210629103904-1be9f5f98cec
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1063,17 +1058,12 @@ knative.dev/eventing/pkg/apis/eventing/v1
 knative.dev/eventing/pkg/apis/eventing/v1beta1
 knative.dev/eventing/pkg/apis/flows
 knative.dev/eventing/pkg/apis/flows/v1
-knative.dev/eventing/pkg/apis/flows/v1beta1
 knative.dev/eventing/pkg/apis/messaging
 knative.dev/eventing/pkg/apis/messaging/config
 knative.dev/eventing/pkg/apis/messaging/v1
-knative.dev/eventing/pkg/apis/messaging/v1beta1
 knative.dev/eventing/pkg/apis/sources
 knative.dev/eventing/pkg/apis/sources/config
 knative.dev/eventing/pkg/apis/sources/v1
-knative.dev/eventing/pkg/apis/sources/v1alpha1
-knative.dev/eventing/pkg/apis/sources/v1alpha2
-knative.dev/eventing/pkg/apis/sources/v1beta1
 knative.dev/eventing/pkg/apis/sources/v1beta2
 knative.dev/eventing/pkg/client/clientset/versioned
 knative.dev/eventing/pkg/client/clientset/versioned/fake
@@ -1084,20 +1074,10 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/eventing/v1beta1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/eventing/v1beta1/fake
 knative.dev/eventing/pkg/client/clientset/versioned/typed/flows/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/flows/v1/fake
-knative.dev/eventing/pkg/client/clientset/versioned/typed/flows/v1beta1
-knative.dev/eventing/pkg/client/clientset/versioned/typed/flows/v1beta1/fake
 knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1/fake
-knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1beta1
-knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1beta1/fake
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1/fake
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2/fake
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1
-knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1/fake
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta2/fake
 knative.dev/eventing/pkg/client/informers/externalversions
@@ -1106,40 +1086,27 @@ knative.dev/eventing/pkg/client/informers/externalversions/eventing/v1
 knative.dev/eventing/pkg/client/informers/externalversions/eventing/v1beta1
 knative.dev/eventing/pkg/client/informers/externalversions/flows
 knative.dev/eventing/pkg/client/informers/externalversions/flows/v1
-knative.dev/eventing/pkg/client/informers/externalversions/flows/v1beta1
 knative.dev/eventing/pkg/client/informers/externalversions/internalinterfaces
 knative.dev/eventing/pkg/client/informers/externalversions/messaging
 knative.dev/eventing/pkg/client/informers/externalversions/messaging/v1
-knative.dev/eventing/pkg/client/informers/externalversions/messaging/v1beta1
 knative.dev/eventing/pkg/client/informers/externalversions/sources
 knative.dev/eventing/pkg/client/informers/externalversions/sources/v1
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1alpha1
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1alpha2
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1beta1
 knative.dev/eventing/pkg/client/informers/externalversions/sources/v1beta2
 knative.dev/eventing/pkg/client/injection/client
 knative.dev/eventing/pkg/client/injection/client/fake
 knative.dev/eventing/pkg/client/injection/informers/eventing/v1/broker
-knative.dev/eventing/pkg/client/injection/informers/eventing/v1beta1/broker
 knative.dev/eventing/pkg/client/injection/informers/factory
 knative.dev/eventing/pkg/client/injection/reconciler/eventing/v1/broker
-knative.dev/eventing/pkg/client/injection/reconciler/eventing/v1beta1/broker
 knative.dev/eventing/pkg/client/listers/eventing/v1
 knative.dev/eventing/pkg/client/listers/eventing/v1beta1
 knative.dev/eventing/pkg/client/listers/flows/v1
-knative.dev/eventing/pkg/client/listers/flows/v1beta1
 knative.dev/eventing/pkg/client/listers/messaging/v1
-knative.dev/eventing/pkg/client/listers/messaging/v1beta1
 knative.dev/eventing/pkg/client/listers/sources/v1
-knative.dev/eventing/pkg/client/listers/sources/v1alpha1
-knative.dev/eventing/pkg/client/listers/sources/v1alpha2
-knative.dev/eventing/pkg/client/listers/sources/v1beta1
 knative.dev/eventing/pkg/client/listers/sources/v1beta2
 knative.dev/eventing/pkg/duck
 knative.dev/eventing/pkg/reconciler/sugar
 knative.dev/eventing/pkg/reconciler/testing
 knative.dev/eventing/pkg/reconciler/testing/v1
-knative.dev/eventing/pkg/reconciler/testing/v1beta1
 knative.dev/eventing/pkg/utils
 knative.dev/eventing/test
 knative.dev/eventing/test/e2e/helpers
@@ -1162,14 +1129,15 @@ knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210628142118-4a62c9cd9173
+# knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210706095154-bc9b27b4771b
 ## explicit
 knative.dev/eventing-kafka/pkg/apis/bindings
 knative.dev/eventing-kafka/pkg/apis/bindings/v1alpha1
 knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1
 knative.dev/eventing-kafka/pkg/apis/duck/v1alpha1
+knative.dev/eventing-kafka/pkg/apis/kafka
+knative.dev/eventing-kafka/pkg/apis/kafka/v1alpha1
 knative.dev/eventing-kafka/pkg/apis/messaging
-knative.dev/eventing-kafka/pkg/apis/messaging/v1alpha1
 knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/apis/sources/v1alpha1
 knative.dev/eventing-kafka/pkg/apis/sources/v1beta1
@@ -1182,8 +1150,8 @@ knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1alpha
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1alpha1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1beta1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1beta1/fake
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1alpha1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1alpha1/fake
+knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1
+knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1alpha1
@@ -1403,6 +1371,6 @@ sigs.k8s.io/yaml
 # k8s.io/client-go => k8s.io/client-go v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210628141718-a84d0554b961
-# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210628142118-4a62c9cd9173
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210629103904-1be9f5f98cec
+# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210706095154-bc9b27b4771b
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210701102323-75ffe62956f2

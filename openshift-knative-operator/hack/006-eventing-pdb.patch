@@ -1,10 +1,10 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 index b51c50a7..7ed34c73 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 @@ -827,7 +827,7 @@ metadata:
    labels:
-     eventing.knative.dev/release: "v0.22.0"
+     eventing.knative.dev/release: "v0.23.0"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 1

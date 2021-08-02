@@ -11,7 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
-	eventingsourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
+	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -19,7 +19,7 @@ const (
 	brokerName       = "smoke-test-broker"
 	triggerName      = "smoke-test-trigger"
 	cmName           = "smoke-test-br-cm"
-	brokerAPIVersion = "eventing.knative.dev/v1beta1"
+	brokerAPIVersion = "eventing.knative.dev/v1"
 	brokerKind       = "Broker"
 )
 
@@ -29,7 +29,7 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 		test.CleanupAll(t, client)
 		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), brokerName, metav1.DeleteOptions{})
 		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
@@ -93,13 +93,13 @@ kind: %q`, channelAPIVersion, channelKind),
 		t.Fatal("Unable to create trigger: ", err)
 	}
 
-	ps := &eventingsourcesv1beta1.PingSource{
+	ps := &eventingsourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1beta1.PingSourceSpec{
-			JsonData: helloWorldText,
+		Spec: eventingsourcesv1.PingSourceSpec{
+			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -111,7 +111,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1beta1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}
