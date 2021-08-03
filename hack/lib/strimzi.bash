@@ -134,11 +134,49 @@ EOF
       --from-literal=user="my-sasl-user"
 }
 
+function install_kafka_ui {
+  logger.info "Installing Kafka UI"
+  cat <<-EOF | oc apply -f -
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-ui
+  namespace: kafka
+  labels:
+    app: kafka-ui
+spec:
+  containers:
+    - env:
+      - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+        value: my-cluster-kafka-bootstrap.kafka.svc:9092
+      - name: KAFKA_CLUSTERS_0_NAME
+        value: my-cluster
+      image: quay.io/openshift-knative/kafka-ui:0.1.0
+      name: user-container
+EOF
+
+  oc -n kafka expose pod kafka-ui --port=8080
+  oc -n kafka expose service kafka-ui
+
+  timeout 600 "[[ \$(oc get -n kafka route.route.openshift.io/kafka-ui -ojsonpath='{.status.ingress[0].host}') == '' ]]" || return 2
+
+  logger.success "Kafka UI URL: $(oc get -n kafka route.route.openshift.io/kafka-ui  -ojsonpath='{.status.ingress[0].host}')"
+}
+
 function install_strimzi {
   header "Strimzi install"
   install_strimzi_operator
   install_strimzi_cluster
   install_strimzi_users
+  install_kafka_ui
+}
+
+function delete_kafka_ui {
+  logger.info 'Deleting Kafka UI'
+  oc delete -n kafka route.route.openshift.io/kafka-ui
+  oc delete -n kafka service/kafka-ui
+  oc delete -n kafka pod/kafka-ui
 }
 
 function delete_strimzi_users {
@@ -177,6 +215,7 @@ function delete_strimzi_operator {
 
 function uninstall_strimzi {
   header "Strimzi uninstall"
+  delete_kafka_ui
   delete_strimzi_users
   delete_strimzi_cluster
   delete_strimzi_operator
