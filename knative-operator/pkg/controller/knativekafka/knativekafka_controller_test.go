@@ -472,7 +472,7 @@ func TestCheckHAComponent(t *testing.T) {
 	}, {
 		name:           "kafka webhook",
 		deploymentName: "kafka-webhook",
-		shouldFail:     false,
+		shouldFail:     true,
 	}, {
 		name:           "kafka source controller",
 		deploymentName: "kafka-controller-manager",
