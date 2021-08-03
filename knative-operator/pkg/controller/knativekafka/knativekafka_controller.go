@@ -39,7 +39,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-webhook", "kafka-controller-manager"}
+	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
 )
 
 type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
@@ -463,6 +463,17 @@ func setKafkaDeployments(replicas int32) mf.Transformer {
 		if u.GetKind() == "Deployment" && checkHAComponent(u.GetName()) {
 			log.Info("Setting Kafka HA component", "deployment", u.GetName(), "replicas", replicas)
 			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "replicas"); err != nil {
+				return err
+			}
+		} else if u.GetKind() == "HorizontalPodAutoscaler" {
+			min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
+			if err != nil {
+				return err
+			}
+			if min > int64(replicas) {
+				return nil
+			}
+			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "minReplicas"); err != nil {
 				return err
 			}
 		}
