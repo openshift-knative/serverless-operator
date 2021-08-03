@@ -406,6 +406,10 @@ function teardown_serverless {
   done
   oc delete namespace openshift-serverless --ignore-not-found=true
 
+  if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
+    oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
+  fi
+
   logger.success 'Serverless has been uninstalled.'
 }
 
