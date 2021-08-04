@@ -13,12 +13,12 @@ require (
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/operator-framework/api v0.8.1
 	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210607005641-f05ea078ab46
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.48.1
-	github.com/prometheus-operator/prometheus-operator/pkg/client v0.48.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.49.0
+	github.com/prometheus-operator/prometheus-operator/pkg/client v0.49.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.26.0
 	github.com/spf13/pflag v1.0.5
-	go.uber.org/zap v1.17.0
+	go.uber.org/zap v1.18.1
 	k8s.io/api v0.20.6
 	k8s.io/apimachinery v0.20.6
 	k8s.io/client-go v12.0.0+incompatible
