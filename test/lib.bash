@@ -291,6 +291,7 @@ function check_serverless_alerts {
   num_alerts=$(jq 'length' "${alerts_file}")
   if [ ! "${num_alerts}" = "0" ]; then
     echo -e "\n\nERROR: Non-zero number of alerts: ${num_alerts}. Check ${alerts_file}\n"
+    jq . "${alerts_file}"
     exit 1
   fi
 }
