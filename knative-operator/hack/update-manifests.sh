@@ -39,3 +39,6 @@ download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}
 
 # Change the minavailable pdb for kafka-webhook to 1
 #git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
+
+# For 1.17 we still skip HPA/PDB
+git apply "$root/knative-operator/hack/001-remove_hpa_pdb.patch"
