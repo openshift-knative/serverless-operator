@@ -21,7 +21,7 @@ data:
       "annotations": {
         "list": []
       },
-      "description": "Knative Eventing - Source CPU and Memory Usage",
+      "description": "Knative Eventing - Source CPU, Memory and Network Usage",
       "editable": false,
       "gnetId": null,
       "graphTooltip": 0,
@@ -572,7 +572,7 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Knative Eventing - Source CPU and Memory Usage",
+      "title": "Knative Eventing - Source CPU, Memory and Network Usage",
       "uid": "bKOoE9Wmk",
       "version": 4
     }
