@@ -4,6 +4,7 @@ metadata:
   annotations:
     operatorframework.io/suggested-namespace: "openshift-serverless"
     operatorframework.io/cluster-monitoring: "true"
+    operators.openshift.io/infrastructure-features: '["disconnected"]'
     alm-examples: |-
       [
         {
