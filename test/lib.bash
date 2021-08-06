@@ -399,30 +399,6 @@ spec:
 EOF
 }
 
-function trigger_gc_and_print_knative {
-  echo ">>> Knative Servings"
-  oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
-
-  echo ">>> Knative Services"
-  oc get ksvc --all-namespaces
-
-  echo ">>> Triggering GC"
-  for pod in $(oc get pod -n openshift-kube-controller-manager -l kube-controller-manager=true -o custom-columns=name:metadata.name --no-headers); do
-    echo "killing pod $pod"
-    oc rsh -n openshift-kube-controller-manager "$pod" /bin/sh -c "kill 1"
-    sleep 30
-  done
-
-  echo "Sleeping so GC can run"
-  sleep 120
-
-  echo ">>> Knative Servings"
-  oc get knativeserving.operator.knative.dev --all-namespaces -o yaml
-
-  echo ">>> Knative Services"
-  oc get ksvc --all-namespaces
-}
-
 function wait_for_leader_controller() {
   local leader
   echo -n "Waiting for a leader Controller"
