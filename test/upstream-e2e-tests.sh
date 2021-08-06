@@ -21,7 +21,7 @@ scale_up_workers
 
 # Install ServiceMesh and enable mTLS.
 if [[ $FULL_MESH == true ]]; then
-   UNINSTALL_MESH="false" install_mesh
+  UNINSTALL_MESH="false" install_mesh
 fi
 
 # Run upgrade tests
@@ -32,7 +32,6 @@ if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
     ensure_kafka_channel_default
   fi
   run_rolling_upgrade_tests
-  trigger_gc_and_print_knative
   teardown_serverless
 fi
 
