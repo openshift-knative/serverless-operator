@@ -1,7 +1,7 @@
 package serving
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
