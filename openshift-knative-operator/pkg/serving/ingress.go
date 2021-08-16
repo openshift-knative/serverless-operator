@@ -1,6 +1,10 @@
 package serving
 
-import "knative.dev/operator/pkg/apis/operator/v1alpha1"
+import (
+	"k8s.io/api/core/v1"
+
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+)
 
 const istioIngressClassName = "istio.ingress.networking.knative.dev"
 
@@ -19,6 +23,15 @@ func defaultToKourier(ks *v1alpha1.KnativeServing) {
 
 	if !ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled {
 		ks.Spec.Ingress.Kourier.Enabled = true
+	}
+
+}
+
+func defaultKourierServiceType(ks *v1alpha1.KnativeServing) {
+	if ks.Spec.Ingress != nil && ks.Spec.Ingress.Kourier.Enabled {
+		if ks.Spec.Ingress.Kourier.ServiceType == "" {
+			ks.Spec.Ingress.Kourier.ServiceType = v1.ServiceTypeClusterIP
+		}
 	}
 }
 
