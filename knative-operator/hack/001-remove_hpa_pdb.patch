@@ -1,3 +1,4 @@
+# For 1.17 we still skip HPA/PDB
 diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
 index b193794d..2d719aec 100644
 --- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
@@ -5,7 +6,7 @@ index b193794d..2d719aec 100644
 @@ -1116,57 +1116,6 @@ spec:
        # high value that we respect whatever value it has configured for the lame duck grace period.
        terminationGracePeriodSeconds: 300
- 
+
 ----
 -# Copyright 2021 The Knative Authors
 -#

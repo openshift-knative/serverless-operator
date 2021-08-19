@@ -42,3 +42,6 @@ download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}
 
 # For 1.17 we still skip HPA/PDB
 git apply "$root/knative-operator/hack/001-remove_hpa_pdb.patch"
+
+# The kafka-ch-controller requires DELETE on deployment in OpenShift
+git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
