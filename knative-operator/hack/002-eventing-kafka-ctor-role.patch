@@ -1,0 +1,20 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index 0c87173e..c8ca87a3 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -159,7 +159,14 @@ rules:
+     resources:
+       - deployments
+       - deployments/status
+-    verbs: *everything
++    verbs:
++      - get
++      - list
++      - watch
++      - create
++      - patch
++      - update
++      - delete
+   - apiGroups:
+       - rbac.authorization.k8s.io
+     resources:
