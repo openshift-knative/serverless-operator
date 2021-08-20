@@ -50,12 +50,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.16.0 <1.17.0'
+    olm.skipRange: '>=1.17.0 <1.18.0'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.17.0
+  name: serverless-operator.v1.18.0
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -866,5 +866,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-dispatcher"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
       image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-webhook"
-  replaces: serverless-operator.v1.16.0
-  version: 1.17.0
+  replaces: serverless-operator.v1.17.0
+  version: 1.18.0
