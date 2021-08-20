@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	KafkaChannelComponents = []string{"kafka-ch-controller", "kafka-ch-dispatcher", "kafka-webhook"}
+	KafkaChannelComponents = []string{"kafka-ch-controller", "kafka-webhook"}
 	KafkaSourceComponents  = []string{"kafka-controller-manager"}
 )
 
