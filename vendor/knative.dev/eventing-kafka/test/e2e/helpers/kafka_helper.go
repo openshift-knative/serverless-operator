@@ -43,10 +43,11 @@ import (
 
 const (
 	strimziApiGroup      = "kafka.strimzi.io"
-	strimziApiVersion    = "v1beta1"
+	strimziApiVersion    = "v1beta2"
 	strimziTopicResource = "kafkatopics"
 	interval             = 3 * time.Second
 	timeout              = 30 * time.Second
+	kafkaCatImage        = "quay.io/openshift-knative/kafkacat:1.6.0"
 )
 
 var (
@@ -102,7 +103,7 @@ func MustPublishKafkaMessage(client *testlib.Client, bootstrapServer string, top
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
-				Image:   "docker.io/edenhill/kafkacat:1.5.0",
+				Image:   kafkaCatImage,
 				Name:    cgName + "-producer-container",
 				Command: []string{"kafkacat"},
 				Args:    args,

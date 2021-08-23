@@ -33,6 +33,7 @@ import (
 
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/reconciler"
+	pkgtest "knative.dev/pkg/test"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	flowsv1 "knative.dev/eventing/pkg/apis/flows/v1"
@@ -451,7 +452,7 @@ func (c *Client) CreatePodOrFail(pod *corev1.Pod, options ...func(*corev1.Pod, *
 	//    retry after the token is automatically created and added to the service account"
 	err := reconciler.RetryErrors(func(attempts int) (err error) {
 		c.T.Logf("Creating pod %+v", pod)
-		_, e := c.Kube.CreatePod(context.Background(), pod)
+		_, e := pkgtest.CreatePod(context.Background(), c.Kube, pod)
 		return e
 	}, apierrs.IsConflict, apierrs.IsServerTimeout)
 	if err != nil {
@@ -514,7 +515,7 @@ func (c *Client) CreateServiceAccountOrFail(saName string) {
 	sa := resources.ServiceAccount(saName, namespace)
 	sas := c.Kube.CoreV1().ServiceAccounts(namespace)
 	c.T.Logf("Creating service account %+v", sa)
-	if _, err := sas.Create(context.Background(), sa, metav1.CreateOptions{}); err != nil {
+	if _, err := sas.Create(context.Background(), sa, metav1.CreateOptions{}); err != nil && !apierrs.IsAlreadyExists(err) {
 		c.T.Fatalf("Failed to create service account %q: %v", saName, err)
 	}
 	c.Tracker.Add(coreAPIGroup, coreAPIVersion, "serviceaccounts", namespace, saName)
@@ -551,8 +552,7 @@ func (c *Client) CreateRoleOrFail(r *rbacv1.Role) {
 }
 
 const (
-	ClusterRoleKind = "ClusterRole"
-	RoleKind        = "Role"
+	RoleKind = "Role"
 )
 
 // CreateRoleBindingOrFail will create a RoleBinding or fail the test if there is an error.
@@ -581,38 +581,6 @@ func (c *Client) CreateClusterRoleBindingOrFail(saName, crName, crbName string) 
 	c.Tracker.Add(rbacAPIGroup, rbacAPIVersion, "clusterrolebindings", "", crb.GetName())
 }
 
-const (
-	// the two ServiceAccounts are required for creating new Brokers in the current namespace
-	saIngressName = "eventing-broker-ingress"
-	saFilterName  = "eventing-broker-filter"
-
-	// the ClusterRoles are preinstalled in Knative Eventing setup
-	crIngressName = "eventing-broker-ingress"
-	crFilterName  = "eventing-broker-filter"
-)
-
-// CreateRBACResourcesForBrokers creates required RBAC resources for creating Brokers,
-// see https://github.com/knative/docs/blob/main/docs/eventing/broker-trigger.md - Manual Setup.
-func (c *Client) CreateRBACResourcesForBrokers() {
-	c.CreateServiceAccountOrFail(saIngressName)
-	c.CreateServiceAccountOrFail(saFilterName)
-	// The two RoleBindings are required for running Brokers correctly.
-	c.CreateRoleBindingOrFail(
-		saIngressName,
-		ClusterRoleKind,
-		crIngressName,
-		fmt.Sprintf("%s-%s", saIngressName, crIngressName),
-		c.Namespace,
-	)
-	c.CreateRoleBindingOrFail(
-		saFilterName,
-		ClusterRoleKind,
-		crFilterName,
-		fmt.Sprintf("%s-%s", saFilterName, crFilterName),
-		c.Namespace,
-	)
-}
-
 func (c *Client) applyAdditionalEnv(pod *corev1.PodSpec) {
 	for i := 0; i < len(pod.Containers); i++ {
 		pod.Containers[i].Env = append(pod.Containers[i].Env, c.tracingEnv)
@@ -620,4 +588,32 @@ func (c *Client) applyAdditionalEnv(pod *corev1.PodSpec) {
 			pod.Containers[i].Env = append(pod.Containers[i].Env, *c.loggingEnv)
 		}
 	}
+}
+
+func CreateRBACPodsEventsGetListWatch(client *Client, name string) {
+	client.CreateServiceAccountOrFail(name)
+	client.CreateRoleOrFail(resources.Role(name,
+		resources.WithRuleForRole(&rbacv1.PolicyRule{
+			APIGroups: []string{""},
+			Resources: []string{"pods", "events"},
+			Verbs:     []string{"get", "list", "watch"}}),
+	))
+	client.CreateRoleBindingOrFail(name, RoleKind, name, name, client.Namespace)
+}
+
+func CreateRBACPodsGetEventsAll(client *Client, name string) {
+	client.CreateServiceAccountOrFail(name)
+	client.CreateRoleOrFail(resources.Role(name,
+		resources.WithRuleForRole(&rbacv1.PolicyRule{
+			APIGroups: []string{""},
+			Resources: []string{"pods"},
+			Verbs:     []string{"get"},
+		}),
+		resources.WithRuleForRole(&rbacv1.PolicyRule{
+			APIGroups: []string{""},
+			Resources: []string{"events"},
+			Verbs:     []string{rbacv1.VerbAll},
+		}),
+	))
+	client.CreateRoleBindingOrFail(name, RoleKind, name, name, client.Namespace)
 }

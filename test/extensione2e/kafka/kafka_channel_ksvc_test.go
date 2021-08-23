@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
@@ -43,7 +42,7 @@ var (
 			Namespace: testNamespace,
 		},
 		Spec: eventingmessagingv1.SubscriptionSpec{
-			Channel: corev1.ObjectReference{
+			Channel: duckv1.KReference{
 				APIVersion: channelAPIVersion,
 				Kind:       kafkaChannelKind,
 				Name:       kafkaChannelName,

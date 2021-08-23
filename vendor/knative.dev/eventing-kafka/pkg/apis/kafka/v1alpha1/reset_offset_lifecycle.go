@@ -19,11 +19,13 @@ package v1alpha1
 import (
 	"sync"
 
+	corev1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
 )
 
 var cs = apis.NewBatchConditionSet(
-	ResetOffsetConditionResetInitiated,
+	ResetOffsetConditionRefMapped,
+	ResetOffsetConditionAcquireDataPlaneServices,
 	ResetOffsetConditionConsumerGroupsStopped,
 	ResetOffsetConditionOffsetsUpdated,
 	ResetOffsetConditionConsumerGroupsStarted)
@@ -34,10 +36,14 @@ const (
 	// ResetOffsetConditionSucceeded has status True when all sub-conditions below have been set to True.
 	ResetOffsetConditionSucceeded = apis.ConditionSucceeded
 
-	// ResetOffsetConditionResetInitiated has status True when the ResetOffset is being processed
-	// Until that time it is either "Unknown" when first encountered, or "Blocked" if another
-	// ResetOffset is being processed for the same "Ref" resource.
-	ResetOffsetConditionResetInitiated apis.ConditionType = "ResetInitiated"
+	// ResetOffsetConditionRefMapped has status True when the ResetOffset.Spec.Ref has been
+	// successfully mapped to the corresponding Kafka Topic name and ConsumerGroup ID.  These
+	// values will then be populated in the the ResetOffsetStatus.
+	ResetOffsetConditionRefMapped apis.ConditionType = "RefMapped"
+
+	// ResetOffsetConditionAcquireDataPlaneServices has status True if the most recent attempt to
+	// reconcile the control-protocol DataPlane Services from the ConnectionPool was successful.
+	ResetOffsetConditionAcquireDataPlaneServices apis.ConditionType = "AcquireDataPlaneServices"
 
 	// ResetOffsetConditionConsumerGroupsStopped has status True when all of the ConsumerGroups
 	// associated with the referenced object (Subscription, Trigger, etc.) have been stopped.
@@ -78,8 +84,13 @@ func (ros *ResetOffsetStatus) GetCondition(t apis.ConditionType) *apis.Condition
 	return ros.GetConditionSet().Manage(ros).GetCondition(t)
 }
 
-// IsCompleted returns true if the resource is ready overall.
-func (ros *ResetOffsetStatus) IsCompleted() bool {
+// IsOffsetsUpdated returns true if the ResetOffsetConditionOffsetsUpdates status is true.
+func (ros *ResetOffsetStatus) IsOffsetsUpdated() bool {
+	return ros.GetConditionSet().Manage(ros).GetCondition(ResetOffsetConditionOffsetsUpdated).Status == corev1.ConditionTrue
+}
+
+// IsSucceeded returns true if the ResetOffsetConditionSucceeded status is true.
+func (ros *ResetOffsetStatus) IsSucceeded() bool {
 	return ros.GetConditionSet().Manage(ros).IsHappy()
 }
 
@@ -88,12 +99,20 @@ func (ros *ResetOffsetStatus) InitializeConditions() {
 	ros.GetConditionSet().Manage(ros).InitializeConditions()
 }
 
-func (ros *ResetOffsetStatus) MarkResetInitiatedFailed(reason, messageFormat string, messageA ...interface{}) {
-	ros.GetConditionSet().Manage(ros).MarkFalse(ResetOffsetConditionResetInitiated, reason, messageFormat, messageA...)
+func (ros *ResetOffsetStatus) MarkRefMappedFailed(reason, messageFormat string, messageA ...interface{}) {
+	ros.GetConditionSet().Manage(ros).MarkFalse(ResetOffsetConditionRefMapped, reason, messageFormat, messageA...)
 }
 
-func (ros *ResetOffsetStatus) MarkResetInitiatedTrue() {
-	ros.GetConditionSet().Manage(ros).MarkTrue(ResetOffsetConditionResetInitiated)
+func (ros *ResetOffsetStatus) MarkRefMappedTrue() {
+	ros.GetConditionSet().Manage(ros).MarkTrue(ResetOffsetConditionRefMapped)
+}
+
+func (ros *ResetOffsetStatus) MarkAcquireDataPlaneServicesFailed(reason, messageFormat string, messageA ...interface{}) {
+	ros.GetConditionSet().Manage(ros).MarkFalse(ResetOffsetConditionAcquireDataPlaneServices, reason, messageFormat, messageA...)
+}
+
+func (ros *ResetOffsetStatus) MarkAcquireDataPlaneServicesTrue() {
+	ros.GetConditionSet().Manage(ros).MarkTrue(ResetOffsetConditionAcquireDataPlaneServices)
 }
 
 func (ros *ResetOffsetStatus) MarkConsumerGroupsStoppedFailed(reason, messageFormat string, messageA ...interface{}) {

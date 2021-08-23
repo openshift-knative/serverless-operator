@@ -18,6 +18,7 @@ package prober
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -53,20 +54,20 @@ func (p *prober) Verify() (eventErrs []error, eventsSent int) {
 	if report.State == "active" {
 		p.client.T.Fatal("report fetched too early, receiver is in active state")
 	}
-	for _, e := range report.Thrown.Missing {
-		p.client.T.Error(e)
+	for _, t := range report.Thrown.Missing {
+		eventErrs = append(eventErrs, errors.New(t))
 	}
-	for _, e := range report.Thrown.Unexpected {
-		p.client.T.Error(e)
+	for _, t := range report.Thrown.Unexpected {
+		eventErrs = append(eventErrs, errors.New(t))
 	}
-	for _, e := range report.Thrown.Unavailable {
-		p.client.T.Error(e)
+	for _, t := range report.Thrown.Unavailable {
+		eventErrs = append(eventErrs, errors.New(t))
 	}
-	for _, e := range report.Thrown.Duplicated {
+	for _, t := range report.Thrown.Duplicated {
 		if p.config.OnDuplicate == Warn {
-			p.log.Warn("Duplicate events: ", e)
+			p.log.Warn("Duplicate events: ", t)
 		} else if p.config.OnDuplicate == Error {
-			p.client.T.Error(e)
+			eventErrs = append(eventErrs, errors.New(t))
 		}
 	}
 	return eventErrs, report.EventsSent
