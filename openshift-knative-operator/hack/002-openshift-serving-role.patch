@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.24.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.24.0/2-serving-core.yaml
 index aa68ca9e..4fc83cba 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.23.1/2-serving-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.24.0/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/0.24.0/2-serving-core.yaml
 @@ -2834,3 +2834,27 @@ metadata:
  # The data is populated at install time.
  

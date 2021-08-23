@@ -10,12 +10,12 @@ source "$root/hack/lib/__sources__.bash"
 
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
-serving_files=(serving-crds serving-core serving-hpa serving-domainmapping-crds serving-domainmapping serving-post-install-jobs)
+serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
 eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
-istio_files=(200-clusterrole 500-mutating-webhook 500-validating-webhook 500-webhook-secret config controller webhook-deployment webhook-service)
+istio_files=(200-clusterrole 400-config-istio 500-controller 500-webhook-deployment 500-webhook-secret 500-webhook-service 600-mutating-webhook 600-validating-webhook)
 
 function download {
   component=$1
