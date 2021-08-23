@@ -355,6 +355,11 @@ spec:
         # adding this label to restart pod.
         networking.knative.dev/poke: "v0.26"
     spec:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 1
       containers:
         - args:
             - --base-id 1
