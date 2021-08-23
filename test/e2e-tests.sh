@@ -34,6 +34,7 @@ if [[ $FULL_MESH == "true" ]]; then
   enable_net_istio
 else
   ensure_serverless_installed
+  trust_router_ca
 fi
 
 [ -n "$OPENSHIFT_CI" ] && setup_quick_api_deprecation_alerts

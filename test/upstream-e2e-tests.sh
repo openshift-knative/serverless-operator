@@ -20,6 +20,8 @@ logger.success '🚀 Cluster prepared for testing.'
 # Install ServiceMesh and enable mTLS.
 if [[ $FULL_MESH == true ]]; then
   UNINSTALL_MESH="false" install_mesh
+else
+  trust_router_ca
 fi
 
 # Run upgrade tests

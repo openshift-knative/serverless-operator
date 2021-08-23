@@ -105,6 +105,9 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
 
+	// Default the URL scheme to HTTPS if nothing else is defined.
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "defaultExternalScheme", "https")
+
 	// Ensure webhook has 1G of memory.
 	common.EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "webhook", resource.MustParse("1024Mi"))
 

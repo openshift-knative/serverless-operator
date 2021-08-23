@@ -222,7 +222,8 @@ function run_rolling_upgrade_tests {
     --servingversion="${KNATIVE_SERVING_VERSION}" \
     --eventingversion="${KNATIVE_EVENTING_VERSION}" \
     --openshiftimage="${UPGRADE_OCP_IMAGE}" \
-    --resolvabledomain
+    --resolvabledomain \
+    --https
 
   git apply -R "${patch}"
 
@@ -439,4 +440,16 @@ function wait_for_leader_controller() {
   done
   echo -e "\n\nERROR: timeout waiting for leader controller"
   return 1
+}
+
+# Sets up a secret in the cert-manager namespace that contains the CA certs that need
+# to be trusted to make TLS connections to routes of an arbitrary cluster.
+# The Knative test machinery looks for this secret if the --https flag is engaged.
+function trust_router_ca() {
+  logger.info "Setting up cert-manager/ca-key-pair secret to trust router CA"
+
+  certs=$(mktemp -d)
+  oc -n openshift-config-managed get cm default-ingress-cert --template="{{index .data \"ca-bundle.crt\"}}" > "$certs/tls.crt"
+  oc get ns cert-manager || oc create namespace cert-manager
+  oc -n cert-manager create secret generic ca-key-pair --from-file=tls.crt="$certs/tls.crt"
 }
