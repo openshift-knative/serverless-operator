@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
@@ -118,8 +117,29 @@ func WithSubscriptionLabels(labels map[string]string) SubscriptionOption {
 
 func WithSubscriptionChannel(gvk metav1.GroupVersionKind, name string) SubscriptionOption {
 	return func(s *v1.Subscription) {
-		s.Spec.Channel = corev1.ObjectReference{
+		s.Spec.Channel = duckv1.KReference{
 			APIVersion: apiVersion(gvk),
+			Kind:       gvk.Kind,
+			Name:       name,
+		}
+	}
+}
+
+func WithSubscriptionChannelUsingGroup(gvk metav1.GroupVersionKind, name string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Channel = duckv1.KReference{
+			Group: gvk.Group,
+			Kind:  gvk.Kind,
+			Name:  name,
+		}
+	}
+}
+
+func WithSubscriptionChannelUsingApiVersionAndGroup(gvk metav1.GroupVersionKind, name string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Channel = duckv1.KReference{
+			APIVersion: apiVersion(gvk),
+			Group:      gvk.Group,
 			Kind:       gvk.Kind,
 			Name:       name,
 		}
@@ -131,6 +151,33 @@ func WithSubscriptionSubscriberRef(gvk metav1.GroupVersionKind, name, namespace 
 		s.Spec.Subscriber = &duckv1.Destination{
 			Ref: &duckv1.KReference{
 				APIVersion: apiVersion(gvk),
+				Kind:       gvk.Kind,
+				Name:       name,
+				Namespace:  namespace,
+			},
+		}
+	}
+}
+
+func WithSubscriptionSubscriberRefUsingGroup(gvk metav1.GroupVersionKind, name, namespace string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Subscriber = &duckv1.Destination{
+			Ref: &duckv1.KReference{
+				Group:     gvk.Group,
+				Kind:      gvk.Kind,
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+	}
+}
+
+func WithSubscriptionSubscriberRefUsingApiVersionAndGroup(gvk metav1.GroupVersionKind, name, namespace string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Subscriber = &duckv1.Destination{
+			Ref: &duckv1.KReference{
+				APIVersion: apiVersion(gvk),
+				Group:      gvk.Group,
 				Kind:       gvk.Kind,
 				Name:       name,
 				Namespace:  namespace,

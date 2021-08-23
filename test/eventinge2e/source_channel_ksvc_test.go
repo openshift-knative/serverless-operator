@@ -6,7 +6,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
@@ -54,7 +53,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			Namespace: testNamespace,
 		},
 		Spec: eventingmessagingv1.SubscriptionSpec{
-			Channel: corev1.ObjectReference{
+			Channel: duckv1.KReference{
 				APIVersion: channelAPIVersion,
 				Kind:       channelKind,
 				Name:       channel.Name,

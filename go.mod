@@ -19,29 +19,29 @@ require (
 	github.com/prometheus/common v0.26.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.18.1
-	k8s.io/api v0.20.6
-	k8s.io/apimachinery v0.20.6
+	k8s.io/api v0.20.7
+	k8s.io/apimachinery v0.20.7
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.23.2
+	knative.dev/eventing v0.24.0
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20210602212444-509255f29a24
-	knative.dev/networking v0.0.0-20210608114541-4b1712c029b7
-	knative.dev/operator v0.23.2
-	knative.dev/pkg v0.0.0-20210510175900-4564797bf3b7
-	knative.dev/serving v0.23.1
+	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
+	knative.dev/networking v0.0.0-20210622182128-53f45d6d2cfa
+	knative.dev/operator v0.24.0
+	knative.dev/pkg v0.0.0-20210622173328-dd0db4b05c80
+	knative.dev/serving v0.24.0
 	sigs.k8s.io/controller-runtime v0.8.3
 	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (
-	// Kubernetes v1.19.7
-	k8s.io/api => k8s.io/api v0.19.7
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
-	k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
-	k8s.io/client-go => k8s.io/client-go v0.19.7
-	k8s.io/code-generator => k8s.io/code-generator v0.19.7
+	// Kubernetes v1.20.7
+	k8s.io/api => k8s.io/api v0.20.7
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.7
+	k8s.io/apimachinery => k8s.io/apimachinery v0.20.7
+	k8s.io/client-go => k8s.io/client-go v0.20.7
+	k8s.io/code-generator => k8s.io/code-generator v0.20.7
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210629103904-1be9f5f98cec
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210706095154-bc9b27b4771b
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210701102323-75ffe62956f2
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210820183158-a0c48812e7f7
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210812095447-6b11cd1f2864
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210823082338-45b685330f8e
 )
