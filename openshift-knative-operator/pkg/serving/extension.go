@@ -102,9 +102,6 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	defaultToKourier(ks)
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))
 
-	// Apply Kourier gateway service type.
-	defaultKourierServiceType(ks)
-
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
 
