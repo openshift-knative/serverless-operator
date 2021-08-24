@@ -49,8 +49,8 @@ image "storage-version-migration-serving-serving-$(metadata.get dependencies.ser
 image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
-image "networking-istio" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
-image "istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
+image "net-istio-controller__controller" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
+image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"
