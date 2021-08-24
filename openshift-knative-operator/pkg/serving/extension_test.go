@@ -146,6 +146,45 @@ func TestReconcile(t *testing.T) {
 			common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "foo")
 		}),
 	}, {
+		name: "default kourier service type",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Kourier: v1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+				Kourier: v1alpha1.KourierIngressConfiguration{
+					Enabled:     true,
+					ServiceType: "ClusterIP",
+				},
+			}
+		}),
+	}, {
+		name: "override kourier service type",
+		in: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Kourier: v1alpha1.KourierIngressConfiguration{
+						Enabled:     true,
+						ServiceType: "LoadBalancer",
+					},
+				},
+			},
+		},
+		expected: ks(func(ks *v1alpha1.KnativeServing) {
+			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
+				Kourier: v1alpha1.KourierIngressConfiguration{
+					Enabled:     true,
+					ServiceType: "LoadBalancer",
+				},
+			}
+		}),
+	}, {
 		name: "override ingress config",
 		in: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
@@ -185,7 +224,8 @@ func TestReconcile(t *testing.T) {
 		expected: ks(func(ks *v1alpha1.KnativeServing) {
 			ks.Spec.Ingress = &v1alpha1.IngressConfigs{
 				Kourier: v1alpha1.KourierIngressConfiguration{
-					Enabled: true,
+					Enabled:     true,
+					ServiceType: "ClusterIP",
 				},
 			}
 		}),
@@ -459,7 +499,8 @@ func ks(mods ...func(*v1alpha1.KnativeServing)) *v1alpha1.KnativeServing {
 			},
 			Ingress: &v1alpha1.IngressConfigs{
 				Kourier: v1alpha1.KourierIngressConfiguration{
-					Enabled: true,
+					Enabled:     true,
+					ServiceType: "ClusterIP",
 				},
 			},
 		},
