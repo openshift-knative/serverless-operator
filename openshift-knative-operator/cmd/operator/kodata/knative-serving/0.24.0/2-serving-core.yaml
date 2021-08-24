@@ -1018,6 +1018,7 @@ spec:
                                   secretName:
                                     description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                                     type: string
+                            x-kubernetes-preserve-unknown-fields: true
                       x-kubernetes-preserve-unknown-fields: true
             status:
               description: ConfigurationStatus communicates the observed state of the Configuration (from the controller).
@@ -2237,6 +2238,7 @@ spec:
                           secretName:
                             description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                             type: string
+                    x-kubernetes-preserve-unknown-fields: true
               x-kubernetes-preserve-unknown-fields: true
             status:
               description: RevisionStatus communicates the observed state of the Revision (from the controller).
@@ -3206,6 +3208,7 @@ spec:
                                   secretName:
                                     description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                                     type: string
+                            x-kubernetes-preserve-unknown-fields: true
                       x-kubernetes-preserve-unknown-fields: true
                 traffic:
                   description: Traffic specifies how to distribute traffic over a collection of revisions and configurations.
@@ -3850,7 +3853,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.24.0"
   annotations:
-    knative.dev/example-checksum: "8c1f8302"
+    knative.dev/example-checksum: "3bac317a"
 data:
   _example: |-
     ################################
@@ -3961,6 +3964,11 @@ data:
     # 1. Enabled: http2 connection will be attempted via upgrade.
     # 2. Disabled: http2 connection will only be attempted when port name is set to "h2c".
     autodetect-http2: "disabled"
+
+    # Controls whether volume support for EmptyDir is enabled or not.
+    # 1. Enabled: enabling EmptyDir volume support
+    # 2. Disabled: disabling EmptyDir volume support
+    kubernetes.podspec-volumes-emptydir: "disabled"
 
 ---
 # Copyright 2018 The Knative Authors
