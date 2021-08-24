@@ -9,10 +9,10 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	routev1 "github.com/openshift/api/route/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/wait"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/test/spoof"
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
@@ -80,22 +80,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
 	})
 
-	// Retry until OpenShift Route becomes ready.
-	err = wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		resp, inErr := http.Get(ksvc.Status.URL.String())
-		if inErr != nil {
-			return false, inErr
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			t.Logf("Retrying... route might not be ready yet")
-			return false, nil
-		}
-		return true, nil
-	})
-	if err != nil {
-		t.Fatalf("Failed to verify custom route: %v", err)
-	}
+	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Create DomainMapping with disable Annotation.
 	dm := &servingv1alpha1.DomainMapping{

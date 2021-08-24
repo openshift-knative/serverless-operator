@@ -2,9 +2,6 @@ package kourier
 
 import (
 	"context"
-	"io/ioutil"
-	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -79,20 +76,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 		}
 
 		// Verify that the "older" service still works.
-		resp, err := http.Get(olderSvc.Status.URL.String())
-		if err != nil {
-			t.Fatalf("Failed sending request to %s: %v", olderSvc.Status.URL.String(), err)
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal("Failed to read body", err)
-		}
-		bodyStr := strings.TrimSpace(string(body))
-
-		if resp.StatusCode != http.StatusOK || bodyStr != helloworldText {
-			t.Fatalf("Received wrong response, status %v, body %v", resp.StatusCode, bodyStr)
-		}
+		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
 		for _, svc := range services {
 			if err := caCtx.Clients.Serving.ServingV1().Services(svc.Namespace).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
