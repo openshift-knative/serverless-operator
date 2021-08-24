@@ -48,6 +48,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --type=merge \
     --patch='{"spec": {"ingress": { "kourier": {"service-type": "LoadBalancer"}}}}'
 
+  # Also enable emptyDir volumes for the respective tests.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-volumes-emptydir": "enabled"}}}}'
+
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain"
 
@@ -75,7 +80,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m -parallel=$parallel \
+  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
