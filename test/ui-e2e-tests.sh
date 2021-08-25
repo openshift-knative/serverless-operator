@@ -46,7 +46,6 @@ INSTALL_SERVERLESS="${INSTALL_SERVERLESS:-true}"
 NPM_TARGET="${NPM_TARGET:-test}"
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
-scale_up_workers
 create_namespaces
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
 oc adm policy add-role-to-user edit "$OCP_USERNAME" -n "$TEST_NAMESPACE"

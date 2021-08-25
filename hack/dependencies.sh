@@ -16,5 +16,4 @@ set -Eeuo pipefail
 
 debugging.setup
 
-scale_up_workers
 create_namespaces

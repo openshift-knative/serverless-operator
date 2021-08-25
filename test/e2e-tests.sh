@@ -12,7 +12,6 @@ fi
 debugging.setup
 dump_state.setup
 
-scale_up_workers
 create_namespaces
 create_htpasswd_users
 add_roles

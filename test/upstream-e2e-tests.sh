@@ -17,8 +17,6 @@ create_namespaces
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
-scale_up_workers
-
 # Install ServiceMesh and enable mTLS.
 if [[ $FULL_MESH == true ]]; then
   UNINSTALL_MESH="false" install_mesh
