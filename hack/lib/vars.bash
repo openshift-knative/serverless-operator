@@ -27,7 +27,6 @@ export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
 export KNATIVE_EVENTING_HOME="${GOPATH}/src/knative.dev/eventing"
 export KNATIVE_EVENTING_KAFKA_HOME="${GOPATH}/src/knative.dev/eventing-kafka"
 
-export CATALOG_SOURCE_FILENAME="${CATALOG_SOURCE_FILENAME:-catalogsource-ci.yaml}"
 export DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
 export INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
 export KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
@@ -37,7 +36,6 @@ export SCALE_UP="${SCALE_UP:--1}"
 
 export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
-export SERVERLESS_NAMESPACE="${SERVERLESS_NAMESPACE:-serverless}"
 export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
 export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
 export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
@@ -45,7 +43,7 @@ export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 export ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
 
 declare -a NAMESPACES
-NAMESPACES=("${SERVERLESS_NAMESPACE}" "${ZIPKIN_NAMESPACE}" "${OPERATORS_NAMESPACE}")
+NAMESPACES=("${ZIPKIN_NAMESPACE}" "${OPERATORS_NAMESPACE}")
 export NAMESPACES
 export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
