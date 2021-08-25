@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/blang/semver/v4"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
@@ -14,11 +16,13 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 )
 
 const (
@@ -58,6 +62,7 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 
 func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
+	log := logging.FromContext(ctx)
 
 	// Make sure Knative Serving is always installed in the defined namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
@@ -102,8 +107,14 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	defaultToKourier(ks)
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))
 
-	// Apply Kourier gateway service type.
-	defaultKourierServiceType(ks)
+	// Changing service type from LoadBalancer to ClusterIP has a bug https://github.com/kubernetes/kubernetes/pull/95196
+	// Do not apply the default if the version is less than v1.20.0.
+	if err := checkMinimumVersion(e.kubeclient.Discovery(), "1.20.0"); err != nil {
+		log.Warnf("Could not apply default service type for Kourier Gateway: %v", err)
+	} else {
+		// Apply Kourier gateway service type.
+		defaultKourierServiceType(ks)
+	}
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
@@ -164,4 +175,42 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
+}
+
+// checkMinimumVersion checks if the version in the arg meets the requirement or not.
+// It is similar logic with CheckMinimumVersion() in knative.dev/pkg/version.
+func checkMinimumVersion(versioner discovery.ServerVersionInterface, version string) error {
+	v, err := versioner.ServerVersion()
+	if err != nil {
+		return err
+	}
+	currentVersion, err := semver.Make(normalizeVersion(v.GitVersion))
+	if err != nil {
+		return err
+	}
+
+	minimumVersion, err := semver.Make(normalizeVersion(version))
+	if err != nil {
+		return err
+	}
+
+	// If no specific pre-release requirement is set, we default to "-0" to always allow
+	// pre-release versions of the same Major.Minor.Patch version.
+	if len(minimumVersion.Pre) == 0 {
+		minimumVersion.Pre = []semver.PRVersion{{VersionNum: 0}}
+	}
+
+	if currentVersion.LT(minimumVersion) {
+		return fmt.Errorf("kubernetes version %q is not compatible, need at least %q",
+			currentVersion, minimumVersion)
+	}
+	return nil
+}
+
+func normalizeVersion(v string) string {
+	if strings.HasPrefix(v, "v") {
+		// No need to account for unicode widths.
+		return v[1:]
+	}
+	return v
 }
