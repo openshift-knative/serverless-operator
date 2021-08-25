@@ -307,7 +307,7 @@ func TestReconcile(t *testing.T) {
 			ks := c.in.DeepCopy()
 			ctx, _ := ocpfake.With(context.Background(), objs...)
 			ctx, _ = kubefake.With(ctx, &servingNamespace)
-			ext := newFakeExtension(t, ctx)
+			ext := newFakeExtension(ctx, t)
 			ext.Reconcile(context.Background(), ks)
 			// Ignore time differences.
 			opt := cmp.Comparer(func(apis.VolatileTime, apis.VolatileTime) bool {
@@ -320,7 +320,7 @@ func TestReconcile(t *testing.T) {
 	}
 }
 
-func newFakeExtension(t *testing.T, ctx context.Context) operator.Extension {
+func newFakeExtension(ctx context.Context, t *testing.T) operator.Extension {
 	kclient := kubeclient.Get(ctx)
 	fakeDiscovery, ok := kclient.Discovery().(*fakediscovery.FakeDiscovery)
 	if !ok {
@@ -453,7 +453,7 @@ func TestMonitoring(t *testing.T) {
 			c.expected.Namespace = ks.Namespace
 			ctx, _ := ocpfake.With(context.Background(), objs...)
 			ctx, kube := kubefake.With(ctx, &servingNamespace)
-			ext := newFakeExtension(t, ctx)
+			ext := newFakeExtension(ctx, t)
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()
 
 			if err != nil {
