@@ -68,6 +68,10 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 				Kind: "Service",
 				Name: "kourier",
 			},
+			TLS: &routev1.TLSConfig{
+				Termination:                   routev1.TLSTerminationEdge,
+				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+			},
 		},
 	}
 	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, meta.CreateOptions{})
