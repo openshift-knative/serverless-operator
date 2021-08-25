@@ -45,7 +45,7 @@ replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210820183158-a0c48812e7f7
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210812095447-6b11cd1f2864
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210823082338-45b685330f8e
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210824193424-cef96ebcd8a9
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210825044407-c77bd558bf37
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210825130602-06630431130e
 )
