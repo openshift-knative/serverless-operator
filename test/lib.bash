@@ -211,7 +211,7 @@ function run_rolling_upgrade_tests {
   EVENTING_UPGRADE_TESTS_SERVING_USE=true \
   EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
   GO_TEST_VERBOSITY=standard-verbose \
-  SYSTEM_NAMESPACE=knative-serving \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" \
   go_test_e2e -tags=upgrade -timeout=30m \
     ./test/upgrade \
     -channels="${channels}" \
@@ -366,8 +366,8 @@ function delete_users {
 }
 
 function add_systemnamespace_label {
-  oc label namespace knative-serving knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true --overwrite || true
+  oc label namespace "$SERVING_NAMESPACE" knative.openshift.io/system-namespace=true --overwrite         || true
+  oc label namespace "$INGRESS_NAMESPACE" knative.openshift.io/system-namespace=true --overwrite || true
 }
 
 function add_networkpolicy {

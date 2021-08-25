@@ -145,7 +145,7 @@ EOF
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: serverless-operator
+  name: ${OPERATOR}
 spec:
   address: serverless-index.${OLM_NAMESPACE}.svc:50051
   displayName: "Serverless Operator"

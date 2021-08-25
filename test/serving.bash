@@ -75,14 +75,14 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
   oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
   
@@ -114,7 +114,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   # Run HA tests separately as they're stopping core Knative Serving pods
   # Define short -spoofinterval to ensure frequent probing while stopping pods
-  SYSTEM_NAMESPACE=knative-serving go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"

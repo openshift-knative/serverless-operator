@@ -401,10 +401,10 @@ function teardown_serverless {
     -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
     --ignore-not-found
   for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
-      | grep serverless-operator | cut -f1 -d' '); do
+      | grep "${OPERATOR}" | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
-  oc delete namespace openshift-serverless --ignore-not-found=true
+  oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
 
   if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
     oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
