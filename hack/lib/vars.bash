@@ -32,7 +32,6 @@ export INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
 export KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
 export OPENSHIFT_CI="${OPENSHIFT_CI:-}"
 export OPERATOR="${OPERATOR:-serverless-operator}"
-export SCALE_UP="${SCALE_UP:--1}"
 
 export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
