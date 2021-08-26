@@ -82,5 +82,6 @@ function versions.major_minor {
 # Breaks all image references in the passed YAML file.
 function yaml.break_image_references {
   sed -i "s,image: .*,image: TO_BE_REPLACED," "$1"
+  sed -i "s,value: gcr.io/knative-releases.*,value: TO_BE_REPLACED," "$1"
   sed -i "s,queueSidecarImage: .*,queueSidecarImage: TO_BE_REPLACED," "$1"
 }
