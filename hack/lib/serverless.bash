@@ -4,8 +4,8 @@ function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   local prev=${1:-false}
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
-     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1 && \
-     oc get knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
+    oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1 && \
+    oc get knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
   then
     logger.success 'Serverless is already installed.'
     return 0
@@ -130,9 +130,10 @@ function find_install_plan {
   local csv="${1:-Pass a CSV as arg[1]}"
   for plan in $(oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers -o name); do
     if [[ $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c "$csv") -eq 1 && \
-       $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]; then
-         echo "$plan"
-         return 0
+      $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]
+    then
+      echo "$plan"
+      return 0
     fi
   done
   echo ""
