@@ -7,15 +7,15 @@ mesh_deployments=(istio-operator jaeger-operator kiali-operator)
 function install_mesh {
   deploy_servicemesh_operators
   if [[ ${FULL_MESH:-} == "true" ]]; then
-     deploy_servicemeshcontrolplane
-     deploy_gateways
+    deploy_servicemeshcontrolplane
+    deploy_gateways
   fi
 }
 
 function uninstall_mesh {
   if [[ ${FULL_MESH:-} == "true" ]]; then
-     undeploy_gateways
-     undeploy_servicemeshcontrolplane
+    undeploy_gateways
+    undeploy_servicemeshcontrolplane
   fi
   undeploy_servicemesh_operators
 }
