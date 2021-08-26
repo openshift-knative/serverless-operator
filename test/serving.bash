@@ -49,11 +49,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --patch='{"spec": {"config": { "features": {"kubernetes.podspec-volumes-emptydir": "enabled"}}}}'
 
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
-  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain"
+  subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
+  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain"
 
   if [[ $FULL_MESH == "true" ]]; then
-    subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
-    OPENSHIFT_TEST_OPTIONS+=" --https --customdomain=$subdomain"
+    OPENSHIFT_TEST_OPTIONS+=" --https"
 
     # Use x509ignoreCN=0.
     # This should not be necesssary if we could ceate certs with SAN. However, openssl command in the CI
