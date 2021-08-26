@@ -117,3 +117,6 @@ git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
 # Add the old versions to eventing CRDs.
 # TODO: Remove after the version migrator is set to always run in eventing
 git apply  "$root/openshift-knative-operator/hack/008-eventing-crds-old-versions.patch"
+
+# Correct names of the batch jobs that we forgot on 1.16
+git apply "$root/openshift-knative-operator/hack/008-fix-post-install-names.patch"
