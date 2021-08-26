@@ -63,6 +63,8 @@ image "imc-controller__controller"                  "${eventing}-channel-control
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
 image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 
+image "v0.23.0-pingsource-cleanup__pingsource"     "${eventing}-pingsource-cleanup"
+
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 
