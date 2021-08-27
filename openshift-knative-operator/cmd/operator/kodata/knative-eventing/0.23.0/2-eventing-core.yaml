@@ -668,7 +668,7 @@ spec:
               value: knative.dev/eventing
             # APIServerSource
             - name: APISERVER_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:7f14ee70af176d77fd08b9c8a046dd37b78f5830dcda154478d9abb0c2858a74
+              value: TO_BE_REPLACED
             - name: POD_NAME
               valueFrom:
                 fieldRef:

@@ -879,7 +879,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election
             - name: DISPATCHER_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/channel/consolidated/dispatcher@sha256:c991ccfcf78eafda005bab3be94376a4310f8fff3e13c4efb09b1f7b809e2103
+              value: TO_BE_REPLACED
             # service account used in the dispatcher
             - name: SERVICE_ACCOUNT
               value: kafka-ch-dispatcher
