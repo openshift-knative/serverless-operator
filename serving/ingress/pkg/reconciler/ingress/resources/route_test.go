@@ -256,7 +256,7 @@ func TestMakeRoute(t *testing.T) {
 		{
 			name: "valid, passthrough by BYO cert",
 			ingress: ingress(
-				withTLS(networkingv1alpha1.IngressTLS{[]string{"custom.example.com"}, "someSecretName", "someSecretNamespace"}),
+				withTLS(networkingv1alpha1.IngressTLS{Hosts: []string{"custom.example.com"}, SecretName: "someSecretName"}),
 				withRules(rule(withHosts([]string{localDomain, externalDomain}))),
 			),
 			want: []*routev1.Route{{
