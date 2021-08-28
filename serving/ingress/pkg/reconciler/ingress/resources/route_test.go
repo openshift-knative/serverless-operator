@@ -215,7 +215,7 @@ func TestMakeRoute(t *testing.T) {
 			wantErr: ErrNoValidLoadbalancerDomain,
 		},
 		{
-			name: "valid, passthrough",
+			name: "valid, passthrough by annotation",
 			ingress: ingress(withPassthroughAnnotation, withRules(
 				rule(withHosts([]string{localDomain, externalDomain}))),
 			),
@@ -231,6 +231,45 @@ func TestMakeRoute(t *testing.T) {
 					Annotations: map[string]string{
 						TimeoutAnnotation:                DefaultTimeout,
 						EnablePassthroughRouteAnnotation: "true",
+					},
+					Namespace: lbNamespace,
+					Name:      routeName0,
+				},
+				Spec: routev1.RouteSpec{
+					Host: externalDomain,
+					To: routev1.RouteTargetReference{
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString(HTTPSPort),
+					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
+				},
+			}},
+		},
+		{
+			name: "valid, passthrough by BYO cert",
+			ingress: ingress(
+				withTLS(networkingv1alpha1.IngressTLS{[]string{"custom.example.com"}, "someSecretName", "someSecretNamespace"}),
+				withRules(rule(withHosts([]string{localDomain, externalDomain}))),
+			),
+			want: []*routev1.Route{{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
+					},
+					Annotations: map[string]string{
+						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
 					Name:      routeName0,
@@ -310,6 +349,12 @@ func rule(options ...ruleOption) networkingv1alpha1.IngressRule {
 }
 
 type ingressOption func(*networkingv1alpha1.Ingress)
+
+func withTLS(tls ...networkingv1alpha1.IngressTLS) ingressOption {
+	return func(ing *networkingv1alpha1.Ingress) {
+		ing.Spec.TLS = tls
+	}
+}
 
 func withRules(rules ...networkingv1alpha1.IngressRule) ingressOption {
 	return func(ing *networkingv1alpha1.Ingress) {
