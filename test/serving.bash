@@ -77,6 +77,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
+    ./test/e2e/domainmapping \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
