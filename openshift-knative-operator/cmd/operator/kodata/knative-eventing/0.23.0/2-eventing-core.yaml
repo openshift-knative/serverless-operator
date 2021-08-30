@@ -941,7 +941,6 @@ spec:
       targetPort: 8443
   selector:
     role: eventing-webhook
-
 ---
 # Copyright 2020 The Knative Authors
 #
