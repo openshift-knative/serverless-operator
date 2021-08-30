@@ -1,12 +1,11 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-index b193794d..2d719aec 100644
+index 8e04200d..66a6898d 100644
 --- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-@@ -1116,57 +1116,6 @@ spec:
-       # high value that we respect whatever value it has configured for the lame duck grace period.
+@@ -1023,42 +1023,6 @@ spec:
        terminationGracePeriodSeconds: 300
 
-----
+ ---
 -# Copyright 2021 The Knative Authors
 -#
 -# Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,20 +42,6 @@ index b193794d..2d719aec 100644
 -          type: Utilization
 -          averageUtilization: 100
 ----
--# Webhook PDB.
--apiVersion: policy/v1beta1
--kind: PodDisruptionBudget
--metadata:
--  name: kafka-webhook
--  namespace: knative-eventing
--  labels:
--    eventing.knative.dev/release: devel
--spec:
--  minAvailable: 80%
--  selector:
--    matchLabels:
--      app: kafka-webhook
--
- ---
- # Copyright 2020 The Knative Authors
- #
+ # Webhook PDB.
+ apiVersion: policy/v1beta1
+ kind: PodDisruptionBudget

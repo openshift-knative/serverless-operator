@@ -1,13 +1,13 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-index 8e88d556..d9054745 100644
+index 66a6898d..23ce5efe 100644
 --- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
-@@ -971,7 +971,7 @@ metadata:
+@@ -1032,7 +1032,7 @@ metadata:
    labels:
      eventing.knative.dev/release: devel
  spec:
 -  minAvailable: 80%
-+  minAvailable: 1
++  minAvailable: 0
    selector:
      matchLabels:
        app: kafka-webhook
