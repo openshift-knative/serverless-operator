@@ -83,9 +83,8 @@ describe('OCP UI for Serverless', () => {
     removeApp() {
       cy.visit('/dev-monitoring')
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
-      let skip = false
       cy.get('div.pf-topology-content').then(($topology) => {
-        skip = $topology.find('div.pf-c-empty-state .pf-c-title:visible').length > 0
+        const skip = $topology.find('div.pf-c-empty-state .pf-c-title:visible').length > 0
         cy.log(`Skip app removal: ${skip}`)
 
         if (skip) {
