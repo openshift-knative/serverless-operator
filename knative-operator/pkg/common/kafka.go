@@ -12,7 +12,7 @@ func MutateKafka(ke *operatorv1alpha1.KnativeKafka) {
 func defaultToKafkaHa(ke *operatorv1alpha1.KnativeKafka) {
 	if ke.Spec.HighAvailability == nil {
 		ke.Spec.HighAvailability = &commonv1alpha1.HighAvailability{
-			Replicas: 1,
+			Replicas: 2,
 		}
 	}
 }
