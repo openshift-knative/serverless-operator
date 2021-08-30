@@ -37,11 +37,11 @@ function download_kafka {
 
 download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 
-# Change the minavailable pdb for kafka-webhook to 1
-#git apply "$root/knative-operator/hack/007-eventing-kafka-pdb.patch"
+# For 1.17 we still skip HPA
+git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
 
-# For 1.17 we still skip HPA/PDB
-git apply "$root/knative-operator/hack/001-remove_hpa_pdb.patch"
+# SRVKE-919: Change the minavailable pdb for kafka-webhook to 0
+git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 
 # The kafka-ch-controller requires DELETE on deployment in OpenShift
 git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
