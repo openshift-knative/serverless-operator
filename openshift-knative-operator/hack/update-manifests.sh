@@ -11,7 +11,7 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-domainmapping-crds serving-domainmapping serving-post-install-jobs)
-eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
+eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-post-install)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
@@ -117,3 +117,6 @@ git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
 # Add the old versions to eventing CRDs.
 # TODO: Remove after the version migrator is set to always run in eventing
 git apply  "$root/openshift-knative-operator/hack/008-eventing-crds-old-versions.patch"
+
+# Correct names of the batch jobs that we forgot on 1.16
+git apply "$root/openshift-knative-operator/hack/009-fix-post-install-names.patch"
