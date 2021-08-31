@@ -3347,7 +3347,7 @@ spec:
   versions:
     - &version
       name: v1alpha2
-      served: false
+      served: true
       storage: false
       subresources:
         status: {}
@@ -3471,7 +3471,7 @@ spec:
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
     - !!merge <<: *version
       name: v1beta1
-      served: false
+      served: true
       storage: false
       schema:
         openAPIV3Schema:
