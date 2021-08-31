@@ -1,0 +1,12 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/ha.go b/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
+index cdf0598f..49388903 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
+@@ -46,7 +46,6 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
+ 		"imc-controller",
+ 		"imc-dispatcher",
+ 		"mt-broker-controller",
+-		"pingsource-mt-adapter",
+ 	)
+ 
+ 	// HA for autoscaler is supported since v0.19+.
