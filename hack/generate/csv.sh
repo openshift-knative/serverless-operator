@@ -70,7 +70,6 @@ kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-con
 kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
-kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
 
 image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
