@@ -1,6 +1,10 @@
 describe('OCP UI for Serverless', () => {
-  it('has Serverless quickstarts', () => {
+
+  beforeEach(() => {
     cy.login()
+  })
+
+  it('has Serverless quickstarts', () => {
     cy.visit('/quickstart')
     cy.contains('Exploring Serverless applications')
   })

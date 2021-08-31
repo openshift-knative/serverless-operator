@@ -23,13 +23,21 @@ Cypress.Commands.add('login', () => {
     .should('have.value', password)
   cy.get('button[type=submit]').click()
 
-  cy.visit(`/topology/ns/${namespace}?view=graph`)
-  cy.contains('Topology')
-  cy.contains(username)
+  cy.visit(`/add/ns/${namespace}?view=graph`)
+  cy.get('#content').contains('Add')
   cy.get('body').then(($body) => {
-    if ($body.find('[data-test="guided-tour-modal"]').length) {
-      cy.contains('Skip tour').click()
-    }
+    const ocpVersion = Cypress.env('OCP_VERSION')
+    cy.semver(ocpVersion).then((semver) => {
+      let selector = '[data-test="guided-tour-modal"]'
+      if (semver.satisfies('>=4.9')) {
+        selector = '#guided-tour-modal'
+      }
+      cy.log(`Guided Tour modal selector used: ${selector}`)
+      const modal = $body.find(selector)
+      if (modal.length) {
+        cy.contains('Skip tour').click()
+      }
+    })
   })
 
 })
