@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -231,7 +231,7 @@ kind: CustomResourceDefinition
 metadata:
   name: brokers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -304,6 +304,7 @@ spec:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
                       format: int32
+                  x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
             status:
               description: Status represents the current state of the Broker. This data may be out of date.
               type: object
@@ -392,7 +393,7 @@ kind: CustomResourceDefinition
 metadata:
   name: channels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -477,6 +478,7 @@ spec:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
                       format: int32
+                  x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
                 subscribers:
                   description: This is the list of subscriptions for this subscribable.
                   type: array
@@ -520,6 +522,7 @@ spec:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
                             format: int32
+                        x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature
                       generation:
                         description: Generation of the origin of the subscriber with uid:UID.
                         type: integer
@@ -660,7 +663,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -812,7 +815,7 @@ kind: CustomResourceDefinition
 metadata:
   name: eventtypes.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -939,7 +942,7 @@ kind: CustomResourceDefinition
 metadata:
   name: parallels.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1003,6 +1006,7 @@ spec:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
                             format: int32
+                        x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
                       filter:
                         description: Filter is the expression guarding the branch
                         type: object
@@ -1191,7 +1195,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1208,7 +1212,7 @@ spec:
     - &version
       name: v1beta2
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -1341,7 +1345,7 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
       # v1 schema is identical to the v1beta2 schema
   names:
     categories:
@@ -1380,7 +1384,7 @@ kind: CustomResourceDefinition
 metadata:
   name: sequences.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1479,6 +1483,7 @@ spec:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
                             format: int32
+                        x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
                       ref:
                         description: Ref points to an Addressable.
                         type: object
@@ -1698,7 +1703,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
@@ -1888,7 +1893,7 @@ kind: CustomResourceDefinition
 metadata:
   name: subscriptions.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
 spec:
   group: messaging.knative.dev
@@ -1907,14 +1912,11 @@ spec:
               type: object
               properties:
                 channel:
-                  description: 'Reference to a channel that will be used to create the subscription You can specify only the following fields of the ObjectReference: - Kind - APIVersion - Name The resource pointed by this ObjectReference must meet the contract to the ChannelableSpec duck type. If the resource does not meet this contract it will be reflected in the Subscription''s status.  This field is immutable. We have no good answer on what happens to the events that are currently in the channel being consumed from and what the semantics there should be. For now, you can always delete the Subscription and recreate it to point to a different channel, giving the user more control over what semantics should be used (drain the channel first, possibly have events dropped, etc.)'
+                  description: 'Reference to a channel that will be used to create the subscription. You can specify only the following fields of the KReference: kind, apiVersion and name. The resource pointed by this KReference must meet the contract to the ChannelableSpec duck type. If the resource does not meet this contract it will be reflected in the Subscription''s status.  This field is immutable. We have no good answer on what happens to the events that are currently in the channel being consumed from and what the semantics there should be. For now, you can always delete the Subscription and recreate it to point to a different channel, giving the user more control over what semantics should be used (drain the channel first, possibly have events dropped, etc.)'
                   type: object
                   properties:
                     apiVersion:
                       description: API version of the referent.
-                      type: string
-                    fieldPath:
-                      description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
                       type: string
                     kind:
                       description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
@@ -1922,15 +1924,7 @@ spec:
                     name:
                       description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                       type: string
-                    namespace:
-                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                      type: string
-                    resourceVersion:
-                      description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                      type: string
-                    uid:
-                      description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                      type: string
+                  x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature
                 delivery:
                   description: Delivery configuration
                   type: object
@@ -1968,6 +1962,7 @@ spec:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
                       format: int32
+                  x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
                 reply:
                   description: Reply specifies (optionally) how to handle events returned from the Subscriber target.
                   type: object
@@ -2011,6 +2006,7 @@ spec:
                         namespace:
                           description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
                           type: string
+                      x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                       type: string
@@ -2107,7 +2103,7 @@ kind: CustomResourceDefinition
 metadata:
   name: triggers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
