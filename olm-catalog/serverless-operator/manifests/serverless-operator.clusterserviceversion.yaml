@@ -620,8 +620,6 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-controller"
                       - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-dispatcher"
-                      - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-webhook"
                     securityContext:
@@ -861,8 +859,6 @@ spec:
     - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
       image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-controller"
     - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-dispatcher"
-    - name: "KAFKA_IMAGE_kafka-ch-dispatcher__dispatcher"
       image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-consolidated-dispatcher"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
       image: "registry.ci.openshift.org/openshift/knative-v0.23.5:knative-eventing-kafka-webhook"
