@@ -119,4 +119,4 @@ git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
 git apply  "$root/openshift-knative-operator/hack/008-eventing-crds-old-versions.patch"
 
 # Correct names of the batch jobs that we forgot on 1.16
-git apply "$root/openshift-knative-operator/hack/008-fix-post-install-names.patch"
+git apply "$root/openshift-knative-operator/hack/009-fix-post-install-names.patch"
