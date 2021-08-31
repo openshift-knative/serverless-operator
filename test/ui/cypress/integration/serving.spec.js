@@ -2,23 +2,14 @@ describe('OCP UI for Serverless', () => {
 
   class ShowcaseKservice {
     constructor(ops = {}) {
-      this.counter = ops.counter || Math.floor(Math.random() * 10_000);
-      this.__app = ops.app || 'demoapp'
-      this.__name = ops.name || 'showcase'
+      this.app = ops.app || 'demoapp'
+      this.name = ops.name || 'showcase'
       this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
       this.image = ops.image || {
         // TODO(ksuszyns): SRVCOM-1235 donate those apps to openshift-knative
         regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
         updated: 'quay.io/cardil/knative-serving-showcase-js'
       }
-    }
-
-    app() {
-      return `${this.__app}-${this.counter}`
-    }
-
-    name() {
-      return `${this.__name}-${this.counter}`
     }
 
     url() {
@@ -73,10 +64,10 @@ describe('OCP UI for Serverless', () => {
       cy.get('input#form-checkbox-route-create-field').check()
       cy.get('input#form-input-application-name-field')
         .clear()
-        .type(showcaseKsvc.app())
+        .type(showcaseKsvc.app)
       cy.get('input#form-input-name-field')
         .clear()
-        .type(showcaseKsvc.name())
+        .type(showcaseKsvc.name)
       if (clusterLocal) {
         cy.get('input#form-checkbox-route-create-field')
           .uncheck()
@@ -84,7 +75,7 @@ describe('OCP UI for Serverless', () => {
       cy.get('button[type=submit]').click()
       cy.url().should('include', `/topology/ns/${showcaseKsvc.namespace}`)
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
-      cy.get('div.pf-topology-content').contains(showcaseKsvc.name()).click()
+      cy.get('div.pf-topology-content').contains(showcaseKsvc.name).click()
       // Make sure the app is running before proceeding.
       cy.contains('Running')
     }
@@ -92,22 +83,30 @@ describe('OCP UI for Serverless', () => {
     removeApp() {
       cy.visit('/dev-monitoring')
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
-      cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.app()).click()
-      cy.contains('Actions').click()
-      cy.contains('Delete Application')
-        .should('not.have.class', 'pf-m-disabled')
-        .click()
-      cy.get('input#form-input-resourceName-field')
-        .type(showcaseKsvc.app())
-      cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
-      cy.contains('No resources found')
+      cy.get('div.pf-topology-content').then(($topology) => {
+        const skip = $topology.find('div.pf-c-empty-state .pf-c-title:visible').length > 0
+        cy.log(`Skip app removal: ${skip}`)
+
+        if (skip) {
+          return
+        }
+        cy.get('div.pf-topology-content')
+          .contains(showcaseKsvc.app).click()
+        cy.contains('Actions').click()
+        cy.contains('Delete Application')
+          .should('not.have.class', 'pf-m-disabled')
+          .click()
+        cy.get('input#form-input-resourceName-field')
+          .type(showcaseKsvc.app)
+        cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
+        cy.contains('No resources found')
+      })
     }
 
     showServiceDetails() {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name()).click()
+        .contains(showcaseKsvc.name).click()
       cy.contains('Location:')
         .scrollIntoView()
     }
@@ -115,8 +114,16 @@ describe('OCP UI for Serverless', () => {
 
   const showcaseKsvc = new ShowcaseKservice()
 
-  it('can deploy kservice and scale it', () => {
+  beforeEach(() => {
     describe('with authenticated via Web Console', cy.login)
+    describe('remove kservice', showcaseKsvc.removeApp)
+  })
+
+  afterEach(() => {
+    describe('remove kservice', showcaseKsvc.removeApp)
+  })
+
+  it('can deploy kservice and scale it', () => {
     describe('deploy kservice from image', showcaseKsvc.deployImage)
     describe('check automatic scaling of kservice', () => {
       showcaseKsvc.showServiceDetails()
@@ -134,28 +141,26 @@ describe('OCP UI for Serverless', () => {
         showcaseKsvc.checkScale(1)
       })
     })
-    describe('remove kservice', showcaseKsvc.removeApp)
   })
 
   it('can route traffic to multiple revisions', () => {
-    describe('with authenticated via Web Console', cy.login)
     describe('deploy kservice from image', showcaseKsvc.deployImage)
     describe('add two revisions to traffic distribution', () => {
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name()).click()
+        .contains(showcaseKsvc.name).click()
       cy.contains('Actions').click()
-      cy.contains(`Edit ${showcaseKsvc.name()}`).click()
+      cy.contains(`Edit ${showcaseKsvc.name}`).click()
       cy.get('input[name=searchTerm]')
         .clear()
         .type(showcaseKsvc.image.updated)
       cy.contains('Validated')
       cy.get('button[type=submit]').click()
       cy.url().should('include', showcaseKsvc.namespace)
-      cy.contains(showcaseKsvc.app())
+      cy.contains(showcaseKsvc.app)
       cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
       cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name()).click()
+        .contains(showcaseKsvc.name).click()
       cy.contains('Set traffic distribution', {matchCase: false}).click()
       cy.get('input[name="trafficSplitting.0.percent"]')
         .clear()
@@ -183,7 +188,6 @@ describe('OCP UI for Serverless', () => {
         }
       })
     })
-    describe('remove kservice', showcaseKsvc.removeApp)
   })
 
   it('can deploy a cluster-local service', () => {
@@ -192,7 +196,6 @@ describe('OCP UI for Serverless', () => {
       const range = '>=4.8 || ~4.7.18 || ~4.6.39'
       cy.onlyOn(semver.satisfies(range))
     })
-    describe('with authenticated via Web Console', cy.login)
     describe('deploy kservice from image', () => {
       showcaseKsvc.deployImage({clusterLocal: true})
     })
@@ -200,6 +203,5 @@ describe('OCP UI for Serverless', () => {
       showcaseKsvc.url()
         .and('include', 'cluster.local')
     })
-    describe('remove kservice', showcaseKsvc.removeApp)
   })
 })
