@@ -113,3 +113,7 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
+
+# Add the old versions to eventing CRDs.
+# TODO: Remove after the version migrator is set to always run in eventing
+git apply  "$root/openshift-knative-operator/hack/008-eventing-crds-old-versions.patch"
