@@ -1,5 +1,5 @@
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
-index 9e3257b9..06c27a9d 100644
+index 9e3257b9..9504a365 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
 @@ -36,92 +36,129 @@ metadata:
@@ -2896,7 +2896,7 @@ index 9e3257b9..06c27a9d 100644
 +  versions:
 +    - &version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -3020,7 +3020,7 @@ index 9e3257b9..06c27a9d 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      schema:
 +        openAPIV3Schema:
@@ -3990,7 +3990,7 @@ index 9e3257b9..06c27a9d 100644
        served: true
        storage: true
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
-index 43e79c04..e72662d0 100644
+index 43e79c04..aef11eda 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 @@ -941,7 +941,6 @@ spec:
@@ -6582,7 +6582,7 @@ index 43e79c04..e72662d0 100644
 +  versions:
 +    - &version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -6706,7 +6706,7 @@ index 43e79c04..e72662d0 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      schema:
 +        openAPIV3Schema:
