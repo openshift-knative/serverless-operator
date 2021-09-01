@@ -80,27 +80,37 @@ describe('OCP UI for Serverless', () => {
       cy.contains('Running')
     }
 
-    removeApp() {
-      cy.visit('/dev-monitoring')
-      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
-      cy.get('div.pf-topology-content').then(($topology) => {
-        const skip = $topology.find('div.pf-c-empty-state .pf-c-title:visible').length > 0
-        cy.log(`Skip app removal: ${skip}`)
-
-        if (skip) {
-          return
-        }
-        cy.get('div.pf-topology-content')
-          .contains(showcaseKsvc.app).click()
-        cy.contains('Actions').click()
-        cy.contains('Delete Application')
-          .should('not.have.class', 'pf-m-disabled')
-          .click()
-        cy.get('input#form-input-resourceName-field')
-          .type(showcaseKsvc.app)
-        cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
-        cy.contains('No resources found')
+    isServiceDeployed() {
+      return new Cypress.Promise((resolve, reject) => {
+        cy.exec(`kubectl get kservice ${showcaseKsvc.name} \
+          -n ${showcaseKsvc.namespace}`, { failOnNonZeroExit: false }).then(result => {
+          resolve(result.code === 0)
+        })
       })
+    }
+
+    removeApp() {
+      showcaseKsvc.isServiceDeployed().then(deployed => {
+        if (deployed) {
+          showcaseKsvc.doRemoveApp()
+        } else {
+          cy.log("Service isn't deployed, skipping removal.")
+        }
+      })
+    }
+
+    doRemoveApp() {
+      cy.visit(`/topology/ns/${showcaseKsvc.namespace}/list`)
+      cy.get('div.pf-topology-content')
+        .contains(showcaseKsvc.app).click()
+      cy.contains('Actions').click()
+      cy.contains('Delete Application')
+        .should('not.have.class', 'pf-m-disabled')
+        .click()
+      cy.get('input#form-input-resourceName-field')
+        .type(showcaseKsvc.app)
+      cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
+      cy.contains('No resources found')
     }
 
     showServiceDetails() {
@@ -191,10 +201,9 @@ describe('OCP UI for Serverless', () => {
   })
 
   it('can deploy a cluster-local service', () => {
-    const ocpVersion = Cypress.env('OCP_VERSION')
-    cy.semver(ocpVersion).then((semver) => {
+    cy.ocpVersion().then((version) => {
       const range = '>=4.8 || ~4.7.18 || ~4.6.39'
-      cy.onlyOn(semver.satisfies(range))
+      cy.onlyOn(version.satisfies(range))
     })
     describe('deploy kservice from image', () => {
       showcaseKsvc.deployImage({clusterLocal: true})
