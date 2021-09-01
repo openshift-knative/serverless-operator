@@ -120,3 +120,6 @@ git apply  "$root/openshift-knative-operator/hack/008-eventing-crds-old-versions
 
 # Correct names of the batch jobs that we forgot on 1.16
 git apply "$root/openshift-knative-operator/hack/009-fix-post-install-names.patch"
+
+# Add missing sources to the post install migration job
+git apply "$root/openshift-knative-operator/hack/010-add-srcs-post-install.patch"
