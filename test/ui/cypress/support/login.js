@@ -26,10 +26,9 @@ Cypress.Commands.add('login', () => {
   cy.visit(`/add/ns/${namespace}?view=graph`)
   cy.get('#content').contains('Add')
   cy.get('body').then(($body) => {
-    const ocpVersion = Cypress.env('OCP_VERSION')
-    cy.semver(ocpVersion).then((semver) => {
+    cy.ocpVersion().then(version => {
       let selector = '[data-test="guided-tour-modal"]'
-      if (semver.satisfies('>=4.9')) {
+      if (version.satisfies('>=4.9')) {
         selector = '#guided-tour-modal'
       }
       cy.log(`Guided Tour modal selector used: ${selector}`)
