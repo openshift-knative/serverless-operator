@@ -75,17 +75,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  sed -ie "s/pkgTest.EventuallyMatchesBody(test.PizzaPlanetText1)/v1test.RetryingRouteInconsistency(spoof.MatchesAllOf(spoof.IsStatusOK, pkgTest.EventuallyMatchesBody(test.PizzaPlanetText1)))/g" ./test/e2e/domainmapping/domain_mapping_test.go
-
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
-    ./test/e2e/domainmapping \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "$image_template"
-
-  exit 1
-
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
+    ./test/e2e/domainmapping \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
