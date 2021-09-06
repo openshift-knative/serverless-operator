@@ -34,6 +34,8 @@ else
   ensure_serverless_installed
 fi
 
+[ -n "$OPENSHIFT_CI" ] && setup_quick_api_deprecation_alerts
+
 # Run Knative Serving & Eventing downstream E2E tests.
 downstream_serving_e2e_tests
 downstream_eventing_e2e_tests

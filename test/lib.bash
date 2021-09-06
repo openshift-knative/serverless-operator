@@ -299,6 +299,18 @@ function check_serverless_alerts {
   fi
 }
 
+function setup_quick_api_deprecation_alerts {
+  logger.info "Setup quick API deprecation alerts"
+  for ns in "${OPERATORS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${SERVING_NAMESPACE}" "${INGRESS_NAMESPACE}"; do
+    # Reuse the existing api-usage Prometheus rule and only make it react more quickly.
+    oc get prometheusrule api-usage -n openshift-kube-apiserver -oyaml | \
+      sed -e "s/\(.*name:.*\)/\1-quick/g" \
+          -e "s/\(.*alert:.*\)/\1-quick/g" \
+          -e "s/\(.*for:\).*/\1 1m/g" \
+          -e "s/\(.*namespace:\).*/\1 ${ns}/g" | oc apply -f -
+  done
+}
+
 # == Test users
 
 function create_htpasswd_users {
