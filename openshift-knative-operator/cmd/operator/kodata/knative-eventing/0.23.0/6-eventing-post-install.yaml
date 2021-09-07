@@ -36,6 +36,9 @@ rules:
       - "sources.knative.dev"
     resources:
       - "pingsources"
+      - "sinkbindings"
+      - "apiserversources"
+      - "containersources"
     verbs:
       - "get"
       - "list"
@@ -184,5 +187,8 @@ spec:
           image: TO_BE_REPLACED
           args:
             - "pingsources.sources.knative.dev"
+            - "sinkbindings.sources.knative.dev"
+            - "apiserversources.sources.knative.dev"
+            - "containersources.sources.knative.dev"
 
 ---

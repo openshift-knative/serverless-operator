@@ -1,5 +1,5 @@
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
-index 9e3257b9..9504a365 100644
+index 9e3257b9..c5049b39 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/1-eventing-crds.yaml
 @@ -36,92 +36,129 @@ metadata:
@@ -7,11 +7,10 @@ index 9e3257b9..9504a365 100644
    group: sources.knative.dev
    versions:
 -    - name: v1
--      served: true
--      storage: true
 +    - &version
 +      name: v1alpha1
-+      served: false
+       served: true
+-      storage: true
 +      storage: false
        subresources:
          status: {}
@@ -283,13 +282,12 @@ index 9e3257b9..9504a365 100644
 -  group: eventing.knative.dev
 -  versions:
 -    - name: v1
--      served: true
++    - !!merge <<: *version
++      name: v1alpha2
+       served: true
 -      storage: true
 -      subresources:
 -        status: {}
-+    - !!merge <<: *version
-+      name: v1alpha2
-+      served: false
 +      storage: false
        schema:
 -        openAPIV3Schema:
@@ -494,7 +492,7 @@ index 9e3257b9..9504a365 100644
 +                  type: string
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      # the schema of v1beta1 is exactly the same as v1alpha2 schema
 +      schema:
@@ -782,7 +780,10 @@ index 9e3257b9..9504a365 100644
                    type: array
                    items:
                      type: object
--                    properties:
++                    required:
++                      - type
++                      - status
+                     properties:
 -                      delivery:
 -                        description: DeliverySpec contains options controlling the event delivery
 -                        type: object
@@ -826,10 +827,6 @@ index 9e3257b9..9504a365 100644
 -                        format: int64
 -                      replyUri:
 -                        description: ReplyURI is the endpoint for the reply
-+                    required:
-+                      - type
-+                      - status
-+                    properties:
 +                      lastTransitionTime:
 +                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
                          type: string
@@ -1056,7 +1053,7 @@ index 9e3257b9..9504a365 100644
    scope: Namespaced
  
  ---
-@@ -659,95 +886,138 @@ spec:
+@@ -659,46 +886,1684 @@ spec:
  apiVersion: apiextensions.k8s.io/v1
  kind: CustomResourceDefinition
  metadata:
@@ -1081,20 +1078,6 @@ index 9e3257b9..9504a365 100644
 +      storage: false
        subresources:
          status: {}
--      schema:
--        openAPIV3Schema:
--          description: 'ContainerSource is an event source that starts a container image which generates events under certain situations and sends messages to a sink URI'
--          type: object
--          properties:
--            spec:
--              type: object
--              properties:
--                ceOverrides:
--                  description: CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.
--                  type: object
--                  properties:
--                    extensions:
--                      description: Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.
 +      additionalPrinterColumns:
 +        - name: URL
 +          type: string
@@ -1108,9 +1091,11 @@ index 9e3257b9..9504a365 100644
 +        - name: Reason
 +          type: string
 +          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-+      schema:
+       schema:
+-        openAPIV3Schema:
+-          description: 'ContainerSource is an event source that starts a container image which generates events under certain situations and sends messages to a sink URI'
 +        openAPIV3Schema: &openAPIV3Schema
-+          type: object
+           type: object
 +          properties:
 +            spec:
 +              description: Spec defines the desired state of the Channel.
@@ -1128,16 +1113,12 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                    spec:
 +                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
-                       type: object
-                       x-kubernetes-preserve-unknown-fields: true
--                sink:
--                  description: Sink is a reference to an object that will resolve to a uri to use as the sink.
++                      type: object
++                      x-kubernetes-preserve-unknown-fields: true
 +                delivery: &deliverySpec
 +                  description: DeliverySpec contains options controlling the event delivery
-                   type: object
-                   properties:
--                    ref:
--                      description: Ref points to an Addressable.
++                  type: object
++                  properties:
 +                    backoffDelay:
 +                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
 +                      type: string
@@ -1146,19 +1127,8 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                    deadLetterSink:
 +                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
-                       type: object
-                       properties:
--                        apiVersion:
--                          description: API version of the referent.
--                          type: string
--                        kind:
--                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
--                          type: string
--                        name:
--                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
--                          type: string
--                        namespace:
--                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
++                      type: object
++                      properties:
 +                        ref:
 +                          description: Ref points to an Addressable.
 +                          type: object
@@ -1177,15 +1147,7 @@ index 9e3257b9..9504a365 100644
 +                              type: string
 +                        uri:
 +                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
-                           type: string
--                    uri:
--                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
--                      type: string
--                # WARNING: the schema tool can not parse PodTemplateSpec, stub here and redirect to Deployment documentation.
--                template:
--                  type: object
--                  x-kubernetes-preserve-unknown-fields: true
--                  description: 'A template in the shape of `Deployment.spec.template` to be used for this ContainerSource. More info: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/'
++                          type: string
 +                    retry:
 +                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
 +                      type: integer
@@ -1211,68 +1173,55 @@ index 9e3257b9..9504a365 100644
 +                      uid:
 +                        description: UID is used to understand the origin of the subscriber.
 +                        type: string
-             status:
++            status:
 +              description: Status represents the current state of the Channel. This data may be out of date.
-               type: object
-               properties:
++              type: object
++              properties:
 +                address:
 +                  type: object
 +                  properties:
 +                    url:
 +                      type: string
-                 annotations:
-                   description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
-                   type: object
-                   x-kubernetes-preserve-unknown-fields: true
--                ceAttributes:
--                  description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
--                  type: array
--                  items:
--                    type: object
--                    properties:
--                      source:
--                        description: Source is the CloudEvents source attribute.
--                        type: string
--                      type:
--                        description: Type refers to the CloudEvent type attribute.
--                        type: string
++                annotations:
++                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
++                  type: object
++                  x-kubernetes-preserve-unknown-fields: true
 +                channel:
 +                  description: Channel is an KReference to the Channel CRD backing this Channel.
 +                  type: object
 +                  properties:
 +                    !!merge <<: *referentProperties
-                 conditions:
-                   description: Conditions the latest available observations of a resource's current state.
-                   type: array
-                   items:
-                     type: object
--                    required:
--                      - type
--                      - status
++                conditions:
++                  description: Conditions the latest available observations of a resource's current state.
++                  type: array
++                  items:
++                    type: object
 +                    x-kubernetes-preserve-unknown-fields: true
-                     properties:
--                      lastTransitionTime:
--                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
--                        type: string
-                       message:
-                         description: A human readable message indicating details about the transition.
-                         type: string
-@@ -763,17 +1033,43 @@ spec:
-                       type:
-                         description: Type of condition.
-                         type: string
++                    properties:
++                      message:
++                        description: A human readable message indicating details about the transition.
++                        type: string
++                      reason:
++                        description: The reason for the condition's last transition.
++                        type: string
++                      severity:
++                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
++                        type: string
++                      status:
++                        description: Status of the condition, one of True, False, Unknown.
++                        type: string
++                      type:
++                        description: Type of condition.
++                        type: string
 +                deadLetterChannel:
 +                  description: DeadLetterChannel is a KReference and is set by the channel when it supports native error handling via a channel Failed messages are delivered here.
 +                  type: object
 +                  properties:
 +                    !!merge <<: *referentProperties
-                 observedGeneration:
-                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
-                   type: integer
-                   format: int64
--                sinkUri:
--                  description: SinkURI is the current active sink URI that has been configured for the Source.
--                  type: string
++                observedGeneration:
++                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
++                  type: integer
++                  format: int64
 +                subscribers:
 +                  description: This is the list of subscription's statuses for this channel.
 +                  type: array
@@ -1297,203 +1246,31 @@ index 9e3257b9..9504a365 100644
 +      storage: true
 +      subresources:
 +        status: {}
-       additionalPrinterColumns:
--        - name: Sink
++      additionalPrinterColumns:
 +        - name: URL
-           type: string
--          jsonPath: ".status.sinkUri"
++          type: string
 +          jsonPath: .status.address.url
-         - name: Age
-           type: date
-           jsonPath: .metadata.creationTimestamp
-@@ -782,192 +1078,75 @@ spec:
-           jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
-         - name: Reason
-           type: string
--          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
--  names:
--    categories:
--      - all
--      - knative
--      - sources
--    kind: ContainerSource
--    plural: containersources
--    singular: containersource
--  scope: Namespaced
--
-----
--# Copyright 2020 The Knative Authors
--#
--# Licensed under the Apache License, Version 2.0 (the "License");
--# you may not use this file except in compliance with the License.
--# You may obtain a copy of the License at
--#
--#     http://www.apache.org/licenses/LICENSE-2.0
--#
--# Unless required by applicable law or agreed to in writing, software
--# distributed under the License is distributed on an "AS IS" BASIS,
--# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--# See the License for the specific language governing permissions and
--# limitations under the License.
--apiVersion: apiextensions.k8s.io/v1
--kind: CustomResourceDefinition
--metadata:
--  name: eventtypes.eventing.knative.dev
--  labels:
--    eventing.knative.dev/release: "v0.23.0"
--    knative.dev/crd-install: "true"
--spec:
--  group: eventing.knative.dev
--  versions:
--    - name: v1beta1
--      served: true
--      storage: true
--      subresources:
--        status: {}
++        - name: Age
++          type: date
++          jsonPath: .metadata.creationTimestamp
++        - name: Ready
++          type: string
++          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
++        - name: Reason
++          type: string
 +          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-       schema:
-         openAPIV3Schema:
++      schema:
++        openAPIV3Schema:
 +          description: 'Channel represents a generic Channel. It is normally used when we want a Channel, but do not need a specific Channel implementation.'
-           type: object
--          description: 'EventType represents a type of event that can be consumed from a Broker.'
-           properties:
-             spec:
--              description: 'Spec defines the desired state of the EventType.'
--              type: object
--              properties:
--                broker:
--                  type: string
--                description:
--                  description: 'Description is an optional field used to describe the EventType, in any meaningful way.'
--                  type: string
--                schema:
--                  description: 'Schema is a URI, it represents the CloudEvents schemaurl extension attribute. It may be a JSON schema, a protobuf schema, etc. It is optional.'
--                  type: string
--                schemaData:
--                  description: 'SchemaData allows the CloudEvents schema to be stored directly in the EventType. Content is dependent on the encoding. Optional attribute. The contents are not validated or manipulated by the system.'
--                  type: string
--                source:
--                  description: 'Source is a URI, it represents the CloudEvents source.'
--                  type: string
--                type:
--                  description: 'Type represents the CloudEvents type. It is authoritative.'
--                  type: string
--            status:
--              description: 'Status represents the current state of the EventType. This data may be out of date.'
++          type: object
++          properties:
++            spec:
 +              description: Spec defines the desired state of the Channel.
-               type: object
-               properties:
--                annotations:
--                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
++              type: object
++              properties:
 +                channelTemplate:
 +                  description: ChannelTemplate specifies which Channel CRD to use to create the CRD Channel backing this Channel. This is immutable after creation. Normally this is set by the Channel defaulter, not directly by the user.
-                   type: object
--                  x-kubernetes-preserve-unknown-fields: true
--                conditions:
--                  description: 'Conditions the latest available observations of a resource''s current state.'
--                  type: array
--                  items:
--                    type: object
--                    required:
--                      - type
--                      - status
--                    properties:
--                      lastTransitionTime:
--                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
--                        type: string
--                      message:
--                        description: 'A human readable message indicating details about the transition.'
--                        type: string
--                      reason:
--                        description: 'The reason for the condition''s last transition.'
--                        type: string
--                      severity:
--                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
--                        type: string
--                      status:
--                        description: 'Status of the condition, one of True, False, Unknown.'
--                        type: string
--                      type:
--                        description: 'Type of condition.'
--                        type: string
--                observedGeneration:
--                  description: 'ObservedGeneration is the ''Generation'' of the Service that was last processed by the controller.'
--                  type: integer
--                  format: int64
--      additionalPrinterColumns:
--        - name: Type
--          type: string
--          jsonPath: ".spec.type"
--        - name: Source
--          type: string
--          jsonPath: ".spec.source"
--        - name: Schema
--          type: string
--          jsonPath: ".spec.schema"
--        - name: Broker
--          type: string
--          jsonPath: ".spec.broker"
--        - name: Description
--          type: string
--          jsonPath: ".spec.description"
--        # TODO remove Status https://github.com/knative/eventing/issues/2750
--        - name: Ready
--          type: string
--          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
--        - name: Reason
--          type: string
--          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
--  names:
--    kind: EventType
--    plural: eventtypes
--    singular: eventtype
--    categories:
--      - all
--      - knative
--      - eventing
--  scope: Namespaced
--
-----
--# Copyright 2020 The Knative Authors
--#
--# Licensed under the Apache License, Version 2.0 (the "License");
--# you may not use this file except in compliance with the License.
--# You may obtain a copy of the License at
--#
--#     http://www.apache.org/licenses/LICENSE-2.0
--#
--# Unless required by applicable law or agreed to in writing, software
--# distributed under the License is distributed on an "AS IS" BASIS,
--# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--# See the License for the specific language governing permissions and
--# limitations under the License.
--apiVersion: apiextensions.k8s.io/v1
--kind: CustomResourceDefinition
--metadata:
--  name: parallels.flows.knative.dev
--  labels:
--    eventing.knative.dev/release: "v0.23.0"
--    knative.dev/crd-install: "true"
--    duck.knative.dev/addressable: "true"
--spec:
--  group: flows.knative.dev
--  versions:
--    - name: v1
--      served: true
--      storage: true
--      subresources:
--        status: {}
--      schema:
--        openAPIV3Schema:
--          description: 'Parallel defines conditional branches that will be wired in series through Channels and Subscriptions.'
--          type: object
--          properties:
--            spec:
--              description: Spec defines the desired state of the Parallel.
--              type: object
--              properties:
--                branches:
--                  description: Branches is the list of Filter/Subscribers pairs.
++                  type: object
 +                  properties:
 +                    apiVersion:
 +                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -1544,64 +1321,47 @@ index 9e3257b9..9504a365 100644
 +                      format: int32
 +                subscribers:
 +                  description: This is the list of subscriptions for this subscribable.
-                   type: array
-                   items:
-                     type: object
--                    x-kubernetes-preserve-unknown-fields: true
-                     properties:
-                       delivery:
--                        description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
++                  type: array
++                  items:
++                    type: object
++                    properties:
++                      delivery:
 +                        description: DeliverySpec contains options controlling the event delivery
-                         type: object
-                         properties:
-                           backoffDelay:
-@@ -979,7 +1158,7 @@ spec:
-                           deadLetterSink:
-                             description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
-                             type: object
--                            properties: &addressableProperties
++                        type: object
++                        properties:
++                          backoffDelay:
++                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
++                            type: string
++                          backoffPolicy:
++                            description: BackoffPolicy is the retry backoff policy (linear, exponential).
++                            type: string
++                          deadLetterSink:
++                            description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
++                            type: object
 +                            properties:
-                               ref:
-                                 description: Ref points to an Addressable.
-                                 type: object
-@@ -1003,42 +1182,21 @@ spec:
-                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
-                             type: integer
-                             format: int32
--                      filter:
--                        description: Filter is the expression guarding the branch
--                        type: object
--                        properties:
--                          !!merge <<: *addressableProperties
--                      reply:
--                        description: Reply is a Reference to where the result of Subscriber of this case gets sent to. If not specified, sent the result to the Parallel Reply
--                        type: object
--                        properties:
--                          !!merge <<: *addressableProperties
--                      subscriber:
--                        description: Subscriber receiving the event when the filter passes
--                        type: object
--                        properties:
--                          !!merge <<: *addressableProperties
--                channelTemplate:
--                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
--                  type: object
--                  properties:
--                    apiVersion:
--                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
--                      type: string
--                    kind:
--                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
--                      type: string
--                    spec:
--                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
--                      type: object
--                      x-kubernetes-preserve-unknown-fields: true
--                reply:
--                  description: Reply is a Reference to where the result of a case Subscriber gets sent to when the case does not have a Reply
--                  type: object
--                  properties:
--                    !!merge <<: *addressableProperties
++                              ref:
++                                description: Ref points to an Addressable.
++                                type: object
++                                properties:
++                                  apiVersion:
++                                    description: API version of the referent.
++                                    type: string
++                                  kind:
++                                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                                    type: string
++                                  name:
++                                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                                    type: string
++                                  namespace:
++                                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
++                                    type: string
++                              uri:
++                                description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
++                                type: string
++                          retry:
++                            description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
++                            type: integer
++                            format: int32
 +                      generation:
 +                        description: Generation of the origin of the subscriber with uid:UID.
 +                        type: integer
@@ -1615,18 +1375,19 @@ index 9e3257b9..9504a365 100644
 +                      uid:
 +                        description: UID is used to understand the origin of the subscriber.
 +                        type: string
-             status:
--              description: Status represents the current state of the Parallel. This data may be out of date.
++            status:
 +              description: Status represents the current state of the Channel. This data may be out of date.
-               type: object
-               properties:
-                 address:
-@@ -1050,162 +1208,1433 @@ spec:
-                   description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
-                   type: object
-                   x-kubernetes-preserve-unknown-fields: true
--                branchStatuses:
--                  description: BranchStatuses is an array of corresponding to branch statuses. Matches the Spec.Branches array in the order.
++              type: object
++              properties:
++                address:
++                  type: object
++                  properties:
++                    url:
++                      type: string
++                annotations:
++                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
++                  type: object
++                  x-kubernetes-preserve-unknown-fields: true
 +                channel:
 +                  description: Channel is an KReference to the Channel CRD backing this Channel.
 +                  type: object
@@ -1645,64 +1406,13 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                conditions:
 +                  description: Conditions the latest available observations of a resource's current state.
-                   type: array
-                   items:
-                     type: object
++                  type: array
++                  items:
++                    type: object
 +                    required:
 +                      - type
 +                      - status
-                     properties:
--                      filterChannelStatus:
--                        description: FilterChannelStatus corresponds to the filter channel status.
--                        type: object
--                        properties: &channelProperties
--                          channel:
--                            description: Channel is the reference to the underlying channel.
--                            type: object
--                            properties: &referentProperties
--                              apiVersion:
--                                description: API version of the referent.
--                                type: string
--                              fieldPath:
--                                description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
--                                type: string
--                              kind:
--                                description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
--                                type: string
--                              name:
--                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
--                                type: string
--                              namespace:
--                                description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
--                                type: string
--                              resourceVersion:
--                                description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
--                                type: string
--                              uid:
--                                description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
--                                type: string
--                          ready:
--                            description: ReadyCondition indicates whether the Channel is ready or not.
--                            type: object
--                            x-kubernetes-preserve-unknown-fields: true
--                            properties: &readyConditionProperties
--                              message:
--                                description: A human readable message indicating details about the transition.
--                                type: string
--                              reason:
--                                description: The reason for the condition's last transition.
--                                type: string
--                              severity:
--                                description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
--                                type: string
--                              status:
--                                description: Status of the condition, one of True, False, Unknown.
--                                type: string
--                              type:
--                                description: Type of condition.
--                                type: string
--                      filterSubscriptionStatus:
--                        description: FilterSubscriptionStatus corresponds to the filter subscription status.
++                    properties:
 +                      lastTransitionTime:
 +                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
 +                        type: string
@@ -1802,7 +1512,7 @@ index 9e3257b9..9504a365 100644
 +  versions:
 +    - &version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -1887,20 +1597,8 @@ index 9e3257b9..9504a365 100644
 +                      description: 'ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn''t need to set or understand this field. A workflow can be the user''s name, a controller''s name, or the name of a specific apply path like "ci-cd". The set of fields is always in the version that the workflow used when modifying the object. '
 +                      type: array
 +                      items:
-                         type: object
-                         properties:
--                          ready:
--                            description: ReadyCondition indicates whether the Subscription is ready or not.
--                            type: object
--                            properties:
--                              !!merge <<: *readyConditionProperties
--                          subscription:
--                            description: Subscription is the reference to the underlying Subscription.
--                            type: object
--                            properties:
--                              !!merge <<: *referentProperties
--                      subscriberSubscriptionStatus:
--                        description: SubscriptionStatus corresponds to the subscriber subscription status.
++                        type: object
++                        properties:
 +                          apiVersion:
 +                            description: 'APIVersion defines the version of this resource that this field set applies to. The format is "group/version" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted.'
 +                            type: string
@@ -1929,18 +1627,8 @@ index 9e3257b9..9504a365 100644
 +                      description: 'List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. If this object is managed by a controller, then an entry in this list will point to this controller, with the controller field set to true. There cannot be more than one managing controller.'
 +                      type: array
 +                      items:
-                         type: object
-                         properties:
--                          ready:
--                            description: ReadyCondition indicates whether the Subscription is ready or not.
--                            type: object
--                            properties:
--                              !!merge <<: *readyConditionProperties
--                          subscription:
--                            description: Subscription is the reference to the underlying Subscription.
--                            type: object
--                            properties:
--                              !!merge <<: *referentProperties
++                        type: object
++                        properties:
 +                          apiVersion:
 +                            description: 'API version of the referent.'
 +                            type: string
@@ -1992,12 +1680,11 @@ index 9e3257b9..9504a365 100644
 +                      type:
 +                        description: 'Type refers to the CloudEvent type attribute.'
 +                        type: string
-                 conditions:
--                  description: Conditions the latest available observations of a resource's current state.
++                conditions:
 +                  description: 'Conditions the latest available observations of a resource''s current state.'
-                   type: array
-                   items:
-                     type: object
++                  type: array
++                  items:
++                    type: object
 +                    required:
 +                      - type
 +                      - status
@@ -2042,7 +1729,7 @@ index 9e3257b9..9504a365 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      # the schema of v1beta1 is exactly the same as v1alpha2 schema
 +      schema:
@@ -3026,11 +2713,195 @@ index 9e3257b9..9504a365 100644
 +        openAPIV3Schema:
 +          type: object
 +          description: 'PingSource describes an event source with a fixed payload produced on a specified cron schedule.'
-+          properties:
-+            spec:
-+              type: object
+           properties:
+             spec:
+               type: object
 +              description: 'PingSourceSpec defines the desired state of the PingSource (from the client).'
-+              properties:
+               properties:
+                 ceOverrides:
+-                  description: CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.
++                  description: 'CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.'
+                   type: object
+                   properties:
+                     extensions:
+-                      description: Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.
++                      description: 'Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.'
+                       type: object
++                      additionalProperties:
++                        type: string
+                       x-kubernetes-preserve-unknown-fields: true
++                jsonData:
++                  description: 'JsonData is json encoded data used as the body of the event posted to the sink. Default is empty. If set, datacontenttype will also be set to "application/json".'
++                  type: string
++                schedule:
++                  description: 'Schedule is the cronjob schedule. Defaults to `* * * * *`.'
++                  type: string
+                 sink:
+-                  description: Sink is a reference to an object that will resolve to a uri to use as the sink.
++                  description: 'Sink is a reference to an object that will resolve to a uri to use as the sink.'
+                   type: object
+                   properties:
+                     ref:
+-                      description: Ref points to an Addressable.
++                      description: 'Ref points to an Addressable.'
+                       type: object
+                       properties:
+                         apiVersion:
+-                          description: API version of the referent.
++                          description: 'API version of the referent.'
+                           type: string
+                         kind:
+                           description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+@@ -710,34 +2575,33 @@ spec:
+                           description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                           type: string
+                     uri:
+-                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
++                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
+                       type: string
+-                # WARNING: the schema tool can not parse PodTemplateSpec, stub here and redirect to Deployment documentation.
+-                template:
+-                  type: object
+-                  x-kubernetes-preserve-unknown-fields: true
+-                  description: 'A template in the shape of `Deployment.spec.template` to be used for this ContainerSource. More info: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/'
++                timezone:
++                  description: 'Timezone modifies the actual time relative to the specified timezone. Defaults to the system time zone. More general information about time zones: https://www.iana.org/time-zones List of valid timezone values: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
++                  type: string
+             status:
+               type: object
++              description: 'PingSourceStatus defines the observed state of PingSource (from the controller).'
+               properties:
+                 annotations:
+-                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
++                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
+                   type: object
+                   x-kubernetes-preserve-unknown-fields: true
+                 ceAttributes:
+-                  description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
++                  description: 'CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.'
+                   type: array
+                   items:
+                     type: object
+                     properties:
+                       source:
+-                        description: Source is the CloudEvents source attribute.
++                        description: 'Source is the CloudEvents source attribute.'
+                         type: string
+                       type:
+-                        description: Type refers to the CloudEvent type attribute.
++                        description: 'Type refers to the CloudEvent type attribute.'
+                         type: string
+                 conditions:
+-                  description: Conditions the latest available observations of a resource's current state.
++                  description: 'Conditions the latest available observations of a resource''s current state.'
+                   type: array
+                   items:
+                     type: object
+@@ -746,78 +2610,32 @@ spec:
+                       - status
+                     properties:
+                       lastTransitionTime:
+-                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
++                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                         type: string
+                       message:
+-                        description: A human readable message indicating details about the transition.
++                        description: 'A human readable message indicating details about the transition.'
+                         type: string
+                       reason:
+-                        description: The reason for the condition's last transition.
++                        description: 'The reason for the condition''s last transition.'
+                         type: string
+                       severity:
+-                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
++                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                         type: string
+                       status:
+-                        description: Status of the condition, one of True, False, Unknown.
++                        description: 'Status of the condition, one of True, False, Unknown.'
+                         type: string
+                       type:
+-                        description: Type of condition.
++                        description: 'Type of condition.'
+                         type: string
+                 observedGeneration:
+-                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
++                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
+                   type: integer
+                   format: int64
+                 sinkUri:
+-                  description: SinkURI is the current active sink URI that has been configured for the Source.
++                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
+                   type: string
+-      additionalPrinterColumns:
+-        - name: Sink
+-          type: string
+-          jsonPath: ".status.sinkUri"
+-        - name: Age
+-          type: date
+-          jsonPath: .metadata.creationTimestamp
+-        - name: Ready
+-          type: string
+-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+-        - name: Reason
+-          type: string
+-          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+-  names:
+-    categories:
+-      - all
+-      - knative
+-      - sources
+-    kind: ContainerSource
+-    plural: containersources
+-    singular: containersource
+-  scope: Namespaced
+-
+----
+-# Copyright 2020 The Knative Authors
+-#
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#     http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
+-apiVersion: apiextensions.k8s.io/v1
+-kind: CustomResourceDefinition
+-metadata:
+-  name: eventtypes.eventing.knative.dev
+-  labels:
+-    eventing.knative.dev/release: "v0.23.0"
+-    knative.dev/crd-install: "true"
+-spec:
+-  group: eventing.knative.dev
+-  versions:
+-    - name: v1beta1
++    - &v1beta2Version
++      name: v1beta2
+       served: true
+       storage: true
+       subresources:
+@@ -825,37 +2643,80 @@ spec:
+       schema:
+         openAPIV3Schema:
+           type: object
+-          description: 'EventType represents a type of event that can be consumed from a Broker.'
++          description: 'PingSource describes an event source with a fixed payload produced on a specified cron schedule.'
+           properties:
+             spec:
+-              description: 'Spec defines the desired state of the EventType.'
+               type: object
++              description: 'PingSourceSpec defines the desired state of the PingSource (from the client).'
+               properties:
+-                broker:
+-                  type: string
+-                description:
+-                  description: 'Description is an optional field used to describe the EventType, in any meaningful way.'
 +                ceOverrides:
 +                  description: 'CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.'
 +                  type: object
@@ -3041,12 +2912,26 @@ index 9e3257b9..9504a365 100644
 +                      additionalProperties:
 +                        type: string
 +                      x-kubernetes-preserve-unknown-fields: true
-+                jsonData:
-+                  description: 'JsonData is json encoded data used as the body of the event posted to the sink. Default is empty. If set, datacontenttype will also be set to "application/json".'
-+                  type: string
++                contentType:
++                  description: 'ContentType is the media type of `data` or `dataBase64`. Default is empty.'
+                   type: string
+-                schema:
+-                  description: 'Schema is a URI, it represents the CloudEvents schemaurl extension attribute. It may be a JSON schema, a protobuf schema, etc. It is optional.'
++                data:
++                  description: 'Data is data used as the body of the event posted to the sink. Default is empty. Mutually exclusive with `dataBase64`.'
+                   type: string
+-                schemaData:
+-                  description: 'SchemaData allows the CloudEvents schema to be stored directly in the EventType. Content is dependent on the encoding. Optional attribute. The contents are not validated or manipulated by the system.'
++                dataBase64:
++                  description: "DataBase64 is the base64-encoded string of the actual event's body posted to the sink. Default is empty. Mutually exclusive with `data`."
+                   type: string
+-                source:
+-                  description: 'Source is a URI, it represents the CloudEvents source.'
 +                schedule:
-+                  description: 'Schedule is the cronjob schedule. Defaults to `* * * * *`.'
-+                  type: string
++                  description: 'Schedule is the cron schedule. Defaults to `* * * * *`.'
+                   type: string
+-                type:
+-                  description: 'Type represents the CloudEvents type. It is authoritative.'
 +                sink:
 +                  description: 'Sink is a reference to an object that will resolve to a uri to use as the sink.'
 +                  type: object
@@ -3072,15 +2957,16 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                timezone:
 +                  description: 'Timezone modifies the actual time relative to the specified timezone. Defaults to the system time zone. More general information about time zones: https://www.iana.org/time-zones List of valid timezone values: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
-+                  type: string
-+            status:
-+              type: object
+                   type: string
+             status:
+-              description: 'Status represents the current state of the EventType. This data may be out of date.'
+               type: object
 +              description: 'PingSourceStatus defines the observed state of PingSource (from the controller).'
-+              properties:
-+                annotations:
-+                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
-+                  type: object
-+                  x-kubernetes-preserve-unknown-fields: true
+               properties:
+                 annotations:
+                   description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
+                   type: object
+                   x-kubernetes-preserve-unknown-fields: true
 +                ceAttributes:
 +                  description: 'CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.'
 +                  type: array
@@ -3093,57 +2979,405 @@ index 9e3257b9..9504a365 100644
 +                      type:
 +                        description: 'Type refers to the CloudEvent type attribute.'
 +                        type: string
-+                conditions:
-+                  description: 'Conditions the latest available observations of a resource''s current state.'
-+                  type: array
-+                  items:
-+                    type: object
-+                    required:
-+                      - type
-+                      - status
+                 conditions:
+                   description: 'Conditions the latest available observations of a resource''s current state.'
+                   type: array
+@@ -884,41 +2745,50 @@ spec:
+                         description: 'Type of condition.'
+                         type: string
+                 observedGeneration:
+-                  description: 'ObservedGeneration is the ''Generation'' of the Service that was last processed by the controller.'
++                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
+                   type: integer
+                   format: int64
++                sinkUri:
++                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
++                  type: string
+       additionalPrinterColumns:
+-        - name: Type
+-          type: string
+-          jsonPath: ".spec.type"
+-        - name: Source
+-          type: string
+-          jsonPath: ".spec.source"
+-        - name: Schema
+-          type: string
+-          jsonPath: ".spec.schema"
+-        - name: Broker
++        - name: Sink
+           type: string
+-          jsonPath: ".spec.broker"
+-        - name: Description
++          jsonPath: .status.sinkUri
++        - name: Schedule
+           type: string
+-          jsonPath: ".spec.description"
+-        # TODO remove Status https://github.com/knative/eventing/issues/2750
++          jsonPath: .spec.schedule
++        - name: Age
++          type: date
++          jsonPath: .metadata.creationTimestamp
+         - name: Ready
+           type: string
+-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
++          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
+         - name: Reason
+           type: string
+-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
++          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
++    - !!merge <<: *v1beta2Version
++      name: v1
++      served: true
++      storage: false
++      # v1 schema is identical to the v1beta2 schema
+   names:
+-    kind: EventType
+-    plural: eventtypes
+-    singular: eventtype
+     categories:
+       - all
+       - knative
+-      - eventing
++      - sources
++    kind: PingSource
++    plural: pingsources
++    singular: pingsource
+   scope: Namespaced
++  conversion:
++    strategy: Webhook
++    webhook:
++      conversionReviewVersions: ["v1", "v1beta1"]
++      clientConfig:
++        service:
++          name: eventing-webhook
++          namespace: knative-eventing
+ 
+ ---
+ # Copyright 2020 The Knative Authors
+@@ -937,7 +2807,7 @@ spec:
+ apiVersion: apiextensions.k8s.io/v1
+ kind: CustomResourceDefinition
+ metadata:
+-  name: parallels.flows.knative.dev
++  name: sequences.flows.knative.dev
+   labels:
+     eventing.knative.dev/release: "v0.23.0"
+     knative.dev/crd-install: "true"
+@@ -945,27 +2815,63 @@ metadata:
+ spec:
+   group: flows.knative.dev
+   versions:
+-    - name: v1
+-      served: true
+-      storage: true
++    - name: v1beta1
++      served: false
++      storage: false
+       subresources:
+         status: {}
+       schema:
+-        openAPIV3Schema:
+-          description: 'Parallel defines conditional branches that will be wired in series through Channels and Subscriptions.'
++        openAPIV3Schema: &openAPIV3Schema
+           type: object
+           properties:
+             spec:
+-              description: Spec defines the desired state of the Parallel.
++              description: Spec defines the desired state of the Sequence.
+               type: object
+               properties:
+-                branches:
+-                  description: Branches is the list of Filter/Subscribers pairs.
++                channelTemplate:
++                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
++                  type: object
++                  properties:
++                    apiVersion:
++                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
++                      type: string
++                    kind:
++                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                      type: string
++                    spec:
++                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
++                      type: object
++                      x-kubernetes-preserve-unknown-fields: true
++                reply:
++                  description: Reply is a Reference to where the result of the last Subscriber gets sent to.
++                  type: object
++                  properties: &addressableProperties
++                    ref:
++                      description: Ref points to an Addressable.
++                      type: object
++                      properties:
++                        apiVersion:
++                          description: API version of the referent.
++                          type: string
++                        kind:
++                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                          type: string
++                        name:
++                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                          type: string
++                        namespace:
++                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
++                          type: string
++                    uri:
++                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
++                      type: string
++                steps:
++                  description: Steps is the list of Destinations (processors / functions) that will be called in the order provided. Each step has its own delivery options
+                   type: array
+                   items:
+                     type: object
+-                    x-kubernetes-preserve-unknown-fields: true
                      properties:
--                      !!merge <<: *readyConditionProperties
++                      !!merge <<: *addressableProperties
+                       delivery:
+                         description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
+                         type: object
+@@ -979,66 +2885,14 @@ spec:
+                           deadLetterSink:
+                             description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                             type: object
+-                            properties: &addressableProperties
+-                              ref:
+-                                description: Ref points to an Addressable.
+-                                type: object
+-                                properties:
+-                                  apiVersion:
+-                                    description: API version of the referent.
+-                                    type: string
+-                                  kind:
+-                                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                                    type: string
+-                                  name:
+-                                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                                    type: string
+-                                  namespace:
+-                                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+-                                    type: string
+-                              uri:
+-                                description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+-                                type: string
++                            properties:
++                              !!merge <<: *addressableProperties
+                           retry:
+                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                             type: integer
+                             format: int32
+-                      filter:
+-                        description: Filter is the expression guarding the branch
+-                        type: object
+-                        properties:
+-                          !!merge <<: *addressableProperties
+-                      reply:
+-                        description: Reply is a Reference to where the result of Subscriber of this case gets sent to. If not specified, sent the result to the Parallel Reply
+-                        type: object
+-                        properties:
+-                          !!merge <<: *addressableProperties
+-                      subscriber:
+-                        description: Subscriber receiving the event when the filter passes
+-                        type: object
+-                        properties:
+-                          !!merge <<: *addressableProperties
+-                channelTemplate:
+-                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
+-                  type: object
+-                  properties:
+-                    apiVersion:
+-                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+-                      type: string
+-                    kind:
+-                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                      type: string
+-                    spec:
+-                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+-                      type: object
+-                      x-kubernetes-preserve-unknown-fields: true
+-                reply:
+-                  description: Reply is a Reference to where the result of a case Subscriber gets sent to when the case does not have a Reply
+-                  type: object
+-                  properties:
+-                    !!merge <<: *addressableProperties
+             status:
+-              description: Status represents the current state of the Parallel. This data may be out of date.
++              description: Status represents the current state of the Sequence. This data may be out of date.
+               type: object
+               properties:
+                 address:
+@@ -1049,90 +2903,57 @@ spec:
+                 annotations:
+                   description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                   type: object
+-                  x-kubernetes-preserve-unknown-fields: true
+-                branchStatuses:
+-                  description: BranchStatuses is an array of corresponding to branch statuses. Matches the Spec.Branches array in the order.
++                channelStatuses:
++                  description: ChannelStatuses is an array of corresponding Channel statuses. Matches the Spec.Steps array in the order.
+                   type: array
+                   items:
+                     type: object
+                     properties:
+-                      filterChannelStatus:
+-                        description: FilterChannelStatus corresponds to the filter channel status.
+-                        type: object
+-                        properties: &channelProperties
+-                          channel:
+-                            description: Channel is the reference to the underlying channel.
+-                            type: object
+-                            properties: &referentProperties
+-                              apiVersion:
+-                                description: API version of the referent.
+-                                type: string
+-                              fieldPath:
+-                                description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
+-                                type: string
+-                              kind:
+-                                description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                                type: string
+-                              name:
+-                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                                type: string
+-                              namespace:
+-                                description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+-                                type: string
+-                              resourceVersion:
+-                                description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+-                                type: string
+-                              uid:
+-                                description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+-                                type: string
+-                          ready:
+-                            description: ReadyCondition indicates whether the Channel is ready or not.
+-                            type: object
+-                            x-kubernetes-preserve-unknown-fields: true
+-                            properties: &readyConditionProperties
+-                              message:
+-                                description: A human readable message indicating details about the transition.
+-                                type: string
+-                              reason:
+-                                description: The reason for the condition's last transition.
+-                                type: string
+-                              severity:
+-                                description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+-                                type: string
+-                              status:
+-                                description: Status of the condition, one of True, False, Unknown.
+-                                type: string
+-                              type:
+-                                description: Type of condition.
+-                                type: string
+-                      filterSubscriptionStatus:
+-                        description: FilterSubscriptionStatus corresponds to the filter subscription status.
++                      channel:
++                        description: Channel is the reference to the underlying channel.
+                         type: object
+-                        properties:
+-                          ready:
+-                            description: ReadyCondition indicates whether the Subscription is ready or not.
+-                            type: object
+-                            properties:
+-                              !!merge <<: *readyConditionProperties
+-                          subscription:
+-                            description: Subscription is the reference to the underlying Subscription.
+-                            type: object
+-                            properties:
+-                              !!merge <<: *referentProperties
+-                      subscriberSubscriptionStatus:
+-                        description: SubscriptionStatus corresponds to the subscriber subscription status.
++                        properties: &referentProperties
++                          apiVersion:
++                            description: API version of the referent.
++                            type: string
++                          fieldPath:
++                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
++                            type: string
++                          kind:
++                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                            type: string
++                          name:
++                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                            type: string
++                          namespace:
++                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
++                            type: string
++                          resourceVersion:
++                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
++                            type: string
++                          uid:
++                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
++                            type: string
++                      ready:
++                        description: ReadyCondition indicates whether the Channel is ready or not.
+                         type: object
+-                        properties:
+-                          ready:
+-                            description: ReadyCondition indicates whether the Subscription is ready or not.
+-                            type: object
+-                            properties:
+-                              !!merge <<: *readyConditionProperties
+-                          subscription:
+-                            description: Subscription is the reference to the underlying Subscription.
+-                            type: object
+-                            properties:
+-                              !!merge <<: *referentProperties
++                        x-kubernetes-preserve-unknown-fields: true
++                        properties: &readyConditionProperties
++                          message:
++                            description: A human readable message indicating details about the transition.
++                            type: string
++                          reason:
++                            description: The reason for the condition's last transition.
++                            type: string
++                          severity:
++                            description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
++                            type: string
++                          status:
++                            description: Status of the condition, one of True, False, Unknown.
++                            type: string
++                          type:
++                            description: Type of condition.
++                            type: string
+                 conditions:
+                   description: Conditions the latest available observations of a resource's current state.
+                   type: array
+@@ -1140,15 +2961,26 @@ spec:
+                     type: object
+                     properties:
+                       !!merge <<: *readyConditionProperties
 -                ingressChannelStatus:
 -                  description: IngressChannelStatus corresponds to the ingress channel status.
 -                  type: object
 -                  properties:
 -                    !!merge <<: *channelProperties
-+                      lastTransitionTime:
-+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
-+                        type: string
-+                      message:
-+                        description: 'A human readable message indicating details about the transition.'
-+                        type: string
-+                      reason:
-+                        description: 'The reason for the condition''s last transition.'
-+                        type: string
-+                      severity:
-+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
-+                        type: string
-+                      status:
-+                        description: 'Status of the condition, one of True, False, Unknown.'
-+                        type: string
-+                      type:
-+                        description: 'Type of condition.'
-+                        type: string
                  observedGeneration:
--                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
-+                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
+                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                    type: integer
                    format: int64
--      additionalPrinterColumns:
--        - name: URL
--          type: string
--          jsonPath: .status.address.url
--        - name: Age
--          type: date
--          jsonPath: .metadata.creationTimestamp
--        - name: Ready
--          type: string
--          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
--        - name: Reason
--          type: string
--          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
++                subscriptionStatuses:
++                  description: SubscriptionStatuses is an array of corresponding Subscription statuses. Matches the Spec.Steps array in the order.
++                  type: array
++                  items:
++                    type: object
++                    properties:
++                      ready:
++                        description: ReadyCondition indicates whether the Subscription is ready or not.
++                        type: object
++                        properties:
++                          !!merge <<: *readyConditionProperties
++                      subscription:
++                        description: Subscription is the reference to the underlying Subscription.
++                        type: object
++                        properties:
++                          !!merge <<: *referentProperties
+       additionalPrinterColumns:
+         - name: URL
+           type: string
+@@ -1162,96 +2994,43 @@ spec:
+         - name: Reason
+           type: string
+           jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
 -  names:
 -    kind: Parallel
 -    plural: parallels
@@ -3188,43 +3422,49 @@ index 9e3257b9..9504a365 100644
 -  group: sources.knative.dev
 -  versions:
 -    - &version
-+                sinkUri:
-+                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
-+                  type: string
-+    - &v1beta2Version
-       name: v1beta2
+-      name: v1beta2
++    - name: v1
        served: true
        storage: true
-@@ -1338,7 +2767,7 @@ spec:
-         - name: Reason
-           type: string
-           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
--    - !!merge <<: *version
-+    - !!merge <<: *v1beta2Version
-       name: v1
-       served: true
-       storage: false
-@@ -1386,6 +2815,185 @@ metadata:
- spec:
-   group: flows.knative.dev
-   versions:
-+    - name: v1beta1
-+      served: false
-+      storage: false
-+      subresources:
-+        status: {}
-+      schema:
-+        openAPIV3Schema: &openAPIV3Schema
-+          type: object
-+          properties:
-+            spec:
+       subresources:
+         status: {}
+       schema:
+         openAPIV3Schema:
++          description: 'Sequence defines a sequence of Subscribers that will be wired in series through Channels and Subscriptions.'
+           type: object
+-          description: 'PingSource describes an event source with a fixed payload produced on a specified cron schedule.'
+           properties:
+             spec:
 +              description: Spec defines the desired state of the Sequence.
-+              type: object
-+              properties:
+               type: object
+-              description: 'PingSourceSpec defines the desired state of the PingSource (from the client).'
+               properties:
+-                ceOverrides:
+-                  description: 'CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.'
 +                channelTemplate:
 +                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
-+                  type: object
-+                  properties:
+                   type: object
+                   properties:
+-                    extensions:
+-                      description: 'Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.'
+-                      type: object
+-                      additionalProperties:
+-                        type: string
+-                      x-kubernetes-preserve-unknown-fields: true
+-                contentType:
+-                  description: 'ContentType is the media type of `data` or `dataBase64`. Default is empty.'
+-                  type: string
+-                data:
+-                  description: 'Data is data used as the body of the event posted to the sink. Default is empty. Mutually exclusive with `dataBase64`.'
+-                  type: string
+-                dataBase64:
+-                  description: "DataBase64 is the base64-encoded string of the actual event's body posted to the sink. Default is empty. Mutually exclusive with `data`."
+-                  type: string
+-                schedule:
+-                  description: 'Schedule is the cron schedule. Defaults to `* * * * *`.'
+-                  type: string
+-                sink:
+-                  description: 'Sink is a reference to an object that will resolve to a uri to use as the sink.'
 +                    apiVersion:
 +                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
 +                      type: string
@@ -3233,38 +3473,38 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                    spec:
 +                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
-+                      type: object
-+                      x-kubernetes-preserve-unknown-fields: true
++                      type: string
 +                reply:
 +                  description: Reply is a Reference to where the result of the last Subscriber gets sent to.
-+                  type: object
-+                  properties: &addressableProperties
-+                    ref:
+                   type: object
+                   properties:
+                     ref:
+-                      description: 'Ref points to an Addressable.'
 +                      description: Ref points to an Addressable.
-+                      type: object
-+                      properties:
-+                        apiVersion:
+                       type: object
+                       properties:
+                         apiVersion:
+-                          description: 'API version of the referent.'
 +                          description: API version of the referent.
-+                          type: string
-+                        kind:
-+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-+                          type: string
-+                        name:
-+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-+                          type: string
-+                        namespace:
-+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
-+                          type: string
-+                    uri:
+                           type: string
+                         kind:
+                           description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+@@ -1263,33 +3042,143 @@ spec:
+                           description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                           type: string
+                     uri:
+-                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
 +                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
-+                      type: string
+                       type: string
+-                timezone:
+-                  description: 'Timezone modifies the actual time relative to the specified timezone. Defaults to the system time zone. More general information about time zones: https://www.iana.org/time-zones List of valid timezone values: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
+-                  type: string
 +                steps:
 +                  description: Steps is the list of Destinations (processors / functions) that will be called in the order provided. Each step has its own delivery options
 +                  type: array
 +                  items:
 +                    type: object
 +                    properties:
-+                      !!merge <<: *addressableProperties
 +                      delivery:
 +                        description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
 +                        type: object
@@ -3279,33 +3519,83 @@ index 9e3257b9..9504a365 100644
 +                            description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
 +                            type: object
 +                            properties:
-+                              !!merge <<: *addressableProperties
++                              ref:
++                                description: Ref points to an Addressable.
++                                type: object
++                                properties:
++                                  apiVersion:
++                                    description: API version of the referent.
++                                    type: string
++                                  kind:
++                                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                                    type: string
++                                  name:
++                                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                                    type: string
++                                  namespace:
++                                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
++                                    type: string
++                              uri:
++                                description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
++                                type: string
 +                          retry:
 +                            description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
 +                            type: integer
 +                            format: int32
-+            status:
++                      ref:
++                        description: Ref points to an Addressable.
++                        type: object
++                        properties:
++                          apiVersion:
++                            description: API version of the referent.
++                            type: string
++                          kind:
++                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                            type: string
++                          name:
++                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                            type: string
++                          namespace:
++                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
++                            type: string
++                      uri:
++                        description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
++                        type: string
+             status:
 +              description: Status represents the current state of the Sequence. This data may be out of date.
-+              type: object
-+              properties:
+               type: object
+-              description: 'PingSourceStatus defines the observed state of PingSource (from the controller).'
+               properties:
 +                address:
 +                  type: object
++                  required:
++                    - url
 +                  properties:
 +                    url:
 +                      type: string
-+                annotations:
+                 annotations:
+-                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
 +                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
-+                  type: object
+                   type: object
+                   x-kubernetes-preserve-unknown-fields: true
+-                ceAttributes:
+-                  description: 'CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.'
 +                channelStatuses:
 +                  description: ChannelStatuses is an array of corresponding Channel statuses. Matches the Spec.Steps array in the order.
-+                  type: array
-+                  items:
-+                    type: object
-+                    properties:
+                   type: array
+                   items:
+                     type: object
+                     properties:
+-                      source:
+-                        description: 'Source is the CloudEvents source attribute.'
+-                        type: string
+-                      type:
+-                        description: 'Type refers to the CloudEvent type attribute.'
+-                        type: string
 +                      channel:
 +                        description: Channel is the reference to the underlying channel.
 +                        type: object
-+                        properties: &referentProperties
++                        properties:
 +                          apiVersion:
 +                            description: API version of the referent.
 +                            type: string
@@ -3330,8 +3620,13 @@ index 9e3257b9..9504a365 100644
 +                      ready:
 +                        description: ReadyCondition indicates whether the Channel is ready or not.
 +                        type: object
-+                        x-kubernetes-preserve-unknown-fields: true
-+                        properties: &readyConditionProperties
++                        required:
++                          - type
++                          - status
++                        properties:
++                          lastTransitionTime:
++                            description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
++                            type: string
 +                          message:
 +                            description: A human readable message indicating details about the transition.
 +                            type: string
@@ -3347,17 +3642,47 @@ index 9e3257b9..9504a365 100644
 +                          type:
 +                            description: Type of condition.
 +                            type: string
-+                conditions:
+                 conditions:
+-                  description: 'Conditions the latest available observations of a resource''s current state.'
 +                  description: Conditions the latest available observations of a resource's current state.
-+                  type: array
-+                  items:
-+                    type: object
-+                    properties:
-+                      !!merge <<: *readyConditionProperties
-+                observedGeneration:
+                   type: array
+                   items:
+                     type: object
+@@ -1298,68 +3187,105 @@ spec:
+                       - status
+                     properties:
+                       lastTransitionTime:
+-                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
++                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                         type: string
+                       message:
+-                        description: 'A human readable message indicating details about the transition.'
++                        description: A human readable message indicating details about the transition.
+                         type: string
+                       reason:
+-                        description: 'The reason for the condition''s last transition.'
++                        description: The reason for the condition's last transition.
+                         type: string
+                       severity:
+-                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
++                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                         type: string
+                       status:
+-                        description: 'Status of the condition, one of True, False, Unknown.'
++                        description: Status of the condition, one of True, False, Unknown.
+                         type: string
+                       type:
+-                        description: 'Type of condition.'
++                        description: Type of condition.
+                         type: string
+                 observedGeneration:
+-                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
 +                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
-+                  type: integer
-+                  format: int64
+                   type: integer
+                   format: int64
+-                sinkUri:
+-                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
+-                  type: string
 +                subscriptionStatuses:
 +                  description: SubscriptionStatuses is an array of corresponding Subscription statuses. Matches the Spec.Steps array in the order.
 +                  type: array
@@ -3367,36 +3692,126 @@ index 9e3257b9..9504a365 100644
 +                      ready:
 +                        description: ReadyCondition indicates whether the Subscription is ready or not.
 +                        type: object
++                        required:
++                          - type
++                          - status
 +                        properties:
-+                          !!merge <<: *readyConditionProperties
++                          lastTransitionTime:
++                            description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
++                            type: string
++                          message:
++                            description: A human readable message indicating details about the transition.
++                            type: string
++                          reason:
++                            description: The reason for the condition's last transition.
++                            type: string
++                          severity:
++                            description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
++                            type: string
++                          status:
++                            description: Status of the condition, one of True, False, Unknown.
++                            type: string
++                          type:
++                            description: Type of condition.
++                            type: string
 +                      subscription:
 +                        description: Subscription is the reference to the underlying Subscription.
 +                        type: object
 +                        properties:
-+                          !!merge <<: *referentProperties
-+      additionalPrinterColumns:
++                          apiVersion:
++                            description: API version of the referent.
++                            type: string
++                          fieldPath:
++                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
++                            type: string
++                          kind:
++                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
++                            type: string
++                          name:
++                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
++                            type: string
++                          namespace:
++                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
++                            type: string
++                          resourceVersion:
++                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
++                            type: string
++                          uid:
++                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
++                            type: string
+       additionalPrinterColumns:
+-        - name: Sink
+-          type: string
+-          jsonPath: .status.sinkUri
+-        - name: Schedule
 +        - name: URL
-+          type: string
+           type: string
+-          jsonPath: .spec.schedule
 +          jsonPath: .status.address.url
-+        - name: Age
-+          type: date
-+          jsonPath: .metadata.creationTimestamp
-+        - name: Ready
-+          type: string
+         - name: Age
+           type: date
+           jsonPath: .metadata.creationTimestamp
+         - name: Ready
+           type: string
+-          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
 +          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
-+        - name: Reason
-+          type: string
+         - name: Reason
+           type: string
+-          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+-    - !!merge <<: *version
+-      name: v1
+-      served: true
+-      storage: false
+-      # v1 schema is identical to the v1beta2 schema
 +          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-     - name: v1
-       served: true
-       storage: true
-@@ -1707,6 +3315,41 @@ metadata:
+   names:
++    kind: Sequence
++    plural: sequences
++    singular: sequence
+     categories:
+       - all
+       - knative
+-      - sources
+-    kind: PingSource
+-    plural: pingsources
+-    singular: pingsource
++      - flows
+   scope: Namespaced
+-  conversion:
+-    strategy: Webhook
+-    webhook:
+-      conversionReviewVersions: ["v1", "v1beta1"]
+-      clientConfig:
+-        service:
+-          name: eventing-webhook
+-          namespace: knative-eventing
+ 
+ ---
+ # Copyright 2020 The Knative Authors
+@@ -1375,17 +3301,55 @@ spec:
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
++
+ apiVersion: apiextensions.k8s.io/v1
+ kind: CustomResourceDefinition
+ metadata:
+-  name: sequences.flows.knative.dev
+   labels:
+     eventing.knative.dev/release: "v0.23.0"
++    eventing.knative.dev/source: "true"
++    duck.knative.dev/source: "true"
++    duck.knative.dev/binding: "true"
+     knative.dev/crd-install: "true"
+-    duck.knative.dev/addressable: "true"
++  name: sinkbindings.sources.knative.dev
  spec:
-   group: sources.knative.dev
+-  group: flows.knative.dev
++  group: sources.knative.dev
    versions:
 +    - &version
 +      name: v1alpha1
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -3423,44 +3838,91 @@ index 9e3257b9..9504a365 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
      - name: v1
        served: true
        storage: true
-@@ -1767,132 +3410,315 @@ spec:
-                     namespace:
-                       description: Namespace of the referent.
+@@ -1393,28 +3357,22 @@ spec:
+         status: {}
+       schema:
+         openAPIV3Schema:
+-          description: 'Sequence defines a sequence of Subscribers that will be wired in series through Channels and Subscriptions.'
++          description: 'SinkBinding describes a Binding that is also a Source. The `sink` (from the Source duck) is resolved to a URL and then projected into the `subject` by augmenting the runtime contract of the referenced containers to have a `K_SINK` environment variable holding the endpoint to which to send cloud events.'
+           type: object
+           properties:
+             spec:
+-              description: Spec defines the desired state of the Sequence.
+               type: object
+               properties:
+-                channelTemplate:
+-                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
++                ceOverrides:
++                  description: CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.
+                   type: object
+                   properties:
+-                    apiVersion:
+-                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+-                      type: string
+-                    kind:
+-                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                      type: string
+-                    spec:
+-                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+-                      type: string
+-                reply:
+-                  description: Reply is a Reference to where the result of the last Subscriber gets sent to.
++                    extensions:
++                      description: Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.
++                      type: object
++                      x-kubernetes-preserve-unknown-fields: true
++                sink:
++                  description: Sink is a reference to an object that will resolve to a uri to use as the sink.
+                   type: object
+                   properties:
+                     ref:
+@@ -1436,139 +3394,66 @@ spec:
+                     uri:
+                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                        type: string
--                    selector:
--                      description: Selector of the referents. Mutually exclusive with Name.
--                      type: object
--                      properties:
--                        matchExpressions:
--                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
--                          type: array
--                          items:
--                            type: object
--                            properties:
--                              key:
--                                description: key is the label key that the selector applies to.
--                                type: string
--                              operator:
--                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
--                                type: string
--                              values:
--                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
--                                type: array
--                                items:
--                                  type: string
--                        matchLabels:
--                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
--                          type: object
--                          x-kubernetes-preserve-unknown-fields: true
+-                steps:
+-                  description: Steps is the list of Destinations (processors / functions) that will be called in the order provided. Each step has its own delivery options
+-                  type: array
+-                  items:
+-                    type: object
+-                    properties:
+-                      delivery:
+-                        description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
+-                        type: object
+-                        properties:
+-                          backoffDelay:
+-                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+-                            type: string
+-                          backoffPolicy:
+-                            description: BackoffPolicy is the retry backoff policy (linear, exponential).
+-                            type: string
+-                          deadLetterSink:
+-                            description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
++                subject:
++                  description: Subject references the resource(s) whose "runtime contract" should be augmented by Binding implementations.
++                  type: object
++                  properties:
++                    apiVersion:
++                      description: API version of the referent.
++                      type: string
++                    kind:
++                      description: Kind of the referent.
++                      type: string
++                    name:
++                      description: Name of the referent. Mutually exclusive with Selector.
++                      type: string
++                    namespace:
++                      description: Namespace of the referent.
++                      type: string
 +                    selector:
 +                      description: Selector of the referents. Mutually exclusive with Name.
 +                      type: object
@@ -3469,11 +3931,52 @@ index 9e3257b9..9504a365 100644
 +                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
 +                          type: array
 +                          items:
-+                            type: object
-+                            properties:
+                             type: object
+                             properties:
+-                              ref:
+-                                description: Ref points to an Addressable.
+-                                type: object
+-                                properties:
+-                                  apiVersion:
+-                                    description: API version of the referent.
+-                                    type: string
+-                                  kind:
+-                                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                                    type: string
+-                                  name:
+-                                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                                    type: string
+-                                  namespace:
+-                                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+-                                    type: string
+-                              uri:
+-                                description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
 +                              key:
 +                                description: key is the label key that the selector applies to.
-+                                type: string
+                                 type: string
+-                          retry:
+-                            description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+-                            type: integer
+-                            format: int32
+-                      ref:
+-                        description: Ref points to an Addressable.
+-                        type: object
+-                        properties:
+-                          apiVersion:
+-                            description: API version of the referent.
+-                            type: string
+-                          kind:
+-                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                            type: string
+-                          name:
+-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                            type: string
+-                          namespace:
+-                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+-                            type: string
+-                      uri:
+-                        description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+-                        type: string
 +                              operator:
 +                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
 +                                type: string
@@ -3486,127 +3989,233 @@ index 9e3257b9..9504a365 100644
 +                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
 +                          type: object
 +                          x-kubernetes-preserve-unknown-fields: true
-+            status:
-+              type: object
-+              properties:
-+                annotations:
-+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
-+                  type: object
-+                  x-kubernetes-preserve-unknown-fields: true
+             status:
+-              description: Status represents the current state of the Sequence. This data may be out of date.
+               type: object
+               properties:
+-                address:
+-                  type: object
+-                  required:
+-                    - url
+-                  properties:
+-                    url:
+-                      type: string
+                 annotations:
+                   description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                   type: object
+                   x-kubernetes-preserve-unknown-fields: true
+-                channelStatuses:
+-                  description: ChannelStatuses is an array of corresponding Channel statuses. Matches the Spec.Steps array in the order.
 +                ceAttributes:
 +                  description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
-+                  type: array
-+                  items:
-+                    type: object
-+                    properties:
+                   type: array
+                   items:
+                     type: object
+                     properties:
+-                      channel:
+-                        description: Channel is the reference to the underlying channel.
+-                        type: object
+-                        properties:
+-                          apiVersion:
+-                            description: API version of the referent.
+-                            type: string
+-                          fieldPath:
+-                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
+-                            type: string
+-                          kind:
+-                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                            type: string
+-                          name:
+-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                            type: string
+-                          namespace:
+-                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+-                            type: string
+-                          resourceVersion:
+-                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+-                            type: string
+-                          uid:
+-                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+-                            type: string
+-                      ready:
+-                        description: ReadyCondition indicates whether the Channel is ready or not.
+-                        type: object
+-                        required:
+-                          - type
+-                          - status
+-                        properties:
+-                          lastTransitionTime:
+-                            description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+-                            type: string
+-                          message:
+-                            description: A human readable message indicating details about the transition.
+-                            type: string
+-                          reason:
+-                            description: The reason for the condition's last transition.
+-                            type: string
+-                          severity:
+-                            description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+-                            type: string
+-                          status:
+-                            description: Status of the condition, one of True, False, Unknown.
+-                            type: string
+-                          type:
+-                            description: Type of condition.
+-                            type: string
 +                      source:
 +                        description: Source is the CloudEvents source attribute.
 +                        type: string
 +                      type:
 +                        description: Type refers to the CloudEvent type attribute.
 +                        type: string
-+                conditions:
-+                  description: Conditions the latest available observations of a resource's current state.
-+                  type: array
-+                  items:
-+                    type: object
-+                    required:
-+                      - type
-+                      - status
-+                    properties:
-+                      lastTransitionTime:
-+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
-+                        type: string
-+                      message:
-+                        description: A human readable message indicating details about the transition.
-+                        type: string
-+                      reason:
-+                        description: The reason for the condition's last transition.
-+                        type: string
-+                      severity:
-+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
-+                        type: string
-+                      status:
-+                        description: Status of the condition, one of True, False, Unknown.
-+                        type: string
-+                      type:
-+                        description: Type of condition.
-+                        type: string
-+                observedGeneration:
-+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
-+                  type: integer
-+                  format: int64
+                 conditions:
+                   description: Conditions the latest available observations of a resource's current state.
+                   type: array
+@@ -1600,83 +3485,31 @@ spec:
+                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                   type: integer
+                   format: int64
+-                subscriptionStatuses:
+-                  description: SubscriptionStatuses is an array of corresponding Subscription statuses. Matches the Spec.Steps array in the order.
+-                  type: array
+-                  items:
+-                    type: object
+-                    properties:
+-                      ready:
+-                        description: ReadyCondition indicates whether the Subscription is ready or not.
+-                        type: object
+-                        required:
+-                          - type
+-                          - status
+-                        properties:
+-                          lastTransitionTime:
+-                            description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+-                            type: string
+-                          message:
+-                            description: A human readable message indicating details about the transition.
+-                            type: string
+-                          reason:
+-                            description: The reason for the condition's last transition.
+-                            type: string
+-                          severity:
+-                            description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+-                            type: string
+-                          status:
+-                            description: Status of the condition, one of True, False, Unknown.
+-                            type: string
+-                          type:
+-                            description: Type of condition.
+-                            type: string
+-                      subscription:
+-                        description: Subscription is the reference to the underlying Subscription.
+-                        type: object
+-                        properties:
+-                          apiVersion:
+-                            description: API version of the referent.
+-                            type: string
+-                          fieldPath:
+-                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
+-                            type: string
+-                          kind:
+-                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+-                            type: string
+-                          name:
+-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+-                            type: string
+-                          namespace:
+-                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+-                            type: string
+-                          resourceVersion:
+-                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+-                            type: string
+-                          uid:
+-                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+-                            type: string
 +                sinkUri:
 +                  description: SinkURI is the current active sink URI that has been configured for the Source.
 +                  type: string
-+      additionalPrinterColumns:
+       additionalPrinterColumns:
+-        - name: URL
 +        - name: Sink
-+          type: string
+           type: string
+-          jsonPath: .status.address.url
 +          jsonPath: ".status.sinkUri"
-+        - name: Age
-+          type: date
-+          jsonPath: .metadata.creationTimestamp
-+        - name: Ready
-+          type: string
+         - name: Age
+           type: date
+           jsonPath: .metadata.creationTimestamp
+         - name: Ready
+           type: string
+-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
-+        - name: Reason
-+          type: string
+         - name: Reason
+           type: string
+-          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
-+  names:
-+    categories:
-+      - all
-+      - knative
+   names:
+-    kind: Sequence
+-    plural: sequences
+-    singular: sequence
+     categories:
+       - all
+       - knative
+-      - flows
 +      - sources
 +      - bindings
 +    kind: SinkBinding
 +    plural: sinkbindings
 +    singular: sinkbinding
-+  scope: Namespaced
-+
-+---
-+# Copyright 2020 The Knative Authors
-+#
-+# Licensed under the Apache License, Version 2.0 (the "License");
-+# you may not use this file except in compliance with the License.
-+# You may obtain a copy of the License at
-+#
-+#     http://www.apache.org/licenses/LICENSE-2.0
-+#
-+# Unless required by applicable law or agreed to in writing, software
-+# distributed under the License is distributed on an "AS IS" BASIS,
-+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+# See the License for the specific language governing permissions and
-+# limitations under the License.
-+apiVersion: apiextensions.k8s.io/v1
-+kind: CustomResourceDefinition
-+metadata:
+   scope: Namespaced
+ 
+ ---
+@@ -1693,51 +3526,104 @@ spec:
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+-
+ apiVersion: apiextensions.k8s.io/v1
+ kind: CustomResourceDefinition
+ metadata:
 +  name: subscriptions.messaging.knative.dev
-+  labels:
-+    eventing.knative.dev/release: "v0.23.0"
-+    knative.dev/crd-install: "true"
-+spec:
+   labels:
+     eventing.knative.dev/release: "v0.23.0"
+-    eventing.knative.dev/source: "true"
+-    duck.knative.dev/source: "true"
+-    duck.knative.dev/binding: "true"
+     knative.dev/crd-install: "true"
+-  name: sinkbindings.sources.knative.dev
+ spec:
+-  group: sources.knative.dev
 +  group: messaging.knative.dev
-+  versions:
+   versions:
+-    - name: v1
+-      served: true
+-      storage: true
 +    - name: v1beta1
 +      served: false
 +      storage: false
-+      subresources:
-+        status: {}
-+      schema:
+       subresources:
+         status: {}
+       schema:
+-        openAPIV3Schema:
+-          description: 'SinkBinding describes a Binding that is also a Source. The `sink` (from the Source duck) is resolved to a URL and then projected into the `subject` by augmenting the runtime contract of the referenced containers to have a `K_SINK` environment variable holding the endpoint to which to send cloud events.'
 +        openAPIV3Schema: &openAPIV3Schema
-+          type: object
+           type: object
 +          description: 'Subscription routes events received on a Channel to a DNS name and corresponds to the subscriptions.channels.knative.dev CRD.'
-+          properties:
-+            spec:
-+              type: object
+           properties:
+             spec:
+               type: object
 +              description: 'Specifies the Channel for incoming events, a Subscriber target for processing those events and where to put the result of the processing. Only From (where the events are coming from) is always required. You can optionally only Process the events (results in no output events) by leaving out the Result. You can also perform an identity transformation on the incoming events by leaving out the Subscriber and only specifying Result.
 +
 +                The following are all valid specifications: channel --[subscriber]--> reply Sink, no outgoing events: channel -- subscriber no-op function (identity transformation): channel --> reply'
-+              properties:
+               properties:
+-                ceOverrides:
+-                  description: CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.
 +                channel:
 +                  description: 'Reference to a channel that will be used to create the subscription You can specify only the following fields of the ObjectReference: - Kind - APIVersion - Name The resource pointed by this ObjectReference must meet the contract to the ChannelableSpec duck type. If the resource does not meet this contract it will be reflected in the Subscription''s status.  This field is immutable. We have no good answer on what happens to the events that are currently in the channel being consumed from and what the semantics there should be. For now, you can always delete the Subscription and recreate it to point to a different channel, giving the user more control over what semantics should be used (drain the channel first, possibly have events dropped, etc.)'
-+                  type: object
-+                  properties:
+                   type: object
+                   properties:
+-                    extensions:
+-                      description: Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.
 +                    apiVersion:
 +                      description: 'API version of the referent.'
 +                      type: string
@@ -3640,7 +4249,10 @@ index 9e3257b9..9504a365 100644
 +                      type: string
 +                    deadLetterSink:
 +                      description: 'DeadLetterSink is the sink receiving event that could not be sent to a destination.'
-+                      type: object
+                       type: object
+-                      x-kubernetes-preserve-unknown-fields: true
+-                sink:
+-                  description: Sink is a reference to an object that will resolve to a uri to use as the sink.
 +                      properties:
 +                        ref:
 +                          description: 'Ref points to an Addressable.'
@@ -3667,31 +4279,43 @@ index 9e3257b9..9504a365 100644
 +                      format: int32
 +                reply:
 +                  description: 'Reply specifies (optionally) how to handle events returned from the Subscriber target.'
-+                  type: object
-+                  properties:
-+                    ref:
+                   type: object
+                   properties:
+                     ref:
+-                      description: Ref points to an Addressable.
 +                      description: 'Ref points to an Addressable.'
-+                      type: object
-+                      properties:
-+                        apiVersion:
+                       type: object
+                       properties:
+                         apiVersion:
+-                          description: API version of the referent.
 +                          description: 'API version of the referent.'
-+                          type: string
-+                        kind:
-+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-+                          type: string
-+                        name:
-+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-+                          type: string
-+                        namespace:
-+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
-+                          type: string
-+                    uri:
+                           type: string
+                         kind:
+                           description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+@@ -1749,150 +3635,90 @@ spec:
+                           description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                           type: string
+                     uri:
+-                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
 +                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
-+                      type: string
+                       type: string
+-                subject:
+-                  description: Subject references the resource(s) whose "runtime contract" should be augmented by Binding implementations.
 +                subscriber:
 +                  description: 'Subscriber is reference to (optional) function for processing events. Events from the Channel will be delivered here and replies are sent to a Destination as specified by the Reply.'
-+                  type: object
-+                  properties:
+                   type: object
+                   properties:
+-                    apiVersion:
+-                      description: API version of the referent.
+-                      type: string
+-                    kind:
+-                      description: Kind of the referent.
+-                      type: string
+-                    name:
+-                      description: Name of the referent. Mutually exclusive with Selector.
+-                      type: string
+-                    namespace:
+-                      description: Namespace of the referent.
 +                    ref:
 +                      description: 'Ref points to an Addressable.'
 +                      type: object
@@ -3710,7 +4334,32 @@ index 9e3257b9..9504a365 100644
 +                          type: string
 +                    uri:
 +                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
-+                      type: string
+                       type: string
+-                    selector:
+-                      description: Selector of the referents. Mutually exclusive with Name.
+-                      type: object
+-                      properties:
+-                        matchExpressions:
+-                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+-                          type: array
+-                          items:
+-                            type: object
+-                            properties:
+-                              key:
+-                                description: key is the label key that the selector applies to.
+-                                type: string
+-                              operator:
+-                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+-                                type: string
+-                              values:
+-                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+-                                type: array
+-                                items:
+-                                  type: string
+-                        matchLabels:
+-                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+-                          type: object
+-                          x-kubernetes-preserve-unknown-fields: true
              status:
                type: object
 +              description: Status (computed) for a subscription
@@ -3990,7 +4639,7 @@ index 9e3257b9..9504a365 100644
        served: true
        storage: true
 diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
-index 43e79c04..aef11eda 100644
+index 43e79c04..498e85cf 100644
 --- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 +++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.23.0/2-eventing-core.yaml
 @@ -941,7 +941,6 @@ spec:
@@ -4006,11 +4655,10 @@ index 43e79c04..aef11eda 100644
    group: sources.knative.dev
    versions:
 -    - name: v1
--      served: true
--      storage: true
 +    - &version
 +      name: v1alpha1
-+      served: false
+       served: true
+-      storage: true
 +      storage: false
        subresources:
          status: {}
@@ -4241,7 +4889,7 @@ index 43e79c04..aef11eda 100644
                    type: string
        additionalPrinterColumns:
          - name: Sink
-@@ -1146,133 +1189,136 @@ spec:
+@@ -1146,135 +1189,138 @@ spec:
          - name: Reason
            type: string
            jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
@@ -4282,13 +4930,12 @@ index 43e79c04..aef11eda 100644
 -  group: eventing.knative.dev
 -  versions:
 -    - name: v1
--      served: true
++    - !!merge <<: *version
++      name: v1alpha2
+       served: true
 -      storage: true
 -      subresources:
 -        status: {}
-+    - !!merge <<: *version
-+      name: v1alpha2
-+      served: false
 +      storage: false
        schema:
 -        openAPIV3Schema:
@@ -4459,6 +5106,8 @@ index 43e79c04..aef11eda 100644
 -                      - status
                      properties:
 -                      lastTransitionTime:
+-                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+-                        type: string
 +                      source:
 +                        description: 'Source is the CloudEvents source attribute.'
 +                        type: string
@@ -4475,9 +5124,11 @@ index 43e79c04..aef11eda 100644
 +                      - status
 +                    properties:
 +                      lastTransitionTime:
-                         description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
-                         type: string
++                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
++                        type: string
                        message:
+                         description: 'A human readable message indicating details about the transition.'
+                         type: string
 @@ -1290,14 +1336,177 @@ spec:
                        type:
                          description: 'Type of condition.'
@@ -4491,7 +5142,7 @@ index 43e79c04..aef11eda 100644
 +                  type: string
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      # the schema of v1beta1 is exactly the same as v1alpha2 schema
 +      schema:
@@ -5070,13 +5721,11 @@ index 43e79c04..aef11eda 100644
 +  group: messaging.knative.dev
    versions:
 -    - name: v1
--      served: true
--      storage: true
 +    - name: v1beta1
 +      served: false
 +      storage: false
-       subresources:
-         status: {}
++      subresources:
++        status: {}
 +      additionalPrinterColumns:
 +        - name: URL
 +          type: string
@@ -5090,11 +5739,9 @@ index 43e79c04..aef11eda 100644
 +        - name: Reason
 +          type: string
 +          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
-       schema:
--        openAPIV3Schema:
--          description: 'ContainerSource is an event source that starts a container image which generates events under certain situations and sends messages to a sink URI'
++      schema:
 +        openAPIV3Schema: &openAPIV3Schema
-           type: object
++          type: object
 +          properties:
 +            spec:
 +              description: Spec defines the desired state of the Channel.
@@ -5511,7 +6158,7 @@ index 43e79c04..aef11eda 100644
 +  versions:
 +    - &version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -5728,7 +6375,7 @@ index 43e79c04..aef11eda 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
 +      # the schema of v1beta1 is exactly the same as v1alpha2 schema
 +      schema:
@@ -6706,11 +7353,15 @@ index 43e79c04..aef11eda 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: true
+       served: true
+-      storage: true
+-      subresources:
+-        status: {}
 +      storage: false
-+      schema:
-+        openAPIV3Schema:
-+          type: object
+       schema:
+         openAPIV3Schema:
+-          description: 'ContainerSource is an event source that starts a container image which generates events under certain situations and sends messages to a sink URI'
+           type: object
 +          description: 'PingSource describes an event source with a fixed payload produced on a specified cron schedule.'
            properties:
              spec:
@@ -7003,16 +7654,15 @@ index 43e79c04..aef11eda 100644
 -          type: string
 -          jsonPath: ".spec.schema"
 -        - name: Broker
--          type: string
++        - name: Sink
+           type: string
 -          jsonPath: ".spec.broker"
 -        - name: Description
-+        - name: Sink
++          jsonPath: .status.sinkUri
++        - name: Schedule
            type: string
 -          jsonPath: ".spec.description"
 -        # TODO remove Status https://github.com/knative/eventing/issues/2750
-+          jsonPath: .status.sinkUri
-+        - name: Schedule
-+          type: string
 +          jsonPath: .spec.schedule
 +        - name: Age
 +          type: date
@@ -7811,7 +8461,7 @@ index 43e79c04..aef11eda 100644
    versions:
 +    - &version
 +      name: v1alpha1
-+      served: false
++      served: true
 +      storage: false
 +      subresources:
 +        status: {}
@@ -7838,11 +8488,11 @@ index 43e79c04..aef11eda 100644
 +          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
 +    - !!merge <<: *version
 +      name: v1alpha2
-+      served: false
++      served: true
 +      storage: false
 +    - !!merge <<: *version
 +      name: v1beta1
-+      served: false
++      served: true
 +      storage: false
      - name: v1
        served: true

@@ -982,7 +982,7 @@ spec:
   versions:
     - &version
       name: v1alpha1
-      served: false
+      served: true
       storage: false
       subresources:
         status: {}
@@ -1191,7 +1191,7 @@ spec:
           jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
     - !!merge <<: *version
       name: v1alpha2
-      served: false
+      served: true
       storage: false
       schema:
         openAPIV3Schema: &openAPIV3Schema
@@ -1345,7 +1345,7 @@ spec:
                   type: string
     - !!merge <<: *version
       name: v1beta1
-      served: false
+      served: true
       storage: false
       # the schema of v1beta1 is exactly the same as v1alpha2 schema
       schema:
@@ -2276,7 +2276,7 @@ spec:
   versions:
     - &version
       name: v1alpha2
-      served: false
+      served: true
       storage: false
       subresources:
         status: {}
@@ -2493,7 +2493,7 @@ spec:
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
     - !!merge <<: *version
       name: v1beta1
-      served: false
+      served: true
       storage: false
       # the schema of v1beta1 is exactly the same as v1alpha2 schema
       schema:
@@ -4261,7 +4261,7 @@ spec:
   versions:
     - &version
       name: v1alpha1
-      served: false
+      served: true
       storage: false
       subresources:
         status: {}
@@ -4288,11 +4288,11 @@ spec:
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
     - !!merge <<: *version
       name: v1alpha2
-      served: false
+      served: true
       storage: false
     - !!merge <<: *version
       name: v1beta1
-      served: false
+      served: true
       storage: false
     - name: v1
       served: true
