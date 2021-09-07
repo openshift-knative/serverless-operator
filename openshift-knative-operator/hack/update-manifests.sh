@@ -11,7 +11,7 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
-eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller)
+eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-post-install)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
@@ -116,3 +116,6 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
+
+# Correct names of the batch jobs, to be generated (upstream will fix this)
+git apply "$root/openshift-knative-operator/hack/008-fix-post-install-names.patch"

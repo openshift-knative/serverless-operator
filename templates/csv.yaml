@@ -512,8 +512,6 @@ spec:
                         value: deploy/resources/knativekafka/1-channel-consolidated.yaml
                       - name: KAFKASOURCE_MANIFEST_PATH
                         value: deploy/resources/knativekafka/2-source.yaml
-                      - name: KAFKA_POST_INSTALL_MANIFEST_PATH
-                        value: deploy/resources/knativekafka/3-eventing-kafka-post-install.yaml
                       - name: QUICKSTART_MANIFEST_PATH
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH

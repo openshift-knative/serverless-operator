@@ -1,0 +1,28 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index 151b01ef..78666ce2 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -798,18 +798,11 @@ spec:
+ 
+ apiVersion: v1
+ data:
+-  version: 1.0.0
+-  # eventing-kafka.kafka.brokers: Replace this with the URLs for your kafka cluster,
+-  #   which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
+-  # eventing-kafka.kafka.authSecretName: name-of-your-secret-for-kafka-auth
+-  # eventing-kafka.kafka.authSecretNamespace: namespace-of-your-secret-for-kafka-auth
+-  eventing-kafka: |
+-    kafka:
+-      brokers: REPLACE_WITH_CLUSTER_URL
+-      topic:
+-        defaultNumPartitions: 4
+-        defaultReplicationFactor: 1 # Cannot exceed the number of Kafka Brokers!
+-        defaultRetentionMillis: 604800000  # 1 week
++  # Broker URL. Replace this with the URLs for your kafka cluster,
++  # which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
++  bootstrapServers: REPLACE_WITH_CLUSTER_URL
++  #authSecretName: name-of-your-secret-for-kafka-auth
++  #authSecretNamespace: namespace-of-your-secret-for-kafka-auth
+ kind: ConfigMap
+ metadata:
+   name: config-kafka
