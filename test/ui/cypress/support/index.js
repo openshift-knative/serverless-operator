@@ -7,8 +7,5 @@
 // ***********************************************************
 
 import './commands'
-import './login'
-import './semver'
-import  './ocpversion'
 
 require('@cypress/skip-test/support')

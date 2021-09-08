@@ -1,7 +1,10 @@
+import OpenshiftConsole from "../code/openshift/openshiftConsole";
+
 describe('OCP UI for Serverless', () => {
 
   beforeEach(() => {
-    cy.login()
+    const openShiftConsole = new OpenshiftConsole()
+    openShiftConsole.login()
   })
 
   it('has Serverless quickstarts', () => {

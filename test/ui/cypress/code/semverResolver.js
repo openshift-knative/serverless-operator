@@ -1,4 +1,4 @@
-const semver = require('semver')
+import semver from 'semver'
 
 class SemverResolver {
   constructor(version) {
@@ -13,8 +13,4 @@ class SemverResolver {
   }
 }
 
-Cypress.Commands.add('semver', (version) => {
-  return new Cypress.Promise((resolve, _) => {
-    resolve(new SemverResolver(version))
-  })
-})
+export default SemverResolver
