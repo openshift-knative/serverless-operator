@@ -2,10 +2,7 @@ import SemverResolver from "./semverResolver";
 
 class Environment {
   ocpVersion() {
-    if (!Environment.__ocpVersion) {
-      Environment.__ocpVersion = new SemverResolver(Cypress.env('OCP_VERSION'))
-    }
-    return Environment.__ocpVersion
+    return new SemverResolver(Cypress.env('OCP_VERSION'))
   }
 
   loginProvider() {
