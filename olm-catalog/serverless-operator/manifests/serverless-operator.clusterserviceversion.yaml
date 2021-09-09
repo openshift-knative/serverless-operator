@@ -500,7 +500,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v0.23.2:kn-cli-artifacts
+                    image: registry.ci.openshift.org/openshift/knative-v0.24.0:kn-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
