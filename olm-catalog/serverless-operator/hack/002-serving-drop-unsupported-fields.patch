@@ -1,5 +1,5 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
-index 141b7e33..8ce6f448 100644
+index aa8f3e459..4b4f9b580 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
 @@ -44,27 +44,8 @@ spec:
@@ -31,8 +31,8 @@ index 141b7e33..8ce6f448 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -122,13 +103,8 @@ spec:
-                       minimum: 1
+@@ -127,13 +108,8 @@ spec:
+                       type: object
                ingress:
                  description: The ingress configuration for Knative Serving
 +                x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
@@ -46,7 +46,7 @@ index 141b7e33..8ce6f448 100644
                    istio:
                      description: Istio settings
                      properties:
-@@ -162,53 +138,6 @@ spec:
+@@ -167,53 +143,6 @@ spec:
                          type: string
                      type: object
                  type: object
@@ -100,7 +100,7 @@ index 141b7e33..8ce6f448 100644
                resources:
                  description: A mapping of deployment name to resource requirements
                  items:
-@@ -248,9 +177,6 @@ spec:
+@@ -253,9 +182,6 @@ spec:
                        type: object
                    type: object
                  type: array
