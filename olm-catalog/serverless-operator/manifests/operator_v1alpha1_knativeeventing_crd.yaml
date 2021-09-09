@@ -90,6 +90,69 @@ spec:
                       description: The number of replicas that HA parts of the control plane will be scaled to
                       type: integer
                       minimum: 1
+                    nodeSelector:
+                      additionalProperties:
+                        type: string
+                      description: NodeSelector overrides nodeSelector for the deployment.
+                      type: object
+              source:
+                description: The source configuration for Knative Eventing
+                properties:
+                  ceph:
+                    description: Ceph settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  couchdb:
+                    description: Apache CouchDB settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  github:
+                    description: GitHub settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  gitlab:
+                    description: GitLab settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  kafka:
+                    description: Apache Kafka settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  natss:
+                    description: NATS Streaming settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  prometheus:
+                    description: Prometheus settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  rabbitmq:
+                    description: RabbitMQ settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  redis:
+                    description: Redis settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                type: object
               resources:
                 description: A mapping of deployment name to resource requirements
                 items:
