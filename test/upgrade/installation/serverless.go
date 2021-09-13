@@ -42,5 +42,13 @@ func UpgradeServerless(ctx *test.Context) error {
 		ctx.T.Error("Eventing upgrade failed:", err)
 	}
 
+	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
+		"knative-kafka",
+		knativeEventing,
+		v1a1test.IsKnativeKafkaReady,
+	); err != nil {
+		ctx.T.Error("KnativeKafka upgrade failed:", err)
+	}
+
 	return nil
 }
