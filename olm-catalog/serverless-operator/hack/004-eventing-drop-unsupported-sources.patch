@@ -1,0 +1,69 @@
+diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
+index 7b4cd096..935fdfb5 100644
+--- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
++++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
+@@ -95,64 +95,6 @@ spec:
+                         type: string
+                       description: NodeSelector overrides nodeSelector for the deployment.
+                       type: object
+-              source:
+-                description: The source configuration for Knative Eventing
+-                properties:
+-                  ceph:
+-                    description: Ceph settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  couchdb:
+-                    description: Apache CouchDB settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  github:
+-                    description: GitHub settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  gitlab:
+-                    description: GitLab settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  kafka:
+-                    description: Apache Kafka settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  natss:
+-                    description: NATS Streaming settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  prometheus:
+-                    description: Prometheus settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  rabbitmq:
+-                    description: RabbitMQ settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  redis:
+-                    description: Redis settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                type: object
+               resources:
+                 description: A mapping of deployment name to resource requirements
+                 items:
