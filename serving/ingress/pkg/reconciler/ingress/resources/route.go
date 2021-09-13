@@ -136,8 +136,10 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		},
 	}
 
-	// If the passthrough annotation is set, target the HTTPS port and configure passthrough.
-	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok {
+	// Target the HTTPS port and configure passthrough when:
+	// * the passthrough annotation is set.
+	// * the ingress.spec.tls is set. (DomainMapping with BYP cert.)
+	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 {
 		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
 		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
 		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
