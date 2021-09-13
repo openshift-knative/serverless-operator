@@ -1037,6 +1037,21 @@ spec:
       terminationGracePeriodSeconds: 300
 
 ---
+# Webhook PDB.
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-webhook
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: devel
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: kafka-webhook
+
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
