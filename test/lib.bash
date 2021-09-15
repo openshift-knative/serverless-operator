@@ -300,6 +300,11 @@ function check_serverless_alerts {
 }
 
 function setup_quick_api_deprecation_alerts {
+  local ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+  # Setup deprecation alerts for OCP >= 4.8
+  if $(versions.le $(versions.major_minor $ocp_version) 4.7); then
+    return
+  fi
   logger.info "Setup quick API deprecation alerts"
   for ns in "${OPERATORS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${SERVING_NAMESPACE}" "${INGRESS_NAMESPACE}"; do
     # Reuse the existing api-usage Prometheus rule and only make it react more quickly.
