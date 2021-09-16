@@ -97,11 +97,3 @@ func WaitForPodsWithImage(ctx *test.Context, namespace string, podSelector, cont
 	}
 	return nil
 }
-
-func PodWithImage(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) {
-	// The CSV might not exist yet.
-	if apierrs.IsNotFound(err) {
-		return false, nil
-	}
-	return c.Status.Phase == "Succeeded", err
-}
