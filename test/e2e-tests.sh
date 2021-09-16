@@ -27,6 +27,8 @@ if [[ $TEST_KNATIVE_KAFKA == true ]]; then
 fi
 
 if [[ $FULL_MESH == "true" ]]; then
+  # net-istio does not use knative-serving-ingress namespace.
+  export INGRESS_NAMESPACE="knative-serving"
   UNINSTALL_MESH="false" install_mesh
   ensure_serverless_installed
   enable_net_istio
