@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/operator-framework/api/pkg/operators/v1alpha1"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
