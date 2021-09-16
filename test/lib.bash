@@ -307,9 +307,9 @@ function setup_quick_api_deprecation_alerts {
     return
   fi
   logger.info "Setup quick API deprecation alerts"
-  local namespaces="${OPERATORS_NAMESPACE} ${EVENTING_NAMESPACE} ${SERVING_NAMESPACE}"
+  local namespaces=("${OPERATORS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${SERVING_NAMESPACE}")
   if [[ "${SERVING_NAMESPACE}" != "${INGRESS_NAMESPACE}" ]]; then
-    namespaces="${namespaces} ${INGRESS_NAMESPACE}"
+    namespaces=("${namespaces[@]}" "${INGRESS_NAMESPACE}")
   fi
   for ns in "${namespaces[@]}"; do
     # Reuse the existing api-usage Prometheus rule and only make it react more quickly.
