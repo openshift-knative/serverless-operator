@@ -48,3 +48,6 @@ git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
 
 # Will be no longer needed with SRVKE-812
 git apply "$root/knative-operator/hack/008-keep-old-config-as-default.patch"
+
+# Will be no longer needed with SRVKE-812
+git apply "$root/knative-operator/hack/009-eventing-kafka-dispatcher-monitoring-rbac.patch"

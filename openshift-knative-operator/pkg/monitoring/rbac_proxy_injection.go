@@ -32,6 +32,13 @@ func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transform
 			firstContainer := &dep.Spec.Template.Spec.Containers[0]
 			// Make sure we export metrics only locally
 			firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: "METRICS_PROMETHEUS_HOST", Value: "127.0.0.1"})
+			if u.GetName() == "kafka-ch-controller" {
+				firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: rbacProxyImageEnvVar, Value: getRbacProxyImage()})
+				enable, present := os.LookupEnv(EnableMonitoringEnvVar)
+				if present {
+					firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: EnableMonitoringEnvVar, Value: enable})
+				}
+			}
 			// Order is important here as there is an assumption elsewhere about the first container being the component one
 			dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers, makeRbacProxyContainer(depName, getDefaultMetricsPort(u.GetName())))
 			dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, []corev1.Volume{{
