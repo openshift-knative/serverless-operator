@@ -1,0 +1,29 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index 93e345a3..1ddb1593 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -129,6 +129,7 @@ rules:
+       - create
+       - patch
+       - update
++      - delete
+   - apiGroups:
+       - "" # Core API Group.
+     resources:
+@@ -172,6 +173,16 @@ rules:
+     resources:
+       - rolebindings
+     verbs: *everything
++  - apiGroups:
++      - rbac.authorization.k8s.io
++    resources:
++      - clusterrolebindings
++    verbs: *everything
++  - apiGroups:
++      - monitoring.coreos.com
++    resources:
++      - servicemonitors
++    verbs: *everything
+   - apiGroups:
+       - "coordination.k8s.io"
+     resources:
