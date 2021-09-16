@@ -1,7 +1,14 @@
 package installation
 
 import (
+	"context"
+	"fmt"
 	"strings"
+
+	"github.com/operator-framework/api/pkg/operators/v1alpha1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
@@ -42,6 +49,24 @@ func UpgradeServerless(ctx *test.Context) error {
 		ctx.T.Error("Eventing upgrade failed:", err)
 	}
 
+	// KnativeKafka doesn't provide the version to wait for. Choosing a well-known image and
+	// waiting for all pods to be updated to this image before proceeding.
+	kafkaWebhookImage, err := test.ImageFromCSV(ctx,
+		test.Flags.CSV,
+		test.OperatorsNamespace,
+		"kafka-webhook")
+	if err != nil {
+		ctx.T.Error(err)
+	}
+
+	if err = WaitForPodsWithImage(ctx,
+		knativeEventing,
+		"app=kafka-webhook",
+		"kafka-webhook",
+		kafkaWebhookImage); err != nil {
+		ctx.T.Error(err)
+	}
+
 	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
@@ -51,4 +76,32 @@ func UpgradeServerless(ctx *test.Context) error {
 	}
 
 	return nil
+}
+
+func WaitForPodsWithImage(ctx *test.Context, namespace string, podSelector, containerName, expectedImage string) error {
+	if waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), meta.ListOptions{LabelSelector: podSelector})
+		if err != nil {
+			return false, err
+		}
+		for _, pod := range podList.Items {
+			for _, c := range pod.Spec.Containers {
+				if c.Name == containerName && c.Image != expectedImage {
+					return false, nil
+				}
+			}
+		}
+		return true, nil
+	}); waitErr != nil {
+		return fmt.Errorf("containers %s in pods with label selector %s do not have the expected image: %w", containerName, podSelector, waitErr)
+	}
+	return nil
+}
+
+func PodWithImage(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) {
+	// The CSV might not exist yet.
+	if apierrs.IsNotFound(err) {
+		return false, nil
+	}
+	return c.Status.Phase == "Succeeded", err
 }
