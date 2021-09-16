@@ -307,7 +307,11 @@ function setup_quick_api_deprecation_alerts {
     return
   fi
   logger.info "Setup quick API deprecation alerts"
-  for ns in "${OPERATORS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${SERVING_NAMESPACE}" "${INGRESS_NAMESPACE}"; do
+  local namespaces="${OPERATORS_NAMESPACE}" "${EVENTING_NAMESPACE}" "${SERVING_NAMESPACE}""
+  if [[ "${SERVING_NAMESPACE}" != "${INGRESS_NAMESPACE}" ]]; then
+    namespaces=""${namespaces}" "{INGRESS_NAMESPACE}""
+  fi
+  for ns in "${namespaces}"; do
     # Reuse the existing api-usage Prometheus rule and only make it react more quickly.
     oc get prometheusrule api-usage -n openshift-kube-apiserver -oyaml | \
       sed -e "s/\(.*name:.*\)/\1-quick/g" \
