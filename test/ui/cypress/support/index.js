@@ -9,3 +9,4 @@
 import './commands'
 
 require('@cypress/skip-test/support')
+require('cypress-terminal-report/src/installLogsCollector')()
