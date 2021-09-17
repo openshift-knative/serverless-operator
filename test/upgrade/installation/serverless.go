@@ -35,7 +35,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		knativeServing,
 		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
 	); err != nil {
-		ctx.T.Error("Serving upgrade failed:", err)
+		return fmt.Errorf("serving upgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
@@ -44,7 +44,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		knativeEventing,
 		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
 	); err != nil {
-		ctx.T.Error("Eventing upgrade failed:", err)
+		return fmt.Errorf("eventing upgrade failed: %w", err)
 	}
 
 	// KnativeKafka doesn't provide the version to wait for. Choosing a well-known image and
@@ -54,7 +54,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		test.OperatorsNamespace,
 		"kafka-webhook")
 	if err != nil {
-		ctx.T.Error(err)
+		return err
 	}
 
 	if err = WaitForPodsWithImage(ctx,
@@ -62,7 +62,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		"app=kafka-webhook",
 		"kafka-webhook",
 		kafkaWebhookImage); err != nil {
-		ctx.T.Error(err)
+		return err
 	}
 
 	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
@@ -70,7 +70,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		knativeEventing,
 		v1a1test.IsKnativeKafkaReady,
 	); err != nil {
-		ctx.T.Error("KnativeKafka upgrade failed:", err)
+		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
 
 	return nil
