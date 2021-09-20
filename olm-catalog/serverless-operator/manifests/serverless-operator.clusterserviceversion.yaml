@@ -624,6 +624,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-webhook"
+                      - name: "KNATIVE_EVENTING_KAFKA_VERSION"
+                        value: "0.25.3"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true

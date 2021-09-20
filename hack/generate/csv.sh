@@ -95,7 +95,7 @@ function add_related_image {
 EOF
 }
 
-function add_downstream_operator_deployment_image {
+function add_downstream_operator_deployment_env {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
@@ -109,7 +109,7 @@ EOF
 # we don't add scope prefixes to image overrides here. We don't have a clash anyway without any scope prefixes!
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
-function add_upstream_operator_deployment_image {
+function add_upstream_operator_deployment_env {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers(name==knative-operator).env[+]
@@ -125,16 +125,19 @@ cp "$template" "$target"
 for name in "${images[@]}"; do
   echo "Image: ${name} -> ${images_addresses[$name]}"
   add_related_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
-  add_downstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
-  add_upstream_operator_deployment_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_downstream_operator_deployment_env "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_upstream_operator_deployment_env "$target" "IMAGE_${name}" "${images_addresses[$name]}"
 done
 
 # don't add Kafka image overrides to upstream operator
 for name in "${kafka_images[@]}"; do
   echo "kafka Image: ${name} -> ${kafka_images_addresses[$name]}"
   add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
-  add_downstream_operator_deployment_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
+  add_downstream_operator_deployment_env "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
+
+# Add Knative Kafka version to the downstream operator
+add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_VERSION" "$(metadata.get dependencies.eventing_kafka)"
 
 # Override the image for the CLI artifact deployment
 yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
