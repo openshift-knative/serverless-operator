@@ -21,7 +21,7 @@ jobs:
       - name: Setup Golang
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.x
+          go-version: 1.16.x
 
       - name: Install prerequisites
         env:
@@ -59,10 +59,10 @@ jobs:
     env:
       GOPATH: ${{ github.workspace }}
     steps:
-      - name: Set up Go 1.15.x
+      - name: Set up Go 1.16.x
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.x
+          go-version: 1.16.x
 
       - name: Checkout
         uses: actions/checkout@v2

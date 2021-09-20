@@ -1,6 +1,6 @@
 module github.com/openshift-knative/serverless-operator
 
-go 1.15
+go 1.16
 
 require (
 	github.com/go-logr/logr v0.4.0
