@@ -135,7 +135,7 @@ func ImageFromCSV(ctx *Context, csvName, csvNamespace, imageName string) (string
 	for _, d := range csv.Spec.InstallStrategy.StrategySpec.DeploymentSpecs {
 		for _, c := range d.Spec.Template.Spec.Containers {
 			for _, e := range c.Env {
-				if strings.Contains(e.Name, imageName) {
+				if strings.Contains(e.Name, imageName) && strings.Contains(e.Name, "IMAGE") {
 					return e.Value, nil
 				}
 			}
