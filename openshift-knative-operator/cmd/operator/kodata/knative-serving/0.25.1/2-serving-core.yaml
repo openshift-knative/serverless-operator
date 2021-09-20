@@ -1,3 +1,4 @@
+---
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,9 @@ metadata:
   # (which should be identical, but isn't guaranteed to be installed alongside serving).
   name: knative-serving-aggregated-addressable-resolver
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -32,9 +35,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-addressable-resolver
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     # Labeled to facilitate aggregated cluster roles that act on Addressables.
     duck.knative.dev/addressable: "true"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
   - apiGroups:
@@ -70,7 +75,9 @@ metadata:
   name: knative-serving-namespaced-admin
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
     resources: ["*"]
@@ -85,7 +92,9 @@ metadata:
   name: knative-serving-namespaced-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
     resources: ["*"]
@@ -100,7 +109,9 @@ metadata:
   name: knative-serving-namespaced-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev", "networking.internal.knative.dev", "autoscaling.internal.knative.dev", "caching.internal.knative.dev"]
     resources: ["*"]
@@ -126,8 +137,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-core
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     serving.knative.dev/controller: "true"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 rules:
   - apiGroups: [""]
     resources: ["pods", "namespaces", "secrets", "configmaps", "endpoints", "services", "events", "serviceaccounts"]
@@ -180,9 +193,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-podspecable-binding
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     # Labeled to facilitate aggregated cluster roles that act on PodSpecables.
     duck.knative.dev/podspecable: "true"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 # Do not use this role directly. These rules will be added to the "podspecable-binder" role.
 rules:
   - apiGroups:
@@ -216,14 +231,19 @@ metadata:
   name: controller
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-admin
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -235,7 +255,10 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-controller-admin
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -250,7 +273,10 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-controller-addressable-resolver
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -332,7 +358,7 @@ kind: CustomResourceDefinition
 metadata:
   name: certificates.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -390,7 +416,7 @@ kind: CustomResourceDefinition
 metadata:
   name: configurations.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -473,6 +499,9 @@ spec:
                       required:
                         - containers
                       properties:
+                        automountServiceAccountToken:
+                          description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
+                          type: boolean
                         containerConcurrency:
                           description: ContainerConcurrency specifies the maximum allowed in-flight (concurrent) requests per container of the Revision.  Defaults to `0` which means concurrency to the application is not limited, and the system decides the target concurrency for the autoscaler.
                           type: integer
@@ -1089,7 +1118,7 @@ kind: CustomResourceDefinition
 metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1138,11 +1167,127 @@ kind: CustomResourceDefinition
 metadata:
   name: domainmappings.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
   versions:
+    - name: v1beta1
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: URL
+          type: string
+          jsonPath: .status.url
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+      "schema":
+        "openAPIV3Schema":
+          description: DomainMapping is a mapping from a custom hostname to an Addressable.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'Spec is the desired state of the DomainMapping. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              required:
+                - ref
+              properties:
+                ref:
+                  description: "Ref specifies the target of the Domain Mapping. \n The object identified by the Ref must be an Addressable with a URL of the form `{name}.{namespace}.{domain}` where `{domain}` is the cluster domain, and `{name}` and `{namespace}` are the name and namespace of a Kubernetes Service. \n This contract is satisfied by Knative types such as Knative Services and Knative Routes, and by Kubernetes Services."
+                  type: object
+                  required:
+                    - kind
+                    - name
+                  properties:
+                    apiVersion:
+                      description: API version of the referent.
+                      type: string
+                    group:
+                      description: 'Group of the API, without the version of the group. This can be used as an alternative to the APIVersion, and then resolved using ResolveGroup. Note: This API is EXPERIMENTAL and might break anytime. For more details: https://github.com/knative/eventing/issues/5086'
+                      type: string
+                    kind:
+                      description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                      type: string
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                      type: string
+                    namespace:
+                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                      type: string
+                tls:
+                  description: TLS allows the DomainMapping to terminate TLS traffic with an existing secret.
+                  type: object
+                  required:
+                    - secretName
+                  properties:
+                    secretName:
+                      description: SecretName is the name of the existing secret used to terminate TLS traffic.
+                      type: string
+            status:
+              description: 'Status is the current state of the DomainMapping. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              properties:
+                address:
+                  description: Address holds the information needed for a DomainMapping to be the target of an event.
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                        format: date-time
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                url:
+                  description: URL is the URL of this DomainMapping.
+                  type: string
     - name: v1alpha1
       served: true
       storage: true
@@ -1291,7 +1436,7 @@ kind: CustomResourceDefinition
 metadata:
   name: ingresses.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1350,7 +1495,7 @@ kind: CustomResourceDefinition
 metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1472,7 +1617,7 @@ kind: CustomResourceDefinition
 metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1631,7 +1776,7 @@ kind: CustomResourceDefinition
 metadata:
   name: revisions.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1693,6 +1838,9 @@ spec:
               required:
                 - containers
               properties:
+                automountServiceAccountToken:
+                  description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
+                  type: boolean
                 containerConcurrency:
                   description: ContainerConcurrency specifies the maximum allowed in-flight (concurrent) requests per container of the Revision.  Defaults to `0` which means concurrency to the application is not limited, and the system decides the target concurrency for the autoscaler.
                   type: integer
@@ -2333,7 +2481,7 @@ kind: CustomResourceDefinition
 metadata:
   name: routes.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2506,7 +2654,7 @@ kind: CustomResourceDefinition
 metadata:
   name: serverlessservices.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2576,7 +2724,7 @@ kind: CustomResourceDefinition
 metadata:
   name: services.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
@@ -2663,6 +2811,9 @@ spec:
                       required:
                         - containers
                       properties:
+                        automountServiceAccountToken:
+                          description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
+                          type: boolean
                         containerConcurrency:
                           description: ContainerConcurrency specifies the maximum allowed in-flight (concurrent) requests per container of the Revision.  Defaults to `0` which means concurrency to the application is not limited, and the system decides the target concurrency for the autoscaler.
                           type: integer
@@ -3341,7 +3492,10 @@ metadata:
   name: queue-proxy
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: queue-proxy
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
@@ -3368,7 +3522,10 @@ metadata:
   name: config-autoscaler
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: autoscaler
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "604cb513"
 data:
@@ -3573,7 +3730,9 @@ metadata:
   name: config-defaults
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "cdabec96"
 data:
@@ -3707,14 +3866,16 @@ metadata:
   name: config-deployment
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "fa67b403"
+    knative.dev/example-checksum: "d42e2c33"
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
   queueSidecarImage: TO_BE_REPLACED
-  _example: |
+  _example: |-
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -3767,6 +3928,12 @@ data:
     # If omitted, no value is specified and the system default is used.
     queueSidecarEphemeralStorageLimit: "1024Mi"
 
+    # concurrencyStateEndpoint is the endpoint that queue-proxy calls when its traffic
+    # drops to zero or scales up from zero.
+    # If omitted, queue proxy takes no action (this is the default behavior).
+    # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE
+    concurrencyStateEndpoint: ""
+
 ---
 # Copyright 2018 The Knative Authors
 #
@@ -3788,7 +3955,9 @@ metadata:
   name: config-domain
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "81552d0b"
 data:
@@ -3851,9 +4020,11 @@ metadata:
   name: config-features
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "3bac317a"
+    knative.dev/example-checksum: "211d4000"
 data:
   _example: |-
     ################################
@@ -3938,6 +4109,12 @@ data:
     # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-security-context
     kubernetes.podspec-securitycontext: "disabled"
 
+    # Indicates whether Kubernetes PriorityClassName support is enabled
+    #
+    # WARNING: Cannot safely be disabled once enabled.
+    # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-priority-class-name
+    kubernetes.podspec-priorityclassname: "disabled"
+
     # This feature flag allows end-users to add a subset of capabilities on the Pod's SecurityContext.
     #
     # When set to "enabled" or "allowed" it allows capabilities to be added to the container.
@@ -3991,7 +4168,9 @@ metadata:
   name: config-gc
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "e6149382"
 data:
@@ -4089,7 +4268,9 @@ metadata:
   name: config-leader-election
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "96896b00"
 data:
@@ -4149,7 +4330,9 @@ metadata:
   name: config-logging
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
     knative.dev/example-checksum: "c68feb1b"
 data:
@@ -4227,7 +4410,7 @@ metadata:
   name: config-network
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
   annotations:
     knative.dev/example-checksum: "d38faef1"
 data:
@@ -4369,9 +4552,11 @@ metadata:
   name: config-observability
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "97c1d10b"
+    knative.dev/example-checksum: "fed4756e"
 data:
   _example: |
     ################################
@@ -4441,26 +4626,13 @@ data:
     logging.enable-probe-request-log: "false"
 
     # metrics.backend-destination field specifies the system metrics destination.
-    # It supports either prometheus (the default) or stackdriver.
-    # Note: Using stackdriver will incur additional charges
+    # It supports either prometheus (the default) or opencensus.
     metrics.backend-destination: prometheus
 
     # metrics.request-metrics-backend-destination specifies the request metrics
     # destination. It enables queue proxy to send request metrics.
-    # Currently supported values: prometheus (the default), stackdriver.
+    # Currently supported values: prometheus (the default), opencensus.
     metrics.request-metrics-backend-destination: prometheus
-
-    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
-    # field is optional. When running on GCE, application default credentials will be
-    # used if this field is not provided.
-    metrics.stackdriver-project-id: "<your stackdriver project id>"
-
-    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
-    # Stackdriver using "global" resource type and custom metric type if the
-    # metrics are not supported by "knative_revision" resource type. Setting this
-    # flag to "true" could cause extra Stackdriver charge.
-    # If metrics.backend-destination is not Stackdriver, this is ignored.
-    metrics.allow-stackdriver-custom-metrics: "false"
 
     # profiling.enable indicates whether it is allowed to retrieve runtime profiling data from
     # the pods via an HTTP server in the format expected by the pprof visualization tool. When
@@ -4489,9 +4661,11 @@ metadata:
   name: config-tracing
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   annotations:
-    knative.dev/example-checksum: "4002b4c2"
+    knative.dev/example-checksum: "26614636"
 data:
   _example: |
     ################################
@@ -4509,17 +4683,12 @@ data:
     # this example block and unindented to be in the data block
     # to actually change the configuration.
     #
-    # This may be "zipkin" or "stackdriver", the default is "none"
+    # This may be "zipkin" or "none" (default)
     backend: "none"
 
     # URL to zipkin collector where traces are sent.
     # This must be specified when backend is "zipkin"
     zipkin-endpoint: "http://zipkin.istio-system.svc.cluster.local:9411/api/v2/spans"
-
-    # The GCP project into which stackdriver metrics will be written
-    # when backend is "stackdriver".  If unspecified, the project-id
-    # is read from GCP metadata when running on GCP.
-    stackdriver-project-id: "my-project"
 
     # Enable zipkin debug mode. This allows all spans to be sent to the server
     # bypassing sampling.
@@ -4549,7 +4718,10 @@ metadata:
   name: activator
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: activator
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   minReplicas: 1
   maxReplicas: 20
@@ -4575,7 +4747,10 @@ metadata:
   name: activator-pdb
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: activator
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   minAvailable: 1
   selector:
@@ -4603,7 +4778,10 @@ metadata:
   name: activator
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: activator
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     matchLabels:
@@ -4616,7 +4794,10 @@ spec:
       labels:
         app: activator
         role: activator
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
+        app.kubernetes.io/name: activator
+        app.kubernetes.io/part-of: knative-serving
+        app.kubernetes.io/version: "0.25.1"
     spec:
       serviceAccountName: controller
       containers:
@@ -4703,7 +4884,10 @@ metadata:
   namespace: knative-serving
   labels:
     app: activator
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: activator
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     app: activator
@@ -4744,7 +4928,10 @@ metadata:
   name: autoscaler
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: autoscaler
+    app.kubernetes.io/part-of: knative-serving
+    app.kubernetes.io/version: "0.25.1"
 spec:
   replicas: 1
   selector:
@@ -4756,7 +4943,10 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
         app: autoscaler
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
+        app.kubernetes.io/name: autoscaler
+        app.kubernetes.io/part-of: knative-serving
+        app.kubernetes.io/version: "0.25.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -4834,7 +5024,10 @@ kind: Service
 metadata:
   labels:
     app: autoscaler
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: autoscaler
+    app.kubernetes.io/part-of: knative-serving
+    app.kubernetes.io/version: "0.25.1"
   name: autoscaler
   namespace: knative-serving
 spec:
@@ -4873,7 +5066,10 @@ metadata:
   name: controller
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     matchLabels:
@@ -4884,7 +5080,10 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: controller
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
+        app.kubernetes.io/name: controller
+        app.kubernetes.io/version: "0.25.1"
+        app.kubernetes.io/part-of: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -4943,7 +5142,10 @@ kind: Service
 metadata:
   labels:
     app: controller
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   name: controller
   namespace: knative-serving
 spec:
@@ -4979,7 +5181,10 @@ metadata:
   name: domain-mapping
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: domain-mapping
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     matchLabels:
@@ -4990,7 +5195,10 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: domain-mapping
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
+        app.kubernetes.io/name: domain-mapping
+        app.kubernetes.io/part-of: knative-serving
+        app.kubernetes.io/version: "0.25.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5061,7 +5269,10 @@ metadata:
   name: domainmapping-webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: domainmapping-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     matchLabels:
@@ -5073,8 +5284,11 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
         app: domainmapping-webhook
+        app.kubernetes.io/name: domainmapping-webhook
+        app.kubernetes.io/part-of: knative-serving
+        app.kubernetes.io/version: "0.25.1"
         role: domainmapping-webhook
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5158,7 +5372,10 @@ kind: Service
 metadata:
   labels:
     role: domainmapping-webhook
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: domainmapping-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   name: domainmapping-webhook
   namespace: knative-serving
 spec:
@@ -5197,7 +5414,10 @@ metadata:
   name: webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   minReplicas: 1
   maxReplicas: 5
@@ -5221,7 +5441,10 @@ metadata:
   name: webhook-pdb
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   minAvailable: 1
   selector:
@@ -5249,7 +5472,10 @@ metadata:
   name: webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   selector:
     matchLabels:
@@ -5262,7 +5488,10 @@ spec:
       labels:
         app: webhook
         role: webhook
-        serving.knative.dev/release: "v0.24.0"
+        serving.knative.dev/release: "v0.25.1"
+        app.kubernetes.io/name: webhook
+        app.kubernetes.io/version: "0.25.1"
+        app.kubernetes.io/part-of: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5348,7 +5577,10 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
   name: webhook
   namespace: knative-serving
 spec:
@@ -5386,7 +5618,10 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: configmap-validation-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5422,7 +5657,10 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: defaulting-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5475,7 +5713,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5491,6 +5729,7 @@ webhooks:
           - serving.knative.dev
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -5519,7 +5758,7 @@ metadata:
   name: domainmapping-webhook-certs
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
 # The data is populated at install time.
 
 ---
@@ -5542,7 +5781,10 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.domainmapping.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: domainmapping-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5558,6 +5800,7 @@ webhooks:
           - serving.knative.dev
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -5586,7 +5829,10 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: validating-webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5641,7 +5887,10 @@ metadata:
   name: webhook-certs
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.24.0"
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 # The data is populated at install time.
 
 ---

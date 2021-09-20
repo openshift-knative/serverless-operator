@@ -85,9 +85,6 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patc
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
-# Backports necessary changes for emptydir. To be removed in 1.19.
-git apply "$root/openshift-knative-operator/hack/004-serving-emptydir.patch"
-
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
 url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get dependencies.kourier)/kourier.yaml"
