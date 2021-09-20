@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.6
-	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.0
 	github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
@@ -21,13 +20,13 @@ require (
 	k8s.io/api v0.20.7
 	k8s.io/apimachinery v0.20.7
 	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.24.0
+	knative.dev/eventing v0.25.1
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
-	knative.dev/networking v0.0.0-20210903191258-4ee76ca89d62
-	knative.dev/operator v0.24.0
-	knative.dev/pkg v0.0.0-20210902173607-953af0138c75
-	knative.dev/serving v0.24.0
+	knative.dev/networking v0.0.0-20210903132258-9d8ab8618e5f
+	knative.dev/operator v0.25.2
+	knative.dev/pkg v0.0.0-20210902173607-844a6bc45596
+	knative.dev/serving v0.25.1
 	sigs.k8s.io/controller-runtime v0.8.3
 	sigs.k8s.io/yaml v1.2.0
 )
@@ -45,7 +44,7 @@ replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210914134155-0629c95758f8
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210916080332-bd12873b588c
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210908084220-a7869625034e
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210917062957-bb1c8599a813
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210824120812-8fea52785fc5
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210917095233-127d6ee3fd2e
 )
