@@ -141,5 +141,5 @@ func ImageFromCSV(ctx *Context, csvName, csvNamespace, imageName string) (string
 			}
 		}
 	}
-	return "", fmt.Errorf("unable to find image for %s in CSV relatedImages: %+v", imageName, csv)
+	return "", fmt.Errorf("unable to find image for %s in CSV deployment specs: %+v", imageName, csv)
 }
