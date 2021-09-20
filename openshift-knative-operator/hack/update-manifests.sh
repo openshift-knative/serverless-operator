@@ -91,7 +91,7 @@ url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadat
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
-sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g' "$kourier_file"
+sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knative-serving-ingress/g' "$kourier_file"
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
