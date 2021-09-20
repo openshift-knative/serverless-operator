@@ -132,10 +132,14 @@ func ImageFromCSV(ctx *Context, csvName, csvNamespace, imageName string) (string
 	if err != nil {
 		return "", err
 	}
-	for _, img := range csv.Spec.RelatedImages {
-		if strings.Contains(img.Name, imageName) {
-			return img.Image, nil
+	for _, d := range csv.Spec.InstallStrategy.StrategySpec.DeploymentSpecs {
+		for _, c := range d.Spec.Template.Spec.Containers {
+			for _, e := range c.Env {
+				if strings.Contains(e.Name, imageName) && strings.Contains(e.Name, "IMAGE") {
+					return e.Value, nil
+				}
+			}
 		}
 	}
-	return "", fmt.Errorf("unable to find image for %s in CSV relatedImages: %+v", imageName, csv)
+	return "", fmt.Errorf("unable to find image for %s in CSV deployment specs: %+v", imageName, csv)
 }
