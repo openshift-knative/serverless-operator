@@ -66,17 +66,11 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
-	kafkaSourcePostInstallManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKA_POST_INSTALL_MANIFEST_PATH")))
-	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaChannel Post Install manifest: %w", err)
-	}
-
 	reconcileKnativeKafka := ReconcileKnativeKafka{
-		client:                            mgr.GetClient(),
-		scheme:                            mgr.GetScheme(),
-		rawKafkaChannelManifest:           kafkaChannelManifest,
-		rawKafkaSourceManifest:            kafkaSourceManifest,
-		rawKafkaSourcePostInstallManifest: kafkaSourcePostInstallManifest,
+		client:                  mgr.GetClient(),
+		scheme:                  mgr.GetScheme(),
+		rawKafkaChannelManifest: kafkaChannelManifest,
+		rawKafkaSourceManifest:  kafkaSourceManifest,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -114,11 +108,10 @@ var _ reconcile.Reconciler = &ReconcileKnativeKafka{}
 type ReconcileKnativeKafka struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client                            client.Client
-	scheme                            *runtime.Scheme
-	rawKafkaChannelManifest           mf.Manifest
-	rawKafkaSourceManifest            mf.Manifest
-	rawKafkaSourcePostInstallManifest mf.Manifest
+	client                  client.Client
+	scheme                  *runtime.Scheme
+	rawKafkaChannelManifest mf.Manifest
+	rawKafkaSourceManifest  mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -407,7 +400,6 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.Knative
 		}
 		resources = append(resources, sourceRBACProxy.Resources()...)
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
-		resources = append(resources, r.rawKafkaSourcePostInstallManifest.Resources()...)
 	}
 
 	manifest, err := mf.ManifestFrom(

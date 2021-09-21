@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -124,4 +125,21 @@ func IsCSVSucceeded(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) 
 
 func IsSubscriptionInstalledCSVPresent(s *v1alpha1.Subscription, err error) (bool, error) {
 	return s.Status.InstalledCSV != "" && s.Status.InstalledCSV != "<none>", err
+}
+
+func ImageFromCSV(ctx *Context, csvName, csvNamespace, imageName string) (string, error) {
+	csv, err := ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csvNamespace).Get(context.Background(), csvName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	for _, d := range csv.Spec.InstallStrategy.StrategySpec.DeploymentSpecs {
+		for _, c := range d.Spec.Template.Spec.Containers {
+			for _, e := range c.Env {
+				if strings.Contains(e.Name, imageName) && strings.Contains(e.Name, "IMAGE") {
+					return e.Value, nil
+				}
+			}
+		}
+	}
+	return "", fmt.Errorf("unable to find image for %s in CSV deployment specs: %+v", imageName, csv)
 }

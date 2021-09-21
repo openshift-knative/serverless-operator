@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   name: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -40,14 +40,14 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -63,7 +63,7 @@ metadata:
   namespace: knative-eventing
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -94,14 +94,14 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 subjects:
   - kind: ServiceAccount
     name: imc-dispatcher
@@ -132,7 +132,7 @@ metadata:
   name: config-imc-event-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 data:
   MaxIdleConnections: "1000"
   MaxIdleConnectionsPerHost: "100"
@@ -158,7 +158,7 @@ metadata:
   name: config-observability
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -233,7 +233,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -294,7 +294,7 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/high-availability: "true"
 spec:
   selector:
@@ -305,6 +305,14 @@ spec:
     metadata:
       labels: *labels
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: *labels
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: imc-controller
       enableServiceLinks: false
       containers:
@@ -359,7 +367,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
   name: inmemorychannel-webhook
   namespace: knative-eventing
 spec:
@@ -391,7 +399,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -425,7 +433,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/high-availability: "true"
 spec:
   selector:
@@ -508,7 +516,7 @@ kind: CustomResourceDefinition
 metadata:
   name: inmemorychannels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -566,6 +574,7 @@ spec:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
                       format: int32
+                  x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature delivery-timeout
                 subscribers:
                   description: This is the list of subscriptions for this subscribable.
                   type: array
@@ -609,6 +618,7 @@ spec:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
                             format: int32
+                        x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature
                       generation:
                         description: Generation of the origin of the subscriber with uid:UID.
                         type: integer
@@ -747,7 +757,7 @@ kind: ClusterRole
 metadata:
   name: imc-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -781,7 +791,7 @@ kind: ClusterRole
 metadata:
   name: imc-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -818,7 +828,7 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -928,6 +938,13 @@ rules:
       - "list"
       - "watch"
       - "patch"
+  # finalizers are needed for the owner reference of the webhook
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces/finalizers"
+    verbs:
+      - "update"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -948,7 +965,7 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -1018,7 +1035,7 @@ metadata:
   namespace: knative-eventing
   name: knative-inmemorychannel-webhook
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -1053,7 +1070,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1085,7 +1102,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1118,7 +1135,7 @@ metadata:
   name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.23.0"
+    eventing.knative.dev/release: "v0.24.0"
 # The data is populated at install time.
 
 ---

@@ -69,3 +69,6 @@ find vendor/ \( -name "OWNERS" \
   -o -name "*_test.go" \) -exec rm -fv {} +
 
 find vendor -type f -name '*.sh' -exec chmod +x {} +
+
+# SRVKE-669: Remove pingsource from HA
+git apply "$ROOT_DIR/hack/001-remove-pingsource-ha.patch"

@@ -48,6 +48,7 @@ image "storage-version-migration-serving-serving-$(metadata.get dependencies.ser
 
 image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "net-kourier-controller__controller" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
 image "net-istio-controller__controller" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
 image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
@@ -70,7 +71,6 @@ kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-con
 kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
-kafka_image "kafka-ch-dispatcher__dispatcher"      "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
 
 image "KUBE_RBAC_PROXY"   "${rbac_proxy}"

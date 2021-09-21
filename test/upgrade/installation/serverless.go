@@ -1,7 +1,12 @@
 package installation
 
 import (
+	"context"
+	"fmt"
 	"strings"
+
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
@@ -30,7 +35,7 @@ func UpgradeServerless(ctx *test.Context) error {
 		knativeServing,
 		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
 	); err != nil {
-		ctx.T.Error("Serving upgrade failed:", err)
+		return fmt.Errorf("serving upgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
@@ -39,8 +44,54 @@ func UpgradeServerless(ctx *test.Context) error {
 		knativeEventing,
 		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
 	); err != nil {
-		ctx.T.Error("Eventing upgrade failed:", err)
+		return fmt.Errorf("eventing upgrade failed: %w", err)
 	}
 
+	// KnativeKafka doesn't provide the version to wait for. Choosing a well-known image and
+	// waiting for all pods to be updated to this image before proceeding.
+	kafkaWebhookImage, err := test.ImageFromCSV(ctx,
+		test.Flags.CSV,
+		test.OperatorsNamespace,
+		"kafka-webhook")
+	if err != nil {
+		return err
+	}
+
+	if err = WaitForPodsWithImage(ctx,
+		knativeEventing,
+		"app=kafka-webhook",
+		"kafka-webhook",
+		kafkaWebhookImage); err != nil {
+		return err
+	}
+
+	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
+		"knative-kafka",
+		knativeEventing,
+		v1a1test.IsKnativeKafkaReady,
+	); err != nil {
+		return fmt.Errorf("knative kafka upgrade failed: %w", err)
+	}
+
+	return nil
+}
+
+func WaitForPodsWithImage(ctx *test.Context, namespace string, podSelector, containerName, expectedImage string) error {
+	if waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), meta.ListOptions{LabelSelector: podSelector})
+		if err != nil {
+			return false, err
+		}
+		for _, pod := range podList.Items {
+			for _, c := range pod.Spec.Containers {
+				if c.Name == containerName && c.Image != expectedImage {
+					return false, nil
+				}
+			}
+		}
+		return true, nil
+	}); waitErr != nil {
+		return fmt.Errorf("containers %s in pods with label selector %s do not have the expected image: %w", containerName, podSelector, waitErr)
+	}
 	return nil
 }

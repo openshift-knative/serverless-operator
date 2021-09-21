@@ -27,12 +27,16 @@ if [[ $TEST_KNATIVE_KAFKA == true ]]; then
 fi
 
 if [[ $FULL_MESH == "true" ]]; then
+  # net-istio does not use knative-serving-ingress namespace.
+  export INGRESS_NAMESPACE="knative-serving"
   UNINSTALL_MESH="false" install_mesh
   ensure_serverless_installed
   enable_net_istio
 else
   ensure_serverless_installed
 fi
+
+[ -n "$OPENSHIFT_CI" ] && setup_quick_api_deprecation_alerts
 
 # Run Knative Serving & Eventing downstream E2E tests.
 downstream_serving_e2e_tests

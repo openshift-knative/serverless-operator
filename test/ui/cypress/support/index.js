@@ -7,7 +7,6 @@
 // ***********************************************************
 
 import './commands'
-import './login'
-import './semver'
 
 require('@cypress/skip-test/support')
+require('cypress-terminal-report/src/installLogsCollector')()
