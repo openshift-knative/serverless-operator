@@ -24,9 +24,9 @@ require (
 	knative.dev/eventing v0.24.0
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
-	knative.dev/networking v0.0.0-20210622182128-53f45d6d2cfa
+	knative.dev/networking v0.0.0-20210903191258-4ee76ca89d62
 	knative.dev/operator v0.24.0
-	knative.dev/pkg v0.0.0-20210622173328-dd0db4b05c80
+	knative.dev/pkg v0.0.0-20210902173607-953af0138c75
 	knative.dev/serving v0.24.0
 	sigs.k8s.io/controller-runtime v0.8.3
 	sigs.k8s.io/yaml v1.2.0
@@ -45,7 +45,7 @@ replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210824193424-cef96ebcd8a9
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210825044407-c77bd558bf37
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210825130602-06630431130e
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20210914134155-0629c95758f8
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20210916080332-bd12873b588c
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210908084220-a7869625034e
 )
