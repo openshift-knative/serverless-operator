@@ -401,7 +401,7 @@ spec:
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/openshift/openshift-serverless-release:openshift-knative-operator
+                    image: registry.ci.openshift.org/openshift/openshift-serverless-v1.18.0:openshift-knative-operator
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
