@@ -26,7 +26,7 @@ dependencies:
   net_istio: 0.25.1
   maistra: 2.0.0
 
-  eventing: 0.24.0
+  eventing: 0.25.0
   eventing_kafka: 0.24.3
   cli: 0.24.0
   operator: 0.24.0

@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    eventing.knative.dev/release: "v0.24.0"
+    eventing.knative.dev/release: "v0.25.0"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -73,14 +73,14 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.24.0"
+    eventing.knative.dev/release: "v0.25.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    eventing.knative.dev/release: "v0.24.0"
+    eventing.knative.dev/release: "v0.25.0"
 subjects:
   - kind: ServiceAccount
     name: knative-eventing-post-install-job
@@ -117,7 +117,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "storage-version-migration-eventing"
-    eventing.knative.dev/release: "v0.24.0"
+    eventing.knative.dev/release: "v0.25.0"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -125,7 +125,7 @@ spec:
     metadata:
       labels:
         app: "storage-version-migration-eventing"
-        eventing.knative.dev/release: "v0.24.0"
+        eventing.knative.dev/release: "v0.25.0"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
