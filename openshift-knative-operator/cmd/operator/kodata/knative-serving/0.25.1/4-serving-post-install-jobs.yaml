@@ -1,6 +1,6 @@
 
 ---
-# /tmp/tmp.MIXoK0yxDL/serving-storage-version-migration.yaml
+# /tmp/tmp.fYEvd2Pawz/serving-storage-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,11 @@ metadata:
   generateName: storage-version-migration-serving-
   namespace: knative-serving
   labels:
-    app: "storage-version-migration-serving"
-    serving.knative.dev/release: "v0.24.0"
+    app: storage-version-migration-serving
+    serving.knative.dev/release: "v0.25.1"
+    app.kubernetes.io/name: storage-version-migration-serving
+    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/part-of: knative-serving
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -31,7 +34,9 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        app: "storage-version-migration-serving"
+        app: storage-version-migration-serving
+        app.kubernetes.io/name: storage-version-migration-serving
+        app.kubernetes.io/version: "0.25.1"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure
@@ -45,5 +50,16 @@ spec:
             - "configurations.serving.knative.dev"
             - "revisions.serving.knative.dev"
             - "routes.serving.knative.dev"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
 
 ---

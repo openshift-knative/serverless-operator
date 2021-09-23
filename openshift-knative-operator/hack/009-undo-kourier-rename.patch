@@ -1,0 +1,95 @@
+diff --git a/openshift-knative-operator/cmd/operator/kodata/ingress/0.25/kourier.yaml b/openshift-knative-operator/cmd/operator/kodata/ingress/0.25/kourier.yaml
+index c61a17276..862ce20a3 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/ingress/0.25/kourier.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/ingress/0.25/kourier.yaml
+@@ -183,7 +183,7 @@ data:
+ apiVersion: v1
+ kind: ServiceAccount
+ metadata:
+-  name: net-kourier
++  name: 3scale-kourier
+   namespace: knative-serving
+   labels:
+     networking.knative.dev/ingress-provider: kourier
+@@ -192,7 +192,7 @@ metadata:
+ apiVersion: rbac.authorization.k8s.io/v1
+ kind: ClusterRole
+ metadata:
+-  name: net-kourier
++  name: 3scale-kourier
+   namespace: knative-serving
+   labels:
+     networking.knative.dev/ingress-provider: kourier
+@@ -220,17 +220,17 @@ rules:
+ apiVersion: rbac.authorization.k8s.io/v1
+ kind: ClusterRoleBinding
+ metadata:
+-  name: net-kourier
++  name: 3scale-kourier
+   labels:
+     networking.knative.dev/ingress-provider: kourier
+     serving.knative.dev/release: "v0.25.0"
+ roleRef:
+   apiGroup: rbac.authorization.k8s.io
+   kind: ClusterRole
+-  name: net-kourier
++  name: 3scale-kourier
+ subjects:
+   - kind: ServiceAccount
+-    name: net-kourier
++    name: 3scale-kourier
+     namespace: knative-serving
+ 
+ ---
+@@ -251,7 +251,7 @@ subjects:
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+-  name: net-kourier-controller
++  name: 3scale-kourier-control
+   namespace: knative-serving
+   labels:
+     networking.knative.dev/ingress-provider: kourier
+@@ -260,15 +260,15 @@ spec:
+   replicas: 1
+   selector:
+     matchLabels:
+-      app: net-kourier-controller
++      app: 3scale-kourier-control
+   template:
+     metadata:
+       labels:
+-        app: net-kourier-controller
++        app: 3scale-kourier-control
+     spec:
+       containers:
+         - image: TO_BE_REPLACED
+-          name: controller
++          name: kourier-control
+           env:
+             - name: CERTS_SECRET_NAMESPACE
+               value: ""
+@@ -297,12 +297,12 @@ spec:
+               drop:
+                 - all
+       restartPolicy: Always
+-      serviceAccountName: net-kourier
++      serviceAccountName: 3scale-kourier
+ ---
+ apiVersion: v1
+ kind: Service
+ metadata:
+-  name: net-kourier-controller
++  name: kourier-control
+   namespace: knative-serving
+   labels:
+     networking.knative.dev/ingress-provider: kourier
+@@ -314,7 +314,7 @@ spec:
+       protocol: TCP
+       targetPort: 18000
+   selector:
+-    app: net-kourier-controller
++    app: 3scale-kourier-control
+   type: ClusterIP
+ 
+ ---
