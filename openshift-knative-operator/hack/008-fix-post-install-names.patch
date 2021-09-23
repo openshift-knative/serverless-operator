@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.24.0/6-eventing-post-install.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.24.0/6-eventing-post-install.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.0/6-eventing-post-install.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.0/6-eventing-post-install.yaml
 index 738062f9..8ff93a33 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.24.0/6-eventing-post-install.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.24.0/6-eventing-post-install.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.0/6-eventing-post-install.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.0/6-eventing-post-install.yaml
 @@ -113,10 +113,10 @@ metadata:
    #
    # If `ttlSecondsAfterFinished` feature gate becomes generally available in the future,
@@ -12,7 +12,7 @@ index 738062f9..8ff93a33 100644
    labels:
 -    app: "storage-version-migration"
 +    app: "storage-version-migration-eventing"
-     eventing.knative.dev/release: "v0.24.0"
+     eventing.knative.dev/release: "v0.25.0"
  spec:
    ttlSecondsAfterFinished: 600
 @@ -124,7 +124,7 @@ spec:
@@ -21,6 +21,6 @@ index 738062f9..8ff93a33 100644
        labels:
 -        app: "storage-version-migration"
 +        app: "storage-version-migration-eventing"
-         eventing.knative.dev/release: "v0.24.0"
+         eventing.knative.dev/release: "v0.25.0"
        annotations:
          sidecar.istio.io/inject: "false"
