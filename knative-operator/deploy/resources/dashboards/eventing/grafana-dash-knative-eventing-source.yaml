@@ -589,7 +589,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MT PingSource: Success Rate  (2xx Event, fraction rate, over 1m window)",
+          "title": "MT PingSource: Success Rate (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
