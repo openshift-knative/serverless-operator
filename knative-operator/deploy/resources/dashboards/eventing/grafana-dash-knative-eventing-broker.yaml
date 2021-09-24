@@ -215,7 +215,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Broker (broker-ingress): Success Rate  (2xx Event, fraction rate, over 1m window)",
+          "title": "Broker (broker-ingress): Success Rate (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -794,7 +794,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Trigger (broker-filter): Success Rate  (2xx Event, fraction rate, over 1m window)",
+          "title": "Trigger (broker-filter): Success Rate (2xx Event, fraction rate, over 1m window)",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
