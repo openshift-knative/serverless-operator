@@ -72,8 +72,8 @@ jobs:
       - name: Install Tools
         working-directory: ./src/github.com/${{ github.repository }}
         env:
-          WOKE_VERSION: v0.8.0
-          OSDK_VERSION: v1.7.2
+          WOKE_VERSION: v0.13.0
+          OSDK_VERSION: v1.12.0
         run: |
           TEMP_PATH="$(mktemp -d)"
           cd $TEMP_PATH
@@ -114,7 +114,7 @@ jobs:
       - name: Go Lint - knative-operator
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.40
+          version: v1.42
           working-directory: ./src/github.com/${{ github.repository }}
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
