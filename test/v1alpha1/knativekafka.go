@@ -90,7 +90,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		lastState := &kafkav1alpha1.KnativeKafka{}
+		lastState = &kafkav1alpha1.KnativeKafka{}
 		var u *unstructured.Unstructured
 		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
