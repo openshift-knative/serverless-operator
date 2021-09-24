@@ -117,7 +117,13 @@ spec:
                   that was last processed by the controller.
                 format: int64
                 type: integer
+              version:
+                description: The version of the installed release
+                type: string
     additionalPrinterColumns:
+    - jsonPath: .status.version
+      name: Version
+      type: string
     - name: Ready
       type: string
       jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"

@@ -273,6 +273,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	instance.Status.MarkInstallSucceeded()
+	instance.Status.Version = os.Getenv("KNATIVE_EVENTING_KAFKA_VERSION")
 	return nil
 }
 

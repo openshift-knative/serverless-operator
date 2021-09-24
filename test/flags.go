@@ -21,6 +21,7 @@ type FlagsStruct struct {
 	CSV                   string // Target CSV for upgrades
 	ServingVersion        string // Target Serving version for upgrades
 	EventingVersion       string // Target Eventing version for upgrades
+	KafkaVersion          string // Target Kafka version for upgrades
 	OpenShiftImage        string // Target OpenShift image for upgrades
 	UpgradeOpenShift      bool   // Whether to upgrade the OpenShift cluster
 	SkipServingPreUpgrade bool   // Whether to skip Serving pre-upgrade tests
@@ -49,6 +50,8 @@ func initializeFlags() *FlagsStruct {
 		"Target Serving version for upgrade tests, empty by default.")
 	flag.StringVar(&f.EventingVersion, "eventingversion", "",
 		"Target Eventing version for upgrade tests, empty by default.")
+	flag.StringVar(&f.KafkaVersion, "kafkaversion", "",
+		"Target Kafka version for upgrade tests, empty by default.")
 	flag.StringVar(&f.OpenShiftImage, "openshiftimage", "",
 		"Target OpenShift image for cluster upgrades, empty by default.")
 	flag.BoolVar(&f.UpgradeOpenShift, "upgradeopenshift", false,

@@ -47,28 +47,10 @@ func UpgradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("eventing upgrade failed: %w", err)
 	}
 
-	// KnativeKafka doesn't provide the version to wait for. Choosing a well-known image and
-	// waiting for all pods to be updated to this image before proceeding.
-	kafkaWebhookImage, err := test.ImageFromCSV(ctx,
-		test.Flags.CSV,
-		test.OperatorsNamespace,
-		"kafka-webhook")
-	if err != nil {
-		return err
-	}
-
-	if err = WaitForPodsWithImage(ctx,
-		knativeEventing,
-		"app=kafka-webhook",
-		"kafka-webhook",
-		kafkaWebhookImage); err != nil {
-		return err
-	}
-
 	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
-		v1a1test.IsKnativeKafkaReady,
+		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v")),
 	); err != nil {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
