@@ -43,6 +43,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --type=merge \
     --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
 
+  # Enable ExternalIP for Kourier.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"ingress": { "kourier": {"service-type": "LoadBalancer"}}}}'
+
   # Also enable emptyDir volumes for the respective tests.
   oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
     --type=merge \
