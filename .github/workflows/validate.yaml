@@ -136,7 +136,7 @@ jobs:
       - name: OLM Bundle
         working-directory: ./src/github.com/${{ github.repository }}
         run: |
-          operator-sdk bundle validate ./olm-catalog/serverless-operator
+          operator-sdk bundle validate ./olm-catalog/serverless-operator --select-optional suite=operatorframework --optional-values=k8s-version=1.22
 
       - name: Spelling
         working-directory: ./src/github.com/${{ github.repository }}
