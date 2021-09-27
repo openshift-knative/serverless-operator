@@ -175,7 +175,7 @@ spec:
     - name: Source Repository
       url: https://github.com/openshift-knative/serverless-operator
   maintainers:
-    - email: Contact Red Hat support
+    - email: support@redhat.com
       name: Serverless Team
   maturity: stable
   provider:
