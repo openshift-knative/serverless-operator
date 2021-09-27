@@ -32,6 +32,8 @@ func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transform
 			firstContainer := &dep.Spec.Template.Spec.Containers[0]
 			// Make sure we export metrics only locally
 			firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: "METRICS_PROMETHEUS_HOST", Value: "127.0.0.1"})
+			// Pass EnableMonitoringEnvVar only to controller as it is the only component that replicates the S-O logic
+			// in order to configure the dispatcher's monitoring resources. All other deployments are managed by the S-O wrt monitoring setup.
 			if u.GetName() == "kafka-ch-controller" {
 				firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{Name: rbacProxyImageEnvVar, Value: getRbacProxyImage()})
 				enable, present := os.LookupEnv(EnableMonitoringEnvVar)
