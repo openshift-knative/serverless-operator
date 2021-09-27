@@ -449,8 +449,12 @@ function wait_for_leader_controller() {
 function trust_router_ca() {
   logger.info "Setting up cert-manager/ca-key-pair secret to trust router CA"
 
+  # This is the secret the Knative test machinery looks for if the --https flag is engaged.
+  certns="cert-manager"
+  certname="ca-key-pair"
+
   certs=$(mktemp -d)
   oc -n openshift-config-managed get cm default-ingress-cert --template="{{index .data \"ca-bundle.crt\"}}" > "$certs/tls.crt"
-  oc get ns cert-manager || oc create namespace cert-manager
-  oc -n cert-manager create secret generic ca-key-pair --from-file=tls.crt="$certs/tls.crt"
+  oc get ns $certns || oc create namespace $certns
+  oc -n $certns get secret $certname || oc -n $certns create secret generic $certname --from-file=tls.crt="$certs/tls.crt"
 }
