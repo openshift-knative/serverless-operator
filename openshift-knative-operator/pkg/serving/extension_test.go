@@ -555,13 +555,16 @@ func TestVersionCheck(t *testing.T) {
 		wantError     bool
 	}{{
 		name:          "greater version (patch)",
-		actualVersion: &testVersioner{version: "v1.20.2"},
+		actualVersion: &testVersioner{version: "v1.20.0"},
 	}, {
 		name:          "greater version (patch), no v",
-		actualVersion: &testVersioner{version: "1.20.2"},
+		actualVersion: &testVersioner{version: "1.20.0"},
 	}, {
 		name:          "greater version (patch), pre-release",
 		actualVersion: &testVersioner{version: "1.20.2-kpn-065dce"},
+	}, {
+		name:          "greater version (patch), pre-release with build",
+		actualVersion: &testVersioner{version: "1.20.0-1095+9689d22dc3121e-dirty"},
 	}, {
 		name:          "greater version (minor)",
 		actualVersion: &testVersioner{version: "v1.20.0"},
