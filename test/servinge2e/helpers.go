@@ -44,13 +44,6 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 	}
 }
 
-func insecureSkipVerify() spoof.TransportOption {
-	return func(transport *http.Transport) *http.Transport {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		return transport
-	}
-}
-
 // addRootCAtoTransport returns TransportOption when HTTPS option is true. Otherwise it returns plain spoof.TransportOption.
 func addRootCAtoTransport(ctx context.Context, logf logging.FormatLogger, clients *test.Clients) spoof.TransportOption {
 	return func(transport *http.Transport) *http.Transport {
