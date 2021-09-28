@@ -1,10 +1,12 @@
 package kourier
 
 import (
+	"context"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
+	pkgTest "knative.dev/pkg/test"
 )
 
 func TestKnativeServiceHTTPS(t *testing.T) {
@@ -18,13 +20,23 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
-	// Checks that HTTPS works.
+	// Implicitly checks that HTTPS works.
 	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Now check that HTTP works.
-	httpsURL := ksvc.Status.URL.DeepCopy()
+	httpURL := ksvc.Status.URL.DeepCopy()
 
-	httpsURL.Scheme = "http"
-	// Implicitly checks that HTTP works.
-	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	httpURL.Scheme = "http"
+	if _, err := pkgTest.WaitForEndpointState(
+		context.Background(),
+		caCtx.Clients.Kube,
+		t.Logf,
+		httpURL.URL(),
+		pkgTest.EventuallyMatchesBody(helloworldText),
+		"WaitForRouteToServeText",
+		true,
+	); err != nil {
+		t.Fatalf("The Route at domain %s didn't serve the expected text %q: %v", httpURL, helloworldText, err)
+	}
+
 }

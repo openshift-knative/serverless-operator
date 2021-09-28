@@ -31,6 +31,6 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 		true,
 		servingTest.AddRootCAtoTransport(context.Background(), t.Logf, &servingTest.Clients{KubeClient: caCtx.Clients.Kube}, true),
 	); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
+		t.Fatalf("The Route at domain %s didn't serve the expected text %q: %v", routeURL, expectedText, err)
 	}
 }
