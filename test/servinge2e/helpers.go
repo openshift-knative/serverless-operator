@@ -2,14 +2,12 @@ package servinge2e
 
 import (
 	"context"
-	"crypto/tls"
-	"net/http"
 	"net/url"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	pkgTest "knative.dev/pkg/test"
-	"knative.dev/pkg/test/spoof"
+	servingTest "knative.dev/serving/test"
 )
 
 const (
@@ -31,15 +29,8 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 		pkgTest.EventuallyMatchesBody(expectedText),
 		"WaitForRouteToServeText",
 		true,
-		insecureSkipVerify(),
+		servingTest.AddRootCAtoTransport(context.Background(), t.Logf, &servingTest.Clients{KubeClient: caCtx.Clients.Kube}, true),
 	); err != nil {
-		t.Fatalf("The Route at domain %s didn't serve the expected text \"%s\": %v", routeURL, expectedText, err)
-	}
-}
-
-func insecureSkipVerify() spoof.TransportOption {
-	return func(transport *http.Transport) *http.Transport {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		return transport
+		t.Fatalf("The Route at domain %s didn't serve the expected text %q: %v", routeURL, expectedText, err)
 	}
 }
