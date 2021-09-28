@@ -17,9 +17,6 @@ const (
 	helloworldService2    = "helloworld-go2"
 	kubeHelloworldService = "kube-helloworld-go"
 	helloworldText        = "Hello World!"
-
-	caSecretNamespace = "cert-manager"
-	caSecretName      = "ca-key-pair"
 )
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
