@@ -292,6 +292,45 @@ func TestMakeRoute(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "valid, http redirect option",
+			ingress: ingress(
+				withRules(rule(withHosts([]string{localDomain, externalDomain}))),
+				withRedirect(),
+			),
+			want: []*routev1.Route{{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
+					},
+					Annotations: map[string]string{
+						TimeoutAnnotation: DefaultTimeout,
+					},
+					Namespace: lbNamespace,
+					Name:      routeName0,
+				},
+				Spec: routev1.RouteSpec{
+					Host: externalDomain,
+					To: routev1.RouteTargetReference{
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString(HTTPPort),
+					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
+				},
+			}},
+		},
 	}
 
 	for _, test := range tests {
@@ -359,6 +398,12 @@ func withTLS(tls ...networkingv1alpha1.IngressTLS) ingressOption {
 func withRules(rules ...networkingv1alpha1.IngressRule) ingressOption {
 	return func(ing *networkingv1alpha1.Ingress) {
 		ing.Spec.Rules = rules
+	}
+}
+
+func withRedirect() ingressOption {
+	return func(ing *networkingv1alpha1.Ingress) {
+		ing.Spec.HTTPOption = networkingv1alpha1.HTTPOptionRedirected
 	}
 }
 

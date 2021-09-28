@@ -111,6 +111,11 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, ErrNoValidLoadbalancerDomain
 	}
 
+	terminationPolicy := routev1.InsecureEdgeTerminationPolicyAllow
+	if ci.Spec.HTTPOption == networkingv1alpha1.HTTPOptionRedirected {
+		terminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
+	}
+
 	route := &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -130,7 +135,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 			},
 			TLS: &routev1.TLSConfig{
 				Termination:                   routev1.TLSTerminationEdge,
-				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+				InsecureEdgeTerminationPolicy: terminationPolicy,
 			},
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
