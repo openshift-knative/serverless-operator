@@ -71,7 +71,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Request to %v failed, err: %v", httpURL, err)
 	}
-	if resp.StatusCode != http.StatusMovedPermanently {
-		t.Fatalf("The Route at domain %s didn't serve the expected status code got=%v, want=%v", httpURL, resp.StatusCode, http.StatusMovedPermanently)
+	if resp.StatusCode != http.StatusFound {
+		t.Fatalf("The Route at domain %s didn't serve the expected status code got=%v, want=%v", httpURL, resp.StatusCode, http.StatusFound)
 	}
 }
