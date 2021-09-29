@@ -48,7 +48,8 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc := test.Service("redirect-service", testNamespace, image, map[string]string{"networking.knative.dev/httpOption": "redirected"})
+	ksvc := test.Service("redirect-service", testNamespace, image, nil)
+	ksvc.ObjectMeta.Annotations = map[string]string{"networking.knative.dev/httpOption": "redirected"}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
 	// Implicitly checks that HTTPS works.
