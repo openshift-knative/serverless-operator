@@ -52,5 +52,3 @@ spec:
     tracing:
       backend: "none"
       sample-rate: "0.1"
-    network:
-      httpProtocol: "Redirected"
