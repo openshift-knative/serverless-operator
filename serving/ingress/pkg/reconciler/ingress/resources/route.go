@@ -111,6 +111,26 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, ErrNoValidLoadbalancerDomain
 	}
 
+	terminationPolicy := routev1.InsecureEdgeTerminationPolicyAllow
+	if ci.Spec.HTTPOption == networkingv1alpha1.HTTPOptionRedirected {
+		terminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
+	}
+
+	// TODO: Remove this annotation handling after serving 0.26+.
+	// Ingress configures the HTTPOption based on the annotation.
+	// https://github.com/knative/serving/commit/d9c1342b5761afdac88c563535885e37fae27c7e
+	if annotations[networking.HTTPOptionAnnotationKey] != "" {
+		annotation := annotations[networking.HTTPOptionAnnotationKey]
+		switch strings.ToLower(annotation) {
+		case "enabled":
+			terminationPolicy = routev1.InsecureEdgeTerminationPolicyAllow
+		case "redirected":
+			terminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
+		default:
+			return nil, fmt.Errorf("incorrect HTTPOption annotation: " + annotation)
+		}
+	}
+
 	route := &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -130,7 +150,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 			},
 			TLS: &routev1.TLSConfig{
 				Termination:                   routev1.TLSTerminationEdge,
-				InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+				InsecureEdgeTerminationPolicy: terminationPolicy,
 			},
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
