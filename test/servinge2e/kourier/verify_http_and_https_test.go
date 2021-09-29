@@ -48,10 +48,8 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image)
-	if err != nil {
-		t.Fatal("Knative Service not ready", err)
-	}
+	ksvc := test.Service("redirect-service", testNamespace, image, map[string]string{"networking.knative.dev/httpOption": "redirected"})
+	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
 	// Implicitly checks that HTTPS works.
 	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
