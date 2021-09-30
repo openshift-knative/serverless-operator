@@ -140,7 +140,7 @@ lint:
 	woke
 	golangci-lint run
 	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck
-	operator-sdk bundle validate ./olm-catalog/serverless-operator
+	operator-sdk bundle validate ./olm-catalog/serverless-operator --select-optional suite=operatorframework --optional-values=k8s-version=1.22
 	git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -error
 	prettier -c templates/*.yaml
 
