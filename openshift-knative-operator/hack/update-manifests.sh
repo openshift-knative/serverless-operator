@@ -110,7 +110,7 @@ git apply "$root/openshift-knative-operator/hack/001-eventing-namespace-deletion
 # TODO: propose to upstream
 git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
 
-# For SRVKE-914 we disable HPA:
+# For SRVKE-934 we disable HPA:
 git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
