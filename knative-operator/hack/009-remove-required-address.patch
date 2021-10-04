@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+index e5b3a080..30f38397 100644
+--- a/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
++++ b/knative-operator/deploy/resources/knativekafka/1-channel-consolidated.yaml
+@@ -677,8 +677,6 @@ spec:
+             status:
+               description: Status represents the current state of the KafkaChannel. This data may be out of date.
+               type: object
+-              required:
+-                - address
+               properties:
+                 address:
+                   type: object
