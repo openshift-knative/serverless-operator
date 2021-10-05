@@ -366,6 +366,12 @@ spec:
             - apiGroups:
                 - ""
               resources:
+                - events
+              verbs:
+                - "*"
+            - apiGroups:
+                - ""
+              resources:
                 - configmaps
               verbs:
                 - get
