@@ -9,15 +9,12 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,11 +27,6 @@ var (
 
 // Apply installs kn ConsoleCLIDownload and its required resources
 func Apply(instance *servingv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
-	// Remove deprecated resources from previous version
-	if err := deleteDeprecatedResources(instance, apiclient); err != nil {
-		return err
-	}
-
 	route, err := reconcileKnConsoleCLIDownloadRoute(apiclient, instance)
 	if err != nil {
 		return err
@@ -126,29 +118,6 @@ func Delete(instance *servingv1alpha1.KnativeServing, apiclient client.Client, s
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload Service: %w", err)
 	}
 
-	return nil
-}
-
-// deleteDeprecatedResources removes deprecated resources created by previous versions
-func deleteDeprecatedResources(instance *servingv1alpha1.KnativeServing, apiclient client.Client) error {
-	metaName := metav1.ObjectMeta{
-		Name:      "kn-cli-downloads",
-		Namespace: instance.Namespace,
-	}
-	toDelete := []client.Object{
-		&appsv1.Deployment{ObjectMeta: metaName},
-		&corev1.Service{ObjectMeta: metaName},
-		&routev1.Route{ObjectMeta: metaName},
-		&servingv1.Service{ObjectMeta: metav1.ObjectMeta{
-			Name:      "kn-cli",
-			Namespace: instance.Namespace,
-		}},
-	}
-	for _, obj := range toDelete {
-		if err := apiclient.Delete(context.TODO(), obj); err != nil && !apierrors.IsNotFound(err) {
-			return fmt.Errorf("failed to delete deprecated kn ConsoleCLIDownload %s: %w", obj.GetObjectKind().GroupVersionKind().Kind, err)
-		}
-	}
 	return nil
 }
 
