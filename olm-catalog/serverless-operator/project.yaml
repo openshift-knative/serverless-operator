@@ -28,5 +28,5 @@ dependencies:
 
   eventing: 0.25.0
   eventing_kafka: 0.25.3
-  cli: 0.24.0
+  cli: 0.25.1
   operator: 0.25.2
