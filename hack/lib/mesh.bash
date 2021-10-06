@@ -2,8 +2,6 @@
 
 resources_dir="$(dirname "${BASH_SOURCE[0]}")/mesh_resources"
   
-mesh_deployments=(istio-operator jaeger-operator kiali-operator)
-
 function install_mesh {
   deploy_servicemesh_operators
   if [[ ${FULL_MESH:-} == "true" ]]; then
@@ -25,8 +23,8 @@ function deploy_servicemesh_operators {
   oc apply -f "${resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until service mesh operators are available"
-  timeout 600 "[[ \$(oc get deploy -n openshift-operators ${mesh_deployments[*]} --no-headers | wc -l) != 3 ]]" || return 1
-  oc wait --for=condition=Available deployment "${mesh_deployments[@]}" --timeout=300s -n openshift-operators || return $?
+  timeout 600 "[[ \$(oc get deploy -n openshift-operators istio-operator --no-headers | wc -l) != 1 ]]" || return 1
+  oc wait --for=condition=Available deployment istio-operator --timeout=300s -n openshift-operators || return $?
 }
 
 function undeploy_servicemesh_operators {
