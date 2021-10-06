@@ -346,14 +346,6 @@ spec:
                 - get
                 - list
                 - watch
-            # Only needed for cleanup
-            # TODO: Drop after 1.17
-            - apiGroups:
-                - serving.knative.dev
-              resources:
-                - services
-              verbs:
-                - delete
         - serviceAccountName: knative-openshift-ingress
           rules:
             - apiGroups:
