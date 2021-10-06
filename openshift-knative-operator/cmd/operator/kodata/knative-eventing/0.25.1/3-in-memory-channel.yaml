@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   name: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -40,14 +40,14 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -63,7 +63,7 @@ metadata:
   namespace: knative-eventing
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -94,14 +94,14 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 subjects:
   - kind: ServiceAccount
     name: imc-dispatcher
@@ -132,7 +132,7 @@ metadata:
   name: config-imc-event-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 data:
   MaxIdleConnections: "1000"
   MaxIdleConnectionsPerHost: "100"
@@ -158,7 +158,7 @@ metadata:
   name: config-observability
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -233,7 +233,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -294,7 +294,7 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     knative.dev/high-availability: "true"
 spec:
   selector:
@@ -367,7 +367,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
   name: inmemorychannel-webhook
   namespace: knative-eventing
 spec:
@@ -399,7 +399,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -433,7 +433,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     knative.dev/high-availability: "true"
 spec:
   selector:
@@ -516,7 +516,7 @@ kind: CustomResourceDefinition
 metadata:
   name: inmemorychannels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -757,7 +757,7 @@ kind: ClusterRole
 metadata:
   name: imc-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -791,7 +791,7 @@ kind: ClusterRole
 metadata:
   name: imc-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -828,7 +828,7 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -965,7 +965,7 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -1035,7 +1035,7 @@ metadata:
   namespace: knative-eventing
   name: knative-inmemorychannel-webhook
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -1070,7 +1070,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1102,7 +1102,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1135,7 +1135,7 @@ metadata:
   name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.25.0"
+    eventing.knative.dev/release: "v0.25.1"
 # The data is populated at install time.
 
 ---
