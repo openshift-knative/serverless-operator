@@ -57,6 +57,8 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
 		overrideKourierNamespace(kourierNamespace(ks.GetNamespace())),
+		// TODO: Remove after resources are bumped to 0.26
+		replaceServiceSelector(ks),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
@@ -142,11 +144,24 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	if ks.Spec.Ingress.Istio.Enabled {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
+
+	// Explicitly remove deleted Kourier resources.
+	// TODO: Remove after resources are bumped to 0.26
+	if err := removeObsoleteResources(ctx, e.kubeclient, ks); err != nil {
+		return err
+	}
+
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
 func (e *extension) Finalize(ctx context.Context, comp v1alpha1.KComponent) error {
 	ks := comp.(*v1alpha1.KnativeServing)
+
+	// Explicitly remove deleted Kourier resources.
+	// TODO: Remove after resources are bumped to 0.26
+	if err := removeObsoleteResources(ctx, e.kubeclient, ks); err != nil {
+		return err
+	}
 
 	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.
 	// See: https://github.com/manifestival/manifestival/issues/85

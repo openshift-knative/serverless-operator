@@ -55,7 +55,7 @@ func TestKnativeServing(t *testing.T) {
 			}
 		}
 		// Check the status of deployments in the ingress namespace.
-		for _, deployment := range []string{"3scale-kourier-control", "3scale-kourier-gateway"} {
+		for _, deployment := range []string{"net-kourier-controller", "3scale-kourier-gateway"} {
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}

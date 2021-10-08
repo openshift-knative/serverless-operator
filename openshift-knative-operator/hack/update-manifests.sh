@@ -91,12 +91,12 @@ url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadat
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
-sed -i -e 's/net-kourier-controller.knative-serving/kourier-control.knative-serving-ingress/g' "$kourier_file"
+sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knative-serving-ingress/g' "$kourier_file"
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
-# TODO: Make this obsolete and buy-into the renaming.
-git apply "$root/openshift-knative-operator/hack/009-undo-kourier-rename.patch"
+# TODO: Remove this when we bump to 0.26 (for release 1.20).
+git apply "$root/openshift-knative-operator/hack/009-kourier-keep-old-service.patch"
 
 #
 # DOWNLOAD EVENTING
