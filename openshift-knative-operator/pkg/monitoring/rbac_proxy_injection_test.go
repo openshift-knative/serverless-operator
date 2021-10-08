@@ -1,59 +1,137 @@
 package monitoring
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
-	manifest, err := mf.NewManifest("testdata/serving-core-deployment.yaml")
 	rbacImage := "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 	os.Setenv(rbacProxyImageEnvVar, rbacImage)
+
+	in := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "activator",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Volumes: []corev1.Volume{{
+						Name: "testVolume",
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "testSecret",
+							},
+						},
+					}},
+					Containers: []corev1.Container{{
+						Name:  "test",
+						Image: "testimage",
+						Env: []corev1.EnvVar{{
+							Name:  "testEnv",
+							Value: "testValue",
+						}},
+						VolumeMounts: []corev1.VolumeMount{{
+							Name:      "testVolume",
+							MountPath: "/foo/bar",
+						}},
+					}},
+				},
+			},
+		},
+	}
+
+	inU := unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(in, &inU, nil); err != nil {
+		t.Fatalf("Failed to convert Deployment to Unstructured: %s", err)
+	}
+	manifest, err := mf.ManifestFrom(mf.Slice{inU})
 	if err != nil {
-		t.Errorf("Unable to load test manifest: %w", err)
+		t.Fatalf("Failed to construct manifest: %s", err)
 	}
-	transforms := []mf.Transformer{InjectRbacProxyContainerToDeployments(servingDeployments)}
-	if manifest, err = manifest.Transform(transforms...); err != nil {
-		t.Errorf("Unable to transform test manifest: %w", err)
+
+	if manifest, err = manifest.Transform(InjectRbacProxyContainerToDeployments(sets.NewString(in.Name))); err != nil {
+		t.Fatalf("Unable to transform test manifest: %s", err)
 	}
-	if len(manifest.Resources()) != 1 {
-		t.Errorf("Got %d, want %d", len(manifest.Resources()), 1)
+
+	got := &appsv1.Deployment{}
+	if err := scheme.Scheme.Convert(&manifest.Resources()[0], got, nil); err != nil {
+		t.Fatalf("Unable to convert Unstructured to Deployment: %s", err)
 	}
-	deployment := &appsv1.Deployment{}
-	if err := scheme.Scheme.Convert(&manifest.Resources()[0], deployment, nil); err != nil {
-		t.Errorf("Unable to convert to deployment %w", err)
+
+	want := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "activator",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Volumes: []corev1.Volume{{
+						Name: "testVolume",
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "testSecret",
+							},
+						},
+					}, {
+						Name: "secret-activator-sm-service-tls",
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: "activator-sm-service-tls",
+							},
+						},
+					}},
+					Containers: []corev1.Container{{
+						Name:  "test",
+						Image: "testimage",
+						Env: []corev1.EnvVar{{
+							Name:  "testEnv",
+							Value: "testValue",
+						}, {
+							Name:  "METRICS_PROMETHEUS_HOST",
+							Value: "127.0.0.1",
+						}},
+						VolumeMounts: []corev1.VolumeMount{{
+							Name:      "testVolume",
+							MountPath: "/foo/bar",
+						}},
+					}, {
+						Name:  rbacContainerName,
+						Image: os.Getenv(rbacProxyImageEnvVar),
+						VolumeMounts: []corev1.VolumeMount{{
+							Name:      "secret-activator-sm-service-tls",
+							MountPath: "/etc/tls/private",
+						}},
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								"memory": resource.MustParse("20Mi"),
+								"cpu":    resource.MustParse("10m"),
+							}},
+						Args: []string{
+							"--secure-listen-address=0.0.0.0:8444",
+							"--upstream=http://127.0.0.1:9090/",
+							"--tls-cert-file=/etc/tls/private/tls.crt",
+							"--tls-private-key-file=/etc/tls/private/tls.key",
+							"--logtostderr=true",
+							"--v=10",
+						},
+					}},
+				},
+			},
+		},
 	}
-	// Make sure we respect existing volumes (eg. controller gets extra volumes due to custom certs)
-	if len(deployment.Spec.Template.Spec.Volumes) != 2 {
-		t.Errorf("Got %d, want %d", len(deployment.Spec.Template.Spec.Volumes), 2)
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Error("Unexpected Deployment diff (-want +got): ", diff)
 	}
-	cContainer := deployment.Spec.Template.Spec.Containers[0]
-	if !envToString(cContainer.Env).Has("METRICS_PROMETHEUS_HOST:127.0.0.1") {
-		t.Error("Component container does not set up the prometheus host to localhost")
-	}
-	rbacContainer := deployment.Spec.Template.Spec.Containers[1]
-	if rbacContainer.Name != rbacContainerName {
-		t.Errorf("Got %q, want %q", rbacContainer.Name, rbacContainerName)
-	}
-	if rbacContainer.Image != rbacImage {
-		t.Errorf("Got %q, want %q", rbacContainer.Image, rbacImage)
-	}
-	// Make sure we define requests otherwise K8s hpa will complain
-	if len(rbacContainer.Resources.Requests) != 2 {
-		t.Errorf("Got %q, want %q", len(rbacContainer.Resources.Requests), 2)
-	}
-}
-func envToString(vars []v1.EnvVar) sets.String {
-	sVars := sets.String{}
-	for _, v := range vars {
-		sVars.Insert(fmt.Sprintf("%s:%s", v.Name, v.Value))
-	}
-	return sVars
 }
