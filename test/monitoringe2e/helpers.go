@@ -112,7 +112,8 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 	if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
 		value, _, err := pc.Query(context.Background(), fmt.Sprintf(`knative_up{type="%s"}`, label), time.Time{})
 		if err != nil {
-			return false, err
+			caCtx.T.Log("Error:", err)
+			return false, nil
 		}
 
 		vec, ok := value.(prommodel.Vector)
