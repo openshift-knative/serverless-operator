@@ -36,6 +36,7 @@ import (
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/serving"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+	servingTest "knative.dev/serving/test"
 )
 
 type testCase struct {
@@ -616,7 +617,9 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 				return true, nil
 			},
 			"WaitForRouteToServe401Or403",
-			true); err != nil {
+			true,
+			servingTest.AddRootCAtoTransport(context.Background(), t.Logf, &servingTest.Clients{KubeClient: ctx.Clients.Kube}, true),
+		); err != nil {
 			t.Fatalf("The Route at domain %s didn't serve the expected HTTP 401 or 403 status: %v", testKsvc.Status.URL.URL(), err)
 		}
 
