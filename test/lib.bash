@@ -456,5 +456,6 @@ function trust_router_ca() {
   certs=$(mktemp -d)
   oc -n openshift-config-managed get cm default-ingress-cert --template="{{index .data \"ca-bundle.crt\"}}" > "$certs/tls.crt"
   oc get ns $certns || oc create namespace $certns
+  timeout 30 "[[ \$(oc get ns $certns --no-headers | wc -l) != 1 ]]"
   oc -n $certns get secret $certname || oc -n $certns create secret generic $certname --from-file=tls.crt="$certs/tls.crt"
 }
