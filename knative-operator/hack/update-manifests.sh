@@ -18,7 +18,7 @@ function download_kafka {
 
   files=("$@")
 
-  component_dir="$root/knative-operator/deploy/resources/${component}"
+  component_dir="$root/knative-operator/deploy/resources/knativekafka"
   target_dir="${component_dir}"
 
   for (( i=0; i<${#files[@]}; i++ ));
@@ -26,7 +26,7 @@ function download_kafka {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     target_file="$target_dir/$index-$file"
-    url="https://github.com/knative-sandbox/eventing-kafka/releases/download/$version/$file"
+    url="https://github.com/knative-sandbox/$component/releases/download/$version/$file"
 
     wget --no-check-certificate "$url" -O "$target_file"
 
@@ -35,7 +35,7 @@ function download_kafka {
   done
 }
 
-download_kafka knativekafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
+download_kafka eventing-kafka "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_files[@]}"
 
 # For 1.17 we still skip HPA
 git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
