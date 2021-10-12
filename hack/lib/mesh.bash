@@ -67,9 +67,8 @@ function deploy_gateways {
   subdomain=$(oc get ingresses.config.openshift.io cluster -o jsonpath="{.spec.domain}")
   openssl req -nodes -newkey rsa:2048 \
       -subj "/O=Example Inc./CN=Example" \
-      -reqexts SAN \
-      -config <(cat /etc/ssl/openssl.cnf \
-          <(printf "\n[SAN]\nsubjectAltName=DNS:*.%s" "$subdomain")) \
+      -reqexts san \
+      -config <(printf "[req]\ndistinguished_name=req\n[san]\nsubjectAltName=DNS:*.%s" "$subdomain") \
       -keyout "${out_dir}"/wildcard.key \
       -out "${out_dir}"/wildcard.csr
 
