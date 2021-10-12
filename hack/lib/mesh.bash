@@ -59,7 +59,10 @@ function deploy_gateways {
   local out_dir
   out_dir="$(mktemp -d /tmp/certs-XXX)"
 
-  subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
+  # Only get the last 2 parts of the subdomain, to make it short.
+  # This is okay as we're using self-signed-certificates + wildcards anyway, so even
+  # claiming *.openshift.com should work fine for this purpose.
+  subdomain=$(oc get ingresses.config.openshift.io cluster -o jsonpath="{.spec.domain}" | rev | cut -d'.' -f-2 | rev)
 
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
     -subj "/O=Example Inc./CN=${subdomain}" \
@@ -67,7 +70,7 @@ function deploy_gateways {
     -out "${out_dir}"/root.crt
 
   openssl req -nodes -newkey rsa:2048 \
-      -subj "/CN=*.${subdomain}/O=Example Inc." \
+      -subj "/O=Example Inc./CN=*.${subdomain}" \
       -keyout "${out_dir}"/wildcard.key \
       -out "${out_dir}"/wildcard.csr
 
