@@ -73,6 +73,7 @@ function deploy_gateways {
       -out "${out_dir}"/wildcard.csr
 
   openssl x509 -req -days 365 -set_serial 0 \
+      -extfile <(printf "subjectAltName=DNS:*.%s" "$subdomain") \
       -CA "${out_dir}"/root.crt \
       -CAkey "${out_dir}"/root.key \
       -in "${out_dir}"/wildcard.csr \
