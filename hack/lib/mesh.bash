@@ -59,19 +59,21 @@ function deploy_gateways {
   local out_dir
   out_dir="$(mktemp -d /tmp/certs-XXX)"
 
-  subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
-
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
-    -subj "/O=Example Inc./CN=${subdomain}" \
+    -subj "/O=Example Inc./CN=Example" \
     -keyout "${out_dir}"/root.key \
     -out "${out_dir}"/root.crt
 
+  subdomain=$(oc get ingresses.config.openshift.io cluster -o jsonpath="{.spec.domain}")
   openssl req -nodes -newkey rsa:2048 \
-      -subj "/CN=*.${subdomain}/O=Example Inc." \
+      -subj "/O=Example Inc./CN=Example" \
+      -reqexts san \
+      -config <(printf "[req]\ndistinguished_name=req\n[san]\nsubjectAltName=DNS:*.%s" "$subdomain") \
       -keyout "${out_dir}"/wildcard.key \
       -out "${out_dir}"/wildcard.csr
 
   openssl x509 -req -days 365 -set_serial 0 \
+      -extfile <(printf "subjectAltName=DNS:*.%s" "$subdomain") \
       -CA "${out_dir}"/root.crt \
       -CAkey "${out_dir}"/root.key \
       -in "${out_dir}"/wildcard.csr \

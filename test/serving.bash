@@ -58,11 +58,6 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
 
   if [[ $FULL_MESH == "true" ]]; then
-    # Use x509ignoreCN=0.
-    # This should not be necesssary if we could ceate certs with SAN. However, openssl command in the CI
-    # seems old version and so it does not have "-addext" option to add SAN.
-    export GODEBUG="x509ignoreCN=0"
-
     # TODO: SRVKS-211: Can not run grpc and http2 tests.
     rm ./test/e2e/grpc_test.go
     rm ./test/e2e/http2_test.go
