@@ -399,7 +399,7 @@ spec:
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
+                    image: quay.io/openshift-knative/openshift-knative-operator:latest
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -424,6 +424,7 @@ spec:
                       - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
                       - name: "IMAGE_queue-proxy"
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-queue"
                       - name: "IMAGE_activator"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-activator"
@@ -451,7 +452,37 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-controller"
                       - name: "IMAGE_net-istio-webhook__webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-webhook"
+=======
+                        value: "quay.io/openshift-knative/knative-serving-queue:v0.25.1"
+                      - name: "IMAGE_activator"
+                        value: "quay.io/openshift-knative/knative-serving-activator:v0.25.1"
+                      - name: "IMAGE_autoscaler"
+                        value: "quay.io/openshift-knative/knative-serving-autoscaler:v0.25.1"
+                      - name: "IMAGE_autoscaler-hpa"
+                        value: "quay.io/openshift-knative/knative-serving-autoscaler-hpa:v0.25.1"
+                      - name: "IMAGE_controller__controller"
+                        value: "quay.io/openshift-knative/knative-serving-controller"
+                      - name: "IMAGE_webhook__webhook"
+                        value: "quay.io/openshift-knative/knative-serving-webhook:v0.25.1"
+                      - name: "IMAGE_domain-mapping"
+                        value: "quay.io/openshift-knative/knative-serving-domain-mapping:v0.25.1"
+                      - name: "IMAGE_domainmapping-webhook"
+                        value: "quay.io/openshift-knative/knative-serving-domain-mapping-webhook:v0.25.1"
+                      - name: "IMAGE_storage-version-migration-serving-serving-0.25.1__migrate"
+                        value: "quay.io/openshift-knative/knative-serving-storage-version-migration:v0.25.1"
+                      - name: "IMAGE_kourier-gateway"
+                        value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
+                      - name: "IMAGE_kourier-control"
+                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                      - name: "IMAGE_net-kourier-controller__controller"
+                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                      - name: "IMAGE_net-istio-controller__controller"
+                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+                      - name: "IMAGE_net-istio-webhook__webhook"
+                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
+>>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
                       - name: "IMAGE_eventing-controller__eventing-controller"
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-controller"
                       - name: "IMAGE_sugar-controller__controller"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-sugar-controller"
@@ -475,6 +506,31 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-apiserver-receive-adapter"
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
+=======
+                        value: "quay.io/openshift-knative/knative-eventing-controller:v0.25.1"
+                      - name: "IMAGE_sugar-controller__controller"
+                        value: "quay.io/openshift-knative/knative-eventing-sugar-controller:v0.25.1"
+                      - name: "IMAGE_eventing-webhook__eventing-webhook"
+                        value: "quay.io/openshift-knative/knative-eventing-webhook:v0.25.1"
+                      - name: "IMAGE_storage-version-migration-eventing-eventing-0.25.1__migrate"
+                        value: "quay.io/openshift-knative/knative-eventing-storage-version-migration:v0.25.1"
+                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
+                        value: "quay.io/openshift-knative/knative-eventing-mtchannel-broker:v0.25.1"
+                      - name: "IMAGE_mt-broker-filter__filter"
+                        value: "quay.io/openshift-knative/knative-eventing-mtbroker-filter:v0.25.1"
+                      - name: "IMAGE_mt-broker-ingress__ingress"
+                        value: "quay.io/openshift-knative/knative-eventing-mtbroker-ingress:v0.25.1"
+                      - name: "IMAGE_imc-controller__controller"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-controller:v0.25.1"
+                      - name: "IMAGE_imc-dispatcher__dispatcher"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
+                        value: "quay.io/openshift-knative/knative-eventing-mtping:v0.25.1"
+                      - name: "IMAGE_APISERVER_RA_IMAGE"
+                        value: "quay.io/openshift-knative/knative-eventing-apiserver-receive-adapter:v0.25.1"
+                      - name: "IMAGE_DISPATCHER_IMAGE"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+>>>>>>> 388bdd16 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                     securityContext:
@@ -500,7 +556,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v0.25.1:kn-cli-artifacts
+                    image: quay.io/openshift-knative/knative-v0.25.1:kn-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -509,7 +565,7 @@ spec:
                 containers:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+                    image: quay.io/openshift-knative/knative-operator:latest
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -559,6 +615,7 @@ spec:
                       - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
                       - name: "IMAGE_queue-proxy"
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-queue"
                       - name: "IMAGE_activator"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-activator"
@@ -586,7 +643,37 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-controller"
                       - name: "IMAGE_net-istio-webhook__webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-webhook"
+=======
+                        value: "quay.io/openshift-knative/knative-serving-queue:v0.25.1"
+                      - name: "IMAGE_activator"
+                        value: "quay.io/openshift-knative/knative-serving-activator:v0.25.1"
+                      - name: "IMAGE_autoscaler"
+                        value: "quay.io/openshift-knative/knative-serving-autoscaler:v0.25.1"
+                      - name: "IMAGE_autoscaler-hpa"
+                        value: "quay.io/openshift-knative/knative-serving-autoscaler-hpa:v0.25.1"
+                      - name: "IMAGE_controller__controller"
+                        value: "quay.io/openshift-knative/knative-serving-controller"
+                      - name: "IMAGE_webhook__webhook"
+                        value: "quay.io/openshift-knative/knative-serving-webhook:v0.25.1"
+                      - name: "IMAGE_domain-mapping"
+                        value: "quay.io/openshift-knative/knative-serving-domain-mapping:v0.25.1"
+                      - name: "IMAGE_domainmapping-webhook"
+                        value: "quay.io/openshift-knative/knative-serving-domain-mapping-webhook:v0.25.1"
+                      - name: "IMAGE_storage-version-migration-serving-serving-0.25.1__migrate"
+                        value: "quay.io/openshift-knative/knative-serving-storage-version-migration:v0.25.1"
+                      - name: "IMAGE_kourier-gateway"
+                        value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
+                      - name: "IMAGE_kourier-control"
+                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                      - name: "IMAGE_net-kourier-controller__controller"
+                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                      - name: "IMAGE_net-istio-controller__controller"
+                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+                      - name: "IMAGE_net-istio-webhook__webhook"
+                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
+>>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
                       - name: "IMAGE_eventing-controller__eventing-controller"
+<<<<<<< HEAD
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-controller"
                       - name: "IMAGE_sugar-controller__controller"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-sugar-controller"
@@ -610,18 +697,43 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-apiserver-receive-adapter"
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
+=======
+                        value: "quay.io/openshift-knative/knative-eventing-controller:v0.25.1"
+                      - name: "IMAGE_sugar-controller__controller"
+                        value: "quay.io/openshift-knative/knative-eventing-sugar-controller:v0.25.1"
+                      - name: "IMAGE_eventing-webhook__eventing-webhook"
+                        value: "quay.io/openshift-knative/knative-eventing-webhook:v0.25.1"
+                      - name: "IMAGE_storage-version-migration-eventing-eventing-0.25.1__migrate"
+                        value: "quay.io/openshift-knative/knative-eventing-storage-version-migration:v0.25.1"
+                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
+                        value: "quay.io/openshift-knative/knative-eventing-mtchannel-broker:v0.25.1"
+                      - name: "IMAGE_mt-broker-filter__filter"
+                        value: "quay.io/openshift-knative/knative-eventing-mtbroker-filter:v0.25.1"
+                      - name: "IMAGE_mt-broker-ingress__ingress"
+                        value: "quay.io/openshift-knative/knative-eventing-mtbroker-ingress:v0.25.1"
+                      - name: "IMAGE_imc-controller__controller"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-controller:v0.25.1"
+                      - name: "IMAGE_imc-dispatcher__dispatcher"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
+                        value: "quay.io/openshift-knative/knative-eventing-mtping:v0.25.1"
+                      - name: "IMAGE_APISERVER_RA_IMAGE"
+                        value: "quay.io/openshift-knative/knative-eventing-apiserver-receive-adapter:v0.25.1"
+                      - name: "IMAGE_DISPATCHER_IMAGE"
+                        value: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+>>>>>>> 388bdd16 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-source-controller"
+                        value: "quay.io/openshift-knative/knative-eventing-kafka-source-controller:v0.25.3"
                       - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-receive-adapter"
+                        value: "quay.io/openshift-knative/knative-eventing-kafka-receive-adapter:v0.25.3"
                       - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-consolidated-controller"
+                        value: "quay.io/openshift-knative/knative-eventing-kafka-consolidated-controller:v0.25.3"
                       - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-consolidated-dispatcher"
+                        value: "quay.io/openshift-knative/knative-eventing-kafka-consolidated-dispatcher:v0.25.3"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-webhook"
+                        value: "quay.io/openshift-knative/knative-eventing-kafka-webhook:v0.25.3"
                       - name: "KNATIVE_EVENTING_KAFKA_VERSION"
                         value: "0.25.3"
                     securityContext:
@@ -650,7 +762,7 @@ spec:
                 containers:
                   - name: knative-openshift-ingress
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+                    image: quay.io/openshift-knative/knative-openshift-ingress:latest
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -795,14 +907,15 @@ spec:
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
+      image: quay.io/openshift-knative/openshift-knative-operator:latest
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
+      image: quay.io/openshift-knative/knative-operator:latest
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-openshift-ingress
+      image: quay.io/openshift-knative/knative-openshift-ingress:latest
     - name: "IMAGE_queue-proxy"
+<<<<<<< HEAD
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-queue"
     - name: "IMAGE_activator"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-serving-activator"
@@ -830,7 +943,37 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-controller"
     - name: "IMAGE_net-istio-webhook__webhook"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:net-istio-webhook"
+=======
+      image: "quay.io/openshift-knative/knative-serving-queue:v0.25.1"
+    - name: "IMAGE_activator"
+      image: "quay.io/openshift-knative/knative-serving-activator:v0.25.1"
+    - name: "IMAGE_autoscaler"
+      image: "quay.io/openshift-knative/knative-serving-autoscaler:v0.25.1"
+    - name: "IMAGE_autoscaler-hpa"
+      image: "quay.io/openshift-knative/knative-serving-autoscaler-hpa:v0.25.1"
+    - name: "IMAGE_controller__controller"
+      image: "quay.io/openshift-knative/knative-serving-controller"
+    - name: "IMAGE_webhook__webhook"
+      image: "quay.io/openshift-knative/knative-serving-webhook:v0.25.1"
+    - name: "IMAGE_domain-mapping"
+      image: "quay.io/openshift-knative/knative-serving-domain-mapping:v0.25.1"
+    - name: "IMAGE_domainmapping-webhook"
+      image: "quay.io/openshift-knative/knative-serving-domain-mapping-webhook:v0.25.1"
+    - name: "IMAGE_storage-version-migration-serving-serving-0.25.1__migrate"
+      image: "quay.io/openshift-knative/knative-serving-storage-version-migration:v0.25.1"
+    - name: "IMAGE_kourier-gateway"
+      image: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
+    - name: "IMAGE_kourier-control"
+      image: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+    - name: "IMAGE_net-kourier-controller__controller"
+      image: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+    - name: "IMAGE_net-istio-controller__controller"
+      image: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+    - name: "IMAGE_net-istio-webhook__webhook"
+      image: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
+>>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
     - name: "IMAGE_eventing-controller__eventing-controller"
+<<<<<<< HEAD
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-controller"
     - name: "IMAGE_sugar-controller__controller"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-sugar-controller"
@@ -854,17 +997,48 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-apiserver-receive-adapter"
     - name: "IMAGE_DISPATCHER_IMAGE"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
+=======
+      image: "quay.io/openshift-knative/knative-eventing-controller:v0.25.1"
+    - name: "IMAGE_sugar-controller__controller"
+      image: "quay.io/openshift-knative/knative-eventing-sugar-controller:v0.25.1"
+    - name: "IMAGE_eventing-webhook__eventing-webhook"
+      image: "quay.io/openshift-knative/knative-eventing-webhook:v0.25.1"
+    - name: "IMAGE_storage-version-migration-eventing-eventing-0.25.1__migrate"
+      image: "quay.io/openshift-knative/knative-eventing-storage-version-migration:v0.25.1"
+    - name: "IMAGE_mt-broker-controller__mt-broker-controller"
+      image: "quay.io/openshift-knative/knative-eventing-mtchannel-broker:v0.25.1"
+    - name: "IMAGE_mt-broker-filter__filter"
+      image: "quay.io/openshift-knative/knative-eventing-mtbroker-filter:v0.25.1"
+    - name: "IMAGE_mt-broker-ingress__ingress"
+      image: "quay.io/openshift-knative/knative-eventing-mtbroker-ingress:v0.25.1"
+    - name: "IMAGE_imc-controller__controller"
+      image: "quay.io/openshift-knative/knative-eventing-channel-controller:v0.25.1"
+    - name: "IMAGE_imc-dispatcher__dispatcher"
+      image: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+    - name: "IMAGE_pingsource-mt-adapter__dispatcher"
+      image: "quay.io/openshift-knative/knative-eventing-mtping:v0.25.1"
+    - name: "IMAGE_APISERVER_RA_IMAGE"
+      image: "quay.io/openshift-knative/knative-eventing-apiserver-receive-adapter:v0.25.1"
+    - name: "IMAGE_DISPATCHER_IMAGE"
+      image: "quay.io/openshift-knative/knative-eventing-channel-dispatcher:v0.25.1"
+>>>>>>> 388bdd16 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
     - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
-      image: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-source-controller"
+      image: "quay.io/openshift-knative/knative-eventing-kafka-source-controller:v0.25.3"
     - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-receive-adapter"
+      image: "quay.io/openshift-knative/knative-eventing-kafka-receive-adapter:v0.25.3"
     - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-consolidated-controller"
+      image: "quay.io/openshift-knative/knative-eventing-kafka-consolidated-controller:v0.25.3"
     - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-consolidated-dispatcher"
+      image: "quay.io/openshift-knative/knative-eventing-kafka-consolidated-dispatcher:v0.25.3"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
+<<<<<<< HEAD
       image: "registry.ci.openshift.org/openshift/knative-v0.25.3:knative-eventing-kafka-webhook"
   replaces: serverless-operator.v1.19.0
   version: 1.20.0
+=======
+      image: "quay.io/openshift-knative/knative-eventing-kafka-webhook:v0.25.3"
+  replaces: serverless-operator.v1.18.0
+  version: 1.19.0
+>>>>>>> 388bdd16 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
