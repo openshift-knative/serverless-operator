@@ -10,6 +10,7 @@ run:
 linters:
   enable:
     - asciicheck
+    - errorlint
     - gofmt
     - goimports
     - gosec

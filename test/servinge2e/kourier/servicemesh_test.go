@@ -316,7 +316,7 @@ func rsaPublicKeyAsJwks(key rsa.PublicKey, keyID string) (string, error) {
 
 	jwksBytes, err := json.Marshal(jwks)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling jwks: %v", err)
+		return "", fmt.Errorf("error marshalling jwks: %w", err)
 	}
 
 	return string(jwksBytes), nil
@@ -330,12 +330,12 @@ func jwtRs256Token(rsaKey *rsa.PrivateKey, payload map[string]interface{}) (stri
 	}
 	jwtHeaderBytes, err := json.Marshal(jwtHeader)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling jwt header into JSON: %v", err)
+		return "", fmt.Errorf("error marshalling jwt header into JSON: %w", err)
 	}
 
 	jwtPayloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling jwt payload into JSON: %v", err)
+		return "", fmt.Errorf("error marshalling jwt payload into JSON: %w", err)
 	}
 
 	jwtHeaderBase64 := base64.RawURLEncoding.EncodeToString(jwtHeaderBytes)
@@ -348,7 +348,7 @@ func jwtRs256Token(rsaKey *rsa.PrivateKey, payload map[string]interface{}) (stri
 
 	signature, err := rsa.SignPKCS1v15(rand.Reader, rsaKey, crypto.SHA256, hash)
 	if err != nil {
-		return "", fmt.Errorf("error signing JWT token with PKSC1v15: %v", err)
+		return "", fmt.Errorf("error signing JWT token with PKSC1v15: %w", err)
 	}
 
 	jwtSignatureBase64 := base64.RawURLEncoding.EncodeToString(signature)
@@ -364,12 +364,12 @@ func jwtUnsignedToken(payload map[string]interface{}) (string, error) {
 	}
 	jwtHeaderBytes, err := json.Marshal(jwtHeader)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling jwt header into JSON: %v", err)
+		return "", fmt.Errorf("error marshalling jwt header into JSON: %w", err)
 	}
 
 	jwtPayloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling jwt payload into JSON: %v", err)
+		return "", fmt.Errorf("error marshalling jwt payload into JSON: %w", err)
 	}
 
 	jwtHeaderBase64 := base64.RawURLEncoding.EncodeToString(jwtHeaderBytes)
@@ -385,7 +385,7 @@ func jwtUnsignedToken(payload map[string]interface{}) (string, error) {
 func jwtHTTPGetRequestBytes(url string, token *string) (*http.Response, []byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error creating HTTP GET request: %v", err)
+		return nil, nil, fmt.Errorf("error creating HTTP GET request: %w", err)
 	}
 	if token != nil {
 		req.Header.Add("Authorization", "Bearer "+*token)
@@ -393,7 +393,7 @@ func jwtHTTPGetRequestBytes(url string, token *string) (*http.Response, []byte, 
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error doing HTTP GET request: %v", err)
+		return nil, nil, fmt.Errorf("error doing HTTP GET request: %w", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
