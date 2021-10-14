@@ -10,6 +10,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -47,7 +48,7 @@ const (
 
 	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
 	// controller's PodTemplate to make it redeploy on certificate changes.
-	certVersionKey = "serving.knative.openshift.io/mounted-cert-version"
+	certVersionKey = socommon.ServingDownstreamDomain + "/mounted-cert-version"
 
 	requiredNsEnvName = "REQUIRED_SERVING_NAMESPACE"
 )
@@ -111,7 +112,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		routev1.GroupVersion.WithKind("Route"):                &routev1.Route{},
 	}
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.ServingOwnerName, common.ServingOwnerNamespace))
+		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}

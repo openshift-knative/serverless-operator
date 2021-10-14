@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	routev1 "github.com/openshift/api/route/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -18,14 +19,14 @@ import (
 
 const (
 	TimeoutAnnotation                = "haproxy.router.openshift.io/timeout"
-	DisableRouteAnnotation           = "serving.knative.openshift.io/disableRoute"
-	EnablePassthroughRouteAnnotation = "serving.knative.openshift.io/enablePassthrough"
+	DisableRouteAnnotation           = socommon.ServingDownstreamDomain + "/disableRoute"
+	EnablePassthroughRouteAnnotation = socommon.ServingDownstreamDomain + "/enablePassthrough"
 
 	HTTPPort  = "http2"
 	HTTPSPort = "https"
 
-	OpenShiftIngressLabelKey          = "serving.knative.openshift.io/ingressName"
-	OpenShiftIngressNamespaceLabelKey = "serving.knative.openshift.io/ingressNamespace"
+	OpenShiftIngressLabelKey          = socommon.ServingDownstreamDomain + "/ingressName"
+	OpenShiftIngressNamespaceLabelKey = socommon.ServingDownstreamDomain + "/ingressNamespace"
 )
 
 // DefaultTimeout is set by DefaultMaxRevisionTimeoutSeconds. So, the OpenShift Route's timeout

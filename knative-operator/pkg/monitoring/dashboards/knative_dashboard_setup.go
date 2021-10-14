@@ -10,6 +10,7 @@ import (
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -75,13 +76,13 @@ func getAnnotationsFromInstance(instance operatorv1alpha1.KComponent) mf.Transfo
 	switch instance.(type) {
 	case *operatorv1alpha1.KnativeEventing:
 		return common.SetAnnotations(map[string]string{
-			common.EventingOwnerName:      instance.GetName(),
-			common.EventingOwnerNamespace: instance.GetNamespace(),
+			socommon.EventingOwnerName:      instance.GetName(),
+			socommon.EventingOwnerNamespace: instance.GetNamespace(),
 		})
 	case *operatorv1alpha1.KnativeServing:
 		return common.SetAnnotations(map[string]string{
-			common.ServingOwnerName:      instance.GetName(),
-			common.ServingOwnerNamespace: instance.GetNamespace(),
+			socommon.ServingOwnerName:      instance.GetName(),
+			socommon.ServingOwnerNamespace: instance.GetNamespace(),
 		})
 	}
 	return nil
