@@ -33,7 +33,7 @@ const (
 )
 
 // NewExtension creates a new extension for a Knative Serving controller.
-func NewExtension(ctx context.Context) operator.Extension {
+func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
 	return &extension{
 		ocpclient:  ocpclient.Get(ctx),
 		kubeclient: kubeclient.Get(ctx),

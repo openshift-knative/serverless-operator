@@ -109,7 +109,7 @@ func TestReconcile(t *testing.T) {
 
 			ke := c.in.DeepCopy()
 			ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
-			ext := NewExtension(ctx)
+			ext := NewExtension(ctx, nil)
 			ext.Reconcile(context.Background(), ke)
 
 			// Ignore time differences.
@@ -242,7 +242,7 @@ func TestMonitoring(t *testing.T) {
 			c.expected.Namespace = ke.Namespace
 			ctx, _ := ocpfake.With(context.Background(), objs...)
 			ctx, kube := kubefake.With(ctx, &eventingNamespace)
-			ext := NewExtension(ctx)
+			ext := NewExtension(ctx, nil)
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()
 
 			if err != nil {

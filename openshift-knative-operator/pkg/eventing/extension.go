@@ -19,7 +19,7 @@ import (
 const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
 
 // NewExtension creates a new extension for a Knative Eventing controller.
-func NewExtension(ctx context.Context) operator.Extension {
+func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
 	return &extension{
 		kubeclient: kubeclient.Get(ctx),
 	}
