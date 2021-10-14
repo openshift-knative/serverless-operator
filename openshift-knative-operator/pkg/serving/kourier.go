@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,13 +23,21 @@ const (
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
 // the -ingress suffix to be backwards compatible.
-func overrideKourierNamespace(kourierNs string) mf.Transformer {
-	nsInjector := mf.InjectNamespace(kourierNs)
+func overrideKourierNamespace(ks v1alpha1.KComponent) mf.Transformer {
+	nsInjector := mf.InjectNamespace(kourierNamespace(ks.GetNamespace()))
 	return func(u *unstructured.Unstructured) error {
 		provider := u.GetLabels()[providerLabel]
 		if provider != "kourier" {
 			return nil
 		}
+
+		labels := u.GetLabels()
+		if labels == nil {
+			labels = make(map[string]string, 2)
+		}
+		labels[socommon.ServingOwnerNamespace] = ks.GetNamespace()
+		labels[socommon.ServingOwnerName] = ks.GetName()
+		u.SetLabels(labels)
 
 		// We need to unset OwnerReferences so Openshift doesn't delete Kourier ressources.
 		u.SetOwnerReferences(nil)
