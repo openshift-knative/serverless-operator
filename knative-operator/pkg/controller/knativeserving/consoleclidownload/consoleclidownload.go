@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -127,8 +128,8 @@ func makeRoute(instance *servingv1alpha1.KnativeServing) *routev1.Route {
 			Name:      knCLIDownload,
 			Namespace: operatorNamespace,
 			Annotations: map[string]string{
-				common.ServingOwnerName:      instance.GetName(),
-				common.ServingOwnerNamespace: instance.GetNamespace(),
+				socommon.ServingOwnerName:      instance.GetName(),
+				socommon.ServingOwnerNamespace: instance.GetNamespace(),
 			},
 		},
 		Spec: routev1.RouteSpec{
@@ -154,8 +155,8 @@ func populateKnConsoleCLIDownload(baseURL string, instance *servingv1alpha1.Knat
 		ObjectMeta: metav1.ObjectMeta{
 			Name: knCLIDownload,
 			Annotations: map[string]string{
-				common.ServingOwnerName:      instance.GetName(),
-				common.ServingOwnerNamespace: instance.GetNamespace(),
+				socommon.ServingOwnerName:      instance.GetName(),
+				socommon.ServingOwnerNamespace: instance.GetNamespace(),
 			},
 		},
 		Spec: consolev1.ConsoleCLIDownloadSpec{
