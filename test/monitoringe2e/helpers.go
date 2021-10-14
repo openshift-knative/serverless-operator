@@ -157,7 +157,7 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
 	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("error getting service account prometheus-k8s %v", err)
+		return "", fmt.Errorf("error getting service account prometheus-k8s: %w", err)
 	}
 	tokenSecret := getSecretNameForToken(sa.Secrets)
 	if tokenSecret == "" {
@@ -165,7 +165,7 @@ func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
 	}
 	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, meta.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("error getting secret %s %v", tokenSecret, err)
+		return "", fmt.Errorf("error getting secret %s: %w", tokenSecret, err)
 	}
 	tokenContents := sec.Data["token"]
 	if len(tokenContents) == 0 {

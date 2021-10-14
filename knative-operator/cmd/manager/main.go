@@ -130,7 +130,7 @@ func main() {
 		// signal handling so the process can just tear it down with it.
 		log.Info("Serving CLI artifacts on :8080")
 		http.Handle("/", http.FileServer(http.Dir("/cli-artifacts")))
-		if err := http.ListenAndServe(":8080", nil); err != nil && err != http.ErrServerClosed {
+		if err := http.ListenAndServe(":8080", nil); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error(err, "Failed to launch CLI artifact server")
 		}
 	}()

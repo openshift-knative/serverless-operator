@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -420,7 +421,7 @@ func TestMakeRoute(t *testing.T) {
 			if test.want != nil && !cmp.Equal(routes, test.want) {
 				t.Errorf("got = %v, want: %v, diff: %s", routes, test.want, cmp.Diff(routes, test.want))
 			}
-			if err != test.wantErr {
+			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got = %v, want: %v", err, test.wantErr)
 			}
 		})
