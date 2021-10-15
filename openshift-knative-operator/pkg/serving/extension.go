@@ -12,17 +12,21 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/reconciler"
 )
 
 const (
@@ -33,7 +37,16 @@ const (
 )
 
 // NewExtension creates a new extension for a Knative Serving controller.
-func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
+func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
+	deploymentInformer := deploymentinformer.Get(ctx)
+
+	// We move the Kourier deployments into a different namespace so the usual informer
+	// that enqueues the OwnerRef doesn't catch those, so we add them here explicitly.
+	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: reconciler.LabelExistsFilterFunc(socommon.ServingOwnerNamespace),
+		Handler:    controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(socommon.ServingOwnerNamespace, socommon.ServingOwnerName)),
+	})
+
 	return &extension{
 		ocpclient:  ocpclient.Get(ctx),
 		kubeclient: kubeclient.Get(ctx),
@@ -56,7 +69,7 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 			corev1.EnvVar{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
-		overrideKourierNamespace(kourierNamespace(ks.GetNamespace())),
+		overrideKourierNamespace(ks),
 		// TODO: Remove after resources are bumped to 0.26
 		replaceServiceSelector(ks),
 	}, monitoring.GetServingTransformers(ks)...)
