@@ -400,7 +400,7 @@ func jwtHTTPGetRequestBytes(ctx *test.Context, url *url.URL, token *string) (*sp
 	}
 
 	// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
-	resp, err := sc.Poll(req, spoof.IsOneOfStatusCodes(http.StatusOK, http.StatusBadRequest, http.StatusForbidden))
+	resp, err := sc.Poll(req, spoof.IsOneOfStatusCodes(http.StatusOK, http.StatusUnauthorized, http.StatusForbidden))
 	if err != nil {
 		return nil, fmt.Errorf("error polling: %w", err)
 	}
