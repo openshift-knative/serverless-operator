@@ -12,10 +12,10 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -382,22 +382,30 @@ func jwtUnsignedToken(payload map[string]interface{}) (string, error) {
 
 // Convenience method to test requests with tokens, reads the response and returns a closed response and the body bits
 // token can be nil, in which case no Authorization header will be sent
-func jwtHTTPGetRequestBytes(url string, token *string) (*http.Response, []byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func jwtHTTPGetRequestBytes(ctx *test.Context, url *url.URL, token *string) (*spoof.Response, error) {
+	tlsConfig := servingTest.TLSClientConfig(context.Background(), ctx.T.Logf, &servingTest.Clients{KubeClient: ctx.Clients.Kube})
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+
+	sc := &spoof.SpoofingClient{
+		Client: &http.Client{Transport: transport},
+		Logf:   ctx.T.Logf,
+	}
+
+	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error creating HTTP GET request: %w", err)
+		return nil, fmt.Errorf("error creating HTTP GET request: %w", err)
 	}
 	if token != nil {
 		req.Header.Add("Authorization", "Bearer "+*token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
+	resp, err := sc.Poll(req, spoof.IsOneOfStatusCodes(http.StatusOK, http.StatusBadRequest, http.StatusForbidden))
 	if err != nil {
-		return nil, nil, fmt.Errorf("error doing HTTP GET request: %w", err)
+		return nil, fmt.Errorf("error polling: %w", err)
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	return resp, body, err
+
+	return resp, err
 }
 
 // Verifies access to a Ksvc with an istio-proxy can be configured
@@ -724,20 +732,20 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 				}
 
 				// Do a request, optionally with a token
-				resp, body, err := jwtHTTPGetRequestBytes(testKsvc.Status.URL.String(), tokenRef)
+				resp, err := jwtHTTPGetRequestBytes(ctx, testKsvc.Status.URL.URL(), tokenRef)
 				if err != nil {
 					t.Fatalf("Error doing HTTP GET request: %v", err)
 				}
 
 				if scenario.valid {
 					// Verify the response is a proper "hello world" when the token is valid
-					if resp.StatusCode != 200 || !strings.Contains(string(body), helloworldText) {
-						t.Fatalf("Unexpected response with a valid token: HTTP %d: %s", resp.StatusCode, string(body))
+					if resp.StatusCode != 200 || !strings.Contains(string(resp.Body), helloworldText) {
+						t.Fatalf("Unexpected response with a valid token: HTTP %d: %s", resp.StatusCode, string(resp.Body))
 					}
 				} else {
 					// Verify the response is a 401 or a 403 for an invalid token
 					if resp.StatusCode != 401 && resp.StatusCode != 403 {
-						t.Fatalf("Unexpected response with an invalid token, expecting 401 or 403, got %d: %s", resp.StatusCode, string(body))
+						t.Fatalf("Unexpected response with an invalid token, expecting 401 or 403, got %d: %s", resp.StatusCode, string(resp.Body))
 					}
 				}
 			})
