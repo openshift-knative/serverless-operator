@@ -42,7 +42,6 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.20.7
 	k8s.io/client-go => k8s.io/client-go v0.20.7
 	k8s.io/code-generator => k8s.io/code-generator v0.20.7
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 
 	// Knative forks.
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211005104650-2127d7fc1400
