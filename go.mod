@@ -25,7 +25,7 @@ require (
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
 	knative.dev/networking v0.0.0-20210903132258-9d8ab8618e5f
-	knative.dev/operator v0.25.3-0.20211014142443-7d5a16050119
+	knative.dev/operator v0.25.3
 	knative.dev/pkg v0.0.0-20210902173607-844a6bc45596
 	knative.dev/serving v0.25.1
 	sigs.k8s.io/controller-runtime v0.8.3
@@ -43,7 +43,7 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.20.7
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211005104650-2127d7fc1400
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211011070646-46b07bfde414
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211025073149-ff3a73d34603
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211020205411-8390acd4d526
 	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210924121646-ec4ba4824474
 )
