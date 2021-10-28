@@ -9,7 +9,7 @@ NAME="${NAME:-hello}"
 TARGET="${USER:-world}"
 
 # Create a sample Knative Service
-cat <<EOF | kubectl apply -f -
+cat <<EOF | oc apply -f -
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
@@ -28,11 +28,11 @@ spec:
 EOF
 
 # Wait for the Knative Service to be ready
-timeout 100 "[[ \$(kubectl get ksvc ${NAME} -o \
+timeout 100 "[[ \$(oc get ksvc ${NAME} -o \
 jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
 
 # Get the URL from the knative service
-URL="$(kubectl get ksvc hello -o jsonpath='{.status.url}')"
+URL="$(oc get ksvc hello -o jsonpath='{.status.url}')"
 
 # Fetch it, accounting for possible ingress race conditions
 until curl -f "$URL" 2>/dev/null; do sleep 2; done
