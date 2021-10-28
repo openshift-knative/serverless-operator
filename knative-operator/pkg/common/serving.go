@@ -25,7 +25,22 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 	imagesFromEnviron(ks)
 	ensureServingWebhookMemoryLimit(ks)
 	defaultToHa(ks)
+	defaultToKourier(ks)
 	return nil
+}
+
+// Technically this does nothing in terms of behavior (the default is assumed in the
+// extension code of openshift-knative-operator already), but it fixes a UX nit where
+// Kourier would be shown as enabled: false to the user if the ingress object is
+// specified.
+func defaultToKourier(ks *servingv1alpha1.KnativeServing) {
+	if ks.Spec.Ingress == nil {
+		return
+	}
+
+	if !ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled {
+		ks.Spec.Ingress.Kourier.Enabled = true
+	}
 }
 
 func defaultToHa(ks *servingv1alpha1.KnativeServing) {
