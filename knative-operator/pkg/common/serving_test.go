@@ -16,7 +16,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/yaml"
 )
 
 func init() {
@@ -116,74 +115,91 @@ func TestMutate(t *testing.T) {
 }
 
 func TestWebhookMemoryLimit(t *testing.T) {
-	var testdata = []byte(`
-- input:
-    apiVersion: operator.knative.dev/v1alpha1
-    kind: KnativeServing
-    metadata:
-      name: no-overrides
-  expected:
-  - container: webhook
-    limits:
-      memory: 1024Mi
-- input:
-    apiVersion: operator.knative.dev/v1alpha1
-    kind: KnativeServing
-    metadata:
-      name: add-webhook-to-existing-override
-    spec:
-      resources:
-      - container: activator
-        limits:
-          cpu: 9999m
-          memory: 999Mi
-  expected:
-  - container: activator
-    limits:
-      cpu: 9999m
-      memory: 999Mi
-  - container: webhook
-    limits:
-      memory: 1024Mi
-- input:
-    apiVersion: operator.knative.dev/v1alpha1
-    kind: KnativeServing
-    metadata:
-      name: preserve-webhook-values
-    spec:
-      resources:
-      - container: webhook
-        requests:
-          cpu: 22m
-          memory: 22Mi
-        limits:
-          cpu: 220m
-          memory: 220Mi
-  expected:
-  - container: webhook
-    requests:
-      cpu: 22m
-      memory: 22Mi
-    limits:
-      cpu: 220m
-      memory: 220Mi
-`)
 	tests := []struct {
-		Input    servingv1alpha1.KnativeServing
-		Expected []servingv1alpha1.ResourceRequirementsOverride
-	}{}
-	if err := yaml.Unmarshal(testdata, &tests); err != nil {
-		t.Fatalf("Failed to unmarshal tests: %v", err)
-	}
+		name string
+		in   []servingv1alpha1.ResourceRequirementsOverride
+		want []servingv1alpha1.ResourceRequirementsOverride
+	}{{
+		name: "no overrides",
+		in:   nil,
+		want: []servingv1alpha1.ResourceRequirementsOverride{{
+			Container: "webhook",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1024Mi"),
+				},
+			},
+		}},
+	}, {
+		name: "add webhook to existing override",
+		in: []servingv1alpha1.ResourceRequirementsOverride{{
+			Container: "activator",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("99Mi"),
+				},
+			},
+		}},
+		want: []servingv1alpha1.ResourceRequirementsOverride{{
+			Container: "activator",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("99Mi"),
+				},
+			},
+		}, {
+			Container: "webhook",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1024Mi"),
+				},
+			},
+		}},
+	}, {
+		name: "preserve webhook values",
+		in: []servingv1alpha1.ResourceRequirementsOverride{{
+			Container: "webhook",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("22m"),
+					corev1.ResourceMemory: resource.MustParse("22Mi"),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("220m"),
+					corev1.ResourceMemory: resource.MustParse("220Mi"),
+				},
+			},
+		}},
+		want: []servingv1alpha1.ResourceRequirementsOverride{{
+			Container: "webhook",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("22m"),
+					corev1.ResourceMemory: resource.MustParse("22Mi"),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("220m"),
+					corev1.ResourceMemory: resource.MustParse("220Mi"),
+				},
+			},
+		}},
+	}}
 	client := fake.NewClientBuilder().WithObjects(mockIngressConfig("whatever")).Build()
 	for _, test := range tests {
-		t.Run(test.Input.Name, func(t *testing.T) {
-			err := common.Mutate(&test.Input, client)
+		t.Run(test.name, func(t *testing.T) {
+			obj := &servingv1alpha1.KnativeServing{
+				Spec: servingv1alpha1.KnativeServingSpec{
+					CommonSpec: servingv1alpha1.CommonSpec{
+						Resources: test.in,
+					},
+				},
+			}
+			err := common.Mutate(obj, client)
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(test.Input.Spec.Resources, test.Expected, cmpopts.IgnoreUnexported(resource.Quantity{})) {
-				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.Expected, test.Input.Spec.Resources))
+			if !cmp.Equal(obj.Spec.Resources, test.want, cmpopts.IgnoreUnexported(resource.Quantity{})) {
+				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.want, obj.Spec.Resources))
 			}
 		})
 	}
