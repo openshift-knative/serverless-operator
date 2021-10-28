@@ -7,10 +7,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	"sigs.k8s.io/yaml"
 )
 
 func TestMutateEventing(t *testing.T) {
@@ -37,29 +37,36 @@ func TestMutateEventing(t *testing.T) {
 }
 
 func TestEventingWebhookMemoryLimit(t *testing.T) {
-	var testdata = []byte(`
-- input:
-    apiVersion: operator.knative.dev/v1alpha1
-    kind: KnativeEventing
-    metadata:
-      name: no-overrides
-  expected:
-  - container: eventing-webhook
-    limits:
-      memory: 1024Mi
-`)
 	tests := []struct {
-		Input    operatorv1alpha1.KnativeEventing
-		Expected []operatorv1alpha1.ResourceRequirementsOverride
-	}{}
-	if err := yaml.Unmarshal(testdata, &tests); err != nil {
-		t.Fatalf("Failed to unmarshal tests: %v", err)
-	}
+		name string
+		in   []operatorv1alpha1.ResourceRequirementsOverride
+		want []operatorv1alpha1.ResourceRequirementsOverride
+	}{{
+		name: "no overrides",
+		in:   nil,
+		want: []operatorv1alpha1.ResourceRequirementsOverride{{
+			Container: "eventing-webhook",
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1024Mi"),
+				},
+			},
+		}},
+	}}
+
 	for _, test := range tests {
-		t.Run(test.Input.Name, func(t *testing.T) {
-			common.MutateEventing(&test.Input)
-			if !cmp.Equal(test.Input.Spec.Resources, test.Expected, cmpopts.IgnoreUnexported(resource.Quantity{})) {
-				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.Expected, test.Input.Spec.Resources))
+		t.Run(test.name, func(t *testing.T) {
+			obj := &operatorv1alpha1.KnativeEventing{
+				Spec: operatorv1alpha1.KnativeEventingSpec{
+					CommonSpec: operatorv1alpha1.CommonSpec{
+						Resources: test.in,
+					},
+				},
+			}
+
+			common.MutateEventing(obj)
+			if !cmp.Equal(obj.Spec.Resources, test.want, cmpopts.IgnoreUnexported(resource.Quantity{})) {
+				t.Errorf("Resources not as expected, diff: %s", cmp.Diff(test.want, obj.Spec.Resources))
 			}
 		})
 	}
