@@ -158,8 +158,7 @@ function deploy_knativeserving_cr {
     enable_net_istio
   fi
 
-  timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
-    -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
 
   logger.success 'Knative Serving has been installed successfully.'
 }
@@ -192,8 +191,7 @@ EOF
     -n "${SERVING_NAMESPACE}" \
     --type merge --patch-file="${patchfile}"
 
-  timeout 900 "[[ \$(oc get knativeserving.operator.knative.dev knative-serving \
-    -n ${SERVING_NAMESPACE} -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
 
   logger.success 'KnativeServing has been updated successfully.'
 
@@ -225,9 +223,7 @@ spec:
       loglevel.mt-broker-controller: "debug"
 EOF
 
-  timeout 900 "[[ \$(oc get knativeeventing.operator.knative.dev \
-    knative-eventing -n ${EVENTING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+  oc wait --for=condition=Ready knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" --timeout=900s
 
   logger.success 'Knative Eventing has been installed successfully.'
 }
@@ -253,9 +249,7 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  timeout 900 "[[ \$(oc get knativekafkas.operator.serverless.openshift.io \
-    knative-kafka -n ${EVENTING_NAMESPACE} \
-    -o=jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != True ]]"
+  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
 
   logger.success 'Knative Kafka has been installed successfully.'
 }
@@ -306,8 +300,7 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  # shellcheck disable=SC2016
-  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
 
   logger.success 'Knative Kafka has been set to use no auth successfully.'
 }
@@ -332,8 +325,7 @@ spec:
     authSecretName: my-tls-secret
 EOF
 
-  # shellcheck disable=SC2016
-  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
 
   logger.success 'Knative Kafka has been set to use TLS auth successfully.'
 }
@@ -358,8 +350,7 @@ spec:
     authSecretName: my-sasl-secret
 EOF
 
-  # shellcheck disable=SC2016
-  timeout 900 '[[ $(oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n $EVENTING_NAMESPACE -o=jsonpath="{.status.conditions[?(@.type==\"Ready\")].status}") != True ]]'  || return 7
+  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
 
   logger.success 'Knative Kafka has been set to use SASL auth successfully.'
 }

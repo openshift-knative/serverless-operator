@@ -28,8 +28,7 @@ spec:
 EOF
 
 # Wait for the Knative Service to be ready
-timeout 100 "[[ \$(oc get ksvc ${NAME} -o \
-jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}') != 'True' ]]"
+oc wait ksvc "${NAME}" --for=condition=Ready --timeout=100s
 
 # Get the URL from the knative service
 URL="$(oc get ksvc hello -o jsonpath='{.status.url}')"
