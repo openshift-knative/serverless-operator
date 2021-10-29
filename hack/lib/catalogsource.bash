@@ -138,7 +138,7 @@ spec:
 EOF
 
   logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
-  wait_until_labelled_pods_are_ready app=serverless-index "$OLM_NAMESPACE"
+  oc wait deployment -n "$OLM_NAMESPACE" serverless-index --for=condition=Available --timeout=600s
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
