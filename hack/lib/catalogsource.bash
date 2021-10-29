@@ -180,7 +180,7 @@ function add_user {
   fi
 
   logger.info "Creating user $name:***"
-  if kubectl get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
+  if oc get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
     logger.debug 'Secret htpass-secret already existed, updating it.'
     # Add a newline to the end of the file if not already present (htpasswd will butcher it otherwise).
     [ -n "$(tail -c1 users.htpasswd)" ] && echo >> users.htpasswd
@@ -190,10 +190,10 @@ function add_user {
 
   htpasswd -b users.htpasswd "$name" "$pass"
 
-  kubectl create secret generic htpass-secret \
+  oc create secret generic htpass-secret \
     --from-file=htpasswd="$(pwd)/users.htpasswd" \
     -n openshift-config \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | oc apply -f -
 
   if oc get oauth.config.openshift.io cluster > /dev/null 2>&1; then
     oc replace -f openshift/identity/htpasswd.yaml

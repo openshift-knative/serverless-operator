@@ -58,8 +58,7 @@ spec:
 EOF
 
   logger.info "Waiting until Zipkin is available"
-  kubectl wait deployment --all --timeout=600s \
-    --for=condition=Available -n "${ZIPKIN_NAMESPACE}"
+  oc wait deployment --all --timeout=600s --for=condition=Available -n "${ZIPKIN_NAMESPACE}"
 }
 
 function enable_eventing_tracing {
