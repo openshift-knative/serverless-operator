@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -88,7 +88,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
-	err = c.Watch(&source.Kind{Type: &servingv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	err = c.Watch(&source.Kind{Type: &operatorv1alpha1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
@@ -100,7 +100,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to owned ConfigMaps
 	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
-		OwnerType:    &servingv1alpha1.KnativeServing{},
+		OwnerType:    &operatorv1alpha1.KnativeServing{},
 		IsController: true,
 	})
 	if err != nil {
@@ -138,7 +138,7 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 	reqLogger.Info("Reconciling KnativeServing")
 
 	// Fetch the KnativeServing instance
-	original := &servingv1alpha1.KnativeServing{}
+	original := &operatorv1alpha1.KnativeServing{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -169,8 +169,8 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alpha1.KnativeServing) error {
-	stages := []func(*servingv1alpha1.KnativeServing) error{
+func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *operatorv1alpha1.KnativeServing) error {
+	stages := []func(*operatorv1alpha1.KnativeServing) error{
 		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
@@ -187,7 +187,7 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *servingv1alp
 }
 
 // configure default settings for OpenShift
-func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) configure(instance *operatorv1alpha1.KnativeServing) error {
 	before := instance.DeepCopy()
 	if err := common.Mutate(instance, r.client); err != nil {
 		return err
@@ -205,7 +205,7 @@ func (r *ReconcileKnativeServing) configure(instance *servingv1alpha1.KnativeSer
 }
 
 // set a finalizer to clean up service mesh when instance is deleted
-func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) ensureFinalizers(instance *operatorv1alpha1.KnativeServing) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -217,7 +217,7 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *servingv1alpha1.Kna
 }
 
 // create the configmap to be injected with custom certs
-func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv1alpha1.KnativeServing) error {
 	certs := instance.Spec.ControllerCustomCerts
 
 	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
@@ -278,7 +278,7 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *servingv1
 	return nil
 }
 
-func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.KnativeServing, name string,
+func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1alpha1.KnativeServing, name string,
 	annotations, labels map[string]string, data map[string]string) (*corev1.ConfigMap, error) {
 	ctx := context.TODO()
 	cm := &corev1.ConfigMap{}
@@ -330,23 +330,23 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *servingv1alpha1.K
 	return cm, nil
 }
 
-func (r *ReconcileKnativeServing) installQuickstarts(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1alpha1.KnativeServing) error {
 	return quickstart.Apply(instance, r.client)
 }
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
-func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operatorv1alpha1.KnativeServing) error {
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
 // installDashboard installs dashboard for OpenShift webconsole
-func (r *ReconcileKnativeServing) installDashboard(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) installDashboard(instance *operatorv1alpha1.KnativeServing) error {
 	log.Info("Installing Serving Dashboards")
 	return dashboards.Apply("serving", instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
-func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServing) error {
+func (r *ReconcileKnativeServing) delete(instance *operatorv1alpha1.KnativeServing) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("serving_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
@@ -372,7 +372,7 @@ func (r *ReconcileKnativeServing) delete(instance *servingv1alpha1.KnativeServin
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.
-	refetched := &servingv1alpha1.KnativeServing{}
+	refetched := &operatorv1alpha1.KnativeServing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
 		return fmt.Errorf("failed to refetch KnativeServing: %w", err)
 	}

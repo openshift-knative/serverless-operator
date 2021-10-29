@@ -14,6 +14,7 @@ linters:
     - gofmt
     - goimports
     - gosec
+    - importas
     - misspell
     - prealloc
     - revive
@@ -22,6 +23,29 @@ linters:
     - unparam
   disable:
     - errcheck
+
+linters-settings:
+  importas:
+    no-unaliased: true
+    alias:
+      - pkg: k8s.io/apimachinery/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: k8s.io/api/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: github.com/openshift/api/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: knative.dev/serving/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: knative.dev/eventing/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: knative.dev/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: knative.dev/operator/pkg/apis/operator/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: github.com/prometheus-operator/prometheus-operator/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: github.com/operator-framework/api/pkg/(\w+)/(v[\w\d]+)
+        alias: $1$2
 
 issues:
   exclude-rules:

@@ -9,7 +9,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,7 +49,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	if actual := ns.Labels[okomon.EnableMonitoringLabel]; actual != "true" {
 		t.Errorf("got %q, want %q", actual, "true")
 	}
-	role := v1.Role{}
+	role := rbacv1.Role{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &role)
 	if err != nil {
 		t.Errorf("Failed to get created role: %w", err)
@@ -57,7 +57,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	if len(role.Rules) == 0 {
 		t.Error("Rules should be non empty")
 	}
-	rb := v1.RoleBinding{}
+	rb := rbacv1.RoleBinding{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &rb)
 	if err != nil {
 		t.Errorf("Failed to get created rolebinding: %w", err)

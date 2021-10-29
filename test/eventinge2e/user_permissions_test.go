@@ -3,7 +3,7 @@ package eventinge2e
 import (
 	"testing"
 
-	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
@@ -12,15 +12,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
-	eventingflowsv1 "knative.dev/eventing/pkg/apis/flows/v1"
-	eventingsourcesv1beta2 "knative.dev/eventing/pkg/apis/sources/v1beta2"
+	flowsv1 "knative.dev/eventing/pkg/apis/flows/v1"
+	sourcesv1beta2 "knative.dev/eventing/pkg/apis/sources/v1beta2"
 )
 
 func init() {
 	eventingv1.AddToScheme(scheme.Scheme)
-	eventingsourcesv1beta2.AddToScheme(scheme.Scheme)
-	eventingmessagingv1.AddToScheme(scheme.Scheme)
-	eventingflowsv1.AddToScheme(scheme.Scheme)
+	sourcesv1beta2.AddToScheme(scheme.Scheme)
+	messagingv1.AddToScheme(scheme.Scheme)
+	flowsv1.AddToScheme(scheme.Scheme)
 }
 
 func TestEventingUserPermissions(t *testing.T) {
@@ -31,16 +31,16 @@ func TestEventingUserPermissions(t *testing.T) {
 	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
 	brokersGVR := eventingv1.SchemeGroupVersion.WithResource("brokers")
-	pingSourcesGVR := eventingsourcesv1beta2.SchemeGroupVersion.WithResource("pingsources")
-	channelsGVR := eventingmessagingv1.SchemeGroupVersion.WithResource("channels")
-	sequencesGVR := eventingflowsv1.SchemeGroupVersion.WithResource("sequences")
+	pingSourcesGVR := sourcesv1beta2.SchemeGroupVersion.WithResource("pingsources")
+	channelsGVR := messagingv1.SchemeGroupVersion.WithResource("channels")
+	sequencesGVR := flowsv1.SchemeGroupVersion.WithResource("sequences")
 
 	broker := &eventingv1.Broker{
 		Spec: eventingv1.BrokerSpec{},
 	}
 
-	pingSource := &eventingsourcesv1beta2.PingSource{
-		Spec: eventingsourcesv1beta2.PingSourceSpec{
+	pingSource := &sourcesv1beta2.PingSource{
+		Spec: sourcesv1beta2.PingSourceSpec{
 			Data: "foo",
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
@@ -54,11 +54,11 @@ func TestEventingUserPermissions(t *testing.T) {
 		},
 	}
 
-	imc := &eventingmessagingv1.Channel{}
+	imc := &messagingv1.Channel{}
 
-	sequence := &eventingflowsv1.Sequence{
-		Spec: eventingflowsv1.SequenceSpec{
-			Steps: []eventingflowsv1.SequenceStep{
+	sequence := &flowsv1.Sequence{
+		Spec: flowsv1.SequenceSpec{
+			Steps: []flowsv1.SequenceStep{
 				{
 					Destination: duckv1.Destination{
 						URI: apis.HTTP("mydomain"),

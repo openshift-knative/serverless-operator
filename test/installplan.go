@@ -9,12 +9,12 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	"github.com/operator-framework/api/pkg/operators/v1alpha1"
+	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource string) (*v1alpha1.InstallPlan, error) {
-	var plan *v1alpha1.InstallPlan
+func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource string) (*operatorsv1alpha1.InstallPlan, error) {
+	var plan *operatorsv1alpha1.InstallPlan
 	if waitErr := wait.PollImmediate(Interval, 15*time.Minute, func() (bool, error) {
 		installPlans, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
@@ -33,7 +33,7 @@ func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource strin
 	return plan, nil
 }
 
-func installsCSVFromSource(installPlan v1alpha1.InstallPlan, csvName, olmSource string) bool {
+func installsCSVFromSource(installPlan operatorsv1alpha1.InstallPlan, csvName, olmSource string) bool {
 	if installPlan.Status.BundleLookups == nil ||
 		len(installPlan.Status.BundleLookups) == 0 ||
 		installPlan.Status.BundleLookups[0].CatalogSourceRef == nil ||

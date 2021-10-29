@@ -10,7 +10,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
@@ -29,16 +29,16 @@ type extension struct {
 	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Manifests(ke v1alpha1.KComponent) ([]mf.Manifest, error) {
+func (e *extension) Manifests(ke operatorv1alpha1.KComponent) ([]mf.Manifest, error) {
 	return monitoring.GetEventingMonitoringPlatformManifests(ke)
 }
 
-func (e *extension) Transformers(ke v1alpha1.KComponent) []mf.Transformer {
+func (e *extension) Transformers(ke operatorv1alpha1.KComponent) []mf.Transformer {
 	return monitoring.GetEventingTransformers(ke)
 }
 
-func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
-	ke := comp.(*v1alpha1.KnativeEventing)
+func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
+	ke := comp.(*operatorv1alpha1.KnativeEventing)
 
 	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ke.Namespace != requiredNs {
@@ -62,7 +62,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Default to 2 replicas.
 	if ke.Spec.HighAvailability == nil {
-		ke.Spec.HighAvailability = &v1alpha1.HighAvailability{
+		ke.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
 			Replicas: 2,
 		}
 	}
@@ -70,6 +70,6 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 
-func (e *extension) Finalize(context.Context, v1alpha1.KComponent) error {
+func (e *extension) Finalize(context.Context, operatorv1alpha1.KComponent) error {
 	return nil
 }

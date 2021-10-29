@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -32,7 +32,7 @@ var _ admission.Handler = (*Validator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ke := &operatorv1alpha1.KnativeKafka{}
+	ke := &serverlessoperatorv1alpha1.KnativeKafka{}
 
 	err := v.decoder.Decode(req, ke)
 	if err != nil {
@@ -47,9 +47,9 @@ func (v *Validator) Handle(ctx context.Context, req admission.Request) admission
 }
 
 // Validator checks for a minimum OpenShift version
-func (v *Validator) validate(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (allowed bool, reason string, err error) {
+func (v *Validator) validate(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (allowed bool, reason string, err error) {
 	log := common.Log.WithName("validate")
-	stages := []func(context.Context, *operatorv1alpha1.KnativeKafka) (bool, string, error){
+	stages := []func(context.Context, *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error){
 		v.validateNamespace,
 		v.validateLoneliness,
 		v.validateShape,
@@ -72,7 +72,7 @@ func (v *Validator) validate(ctx context.Context, ke *operatorv1alpha1.KnativeKa
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateNamespace(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_KAFKA_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeKafka may only be created in %s namespace", ns), nil
@@ -81,8 +81,8 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.
 }
 
 // validate this is the only KE in this namespace
-func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
-	list := &operatorv1alpha1.KnativeKafkaList{}
+func (v *Validator) validateLoneliness(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+	list := &serverlessoperatorv1alpha1.KnativeKafkaList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeKafkas", err
 	}
@@ -95,7 +95,7 @@ func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1alpha1
 }
 
 // validate the shape of the CR
-func (v *Validator) validateShape(_ context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
 	if ke.Spec.Channel.Enabled && ke.Spec.Channel.BootstrapServers == "" {
 		return false, "spec.channel.bootStrapServers is a required detail when spec.channel.enabled is true", nil
 	}
@@ -109,9 +109,9 @@ func (v *Validator) validateShape(_ context.Context, ke *operatorv1alpha1.Knativ
 }
 
 // validate that KnativeEventing is installed as a hard dep
-func (v *Validator) validateDependencies(ctx context.Context, ke *operatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
 	// check to see if we can find KnativeEventing
-	list := &eventingv1alpha1.KnativeEventingList{}
+	list := &operatorv1alpha1.KnativeEventingList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventing instance", err
 	}

@@ -7,7 +7,7 @@ import (
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestOverrideKourierNamespace(t *testing.T) {
@@ -24,7 +24,7 @@ func TestOverrideKourierNamespace(t *testing.T) {
 		Name:       "bar",
 	}})
 
-	ks := &v1alpha1.KnativeServing{
+	ks := &operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
@@ -62,7 +62,7 @@ func TestOverrideKourierNamespaceOther(t *testing.T) {
 	}})
 	want := other.DeepCopy()
 
-	ks := &v1alpha1.KnativeServing{
+	ks := &operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",

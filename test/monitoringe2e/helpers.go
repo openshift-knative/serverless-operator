@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	v1 "github.com/openshift/api/route/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	prom "github.com/prometheus/client_golang/api"
@@ -95,8 +95,8 @@ func newPrometheusClient(caCtx *test.Context) (promv1.API, error) {
 	return promv1.NewAPI(client), nil
 }
 
-func getPrometheusRoute(caCtx *test.Context) (*v1.Route, error) {
-	r, err := caCtx.Clients.Route.Routes("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
+func getPrometheusRoute(caCtx *test.Context) (*routev1.Route, error) {
+	r, err := caCtx.Clients.Route.Routes("openshift-monitoring").Get(context.Background(), "prometheus-k8s", metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error getting Prometheus route: %w", err)
 	}
@@ -155,7 +155,7 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 }
 
 func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
-	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", meta.GetOptions{})
+	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("error getting service account prometheus-k8s: %w", err)
 	}
@@ -163,7 +163,7 @@ func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
 	if tokenSecret == "" {
 		return "", errors.New("token name for prometheus-k8s service account not found")
 	}
-	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, meta.GetOptions{})
+	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("error getting secret %s: %w", tokenSecret, err)
 	}

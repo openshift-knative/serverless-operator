@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
 )
@@ -39,62 +39,62 @@ func TestReconcile(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		in       *v1alpha1.KnativeEventing
-		expected *v1alpha1.KnativeEventing
+		in       *operatorv1alpha1.KnativeEventing
+		expected *operatorv1alpha1.KnativeEventing
 	}{{
 		name:     "all nil",
-		in:       &v1alpha1.KnativeEventing{},
+		in:       &operatorv1alpha1.KnativeEventing{},
 		expected: ke(),
 	}, {
 		name: "different HA settings",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					HighAvailability: &v1alpha1.HighAvailability{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
+					HighAvailability: &operatorv1alpha1.HighAvailability{
 						Replicas: 3,
 					},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Spec.HighAvailability.Replicas = 3
 		}),
 	}, {
 		name: "With inclusion sinkbinding setting",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
 				SinkBindingSelectionMode: "inclusion",
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "inclusion"
 		}),
 	}, {
 		name: "With exclusion sinkbinding setting",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
 				SinkBindingSelectionMode: "exclusion",
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "exclusion"
 		}),
 	}, {
 		name: "With empty sinkbinding setting",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
 				SinkBindingSelectionMode: "",
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "inclusion"
 		}),
 	}, {
 		name: "Wrong namespace",
-		in: ke(func(ke *v1alpha1.KnativeEventing) {
+		in: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Namespace = "foo"
 		}),
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			ke.Namespace = "foo"
 			ke.Status.MarkInstallFailed(`Knative Eventing must be installed into the namespace "knative-eventing"`)
 		}),
@@ -127,56 +127,56 @@ func TestReconcile(t *testing.T) {
 func TestMonitoring(t *testing.T) {
 	cases := []struct {
 		name     string
-		in       *v1alpha1.KnativeEventing
-		expected *v1alpha1.KnativeEventing
+		in       *operatorv1alpha1.KnativeEventing
+		expected *operatorv1alpha1.KnativeEventing
 		// Returns the expected status for monitoring
 		setupMonitoringToggle func() (bool, error)
 	}{{
 		name:                  "enable monitoring when monitoring toggle is not defined, backend is not defined",
-		in:                    &v1alpha1.KnativeEventing{},
+		in:                    &operatorv1alpha1.KnativeEventing{},
 		expected:              ke(),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "enable monitoring when monitoring toggle = not defined, backend = defined and not `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "disable monitoring when monitoring toggle is not defined, backend is `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, nil },
 	}, {
 		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
-		in:                    &v1alpha1.KnativeEventing{},
+		in:                    &operatorv1alpha1.KnativeEventing{},
 		expected:              ke(),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
 	}, {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
@@ -184,14 +184,14 @@ func TestMonitoring(t *testing.T) {
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is on, backend is `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
@@ -199,34 +199,34 @@ func TestMonitoring(t *testing.T) {
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is not defined",
-		in:   &v1alpha1.KnativeEventing{},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		in:   &operatorv1alpha1.KnativeEventing{},
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
-		in: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+		in: &operatorv1alpha1.KnativeEventing{
+			Spec: operatorv1alpha1.KnativeEventingSpec{
+				CommonSpec: operatorv1alpha1.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ke(func(ke *v1alpha1.KnativeEventing) {
+		expected: ke(func(ke *operatorv1alpha1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
@@ -268,25 +268,25 @@ func TestMonitoring(t *testing.T) {
 	}
 }
 
-func ke(mods ...func(*v1alpha1.KnativeEventing)) *v1alpha1.KnativeEventing {
-	base := &v1alpha1.KnativeEventing{
+func ke(mods ...func(*operatorv1alpha1.KnativeEventing)) *operatorv1alpha1.KnativeEventing {
+	base := &operatorv1alpha1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: requiredNs,
 		},
-		Spec: v1alpha1.KnativeEventingSpec{
+		Spec: operatorv1alpha1.KnativeEventingSpec{
 			SinkBindingSelectionMode: "inclusion",
-			CommonSpec: v1alpha1.CommonSpec{
-				HighAvailability: &v1alpha1.HighAvailability{
+			CommonSpec: operatorv1alpha1.CommonSpec{
+				HighAvailability: &operatorv1alpha1.HighAvailability{
 					Replicas: 2,
 				},
-				Registry: v1alpha1.Registry{
+				Registry: operatorv1alpha1.Registry{
 					Default: "bar2",
 					Override: map[string]string{
 						"default": "bar2",
 						"foo":     "bar",
 					},
 				},
-				Resources: []v1alpha1.ResourceRequirementsOverride{{
+				Resources: []operatorv1alpha1.ResourceRequirementsOverride{{
 					Container: "eventing-webhook",
 					ResourceRequirements: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{

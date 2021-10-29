@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -27,7 +27,7 @@ var _ admission.Handler = (*Configurator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ke := &eventingv1alpha1.KnativeEventing{}
+	ke := &operatorv1alpha1.KnativeEventing{}
 
 	err := v.decoder.Decode(req, ke)
 	if err != nil {

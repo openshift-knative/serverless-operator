@@ -7,7 +7,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -55,14 +55,14 @@ func sourceServiceMonitorManifest(client client.Client, instance *appsv1.Deploym
 func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
 	var svU = &unstructured.Unstructured{}
 	var smU = &unstructured.Unstructured{}
-	sms := v1.Service{
+	sms := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
 			Namespace: ns,
 			Labels:    kmeta.CopyMap(labels),
 		},
-		Spec: v1.ServiceSpec{
-			Ports: []v1.ServicePort{{
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
 				Name:       "http-metrics",
 				Port:       9090,
 				TargetPort: intstr.FromInt(9090),

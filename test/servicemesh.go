@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	networking "k8s.io/api/networking/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	networkingv1 "k8s.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -332,7 +332,7 @@ func WaitForServiceMeshControlPlaneReady(ctx *Context, name, namespace string) {
 }
 
 func GetServiceMeshControlPlaneVersion(ctx *Context, name, namespace string) (string, bool, error) {
-	smcp, err := ctx.Clients.Dynamic.Resource(serviceMeshControlPlaneV2Schema()).Namespace(namespace).Get(context.Background(), name, meta.GetOptions{})
+	smcp, err := ctx.Clients.Dynamic.Resource(serviceMeshControlPlaneV2Schema()).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error getting SMCP %s: %v", name, err)
 	}
@@ -380,18 +380,18 @@ func CreateIstioVirtualService(ctx *Context, virtualService *unstructured.Unstru
 	return CreateUnstructured(ctx, virtualServiceGvr, virtualService)
 }
 
-func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networking.NetworkPolicy {
-	return &networking.NetworkPolicy{
-		ObjectMeta: meta.ObjectMeta{
+func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-from-serving-system-namespace",
 			Namespace: namespace,
 		},
-		Spec: networking.NetworkPolicySpec{
-			Ingress: []networking.NetworkPolicyIngressRule{
+		Spec: networkingv1.NetworkPolicySpec{
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
 				{
-					From: []networking.NetworkPolicyPeer{
+					From: []networkingv1.NetworkPolicyPeer{
 						{
-							NamespaceSelector: &meta.LabelSelector{
+							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
 									KnativeSystemNamespaceKey: "true",
 								},
@@ -400,22 +400,22 @@ func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networking.
 					},
 				},
 			},
-			PolicyTypes: []networking.PolicyType{
-				networking.PolicyTypeIngress,
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeIngress,
 			},
 		},
 	}
 }
 
-func CreateNetworkPolicy(ctx *Context, networkPolicy *networking.NetworkPolicy) *networking.NetworkPolicy {
-	createdNetworkPolicy, err := ctx.Clients.Kube.NetworkingV1().NetworkPolicies(networkPolicy.Namespace).Create(context.Background(), networkPolicy, meta.CreateOptions{})
+func CreateNetworkPolicy(ctx *Context, networkPolicy *networkingv1.NetworkPolicy) *networkingv1.NetworkPolicy {
+	createdNetworkPolicy, err := ctx.Clients.Kube.NetworkingV1().NetworkPolicies(networkPolicy.Namespace).Create(context.Background(), networkPolicy, metav1.CreateOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error creating NetworkPolicy %s: %v", networkPolicy.GetName(), err)
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up NetworkPolicy %s", createdNetworkPolicy.GetName())
-		return ctx.Clients.Kube.NetworkingV1().NetworkPolicies(createdNetworkPolicy.Namespace).Delete(context.Background(), createdNetworkPolicy.GetName(), meta.DeleteOptions{})
+		return ctx.Clients.Kube.NetworkingV1().NetworkPolicies(createdNetworkPolicy.Namespace).Delete(context.Background(), createdNetworkPolicy.GetName(), metav1.DeleteOptions{})
 	})
 
 	return createdNetworkPolicy
@@ -427,7 +427,7 @@ func LabelNamespace(ctx *Context, namespace, key, value string) {
 		namespace,
 		types.MergePatchType,
 		[]byte(fmt.Sprintf("{\"metadata\":{\"labels\":{\"%s\":\"%s\"}}}", key, value)),
-		meta.PatchOptions{})
+		metav1.PatchOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error labelling namespace %q: %v", namespace, err)
 	}

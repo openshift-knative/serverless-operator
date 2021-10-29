@@ -6,8 +6,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
-	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
-	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
+	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -36,12 +36,12 @@ var (
 		},
 	}
 
-	subscription = &eventingmessagingv1.Subscription{
+	subscription = &messagingv1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      subscriptionName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingmessagingv1.SubscriptionSpec{
+		Spec: messagingv1.SubscriptionSpec{
 			Channel: duckv1.KReference{
 				APIVersion: channelAPIVersion,
 				Kind:       kafkaChannelKind,
@@ -57,12 +57,12 @@ var (
 		},
 	}
 
-	ps = &eventingsourcesv1.PingSource{
+	ps = &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1.PingSourceSpec{
+		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{

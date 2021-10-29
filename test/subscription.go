@@ -10,7 +10,7 @@ import (
 
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/operator-framework/api/pkg/operators/v1alpha1"
+	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -25,28 +25,28 @@ const (
 	ServerlessOperatorPackage = "serverless-operator"
 )
 
-func Subscription(subscriptionName string) *v1alpha1.Subscription {
+func Subscription(subscriptionName string) *operatorsv1alpha1.Subscription {
 	//namespace, name, catalogSourceName, packageName, channel string, approval v1alpha1.Approval
-	return &v1alpha1.Subscription{
+	return &operatorsv1alpha1.Subscription{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       v1alpha1.SubscriptionKind,
-			APIVersion: v1alpha1.SubscriptionCRDAPIVersion,
+			Kind:       operatorsv1alpha1.SubscriptionKind,
+			APIVersion: operatorsv1alpha1.SubscriptionCRDAPIVersion,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: OperatorsNamespace,
 			Name:      subscriptionName,
 		},
-		Spec: &v1alpha1.SubscriptionSpec{
+		Spec: &operatorsv1alpha1.SubscriptionSpec{
 			CatalogSource:          Flags.CatalogSource,
 			CatalogSourceNamespace: OLMNamespace,
 			Package:                ServerlessOperatorPackage,
 			Channel:                Flags.Channel,
-			InstallPlanApproval:    v1alpha1.ApprovalAutomatic,
+			InstallPlanApproval:    operatorsv1alpha1.ApprovalAutomatic,
 		},
 	}
 }
 
-func WithOperatorReady(ctx *Context, subscriptionName string) (*v1alpha1.Subscription, error) {
+func WithOperatorReady(ctx *Context, subscriptionName string) (*operatorsv1alpha1.Subscription, error) {
 	if _, err := CreateSubscription(ctx, subscriptionName); err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func WithOperatorReady(ctx *Context, subscriptionName string) (*v1alpha1.Subscri
 	return subs, nil
 }
 
-func CreateSubscription(ctx *Context, name string) (*v1alpha1.Subscription, error) {
+func CreateSubscription(ctx *Context, name string) (*operatorsv1alpha1.Subscription, error) {
 	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
@@ -82,8 +82,8 @@ func CreateSubscription(ctx *Context, name string) (*v1alpha1.Subscription, erro
 	return subs, nil
 }
 
-func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func(s *v1alpha1.Subscription, err error) (bool, error)) (*v1alpha1.Subscription, error) {
-	var lastState *v1alpha1.Subscription
+func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.Subscription, err error) (bool, error)) (*operatorsv1alpha1.Subscription, error) {
+	var lastState *operatorsv1alpha1.Subscription
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -96,14 +96,14 @@ func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func
 	return lastState, nil
 }
 
-func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*v1alpha1.Subscription, error) {
+func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*operatorsv1alpha1.Subscription, error) {
 	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
 	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
 		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
 }
 
-func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *v1alpha1.ClusterServiceVersion, err error) (bool, error)) (*v1alpha1.ClusterServiceVersion, error) {
-	var lastState *v1alpha1.ClusterServiceVersion
+func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.ClusterServiceVersion, err error) (bool, error)) (*operatorsv1alpha1.ClusterServiceVersion, error) {
+	var lastState *operatorsv1alpha1.ClusterServiceVersion
 	var err error
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Get(context.Background(), name, metav1.GetOptions{})
@@ -115,7 +115,7 @@ func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inS
 	return lastState, nil
 }
 
-func IsCSVSucceeded(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) {
+func IsCSVSucceeded(c *operatorsv1alpha1.ClusterServiceVersion, err error) (bool, error) {
 	// The CSV might not exist yet.
 	if apierrs.IsNotFound(err) {
 		return false, nil
@@ -123,7 +123,7 @@ func IsCSVSucceeded(c *v1alpha1.ClusterServiceVersion, err error) (bool, error) 
 	return c.Status.Phase == "Succeeded", err
 }
 
-func IsSubscriptionInstalledCSVPresent(s *v1alpha1.Subscription, err error) (bool, error) {
+func IsSubscriptionInstalledCSVPresent(s *operatorsv1alpha1.Subscription, err error) (bool, error) {
 	return s.Status.InstalledCSV != "" && s.Status.InstalledCSV != "<none>", err
 }
 

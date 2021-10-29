@@ -8,8 +8,8 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingmessagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
-	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
+	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -37,7 +37,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
-	imc := &eventingmessagingv1.Channel{
+	imc := &messagingv1.Channel{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      channelName,
 			Namespace: testNamespace,
@@ -47,12 +47,12 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to create Channel: ", err)
 	}
-	subscription := &eventingmessagingv1.Subscription{
+	subscription := &messagingv1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      subscriptionName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingmessagingv1.SubscriptionSpec{
+		Spec: messagingv1.SubscriptionSpec{
 			Channel: duckv1.KReference{
 				APIVersion: channelAPIVersion,
 				Kind:       channelKind,
@@ -71,12 +71,12 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
-	ps := &eventingsourcesv1.PingSource{
+	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1.PingSourceSpec{
+		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
