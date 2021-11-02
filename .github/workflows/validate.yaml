@@ -145,7 +145,7 @@ jobs:
         run: |
           # Don't fail because of misspell
           set +o pipefail
-          git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -error xargs misspell -error \
+          git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -i importas -error \
             | reviewdog -efm="%f:%l:%c: %m" \
                 -name="github.com/client9/misspell" \
                 -reporter="github-pr-check" \
