@@ -6,7 +6,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	network "knative.dev/networking/pkg"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	"knative.dev/serving/pkg/apis/serving"
@@ -80,7 +80,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	servinge2e.WaitForRouteServingText(t, ctx, serviceURL, helloworldText)
 
 	// Verify the expected istio-proxy is really there
-	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), meta.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})
+	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})
 	if err != nil {
 		t.Errorf("error listing pods: %v", err)
 		return

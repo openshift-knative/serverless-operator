@@ -11,7 +11,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	routev1 "github.com/openshift/api/route/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/test/spoof"
@@ -43,7 +43,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
 	// Verify that operator did not create OpenShift route.
-	routes, err := caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), meta.ListOptions{
+	routes, err := caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", resources.OpenShiftIngressLabelKey, ksvc.Name),
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 
 	// Create OpenShift Route manually
 	route := &routev1.Route{
-		ObjectMeta: meta.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "myroute",
 			Namespace: "knative-serving-ingress",
 		},
@@ -74,21 +74,21 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 			},
 		},
 	}
-	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, meta.CreateOptions{})
+	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}
 
 	caCtx.AddToCleanup(func() error {
 		t.Logf("Cleaning up OpenShift Route %s", route.Name)
-		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
+		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 	})
 
 	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Create DomainMapping with disable Annotation.
 	dm := &servingv1alpha1.DomainMapping{
-		ObjectMeta: meta.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        domainMappingName,
 			Namespace:   testNamespace,
 			Annotations: map[string]string{resources.DisableRouteAnnotation: "true"},
@@ -105,7 +105,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	dm = withDomainMappingReadyOrFail(caCtx, dm)
 
 	// Verify that operator did not create OpenShift route.
-	routes, err = caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), meta.ListOptions{
+	routes, err = caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", resources.OpenShiftIngressLabelKey, dm.Name),
 	})
 	if err != nil {
@@ -117,7 +117,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 
 	// Create OpenShift Route manually
 	route = &routev1.Route{
-		ObjectMeta: meta.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "myroute-for-dm",
 			Namespace: "knative-serving-ingress",
 		},
@@ -132,14 +132,14 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 			},
 		},
 	}
-	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, meta.CreateOptions{})
+	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}
 
 	caCtx.AddToCleanup(func() error {
 		t.Logf("Cleaning up OpenShift Route %s", route.Name)
-		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
+		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 	})
 
 	routerIP := lookupOpenShiftRouterIP(caCtx)

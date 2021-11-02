@@ -6,21 +6,21 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func CreateUnstructured(ctx *Context, schema schema.GroupVersionResource, unstructured *unstructured.Unstructured) *unstructured.Unstructured {
-	ret, err := ctx.Clients.Dynamic.Resource(schema).Namespace(unstructured.GetNamespace()).Create(context.Background(), unstructured, meta.CreateOptions{})
+	ret, err := ctx.Clients.Dynamic.Resource(schema).Namespace(unstructured.GetNamespace()).Create(context.Background(), unstructured, metav1.CreateOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error creating %s %s: %v", schema.GroupResource(), unstructured.GetName(), err)
 	}
 
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up %s %s", schema.GroupResource(), ret.GetName())
-		return ctx.Clients.Dynamic.Resource(schema).Namespace(ret.GetNamespace()).Delete(context.Background(), ret.GetName(), meta.DeleteOptions{})
+		return ctx.Clients.Dynamic.Resource(schema).Namespace(ret.GetNamespace()).Delete(context.Background(), ret.GetName(), metav1.DeleteOptions{})
 	})
 
 	return ret
@@ -63,7 +63,7 @@ func WaitForUnstructuredState(ctx *Context, schema schema.GroupVersionResource, 
 		err       error
 	)
 	waitErr := wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
-		lastState, err = ctx.Clients.Dynamic.Resource(schema).Namespace(namespace).Get(context.Background(), name, meta.GetOptions{})
+		lastState, err = ctx.Clients.Dynamic.Resource(schema).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 

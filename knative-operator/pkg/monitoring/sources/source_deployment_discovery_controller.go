@@ -8,11 +8,11 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -52,7 +52,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 	// common function to enqueue reconcile requests for resources
 	enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
-		dep := obj.(*v1.Deployment)
+		dep := obj.(*appsv1.Deployment)
 		sourceLabel := dep.Spec.Selector.MatchLabels[SourceLabel]
 		sourceNameLabel := dep.Spec.Selector.MatchLabels[SourceNameLabel]
 		sourceRoleLabel := dep.Spec.Selector.MatchLabels[SourceRoleLabel]
@@ -64,7 +64,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &v1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipUpdatePredicate{})
+	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipUpdatePredicate{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -82,7 +82,7 @@ type ReconcileSourceDeployment struct {
 func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
-	dep := &v1.Deployment{}
+	dep := &appsv1.Deployment{}
 	inDeletion := false
 	err := r.client.Get(context.TODO(), request.NamespacedName, dep)
 	if apierrors.IsNotFound(err) {
@@ -92,7 +92,7 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
-	eventing := &v1alpha1.KnativeEventing{}
+	eventing := &operatorv1alpha1.KnativeEventing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -125,7 +125,7 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileSourceDeployment) generateSourceServiceMonitors(dep *v1.Deployment) error {
+func (r *ReconcileSourceDeployment) generateSourceServiceMonitors(dep *appsv1.Deployment) error {
 	shouldGenerateSourceMonitors, err := r.shouldGenerateSourceServiceMonitorsByDefault()
 	if err != nil {
 		return err

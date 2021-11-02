@@ -11,12 +11,12 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
 
@@ -60,7 +60,7 @@ func injectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 	}
 }
 
-func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *v1alpha1.CommonSpec, ns string) error {
+func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *operatorv1alpha1.CommonSpec, ns string) error {
 	if ShouldEnableMonitoring(spec.GetConfig()) {
 		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
@@ -76,7 +76,7 @@ func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *v1
 	return nil
 }
 
-func ShouldEnableMonitoring(config v1alpha1.ConfigMapData) bool {
+func ShouldEnableMonitoring(config operatorv1alpha1.ConfigMapData) bool {
 	backend := config[ObservabilityCMName][ObservabilityBackendKey]
 	if backend == "none" || backend == "opencensus" {
 		return false
@@ -199,16 +199,16 @@ func createServiceMonitorService(component string, ns string) corev1.Service {
 }
 
 func CreateClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf.Manifest, error) {
-	crb := v1.ClusterRoleBinding{
+	crb := rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", serviceAccountName),
 		},
-		RoleRef: v1.RoleRef{
+		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "ClusterRole",
 			Name:     "rbac-proxy-reviews-prom",
 		},
-		Subjects: []v1.Subject{{
+		Subjects: []rbacv1.Subject{{
 			Kind:      "ServiceAccount",
 			Name:      serviceAccountName,
 			Namespace: ns,

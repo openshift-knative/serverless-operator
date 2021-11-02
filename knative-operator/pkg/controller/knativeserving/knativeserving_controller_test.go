@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -26,12 +26,12 @@ import (
 )
 
 var (
-	defaultKnativeServing = v1alpha1.KnativeServing{
+	defaultKnativeServing = operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-serving",
 			Namespace: "knative-serving",
 		},
-		Status: v1alpha1.KnativeServingStatus{
+		Status: operatorv1alpha1.KnativeServingStatus{
 			Status: duckv1.Status{
 				Conditions: []pkgapis.Condition{
 					{
@@ -184,13 +184,13 @@ func TestExtraResourcesReconcile(t *testing.T) {
 }
 
 func TestCustomCertsConfigMap(t *testing.T) {
-	ks := &v1alpha1.KnativeServing{
+	ks := &operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-serving",
 			Namespace: "knative-serving",
 		},
-		Spec: v1alpha1.KnativeServingSpec{
-			ControllerCustomCerts: v1alpha1.CustomCerts{
+		Spec: operatorv1alpha1.KnativeServingSpec{
+			ControllerCustomCerts: operatorv1alpha1.CustomCerts{
 				Name: "test-cm",
 				Type: "ConfigMap",
 			},

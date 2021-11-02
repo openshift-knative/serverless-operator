@@ -9,13 +9,13 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var log = Log
 
-func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func Mutate(ks *operatorv1alpha1.KnativeServing, c client.Client) error {
 	if err := ingress(ks, c); err != nil {
 		return fmt.Errorf("failed to configure ingress: %w", err)
 	}
@@ -33,7 +33,7 @@ func Mutate(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 // extension code of openshift-knative-operator already), but it fixes a UX nit where
 // Kourier would be shown as enabled: false to the user if the ingress object is
 // specified.
-func defaultToKourier(ks *servingv1alpha1.KnativeServing) {
+func defaultToKourier(ks *operatorv1alpha1.KnativeServing) {
 	if ks.Spec.Ingress == nil {
 		return
 	}
@@ -43,20 +43,20 @@ func defaultToKourier(ks *servingv1alpha1.KnativeServing) {
 	}
 }
 
-func defaultToHa(ks *servingv1alpha1.KnativeServing) {
+func defaultToHa(ks *operatorv1alpha1.KnativeServing) {
 	if ks.Spec.HighAvailability == nil {
-		ks.Spec.HighAvailability = &servingv1alpha1.HighAvailability{
+		ks.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
 			Replicas: 2,
 		}
 	}
 }
 
-func ensureServingWebhookMemoryLimit(ks *servingv1alpha1.KnativeServing) {
+func ensureServingWebhookMemoryLimit(ks *operatorv1alpha1.KnativeServing) {
 	EnsureContainerMemoryLimit(&ks.Spec.CommonSpec, "webhook", resource.MustParse("1024Mi"))
 }
 
 // configure ingress
-func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
+func ingress(ks *operatorv1alpha1.KnativeServing, c client.Client) error {
 	ingressConfig := &configv1.Ingress{}
 	if err := c.Get(context.TODO(), client.ObjectKey{Name: "cluster"}, ingressConfig); err != nil {
 		if !meta.IsNoMatchError(err) {
@@ -73,7 +73,7 @@ func ingress(ks *servingv1alpha1.KnativeServing, c client.Client) error {
 }
 
 // configure observability if ClusterLogging is installed
-func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client) {
+func configureLogURLTemplate(ks *operatorv1alpha1.KnativeServing, c client.Client) {
 	const (
 		configmap = "observability"
 		key       = "logging.revision-url-template"
@@ -98,9 +98,9 @@ func configureLogURLTemplate(ks *servingv1alpha1.KnativeServing, c client.Client
 
 // configure controller with custom certs for openshift registry if
 // not already set
-func ensureCustomCerts(ks *servingv1alpha1.KnativeServing) {
-	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
-		ks.Spec.ControllerCustomCerts = servingv1alpha1.CustomCerts{
+func ensureCustomCerts(ks *operatorv1alpha1.KnativeServing) {
+	if ks.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
+		ks.Spec.ControllerCustomCerts = operatorv1alpha1.CustomCerts{
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
@@ -109,7 +109,7 @@ func ensureCustomCerts(ks *servingv1alpha1.KnativeServing) {
 }
 
 // imagesFromEnviron overrides registry images
-func imagesFromEnviron(ks *servingv1alpha1.KnativeServing) {
+func imagesFromEnviron(ks *operatorv1alpha1.KnativeServing) {
 	ks.Spec.Registry.Override = BuildImageOverrideMapFromEnviron(os.Environ(), "IMAGE_")
 
 	if defaultVal, ok := ks.Spec.Registry.Override["default"]; ok {

@@ -8,7 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	eventingsourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
+	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -37,12 +37,12 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 		t.Fatal("Knative Service not ready", err)
 	}
 
-	ps := &eventingsourcesv1.PingSource{
+	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
 		},
-		Spec: eventingsourcesv1.PingSourceSpec{
+		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{

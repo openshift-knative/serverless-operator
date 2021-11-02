@@ -11,7 +11,7 @@ import (
 	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,7 +59,7 @@ func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client
 			Name:      "knative-openshift-metrics",
 		},
 	}
-	oldService := v1.Service{
+	oldService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      oldSM.Name,
@@ -108,7 +108,7 @@ func GetServerlessOperatorDeployment(api client.Client, namespace string) (*apps
 }
 
 func addClusterMonitoringLabelToNamespace(namespace string, api client.Client, value bool) error {
-	ns := &v1.Namespace{}
+	ns := &corev1.Namespace{}
 	if err := api.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
 		return err
 	}

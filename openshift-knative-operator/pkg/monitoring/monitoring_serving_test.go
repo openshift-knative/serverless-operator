@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
-	manifests, err := GetServingMonitoringPlatformManifests(&v1alpha1.KnativeServing{
+	manifests, err := GetServingMonitoringPlatformManifests(&operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{Namespace: servingNamespace},
 	})
 	if err != nil {

@@ -6,17 +6,17 @@ import (
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestEnsureContainerMemoryLimit(t *testing.T) {
 	cases := []struct {
 		name     string
-		in       []v1alpha1.ResourceRequirementsOverride
-		expected []v1alpha1.ResourceRequirementsOverride
+		in       []operatorv1alpha1.ResourceRequirementsOverride
+		expected []operatorv1alpha1.ResourceRequirementsOverride
 	}{{
 		name: "all nil",
-		expected: []v1alpha1.ResourceRequirementsOverride{{
+		expected: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -26,7 +26,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 		}},
 	}, {
 		name: "don't override",
-		in: []v1alpha1.ResourceRequirementsOverride{{
+		in: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -34,7 +34,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 				},
 			},
 		}},
-		expected: []v1alpha1.ResourceRequirementsOverride{{
+		expected: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -44,7 +44,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 		}},
 	}, {
 		name: "leave other values alone",
-		in: []v1alpha1.ResourceRequirementsOverride{{
+		in: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -52,7 +52,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 				},
 			},
 		}},
-		expected: []v1alpha1.ResourceRequirementsOverride{{
+		expected: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -63,7 +63,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 		}},
 	}, {
 		name: "leave request values alone",
-		in: []v1alpha1.ResourceRequirementsOverride{{
+		in: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
@@ -71,7 +71,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 				},
 			},
 		}},
-		expected: []v1alpha1.ResourceRequirementsOverride{{
+		expected: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "foo",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
@@ -86,7 +86,7 @@ func TestEnsureContainerMemoryLimit(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			s := &v1alpha1.CommonSpec{Resources: c.in}
+			s := &operatorv1alpha1.CommonSpec{Resources: c.in}
 			EnsureContainerMemoryLimit(s, "foo", resource.MustParse("1024Mi"))
 
 			if !cmp.Equal(s.Resources, c.expected) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -60,7 +60,7 @@ func UpgradeServerless(ctx *test.Context) error {
 
 func WaitForPodsWithImage(ctx *test.Context, namespace string, podSelector, containerName, expectedImage string) error {
 	if waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), meta.ListOptions{LabelSelector: podSelector})
+		podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: podSelector})
 		if err != nil {
 			return false, err
 		}

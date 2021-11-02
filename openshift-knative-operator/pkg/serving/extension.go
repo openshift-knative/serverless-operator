@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
@@ -58,11 +58,11 @@ type extension struct {
 	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Manifests(ks v1alpha1.KComponent) ([]mf.Manifest, error) {
+func (e *extension) Manifests(ks operatorv1alpha1.KComponent) ([]mf.Manifest, error) {
 	return monitoring.GetServingMonitoringPlatformManifests(ks)
 }
 
-func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
+func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transformer {
 	return append([]mf.Transformer{
 		common.InjectEnvironmentIntoDeployment("controller", "controller",
 			corev1.EnvVar{Name: "HTTP_PROXY", Value: os.Getenv("HTTP_PROXY")},
@@ -75,8 +75,8 @@ func (e *extension) Transformers(ks v1alpha1.KComponent) []mf.Transformer {
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
-func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) error {
-	ks := comp.(*v1alpha1.KnativeServing)
+func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
+	ks := comp.(*operatorv1alpha1.KnativeServing)
 	log := logging.FromContext(ctx)
 
 	// Make sure Knative Serving is always installed in the defined namespace.
@@ -87,7 +87,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	}
 
 	// Mark failed dependencies as succeeded since we're no longer using that mechanism anyway.
-	if ks.Status.GetCondition(v1alpha1.DependenciesInstalled).IsFalse() {
+	if ks.Status.GetCondition(operatorv1alpha1.DependenciesInstalled).IsFalse() {
 		ks.Status.MarkDependenciesInstalled()
 	}
 
@@ -113,7 +113,7 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
-		ks.Spec.HighAvailability = &v1alpha1.HighAvailability{
+		ks.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
 			Replicas: 2,
 		}
 	}
@@ -142,8 +142,8 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 
 	// Add custom-certificates to the deployments (ConfigMap creation remains in the old
 	// operator for now)
-	if ks.Spec.ControllerCustomCerts == (v1alpha1.CustomCerts{}) {
-		ks.Spec.ControllerCustomCerts = v1alpha1.CustomCerts{
+	if ks.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
+		ks.Spec.ControllerCustomCerts = operatorv1alpha1.CustomCerts{
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
@@ -167,8 +167,8 @@ func (e *extension) Reconcile(ctx context.Context, comp v1alpha1.KComponent) err
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
-func (e *extension) Finalize(ctx context.Context, comp v1alpha1.KComponent) error {
-	ks := comp.(*v1alpha1.KnativeServing)
+func (e *extension) Finalize(ctx context.Context, comp operatorv1alpha1.KComponent) error {
+	ks := comp.(*operatorv1alpha1.KnativeServing)
 
 	// Explicitly remove deleted Kourier resources.
 	// TODO: Remove after resources are bumped to 0.26

@@ -12,13 +12,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var (
-	ke = &v1alpha1.KnativeEventing{
+	ke = &operatorv1alpha1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-eventing",
 			Namespace: "knative-eventing",

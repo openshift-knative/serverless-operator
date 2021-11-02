@@ -13,7 +13,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -137,7 +137,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				}
 
 				// Check if the clusterrolebinding for the Kafka deployment is created
-				crb := &v1.ClusterRoleBinding{}
+				crb := &rbacv1.ClusterRoleBinding{}
 				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", deployment.Name)}, crb)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)

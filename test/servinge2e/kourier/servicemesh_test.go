@@ -25,8 +25,8 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	routev1 "github.com/openshift/api/route/v1"
-	core "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -57,7 +57,7 @@ func isServiceMeshInstalled(ctx *test.Context) bool {
 		Group:    "apiextensions.k8s.io",
 		Version:  "v1",
 		Resource: "customresourcedefinitions",
-	}).Get(context.Background(), "servicemeshcontrolplanes.maistra.io", meta.GetOptions{})
+	}).Get(context.Background(), "servicemeshcontrolplanes.maistra.io", metav1.GetOptions{})
 
 	if err == nil {
 		return true
@@ -129,25 +129,25 @@ func setupCustomDomainTLSSecret(ctx *test.Context, serviceMeshNamespace, customS
 		Bytes: x509.MarshalPKCS1PrivateKey(customPrivateKey),
 	})
 
-	customSecret := &core.Secret{
-		ObjectMeta: meta.ObjectMeta{
+	customSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      customSecretName,
 			Namespace: serviceMeshNamespace,
 		},
-		Type: core.SecretTypeTLS,
+		Type: corev1.SecretTypeTLS,
 		Data: map[string][]byte{
-			core.TLSCertKey:       customPem,
-			core.TLSPrivateKeyKey: customPrivateKeyPem,
+			corev1.TLSCertKey:       customPem,
+			corev1.TLSPrivateKeyKey: customPrivateKeyPem,
 		},
 	}
 
-	customSecret, err = ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Create(context.Background(), customSecret, meta.CreateOptions{})
+	customSecret, err = ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Create(context.Background(), customSecret, metav1.CreateOptions{})
 	if err != nil {
 		ctx.T.Fatalf("Error creating Secret %q: %v", customSecretName, err)
 	}
 	ctx.AddToCleanup(func() error {
 		ctx.T.Logf("Cleaning up Secret %s", customSecret.GetName())
-		return ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Delete(context.Background(), customSecret.Name, meta.DeleteOptions{})
+		return ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Delete(context.Background(), customSecret.Name, metav1.DeleteOptions{})
 	})
 
 	// Return a CertPool with our example CA
@@ -225,7 +225,7 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
 func httpProxyService(name, namespace, host string) *servingv1.Service {
 	proxy := test.Service(name, namespace, httpProxyImage, nil)
-	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, core.EnvVar{
+	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 		Name:  "TARGET_HOST",
 		Value: host,
 	})
@@ -455,7 +455,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
 		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), testNamespace, "registry.ci.openshift.org/openshift/hello-openshift", nil)
-		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, core.EnvVar{
+		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
 		})
@@ -798,7 +798,7 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 		// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
 		// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
 		route := &routev1.Route{
-			ObjectMeta: meta.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "hello",
 				Namespace: serviceMeshTestNamespaceName,
 			},
@@ -813,14 +813,14 @@ func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
 				},
 			},
 		}
-		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, meta.CreateOptions{})
+		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Error creating OpenShift Route: %v", err)
 		}
 
 		ctx.AddToCleanup(func() error {
 			t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
+			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 		})
 
 		// Do a spoofed HTTP request via the OpenShiftRouter
@@ -953,7 +953,7 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 		// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
 		// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
 		route := &routev1.Route{
-			ObjectMeta: meta.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "hello",
 				Namespace: serviceMeshTestNamespaceName,
 			},
@@ -972,14 +972,14 @@ func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
 				},
 			},
 		}
-		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, meta.CreateOptions{})
+		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Error creating OpenShift Route: %v", err)
 		}
 
 		ctx.AddToCleanup(func() error {
 			t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, meta.DeleteOptions{})
+			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 		})
 
 		// Do a spoofed HTTP request.

@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
@@ -22,8 +22,8 @@ func init() {
 	apis.AddToScheme(scheme.Scheme)
 }
 
-func newKs() *servingv1alpha1.KnativeServing {
-	return &servingv1alpha1.KnativeServing{
+func newKs() *operatorv1alpha1.KnativeServing {
+	return &operatorv1alpha1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "knative-serving",
 		},
@@ -37,11 +37,11 @@ func TestMutate(t *testing.T) {
 		image    = "quay.io/queue:tag"
 	)
 	os.Setenv("IMAGE_queue-proxy", image)
-	type check func(*testing.T, *servingv1alpha1.KnativeServing)
+	type check func(*testing.T, *operatorv1alpha1.KnativeServing)
 
 	cases := []struct {
 		name string
-		ks   *servingv1alpha1.KnativeServing
+		ks   *operatorv1alpha1.KnativeServing
 		ha   check
 	}{
 		{
@@ -51,9 +51,9 @@ func TestMutate(t *testing.T) {
 		},
 		{
 			name: "HA not defaulted",
-			ks: func() *servingv1alpha1.KnativeServing {
+			ks: func() *operatorv1alpha1.KnativeServing {
 				s := newKs()
-				s.Spec.HighAvailability = &servingv1alpha1.HighAvailability{
+				s.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
 					Replicas: 1,
 				}
 
@@ -117,12 +117,12 @@ func TestMutate(t *testing.T) {
 func TestWebhookMemoryLimit(t *testing.T) {
 	tests := []struct {
 		name string
-		in   []servingv1alpha1.ResourceRequirementsOverride
-		want []servingv1alpha1.ResourceRequirementsOverride
+		in   []operatorv1alpha1.ResourceRequirementsOverride
+		want []operatorv1alpha1.ResourceRequirementsOverride
 	}{{
 		name: "no overrides",
 		in:   nil,
-		want: []servingv1alpha1.ResourceRequirementsOverride{{
+		want: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "webhook",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -132,7 +132,7 @@ func TestWebhookMemoryLimit(t *testing.T) {
 		}},
 	}, {
 		name: "add webhook to existing override",
-		in: []servingv1alpha1.ResourceRequirementsOverride{{
+		in: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "activator",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -140,7 +140,7 @@ func TestWebhookMemoryLimit(t *testing.T) {
 				},
 			},
 		}},
-		want: []servingv1alpha1.ResourceRequirementsOverride{{
+		want: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "activator",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
@@ -157,7 +157,7 @@ func TestWebhookMemoryLimit(t *testing.T) {
 		}},
 	}, {
 		name: "preserve webhook values",
-		in: []servingv1alpha1.ResourceRequirementsOverride{{
+		in: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "webhook",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
@@ -170,7 +170,7 @@ func TestWebhookMemoryLimit(t *testing.T) {
 				},
 			},
 		}},
-		want: []servingv1alpha1.ResourceRequirementsOverride{{
+		want: []operatorv1alpha1.ResourceRequirementsOverride{{
 			Container: "webhook",
 			ResourceRequirements: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
@@ -187,9 +187,9 @@ func TestWebhookMemoryLimit(t *testing.T) {
 	client := fake.NewClientBuilder().WithObjects(mockIngressConfig("whatever")).Build()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			obj := &servingv1alpha1.KnativeServing{
-				Spec: servingv1alpha1.KnativeServingSpec{
-					CommonSpec: servingv1alpha1.CommonSpec{
+			obj := &operatorv1alpha1.KnativeServing{
+				Spec: operatorv1alpha1.KnativeServingSpec{
+					CommonSpec: operatorv1alpha1.CommonSpec{
 						Resources: test.in,
 					},
 				},
@@ -227,27 +227,27 @@ func mockIngressConfig(domain string) *configv1.Ingress {
 	}
 }
 
-func verifyIngress(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
+func verifyIngress(t *testing.T, ks *operatorv1alpha1.KnativeServing, expected string) {
 	domain := ks.Spec.Config["domain"]
 	if actual, ok := domain[expected]; !ok || actual != "" {
 		t.Errorf("Missing %v, domain=%v", expected, domain)
 	}
 }
 
-func verifyQueueProxySidecarImageOverride(t *testing.T, ks *servingv1alpha1.KnativeServing, expected string) {
+func verifyQueueProxySidecarImageOverride(t *testing.T, ks *operatorv1alpha1.KnativeServing, expected string) {
 	// Because we overrode the queue image...
 	if ks.Spec.Config["deployment"]["queueSidecarImage"] != expected {
 		t.Errorf("Missing queue image, config=%v", ks.Spec.Config["deployment"])
 	}
 }
 
-func verifyCerts(t *testing.T, ks *servingv1alpha1.KnativeServing) {
-	if ks.Spec.ControllerCustomCerts == (servingv1alpha1.CustomCerts{}) {
+func verifyCerts(t *testing.T, ks *operatorv1alpha1.KnativeServing) {
+	if ks.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
 		t.Error("Missing custom certs config")
 	}
 }
 
-func verifyWebookMemoryLimit(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyWebookMemoryLimit(t *testing.T, ks *operatorv1alpha1.KnativeServing) {
 	for _, v := range ks.Spec.Resources {
 		if v.Container == "webhook" {
 			if _, ok := v.Limits[corev1.ResourceMemory]; ok {
@@ -258,15 +258,15 @@ func verifyWebookMemoryLimit(t *testing.T, ks *servingv1alpha1.KnativeServing) {
 	t.Error("Missing webhook memory limit")
 }
 
-func verifyDefaultHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyDefaultHA(t *testing.T, ks *operatorv1alpha1.KnativeServing) {
 	verifyHA(t, ks, 2)
 }
 
-func verifyOverriddenHA(t *testing.T, ks *servingv1alpha1.KnativeServing) {
+func verifyOverriddenHA(t *testing.T, ks *operatorv1alpha1.KnativeServing) {
 	verifyHA(t, ks, 1)
 }
 
-func verifyHA(t *testing.T, ks *servingv1alpha1.KnativeServing, replicas int32) {
+func verifyHA(t *testing.T, ks *operatorv1alpha1.KnativeServing, replicas int32) {
 	if ks.Spec.HighAvailability == nil {
 		t.Error("Missing HA")
 		return

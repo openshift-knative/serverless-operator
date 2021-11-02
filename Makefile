@@ -141,7 +141,7 @@ lint:
 	golangci-lint run
 	find . -type f -path './**/*.*sh' -not -path '*vendor*' | xargs -r shellcheck
 	operator-sdk bundle validate ./olm-catalog/serverless-operator --select-optional suite=operatorframework --optional-values=k8s-version=1.22
-	git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -error
+	git ls-files | grep -Ev '^(vendor/|.git)' | xargs misspell -i importas -error
 	prettier -c templates/*.yaml
 
 # Runs formatters and thelike to fix potential linter warnings.
