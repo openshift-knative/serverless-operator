@@ -19,7 +19,6 @@ package v1
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +26,6 @@ import (
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 	"knative.dev/pkg/test/logging"
-	"knative.dev/pkg/test/spoof"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	rtesting "knative.dev/serving/pkg/testing/v1"
 	"knative.dev/serving/test"
@@ -54,6 +52,22 @@ func Route(names test.ResourceNames, fopt ...rtesting.RouteOption) *v1.Route {
 	}
 
 	return route
+}
+
+// GetRoute gets a route by name
+func GetRoute(clients *test.Clients, routeName string) (route *v1.Route, err error) {
+	return route, reconciler.RetryTestErrors(func(int) (err error) {
+		route, err = clients.ServingClient.Routes.Get(context.Background(), routeName, metav1.GetOptions{})
+		return err
+	})
+}
+
+// GetRoutes returns all the available routes
+func GetRoutes(clients *test.Clients) (list *v1.RouteList, err error) {
+	return list, reconciler.RetryTestErrors(func(int) (err error) {
+		list, err = clients.ServingClient.Routes.List(context.Background(), metav1.ListOptions{})
+		return err
+	})
 }
 
 // CreateRoute creates a route in the given namespace using the route name in names
@@ -123,26 +137,6 @@ func IsRouteReady(r *v1.Route) (bool, error) {
 // not ready.
 func IsRouteFailed(r *v1.Route) (bool, error) {
 	return r.IsFailed(), nil
-}
-
-// RetryingRouteInconsistency retries common requests seen when creating a new route
-// - 404 until the route is propagated to the proxy
-// - 503 to account for Openshift route inconsistency (https://jira.coreos.com/browse/SRVKS-157)
-func RetryingRouteInconsistency(innerCheck spoof.ResponseChecker) spoof.ResponseChecker {
-	const neededSuccesses = 5
-	var successes int
-	return func(resp *spoof.Response) (bool, error) {
-		if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusServiceUnavailable {
-			successes = 0
-			return false, nil
-		}
-		successes++
-		if successes < neededSuccesses {
-			return false, nil
-		}
-		// If we didn't match any retryable codes, invoke the ResponseChecker that we wrapped.
-		return innerCheck(resp)
-	}
 }
 
 // AllRouteTrafficAtRevision will check the revision that route r is routing

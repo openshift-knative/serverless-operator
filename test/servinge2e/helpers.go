@@ -7,6 +7,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	pkgTest "knative.dev/pkg/test"
+	"knative.dev/pkg/test/spoof"
 	servingTest "knative.dev/serving/test"
 )
 
@@ -26,7 +27,7 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 		caCtx.Clients.Kube,
 		t.Logf,
 		routeURL,
-		pkgTest.EventuallyMatchesBody(expectedText),
+		spoof.MatchesBody(expectedText),
 		"WaitForRouteToServeText",
 		true,
 		servingTest.AddRootCAtoTransport(context.Background(), t.Logf, &servingTest.Clients{KubeClient: caCtx.Clients.Kube}, true),

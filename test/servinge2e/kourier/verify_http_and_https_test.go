@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	pkgTest "knative.dev/pkg/test"
+	"knative.dev/pkg/test/spoof"
 )
 
 func TestKnativeServiceHTTPS(t *testing.T) {
@@ -33,7 +34,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 		caCtx.Clients.Kube,
 		t.Logf,
 		httpURL.URL(),
-		pkgTest.EventuallyMatchesBody(helloworldText),
+		spoof.MatchesBody(helloworldText),
 		"WaitForRouteToServeText",
 		true,
 	); err != nil {
