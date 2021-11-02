@@ -119,6 +119,3 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
-
-# Correct names of the batch jobs, to be generated (upstream will fix this)
-git apply "$root/openshift-knative-operator/hack/008-fix-post-install-names.patch"

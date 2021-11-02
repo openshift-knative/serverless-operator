@@ -1,8 +1,8 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/4-mt-channel-broker.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/4-mt-channel-broker.yaml
-index 65dcc06e..28648397 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/4-mt-channel-broker.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/4-mt-channel-broker.yaml
-@@ -552,62 +552,3 @@ spec:
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/4-mt-channel-broker.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/4-mt-channel-broker.yaml
+index 93720c3d..ef84892b 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/4-mt-channel-broker.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/4-mt-channel-broker.yaml
+@@ -594,68 +594,3 @@ spec:
                containerPort: 8008
  
  ---
@@ -26,7 +26,10 @@ index 65dcc06e..28648397 100644
 -  name: broker-ingress-hpa
 -  namespace: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v0.25.1"
+-    eventing.knative.dev/release: "v0.26.0"
+-    app.kubernetes.io/name: broker-ingress
+-    app.kubernetes.io/version: "0.26.0"
+-    app.kubernetes.io/part-of: knative-eventing
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1
@@ -48,7 +51,10 @@ index 65dcc06e..28648397 100644
 -  name: broker-filter-hpa
 -  namespace: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v0.25.1"
+-    eventing.knative.dev/release: "v0.26.0"
+-    app.kubernetes.io/name: broker-filter
+-    app.kubernetes.io/version: "0.26.0"
+-    app.kubernetes.io/part-of: knative-eventing
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1

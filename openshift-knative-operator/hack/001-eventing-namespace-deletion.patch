@@ -1,19 +1,8 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/2-eventing-core.yaml
-index 08010cff..8373873c 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.25.1/2-eventing-core.yaml
-@@ -11,27 +11,6 @@
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
--apiVersion: v1
--kind: Namespace
--metadata:
--  name: knative-eventing
--  labels:
--    eventing.knative.dev/release: "v0.25.1"
--
-----
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+index 8f37de3e..a35ce957 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+@@ -1,26 +1,4 @@
 -# Copyright 2018 The Knative Authors
 -#
 -# Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +16,16 @@ index 08010cff..8373873c 100644
 -# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -# See the License for the specific language governing permissions and
 -# limitations under the License.
+-apiVersion: v1
+-kind: Namespace
+-metadata:
+-  name: knative-eventing
+-  labels:
+-    eventing.knative.dev/release: "v0.26.0"
+-    app.kubernetes.io/version: "0.26.0"
+-    app.kubernetes.io/part-of: knative-eventing
  
- apiVersion: v1
- kind: ServiceAccount
+----
+ # Copyright 2018 The Knative Authors
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
