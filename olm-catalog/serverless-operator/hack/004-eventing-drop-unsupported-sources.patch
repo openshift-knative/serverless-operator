@@ -1,10 +1,10 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-index 7b4cd096..935fdfb5 100644
+index 94ae62506..7144ed431 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-@@ -95,64 +95,6 @@ spec:
-                         type: string
-                       description: NodeSelector overrides nodeSelector for the deployment.
+@@ -709,64 +709,6 @@ spec:
+                               type: array
+                           type: object
                        type: object
 -              source:
 -                description: The source configuration for Knative Eventing
