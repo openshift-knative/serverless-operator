@@ -95,9 +95,6 @@ sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knati
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
-# TODO: Remove this when we bump to 0.26 (for release 1.20).
-git apply "$root/openshift-knative-operator/hack/009-kourier-keep-old-service.patch"
-
 #
 # DOWNLOAD EVENTING
 #

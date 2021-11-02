@@ -18,11 +18,11 @@ metadata:
   name: autoscaler-hpa
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.25.1"
+    serving.knative.dev/release: "v0.26.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
     app.kubernetes.io/name: autoscaler-hpa
     app.kubernetes.io/part-of: knative-serving
-    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/version: "0.26.0"
 spec:
   selector:
     matchLabels:
@@ -33,7 +33,7 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: autoscaler-hpa
-        serving.knative.dev/release: "v0.25.1"
+        serving.knative.dev/release: "v0.26.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -90,9 +90,9 @@ metadata:
     app: autoscaler-hpa
     app.kubernetes.io/name: autoscaler-hpa
     app.kubernetes.io/part-of: knative-serving
-    app.kubernetes.io/version: "0.25.1"
+    app.kubernetes.io/version: "0.26.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
-    serving.knative.dev/release: "v0.25.1"
+    serving.knative.dev/release: "v0.26.0"
   name: autoscaler-hpa
   namespace: knative-serving
 spec:
