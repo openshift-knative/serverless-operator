@@ -50,11 +50,11 @@ image "domainmapping-webhook" "${serving}-domain-mapping-webhook:${serving_versi
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration:${serving_version}"
 
 image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
-image "net-kourier-controller__controller" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "kourier-control" "${registry}/kourier:v$(metadata.get dependencies.kourier)"
+image "net-kourier-controller__controller" "${registry}/kourier:v$(metadata.get dependencies.kourier)"
 
-image "net-istio-controller__controller" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
-image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
+image "net-istio-controller__controller" "${registry}/net-istio-controller:v$(metadata.get dependencies.net_istio)"
+image "net-istio-webhook__webhook" "${registry}/net-istio-webhook:v$(metadata.get dependencies.net_istio)"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller:${eventing_version}"
 image "sugar-controller__controller"                "${eventing}-sugar-controller:${eventing_version}"

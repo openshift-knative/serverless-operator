@@ -473,14 +473,18 @@ spec:
                       - name: "IMAGE_kourier-gateway"
                         value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
                       - name: "IMAGE_kourier-control"
-                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                        value: "quay.io/openshift-knative/kourier:v0.25.0"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                        value: "quay.io/openshift-knative/kourier:v0.25.0"
                       - name: "IMAGE_net-istio-controller__controller"
-                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+                        value: "quay.io/openshift-knative/net-istio-controller:v0.25.1"
                       - name: "IMAGE_net-istio-webhook__webhook"
+<<<<<<< HEAD
                         value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
 >>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
+=======
+                        value: "quay.io/openshift-knative/net-istio-webhook:v0.25.1"
+>>>>>>> e2704f58 (Fixing a few not correct image references)
                       - name: "IMAGE_eventing-controller__eventing-controller"
                         value: "quay.io/openshift-knative/knative-eventing-controller:v0.26.0"
                       - name: "IMAGE_sugar-controller__controller"
@@ -638,14 +642,18 @@ spec:
                       - name: "IMAGE_kourier-gateway"
                         value: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
                       - name: "IMAGE_kourier-control"
-                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                        value: "quay.io/openshift-knative/kourier:v0.25.0"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+                        value: "quay.io/openshift-knative/kourier:v0.25.0"
                       - name: "IMAGE_net-istio-controller__controller"
-                        value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+                        value: "quay.io/openshift-knative/net-istio-controller:v0.25.1"
                       - name: "IMAGE_net-istio-webhook__webhook"
+<<<<<<< HEAD
                         value: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
 >>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
+=======
+                        value: "quay.io/openshift-knative/net-istio-webhook:v0.25.1"
+>>>>>>> e2704f58 (Fixing a few not correct image references)
                       - name: "IMAGE_eventing-controller__eventing-controller"
                         value: "quay.io/openshift-knative/knative-eventing-controller:v0.26.0"
                       - name: "IMAGE_sugar-controller__controller"
@@ -912,14 +920,18 @@ spec:
     - name: "IMAGE_kourier-gateway"
       image: "quay.io/openshift-knative/proxyv2-ubi8:2.0.0"
     - name: "IMAGE_kourier-control"
-      image: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+      image: "quay.io/openshift-knative/kourier:v0.25.0"
     - name: "IMAGE_net-kourier-controller__controller"
-      image: "quay.io/openshift-knative/knative-v0.25.0:kourier"
+      image: "quay.io/openshift-knative/kourier:v0.25.0"
     - name: "IMAGE_net-istio-controller__controller"
-      image: "quay.io/openshift-knative/knative-v0.25.1:net-istio-controller"
+      image: "quay.io/openshift-knative/net-istio-controller:v0.25.1"
     - name: "IMAGE_net-istio-webhook__webhook"
+<<<<<<< HEAD
       image: "quay.io/openshift-knative/knative-v0.25.1:net-istio-webhook"
 >>>>>>> 4dff7c67 (:recycle: :dizzy: :whale: Moving a few images from OCP registry to quay.io, and regenerating the actual manifests and related files)
+=======
+      image: "quay.io/openshift-knative/net-istio-webhook:v0.25.1"
+>>>>>>> e2704f58 (Fixing a few not correct image references)
     - name: "IMAGE_eventing-controller__eventing-controller"
       image: "quay.io/openshift-knative/knative-eventing-controller:v0.26.0"
     - name: "IMAGE_sugar-controller__controller"
