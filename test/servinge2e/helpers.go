@@ -22,7 +22,7 @@ const (
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
 	t.Helper()
-	if _, err := pkgTest.WaitForEndpointState(
+	if _, err := pkgTest.CheckEndpointState(
 		context.Background(),
 		caCtx.Clients.Kube,
 		t.Logf,

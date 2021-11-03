@@ -29,7 +29,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 	httpURL := ksvc.Status.URL.DeepCopy()
 
 	httpURL.Scheme = "http"
-	if _, err := pkgTest.WaitForEndpointState(
+	if _, err := pkgTest.CheckEndpointState(
 		context.Background(),
 		caCtx.Clients.Kube,
 		t.Logf,
