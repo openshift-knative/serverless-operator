@@ -143,7 +143,7 @@ done
 add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_VERSION" "$(metadata.get dependencies.eventing_kafka)"
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/kn-cli-artifacts:v$(metadata.get dependencies.cli)"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"

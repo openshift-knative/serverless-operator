@@ -534,7 +534,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: quay.io/openshift-knative/knative-v0.25.1:kn-cli-artifacts
+                    image: quay.io/openshift-knative/kn-cli-artifacts:v0.25.1
                     imagePullPolicy: Always
                     command: ["sh", "-c", "cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
