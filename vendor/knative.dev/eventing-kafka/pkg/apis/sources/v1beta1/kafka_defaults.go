@@ -47,6 +47,10 @@ func (k *KafkaSource) SetDefaults(ctx context.Context) {
 		k.Spec.Consumers = pointer.Int32Ptr(1)
 	}
 
+	if k.Spec.InitialOffset == "" {
+		k.Spec.InitialOffset = OffsetLatest
+	}
+
 	kafkaConfig := config.FromContextOrDefaults(ctx)
 	kafkaDefaults := kafkaConfig.KafkaSourceDefaults
 	if kafkaDefaults.AutoscalingClass == config.KedaAutoscalingClass {

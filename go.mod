@@ -15,35 +15,32 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.49.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.49.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.30.0
+	github.com/prometheus/common v0.31.1
 	github.com/spf13/pflag v1.0.5
-	go.uber.org/zap v1.19.0
-	k8s.io/api v0.20.7
-	k8s.io/apimachinery v0.20.7
-	k8s.io/client-go v12.0.0+incompatible
-	knative.dev/eventing v0.25.1
+	go.uber.org/zap v1.19.1
+	k8s.io/api v0.21.4
+	k8s.io/apimachinery v0.21.4
+	k8s.io/client-go v0.21.4
+	knative.dev/eventing v0.26.1
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
-	knative.dev/networking v0.0.0-20210903132258-9d8ab8618e5f
-	knative.dev/operator v0.25.3
-	knative.dev/pkg v0.0.0-20210902173607-844a6bc45596
-	knative.dev/serving v0.25.1
-	sigs.k8s.io/controller-runtime v0.8.3
+	knative.dev/hack v0.0.0-20210806075220-815cd312d65c
+	knative.dev/networking v0.0.0-20210914225408-69ad45454096
+	knative.dev/operator v0.26.3
+	knative.dev/pkg v0.0.0-20210919202233-5ae482141474
+	knative.dev/serving v0.26.0
+	sigs.k8s.io/controller-runtime v0.9.7
 )
 
 replace (
-	// TODO: Remove this after Knative is bumped to 0.26.
-	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.3.1-0.20210621165811-f3a7283b3002
-
-	// Kubernetes v1.20.7
-	k8s.io/api => k8s.io/api v0.20.7
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.20.7
-	k8s.io/apimachinery => k8s.io/apimachinery v0.20.7
-	k8s.io/client-go => k8s.io/client-go v0.20.7
-	k8s.io/code-generator => k8s.io/code-generator v0.20.7
+	// Kubernetes v1.21.4
+	k8s.io/api => k8s.io/api v0.21.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
+	k8s.io/client-go => k8s.io/client-go v0.21.4
+	k8s.io/code-generator => k8s.io/code-generator v0.21.4
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211025073149-ff3a73d34603
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211020205411-8390acd4d526
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20210924121646-ec4ba4824474
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211025151756-703d65285e51
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211028143625-1d988ab679d1
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211102182047-7d120bbb781d
 )
