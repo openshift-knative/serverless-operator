@@ -30,13 +30,13 @@ function install_catalogsource {
 
   if [ -n "$OPENSHIFT_CI" ]; then
     # Image variables supplied by ci-operator.
-    sed -i "s,image: .*openshift-knative.*/openshift-knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
-    sed -i "s,image: .*openshift-knative.*/knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
-    sed -i "s,image: .*openshift-knative.*/openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
+    sed -i "s,image: .*openshift-knative.*openshift-knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
+    sed -i "s,image: .*openshift-knative.*knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
+    sed -i "s,image: .*openshift-knative.*openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
   elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-    sed -i "s,image: .*openshift-knative.*/openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
-    sed -i "s,image: .*openshift-knative.*/knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
-    sed -i "s,image: .*openshift-knative.*/openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
+    sed -i "s,image: .*openshift-knative.*openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
+    sed -i "s,image: .*openshift-knative.*knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
+    sed -i "s,image: .*openshift-knative.*openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
   fi
 
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
@@ -119,7 +119,7 @@ spec:
         - -c
         - |-
           podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-stop-bundle:$PREVIOUS_VERSION,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
+          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b quay.io/openshift-knative/serverless-stop-bundle:v$PREVIOUS_VERSION,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
           /bin/opm registry serve -d index.db -p 50051
 ---
 apiVersion: v1
