@@ -26,7 +26,7 @@ import (
 const (
 	letterBytes     = "abcdefghijklmnopqrstuvwxyz"
 	randSuffixLen   = 8
-	nameLengthLimit = 50
+	nameLengthLimit = 40
 	sep             = '-'
 	sepS            = "-"
 	testNamePrefix  = "Test"
@@ -52,7 +52,6 @@ func ObjectPrefixForTest(t named) string {
 // ObjectNameForTest generates a random object name based on the test name.
 func ObjectNameForTest(t named) string {
 	prefix := ObjectPrefixForTest(t)
-<<<<<<< HEAD
 	suffix := string(sep) + RandomString()
 	limit := nameLengthLimit - len(suffix)
 	if len(prefix) < limit {
@@ -60,12 +59,6 @@ func ObjectNameForTest(t named) string {
 	}
 
 	return prefix[:limit] + suffix
-=======
-	if len(prefix) > 20 {
-		prefix = prefix[:20]
-	}
-	return kmeta.ChildName(prefix, string(sep)+RandomString())
->>>>>>> 9a4a6d381 (Apply test object patch statically to the codebase)
 }
 
 // AppendRandomString will generate a random string that begins with prefix.
