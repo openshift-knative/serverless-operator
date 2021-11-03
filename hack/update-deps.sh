@@ -69,3 +69,6 @@ find vendor/ \( -name "OWNERS" \
   -o -name "*_test.go" \) -exec rm -fv {} +
 
 find vendor -type f -name '*.sh' -exec chmod +x {} +
+
+# Apply patches
+git apply "${ROOT_DIR}"/hack/patches/*

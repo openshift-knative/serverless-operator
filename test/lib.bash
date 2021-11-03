@@ -185,7 +185,7 @@ function downstream_monitoring_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local image_version image_template patch channels
+  local image_version image_template channels
 
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
@@ -194,12 +194,6 @@ function run_rolling_upgrade_tests {
   prepare_knative_serving_tests
 
   cd "$rootdir"
-
-  # Ensure the generated test case names are short enough for Kubernetes.
-  # The upgrade framework prefixes the base names and the generated
-  # OpenShift Route hostname exceeds the 63-char limit.
-  patch="${KNATIVE_SERVING_HOME}/openshift/patches/001-object.patch"
-  git apply "${patch}"
 
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
@@ -225,8 +219,6 @@ function run_rolling_upgrade_tests {
     --openshiftimage="${UPGRADE_OCP_IMAGE}" \
     --resolvabledomain \
     --https
-
-  git apply -R "${patch}"
 
   # Delete the leftover services.
   oc delete ksvc --all -n serving-tests
