@@ -1,0 +1,17 @@
+diff --git a/vendor/knative.dev/pkg/test/helpers/name.go b/vendor/knative.dev/pkg/test/helpers/name.go
+index 0cd25785b..2f21dd98f 100644
+--- a/vendor/knative.dev/pkg/test/helpers/name.go
++++ b/vendor/knative.dev/pkg/test/helpers/name.go
+@@ -52,7 +52,11 @@ func ObjectPrefixForTest(t named) string {
+ 
+ // ObjectNameForTest generates a random object name based on the test name.
+ func ObjectNameForTest(t named) string {
+-	return kmeta.ChildName(ObjectPrefixForTest(t), string(sep)+RandomString())
++	prefix := ObjectPrefixForTest(t)
++	if len(prefix) > 20 {
++		prefix = prefix[:20]
++	}
++	return kmeta.ChildName(prefix, string(sep)+RandomString())
+ }
+ 
+ // AppendRandomString will generate a random string that begins with prefix.

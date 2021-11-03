@@ -52,7 +52,11 @@ func ObjectPrefixForTest(t named) string {
 
 // ObjectNameForTest generates a random object name based on the test name.
 func ObjectNameForTest(t named) string {
-	return kmeta.ChildName(ObjectPrefixForTest(t), string(sep)+RandomString())
+	prefix := ObjectPrefixForTest(t)
+	if len(prefix) > 20 {
+		prefix = prefix[:20]
+	}
+	return kmeta.ChildName(prefix, string(sep)+RandomString())
 }
 
 // AppendRandomString will generate a random string that begins with prefix.
