@@ -39,12 +39,12 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	cl := fake.NewClientBuilder().WithObjects(&operatorNamespace, &serverlessDeployment).Build()
 	err := SetupClusterMonitoringRequirements(cl, &serverlessDeployment, serverlessDeployment.GetNamespace(), nil)
 	if err != nil {
-		t.Errorf("Failed to set up monitoring requirements: %w", err)
+		t.Errorf("Failed to set up monitoring requirements: %v", err)
 	}
 	ns := corev1.Namespace{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: installedNS}, &ns)
 	if err != nil {
-		t.Errorf("Failed to get modified namespace: %w", err)
+		t.Errorf("Failed to get modified namespace: %v", err)
 	}
 	if actual := ns.Labels[okomon.EnableMonitoringLabel]; actual != "true" {
 		t.Errorf("got %q, want %q", actual, "true")
@@ -52,7 +52,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	role := rbacv1.Role{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &role)
 	if err != nil {
-		t.Errorf("Failed to get created role: %w", err)
+		t.Errorf("Failed to get created role: %v", err)
 	}
 	if len(role.Rules) == 0 {
 		t.Error("Rules should be non empty")
@@ -60,7 +60,7 @@ func TestSetupMonitoringRequirements(t *testing.T) {
 	rb := rbacv1.RoleBinding{}
 	err = cl.Get(context.TODO(), client.ObjectKey{Name: rbacName, Namespace: installedNS}, &rb)
 	if err != nil {
-		t.Errorf("Failed to get created rolebinding: %w", err)
+		t.Errorf("Failed to get created rolebinding: %v", err)
 	}
 	if len(rb.Subjects) == 0 {
 		t.Error("Subjects should be non empty")
@@ -117,11 +117,11 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 	initObjs := []client.Object{&operatorNamespace, &oldSM, &oldSMService, &newSM, &newSMService, &randomSM, &randomService}
 	cl := fake.NewClientBuilder().WithObjects(initObjs...).Build()
 	if err := RemoveOldServiceMonitorResourcesIfExist(operatorNamespace.Name, cl); err != nil {
-		t.Errorf("Failed to remove old service monitor resources: %w", err)
+		t.Errorf("Failed to remove old service monitor resources: %v", err)
 	}
 	smList := monitoringv1.ServiceMonitorList{}
 	if err := cl.List(context.TODO(), &smList, client.InNamespace(operatorNamespace.Name)); err != nil {
-		t.Errorf("Failed to list available service monitors: %w", err)
+		t.Errorf("Failed to list available service monitors: %v", err)
 	}
 	if len(smList.Items) != 2 {
 		t.Errorf("got %d, want %d", len(smList.Items), 2)
@@ -133,7 +133,7 @@ func TestRemoveOldServiceMonitorResources(t *testing.T) {
 	}
 	smServiceList := corev1.ServiceList{}
 	if err := cl.List(context.TODO(), &smServiceList, client.InNamespace(operatorNamespace.Name)); err != nil {
-		t.Errorf("Failed to list available services: %w", err)
+		t.Errorf("Failed to list available services: %v", err)
 	}
 	if len(smServiceList.Items) != 2 {
 		t.Errorf("got %d, want %d", len(smServiceList.Items), 2)

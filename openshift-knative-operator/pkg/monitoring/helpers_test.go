@@ -22,53 +22,53 @@ func TestSetupServingRbacTransformation(t *testing.T) {
 	client := fake.New()
 	manifest, err := mf.NewManifest("testdata/rbac.yaml", mf.UseClient(client))
 	if err != nil {
-		t.Errorf("Unable to load test manifest: %w", err)
+		t.Errorf("Unable to load test manifest: %v", err)
 	}
 	transforms := []mf.Transformer{injectNamespaceWithSubject(servingNamespace, OpenshiftMonitoringNamespace)}
 	if manifest, err = manifest.Transform(transforms...); err != nil {
-		t.Errorf("Unable to transform test manifest: %w", err)
+		t.Errorf("Unable to transform test manifest: %v", err)
 	}
 	if err := manifest.Apply(); err != nil {
-		t.Errorf("Unable to apply the test manifest %w", err)
+		t.Errorf("Unable to apply the test manifest %v", err)
 	}
 	u := createRole(prometheusRoleName, servingNamespace)
 	_, err = client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the role %w", err)
+		t.Errorf("Unable to get the role %v", err)
 	}
 	u = createRole("test-role", "default")
 	_, err = client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the role %w", err)
+		t.Errorf("Unable to get the role %v", err)
 	}
 	u = createClusterRole()
 	_, err = client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the cluster role %w", err)
+		t.Errorf("Unable to get the cluster role %v", err)
 	}
 	u = createRoleBinding(prometheusRoleName, servingNamespace)
 	resultRoleBinding, err := client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the rolebinding %w", err)
+		t.Errorf("Unable to get the rolebinding %v", err)
 	}
 	checkSubjects(t, resultRoleBinding.Object, OpenshiftMonitoringNamespace)
 	u = createRoleBinding("test-rb", "default")
 	resultRoleBinding, err = client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the rolebinding %w", err)
+		t.Errorf("Unable to get the rolebinding %v", err)
 	}
 	checkSubjects(t, resultRoleBinding.Object, "default")
 	u = createClusterRoleBinding()
 	resultClusterRoleBinding, err := client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the cluster rolebinding %w", err)
+		t.Errorf("Unable to get the cluster rolebinding %v", err)
 	}
 	checkSubjects(t, resultClusterRoleBinding.Object, OpenshiftMonitoringNamespace)
 	// Make sure unrelated resources are not touched
 	u = createService("activator-sm-service", "test")
 	_, err = client.Get(u)
 	if err != nil {
-		t.Errorf("Unable to get the service %w", err)
+		t.Errorf("Unable to get the service %v", err)
 	}
 }
 

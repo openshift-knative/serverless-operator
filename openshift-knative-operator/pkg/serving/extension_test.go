@@ -473,7 +473,7 @@ func TestMonitoring(t *testing.T) {
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()
 
 			if err != nil {
-				t.Errorf("Failed to setup the monitoring toggle %w", err)
+				t.Errorf("Failed to setup the monitoring toggle %v", err)
 			}
 			ext.Reconcile(context.Background(), ks)
 

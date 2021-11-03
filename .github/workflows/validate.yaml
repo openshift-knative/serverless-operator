@@ -114,7 +114,7 @@ jobs:
       - name: Go Lint - knative-operator
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.42
+          version: v1.43
           working-directory: ./src/github.com/${{ github.repository }}
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh

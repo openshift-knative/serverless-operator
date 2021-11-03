@@ -13,7 +13,7 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Namespace: eventingNamespace},
 	})
 	if err != nil {
-		t.Errorf("Unable to load eventing monitoring platform manifests: %w", err)
+		t.Errorf("Unable to load eventing monitoring platform manifests: %v", err)
 	}
 	if len(manifests) != 1 {
 		t.Errorf("Got %d, want %d", len(manifests), 1)
