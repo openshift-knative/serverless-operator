@@ -24,7 +24,7 @@ dependencies:
   serving: 0.26.0
   kourier: 0.26.0
   net_istio: 0.26.0
-  maistra: 2.0.0
+  maistra: 2.1.0
 
   eventing: 0.26.0
   eventing_kafka: 0.25.3

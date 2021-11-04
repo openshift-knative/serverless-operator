@@ -46,7 +46,7 @@ image "domain-mapping" "${serving}-domain-mapping"
 image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
 
-image "kourier-gateway" "quay.io/openshift-knative/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
+image "kourier-gateway" "quay.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 image "net-kourier-controller__controller" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
 
