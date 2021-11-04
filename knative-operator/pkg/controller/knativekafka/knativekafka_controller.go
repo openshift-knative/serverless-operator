@@ -268,7 +268,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 		instance.Status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings in manifest: %w", err)
 	}
-	if err := manifest.Filter(not(roleOrRoleBinding)).Apply(); err != nil {
+	if err := manifest.Filter(mf.Not(roleOrRoleBinding)).Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
@@ -308,7 +308,7 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance 
 		return nil
 	}
 	log.Info("Deleting resources in manifest")
-	if err := manifest.Filter(mf.NoCRDs, not(roleOrRoleBinding)).Delete(); err != nil {
+	if err := manifest.Filter(mf.NoCRDs, mf.Not(roleOrRoleBinding)).Delete(); err != nil {
 		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 	}
 	// Delete Roles last, as they may be useful for human operators to clean up.
@@ -482,11 +482,4 @@ func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifes
 		}
 	}
 	return nil
-}
-
-// TODO: get rid of this when we update to Manifestival version that has this function
-var not = func(pred mf.Predicate) mf.Predicate {
-	return func(u *unstructured.Unstructured) bool {
-		return !pred(u)
-	}
 }
