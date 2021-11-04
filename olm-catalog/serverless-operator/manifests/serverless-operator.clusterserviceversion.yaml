@@ -622,6 +622,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-consolidated-dispatcher"
                       - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-webhook"
+                      - name: "KAFKA_IMAGE_v0.26-eventing-kafka-channel-post-install-job__post-install"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-post-install"
                       - name: "KNATIVE_EVENTING_KAFKA_VERSION"
                         value: "0.26.0"
                     securityContext:
@@ -847,5 +849,7 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-consolidated-dispatcher"
     - name: "KAFKA_IMAGE_kafka-webhook__kafka-webhook"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-webhook"
+    - name: "KAFKA_IMAGE_v0.26-eventing-kafka-channel-post-install-job__post-install"
+      image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-post-install"
   replaces: serverless-operator.v1.19.0
   version: 1.20.0

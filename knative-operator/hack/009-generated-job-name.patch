@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+index c316076c..8258531c 100644
+--- a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
++++ b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+@@ -162,7 +162,7 @@ roleRef:
+ apiVersion: batch/v1
+ kind: Job
+ metadata:
+-  name: eventing-kafka-v0.26-channel-post-install-job
++  name: v0.26-eventing-kafka-channel-post-install-job
+   namespace: knative-eventing
+   labels:
+     app: "kafkachannel-retentionduration-update"

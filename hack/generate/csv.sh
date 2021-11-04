@@ -72,6 +72,7 @@ kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-ad
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
+kafka_image "v0.26-eventing-kafka-channel-post-install-job__post-install" "${eventing_kafka}-post-install"
 
 image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
 
