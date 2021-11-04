@@ -13,7 +13,7 @@ RUN GO111MODULE=on go get github.com/mikefarah/yq/v3 \
 # Allow runtime users to add entries to /etc/passwd
 RUN chmod g+rw /etc/passwd
 
-RUN yum install -y https://rpm.nodesource.com/pub_14.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm
+RUN yum install -y https://rpm.nodesource.com/pub_16.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm
 RUN yum install -y \
   gcc-c++ \
   make \
