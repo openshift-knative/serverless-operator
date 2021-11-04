@@ -48,7 +48,3 @@ git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
 
 # Will be no longer needed with SRVKE-812
 git apply "$root/knative-operator/hack/008-keep-old-config-as-default.patch"
-
-# For 1.20 this patch is no longer needed, since it is available upstream.
-# See original upstream PR: https://github.com/knative-sandbox/eventing-kafka/pull/857
-git apply "$root/knative-operator/hack/009-remove-required-address.patch"
