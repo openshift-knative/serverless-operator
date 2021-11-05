@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
@@ -19,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -27,6 +28,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/ghodss/yaml"
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 )
 
 const (
@@ -42,6 +46,10 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
 )
+
+type EventingKafkaConfig struct {
+	Kafka kafkaconfig.EKKafkaConfig `json:"kafka,omitempty"`
+}
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
 
@@ -236,8 +244,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
-		setBootstrapServers(instance.Spec.Channel.BootstrapServers),
-		setAuthSecret(instance.Spec.Channel.AuthSecretNamespace, instance.Spec.Channel.AuthSecretName),
+		updateEventingKafka(instance.Spec.Channel),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
@@ -409,28 +416,28 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	return &manifest, nil
 }
 
-// setBootstrapServers sets Kafka bootstrapServers value in config-kafka
-func setBootstrapServers(bootstrapServers string) mf.Transformer {
+func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
-			log.Info("Found ConfigMap config-kafka, updating it with bootstrapServers from spec")
-			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrapServers"); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
 
-// setAuthSecret sets Kafka auth secret namespace and name value in config-kafka
-func setAuthSecret(secretNamespace, secretName string) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
-			log.Info("Found ConfigMap config-kafka, updating it with authSecretName and authSecretNamespace from spec")
-			if err := unstructured.SetNestedField(u.Object, secretNamespace, "data", "authSecretNamespace"); err != nil {
+			// set the values from our operator
+			kafkacfg := EventingKafkaConfig{
+				Kafka: kafkaconfig.EKKafkaConfig{
+					Brokers:             kafkachannel.BootstrapServers,
+					AuthSecretName:      kafkachannel.AuthSecretName,
+					AuthSecretNamespace: kafkachannel.AuthSecretNamespace,
+				},
+			}
+
+			// write to yaml
+			configBytes, err := yaml.Marshal(kafkacfg)
+			if err != nil {
 				return err
 			}
-			if err := unstructured.SetNestedField(u.Object, secretName, "data", "authSecretName"); err != nil {
+
+			// update the config map data
+			log.Info("Found ConfigMap config-kafka, updating it with broker and auth info from spec")
+			if err := unstructured.SetNestedField(u.Object, string(configBytes), "data", "eventing-kafka"); err != nil {
 				return err
 			}
 		}

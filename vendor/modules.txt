@@ -73,6 +73,7 @@ github.com/evanphx/json-patch/v5
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
+## explicit
 github.com/ghodss/yaml
 # github.com/go-kit/log v0.1.0
 github.com/go-kit/log
@@ -1165,6 +1166,7 @@ knative.dev/eventing-kafka/pkg/client/injection/client
 knative.dev/eventing-kafka/pkg/client/injection/client/fake
 knative.dev/eventing-kafka/pkg/client/listers/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/common/client
+knative.dev/eventing-kafka/pkg/common/config
 knative.dev/eventing-kafka/pkg/common/constants
 knative.dev/eventing-kafka/test
 knative.dev/eventing-kafka/test/e2e

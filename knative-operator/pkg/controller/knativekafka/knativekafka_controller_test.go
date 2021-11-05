@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ghodss/yaml"
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
+
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
@@ -183,14 +186,14 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	}
 }
 
-func TestSetBootstrapServers(t *testing.T) {
+func TestUpdateEventingKafka(t *testing.T) {
 	tests := []struct {
-		name             string
-		obj              *unstructured.Unstructured
-		bootstrapServers string
-		expect           *unstructured.Unstructured
+		name         string
+		obj          *unstructured.Unstructured
+		kafkaChannel v1alpha1.Channel
+		expect       *unstructured.Unstructured
 	}{{
-		name: "Update config-kafka",
+		name: "Update config-kafka with all arguments",
 		obj: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -200,7 +203,11 @@ func TestSetBootstrapServers(t *testing.T) {
 				},
 			},
 		},
-		bootstrapServers: "example.com:1234",
+		kafkaChannel: v1alpha1.Channel{
+			AuthSecretName:      "my-secret",
+			BootstrapServers:    "example.com:1234",
+			AuthSecretNamespace: "my-ns",
+		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -209,12 +216,12 @@ func TestSetBootstrapServers(t *testing.T) {
 					"name": "config-kafka",
 				},
 				"data": map[string]interface{}{
-					"bootstrapServers": "example.com:1234",
+					"eventing-kafka": "kafka:\n  authSecretName: my-secret\n  authSecretNamespace: my-ns\n  brokers: example.com:1234\n",
 				},
 			},
 		},
 	}, {
-		name: "Update config-kafka - overwrite",
+		name: "Update config-kafka with only brokers",
 		obj: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -222,12 +229,11 @@ func TestSetBootstrapServers(t *testing.T) {
 				"metadata": map[string]interface{}{
 					"name": "config-kafka",
 				},
-				"data": map[string]interface{}{
-					"bootstrapServers": "TO_BE_OVERWRITTEN",
-				},
 			},
 		},
-		bootstrapServers: "example.com:1234",
+		kafkaChannel: v1alpha1.Channel{
+			BootstrapServers: "example.com:1234",
+		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -236,7 +242,77 @@ func TestSetBootstrapServers(t *testing.T) {
 					"name": "config-kafka",
 				},
 				"data": map[string]interface{}{
-					"bootstrapServers": "example.com:1234",
+					"eventing-kafka": "kafka:\n  brokers: example.com:1234\n",
+				},
+			},
+		},
+	}, {
+		name: "Update config-kafka - overwrite all arguments",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"eventing-kafka": marshalEventingKafkaConfig(EventingKafkaConfig{
+						Kafka: kafkaconfig.EKKafkaConfig{
+							Brokers:             "TO_BE_OVERWRITTEN",
+							AuthSecretName:      "TO_BE_OVERWRITTEN",
+							AuthSecretNamespace: "TO_BE_OVERWRITTEN",
+						},
+					}),
+				},
+			},
+		},
+		kafkaChannel: v1alpha1.Channel{
+			BootstrapServers:    "example.com:1234",
+			AuthSecretName:      "my-secret",
+			AuthSecretNamespace: "my-ns",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"eventing-kafka": "kafka:\n  authSecretName: my-secret\n  authSecretNamespace: my-ns\n  brokers: example.com:1234\n",
+				},
+			},
+		},
+	}, {
+		name: "Update config-kafka - overwrite only brokers",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"eventing-kafka": marshalEventingKafkaConfig(EventingKafkaConfig{
+						Kafka: kafkaconfig.EKKafkaConfig{
+							Brokers: "TO_BE_OVERWRITTEN",
+						},
+					}),
+				},
+			},
+		},
+		kafkaChannel: v1alpha1.Channel{
+			BootstrapServers: "example.com:1234",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+				"data": map[string]interface{}{
+					"eventing-kafka": "kafka:\n  brokers: example.com:1234\n",
 				},
 			},
 		},
@@ -251,7 +327,10 @@ func TestSetBootstrapServers(t *testing.T) {
 				},
 			},
 		},
-		bootstrapServers: "example.com:1234",
+		kafkaChannel: v1alpha1.Channel{
+			AuthSecretName:      "my-secret",
+			AuthSecretNamespace: "my-ns",
+		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -272,7 +351,10 @@ func TestSetBootstrapServers(t *testing.T) {
 				},
 			},
 		},
-		bootstrapServers: "example.com:1234",
+		kafkaChannel: v1alpha1.Channel{
+			AuthSecretName:      "my-secret",
+			AuthSecretNamespace: "my-ns",
+		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -286,130 +368,7 @@ func TestSetBootstrapServers(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := setBootstrapServers(test.bootstrapServers)(test.obj)
-			if err != nil {
-				t.Fatalf("setBootstrapServers: (%v)", err)
-			}
-
-			if !cmp.Equal(test.expect, test.obj) {
-				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
-			}
-		})
-	}
-}
-
-func TestSetAuthSecret(t *testing.T) {
-	tests := []struct {
-		name            string
-		obj             *unstructured.Unstructured
-		secretNamespace string
-		secretName      string
-		expect          *unstructured.Unstructured
-	}{{
-		name: "Update config-kafka",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-		secretNamespace: "my-ns",
-		secretName:      "my-secret",
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"authSecretNamespace": "my-ns",
-					"authSecretName":      "my-secret",
-				},
-			},
-		},
-	}, {
-		name: "Update config-kafka - overwrite",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"authSecretNamespace": "TO_BE_OVERWRITTEN",
-					"authSecretName":      "TO_BE_OVERWRITTEN",
-				},
-			},
-		},
-		secretNamespace: "my-ns",
-		secretName:      "my-secret",
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"authSecretNamespace": "my-ns",
-					"authSecretName":      "my-secret",
-				},
-			},
-		},
-	}, {
-		name: "Do not update other configmaps",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-foo",
-				},
-			},
-		},
-		secretNamespace: "my-ns",
-		secretName:      "my-secret",
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-foo",
-				},
-			},
-		},
-	}, {
-		name: "Do not update other resources",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Secret",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-		secretNamespace: "my-ns",
-		secretName:      "my-secret",
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Secret",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := setAuthSecret(test.secretNamespace, test.secretName)(test.obj)
+			err := updateEventingKafka(test.kafkaChannel)(test.obj)
 			if err != nil {
 				t.Fatalf("setAuthSecretNamespace/setAuthSecretName: (%v)", err)
 			}
@@ -419,6 +378,11 @@ func TestSetAuthSecret(t *testing.T) {
 			}
 		})
 	}
+}
+
+func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
+	configBytes, _ := yaml.Marshal(kafka)
+	return string(configBytes)
 }
 
 func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {

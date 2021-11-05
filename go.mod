@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/blang/semver/v4 v4.0.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.6
 	github.com/manifestival/controller-runtime-client v0.4.0

@@ -46,6 +46,3 @@ git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 # NOTE: With upstream 0.27 (1.0) this patch is not needed:
 # The kafka-ch-controller requires DELETE on deployment in OpenShift
 git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
-
-# Will be no longer needed with SRVKE-812
-git apply "$root/knative-operator/hack/008-keep-old-config-as-default.patch"
