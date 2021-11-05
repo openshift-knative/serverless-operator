@@ -110,7 +110,7 @@ func main() {
 	}
 
 	// Serving Webhooks
-	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(mgr.GetClient(), decoder)})
+	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(decoder)})
 	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: knativeserving.NewValidator(mgr.GetClient(), decoder)})
 	// Eventing Webhooks
 	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewConfigurator(decoder)})

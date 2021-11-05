@@ -171,7 +171,6 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 
 func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *operatorv1alpha1.KnativeServing) error {
 	stages := []func(*operatorv1alpha1.KnativeServing) error{
-		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
 		r.installDashboard,
@@ -182,24 +181,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *operatorv1al
 		if err := stage(instance); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-// configure default settings for OpenShift
-func (r *ReconcileKnativeServing) configure(instance *operatorv1alpha1.KnativeServing) error {
-	before := instance.DeepCopy()
-	if err := common.Mutate(instance, r.client); err != nil {
-		return err
-	}
-	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
-		return nil
-	}
-
-	// Only apply the update if something changed.
-	log.Info("Updating KnativeServing with mutated state for Openshift")
-	if err := r.client.Update(context.TODO(), instance); err != nil {
-		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
 	}
 	return nil
 }

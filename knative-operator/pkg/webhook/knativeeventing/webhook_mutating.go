@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -34,7 +33,10 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	common.MutateEventing(ke)
+	// Unset the entire registry section. We used to override it anyway, so there can't
+	// be any userdata in there.
+	// TODO: Remove in the 1.21 release to potentially make this usable for users.
+	ke.Spec.CommonSpec.Registry = operatorv1alpha1.Registry{}
 
 	marshaled, err := json.Marshal(ke)
 	if err != nil {
