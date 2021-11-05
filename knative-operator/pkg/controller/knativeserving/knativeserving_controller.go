@@ -200,10 +200,12 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *operatorv1alpha1.Kn
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv1alpha1.KnativeServing) error {
 	certs := instance.Spec.ControllerCustomCerts
-
-	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
-	// cause us to automatically pull in the relevant ConfigMaps from the cluster. The user needs
-	// to specifically opt-out of this today by specifying an empty Name and ConfigMap explicitly.
+	if instance.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
+		certs = operatorv1alpha1.CustomCerts{
+			Name: "config-service-ca",
+			Type: "ConfigMap",
+		}
+	}
 	if certs.Type != "ConfigMap" || certs.Name == "" {
 		return nil
 	}
