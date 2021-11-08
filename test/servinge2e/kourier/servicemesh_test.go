@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
@@ -24,12 +23,10 @@ import (
 	"knative.dev/serving/pkg/apis/autoscaling"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	network "knative.dev/networking/pkg"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
@@ -70,93 +67,6 @@ func isServiceMeshInstalled(ctx *test.Context) bool {
 	return false
 }
 
-func setupCustomDomainTLSSecret(ctx *test.Context, serviceMeshNamespace, customSecretName, customDomain string) *x509.CertPool {
-	// Generate example.com CA
-	caCertificate := &x509.Certificate{
-		SerialNumber: big.NewInt(0),
-		Subject: pkix.Name{
-			Organization: []string{"Example Inc."},
-			CommonName:   "example.com",
-		},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(1, 0, 0),
-		IsCA:                  true,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-	}
-	caPrivateKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		ctx.T.Fatalf("Error generating CA RSA key: %v", err)
-	}
-
-	caBytes, err := x509.CreateCertificate(rand.Reader, caCertificate, caCertificate, &caPrivateKey.PublicKey, caPrivateKey)
-	if err != nil {
-		ctx.T.Fatalf("Error self-signing CA Certificate: %v", err)
-	}
-
-	caPem := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: caBytes,
-	})
-
-	customCertificate := &x509.Certificate{
-		SerialNumber: big.NewInt(0),
-		Subject: pkix.Name{
-			Organization: []string{"Example Inc."},
-		},
-		DNSNames:     []string{customDomain},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(1, 0, 0),
-		SubjectKeyId: []byte{42},
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:     x509.KeyUsageDigitalSignature,
-	}
-	customPrivateKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		ctx.T.Fatalf("Error generating Custom RSA key: %v", err)
-	}
-	customCertificateBytes, err := x509.CreateCertificate(rand.Reader, customCertificate, caCertificate, &customPrivateKey.PublicKey, caPrivateKey)
-	if err != nil {
-		ctx.T.Fatalf("Error signing Custom Certificate by CA: %v", err)
-	}
-	customPem := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: customCertificateBytes,
-	})
-	customPrivateKeyPem := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(customPrivateKey),
-	})
-
-	customSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      customSecretName,
-			Namespace: serviceMeshNamespace,
-		},
-		Type: corev1.SecretTypeTLS,
-		Data: map[string][]byte{
-			corev1.TLSCertKey:       customPem,
-			corev1.TLSPrivateKeyKey: customPrivateKeyPem,
-		},
-	}
-
-	customSecret, err = ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Create(context.Background(), customSecret, metav1.CreateOptions{})
-	if err != nil {
-		ctx.T.Fatalf("Error creating Secret %q: %v", customSecretName, err)
-	}
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up Secret %s", customSecret.GetName())
-		return ctx.Clients.Kube.CoreV1().Secrets(customSecret.Namespace).Delete(context.Background(), customSecret.Name, metav1.DeleteOptions{})
-	})
-
-	// Return a CertPool with our example CA
-	certPool := x509.NewCertPool()
-	certPool.AppendCertsFromPEM(caPem)
-
-	return certPool
-}
-
 // Following https://docs.openshift.com/container-platform/4.6/serverless/networking/serverless-ossm.html
 func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testNamespace string) {
 	test.CreateServiceMeshMemberRollV1(ctx, test.ServiceMeshMemberRollV1("default", serviceMeshNamespace, testNamespace))
@@ -166,7 +76,7 @@ func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testN
 	test.LabelNamespace(ctx, "knative-serving-ingress", test.KnativeSystemNamespaceKey, "true")
 }
 
-func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretName, secretVolumeName, secretVolumeMountPath string, testFunc func(ctx *test.Context)) {
+func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Context)) {
 	const smcpName = "basic"
 
 	type serviceMeshVersion struct {
@@ -179,9 +89,6 @@ func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretN
 			name: "v1",
 			smcpCreationFunc: func(ctx *test.Context) {
 				smcp := test.ServiceMeshControlPlaneV1(smcpName, serviceMeshTestNamespaceName)
-				if customSecretName != "" {
-					test.AddServiceMeshControlPlaneV1IngressGatewaySecretVolume(smcp, secretVolumeName, customSecretName, secretVolumeMountPath)
-				}
 				test.CreateServiceMeshControlPlaneV1(ctx, smcp)
 			},
 		},
@@ -216,10 +123,6 @@ func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretN
 			testFunc(ctx)
 		})
 	}
-}
-
-func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Context)) {
-	runCustomDomainTLSTestForAllServiceMeshVersions(t, "", "", "", testFunc)
 }
 
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
@@ -770,85 +673,6 @@ func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	return ips[0]
 }
 
-func TestKsvcWithServiceMeshCustomDomain(t *testing.T) {
-	const customDomain = "custom-ksvc-domain.example.com"
-
-	runTestForAllServiceMeshVersions(t, func(ctx *test.Context) {
-		t := ctx.T
-
-		// Deploy a cluster-local ksvc "hello"
-		ksvc := test.Service("hello", testNamespace, image, nil)
-		ksvc.ObjectMeta.Labels = map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
-		}
-		ksvc = withServiceReadyOrFail(ctx, ksvc)
-
-		// Create the Istio Gateway for traffic via istio-ingressgateway
-		defaultGateway := test.IstioGateway("default-gateway", testNamespace)
-		test.CreateIstioGateway(ctx, defaultGateway)
-
-		// Create the Istio VirtualService to rewrite the host header of a custom domain with the ksvc's svc hostname
-		virtualService := test.IstioVirtualServiceForKnativeServiceWithCustomDomain(ksvc, defaultGateway.GetName(), customDomain)
-		test.CreateIstioVirtualService(ctx, virtualService)
-
-		// Create the Istio ServiceEntry for ksvc's svc hostname routing towards the knative kourier-internal gateway
-		serviceEntry := test.IstioServiceEntryForKnativeServiceTowardsKourier(ksvc)
-		test.CreateIstioServiceEntry(ctx, serviceEntry)
-
-		// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
-		// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
-		route := &routev1.Route{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "hello",
-				Namespace: serviceMeshTestNamespaceName,
-			},
-			Spec: routev1.RouteSpec{
-				Host: customDomain,
-				Port: &routev1.RoutePort{
-					TargetPort: intstr.FromInt(8080),
-				},
-				To: routev1.RouteTargetReference{
-					Kind: "Service",
-					Name: "istio-ingressgateway",
-				},
-			},
-		}
-		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, metav1.CreateOptions{})
-		if err != nil {
-			t.Fatalf("Error creating OpenShift Route: %v", err)
-		}
-
-		ctx.AddToCleanup(func() error {
-			t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
-		})
-
-		// Do a spoofed HTTP request via the OpenShiftRouter
-		// Note, here we go via the OpenShift Router IP address, not kourier, as usual with the "spoof" client.
-		routerIP := lookupOpenShiftRouterIP(ctx)
-		sc, err := newSpoofClientWithTLS(ctx, customDomain, routerIP.String(), nil)
-		if err != nil {
-			t.Fatalf("Error creating a Spoofing Client: %v", err)
-		}
-
-		req, err := http.NewRequest(http.MethodGet, "http://"+customDomain, nil)
-		if err != nil {
-			t.Fatalf("Error creating an HTTP GET request: %v", err)
-		}
-
-		// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
-		resp, err := sc.Poll(req, spoof.IsStatusOK)
-		if err != nil {
-			t.Fatalf("Error polling custom domain: %v", err)
-		}
-
-		const expectedResponse = "Hello World!"
-		if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
-			t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
-		}
-	})
-}
-
 // newSpoofClientWithTLS returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
 func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
 	transport := &http.Transport{
@@ -887,141 +711,4 @@ func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool 
 	}
 
 	return sc, nil
-}
-
-func TestKsvcWithServiceMeshCustomTlsDomain(t *testing.T) {
-
-	const customDomain = "custom-ksvc-domain.example.com"
-	const customSecretName = "custom.example.com"
-	const secretVolumeName = "custom-example-com"
-	const secretVolumeMountPath = "/custom.example.com"
-
-	ctx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	defer test.CleanupAll(t, ctx)
-
-	certPool := setupCustomDomainTLSSecret(ctx, serviceMeshTestNamespaceName, customSecretName, customDomain)
-
-	runCustomDomainTLSTestForAllServiceMeshVersions(t, customSecretName, secretVolumeName, secretVolumeMountPath, func(ctx *test.Context) {
-		t := ctx.T
-
-		// Deploy a cluster-local ksvc "hello"
-		ksvc := test.Service("hello", testNamespace, image, nil)
-		ksvc.ObjectMeta.Labels = map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
-		}
-		ksvc = withServiceReadyOrFail(ctx, ksvc)
-
-		smcpVersion, _, _ := test.GetServiceMeshControlPlaneVersion(ctx, "basic", serviceMeshTestNamespaceName)
-
-		var defaultGateway *unstructured.Unstructured
-		// If "version" exists and is a v1, Gateway uses File Mount (https://istio.io/v1.5/pt-br/docs/tasks/traffic-management/ingress/secure-ingress-mount/) to mount certs.
-		if strings.HasPrefix(smcpVersion, "v1.") {
-			// Create the Istio Gateway for traffic via istio-ingressgateway
-			// The secret and its mounts are specified in the example SMCP in hack/lib/mesh.bash
-			//
-			//       istio-ingressgateway:
-			//        secretVolumes:
-			//        - mountPath: /custom.example.com
-			//          name: custom-example-com
-			//          secretName: custom.example.com
-			//
-			defaultGateway = test.IstioGatewayV1WithTLS("default-gateway",
-				testNamespace,
-				customDomain,
-				secretVolumeMountPath+"/tls.key",
-				secretVolumeMountPath+"/tls.crt",
-			)
-		} else {
-			defaultGateway = test.IstioGatewayWithTLS("default-gateway",
-				testNamespace,
-				customDomain,
-				customSecretName,
-			)
-		}
-
-		defaultGateway = test.CreateIstioGateway(ctx, defaultGateway)
-
-		// Create the Istio VirtualService to rewrite the host header of a custom domain with the ksvc's svc hostname
-		virtualService := test.IstioVirtualServiceForKnativeServiceWithCustomDomain(ksvc, defaultGateway.GetName(), customDomain)
-		test.CreateIstioVirtualService(ctx, virtualService)
-
-		// Create the Istio ServiceEntry for ksvc's svc hostname routing towards the knative kourier-internal gateway
-		serviceEntry := test.IstioServiceEntryForKnativeServiceTowardsKourier(ksvc)
-		test.CreateIstioServiceEntry(ctx, serviceEntry)
-
-		// Create the OpenShift Route for the custom domain pointing to the istio-ingressgateway
-		// Note, this one is created in the service mesh namespace ("istio-system"), not the test namespace
-		route := &routev1.Route{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "hello",
-				Namespace: serviceMeshTestNamespaceName,
-			},
-			Spec: routev1.RouteSpec{
-				Host: customDomain,
-				Port: &routev1.RoutePort{
-					TargetPort: intstr.FromInt(8443),
-				},
-				TLS: &routev1.TLSConfig{
-					InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyNone,
-					Termination:                   routev1.TLSTerminationPassthrough,
-				},
-				To: routev1.RouteTargetReference{
-					Kind: "Service",
-					Name: "istio-ingressgateway",
-				},
-			},
-		}
-		route, err := ctx.Clients.Route.Routes(serviceMeshTestNamespaceName).Create(context.Background(), route, metav1.CreateOptions{})
-		if err != nil {
-			t.Fatalf("Error creating OpenShift Route: %v", err)
-		}
-
-		ctx.AddToCleanup(func() error {
-			t.Logf("Cleaning up OpenShift Route %s", route.GetName())
-			return ctx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
-		})
-
-		// Do a spoofed HTTP request.
-		// Note, here we go via the OpenShift Router IP address, not kourier as usual with the "spoof" client.
-		routerIP := lookupOpenShiftRouterIP(ctx)
-		sc, err := newSpoofClientWithTLS(ctx, customDomain, routerIP.String(), certPool)
-		if err != nil {
-			t.Fatalf("Error creating a Spoofing Client: %v", err)
-		}
-
-		req, err := http.NewRequest(http.MethodGet, "https://"+customDomain, nil)
-		if err != nil {
-			t.Fatalf("Error creating an HTTPS GET request: %v", err)
-		}
-
-		// Poll, as it is expected OpenShift Router will return 503s until it reconciles the Route.
-		resp, err := sc.Poll(req, spoof.IsStatusOK)
-		if err != nil {
-			t.Fatalf("Error polling custom domain: %v", err)
-		}
-
-		const expectedResponse = "Hello World!"
-		if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
-			t.Fatalf("Expecting an HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
-		}
-
-		// Verify we cannot connect via plain HTTP (as the Route has InsecureEdgeTerminationPolicyNone)
-		// In this case we expect a 503 response from the OpenShift Router.
-
-		// As the router already returned an OK response for the HTTPS request, we assume the route is already
-		// reconciled and its 503 response really means it won't serve insecure HTTP ever.
-		req, err = http.NewRequest(http.MethodGet, "http://"+customDomain, nil)
-		if err != nil {
-			t.Fatalf("Error creating an HTTP GET request: %v", err)
-		}
-		resp, err = sc.Do(req)
-		if err != nil {
-			t.Fatalf("Error doing HTTP request: %v", err)
-		}
-
-		if resp.StatusCode != 503 {
-			t.Fatalf("Expecting an HTTP 503 response for an insecure HTTP request, got %d: %s", resp.StatusCode, string(resp.Body))
-		}
-	})
 }
