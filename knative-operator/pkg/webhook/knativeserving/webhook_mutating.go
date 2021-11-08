@@ -36,7 +36,7 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 	// Unset the entire registry section. We used to override it anyway, so there can't
 	// be any userdata in there.
 	// TODO: Remove in the 1.21 release to potentially make this usable for users.
-	ks.Spec.CommonSpec.Registry = operatorv1alpha1.Registry{}
+	ks.Spec.CommonSpec.Registry.Override = nil
 
 	defaultToKourier(ks)
 
