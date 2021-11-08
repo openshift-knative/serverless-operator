@@ -47,27 +47,6 @@ func ServiceMeshControlPlaneV2(name, namespace string) *unstructured.Unstructure
 	}
 }
 
-func AddServiceMeshControlPlaneV1IngressGatewaySecretVolume(smcp *unstructured.Unstructured, name, secretName, mountPath string) error {
-	secretVolume := make(map[string]interface{})
-	secretVolume["name"] = name
-	secretVolume["secretName"] = secretName
-	secretVolume["mountPath"] = mountPath
-
-	secretVolumes, found, err := unstructured.NestedSlice(smcp.Object, "spec", "istio", "gateways", "istio-ingressgateway", "secretVolumes")
-	if err != nil {
-		return err
-	}
-
-	if found {
-		secretVolumes = append(secretVolumes, secretVolume)
-	} else {
-		secretVolumes = make([]interface{}, 1)
-		secretVolumes[0] = secretVolume
-	}
-
-	return unstructured.SetNestedSlice(smcp.Object, secretVolumes, "spec", "istio", "gateways", "istio-ingressgateway", "secretVolumes")
-}
-
 func ServiceMeshMemberRollV1(name, namespace string, members ...string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -145,36 +124,6 @@ func CreateServiceMeshMemberRollV1(ctx *Context, smmr *unstructured.Unstructured
 	}
 
 	return CreateUnstructured(ctx, smmrGvr, smmr)
-}
-
-func CreateIstioGateway(ctx *Context, gateway *unstructured.Unstructured) *unstructured.Unstructured {
-	gatewayGvr := schema.GroupVersionResource{
-		Group:    "networking.istio.io",
-		Version:  "v1alpha3",
-		Resource: "gateways",
-	}
-
-	return CreateUnstructured(ctx, gatewayGvr, gateway)
-}
-
-func CreateIstioServiceEntry(ctx *Context, serviceEntry *unstructured.Unstructured) *unstructured.Unstructured {
-	serviceEntryGvr := schema.GroupVersionResource{
-		Group:    "networking.istio.io",
-		Version:  "v1alpha3",
-		Resource: "serviceentries",
-	}
-
-	return CreateUnstructured(ctx, serviceEntryGvr, serviceEntry)
-}
-
-func CreateIstioVirtualService(ctx *Context, virtualService *unstructured.Unstructured) *unstructured.Unstructured {
-	virtualServiceGvr := schema.GroupVersionResource{
-		Group:    "networking.istio.io",
-		Version:  "v1alpha3",
-		Resource: "virtualservices",
-	}
-
-	return CreateUnstructured(ctx, virtualServiceGvr, virtualService)
 }
 
 func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv1.NetworkPolicy {

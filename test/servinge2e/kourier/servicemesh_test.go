@@ -76,7 +76,7 @@ func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testN
 	test.LabelNamespace(ctx, "knative-serving-ingress", test.KnativeSystemNamespaceKey, "true")
 }
 
-func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretName, secretVolumeName, secretVolumeMountPath string, testFunc func(ctx *test.Context)) {
+func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Context)) {
 	const smcpName = "basic"
 
 	type serviceMeshVersion struct {
@@ -89,9 +89,6 @@ func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretN
 			name: "v1",
 			smcpCreationFunc: func(ctx *test.Context) {
 				smcp := test.ServiceMeshControlPlaneV1(smcpName, serviceMeshTestNamespaceName)
-				if customSecretName != "" {
-					test.AddServiceMeshControlPlaneV1IngressGatewaySecretVolume(smcp, secretVolumeName, customSecretName, secretVolumeMountPath)
-				}
 				test.CreateServiceMeshControlPlaneV1(ctx, smcp)
 			},
 		},
@@ -126,10 +123,6 @@ func runCustomDomainTLSTestForAllServiceMeshVersions(t *testing.T, customSecretN
 			testFunc(ctx)
 		})
 	}
-}
-
-func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Context)) {
-	runCustomDomainTLSTestForAllServiceMeshVersions(t, "", "", "", testFunc)
 }
 
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
