@@ -40,7 +40,7 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.21.4
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211025151756-703d65285e51
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211028143625-1d988ab679d1
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211102182047-7d120bbb781d
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211104153203-bb8a2e690a22
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211109065725-8b5a70060273
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211104123023-a70b6bb3b54c
 )

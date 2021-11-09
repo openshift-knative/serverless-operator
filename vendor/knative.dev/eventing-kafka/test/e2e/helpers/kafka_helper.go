@@ -47,7 +47,7 @@ const (
 	strimziTopicResource = "kafkatopics"
 	interval             = 3 * time.Second
 	timeout              = 30 * time.Second
-	kafkaCatImage        = "docker.io/edenhill/kafkacat:1.6.0"
+	kafkaCatImage        = "quay.io/openshift-knative/kafkacat:1.6.0"
 )
 
 var (

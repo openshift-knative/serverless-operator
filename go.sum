@@ -1063,8 +1063,8 @@ github.com/opencontainers/runtime-spec v1.0.3-0.20200929063507-e6143ca7d51d/go.m
 github.com/opencontainers/runtime-tools v0.0.0-20181011054405-1d69bd0f9c39/go.mod h1:r3f7wjNzSs2extwzU3Y+6pKfobzPh+kKFJ3ofN+3nfs=
 github.com/opencontainers/selinux v1.6.0/go.mod h1:VVGKuOLlE7v4PJyT6h7mNWvq1rzqiriPsEqVhc+svHE=
 github.com/opencontainers/selinux v1.8.0/go.mod h1:RScLhm78qiWa2gbVCcGkC7tCGdgk3ogry1nUQF8Evvo=
-github.com/openshift-knative/eventing-kafka v0.19.1-0.20211028143625-1d988ab679d1 h1:aszGFE+9bZ4Iu1pwQz++5AesP2MIZXdojUlzeo3dtTQ=
-github.com/openshift-knative/eventing-kafka v0.19.1-0.20211028143625-1d988ab679d1/go.mod h1:X2ZA5w0knjtgDF9cH+f4JG0Yli4SvcaCVGyEC3RZgQ4=
+github.com/openshift-knative/eventing-kafka v0.19.1-0.20211109065725-8b5a70060273 h1:Klk+jiiD1FInfxdrFkIzo8zaYjExq8CjJV9iBXORCuo=
+github.com/openshift-knative/eventing-kafka v0.19.1-0.20211109065725-8b5a70060273/go.mod h1:X2ZA5w0knjtgDF9cH+f4JG0Yli4SvcaCVGyEC3RZgQ4=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=
@@ -1075,10 +1075,10 @@ github.com/openshift/build-machinery-go v0.0.0-20200917070002-f171684f77ab/go.mo
 github.com/openshift/client-go v0.0.0-20200326155132-2a6cd50aedd0/go.mod h1:uUQ4LClRO+fg5MF/P6QxjMCb1C9f7Oh4RKepftDnEJE=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47 h1:+TEY29DK0XhqB7HFC9OfV8qf3wffSyi7MWv3AP28DGQ=
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47/go.mod h1:u7NRAjtYVAKokiI9LouzTv4mhds8P4S1TwdVAfbjKSk=
-github.com/openshift/knative-eventing v0.99.1-0.20211025151756-703d65285e51 h1:j52XVd7XP4OkmXqODoAceJl8G4kUiLE6IOCczEkGa7k=
-github.com/openshift/knative-eventing v0.99.1-0.20211025151756-703d65285e51/go.mod h1:6tTam0lsPtBSJHJ63/195obj2VAHlTZZB7TLiBSeqk0=
-github.com/openshift/knative-serving v0.10.1-0.20211102182047-7d120bbb781d h1:GihsexyN+YxeW2AaOH4gu/HAhcuwqenv9HQpL19m5qo=
-github.com/openshift/knative-serving v0.10.1-0.20211102182047-7d120bbb781d/go.mod h1:h9xgMseMjlDOHNULR/zsgDacYdRUQsYPR3ETpS/uqlA=
+github.com/openshift/knative-eventing v0.99.1-0.20211104153203-bb8a2e690a22 h1:AdHGrVEso5Na+51k9gCiijC8xhvFRYX+m+MVRRC3WnM=
+github.com/openshift/knative-eventing v0.99.1-0.20211104153203-bb8a2e690a22/go.mod h1:6tTam0lsPtBSJHJ63/195obj2VAHlTZZB7TLiBSeqk0=
+github.com/openshift/knative-serving v0.10.1-0.20211104123023-a70b6bb3b54c h1:XMFS0QKFV050phV3kUjLd6EDNguKfC53ZQaP0MzENQw=
+github.com/openshift/knative-serving v0.10.1-0.20211104123023-a70b6bb3b54c/go.mod h1:h9xgMseMjlDOHNULR/zsgDacYdRUQsYPR3ETpS/uqlA=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing/basictracer-go v1.0.0/go.mod h1:QfBfYuafItcjQuMwinw9GhYKwFXS9KnPs5lxoYwgW74=
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
