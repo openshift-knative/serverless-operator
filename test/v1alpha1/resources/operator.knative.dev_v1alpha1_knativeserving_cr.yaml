@@ -6,6 +6,8 @@ spec:
   deployments:
   - name: domain-mapping
     replicas: 2
+  - name: 3scale-kourier-gateway
+    replicas: 3
   config:
     autoscaler:
       container-concurrency-target-default: "100"
