@@ -46,6 +46,9 @@ func ImageTransform(overrideMap map[string]string, log logr.Logger) mf.Transform
 
 			obj = job
 			podSpec = &job.Spec.Template.Spec
+		default:
+			// No matches, exit early
+			return nil
 		}
 
 		containers := podSpec.Containers
