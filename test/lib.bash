@@ -269,9 +269,13 @@ function gather_knative_state {
   logger.info 'Gather knative state'
   local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
   mkdir -p "$gather_dir"
+  IMAGE_OPTION="--image=quay.io/openshift-knative/must-gather"
+  if [[ $FULL_MESH == true ]]; then
+    IMAGE_OPTION="${IMAGE_OPTION} --image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7"
+  fi
 
   oc --insecure-skip-tls-verify adm must-gather \
-    --image=quay.io/openshift-knative/must-gather \
+    "${IMAGE_OPTION}" \
     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
 
