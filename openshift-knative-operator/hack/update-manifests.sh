@@ -95,6 +95,10 @@ sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knati
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
+# Make Kourier rollout in a more defensive way so no requests get dropped.
+# TODO: Can probably be removed in 1.21 and/or be sent upstream.
+git apply "$root/openshift-knative-operator/hack/008-kourier-rollout.patch"
+
 #
 # DOWNLOAD EVENTING
 #
