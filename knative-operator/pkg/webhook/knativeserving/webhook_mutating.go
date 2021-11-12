@@ -5,22 +5,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // Configurator annotates Kss
 type Configurator struct {
-	client  client.Client
 	decoder *admission.Decoder
 }
 
 // NewConfigurator creates a new Configurator instance to configure KnativeServing CRs.
-func NewConfigurator(client client.Client, decoder *admission.Decoder) *Configurator {
+func NewConfigurator(decoder *admission.Decoder) *Configurator {
 	return &Configurator{
-		client:  client,
 		decoder: decoder,
 	}
 }
@@ -37,14 +33,30 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	err = common.Mutate(ks, v.client)
-	if err != nil {
-		return admission.Errored(http.StatusInternalServerError, err)
-	}
+	// Unset the entire registry section. We used to override it anyway, so there can't
+	// be any userdata in there.
+	// TODO: Remove in the 1.21 release to potentially make this usable for users.
+	ks.Spec.CommonSpec.Registry.Override = nil
+
+	defaultToKourier(ks)
 
 	marshaled, err := json.Marshal(ks)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.PatchResponseFromRaw(req.AdmissionRequest.Object.Raw, marshaled)
+}
+
+// Technically this does nothing in terms of behavior (the default is assumed in the
+// extension code of openshift-knative-operator already), but it fixes a UX nit where
+// Kourier would be shown as enabled: false to the user if the ingress object is
+// specified.
+func defaultToKourier(ks *operatorv1alpha1.KnativeServing) {
+	if ks.Spec.Ingress == nil {
+		return
+	}
+
+	if !ks.Spec.Ingress.Istio.Enabled && !ks.Spec.Ingress.Kourier.Enabled && !ks.Spec.Ingress.Contour.Enabled {
+		ks.Spec.Ingress.Kourier.Enabled = true
+	}
 }

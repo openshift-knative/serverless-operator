@@ -7,8 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
@@ -109,12 +107,6 @@ func TestBuildImageOverrideMapFromEnviron(t *testing.T) {
 				t.Errorf("Image override map not as expected, diff: %s", cmp.Diff(tc.expected, overrideMap))
 			}
 		})
-	}
-}
-
-func verifyImageOverride(t *testing.T, registry *operatorv1alpha1.Registry, imageName string, expected string) {
-	if registry.Override[imageName] != expected {
-		t.Errorf("Missing queue image. Expected a map with following override in it : %v=%v, actual: %v", imageName, expected, registry.Override)
 	}
 }
 

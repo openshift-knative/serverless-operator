@@ -171,7 +171,6 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 
 func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *operatorv1alpha1.KnativeServing) error {
 	stages := []func(*operatorv1alpha1.KnativeServing) error{
-		r.configure,
 		r.ensureFinalizers,
 		r.ensureCustomCertsConfigMap,
 		r.installDashboard,
@@ -182,24 +181,6 @@ func (r *ReconcileKnativeServing) reconcileKnativeServing(instance *operatorv1al
 		if err := stage(instance); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-// configure default settings for OpenShift
-func (r *ReconcileKnativeServing) configure(instance *operatorv1alpha1.KnativeServing) error {
-	before := instance.DeepCopy()
-	if err := common.Mutate(instance, r.client); err != nil {
-		return err
-	}
-	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
-		return nil
-	}
-
-	// Only apply the update if something changed.
-	log.Info("Updating KnativeServing with mutated state for Openshift")
-	if err := r.client.Update(context.TODO(), instance); err != nil {
-		return fmt.Errorf("failed to update KnativeServing with mutated state: %w", err)
 	}
 	return nil
 }
@@ -219,10 +200,12 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *operatorv1alpha1.Kn
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv1alpha1.KnativeServing) error {
 	certs := instance.Spec.ControllerCustomCerts
-
-	// If the user doesn't specify anything else, this is set by the webhook/controller defaulter to
-	// cause us to automatically pull in the relevant ConfigMaps from the cluster. The user needs
-	// to specifically opt-out of this today by specifying an empty Name and ConfigMap explicitly.
+	if instance.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
+		certs = operatorv1alpha1.CustomCerts{
+			Name: "config-service-ca",
+			Type: "ConfigMap",
+		}
+	}
 	if certs.Type != "ConfigMap" || certs.Name == "" {
 		return nil
 	}
