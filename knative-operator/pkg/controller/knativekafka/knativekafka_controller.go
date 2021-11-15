@@ -7,7 +7,7 @@ import (
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	operatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	appsv1 "k8s.io/api/apps/v1"
@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -42,7 +43,7 @@ var (
 	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
 )
 
-type stage func(*mf.Manifest, *operatorv1alpha1.KnativeKafka) error
+type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
 
 // Add creates a new KnativeKafka Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -84,7 +85,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// Watch for changes to primary resource KnativeKafka
-	err = c.Watch(&source.Kind{Type: &operatorv1alpha1.KnativeKafka{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &serverlessoperatorv1alpha1.KnativeKafka{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -121,7 +122,7 @@ func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile
 	reqLogger.Info("Reconciling KnativeKafka")
 
 	// Fetch the KnativeKafka instance
-	original := &operatorv1alpha1.KnativeKafka{}
+	original := &serverlessoperatorv1alpha1.KnativeKafka{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -157,7 +158,7 @@ func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
 	// install the components that are enabled
@@ -168,7 +169,7 @@ func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *operatorv1alpha1
 	return r.executeDeleteStages(instance)
 }
 
-func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildEnabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
@@ -185,7 +186,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *operatorv1alpha1.
 	return executeStages(instance, manifest, stages)
 }
 
-func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) executeDeleteStages(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildDisabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
@@ -200,23 +201,18 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *operatorv1alpha1.K
 }
 
 // set defaults for Openshift
-func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
-	before := instance.DeepCopy()
-	common.MutateKafka(instance)
-	if equality.Semantic.DeepEqual(before.Spec, instance.Spec) {
-		return nil
+func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+	if instance.Spec.HighAvailability == nil {
+		instance.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
+			Replicas: 1,
+		}
 	}
 
-	// Only apply the update if something changed.
-	log.Info("Updating KnativeKafka with mutated state for Openshift")
-	if err := r.client.Update(context.TODO(), instance); err != nil {
-		return fmt.Errorf("failed to update KnativeKafka with mutated state: %w", err)
-	}
 	return nil
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -227,7 +223,7 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *opera
 	return r.client.Update(context.TODO(), instance)
 }
 
-func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	rbacProxyTranform, err := monitoring.GetRBACProxyInjectTransformer(r.client)
 	if err != nil {
@@ -255,7 +251,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *opera
 }
 
 // Install Knative Kafka components
-func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Installing manifest")
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
@@ -277,7 +273,7 @@ func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *operatorv
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Checking deployments")
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		u := u // To avoid memory aliasing
@@ -303,7 +299,7 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 }
 
 // Delete Knative Kafka resources
-func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if len(manifest.Resources()) <= 0 {
 		return nil
 	}
@@ -328,7 +324,7 @@ func isDeploymentAvailable(d *appsv1.Deployment) bool {
 }
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
-func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) delete(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("kafka_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
@@ -344,7 +340,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.
-	refetched := &operatorv1alpha1.KnativeKafka{}
+	refetched := &serverlessoperatorv1alpha1.KnativeKafka{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
 		return fmt.Errorf("failed to refetch KnativeKafka: %w", err)
 	}
@@ -360,7 +356,7 @@ func (r *ReconcileKnativeKafka) delete(instance *operatorv1alpha1.KnativeKafka) 
 	return nil
 }
 
-func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *operatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildAll)
 	if err != nil {
 		return fmt.Errorf("failed to build manifest: %w", err)
@@ -382,7 +378,7 @@ const (
 	manifestBuildAll
 )
 
-func (r *ReconcileKnativeKafka) buildManifest(instance *operatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
+func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alpha1.KnativeKafka, build manifestBuild) (*mf.Manifest, error) {
 	var resources []unstructured.Unstructured
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
@@ -474,7 +470,7 @@ func setKafkaDeployments(replicas int32) mf.Transformer {
 	}
 }
 
-func executeStages(instance *operatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
+func executeStages(instance *serverlessoperatorv1alpha1.KnativeKafka, manifest *mf.Manifest, stages []stage) error {
 	// Execute each stage in sequence until one returns an error
 	for _, stage := range stages {
 		if err := stage(manifest, instance); err != nil {
