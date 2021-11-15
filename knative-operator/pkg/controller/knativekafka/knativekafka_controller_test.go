@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ghodss/yaml"
 	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
+	"sigs.k8s.io/yaml"
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
