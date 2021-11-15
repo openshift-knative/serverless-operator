@@ -73,7 +73,6 @@ github.com/evanphx/json-patch/v5
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
-## explicit
 github.com/ghodss/yaml
 # github.com/go-kit/log v0.1.0
 github.com/go-kit/log
@@ -1376,6 +1375,7 @@ sigs.k8s.io/structured-merge-diff/v4/schema
 sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
+## explicit
 sigs.k8s.io/yaml
 # k8s.io/api => k8s.io/api v0.21.4
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4

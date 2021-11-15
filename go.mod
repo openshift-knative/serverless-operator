@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.6
 	github.com/manifestival/controller-runtime-client v0.4.0
@@ -30,6 +29,7 @@ require (
 	knative.dev/pkg v0.0.0-20210919202233-5ae482141474
 	knative.dev/serving v0.26.0
 	sigs.k8s.io/controller-runtime v0.9.7
+	sigs.k8s.io/yaml v1.3.0
 )
 
 replace (
