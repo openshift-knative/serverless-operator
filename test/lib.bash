@@ -275,7 +275,7 @@ function gather_knative_state {
   fi
 
   oc --insecure-skip-tls-verify adm must-gather \
-    "${IMAGE_OPTION}" \
+    ${IMAGE_OPTION} \
     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
 
