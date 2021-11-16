@@ -8,7 +8,7 @@ root="$(dirname "${BASH_SOURCE[0]}")/../.."
 # shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
-kafka_channel_files=(channel-consolidated)
+kafka_channel_files=(channel-consolidated channel-post-install)
 kafka_source_files=(source)
 
 function download_kafka {
@@ -50,3 +50,6 @@ git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 # NOTE: With upstream 0.27 (1.0) this patch is not needed:
 # The kafka-ch-controller requires DELETE on deployment in OpenShift
 git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
+
+# With 1.21 (1.0.0 knative) we do not need this. upstream has generated name
+git apply "$root/knative-operator/hack/009-generated-job-name.patch"
