@@ -29,6 +29,7 @@ require (
 	knative.dev/pkg v0.0.0-20210919202233-5ae482141474
 	knative.dev/serving v0.26.0
 	sigs.k8s.io/controller-runtime v0.9.7
+	sigs.k8s.io/yaml v1.3.0
 )
 
 replace (

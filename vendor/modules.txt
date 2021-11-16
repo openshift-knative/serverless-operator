@@ -1165,6 +1165,7 @@ knative.dev/eventing-kafka/pkg/client/injection/client
 knative.dev/eventing-kafka/pkg/client/injection/client/fake
 knative.dev/eventing-kafka/pkg/client/listers/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/common/client
+knative.dev/eventing-kafka/pkg/common/config
 knative.dev/eventing-kafka/pkg/common/constants
 knative.dev/eventing-kafka/test
 knative.dev/eventing-kafka/test/e2e
@@ -1374,6 +1375,7 @@ sigs.k8s.io/structured-merge-diff/v4/schema
 sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
+## explicit
 sigs.k8s.io/yaml
 # k8s.io/api => k8s.io/api v0.21.4
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
