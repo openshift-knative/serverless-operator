@@ -19,10 +19,10 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path  string
 		fails bool
 	}{{
-		path:  "./1-channel-consolidated.yaml",
+		path:  "./channel/1-channel-consolidated.yaml",
 		fails: false,
 	}, {
-		path:  "./2-source.yaml",
+		path:  "./source/1-source.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",
