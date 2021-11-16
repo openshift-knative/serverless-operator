@@ -5,8 +5,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -44,6 +47,58 @@ func TestOverrideKourierNamespace(t *testing.T) {
 
 	if !cmp.Equal(withKourier, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(withKourier, want))
+	}
+}
+
+func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
+	deploy := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "net-kourier-controller",
+			Labels: map[string]string{providerLabel: "kourier"},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "controller",
+						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}},
+					}},
+				},
+			},
+		},
+	}
+
+	expected := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "net-kourier-controller",
+			Labels: map[string]string{providerLabel: "kourier"},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "controller",
+						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}, {Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}},
+					}},
+				},
+			},
+		},
+	}
+
+	got := &unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(deploy, got, nil); err != nil {
+		t.Fatal("Failed to convert deployment to unstructured", err)
+	}
+
+	want := &unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(expected, want, nil); err != nil {
+		t.Fatal("Failed to convert deployment to unstructured", err)
+	}
+
+	addHTTPOptionDisabledEnvValue()(got)
+
+	if !cmp.Equal(got, want) {
+		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
 	}
 }
 

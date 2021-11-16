@@ -2,7 +2,9 @@ package serving
 
 import (
 	mf "github.com/manifestival/manifestival"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -40,4 +42,10 @@ func overrideKourierNamespace(ks operatorv1alpha1.KComponent) mf.Transformer {
 // compatibility.
 func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
+}
+
+func addHTTPOptionDisabledEnvValue() mf.Transformer {
+	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller",
+		corev1.EnvVar{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
+	)
 }
