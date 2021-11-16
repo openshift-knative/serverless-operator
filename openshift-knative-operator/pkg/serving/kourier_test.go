@@ -13,13 +13,6 @@ import (
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-var testks = &operatorv1alpha1.KnativeServing{
-	ObjectMeta: metav1.ObjectMeta{
-		Namespace: "knative-serving",
-		Name:      "test",
-	},
-}
-
 func TestOverrideKourierNamespace(t *testing.T) {
 	kourierLabels := map[string]string{
 		providerLabel: "kourier",
@@ -34,16 +27,23 @@ func TestOverrideKourierNamespace(t *testing.T) {
 		Name:       "bar",
 	}})
 
+	ks := &operatorv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "test",
+		},
+	}
+
 	want := withKourier.DeepCopy()
 	want.SetNamespace("knative-serving-ingress")
 	want.SetLabels(map[string]string{
 		providerLabel:                  "kourier",
-		socommon.ServingOwnerNamespace: testks.Namespace,
-		socommon.ServingOwnerName:      testks.Name,
+		socommon.ServingOwnerNamespace: ks.Namespace,
+		socommon.ServingOwnerName:      ks.Name,
 	})
 	want.SetOwnerReferences(nil)
 
-	overrideKourierNamespace(testks)(withKourier)
+	overrideKourierNamespace(ks)(withKourier)
 
 	if !cmp.Equal(withKourier, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(withKourier, want))
@@ -61,7 +61,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name: "controller",
-						Env:  []corev1.EnvVar{corev1.EnvVar{Name: "a", Value: "b"}},
+						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}},
 					}},
 				},
 			},
@@ -78,7 +78,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name: "controller",
-						Env:  []corev1.EnvVar{corev1.EnvVar{Name: "a", Value: "b"}, corev1.EnvVar{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}},
+						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}, {Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}},
 					}},
 				},
 			},
@@ -95,7 +95,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 		t.Fatal("Failed to convert deployment to unstructured", err)
 	}
 
-	addHTTPOptionDisabledEnvValue(testks)(got)
+	addHTTPOptionDisabledEnvValue()(got)
 
 	if !cmp.Equal(got, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
@@ -117,7 +117,14 @@ func TestOverrideKourierNamespaceOther(t *testing.T) {
 	}})
 	want := other.DeepCopy()
 
-	overrideKourierNamespace(testks)(other)
+	ks := &operatorv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "test",
+		},
+	}
+
+	overrideKourierNamespace(ks)(other)
 
 	if !cmp.Equal(other, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(other, want))
