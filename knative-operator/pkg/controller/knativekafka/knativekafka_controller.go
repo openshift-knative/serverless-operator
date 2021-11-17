@@ -75,11 +75,17 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
+	kafkaBrokerManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKABROKER_MANIFEST_PATH")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
+	}
+
 	reconcileKnativeKafka := ReconcileKnativeKafka{
 		client:                  mgr.GetClient(),
 		scheme:                  mgr.GetScheme(),
 		rawKafkaChannelManifest: kafkaChannelManifest,
 		rawKafkaSourceManifest:  kafkaSourceManifest,
+		rawKafkaBrokerManifest:  kafkaBrokerManifest,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -121,6 +127,7 @@ type ReconcileKnativeKafka struct {
 	scheme                  *runtime.Scheme
 	rawKafkaChannelManifest mf.Manifest
 	rawKafkaSourceManifest  mf.Manifest
+	rawKafkaBrokerManifest  mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -245,6 +252,10 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
 		updateEventingKafka(instance.Spec.Channel),
+
+		// TODO: this will be done differently!
+		setBrokerBootstrapServers(instance.Spec.Broker.BootstrapServers),
+
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
@@ -406,6 +417,12 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
+	// here add the two broker files
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
+		// TODO: RBAC
+		resources = append(resources, r.rawKafkaBrokerManifest.Resources()...)
+	}
+
 	manifest, err := mf.ManifestFrom(
 		mf.Slice(resources),
 		mf.UseClient(mfc.NewClient(r.client)),
@@ -438,6 +455,19 @@ func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Tra
 			// update the config map data
 			log.Info("Found ConfigMap config-kafka, updating it with broker and auth info from spec")
 			if err := unstructured.SetNestedField(u.Object, string(configBytes), "data", "eventing-kafka"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// setBootstrapServers sets Kafka bootstrapServers value in kafka-broker-config
+func setBrokerBootstrapServers(bootstrapServers string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-broker-config" {
+			log.Info("Found ConfigMap kafka-broker-config, updating it with bootstrapServers from spec")
+			if err := unstructured.SetNestedField(u.Object, bootstrapServers, "data", "bootstrap.servers"); err != nil {
 				return err
 			}
 		}

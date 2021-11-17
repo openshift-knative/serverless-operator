@@ -10,6 +10,7 @@ source "$root/hack/lib/__sources__.bash"
 
 kafka_channel_files=(channel-consolidated channel-post-install)
 kafka_source_files=(source)
+kafka_broker_files=(eventing-kafka-controller eventing-kafka-broker)
 
 function download_kafka {
   component=$1
@@ -53,3 +54,9 @@ git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
 
 # With 1.21 (1.0.0 knative) we do not need this. upstream has generated name
 git apply "$root/knative-operator/hack/009-generated-job-name.patch"
+
+# Kafka Broker content:
+download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"
+
+# That CM is already there, with Eventing
+git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"

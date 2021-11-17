@@ -66,6 +66,20 @@ spec:
                 required:
                 - enabled
                 type: object
+              broker:
+                description: Allows configuration for KafkaBroker installation
+                properties:
+                  bootstrapServers:
+                    description: BootstrapServers is comma separated string of bootstrapservers
+                      that the KafkaBrokers will use
+                    type: string
+                  enabled:
+                    description: Enabled defines if the KafkaBroker installation is
+                      enabled
+                    type: boolean
+                required:
+                  - enabled
+                type: object
               high-availability:
                 description: Allows specification of HA control plane
                 properties:

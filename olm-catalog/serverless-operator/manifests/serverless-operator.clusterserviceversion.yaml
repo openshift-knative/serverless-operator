@@ -550,6 +550,8 @@ spec:
                         value: deploy/resources/knativekafka/channel
                       - name: KAFKASOURCE_MANIFEST_PATH
                         value: deploy/resources/knativekafka/source
+                      - name: KAFKABROKER_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/broker
                       - name: QUICKSTART_MANIFEST_PATH
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH
@@ -624,6 +626,14 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-webhook"
                       - name: "KAFKA_IMAGE_v0.26-eventing-kafka-channel-post-install-job__post-install"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-post-install"
+                      - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-receiver"
+                      - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-dispatcher"
+                      - name: "KAFKA_IMAGE_kafka-controller__controller"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-kafka-controller"
+                      - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
+                        value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-webhook-kafka"
                       - name: "KNATIVE_EVENTING_KAFKA_VERSION"
                         value: "0.26.0"
                     securityContext:
@@ -851,5 +861,13 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-webhook"
     - name: "KAFKA_IMAGE_v0.26-eventing-kafka-channel-post-install-job__post-install"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-post-install"
+    - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
+      image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-receiver"
+    - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
+      image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-dispatcher"
+    - name: "KAFKA_IMAGE_kafka-controller__controller"
+      image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-kafka-controller"
+    - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
+      image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-broker-webhook-kafka"
   replaces: serverless-operator.v1.19.0
   version: 1.20.0
