@@ -18,17 +18,17 @@ import (
 )
 
 const (
-	kafkaBrokerName  = "smoke-test-kafka-broker"
-	kafkatriggerName = "smoke-test-trigger"
-	cmName           = "smoke-test-br-cm"
-	brokerAPIVersion = "eventing.knative.dev/v1"
-	brokerKind       = "Broker"
+	kafkaChannelBrokerName            = "smoke-test-kafka-kafka-channel-broker"
+	kafkatriggerName                  = "smoke-test-trigger"
+	kafkaChannelTemplateConfigMapName = "smoke-test-br-cm"
+	brokerAPIVersion                  = "eventing.knative.dev/v1"
+	brokerKind                        = "Broker"
 )
 
 var (
-	channelTemplateCM = &corev1.ConfigMap{
+	kafkaChannelTemplateConfigMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: cmName,
+			Name: kafkaChannelTemplateConfigMapName,
 		},
 		Data: map[string]string{
 			"channelTemplateSpec": fmt.Sprintf(`
@@ -37,16 +37,16 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 		},
 	}
 
-	broker = &eventingv1.Broker{
+	kafkaChannelBroker = &eventingv1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      kafkaBrokerName,
+			Name:      kafkaChannelBrokerName,
 			Namespace: testNamespace,
 		},
 		Spec: eventingv1.BrokerSpec{
 			Config: &duckv1.KReference{
 				APIVersion: "v1",
 				Kind:       "ConfigMap",
-				Name:       cmName,
+				Name:       kafkaChannelTemplateConfigMapName,
 			},
 		},
 	}
@@ -57,18 +57,18 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 			Namespace: testNamespace,
 		},
 		Spec: eventingv1.TriggerSpec{
-			Broker: kafkaBrokerName,
+			Broker: kafkaChannelBrokerName,
 			Subscriber: duckv1.Destination{
 				Ref: &duckv1.KReference{
 					APIVersion: ksvcAPIVersion,
 					Kind:       ksvcKind,
-					Name:       helloWorldService + "-broker",
+					Name:       helloWorldService + "-kafka-channel-broker",
 				},
 			},
 		},
 	}
 
-	brokerps = &sourcesv1.PingSource{
+	brokerPingSource = &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
 			Namespace: testNamespace,
@@ -80,7 +80,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 					Ref: &duckv1.KReference{
 						APIVersion: brokerAPIVersion,
 						Kind:       brokerKind,
-						Name:       kafkaBrokerName,
+						Name:       kafkaChannelBrokerName,
 					},
 				},
 			},
@@ -88,14 +88,14 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 	}
 )
 
-func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
+func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), kafkaBrokerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), kafkaChannelBrokerName, metav1.DeleteOptions{})
 		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), kafkaChannelTemplateConfigMapName, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
 		removePullSecretFromSA(t, client, testNamespace, serviceAccount, tlsSecret)
@@ -114,19 +114,19 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, testNamespace)
 	}
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-broker", testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
 
 	// Create the configmap
-	_, err = client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), channelTemplateCM, metav1.CreateOptions{})
+	_, err = client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), kafkaChannelTemplateConfigMap, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Channel Template ConfigMap: ", err)
 	}
 
-	// Create the (kafka backed) broker
-	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), broker, metav1.CreateOptions{})
+	// Create the (kafka backed) kafkaChannelBroker
+	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), kafkaChannelBroker, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Kafka Backed Broker: ", err)
 	}
@@ -138,7 +138,7 @@ func TestSourceToKafkaBrokerToKnativeService(t *testing.T) {
 	}
 
 	// Create the source
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), brokerps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), brokerPingSource, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create pingsource: ", err)
 	}
