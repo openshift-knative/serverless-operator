@@ -65,7 +65,7 @@ spec:
     enables containers, microservices and functions to run "serverless".
     Serverless applications can scale up and down (to zero) on demand and be triggered by a
     number of event sources. OpenShift Serverless integrates with a number of
-    platform services, such as Metering and Monitoring and it is based on the open
+    platform services, such as Monitoring and it is based on the open
     source project Knative.
 
     # Prerequisites
