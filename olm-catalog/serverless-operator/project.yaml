@@ -28,5 +28,6 @@ dependencies:
 
   eventing: 0.26.0
   eventing_kafka: 0.26.0
+  eventing_kafka_broker: 0.26.0
   cli: 0.26.0
   operator: 0.26.3

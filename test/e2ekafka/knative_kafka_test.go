@@ -28,6 +28,11 @@ var knativeKafkaSourceControlPlaneDeploymentNames = []string{
 	"kafka-controller-manager",
 }
 
+var knativeKafkaBrokerControlPlaneDeploymentNames = []string{
+	"kafka-controller",
+	"kafka-webhook-eventing",
+}
+
 func TestKnativeKafka(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
@@ -88,6 +93,15 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for KafkaSource", func(t *testing.T) {
 		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
 			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
+			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
+			}
+		}
+	})
+
+	t.Run("verify correct deployment shape for Kafka Broker", func(t *testing.T) {
+		for i := range knativeKafkaBrokerControlPlaneDeploymentNames {
+			deploymentName := knativeKafkaBrokerControlPlaneDeploymentNames[i]
 			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}

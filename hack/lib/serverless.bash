@@ -242,6 +242,9 @@ metadata:
   name: knative-kafka
   namespace: ${EVENTING_NAMESPACE}
 spec:
+  broker:
+    enabled: true
+    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
   source:
     enabled: true
   channel:

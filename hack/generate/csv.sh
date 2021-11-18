@@ -74,6 +74,11 @@ kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidat
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
 kafka_image "v0.26-eventing-kafka-channel-post-install-job__post-install" "${eventing_kafka}-post-install"
 
+kafka_image "kafka-broker-receiver__kafka-broker-receiver"      "${eventing_kafka}-broker-receiver"
+kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafka}-broker-dispatcher"
+kafka_image "kafka-controller__controller"                      "${eventing_kafka}-broker-kafka-controller"
+kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"    "${eventing_kafka}-broker-webhook-kafka"
+
 image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
 
 declare -A yaml_keys
