@@ -62,8 +62,8 @@ type Broker struct {
 	// Enabled defines if the KafkaBroker installation is enabled
 	Enabled bool `json:"enabled"`
 
-	// BootstrapServers is comma separated string of bootstrapservers that the
-	// brokers will use
+	// BootstrapServers is the default comma-separated string of bootstrapservers that the
+	// brokers will use, but can be overridden on the individual broker object's config map.
 	// +optional
 	BootstrapServers string `json:"bootstrapServers"`
 }
