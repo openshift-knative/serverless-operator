@@ -380,6 +380,142 @@ func TestUpdateEventingKafka(t *testing.T) {
 	}
 }
 
+func TestBrokerCfg(t *testing.T) {
+	tests := []struct {
+		name        string
+		obj         *unstructured.Unstructured
+		kafkaBroker v1alpha1.Broker
+		expect      *unstructured.Unstructured
+	}{{
+		name: "Update kafka-broker-config with all arguments",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-broker-config",
+				},
+			},
+		},
+		kafkaBroker: v1alpha1.Broker{
+			AuthSecretName:    "my-secret",
+			NumPartitions:     12,
+			ReplicationFactor: 3,
+			BootstrapServers:  "example.com:1234",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-broker-config",
+				},
+				"data": map[string]interface{}{
+					"bootstrap.servers":                "example.com:1234",
+					"auth.secret.ref.name":             "my-secret",
+					"default.topic.partitions":         "12",
+					"default.topic.replication.factor": "3",
+				},
+			},
+		},
+	}, {
+		name: "Update kafka-broker-config with bootstrap and topic settings",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-broker-config",
+				},
+			},
+		},
+		kafkaBroker: v1alpha1.Broker{
+			NumPartitions:     12,
+			ReplicationFactor: 3,
+			BootstrapServers:  "example.com:1234",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-broker-config",
+				},
+				"data": map[string]interface{}{
+					"bootstrap.servers":                "example.com:1234",
+					"default.topic.partitions":         "12",
+					"default.topic.replication.factor": "3",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other configmaps",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+		kafkaBroker: v1alpha1.Broker{
+			AuthSecretName:    "my-secret",
+			NumPartitions:     12,
+			ReplicationFactor: 3,
+			BootstrapServers:  "example.com:1234",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other resources",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+		kafkaBroker: v1alpha1.Broker{
+			AuthSecretName:    "my-secret",
+			NumPartitions:     12,
+			ReplicationFactor: 3,
+			BootstrapServers:  "example.com:1234",
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := configureKafkaBroker(test.kafkaBroker)(test.obj)
+			if err != nil {
+				t.Fatalf("configureKafkaBroker: (%v)", err)
+			}
+
+			if !cmp.Equal(test.expect, test.obj) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
+			}
+		})
+	}
+}
+
 func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
 	configBytes, _ := yaml.Marshal(kafka)
 	return string(configBytes)

@@ -66,6 +66,17 @@ type Broker struct {
 	// brokers will use, but can be overridden on the individual broker object's config map.
 	// +optional
 	BootstrapServers string `json:"bootstrapServers"`
+
+	// NumPartitions is the number of partitions of a Kafka topic. By default, it is set to 10.
+	NumPartitions int32 `json:"numPartitions"`
+
+	// ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 3.
+	ReplicationFactor int16 `json:"replicationFactor"`
+
+	// AuthSecretName is the name of the secret that contains Kafka
+	// auth configuration.
+	// +optional
+	AuthSecretName string `json:"authSecretName"`
 }
 
 // Source allows configuration for KafkaSource installation
