@@ -77,6 +77,19 @@ spec:
                     description: Enabled defines if the KafkaBroker installation is
                       enabled
                     type: boolean
+                  numPartitions:
+                    description: NumPartitions is the number of partitions of a Kafka topic. By default, it is set to 10.
+                    type: integer
+                    default: 10
+                  replicationFactor:
+                    description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 1.
+                    type: integer
+                    maximum: 32767
+                    default: 3
+                  authSecretName:
+                    description: AuthSecretName is the name of the secret that contains Kafka
+                      auth configuration for the Broker.
+                    type: string
                 required:
                   - enabled
                 type: object
