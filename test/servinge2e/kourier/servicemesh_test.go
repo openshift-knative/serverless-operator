@@ -578,9 +578,9 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 				"iss": issuer,
 				"sub": subject,
 				"foo": "bar",
-				// as if generated before an hour, expiring 10 seconds ago
+				// as if generated before an hour, expiring 10 minutes ago
 				"iat": time.Now().Unix() - 3600,
-				"exp": time.Now().Unix() - 10,
+				"exp": time.Now().Unix() - 600,
 			},
 		}, {
 			// A token signed by a different key
