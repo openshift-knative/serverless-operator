@@ -120,3 +120,6 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
+
+# Enable the exp-feature for timeout. See TODO_JIRA:
+git apply "$root/openshift-knative-operator/hack/009-enable-delivery-timeout.patch"
