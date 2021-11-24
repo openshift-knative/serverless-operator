@@ -95,6 +95,9 @@ sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knati
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
 
+# Add networkpolicy for webhook when net-istio is enabled.
+git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
+
 # Make Kourier rollout in a more defensive way so no requests get dropped.
 # TODO: Can probably be removed in 1.21 and/or be sent upstream.
 git apply "$root/openshift-knative-operator/hack/008-kourier-rollout.patch"
@@ -117,6 +120,3 @@ git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 # TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
 # This is the eventing counterpart of SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
-
-# Add networkpolicy for webhook when net-istio is enabled.
-git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
