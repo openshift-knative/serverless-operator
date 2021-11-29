@@ -1,12 +1,8 @@
 package installation
 
 import (
-	"context"
 	"fmt"
 	"strings"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
@@ -55,25 +51,5 @@ func UpgradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
 
-	return nil
-}
-
-func WaitForPodsWithImage(ctx *test.Context, namespace string, podSelector, containerName, expectedImage string) error {
-	if waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
-		podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: podSelector})
-		if err != nil {
-			return false, err
-		}
-		for _, pod := range podList.Items {
-			for _, c := range pod.Spec.Containers {
-				if c.Name == containerName && c.Image != expectedImage {
-					return false, nil
-				}
-			}
-		}
-		return true, nil
-	}); waitErr != nil {
-		return fmt.Errorf("containers %s in pods with label selector %s do not have the expected image: %w", containerName, podSelector, waitErr)
-	}
 	return nil
 }
