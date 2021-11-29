@@ -23,11 +23,11 @@ require (
 	k8s.io/client-go v0.21.4
 	knative.dev/eventing v0.26.1
 	knative.dev/eventing-kafka v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20210806075220-815cd312d65c
+	knative.dev/hack v0.0.0-20211019034732-ced8ce706528
 	knative.dev/networking v0.0.0-20210914225408-69ad45454096
 	knative.dev/operator v0.26.3
-	knative.dev/pkg v0.0.0-20210919202233-5ae482141474
-	knative.dev/serving v0.26.0
+	knative.dev/pkg v0.0.0-20211019132235-ba2b2b1bf268
+	knative.dev/serving v0.26.1-0.20211022182733-a45951406e94
 	sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/yaml v1.3.0
 )

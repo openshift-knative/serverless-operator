@@ -20,4 +20,3 @@ docker push "$repo/knative-operator"
 
 docker build -t "$repo/knative-openshift-ingress" -f serving/ingress/Dockerfile .
 docker push "$repo/knative-openshift-ingress"
-
