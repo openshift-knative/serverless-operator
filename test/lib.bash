@@ -220,8 +220,9 @@ function run_rolling_upgrade_tests {
     --resolvabledomain \
     --https
 
-  # Delete the leftover namespace.
-  oc delete namespace serving-tests
+  # Delete the leftover services.
+  oc delete ksvc all -n serving-tests
+  timeout 120 "[[ \$(oc get all --no-headers -n ${SERVING_NAMESPACE} | wc -l) != 0 ]]"
 
   logger.success 'Upgrade tests passed'
 }
