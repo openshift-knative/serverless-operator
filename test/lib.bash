@@ -220,8 +220,8 @@ function run_rolling_upgrade_tests {
     --resolvabledomain \
     --https
 
-  # Delete the leftover services.
-  oc delete ksvc --all -n serving-tests
+  # Delete the leftover namespace.
+  oc delete namespace serving-tests
 
   logger.success 'Upgrade tests passed'
 }
