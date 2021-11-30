@@ -221,7 +221,7 @@ function run_rolling_upgrade_tests {
     --https
 
   # Delete the leftover services.
-  oc delete ksvc --all -n ${SERVING_NAMESPACE}
+  oc delete ksvc --all -n "${SERVING_NAMESPACE}"
   timeout 120 "[[ \$(oc get all --no-headers -n ${SERVING_NAMESPACE} | wc -l) != 0 ]]"
 
   logger.success 'Upgrade tests passed'
