@@ -56,7 +56,7 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 								Annotations: map[string]string{
 									sidecarInject:                "false",
 									sidecarrewriteAppHTTPProbers: "false",
-									maistraProxyEnv:              "{ \"TERMINATION_DRAIN_DURATION_SECONDS\": \"5\" }",
+									maistraProxyEnv:              `{ "TERMINATION_DRAIN_DURATION_SECONDS": "5" }`,
 								},
 							},
 						},
