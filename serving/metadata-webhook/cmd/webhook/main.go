@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/openshift-knative/serverless-operator/experimental/metadata-webhook/pkg/defaults"
+	"github.com/openshift-knative/serverless-operator/serving/metadata-webhook/pkg/defaults"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"

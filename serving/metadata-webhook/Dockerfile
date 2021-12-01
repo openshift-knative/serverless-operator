@@ -6,7 +6,7 @@ WORKDIR ${GOPATH}/src/${BASE}
 COPY . .
 
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/metadata-webhook ${BASE}/experimental/metadata-webhook/cmd/webhook
+RUN go build -o /tmp/metadata-webhook ${BASE}/serving/metadata-webhook/cmd/webhook
 
 FROM openshift/origin-base
 USER 65532

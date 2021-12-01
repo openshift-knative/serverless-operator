@@ -196,7 +196,7 @@ EOF
   logger.success 'KnativeServing has been updated successfully.'
 
   # metadata-webhook adds istio annotations for e2e test by webhook.
-  oc apply -f "${rootdir}/experimental/metadata-webhook/config"
+  oc apply -f "${rootdir}/serving/metadata-webhook/config"
 }
 
 function deploy_knativeeventing_cr {
