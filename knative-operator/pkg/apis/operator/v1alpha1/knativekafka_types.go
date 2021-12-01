@@ -57,11 +57,7 @@ type KnativeKafkaList struct {
 	Items           []KnativeKafka `json:"items"`
 }
 
-// Broker allows configuration for KafkaBroker installation
-type Broker struct {
-	// Enabled defines if the KafkaBroker installation is enabled
-	Enabled bool `json:"enabled"`
-
+type BrokerDefaultConfig struct {
 	// BootstrapServers is the default comma-separated string of bootstrapservers that the
 	// brokers will use, but can be overridden on the individual broker object's config map.
 	// +optional
@@ -77,6 +73,15 @@ type Broker struct {
 	// auth configuration.
 	// +optional
 	AuthSecretName string `json:"authSecretName"`
+}
+
+// Broker allows configuration for KafkaBroker installation
+type Broker struct {
+	// Enabled defines if the KafkaBroker installation is enabled
+	Enabled bool `json:"enabled"`
+
+	// DefaultConfig settings for the Openshift cluster
+	DefaultConfig BrokerDefaultConfig `json:"defaultConfig"`
 }
 
 // Source allows configuration for KafkaSource installation

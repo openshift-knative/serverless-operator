@@ -244,7 +244,8 @@ metadata:
 spec:
   broker:
     enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
+    defaultConfig:
+      bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
   source:
     enabled: true
   channel:

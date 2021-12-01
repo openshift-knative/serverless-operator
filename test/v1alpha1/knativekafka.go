@@ -25,8 +25,10 @@ func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
 		},
 		Spec: kafkav1alpha1.KnativeKafkaSpec{
 			Broker: kafkav1alpha1.Broker{
-				Enabled:          true,
-				BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
+				Enabled: true,
+				DefaultConfig: kafkav1alpha1.BrokerDefaultConfig{
+					BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
+				},
 			},
 			Source: kafkav1alpha1.Source{
 				Enabled: true,

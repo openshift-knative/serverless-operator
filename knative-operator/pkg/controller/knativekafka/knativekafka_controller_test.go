@@ -398,10 +398,12 @@ func TestBrokerCfg(t *testing.T) {
 			},
 		},
 		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+			DefaultConfig: v1alpha1.BrokerDefaultConfig{
+				AuthSecretName:    "my-secret",
+				NumPartitions:     12,
+				ReplicationFactor: 3,
+				BootstrapServers:  "example.com:1234",
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -430,9 +432,11 @@ func TestBrokerCfg(t *testing.T) {
 			},
 		},
 		kafkaBroker: v1alpha1.Broker{
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+			DefaultConfig: v1alpha1.BrokerDefaultConfig{
+				NumPartitions:     12,
+				ReplicationFactor: 3,
+				BootstrapServers:  "example.com:1234",
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -460,10 +464,12 @@ func TestBrokerCfg(t *testing.T) {
 			},
 		},
 		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+			DefaultConfig: v1alpha1.BrokerDefaultConfig{
+				AuthSecretName:    "my-secret",
+				NumPartitions:     12,
+				ReplicationFactor: 3,
+				BootstrapServers:  "example.com:1234",
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -486,10 +492,12 @@ func TestBrokerCfg(t *testing.T) {
 			},
 		},
 		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+			DefaultConfig: v1alpha1.BrokerDefaultConfig{
+				AuthSecretName:    "my-secret",
+				NumPartitions:     12,
+				ReplicationFactor: 3,
+				BootstrapServers:  "example.com:1234",
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -504,7 +512,7 @@ func TestBrokerCfg(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := configureKafkaBroker(test.kafkaBroker)(test.obj)
+			err := configureKafkaBroker(test.kafkaBroker.DefaultConfig)(test.obj)
 			if err != nil {
 				t.Fatalf("configureKafkaBroker: (%v)", err)
 			}
