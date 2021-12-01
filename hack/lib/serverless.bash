@@ -195,6 +195,9 @@ EOF
 
   logger.success 'KnativeServing has been updated successfully.'
 
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
   # metadata-webhook adds istio annotations for e2e test by webhook.
   oc apply -f "${rootdir}/serving/metadata-webhook/config"
 }
