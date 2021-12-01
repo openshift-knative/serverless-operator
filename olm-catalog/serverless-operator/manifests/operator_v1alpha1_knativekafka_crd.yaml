@@ -85,7 +85,7 @@ spec:
                         type: integer
                         default: 10
                       replicationFactor:
-                        description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 1.
+                        description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 3.
                         type: integer
                         maximum: 32767
                         default: 3
