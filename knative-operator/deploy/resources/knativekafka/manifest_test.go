@@ -50,14 +50,14 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 	for _, test := range tests {
 		manifest, err := mf.ManifestFrom(mf.Path(test.path))
 		if err != nil {
-			t.Fatalf("Unable to load manifest at path '%s' for testing: %v", test.path, err)
+			t.Fatalf("Unable to load manifest at path %q for testing: %v", test.path, err)
 		}
 		manifest = manifest.Filter(notAllowed)
 		if len(manifest.Resources()) > 0 && !test.fails {
-			t.Fatalf("Manifest at path '%s' has unallowed resources: %+v", test.path, manifest.Resources())
+			t.Fatalf("Manifest at path %q has unallowed resources: %+v", test.path, manifest.Resources())
 		}
 		if len(manifest.Resources()) == 0 && test.fails {
-			t.Fatalf("Manifest at path '%s' should have unallowed resources, but it does not. Perhaps the check for unallowed resources is not working?", test.path)
+			t.Fatalf("Manifest at path %q should have unallowed resources, but it does not. Perhaps the check for unallowed resources is not working?", test.path)
 		}
 	}
 }
