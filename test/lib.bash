@@ -222,6 +222,7 @@ function run_rolling_upgrade_tests {
 
   # Delete the leftover services.
   oc delete ksvc --all -n serving-tests
+  timeout 120 "[[ \$(oc get all --no-headers -n serving-tests | wc -l) != 0 ]]"
 
   logger.success 'Upgrade tests passed'
 }
