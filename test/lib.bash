@@ -190,20 +190,21 @@ function run_rolling_upgrade_tests {
   # Save the rootdir before changing dir
   rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-  prepare_knative_eventing_tests
-  prepare_knative_serving_tests
-
   cd "$rootdir"
 
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
   channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
+  # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
+  oc create namespace serving-tests
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
   EVENTING_UPGRADE_TESTS_SERVING_USE=true \
   EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
+  GATEWAY_OVERRIDE="kourier" \
+  GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}" \
   GO_TEST_VERBOSITY=standard-verbose \
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" \
   go_test_e2e -tags=upgrade -timeout=30m \
