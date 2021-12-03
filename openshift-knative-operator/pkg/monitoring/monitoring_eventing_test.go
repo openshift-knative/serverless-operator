@@ -19,7 +19,7 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 		t.Errorf("Got %d, want %d", len(manifests), 1)
 	}
 	resources := manifests[0].Resources()
-	if len(resources) != 28 {
+	if len(resources) != 25 {
 		t.Errorf("Got %d, want %d", len(resources), 28)
 	}
 	for _, u := range resources {
