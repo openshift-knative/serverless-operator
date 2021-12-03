@@ -39,7 +39,6 @@ var (
 		"mt_broker_controller_go_mallocs",
 		"mt_broker_filter_go_mallocs",
 		"mt_broker_ingress_go_mallocs",
-		"sugar_controller_go_mallocs",
 	}
 
 	KafkaQueries = []string{

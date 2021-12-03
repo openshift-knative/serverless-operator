@@ -54,7 +54,6 @@ image "net-istio-controller__controller" "${registry}/knative-v$(metadata.get de
 image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
 
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
-image "sugar-controller__controller"                "${eventing}-sugar-controller"
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
 image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
 image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
