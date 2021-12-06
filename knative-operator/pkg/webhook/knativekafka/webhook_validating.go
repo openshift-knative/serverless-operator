@@ -111,8 +111,8 @@ func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alp
 
 // validate that KnativeEventing is installed as a hard dep
 func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (bool, string, error) {
-	// Skip check if in deletion phase as Eventing maybe already deleted
-	if req.Operation  == admissionv1.Delete {
+	// skip check if in deletion phase as Eventing maybe already deleted
+	if req.Operation == admissionv1.Delete {
 		return true, "", nil
 	}
 	// check to see if we can find KnativeEventing
