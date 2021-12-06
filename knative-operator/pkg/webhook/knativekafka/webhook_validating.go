@@ -8,6 +8,7 @@ import (
 
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	admissionv1 "k8s.io/api/admission/v1"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -39,7 +40,7 @@ func (v *Validator) Handle(ctx context.Context, req admission.Request) admission
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	allowed, reason, err := v.validate(ctx, ke)
+	allowed, reason, err := v.validate(ctx, ke, req)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
@@ -47,16 +48,16 @@ func (v *Validator) Handle(ctx context.Context, req admission.Request) admission
 }
 
 // Validator checks for a minimum OpenShift version
-func (v *Validator) validate(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (allowed bool, reason string, err error) {
+func (v *Validator) validate(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (allowed bool, reason string, err error) {
 	log := common.Log.WithName("validate")
-	stages := []func(context.Context, *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error){
+	stages := []func(context.Context, *serverlessoperatorv1alpha1.KnativeKafka, admission.Request) (bool, string, error){
 		v.validateNamespace,
 		v.validateLoneliness,
 		v.validateShape,
 		v.validateDependencies,
 	}
 	for _, stage := range stages {
-		allowed, reason, err = stage(ctx, ke)
+		allowed, reason, err = stage(ctx, ke, req)
 		if len(reason) > 0 {
 			if err != nil {
 				log.Error(err, reason)
@@ -72,7 +73,7 @@ func (v *Validator) validate(ctx context.Context, ke *serverlessoperatorv1alpha1
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateNamespace(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_KAFKA_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeKafka may only be created in %s namespace", ns), nil
@@ -81,7 +82,7 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *serverlessoperato
 }
 
 // validate this is the only KE in this namespace
-func (v *Validator) validateLoneliness(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateLoneliness(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (bool, string, error) {
 	list := &serverlessoperatorv1alpha1.KnativeKafkaList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeKafkas", err
@@ -95,7 +96,7 @@ func (v *Validator) validateLoneliness(ctx context.Context, ke *serverlessoperat
 }
 
 // validate the shape of the CR
-func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (bool, string, error) {
 	if ke.Spec.Channel.Enabled && ke.Spec.Channel.BootstrapServers == "" {
 		return false, "spec.channel.bootStrapServers is a required detail when spec.channel.enabled is true", nil
 	}
@@ -109,7 +110,11 @@ func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alp
 }
 
 // validate that KnativeEventing is installed as a hard dep
-func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka, req admission.Request) (bool, string, error) {
+	// Skip check if in deletion phase as Eventing maybe already deleted
+	if req.Operation  == admissionv1.Delete {
+		return true, "", nil
+	}
 	// check to see if we can find KnativeEventing
 	list := &operatorv1alpha1.KnativeEventingList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
