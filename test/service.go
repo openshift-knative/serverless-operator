@@ -75,8 +75,8 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 	if err != nil {
 		return err
 	}
-	if d.Status.ReadyReplicas != int32(scale) {
-		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", d.Status.ReadyReplicas, scale)
+	if *d.Spec.Replicas != int32(scale) {
+		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", *d.Spec.Replicas, scale)
 	}
 	return nil
 }
