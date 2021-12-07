@@ -201,24 +201,23 @@ function run_rolling_upgrade_tests {
   export GO_TEST_VERBOSITY=standard-verbose
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  common_opts="./test/upgrade -tags=upgrade \
-    --kubeconfigs=${KUBECONFIG} \
-    --channels=${channels} \
-    --imagetemplate=${image_template} \
-    --catalogsource=${OLM_SOURCE} \
-    --upgradechannel=${OLM_UPGRADE_CHANNEL} \
-    --csv=${CURRENT_CSV} \
-    --servingversion=${KNATIVE_SERVING_VERSION} \
-    --eventingversion=${KNATIVE_EVENTING_VERSION} \
-    --kafkaversion=${KNATIVE_EVENTING_KAFKA_VERSION} \
+  common_opts=(./test/upgrade -tags=upgrade \
+    --kubeconfigs="${KUBECONFIG}" \
+    --channels="${channels}" \
+    --imagetemplate="${image_template}" \
+    --catalogsource="${OLM_SOURCE}" \
+    --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
+    --csv="${CURRENT_CSV}" \
+    --servingversion="${KNATIVE_SERVING_VERSION}" \
+    --eventingversion="${KNATIVE_EVENTING_VERSION}" \
+    --kafkaversion="${KNATIVE_EVENTING_KAFKA_VERSION}" \
     --resolvabledomain \
-    --https"
+    --https)
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
     oc create namespace serving-tests
-    # shellcheck disable=SC2086
-    go_test_e2e -run=TestServerlessUpgrade -timeout=30m $common_opts
+    go_test_e2e -run=TestServerlessUpgrade -timeout=30m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
@@ -228,8 +227,7 @@ function run_rolling_upgrade_tests {
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
-    # shellcheck disable=SC2086
-    go_test_e2e -run=TestClusterUpgrade -timeout=190m $common_opts \
+    go_test_e2e -run=TestClusterUpgrade -timeout=190m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
   fi
