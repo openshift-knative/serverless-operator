@@ -185,41 +185,54 @@ function downstream_monitoring_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local image_version image_template channels
-
-  # Save the rootdir before changing dir
-  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-
-  cd "$rootdir"
+  local image_version image_template channels common_opts
 
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
   channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
-  # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
-  oc create namespace serving-tests
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
-  EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
-  EVENTING_UPGRADE_TESTS_SERVING_USE=true \
-  EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
-  GATEWAY_OVERRIDE="kourier" \
-  GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}" \
-  GO_TEST_VERBOSITY=standard-verbose \
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" \
-  go_test_e2e -tags=upgrade -timeout=30m \
-    ./test/upgrade \
-    -channels="${channels}" \
-    --kubeconfigs "${KUBECONFIG}" \
-    --imagetemplate "${image_template}" \
-    --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
-    --csv="${CURRENT_CSV}" \
-    --servingversion="${KNATIVE_SERVING_VERSION}" \
-    --eventingversion="${KNATIVE_EVENTING_VERSION}" \
-    --kafkaversion="${KNATIVE_EVENTING_KAFKA_VERSION}" \
-    --openshiftimage="${UPGRADE_OCP_IMAGE}" \
+  export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
+  export EVENTING_UPGRADE_TESTS_SERVING_USE=true
+  export EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola
+  export GATEWAY_OVERRIDE="kourier"
+  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
+  export GO_TEST_VERBOSITY=standard-verbose
+  export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
+
+  common_opts="./test/upgrade -tags=upgrade \
+    --kubeconfigs=${KUBECONFIG} \
+    --channels=${channels} \
+    --imagetemplate=${image_template} \
+    --catalogsource=${OLM_SOURCE} \
+    --upgradechannel=${OLM_UPGRADE_CHANNEL} \
+    --csv=${CURRENT_CSV} \
+    --servingversion=${KNATIVE_SERVING_VERSION} \
+    --eventingversion=${KNATIVE_EVENTING_VERSION} \
+    --kafkaversion=${KNATIVE_EVENTING_KAFKA_VERSION} \
     --resolvabledomain \
-    --https
+    --https"
+
+  if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
+    # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
+    oc create namespace serving-tests
+    # shellcheck disable=SC2086
+    go_test_e2e -run=TestServerlessUpgrade -timeout=30m $common_opts
+  fi
+
+  # For reuse in downstream test executions. Might be run after Serverless
+  # upgrade or independently.
+  if [[ "${UPGRADE_CLUSTER}" == "true" ]]; then
+    if oc get namespace serving-tests &>/dev/null; then
+      oc delete namespace serving-tests
+    fi
+    oc create namespace serving-tests
+    # shellcheck disable=SC2086
+    go_test_e2e -run=TestClusterUpgrade -timeout=190m $common_opts \
+      --openshiftimage="${UPGRADE_OCP_IMAGE}" \
+      --upgradeopenshift
+  fi
 
   # Delete the leftover namespace with services.
   oc delete namespace serving-tests
