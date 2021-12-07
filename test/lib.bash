@@ -201,16 +201,16 @@ function run_rolling_upgrade_tests {
   export GO_TEST_VERBOSITY=standard-verbose
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  common_opts=(./test/upgrade -tags=upgrade \
-    --kubeconfigs="${KUBECONFIG}" \
-    --channels="${channels}" \
-    --imagetemplate="${image_template}" \
-    --catalogsource="${OLM_SOURCE}" \
-    --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
-    --csv="${CURRENT_CSV}" \
-    --servingversion="${KNATIVE_SERVING_VERSION}" \
-    --eventingversion="${KNATIVE_EVENTING_VERSION}" \
-    --kafkaversion="${KNATIVE_EVENTING_KAFKA_VERSION}" \
+  common_opts=(./test/upgrade "-tags=upgrade" \
+    "--kubeconfigs=${KUBECONFIG}" \
+    "--channels=${channels}" \
+    "--imagetemplate=${image_template}" \
+    "--catalogsource=${OLM_SOURCE}" \
+    "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
+    "--csv=${CURRENT_CSV}" \
+    "--servingversion=${KNATIVE_SERVING_VERSION}" \
+    "--eventingversion=${KNATIVE_EVENTING_VERSION}" \
+    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_VERSION}" \
     --resolvabledomain \
     --https)
 
