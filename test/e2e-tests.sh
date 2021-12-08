@@ -9,24 +9,13 @@ set -Eeuo pipefail
 if [ -n "$OPENSHIFT_CI" ]; then
   env
 fi
-debugging.setup
-dump_state.setup
-
-create_namespaces "${SYSTEM_NAMESPACES[@]}"
-install_catalogsource
-
-if [[ $INSTALL_KAFKA == true ]]; then
-  install_strimzi
-fi
+debugging.setup # both install and test
+dump_state.setup # test
 
 if [[ $FULL_MESH == "true" ]]; then
   # net-istio does not use knative-serving-ingress namespace.
   export INGRESS_NAMESPACE="knative-serving"
-  UNINSTALL_MESH="false" install_mesh
-  ensure_serverless_installed
-  enable_net_istio
 else
-  ensure_serverless_installed
   trust_router_ca
 fi
 
@@ -57,7 +46,5 @@ if [[ $TEST_KNATIVE_KAFKA == true ]]; then
 fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
-
-teardown_serverless
 
 success
