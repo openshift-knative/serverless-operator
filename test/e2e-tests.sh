@@ -33,8 +33,8 @@ fi
 logger.success '🚀 Cluster prepared for testing.'
 
 # Run serverless-operator specific tests.
-create_htpasswd_users && add_roles
 create_namespaces "${TEST_NAMESPACES[@]}"
+create_htpasswd_users && add_roles
 serverless_operator_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
   serverless_operator_kafka_e2e_tests
