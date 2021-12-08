@@ -80,9 +80,6 @@ function serverless_operator_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  # make sure knative-serving-ingress namespace is deleted.
-  timeout 600 "[[ \$(oc get ns ${SERVING_NAMESPACE}-ingress --no-headers | wc -l) == 1 ]]"
 }
 
 function serverless_operator_kafka_e2e_tests {

@@ -371,14 +371,12 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative serving pods running'
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get namespace "${SERVING_NAMESPACE}" &>/dev/null; then
     oc delete namespace "${SERVING_NAMESPACE}"
   fi
-  logger.info 'Ensure no ingress pods running'
+  logger.info 'Ensure ingress namespace no pods running'
   timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
-    oc delete namespace "${INGRESS_NAMESPACE}"
-  fi
+  timeout 600 "[[ \$(oc get ns ${INGRESS_NAMESPACE} --no-headers | wc -l) == 1 ]]"
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
@@ -393,23 +391,26 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
   timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get namespace "${EVENTING_NAMESPACE}" &>/dev/null; then
     oc delete namespace "${EVENTING_NAMESPACE}"
   fi
-
+  logger.info 'Deleting subscription'
   oc delete subscriptions.operators.coreos.com \
     -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
     --ignore-not-found
+  logger.info 'Deleting CSVs'
   for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
       | grep "${OPERATOR}" | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
+  logger.info 'Ensure no operators present'
+  timeout 600 "[[ \$(oc get deployments -n ${OPERATORS_NAMESPACE} -oname | grep -c 'knative') != 0 ]]"
+  logger.info 'Deleting operators namespace'
   oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
-
+  logger.info 'Ensure not CRDs left'
   if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
     oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
   fi
-
   logger.success 'Serverless has been uninstalled.'
 }
 

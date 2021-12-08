@@ -7,7 +7,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
-	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 )
@@ -37,17 +36,11 @@ func TestKnativeKafka(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
-	t.Run("create subscription and wait for CSV to succeed", func(t *testing.T) {
-		if _, err := test.WithOperatorReady(caCtx, test.Flags.Subscription); err != nil {
-			t.Fatal("Failed", err)
-		}
-	})
-
-	t.Run("deploy knativeeventing cr and wait for it to be ready", func(t *testing.T) {
-		if _, err := v1a1test.WithKnativeEventingReady(caCtx, eventingName, eventingNamespace); err != nil {
-			t.Fatal("Failed to deploy KnativeEventing", err)
-		}
-	})
+	// Ensure KnativeEventing is already installed.
+	if ev, err := caCtx.Clients.Operator.KnativeEventings(eventingNamespace).
+		Get(context.Background(), eventingName, metav1.GetOptions{}); err != nil || !ev.Status.IsReady() {
+			t.Fatal("KnativeEventing CR must be ready:", err)
+	}
 
 	ch := &v1beta1.KafkaChannel{
 		ObjectMeta: metav1.ObjectMeta{
@@ -60,11 +53,7 @@ func TestKnativeKafka(t *testing.T) {
 		},
 	}
 
-	t.Run("deploy knativekafka and channel cr and wait for it to be ready", func(t *testing.T) {
-		if _, err := v1a1test.WithKnativeKafkaReady(caCtx, knativeKafkaName, eventingNamespace); err != nil {
-			t.Fatal("Failed to deploy KnativeKafka", err)
-		}
-
+	t.Run("deploy channel cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Create(context.Background(), ch, metav1.CreateOptions{}); err != nil {
 			t.Fatal("Failed to create channel to trigger the dispatcher deployment", err)
 		}
@@ -119,40 +108,9 @@ func TestKnativeKafka(t *testing.T) {
 		e2e.VerifyNoDisallowedImageReference(t, caCtx, knativeKafkaNamespace)
 	})
 
-	t.Run("remove knativekafka and channel cr", func(t *testing.T) {
+	t.Run("remove channel cr", func(t *testing.T) {
 		if err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), ch.Name, metav1.DeleteOptions{}); err != nil {
 			t.Fatal("Failed to remove Knative Channel", err)
-		}
-
-		if err := v1a1test.DeleteKnativeKafka(caCtx, knativeKafkaName, eventingNamespace); err != nil {
-			t.Fatal("Failed to remove Knative Kafka", err)
-		}
-
-		for i := range knativeKafkaChannelControlPlaneDeploymentNames {
-			deploymentName := knativeKafkaChannelControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
-				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
-			}
-		}
-
-		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
-			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
-			if err := test.WithDeploymentGone(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
-				t.Fatalf("Deployment %s is not gone: %v", deploymentName, err)
-			}
-		}
-	})
-
-	t.Run("remove knativeeventing cr", func(t *testing.T) {
-		if err := v1a1test.DeleteKnativeEventing(caCtx, eventingName, eventingNamespace); err != nil {
-			t.Fatal("Failed to remove Knative Eventing", err)
-		}
-	})
-
-	t.Run("undeploy serverless operator and check dependent operators removed", func(t *testing.T) {
-		caCtx.Cleanup(t)
-		if err := test.WaitForOperatorDepsDeleted(caCtx); err != nil {
-			t.Fatalf("Operators still running: %v", err)
 		}
 	})
 }

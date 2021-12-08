@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -21,80 +20,7 @@ const (
 	// Timeout specifies the timeout for the function PollImmediate to reach a certain status.
 	Timeout                   = 5 * time.Minute
 	OperatorsNamespace        = "openshift-serverless"
-	OLMNamespace              = "openshift-marketplace"
-	ServerlessOperatorPackage = "serverless-operator"
 )
-
-func Subscription(subscriptionName string) *operatorsv1alpha1.Subscription {
-	//namespace, name, catalogSourceName, packageName, channel string, approval v1alpha1.Approval
-	return &operatorsv1alpha1.Subscription{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       operatorsv1alpha1.SubscriptionKind,
-			APIVersion: operatorsv1alpha1.SubscriptionCRDAPIVersion,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: OperatorsNamespace,
-			Name:      subscriptionName,
-		},
-		Spec: &operatorsv1alpha1.SubscriptionSpec{
-			CatalogSource:          Flags.CatalogSource,
-			CatalogSourceNamespace: OLMNamespace,
-			Package:                ServerlessOperatorPackage,
-			Channel:                Flags.Channel,
-			InstallPlanApproval:    operatorsv1alpha1.ApprovalAutomatic,
-		},
-	}
-}
-
-func WithOperatorReady(ctx *Context, subscriptionName string) (*operatorsv1alpha1.Subscription, error) {
-	if _, err := CreateSubscription(ctx, subscriptionName); err != nil {
-		return nil, err
-	}
-
-	subs, err := WaitForSubscriptionState(ctx, subscriptionName, OperatorsNamespace, IsSubscriptionInstalledCSVPresent)
-	if err != nil {
-		return nil, err
-	}
-
-	csvName := subs.Status.InstalledCSV
-
-	csv, err := WaitForClusterServiceVersionState(ctx, csvName, OperatorsNamespace, IsCSVSucceeded)
-	if err != nil {
-		return nil, err
-	}
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up CSV '%s/%s'", csv.Namespace, csv.Name)
-		return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csv.Namespace).Delete(context.Background(), csv.Name, metav1.DeleteOptions{})
-	})
-
-	return subs, nil
-}
-
-func CreateSubscription(ctx *Context, name string) (*operatorsv1alpha1.Subscription, error) {
-	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name), metav1.CreateOptions{})
-	if err != nil {
-		return nil, err
-	}
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Cleaning up Subscription '%s/%s'", subs.Namespace, subs.Name)
-		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(subs.Namespace).Delete(context.Background(), subs.Name, metav1.DeleteOptions{})
-	})
-	return subs, nil
-}
-
-func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.Subscription, err error) (bool, error)) (*operatorsv1alpha1.Subscription, error) {
-	var lastState *operatorsv1alpha1.Subscription
-	var err error
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(context.Background(), name, metav1.GetOptions{})
-		return inState(lastState, err)
-	})
-
-	if waitErr != nil {
-		return lastState, fmt.Errorf("subscription %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
-	}
-	return lastState, nil
-}
 
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*operatorsv1alpha1.Subscription, error) {
 	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
@@ -121,25 +47,4 @@ func IsCSVSucceeded(c *operatorsv1alpha1.ClusterServiceVersion, err error) (bool
 		return false, nil
 	}
 	return c.Status.Phase == "Succeeded", err
-}
-
-func IsSubscriptionInstalledCSVPresent(s *operatorsv1alpha1.Subscription, err error) (bool, error) {
-	return s.Status.InstalledCSV != "" && s.Status.InstalledCSV != "<none>", err
-}
-
-func ImageFromCSV(ctx *Context, csvName, csvNamespace, imageName string) (string, error) {
-	csv, err := ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(csvNamespace).Get(context.Background(), csvName, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	for _, d := range csv.Spec.InstallStrategy.StrategySpec.DeploymentSpecs {
-		for _, c := range d.Spec.Template.Spec.Containers {
-			for _, e := range c.Env {
-				if strings.Contains(e.Name, imageName) && strings.Contains(e.Name, "IMAGE") {
-					return e.Value, nil
-				}
-			}
-		}
-	}
-	return "", fmt.Errorf("unable to find image for %s in CSV deployment specs: %+v", imageName, csv)
 }
