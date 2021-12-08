@@ -39,7 +39,7 @@ func TestKnativeKafka(t *testing.T) {
 	// Ensure KnativeEventing is already installed.
 	if ev, err := caCtx.Clients.Operator.KnativeEventings(eventingNamespace).
 		Get(context.Background(), eventingName, metav1.GetOptions{}); err != nil || !ev.Status.IsReady() {
-			t.Fatal("KnativeEventing CR must be ready:", err)
+		t.Fatal("KnativeEventing CR must be ready:", err)
 	}
 
 	ch := &v1beta1.KafkaChannel{
