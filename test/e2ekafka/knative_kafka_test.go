@@ -14,13 +14,13 @@ import (
 const (
 	eventingName          = "knative-eventing"
 	eventingNamespace     = "knative-eventing"
-	knativeKafkaName      = "knative-kafka"
 	knativeKafkaNamespace = "knative-eventing"
 )
 
 var knativeKafkaChannelControlPlaneDeploymentNames = []string{
 	"kafka-ch-controller",
 	"kafka-webhook",
+	"kafka-ch-dispatcher",
 }
 
 var knativeKafkaSourceControlPlaneDeploymentNames = []string{

@@ -13,10 +13,11 @@ debugging.setup
 dump_state.setup
 
 teardown_serverless
-create_namespaces
+create_namespaces "${SYSTEM_NAMESPACES[@]}"
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
+create_namespaces "${TEST_NAMESPACES[@]}"
 # Install ServiceMesh and enable mTLS.
 if [[ $FULL_MESH == true ]]; then
   UNINSTALL_MESH="false" install_mesh

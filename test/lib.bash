@@ -7,9 +7,9 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
-NAMESPACES+=("${TEST_NAMESPACE}")
-NAMESPACES+=("serverless-tests2")
-NAMESPACES+=("serverless-tests-mesh")
+declare -a TEST_NAMESPACES
+TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests2" "serverless-tests-mesh")
+export TEST_NAMESPACES
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
@@ -243,7 +243,7 @@ function teardown {
   logger.warn "Teardown 💀"
   teardown_serverless
   teardown_tracing
-  delete_namespaces
+  delete_namespaces "${SYSTEM_NAMESPACES[@]}" "${TEST_NAMESPACES[@]}"
   delete_catalog_source
   delete_users
 }

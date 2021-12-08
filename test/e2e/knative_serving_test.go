@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	servingName      = "knative-serving"
 	servingNamespace = "knative-serving"
 	haReplicas       = 2
 )
