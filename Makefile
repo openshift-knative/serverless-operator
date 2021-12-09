@@ -92,29 +92,29 @@ test-operator: test-unit test-e2e
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
 test-upstream-e2e-mesh-testonly:
-	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-mesh: install-full-mesh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
-	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 	./hack/teardown.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-no-upgrade: install-all
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 	./hack/teardown.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
-	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 test-upstream-upgrade: install-strimzi
 	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 	./hack/teardown.sh
 
 # Alias.
@@ -131,8 +131,8 @@ test-ui-e2e: install
 # Run all E2E tests.
 test-all-e2e: install
 	./test/e2e-tests.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 	./test/ui-e2e-tests.sh
 	./hack/teardown.sh
 

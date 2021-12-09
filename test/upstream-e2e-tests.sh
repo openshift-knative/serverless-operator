@@ -22,7 +22,6 @@ fi
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
-  install_serverless_previous
   # Set KafkaChannel as default for upgrade tests.
   if [[ $TEST_KNATIVE_KAFKA == "true" ]]; then
     ensure_kafka_channel_default
