@@ -361,10 +361,15 @@ function create_htpasswd_users {
 
   logger.info 'Generate kubeconfig for each user'
 
-  ctx=$(oc config current-context)
-  cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
-  server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
-  logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+  if oc config current-context >&/dev/null; then
+    ctx=$(oc config current-context)
+    cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
+    server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
+    logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+  else
+    # Fallback to in-cluster api server service.
+    server="https://kubernetes.default.svc"
+  fi
 
   for i in $(seq 1 "$num_users"); do
     occmd="bash -c '! oc login --insecure-skip-tls-verify=true --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} ${server} > /dev/null'"
