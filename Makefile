@@ -65,19 +65,26 @@ test-unit:
 test-e2e-testonly:
 	./test/e2e-tests.sh
 
-test-e2e: install test-e2e-testonly teardown
+test-e2e: install
+	./test/e2e-tests.sh
+	./hack/teardown
 
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
 test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
-test-e2e-with-kafka: install-all test-e2e-with-kafka-testonly teardown
+test-e2e-with-kafka: install-all
+	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
 	FULL_MESH=true ./test/e2e-tests.sh
 
-test-e2e-with-mesh: install-full-mesh install-with-mesh-enabled test-e2e-with-mesh-testonly teardown
+test-e2e-with-mesh: install-full-mesh
+	FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true ./test/e2e-tests.sh
+	./hack/teardown.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
@@ -87,19 +94,28 @@ test-operator: test-unit test-e2e
 test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-mesh: install-full-mesh install-with-mesh-enabled test-e2e-with-mesh-testonly test-upstream-e2e-mesh-testonly teardown
+test-upstream-e2e-mesh: install-full-mesh
+	FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true ./test/e2e-tests.sh
+	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	./hack/teardown.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-no-upgrade: install-all test-upstream-e2e-no-upgrade-testonly teardown
+test-upstream-e2e-no-upgrade: install-all
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	./hack/teardown.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
 	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-test-upstream-upgrade: install-strimzi install-previous-with-kafka test-upstream-upgrade-testonly teardown
+test-upstream-upgrade: install-strimzi
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	./hack/teardown.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade
@@ -108,10 +124,17 @@ test-upgrade: test-upstream-upgrade
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-test-ui-e2e: install test-ui-e2e-testonly teardown
+test-ui-e2e: install
+	./test/ui-e2e-tests.sh
+	./hack/teardown.sh
 
 # Run all E2E tests.
-test-all-e2e: install test-e2e-testonly test-upstream-e2e-no-upgrade-testonly test-upstream-upgrade-testonly test-ui-e2e-testonly teardown
+test-all-e2e: install
+	./test/e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	./test/ui-e2e-tests.sh
+	./hack/teardown.sh
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:
