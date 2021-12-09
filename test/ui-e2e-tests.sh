@@ -34,23 +34,17 @@ OCP_USERNAME="${OCP_USERNAME:-uitesting}"
 OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
 OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
 CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpath='{.status.ingress[].host}')"
-INSTALL_SERVERLESS="${INSTALL_SERVERLESS:-true}"
 # use dev to run test development UI
 NPM_TARGET="${NPM_TARGET:-test}"
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
-create_namespaces "${SYSTEM_NAMESPACES[@]}"
+create_namespaces "${TEST_NAMESPACES[@]}"
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
 oc adm policy add-role-to-user edit "$OCP_USERNAME" -n "$TEST_NAMESPACE"
-if [[ 'true' == "$INSTALL_SERVERLESS" ]]; then
-  install_catalogsource
-  ensure_serverless_installed
-fi
 check_node
 archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
-create_namespaces "${TEST_NAMESPACES[@]}"
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
 npm run install

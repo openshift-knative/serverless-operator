@@ -33,6 +33,9 @@ uninstall-strimzi:
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
+install-previous-with-kafka:
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+
 install-mesh:
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 
@@ -79,36 +82,36 @@ test-e2e-with-mesh: install-full-mesh install-with-mesh-enabled test-e2e-with-me
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
-# Run upstream E2E tests including upgrades (Serving, Eventing, ...).
-test-upstream-e2e:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
-
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
-test-upstream-e2e-mesh: test-e2e-with-mesh
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
+test-upstream-e2e-mesh: install-full-mesh install-with-mesh-enabled test-e2e-with-mesh-testonly test-upstream-e2e-mesh-testonly teardown
+
 # Run upstream E2E tests without upgrades.
-test-upstream-e2e-no-upgrade:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+test-upstream-e2e-no-upgrade-testonly:
 	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
+test-upstream-e2e-no-upgrade: install-all test-upstream-e2e-no-upgrade-testonly teardown
+
 # Run only upstream upgrade tests.
-test-upstream-upgrade:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+test-upstream-upgrade-testonly:
 	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+
+test-upstream-upgrade: install-strimzi install-previous-with-kafka test-upstream-upgrade-testonly teardown
 
 # Alias.
 test-upgrade: test-upstream-upgrade
 
 # Run Console UI e2e tests.
-test-ui-e2e:
+test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-# Run all E2E tests. Used by periodic CI jobs.
-test-all-e2e: test-e2e test-upstream-e2e test-ui-e2e
+test-ui-e2e: install test-ui-e2e-testonly teardown
+
+# Run all E2E tests.
+test-all-e2e: install test-e2e-testonly test-upstream-e2e-no-upgrade-testonly test-upstream-upgrade-testonly test-ui-e2e-testonly teardown
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:
