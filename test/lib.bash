@@ -337,48 +337,9 @@ function create_htpasswd_users {
   local occmd num_users
   num_users=${num_users:-3}
   logger.info "Creating htpasswd for ${num_users} users"
-
-  if oc get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
-    logger.info 'Secret htpass-secret already existed, updating it.'
-    # Add a newline to the end of the file if not already present (htpasswd will butcher it otherwise).
-    [ -n "$(tail -c1 users.htpasswd)" ] && echo >> users.htpasswd
-  else
-    touch users.htpasswd
-  fi
-
-  logger.info 'Add users to htpasswd'
   for i in $(seq 1 "$num_users"); do
-    htpasswd -b users.htpasswd "user${i}" "password${i}"
+    add_user "user${i}" "password${i}"
   done
-
-  oc create secret generic htpass-secret \
-    --from-file=htpasswd="$(pwd)/users.htpasswd" \
-    -n openshift-config \
-    --dry-run=client -o yaml | oc apply -f -
-
-  if oc get oauth.config.openshift.io cluster > /dev/null 2>&1; then
-    oc replace -f openshift/identity/htpasswd.yaml
-  else
-    oc apply -f openshift/identity/htpasswd.yaml
-  fi
-
-  logger.info 'Generate kubeconfig for each user'
-
-  if oc config current-context >&/dev/null; then
-    ctx=$(oc config current-context)
-    cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
-    server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
-    logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
-  else
-    # Fallback to in-cluster api server service.
-    server="https://kubernetes.default.svc"
-  fi
-
-  for i in $(seq 1 "$num_users"); do
-    occmd="bash -c '! oc login --insecure-skip-tls-verify=true --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} ${server} > /dev/null'"
-    timeout 600 "${occmd}"
-  done
-
   logger.success "${num_users} htpasswd users created"
 }
 
@@ -387,6 +348,15 @@ function add_roles {
   oc adm policy add-role-to-user admin user1 -n "$TEST_NAMESPACE"
   oc adm policy add-role-to-user edit user2 -n "$TEST_NAMESPACE"
   oc adm policy add-role-to-user view user3 -n "$TEST_NAMESPACE"
+}
+
+function ensure_kubeconfig {
+  if [[ -z "$KUBECONFIG" ]]; then
+    add_user "kubeadmin" "kubeadmin"
+    oc adm policy add-cluster-role-to-user cluster-admin kubeadmin
+    KUBECONFIG="$(pwd)/kubeadmin.kubeconfig"
+    export KUBECONFIG
+  fi
 }
 
 function delete_users {

@@ -168,11 +168,12 @@ function delete_catalog_source {
   logger.success 'CatalogSource deleted'
 }
 
-# TODO: Deduplicate with the `create_htpasswd_users` function in test/lib.bash.
 function add_user {
-  local name pass
+  local name pass occmd rootdir
   name=${1:?Pass a username as arg[1]}
   pass=${2:?Pass a password as arg[2]}
+
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
   logger.info "Creating user $name:***"
   if oc get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
@@ -190,19 +191,26 @@ function add_user {
     -n openshift-config \
     --dry-run=client -o yaml | oc apply -f -
 
-  if oc get oauth.config.openshift.io cluster > /dev/null 2>&1; then
-    oc replace -f openshift/identity/htpasswd.yaml
+  if oc get oauth.config.openshift.io cluster &>/dev/null; then
+    oc replace -f "${rootdir}/openshift/identity/htpasswd.yaml"
   else
-    oc apply -f openshift/identity/htpasswd.yaml
+    oc apply -f "${rootdir}/openshift/identity/htpasswd.yaml"
   fi
 
   logger.debug 'Generate kubeconfig'
-  
-  ctx=$(oc config current-context)
-  cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
-  server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
-  logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+
+  if oc config current-context >&/dev/null; then
+    ctx=$(oc config current-context)
+    cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
+    server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
+    logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+  else
+    # Fallback to in-cluster api server service.
+    server="https://kubernetes.default.svc"
+  fi
 
   occmd="bash -c '! oc login --kubeconfig=${name}.kubeconfig --insecure-skip-tls-verify=true --username=${name} --password=${pass} ${server} > /dev/null'"
   timeout 600 "${occmd}"
+
+  logger.info "Kubeconfig for user ${name} created"
 }
