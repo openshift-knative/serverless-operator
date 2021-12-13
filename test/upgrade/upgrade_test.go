@@ -24,11 +24,10 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
-	"knative.dev/eventing-kafka/test/upgrade/continual"
-
 	"go.uber.org/zap"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
+	"knative.dev/eventing-kafka/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -62,6 +61,10 @@ func TestServerlessUpgrade(t *testing.T) {
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
+					}
+					// Remove this when upgrading from Serverless 1.20 to 1.21.
+					if err := installation.EnableKafkaBroker(ctx); err != nil {
+						c.T.Error("Failed to enable Kafka Broker on KnativeKafka resource:", err)
 					}
 				}),
 			},
