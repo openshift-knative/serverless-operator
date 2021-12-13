@@ -8,12 +8,13 @@ target="${2:?Provide a target CSV file as arg[2]}"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
-registry="registry.ci.openshift.org/openshift"
+registry_host='registry.ci.openshift.org'
+registry="${registry_host}/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
 client_version="$(metadata.get dependencies.cli)"
-kn_event="${registry}-knative/release-${client_version%.*}:client-plugin-event"
+kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 
 declare -a images
