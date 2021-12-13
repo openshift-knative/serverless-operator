@@ -16,6 +16,7 @@ cd "${ROOT_DIR}"
 KN_VERSION="release-0.26"
 EVENTING_VERSION="release-v0.26"
 EVENTING_KAFKA_VERSION="release-v0.26"
+EVENTING_KAFKA_BROKER_VERSION="release-v0.26"
 SERVING_VERSION="release-v0.26.0"
 
 # The list of dependencies that we track at HEAD and periodically
@@ -28,6 +29,7 @@ FLOATING_DEPS=(
 )
 
 FLOATING_FORK_DEPS=(
+  "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
   "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
   "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
   "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"

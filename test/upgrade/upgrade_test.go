@@ -27,6 +27,7 @@ import (
 	"knative.dev/eventing-kafka/test/upgrade/continual"
 
 	"go.uber.org/zap"
+	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
@@ -128,6 +129,7 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		eventingupgrade.PostUpgradeTest(),
 		kafkaupgrade.ChannelPostUpgradeTest(),
 		kafkaupgrade.SourcePostUpgradeTest(),
+		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 	}
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
