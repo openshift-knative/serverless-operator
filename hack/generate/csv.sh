@@ -12,6 +12,8 @@ registry="registry.ci.openshift.org/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
 eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
+client_version="$(metadata.get dependencies.cli)"
+kn_event="${registry}-knative/release-${client_version%.*}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 
 declare -a images
@@ -79,7 +81,8 @@ kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafk
 kafka_image "kafka-controller__controller"                      "${eventing_kafka}-broker-kafka-controller"
 kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"    "${eventing_kafka}-broker-webhook-kafka"
 
-image "KUBE_RBAC_PROXY"   "${rbac_proxy}"
+image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
+image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
