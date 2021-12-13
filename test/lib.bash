@@ -216,7 +216,9 @@ function run_rolling_upgrade_tests {
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
-    oc create namespace serving-tests
+    if ! oc get namespace serving-tests &>/dev/null; then
+      oc create namespace serving-tests
+    fi
     go_test_e2e -run=TestServerlessUpgrade -timeout=30m "${common_opts[@]}"
   fi
 
