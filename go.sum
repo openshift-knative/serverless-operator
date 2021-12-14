@@ -1069,8 +1069,8 @@ github.com/opencontainers/selinux v1.6.0/go.mod h1:VVGKuOLlE7v4PJyT6h7mNWvq1rzqi
 github.com/opencontainers/selinux v1.8.0/go.mod h1:RScLhm78qiWa2gbVCcGkC7tCGdgk3ogry1nUQF8Evvo=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20211208110616-40a484dbda5d h1:vBY1kMeBeH+zviv6YAZzbH+pyDncpVZYhx9Va+2vEZc=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20211208110616-40a484dbda5d/go.mod h1:sDfTYc5n5+dtEr5LUvgPYTzDn3FA1ZiAIfgRNjUKcJg=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211210171029-ba58c7bfb0c4 h1:PL3xFxjuen/5vmNZHej4nVFwQ4FttvDcWyAIaKblHvg=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211210171029-ba58c7bfb0c4/go.mod h1:akolZVojSeeJdDekJyFHEOzGFvGJAuOrQcoXCV1/+N4=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211214091540-6e189b3522ba h1:sv1ROxtbqKk0Pajze8MpDlKXtsfBa4wWaOXiygfxivA=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211214091540-6e189b3522ba/go.mod h1:akolZVojSeeJdDekJyFHEOzGFvGJAuOrQcoXCV1/+N4=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=

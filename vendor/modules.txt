@@ -1177,7 +1177,7 @@ knative.dev/eventing-kafka/test/lib/resources
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/continual
 knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211210171029-ba58c7bfb0c4
+# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211214091540-6e189b3522ba
 ## explicit
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1
@@ -1412,5 +1412,5 @@ sigs.k8s.io/yaml
 # k8s.io/code-generator => k8s.io/code-generator v0.21.4
 # knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211209162855-b11166348c00
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211208110616-40a484dbda5d
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211210171029-ba58c7bfb0c4
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211214091540-6e189b3522ba
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211116134039-c59569c7a251
