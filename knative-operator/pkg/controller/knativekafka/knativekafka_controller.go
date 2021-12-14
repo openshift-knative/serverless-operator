@@ -241,9 +241,13 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *serve
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
-	rbacProxyTranform, err := monitoring.GetRBACProxyInjectTransformer(r.client)
-	if err != nil {
-		return err
+	// If in deletion we don't apply any monitoring transformer to kafka components and transformer will be nil and skipped.
+	var rbacProxyTranform mf.Transformer
+	if instance.GetDeletionTimestamp() == nil {
+		var err error
+		if rbacProxyTranform, err = monitoring.GetRBACProxyInjectTransformer(r.client); err != nil {
+			return err
+		}
 	}
 	m, err := manifest.Transform(
 		mf.InjectOwner(instance),

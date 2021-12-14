@@ -110,6 +110,11 @@ func (v *Validator) validateShape(_ context.Context, ke *serverlessoperatorv1alp
 
 // validate that KnativeEventing is installed as a hard dep
 func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+	// skip check if in deletion phase as Eventing maybe already deleted
+	// allow deletion to proceed
+	if ke.GetDeletionTimestamp() != nil {
+		return true, "", nil
+	}
 	// check to see if we can find KnativeEventing
 	list := &operatorv1alpha1.KnativeEventingList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
