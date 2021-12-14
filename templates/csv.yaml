@@ -390,22 +390,22 @@ spec:
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
         # itself.
-        - name: knative-openshift
+        - name: knative-operator
           spec:
             replicas: 1
             selector:
               matchLabels:
-                name: knative-openshift
+                name: knative-operator
             template:
               metadata:
                 annotations:
                   sidecar.istio.io/inject: "false"
                 labels:
-                  name: knative-openshift
+                  name: knative-operator
               spec:
-                serviceAccountName: knative-openshift
+                serviceAccountName: knative-operator
                 containers:
-                  - name: knative-openshift
+                  - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
                     imagePullPolicy: Always
@@ -418,7 +418,7 @@ spec:
                           fieldRef:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
-                        value: knative-openshift
+                        value: knative-operator
                       - name: SYSTEM_NAMESPACE
                         valueFrom:
                           fieldRef:
@@ -441,16 +441,16 @@ spec:
 
         # Openshift specific extensions in the "old" operator format. Ships KnativeKafka and
         # other Openshift specifica that have not yet been moved to the operator above.
-        - name: knative-operator
+        - name: knative-openshift
           spec:
             replicas: 1
             selector:
               matchLabels:
-                name: knative-operator
+                name: knative-openshift
             template:
               metadata:
                 labels:
-                  name: knative-operator
+                  name: knative-openshift
               spec:
                 serviceAccountName: knative-operator
                 initContainers:
@@ -467,7 +467,7 @@ spec:
                       - mountPath: /cli-artifacts
                         name: cli-artifacts
                 containers:
-                  - name: knative-operator
+                  - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
                     imagePullPolicy: Always
@@ -493,13 +493,13 @@ spec:
                           fieldRef:
                             fieldPath: metadata.namespace
                       - name: DEPLOYMENT_NAME
-                        value: "knative-operator"
+                        value: "knative-openshift"
                       - name: POD_NAME
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
-                        value: "knative-operator"
+                        value: "knative-openshift"
                       - name: REQUIRED_SERVING_NAMESPACE
                         value: "knative-serving"
                       - name: REQUIRED_EVENTING_NAMESPACE
@@ -673,10 +673,10 @@ spec:
       webhookPath: /mutate-knativeservings
 
   relatedImages:
-    - name: knative-openshift
+    - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:openshift-knative-operator
-    - name: knative-operator
+    - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.ci.openshift.org/openshift/openshift-serverless-nightly:knative-operator
     - name: knative-openshift-ingress
