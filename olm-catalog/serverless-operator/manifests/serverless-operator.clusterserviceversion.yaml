@@ -477,6 +477,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+                      - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
+                        value: "registry.ci.openshift.org/knative/release-0.26:client-plugin-event-sender"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -614,6 +616,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+                      - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
+                        value: "registry.ci.openshift.org/knative/release-0.26:client-plugin-event-sender"
                       - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
                         value: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-source-controller"
                       - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
@@ -849,6 +853,8 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-channel-dispatcher"
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+    - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
+      image: "registry.ci.openshift.org/knative/release-0.26:client-plugin-event-sender"
     - name: "KAFKA_IMAGE_kafka-controller-manager__manager"
       image: "registry.ci.openshift.org/openshift/knative-v0.26.0:knative-eventing-kafka-source-controller"
     - name: "KAFKA_IMAGE_KAFKA_RA_IMAGE"
