@@ -1,8 +1,8 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
-index 8e04200d..66a6898d 100644
+index 500b1998d..c9caae14a 100644
 --- a/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
-@@ -1023,42 +1023,6 @@ spec:
+@@ -1052,42 +1052,6 @@ spec:
        terminationGracePeriodSeconds: 300
 
  ---
@@ -26,7 +26,7 @@ index 8e04200d..66a6898d 100644
 -  name: kafka-webhook
 -  namespace: knative-eventing
 -  labels:
--    eventing.knative.dev/release: devel
+-    kafka.eventing.knative.dev/release: "v1.0.0"
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1

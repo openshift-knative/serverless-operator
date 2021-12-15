@@ -22,16 +22,10 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path:  "./channel/1-channel-consolidated.yaml",
 		fails: false,
 	}, {
-		path:  "./channel/2-channel-post-install.yaml",
-		fails: false,
-	}, {
 		path:  "./source/1-source.yaml",
 		fails: false,
 	}, {
-		path:  "./broker/1-eventing-kafka-controller.yaml",
-		fails: false,
-	}, {
-		path:  "./broker/2-eventing-kafka-broker.yaml",
+		path:  "./broker/1-eventing-kafka.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",
