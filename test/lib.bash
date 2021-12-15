@@ -243,6 +243,7 @@ function teardown {
   logger.warn "Teardown 💀"
   teardown_serverless
   teardown_tracing
+  # shellcheck disable=SC2153
   delete_namespaces "${SYSTEM_NAMESPACES[@]}" "${TEST_NAMESPACES[@]}"
   delete_catalog_source
   delete_users
