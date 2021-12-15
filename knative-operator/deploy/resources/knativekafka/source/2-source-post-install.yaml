@@ -33,11 +33,11 @@ rules:
       - "watch"
   # Our own resources we care about.
   - apiGroups:
-      - "messaging.knative.dev"
+      - "sources.knative.dev"
     resources:
-      - "kafkachannels"
-      - "kafkachannels/finalizers"
-      - "kafkachannels/status"
+      - "kafkasources"
+      - "kafkasources/finalizers"
+      - "kafkasources/status"
     verbs:
       - "get"
       - "list"
@@ -71,7 +71,7 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: knative-eventing-kafka-channel-post-install-job
+  name: knative-eventing-kafka-source-post-install-job
   namespace: knative-eventing
   labels:
     kafka.eventing.knative.dev/release: "v1.0.0"
@@ -79,16 +79,16 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-eventing-kafka-channel-post-install-job-role-binding
+  name: knative-eventing-kafka-source-post-install-job-role-binding
   labels:
     kafka.eventing.knative.dev/release: "v1.0.0"
 subjects:
   - kind: ServiceAccount
-    name: knative-eventing-kafka-channel-post-install-job
+    name: knative-eventing-kafka-source-post-install-job
     namespace: knative-eventing
 roleRef:
   kind: ClusterRole
-  name: knative-eventing-kafka-channel-post-install-job-role
+  name: knative-eventing-kafka-source-post-install-job-role
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -109,10 +109,10 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: storage-version-migration-eventing-kafka-channel-
+  generateName: storage-version-migration-eventing-kafka-source-
   namespace: knative-eventing
   labels:
-    app: "storage-version-migration-eventing-kafka-channel"
+    app: "storage-version-migration-eventing-kafka-source"
     kafka.eventing.knative.dev/release: "v1.0.0"
 spec:
   ttlSecondsAfterFinished: 600
@@ -120,17 +120,17 @@ spec:
   template:
     metadata:
       labels:
-        app: "storage-version-migration-eventing-kafka-channel"
+        app: "storage-version-migration-eventing-kafka-source"
         kafka.eventing.knative.dev/release: "v1.0.0"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: knative-eventing-kafka-channel-post-install-job
+      serviceAccountName: knative-eventing-kafka-source-post-install-job
       restartPolicy: OnFailure
       containers:
         - name: migrate
           image: TO_BE_REPLACED
           args:
-            - "kafkachannels.messaging.knative.dev"
+            - "kafkasources.messaging.knative.dev"
 
 ---

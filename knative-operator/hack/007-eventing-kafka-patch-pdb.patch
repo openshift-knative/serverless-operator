@@ -1,10 +1,10 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml b/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
-index 66a6898d..23ce5efe 100644
+index c9caae14a..5d64f171c 100644
 --- a/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
-@@ -1032,7 +1032,7 @@ metadata:
+@@ -1061,7 +1061,7 @@ metadata:
    labels:
-     eventing.knative.dev/release: devel
+     kafka.eventing.knative.dev/release: "v1.0.0"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 0
