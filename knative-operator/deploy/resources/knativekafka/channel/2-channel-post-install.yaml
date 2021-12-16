@@ -168,6 +168,7 @@ metadata:
     app: "kafkachannel-retentionduration-update"
     kafka.eventing.knative.dev/release: "v0.26.0"
 spec:
+  ttlSecondsAfterFinished: 600
   backoffLimit: 10
   template:
     metadata:
