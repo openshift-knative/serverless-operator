@@ -32,6 +32,14 @@ metadata:
             "name": "knative-kafka"
           },
           "spec": {
+            "broker": {
+              "enabled": false,
+              "defaultConfig": {
+                "numPartitions": 10,
+                "replicationFactor": 3,
+                "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
+              }
+            },
             "source": {
               "enabled": false
             },
