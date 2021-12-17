@@ -35,8 +35,12 @@ function download {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     target_file="$target_dir/$index-$file"
-    url="https://github.com/knative/$component/releases/download/$version/$file"
 
+    if [[ "${component}" == "serving" ]]; then
+      url="https://github.com/knative/$component/releases/download/knative-$version/$file"
+    else
+      url="https://github.com/knative/$component/releases/download/$version/$file"
+    fi
     wget --no-check-certificate "$url" -O "$target_file"
 
     # Break all image references so we know our overrides work correctly.
@@ -73,7 +77,7 @@ function download_ingress {
 #
 # DOWNLOAD SERVING
 #
-download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
+download serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
 
 # Drop namespace from manifest.
 git apply "$root/openshift-knative-operator/hack/001-serving-namespace-deletion.patch"
@@ -85,9 +89,9 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patc
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
-download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
+download_ingress net-istio "v$(metadata.get dependencies.net_istio_download)" "${istio_files[@]}"
 
-url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get dependencies.kourier)/kourier.yaml"
+url="https://github.com/knative-sandbox/net-kourier/releases/download/knative-v$(metadata.get dependencies.kourier)/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
