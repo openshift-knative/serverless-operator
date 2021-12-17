@@ -23,8 +23,6 @@ import (
 	"github.com/Shopify/sarama"
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"knative.dev/eventing-kafka-broker/control-plane/pkg/security"
 )
 
 // TopicConfig contains configurations for creating a topic.
@@ -103,44 +101,38 @@ func DeleteTopic(admin sarama.ClusterAdmin, topic string) (string, error) {
 	return topic, nil
 }
 
-func (f NewClusterAdminFunc) CreateTopicIfDoesntExist(logger *zap.Logger, topic string, config *TopicConfig, secOptions security.ConfigOption) (string, error) {
-
-	kafkaClusterAdmin, err := GetClusterAdmin(f, config.BootstrapServers, secOptions)
-	if err != nil {
-		return topic, err
+func AreTopicsPresentAndValid(kafkaClusterAdmin sarama.ClusterAdmin, topics ...string) (bool, error) {
+	if len(topics) == 0 {
+		return false, fmt.Errorf("expected at least one topic, got 0")
 	}
-	defer kafkaClusterAdmin.Close()
 
-	return CreateTopicIfDoesntExist(kafkaClusterAdmin, logger, topic, config)
+	metadata, err := kafkaClusterAdmin.DescribeTopics(topics)
+	if err != nil {
+		return false, fmt.Errorf("failed to describe topics %v: %w", topics, err)
+	}
+
+	metadataByTopic := make(map[string]*sarama.TopicMetadata, len(metadata))
+	for _, m := range metadata {
+		metadataByTopic[m.Name] = m
+	}
+
+	for _, t := range topics {
+		m, ok := metadataByTopic[t]
+		if !ok || !isValidSingleTopicMetadata(m, t) {
+			return false, InvalidOrNotPresentTopic{Topic: t}
+		}
+	}
+	return true, nil
 }
 
-func (f NewClusterAdminFunc) DeleteTopic(topic string, bootstrapServers []string, secOptions security.ConfigOption) (string, error) {
-
-	kafkaClusterAdmin, err := GetClusterAdmin(f, bootstrapServers, secOptions)
-	if err != nil {
-		return topic, err
-	}
-	defer kafkaClusterAdmin.Close()
-
-	return DeleteTopic(kafkaClusterAdmin, topic)
+func isValidSingleTopicMetadata(metadata *sarama.TopicMetadata, topic string) bool {
+	return len(metadata.Partitions) > 0 && metadata.Name == topic && !metadata.IsInternal
 }
 
-func (f NewClusterAdminFunc) IsTopicPresentAndValid(topic string, bootstrapServers []string, secOptions security.ConfigOption) (bool, error) {
-
-	kafkaClusterAdmin, err := GetClusterAdmin(f, bootstrapServers, secOptions)
-	if err != nil {
-		return false, err
-	}
-	defer kafkaClusterAdmin.Close()
-
-	metadata, err := kafkaClusterAdmin.DescribeTopics([]string{topic})
-	if err != nil {
-		return false, fmt.Errorf("failed to describe topic %s: %w", topic, err)
-	}
-
-	return isValidSingleTopicMetadata(metadata, topic), nil
+type InvalidOrNotPresentTopic struct {
+	Topic string
 }
 
-func isValidSingleTopicMetadata(metadata []*sarama.TopicMetadata, topic string) bool {
-	return len(metadata) == 1 && metadata[0].Name == topic && !metadata[0].IsInternal
+func (it InvalidOrNotPresentTopic) Error() string {
+	return fmt.Sprintf("invalid topic %s", it.Topic)
 }

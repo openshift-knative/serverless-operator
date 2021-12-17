@@ -260,10 +260,6 @@ function test_setup() {
 
   # Publish test images.
   echo ">> Publishing test images from eventing"
-  # We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
-  # path has to be a GOPATH.  The two slashes at the beginning are to anchor the match so that running the test
-  # twice doesn't re-parse the yaml and cause errors.
-  sed -i 's@//knative.dev/eventing/test/test_images@//knative.dev/eventing-kafka/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
   $(dirname $0)/upload-test-images.sh "${VENDOR_EVENTING_TEST_IMAGES}" e2e || fail_test "Error uploading test images"
   $(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
 }
@@ -586,7 +582,7 @@ function test_mt_source() {
     progress="${progress}."
     iterations=$((iterations + 1))
     kubectl get kafkasources --all-namespaces -oyaml
-    sleep 3
+    sleep 5
   done
 
   uninstall_mt_source || return 1

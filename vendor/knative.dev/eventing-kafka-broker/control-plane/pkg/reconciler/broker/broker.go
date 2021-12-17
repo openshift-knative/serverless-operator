@@ -65,9 +65,9 @@ type Reconciler struct {
 	bootstrapServersLock         sync.RWMutex
 	ConfigMapLister              corelisters.ConfigMapLister
 
-	// ClusterAdmin creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
+	// NewKafkaClusterAdmin creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
 	// mock the function used during the reconciliation loop.
-	ClusterAdmin kafka.NewClusterAdminFunc
+	NewKafkaClusterAdmin kafka.NewClusterAdminFunc
 
 	Configs *Configs
 }
@@ -125,7 +125,20 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 		return fmt.Errorf("failed to track secret: %w", err)
 	}
 
-	topic, err := r.ClusterAdmin.CreateTopicIfDoesntExist(logger, kafka.Topic(TopicPrefix, broker), topicConfig, securityOption)
+	topicName := kafka.Topic(TopicPrefix, broker)
+
+	saramaConfig, err := kafka.GetSaramaConfig(securityOption)
+	if err != nil {
+		return statusConditionManager.FailedToCreateTopic(topicName, fmt.Errorf("error getting cluster admin config: %w", err))
+	}
+
+	kafkaClusterAdmin, err := r.NewKafkaClusterAdmin(topicConfig.BootstrapServers, saramaConfig)
+	if err != nil {
+		return statusConditionManager.FailedToCreateTopic(topicName, fmt.Errorf("cannot obtain Kafka cluster admin, %w", err))
+	}
+	defer kafkaClusterAdmin.Close()
+
+	topic, err := kafka.CreateTopicIfDoesntExist(kafkaClusterAdmin, logger, topicName, topicConfig)
 	if err != nil {
 		return statusConditionManager.FailedToCreateTopic(topic, err)
 	}
@@ -150,10 +163,11 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 	logger.Debug("Got contract data from config map", zap.Any(base.ContractLogKey, ct))
 
 	// Get resource configuration.
-	brokerResource, err := r.getBrokerResource(ctx, topic, broker, secret, topicConfig)
+	brokerResource, err := r.reconcilerBrokerResource(ctx, topic, broker, secret, topicConfig)
 	if err != nil {
 		return statusConditionManager.FailedToGetConfig(err)
 	}
+	coreconfig.SetDeadLetterSinkURIFromEgressConfig(&broker.Status.DeliveryStatus, brokerResource.EgressConfig)
 
 	brokerIndex := coreconfig.FindResource(ct, broker.UID)
 	// Update contract data with the new contract configuration
@@ -239,20 +253,8 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 
 	logger.Debug("Got contract data from config map", zap.Any(base.ContractLogKey, ct))
 
-	brokerIndex := coreconfig.FindResource(ct, broker.UID)
-	if brokerIndex != coreconfig.NoResource {
-		coreconfig.DeleteResource(ct, brokerIndex)
-
-		logger.Debug("Broker deleted", zap.Int("index", brokerIndex))
-
-		// Resource changed, increment contract generation.
-		coreconfig.IncrementContractGeneration(ct)
-
-		// Update the configuration map with the new contract data.
-		if err := r.UpdateDataPlaneConfigMap(ctx, ct, contractConfigMap); err != nil {
-			return err
-		}
-		logger.Debug("Contract config map updated")
+	if err := r.DeleteResource(ctx, logger, broker.GetUID(), ct, contractConfigMap); err != nil {
+		return err
 	}
 
 	// We update receiver and dispatcher pods annotation regardless of our contract changed or not due to the fact
@@ -297,7 +299,22 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 	// get security option for Sarama with secret info in it
 	securityOption := security.NewSaramaSecurityOptionFromSecret(secret)
 
-	topic, err := r.ClusterAdmin.DeleteTopic(kafka.Topic(TopicPrefix, broker), topicConfig.BootstrapServers, securityOption)
+	saramaConfig, err := kafka.GetSaramaConfig(securityOption)
+	if err != nil {
+		// even in error case, we return `normal`, since we are fine with leaving the
+		// topic undeleted e.g. when we lose connection
+		return fmt.Errorf("error getting cluster admin sarama config: %w", err)
+	}
+
+	kafkaClusterAdmin, err := r.NewKafkaClusterAdmin(topicConfig.BootstrapServers, saramaConfig)
+	if err != nil {
+		// even in error case, we return `normal`, since we are fine with leaving the
+		// topic undeleted e.g. when we lose connection
+		return fmt.Errorf("cannot obtain Kafka cluster admin, %w", err)
+	}
+	defer kafkaClusterAdmin.Close()
+
+	topic, err := kafka.DeleteTopic(kafkaClusterAdmin, kafka.Topic(TopicPrefix, broker))
 	if err != nil {
 		return err
 	}
@@ -359,7 +376,7 @@ func (r *Reconciler) defaultConfig() (*kafka.TopicConfig, error) {
 	}, nil
 }
 
-func (r *Reconciler) getBrokerResource(ctx context.Context, topic string, broker *eventing.Broker, secret *corev1.Secret, config *kafka.TopicConfig) (*contract.Resource, error) {
+func (r *Reconciler) reconcilerBrokerResource(ctx context.Context, topic string, broker *eventing.Broker, secret *corev1.Secret, config *kafka.TopicConfig) (*contract.Resource, error) {
 	resource := &contract.Resource{
 		Uid:    string(broker.UID),
 		Topics: []string{topic},
