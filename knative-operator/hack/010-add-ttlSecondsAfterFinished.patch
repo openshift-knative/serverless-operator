@@ -1,0 +1,12 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+index dd039a9a7..47bf47a26 100644
+--- a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
++++ b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+@@ -168,6 +168,7 @@ metadata:
+     app: "kafkachannel-retentionduration-update"
+     kafka.eventing.knative.dev/release: "v0.26.0"
+ spec:
++  ttlSecondsAfterFinished: 600
+   backoffLimit: 10
+   template:
+     metadata:

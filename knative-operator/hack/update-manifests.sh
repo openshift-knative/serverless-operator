@@ -55,6 +55,9 @@ git apply "$root/knative-operator/hack/002-eventing-kafka-ctor-role.patch"
 # With 1.21 (1.0.0 knative) we do not need this. upstream has generated name
 git apply "$root/knative-operator/hack/009-generated-job-name.patch"
 
+# This is only for 1.20 branch, we add the ttlSecondsAfterFinished field so that OCP 4.8 can remove it
+git apply "$root/knative-operator/hack/010-add-ttlSecondsAfterFinished.patch"
+
 # Kafka Broker content:
 download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"
 
