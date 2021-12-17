@@ -469,7 +469,7 @@ spec:
                       [
                         "sh",
                         "-c",
-                        "rm -rf /cli-artifacts && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*",
+                        "sudo rm -rf /cli-artifacts && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*",
                       ]
                     volumeMounts:
                       - mountPath: /cli-artifacts
