@@ -512,7 +512,7 @@ spec:
                   - name: cli-artifacts
                     image: registry.ci.openshift.org/openshift/knative-v0.26.0:kn-cli-artifacts
                     imagePullPolicy: Always
-                    command: ["sh", "-c", "cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
+                    command: ["sh", "-c", "rm -rf /cli-artifacts && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
                       - mountPath: /cli-artifacts
                         name: cli-artifacts
