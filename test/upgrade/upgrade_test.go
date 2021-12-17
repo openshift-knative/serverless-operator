@@ -127,13 +127,11 @@ func preUpgradeTests() []pkgupgrade.Operation {
 }
 
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
-	tests := []pkgupgrade.Operation{
-		waitForServicesReady(ctx),
-		eventingupgrade.PostUpgradeTest(),
-		kafkaupgrade.ChannelPostUpgradeTest(),
+	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
+	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
+	tests = append(tests, kafkaupgrade.ChannelPostUpgradeTest(),
 		kafkaupgrade.SourcePostUpgradeTest(),
-		kafkabrokerupgrade.BrokerPostUpgradeTest(),
-	}
+		kafkabrokerupgrade.BrokerPostUpgradeTest())
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
