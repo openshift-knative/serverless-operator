@@ -39,12 +39,18 @@ const (
 	ConditionConfigParsed       apis.ConditionType = "ConfigParsed"
 )
 
-var ConditionSet = apis.NewLivingConditionSet(
+var IngressConditionSet = apis.NewLivingConditionSet(
 	ConditionAddressable,
 	ConditionDataPlaneAvailable,
 	ConditionTopicReady,
 	ConditionConfigMapUpdated,
 	ConditionConfigParsed,
+)
+
+var EgressConditionSet = apis.NewLivingConditionSet(
+	ConditionDataPlaneAvailable,
+	ConditionTopicReady,
+	ConditionConfigMapUpdated,
 )
 
 const (
@@ -53,7 +59,7 @@ const (
 	ReasonDataPlaneNotAvailable  = "Data plane not available"
 	MessageDataPlaneNotAvailable = "Did you install the data plane for this component?"
 
-	ReasonTopicNotPresent = "Topic is not present"
+	ReasonTopicNotPresentOrInvalid = "Topic is not present or invalid"
 )
 
 type Object interface {
@@ -170,14 +176,16 @@ func (manager *StatusConditionManager) TopicReady(topic string) {
 
 func (manager *StatusConditionManager) Reconciled() reconciler.Event {
 
-	object := manager.Object
+	if manager.SetAddress != nil {
+		object := manager.Object
 
-	manager.SetAddress(&apis.URL{
-		Scheme: "http",
-		Host:   network.GetServiceHostname(manager.Configs.IngressName, manager.Configs.SystemNamespace),
-		Path:   fmt.Sprintf("/%s/%s", object.GetNamespace(), object.GetName()),
-	})
-	object.GetConditionSet().Manage(object.GetStatus()).MarkTrue(ConditionAddressable)
+		manager.SetAddress(&apis.URL{
+			Scheme: "http",
+			Host:   network.GetServiceHostname(manager.Configs.IngressName, manager.Configs.SystemNamespace),
+			Path:   fmt.Sprintf("/%s/%s", object.GetNamespace(), object.GetName()),
+		})
+		object.GetConditionSet().Manage(object.GetStatus()).MarkTrue(ConditionAddressable)
+	}
 
 	return nil
 }
@@ -221,24 +229,24 @@ func (manager *StatusConditionManager) ConfigResolved() {
 	manager.Object.GetConditionSet().Manage(manager.Object.GetStatus()).MarkTrue(ConditionConfigParsed)
 }
 
-func (manager *StatusConditionManager) TopicNotPresentOrInvalidErr(err error) error {
+func (manager *StatusConditionManager) TopicsNotPresentOrInvalidErr(topics []string, err error) error {
 	manager.Object.GetConditionSet().Manage(manager.Object.GetStatus()).MarkFalse(
 		ConditionTopicReady,
-		ReasonTopicNotPresent,
+		ReasonTopicNotPresentOrInvalid,
+		"topics %v: %s",
+		topics,
 		err.Error(),
 	)
 
-	return fmt.Errorf("topic is not present: %w", err)
+	return fmt.Errorf("topics %v not present or invalid: %w", topics, err)
 }
 
-func (manager *StatusConditionManager) TopicNotPresentOrInvalid() error {
-
+func (manager *StatusConditionManager) TopicsNotPresentOrInvalid(topics []string) error {
 	manager.Object.GetConditionSet().Manage(manager.Object.GetStatus()).MarkFalse(
 		ConditionTopicReady,
-		ReasonTopicNotPresent,
-		"Check topic configuration",
+		ReasonTopicNotPresentOrInvalid,
+		"Check topics %v configuration",
+		topics,
 	)
-
-	return fmt.Errorf("topic is not present: check topic configuration")
-
+	return fmt.Errorf("topics %v not present or invalid: check topic configuration", topics)
 }

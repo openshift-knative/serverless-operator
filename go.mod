@@ -15,20 +15,20 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.49.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.49.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.31.1
+	github.com/prometheus/common v0.32.1
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.19.1
 	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4
 	k8s.io/client-go v0.21.4
-	knative.dev/eventing v0.26.2-0.20211115113755-3709c3ddbbf5
-	knative.dev/eventing-kafka v0.26.0
+	knative.dev/eventing v0.27.1
+	knative.dev/eventing-kafka v0.27.0
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20211122163617-c1797116a841
-	knative.dev/networking v0.0.0-20210914225408-69ad45454096
-	knative.dev/operator v0.26.3
-	knative.dev/pkg v0.0.0-20210919202233-5ae482141474
-	knative.dev/serving v0.26.1-0.20211022182733-a45951406e94
+	knative.dev/hack v0.0.0-20211210083629-92d8a0a00cb6
+	knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
+	knative.dev/operator v0.27.1
+	knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
+	knative.dev/serving v0.27.1
 	sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -42,8 +42,8 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.21.4
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211209162855-b11166348c00
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211208110616-40a484dbda5d
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211214091540-6e189b3522ba
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211116134039-c59569c7a251
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211209091929-0757c1f1246f
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211201212309-356702dbe01b
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211216103949-764b046ac45d
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211216123441-d433138b15d4
 )
