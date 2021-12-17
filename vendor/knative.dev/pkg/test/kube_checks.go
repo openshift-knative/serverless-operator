@@ -39,7 +39,7 @@ import (
 
 const (
 	interval   = 1 * time.Second
-	podTimeout = 8 * time.Minute
+	podTimeout = 20 * time.Minute
 	logTimeout = 1 * time.Minute
 )
 
