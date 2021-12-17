@@ -8,8 +8,8 @@ root="$(dirname "${BASH_SOURCE[0]}")/../.."
 # shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
-kafka_channel_files=(channel-consolidated)
-kafka_source_files=(source)
+kafka_channel_files=(channel-consolidated channel-post-install)
+kafka_source_files=(source source-post-install)
 kafka_broker_files=(eventing-kafka)
 
 function download_kafka {
@@ -47,6 +47,9 @@ git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
 
 # SRVKE-919: Change the minavailable pdb for kafka-webhook to 0
 git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
+
+# For now we use fixed names
+git apply "$root/knative-operator/hack/002-kafka-migrator-fixed-names.patch"
 
 # Kafka Broker content:
 download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"

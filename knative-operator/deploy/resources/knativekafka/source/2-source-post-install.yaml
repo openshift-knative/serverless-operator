@@ -15,7 +15,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: knative-eventing-kafka-channel-post-install-job-role
+  name: knative-eventing-kafka-source-post-install-job-role
   labels:
     kafka.eventing.knative.dev/release: "v1.0.0"
 rules:
@@ -109,13 +109,12 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: storage-version-migration-eventing-kafka-source-
+  name: storage-version-migration-kafka-source-1.0.0
   namespace: knative-eventing
   labels:
     app: "storage-version-migration-eventing-kafka-source"
     kafka.eventing.knative.dev/release: "v1.0.0"
 spec:
-  ttlSecondsAfterFinished: 600
   backoffLimit: 10
   template:
     metadata:
@@ -131,6 +130,6 @@ spec:
         - name: migrate
           image: TO_BE_REPLACED
           args:
-            - "kafkasources.messaging.knative.dev"
+            - "kafkasources.sources.knative.dev"
 
 ---
