@@ -15,13 +15,9 @@ target_serving_file="$target_dir/operator_v1alpha1_knativeserving_crd.yaml"
 target_eventing_file="$target_dir/operator_v1alpha1_knativeeventing_crd.yaml"
 rm -rf "$target_serving_file" "$target_eventing_file"
 
-if [[ "$version" == "1.0.1" || "$version" == "1.0.0" ]]; then
-  serving_url="https://raw.githubusercontent.com/knative/operator/knative-v1.0.1/config/300-serving.yaml"
-  eventing_url="https://raw.githubusercontent.com/knative/operator/knative-v1.0.0/config/300-eventing.yaml"
-else
-  serving_url="https://raw.githubusercontent.com/knative/operator/$version/config/300-serving.yaml"
-  eventing_url="https://raw.githubusercontent.com/knative/operator/$version/config/300-eventing.yaml"
-fi
+serving_url="https://raw.githubusercontent.com/knative/operator/knative-v1.0.1/config/300-serving.yaml"
+eventing_url="https://raw.githubusercontent.com/knative/operator/knative-v1.0.1/config/300-eventing.yaml"
+
 wget --no-check-certificate "$serving_url" -O "$target_serving_file"
 wget --no-check-certificate "$eventing_url" -O "$target_eventing_file"
 
