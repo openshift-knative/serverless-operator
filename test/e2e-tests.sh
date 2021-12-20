@@ -12,19 +12,11 @@ fi
 debugging.setup
 dump_state.setup
 
+install_strimzi
 create_namespaces
-create_htpasswd_users
-add_roles
 
 install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
-
-# Run serverless-operator specific tests.
-serverless_operator_e2e_tests
-if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  install_strimzi
-  serverless_operator_kafka_e2e_tests
-fi
 
 if [[ $FULL_MESH == "true" ]]; then
   # net-istio does not use knative-serving-ingress namespace.
@@ -36,6 +28,11 @@ else
   ensure_serverless_installed
   trust_router_ca
 fi
+
+create_htpasswd_users
+add_roles
+# Sleep 30 mins and see if Serving tests will return Unauthorized when using user1's credentials.
+sleep 1800
 
 [ -n "$OPENSHIFT_CI" ] && setup_quick_api_deprecation_alerts
 
