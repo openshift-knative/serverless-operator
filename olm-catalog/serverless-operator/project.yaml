@@ -21,9 +21,9 @@ requirements:
     label: 'v4.6-v4.9'
 
 dependencies:
-  serving: 0.26.0
-  kourier: 0.26.0
-  net_istio: 0.26.0
+  serving: 1.0.1
+  kourier: 1.0.1
+  net_istio: 1.0.0
   maistra: 2.1.0
 
   eventing: 0.26.0

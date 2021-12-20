@@ -55,7 +55,7 @@ const (
 
 func NewController(ctx context.Context, watcher configmap.Watcher, configs *Configs) *controller.Impl {
 
-	eventing.RegisterAlternateBrokerConditionSet(base.ConditionSet)
+	eventing.RegisterAlternateBrokerConditionSet(base.IngressConditionSet)
 
 	configmapInformer := configmapinformer.Get(ctx)
 
@@ -71,7 +71,7 @@ func NewController(ctx context.Context, watcher configmap.Watcher, configs *Conf
 			DispatcherLabel:             base.BrokerDispatcherLabel,
 			ReceiverLabel:               base.BrokerReceiverLabel,
 		},
-		ClusterAdmin: sarama.NewClusterAdmin,
+		NewKafkaClusterAdmin: sarama.NewClusterAdmin,
 		KafkaDefaultTopicDetails: sarama.TopicDetail{
 			NumPartitions:     DefaultNumPartitions,
 			ReplicationFactor: DefaultReplicationFactor,

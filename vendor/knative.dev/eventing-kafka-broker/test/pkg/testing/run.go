@@ -28,8 +28,8 @@ const (
 	// Kafka bootstrap server.
 	BootstrapServersPlaintext     = "my-cluster-kafka-bootstrap.kafka:9092"
 	BootstrapServersSsl           = "my-cluster-kafka-bootstrap.kafka:9093"
-	BootstrapServersSaslPlaintext = "my-cluster-kafka-bootstrap.kafka:9094"
-	BootstrapServersSslSaslScram  = "my-cluster-kafka-bootstrap.kafka:9095"
+	BootstrapServersSaslPlaintext = "my-cluster-kafka-bootstrap.kafka:9095"
+	BootstrapServersSslSaslScram  = "my-cluster-kafka-bootstrap.kafka:9094"
 
 	NumPartitions     = 10
 	ReplicationFactor = 3
