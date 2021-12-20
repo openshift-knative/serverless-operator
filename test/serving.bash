@@ -62,7 +62,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     rm ./test/e2e/grpc_test.go
     rm ./test/e2e/http2_test.go
     # Remove h2c test
-    sed -ie '46,50d' ./test/conformance/runtime/protocol_test.go
+    sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
   fi
 
   local parallel=3
