@@ -65,12 +65,7 @@ function download_ingress {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-
-    if [[ "${component}" == "net-istio" ]]; then
-      url="https://raw.githubusercontent.com/knative-sandbox/${component}/knative-${version}/config/${file}"
-    else
-      url="https://raw.githubusercontent.com/knative-sandbox/${component}/${version}/config/${file}"
-    fi
+    url="https://raw.githubusercontent.com/knative-sandbox/${component}/knative-${version}/config/${file}"
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
