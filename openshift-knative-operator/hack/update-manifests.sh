@@ -65,7 +65,12 @@ function download_ingress {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/knative-sandbox/${component}/${version}/config/${file}"
+
+    if [[ "${component}" == "net-istio" ]]; then
+      url="https://raw.githubusercontent.com/knative-sandbox/${component}/knative-${version}/config/${file}"
+    else
+      url="https://raw.githubusercontent.com/knative-sandbox/${component}/${version}/config/${file}"
+    fi
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
@@ -89,7 +94,7 @@ git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patc
 # See also https://issues.redhat.com/browse/SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
-download_ingress net-istio "v$(metadata.get dependencies.net_istio_download)" "${istio_files[@]}"
+download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
 url="https://github.com/knative-sandbox/net-kourier/releases/download/knative-v$(metadata.get dependencies.kourier)/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"

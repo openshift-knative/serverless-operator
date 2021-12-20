@@ -24,7 +24,6 @@ dependencies:
   serving: 1.0.1
   kourier: 1.0.1
   net_istio: 1.0.0
-  net_istio_download: 0.27.0
   maistra: 2.1.0
 
   eventing: 0.26.0
