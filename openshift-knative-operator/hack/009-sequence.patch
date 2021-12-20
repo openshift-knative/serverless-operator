@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
 index 8b3260fa4..9027e215e 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
 @@ -2541,7 +2541,8 @@ spec:
                        type: string
                      spec:

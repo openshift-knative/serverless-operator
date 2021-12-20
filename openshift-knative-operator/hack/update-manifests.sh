@@ -36,11 +36,7 @@ function download {
     file="${files[$i]}.yaml"
     target_file="$target_dir/$index-$file"
 
-    if [[ "${component}" == "serving" ]]; then
-      url="https://github.com/knative/$component/releases/download/knative-$version/$file"
-    else
-      url="https://github.com/knative/$component/releases/download/$version/$file"
-    fi
+    url="https://github.com/knative/$component/releases/download/knative-$version/$file"
     wget --no-check-certificate "$url" -O "$target_file"
 
     # Break all image references so we know our overrides work correctly.
