@@ -12,7 +12,8 @@ install:
 install-operator:
 	INSTALL_SERVING="false" INSTALL_EVENTING="false" ./hack/install.sh
 
-install-all: install-strimzi
+install-all:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_KAFKA="true" ./hack/install.sh
 
 install-serving:
@@ -65,7 +66,8 @@ test-unit:
 test-e2e-testonly:
 	./test/e2e-tests.sh
 
-test-e2e: install
+test-e2e:
+	./hack/install.sh
 	./test/e2e-tests.sh
 	./hack/teardown.sh
 
@@ -73,7 +75,9 @@ test-e2e: install
 test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
-test-e2e-with-kafka: install-all
+test-e2e-with-kafka:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	./hack/teardown.sh
 
@@ -81,7 +85,8 @@ test-e2e-with-kafka: install-all
 test-e2e-with-mesh-testonly:
 	FULL_MESH=true ./test/e2e-tests.sh
 
-test-e2e-with-mesh: install-full-mesh
+test-e2e-with-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 
@@ -93,7 +98,8 @@ test-operator: test-unit test-e2e
 test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-mesh: install-full-mesh
+test-upstream-e2e-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
@@ -102,14 +108,17 @@ test-upstream-e2e-mesh: install-full-mesh
 test-upstream-e2e-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-no-upgrade: install-all
+test-upstream-e2e-no-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-test-upstream-upgrade: install-strimzi
+test-upstream-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
@@ -120,11 +129,13 @@ test-upgrade: test-upstream-upgrade
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-test-ui-e2e: install
+test-ui-e2e:
+	./hack/install.sh
 	./test/ui-e2e-tests.sh
 
 # Run all E2E tests.
-test-all-e2e: install
+test-all-e2e:
+	./hack/install.sh
 	./test/e2e-tests.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
