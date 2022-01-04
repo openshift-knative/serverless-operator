@@ -86,7 +86,7 @@ test-e2e-with-mesh-testonly:
 	FULL_MESH=true ./test/e2e-tests.sh
 
 test-e2e-with-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 
@@ -99,7 +99,7 @@ test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
