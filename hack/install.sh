@@ -15,7 +15,7 @@ set -Eeuo pipefail
 
 debugging.setup
 
-create_namespaces
+create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
 ensure_catalogsource_installed
 ensure_serverless_installed "${INSTALL_PREVIOUS_VERSION}"

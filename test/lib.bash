@@ -7,9 +7,9 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
-NAMESPACES+=("${TEST_NAMESPACE}")
-NAMESPACES+=("serverless-tests2")
-NAMESPACES+=("serverless-tests-mesh")
+declare -a TEST_NAMESPACES
+TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests2" "serverless-tests-mesh")
+export TEST_NAMESPACES
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
@@ -80,9 +80,6 @@ function serverless_operator_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  # make sure knative-serving-ingress namespace is deleted.
-  timeout 600 "[[ \$(oc get ns ${SERVING_NAMESPACE}-ingress --no-headers | wc -l) == 1 ]]"
 }
 
 function serverless_operator_kafka_e2e_tests {
@@ -248,7 +245,8 @@ function teardown {
   logger.warn "Teardown 💀"
   teardown_serverless
   teardown_tracing
-  delete_namespaces
+  # shellcheck disable=SC2153
+  delete_namespaces "${SYSTEM_NAMESPACES[@]}" "${TEST_NAMESPACES[@]}"
   delete_catalog_source
   delete_users
 }
@@ -366,10 +364,15 @@ function create_htpasswd_users {
 
   logger.info 'Generate kubeconfig for each user'
 
-  ctx=$(oc config current-context)
-  cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
-  server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
-  logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+  if oc config current-context >&/dev/null; then
+    ctx=$(oc config current-context)
+    cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
+    server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
+    logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
+  else
+    # Fallback to in-cluster api server service.
+    server="https://kubernetes.default.svc"
+  fi
 
   for i in $(seq 1 "$num_users"); do
     occmd="bash -c '! oc login --insecure-skip-tls-verify=true --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} ${server} > /dev/null'"

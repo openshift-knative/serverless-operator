@@ -3,7 +3,9 @@
 function install_strimzi_operator {
   strimzi_version=$(curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null)
   header "Installing Strimzi Kafka operator"
-  oc create namespace kafka
+  if ! oc get ns kafka &>/dev/null; then
+    oc create namespace kafka
+  fi
   oc -n kafka apply --selector strimzi.io/crd-install=true -f "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml"
   curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml" \
   | sed 's/namespace: .*/namespace: kafka/' \

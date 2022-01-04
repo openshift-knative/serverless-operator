@@ -174,11 +174,6 @@ function add_user {
   name=${1:?Pass a username as arg[1]}
   pass=${2:?Pass a password as arg[2]}
 
-  if oc get user "$name" >/dev/null 2>&1; then
-    logger.success "User ${name} already exists."
-    return 0
-  fi
-
   logger.info "Creating user $name:***"
   if oc get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
     logger.debug 'Secret htpass-secret already existed, updating it.'

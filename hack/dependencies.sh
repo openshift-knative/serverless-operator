@@ -16,4 +16,4 @@ set -Eeuo pipefail
 
 debugging.setup
 
-create_namespaces
+create_namespaces "${SYSTEM_NAMESPACES[@]}"
