@@ -16,6 +16,9 @@ type KnativeKafkaSpec struct {
 	// +optional
 	Source Source `json:"source,omitempty"`
 
+	// Allows configuration for KafkaSink installation
+	// +optional
+	Sink Sink `json:"sink,omitempty"`
 	// Allows configuration for KafkaChannel installation
 	// +optional
 	Channel Channel `json:"channel,omitempty"`
@@ -87,6 +90,12 @@ type Broker struct {
 // Source allows configuration for KafkaSource installation
 type Source struct {
 	// Enabled defines if the KafkaSource installation is enabled
+	Enabled bool `json:"enabled"`
+}
+
+// Sink allows configuration for KafkaSink installation
+type Sink struct {
+	// Enabled defines if the KafkaSink installation is enabled
 	Enabled bool `json:"enabled"`
 }
 

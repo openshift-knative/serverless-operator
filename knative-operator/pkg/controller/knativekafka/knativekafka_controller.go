@@ -6,9 +6,10 @@ import (
 	"os"
 	"strconv"
 
+	mfc "github.com/manifestival/controller-runtime-client"
+
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
-	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -78,10 +79,15 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 
 	kafkaControllerManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACONTROLLER_MANIFEST_PATH")))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
+		return nil, fmt.Errorf("failed to load Kafka Control-Plane manifest: %w", err)
 	}
 
 	kafkaBrokerManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKABROKER_MANIFEST_PATH")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
+	}
+
+	kafkaSinkManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASINK_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
 	}
@@ -93,6 +99,7 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		rawKafkaSourceManifest:     kafkaSourceManifest,
 		rawKafkaControllerManifest: kafkaControllerManifest,
 		rawKafkaBrokerManifest:     kafkaBrokerManifest,
+		rawKafkaSinkManifest:       kafkaSinkManifest,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -136,6 +143,7 @@ type ReconcileKnativeKafka struct {
 	rawKafkaSourceManifest     mf.Manifest
 	rawKafkaControllerManifest mf.Manifest
 	rawKafkaBrokerManifest     mf.Manifest
+	rawKafkaSinkManifest       mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -426,11 +434,22 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
-	// here add the two broker files
-	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
+	// Kafka Control Plane
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && enableControlPlaneManifest(instance.Spec)) || (build == manifestBuildDisabledOnly && !enableControlPlaneManifest(instance.Spec)) {
 		// TODO: RBAC
 		resources = append(resources, r.rawKafkaControllerManifest.Resources()...)
+	}
+
+	// Kafka Broker Data Plane
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
+		// TODO: RBAC
 		resources = append(resources, r.rawKafkaBrokerManifest.Resources()...)
+	}
+
+	// Kafka Sink Data Plan
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Sink.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Sink.Enabled) {
+		// TODO: RBAC
+		resources = append(resources, r.rawKafkaSinkManifest.Resources()...)
 	}
 
 	manifest, err := mf.ManifestFrom(
@@ -441,6 +460,10 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		return nil, fmt.Errorf("failed to build Kafka manifest: %w", err)
 	}
 	return &manifest, nil
+}
+
+func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) bool {
+	return spec.Broker.Enabled || spec.Sink.Enabled
 }
 
 func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
@@ -483,8 +506,17 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				return err
 			}
 
-			// we just keep the sink controller disabled
-			deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=sink-controller"}
+			if spec.Broker.Enabled && spec.Sink.Enabled {
+				// all: nothing to disable
+				deployment.Spec.Template.Spec.Containers[0].Args = nil
+			} else if spec.Broker.Enabled {
+				// only Broker: we disable the sink controllers
+				deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=sink-controller"}
+			} else if spec.Sink.Enabled {
+				// only sink: we disable the Broker controllers
+				deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=broker-controller,trigger-controller"}
+			}
+
 			return scheme.Scheme.Convert(deployment, u, nil)
 		}
 

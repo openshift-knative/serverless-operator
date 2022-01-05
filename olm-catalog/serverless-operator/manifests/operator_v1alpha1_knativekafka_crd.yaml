@@ -66,6 +66,16 @@ spec:
                 required:
                 - enabled
                 type: object
+              sink:
+                description: Allows configuration for KafkaSink installation
+                properties:
+                  enabled:
+                    description: Enabled defines if the KafkaSink installation is
+                      enabled
+                    type: boolean
+                required:
+                  - enabled
+                type: object
               broker:
                 description: Allows configuration for KafkaBroker installation
                 properties:
