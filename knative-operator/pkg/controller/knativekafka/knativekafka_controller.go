@@ -475,6 +475,20 @@ func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Tra
 // setBootstrapServers sets Kafka bootstrapServers value in kafka-broker-config
 func configureKafkaBroker(kafkaBrokerDefaultConfig serverlessoperatorv1alpha1.BrokerDefaultConfig) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		// patch the deployment and enable the relevant controllers
+		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
+
+			var deployment = &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
+				return err
+			}
+
+			// we just keep the sink controller disabled
+			deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=sink-controller"}
+			return scheme.Scheme.Convert(deployment, u, nil)
+		}
+
+		// configure the broker itself
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-broker-config" {
 			log.Info("Found ConfigMap kafka-broker-config, updating it with values from spec")
 

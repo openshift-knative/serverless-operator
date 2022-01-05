@@ -61,3 +61,6 @@ download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERS
 
 # That CM is already there, with Eventing
 git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
+
+# By default we disable all controllers, based on user choice we add them back
+git apply "$root/knative-operator/hack/002-broker-disabled-controllers.patch"

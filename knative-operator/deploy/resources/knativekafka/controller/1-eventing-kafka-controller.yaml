@@ -950,6 +950,8 @@ spec:
       containers:
         - name: controller
           image: TO_BE_REPLACED
+          args:
+            - "--disable-controllers=broker-controller,trigger-controller,sink-controller"
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE

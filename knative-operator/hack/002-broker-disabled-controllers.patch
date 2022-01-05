@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+index 67c586a06..93388a995 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+@@ -950,6 +950,8 @@ spec:
+       containers:
+         - name: controller
+           image: TO_BE_REPLACED
++          args:
++            - "--disable-controllers=broker-controller,trigger-controller,sink-controller"
+           imagePullPolicy: IfNotPresent
+           env:
+             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
