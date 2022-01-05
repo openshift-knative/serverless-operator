@@ -116,12 +116,10 @@ function downstream_serving_e2e_tests {
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
-      --kubeconfig "${kubeconfigs[0]}" \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   else
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
-      --kubeconfig "${kubeconfigs[0]}" \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   fi
@@ -139,7 +137,6 @@ function downstream_eventing_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
@@ -156,7 +153,6 @@ function downstream_knative_kafka_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
