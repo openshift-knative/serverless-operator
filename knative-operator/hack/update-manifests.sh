@@ -64,3 +64,6 @@ git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
 
 # By default we disable all controllers, based on user choice we add them back
 git apply "$root/knative-operator/hack/002-broker-disabled-controllers.patch"
+
+# For now we remove the CRDs, since the "broker" does not yet do anything with them
+git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
