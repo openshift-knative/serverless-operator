@@ -518,6 +518,8 @@ spec:
                         value: deploy/resources/knativekafka/channel
                       - name: KAFKASOURCE_MANIFEST_PATH
                         value: deploy/resources/knativekafka/source
+                      - name: KAFKACONTROLLER_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/controller
                       - name: KAFKABROKER_MANIFEST_PATH
                         value: deploy/resources/knativekafka/broker
                       - name: QUICKSTART_MANIFEST_PATH

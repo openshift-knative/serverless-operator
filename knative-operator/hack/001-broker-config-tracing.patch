@@ -1,7 +1,7 @@
-diff --git a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka.yaml b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka.yaml
-index 778630c8f..6fdce9064 100644
---- a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka.yaml
-+++ b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka.yaml
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+index 923078b98..67c586a06 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
 @@ -643,67 +643,6 @@ data:
        </root>
      </configuration>
