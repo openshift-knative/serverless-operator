@@ -10,7 +10,8 @@ source "$root/hack/lib/__sources__.bash"
 
 kafka_channel_files=(channel-consolidated channel-post-install)
 kafka_source_files=(source source-post-install)
-kafka_broker_files=(eventing-kafka)
+kafka_controller_files=(eventing-kafka-controller)
+kafka_broker_files=(eventing-kafka-broker)
 
 function download_kafka {
   component=$1
@@ -52,6 +53,10 @@ git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 git apply "$root/knative-operator/hack/002-kafka-migrator-fixed-names.patch"
 
 # Kafka Broker content:
+# Control-Plane files:
+download_kafka eventing-kafka-broker controller "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_controller_files[@]}"
+
+#Data-Plane Files:
 download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"
 
 # That CM is already there, with Eventing
