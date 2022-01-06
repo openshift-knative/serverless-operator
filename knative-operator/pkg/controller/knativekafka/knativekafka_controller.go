@@ -263,8 +263,8 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
-		updateEventingKafka(instance.Spec.Channel),
-		configureKafkaBroker(instance.Spec.Broker.DefaultConfig),
+		configureLegacyEventingKafka(instance.Spec.Channel),
+		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
@@ -443,7 +443,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	return &manifest, nil
 }
 
-func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
+func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
 
@@ -472,8 +472,8 @@ func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Tra
 	}
 }
 
-// setBootstrapServers sets Kafka bootstrapServers value in kafka-broker-config
-func configureKafkaBroker(kafkaBrokerDefaultConfig serverlessoperatorv1alpha1.BrokerDefaultConfig) mf.Transformer {
+// configureEventingKafka configures the new Knative Eventing components for Apache Kafka
+func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// patch the deployment and enable the relevant controllers
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
@@ -492,6 +492,7 @@ func configureKafkaBroker(kafkaBrokerDefaultConfig serverlessoperatorv1alpha1.Br
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-broker-config" {
 			log.Info("Found ConfigMap kafka-broker-config, updating it with values from spec")
 
+			kafkaBrokerDefaultConfig := spec.Broker.DefaultConfig
 			if err := unstructured.SetNestedField(u.Object, kafkaBrokerDefaultConfig.BootstrapServers, "data", "bootstrap.servers"); err != nil {
 				return err
 			}
