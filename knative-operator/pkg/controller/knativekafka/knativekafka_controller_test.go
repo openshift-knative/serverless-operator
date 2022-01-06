@@ -368,7 +368,7 @@ func TestUpdateEventingKafka(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := updateEventingKafka(test.kafkaChannel)(test.obj)
+			err := configureLegacyEventingKafka(test.kafkaChannel)(test.obj)
 			if err != nil {
 				t.Fatalf("setAuthSecretNamespace/setAuthSecretName: (%v)", err)
 			}
@@ -382,10 +382,10 @@ func TestUpdateEventingKafka(t *testing.T) {
 
 func TestBrokerCfg(t *testing.T) {
 	tests := []struct {
-		name        string
-		obj         *unstructured.Unstructured
-		kafkaBroker v1alpha1.Broker
-		expect      *unstructured.Unstructured
+		name         string
+		obj          *unstructured.Unstructured
+		knativeKafka v1alpha1.KnativeKafkaSpec
+		expect       *unstructured.Unstructured
 	}{{
 		name: "Update kafka-broker-config with all arguments",
 		obj: &unstructured.Unstructured{
@@ -397,12 +397,14 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			DefaultConfig: v1alpha1.BrokerDefaultConfig{
-				AuthSecretName:    "my-secret",
-				NumPartitions:     12,
-				ReplicationFactor: 3,
-				BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
 			},
 		},
 		expect: &unstructured.Unstructured{
@@ -431,11 +433,13 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			DefaultConfig: v1alpha1.BrokerDefaultConfig{
-				NumPartitions:     12,
-				ReplicationFactor: 3,
-				BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
 			},
 		},
 		expect: &unstructured.Unstructured{
@@ -463,12 +467,14 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			DefaultConfig: v1alpha1.BrokerDefaultConfig{
-				AuthSecretName:    "my-secret",
-				NumPartitions:     12,
-				ReplicationFactor: 3,
-				BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
 			},
 		},
 		expect: &unstructured.Unstructured{
@@ -491,12 +497,14 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			DefaultConfig: v1alpha1.BrokerDefaultConfig{
-				AuthSecretName:    "my-secret",
-				NumPartitions:     12,
-				ReplicationFactor: 3,
-				BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
 			},
 		},
 		expect: &unstructured.Unstructured{
@@ -512,7 +520,7 @@ func TestBrokerCfg(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := configureKafkaBroker(test.kafkaBroker.DefaultConfig)(test.obj)
+			err := configureEventingKafka(test.knativeKafka)(test.obj)
 			if err != nil {
 				t.Fatalf("configureKafkaBroker: (%v)", err)
 			}
