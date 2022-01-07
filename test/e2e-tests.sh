@@ -36,13 +36,7 @@ downstream_serving_e2e_tests
 downstream_eventing_e2e_tests
 downstream_monitoring_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  # TODO: Remove this as this is already installed in ensure_serverless_installed, or use deploy_knativekafka_cr
-  ensure_kafka_no_auth
   downstream_knative_kafka_e2e_tests
-  # ensure_kafka_tls_auth
-  # downstream_knative_kafka_e2e_tests
-  # ensure_kafka_sasl_auth
-  # downstream_knative_kafka_e2e_tests
 fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
