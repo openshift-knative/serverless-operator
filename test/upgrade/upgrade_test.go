@@ -54,6 +54,7 @@ func TestServerlessUpgrade(t *testing.T) {
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkaupgrade.SourceContinualTests(continual.SourceTestOptions{}),
+				kafkabrokerupgrade.BrokerContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
@@ -61,10 +62,6 @@ func TestServerlessUpgrade(t *testing.T) {
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
-					}
-					// Remove this when upgrading from Serverless 1.20 to 1.21.
-					if err := installation.EnableKafkaBroker(ctx); err != nil {
-						c.T.Error("Failed to enable Kafka Broker on KnativeKafka resource:", err)
 					}
 				}),
 			},
@@ -115,6 +112,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		eventingupgrade.PreUpgradeTest(),
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
+		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
