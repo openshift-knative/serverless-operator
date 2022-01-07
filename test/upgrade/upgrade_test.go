@@ -54,6 +54,7 @@ func TestServerlessUpgrade(t *testing.T) {
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkaupgrade.SourceContinualTests(continual.SourceTestOptions{}),
+				kafkabrokerupgrade.BrokerContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
@@ -115,6 +116,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		eventingupgrade.PreUpgradeTest(),
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
+		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
