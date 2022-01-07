@@ -63,10 +63,6 @@ func TestServerlessUpgrade(t *testing.T) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
 					}
-					// Remove this when upgrading from Serverless 1.20 to 1.21.
-					if err := installation.EnableKafkaBroker(ctx); err != nil {
-						c.T.Error("Failed to enable Kafka Broker on KnativeKafka resource:", err)
-					}
 				}),
 			},
 		},
