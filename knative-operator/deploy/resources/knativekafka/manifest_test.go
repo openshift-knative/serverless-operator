@@ -37,6 +37,9 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path:  "./broker/1-eventing-kafka-broker.yaml",
 		fails: false,
 	}, {
+		path:  "./sink/1-eventing-kafka-sink.yaml",
+		fails: false,
+	}, {
 		path:  "./testdata/config-logging.yaml",
 		fails: true,
 	}, {

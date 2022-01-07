@@ -12,6 +12,7 @@ kafka_channel_files=(channel-consolidated channel-post-install)
 kafka_source_files=(source source-post-install)
 kafka_controller_files=(eventing-kafka-controller)
 kafka_broker_files=(eventing-kafka-broker)
+kafka_sink_files=(eventing-kafka-sink)
 
 function download_kafka {
   component=$1
@@ -56,8 +57,11 @@ git apply "$root/knative-operator/hack/002-kafka-migrator-fixed-names.patch"
 # Control-Plane files:
 download_kafka eventing-kafka-broker controller "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_controller_files[@]}"
 
-#Data-Plane Files:
+#Data-Plane Files Broker:
 download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"
+
+#Data-Plane Files Sink:
+download_kafka eventing-kafka-broker sink "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_sink_files[@]}"
 
 # That CM is already there, with Eventing
 git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
