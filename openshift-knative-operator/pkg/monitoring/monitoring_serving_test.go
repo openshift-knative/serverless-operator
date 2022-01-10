@@ -20,11 +20,11 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 	}
 	resources := manifests[0].Resources()
 
-	// We create a service monitor and a service monitor service per deployment
+	// We create a service monitor and a service monitor service per deployment: len(servingDeployments)*2 resources.
 	// One clusterrolebinding for allowing tokenreviews, subjectaccessreviews
-	// to be used by kube proxy. All deployments share the same sa.
-	// Five RBAC resources from rbac-proxy.yaml.
-	expectedServingMonitoringResources := len(servingDeployments)*2 + 6
+	// to be used by kube proxy. All deployments share the same sa: 1 resource.
+	// RBAC resources from rbac-proxy.yaml: 5 resources that don't depend on the deployments number.
+	expectedServingMonitoringResources := len(servingDeployments)*2 + 5 + 1
 
 	if len(resources) != expectedServingMonitoringResources {
 		t.Errorf("Got %d, want %d", len(resources), expectedServingMonitoringResources)
