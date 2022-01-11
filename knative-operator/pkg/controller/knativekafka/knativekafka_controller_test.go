@@ -532,6 +532,101 @@ func TestBrokerCfg(t *testing.T) {
 	}
 }
 
+func TestDisabledControllers(t *testing.T) {
+	tests := []struct {
+		name         string
+		knativeKafka v1alpha1.KnativeKafkaSpec
+		expect       *unstructured.Unstructured
+	}{{
+		name: "just broker",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: true,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: false,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "sink-controller"),
+	}, {
+		name: "just sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: false,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: true,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller"),
+	}, {
+		name: "broker and sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: true,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: true,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, ""),
+	}, {
+		name: "no broker and no sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: false,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: false,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller"),
+	}}
+
+	for _, test := range tests {
+		defaultDeployment := makeEventingKafkaDeployment(t, "")
+		t.Run(test.name, func(t *testing.T) {
+			err := configureEventingKafka(test.knativeKafka)(defaultDeployment)
+			if err != nil {
+				t.Fatalf("configureKafkaBroker: (%v)", err)
+			}
+
+			if !cmp.Equal(test.expect, defaultDeployment) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(defaultDeployment, test.expect))
+			}
+		})
+	}
+}
+
+func makeEventingKafkaDeployment(t *testing.T, disabledControllers string) *unstructured.Unstructured {
+	d := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kafka-controller",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "controller",
+						},
+					},
+				},
+			},
+		},
+	}
+	d.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledControllers}
+
+	result := &unstructured.Unstructured{}
+	err := scheme.Scheme.Convert(d, result, nil)
+	if err != nil {
+		t.Fatalf("Could not create unstructured Deployment: %v, err: %v", d, err)
+	}
+
+	return result
+
+}
+
 func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
 	configBytes, _ := yaml.Marshal(kafka)
 	return string(configBytes)

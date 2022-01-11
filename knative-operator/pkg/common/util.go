@@ -17,6 +17,26 @@ import (
 
 var Log = logf.Log.WithName("knative").WithName("openshift")
 
+// StringMap is a map which key and value are strings
+type StringMap map[string]string
+
+// Removes given slice from StringMap
+func (m StringMap) Remove(toRemove string) StringMap {
+	delete(m, toRemove)
+	return m
+}
+
+// Gets StringMap values as comma separated string
+func (m StringMap) StringValues() string {
+	values := make([]string, 0, len(m))
+
+	for _, v := range m {
+		values = append(values, v)
+	}
+
+	return strings.Join(values, ",")
+}
+
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.
 func Configure(ks *operatorv1alpha1.KnativeServing, cm, key, value string) bool {
 	if ks.Spec.Config == nil {

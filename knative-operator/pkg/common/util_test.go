@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -118,6 +120,20 @@ func environFromMap(envMap map[string]string) []string {
 	}
 
 	return e
+}
+
+func TestStringMap(t *testing.T) {
+	disabledKafkaControllers := common.StringMap{
+		"broker": "broker-controller,trigger-controller",
+		"sink":   "sink-controller",
+	}
+	disabledKafkaControllers.Remove("broker")
+	assert.Equal(t, len(disabledKafkaControllers), 1)
+	assert.NotEmpty(t, disabledKafkaControllers)
+
+	disabledKafkaControllers.Remove("sink")
+	assert.Equal(t, len(disabledKafkaControllers), 0)
+	assert.Empty(t, disabledKafkaControllers)
 }
 
 func TestSetAnnotations(t *testing.T) {

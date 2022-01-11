@@ -408,6 +408,8 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *serverlessoperatorv
 type manifestBuild int
 
 const (
+	broker                                 = "BROKER"
+	sink                                   = "SINK"
 	manifestBuildEnabledOnly manifestBuild = iota
 	manifestBuildDisabledOnly
 	manifestBuildAll
@@ -501,21 +503,28 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		// patch the deployment and enable the relevant controllers
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
 
+			var disabledKafkaControllers = common.StringMap{
+				broker: "broker-controller,trigger-controller",
+				sink:   "sink-controller",
+			}
+
 			var deployment = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 				return err
 			}
 
-			if spec.Broker.Enabled && spec.Sink.Enabled {
-				// all: nothing to disable
-				deployment.Spec.Template.Spec.Containers[0].Args = nil
-			} else if spec.Broker.Enabled {
-				// only Broker: we disable the sink controllers
-				deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=sink-controller"}
-			} else if spec.Sink.Enabled {
-				// only sink: we disable the Broker controllers
-				deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=broker-controller,trigger-controller"}
+			if spec.Broker.Enabled {
+				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(broker)
 			}
+			if spec.Sink.Enabled {
+				// only sink: we remove the Sink controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(sink)
+			}
+
+			// render the actual argument
+			// todo: if we have no disabled controllers left we should filter for the proper argument and remove just that!
+			deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledKafkaControllers.StringValues()}
 
 			return scheme.Scheme.Convert(deployment, u, nil)
 		}
