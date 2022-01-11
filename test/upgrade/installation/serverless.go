@@ -1,9 +1,14 @@
 package installation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+
+	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test"
 	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
 )
@@ -51,5 +56,20 @@ func UpgradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
 
+	return nil
+}
+
+func EnableKafkaSink(ctx *test.Context) error {
+	if _, err := ctx.Clients.Dynamic.
+		Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).
+		Namespace("knative-eventing").
+		Patch(context.Background(),
+			"knative-kafka",
+			types.MergePatchType,
+			[]byte(`{"spec":{"sink":{"enabled": true}}}`),
+			metav1.PatchOptions{},
+		); err != nil {
+		return err
+	}
 	return nil
 }
