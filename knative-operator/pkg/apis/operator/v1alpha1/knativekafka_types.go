@@ -23,6 +23,10 @@ type KnativeKafkaSpec struct {
 	// +optional
 	Channel Channel `json:"channel,omitempty"`
 
+	// A means to override the corresponding entries in the upstream configmaps
+	// +optional
+	Config operatorv1alpha1.ConfigMapData `json:"config,omitempty"`
+
 	// HighAvailability allows specification of HA control plane.
 	// +optional
 	HighAvailability *operatorv1alpha1.HighAvailability `json:"high-availability,omitempty"`

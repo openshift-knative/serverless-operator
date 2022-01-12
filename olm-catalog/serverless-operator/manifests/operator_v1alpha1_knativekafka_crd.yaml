@@ -34,6 +34,14 @@ spec:
             - channel
             - source
             properties:
+              config:
+                additionalProperties:
+                  additionalProperties:
+                    type: string
+                  type: object
+                description: A means to override the corresponding entries in the
+                  upstream configmaps
+                type: object
               channel:
                 description: Allows configuration for KafkaChannel installation
                 properties:

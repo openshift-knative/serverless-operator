@@ -6,6 +6,9 @@ import (
 	"os"
 	"strconv"
 
+	operatorcommon "knative.dev/operator/pkg/reconciler/common"
+	"knative.dev/pkg/logging"
+
 	mfc "github.com/manifestival/controller-runtime-client"
 
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -272,6 +275,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
 		configureLegacyEventingKafka(instance.Spec.Channel),
+		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
