@@ -22,8 +22,6 @@ package upgrade_test
 import (
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"go.uber.org/zap"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
@@ -32,6 +30,9 @@ import (
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
 // FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
@@ -62,6 +63,9 @@ func TestServerlessUpgrade(t *testing.T) {
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
+					}
+					if err := installation.EnableKafkaSink(ctx); err != nil {
+						c.T.Error("Failed to enable KafkaSink on KnativeKafka resource:", err)
 					}
 				}),
 			},
@@ -127,9 +131,12 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
-	tests = append(tests, kafkaupgrade.ChannelPostUpgradeTest(),
+	tests = append(tests,
+		kafkaupgrade.ChannelPostUpgradeTest(),
 		kafkaupgrade.SourcePostUpgradeTest(),
-		kafkabrokerupgrade.BrokerPostUpgradeTest())
+		kafkabrokerupgrade.BrokerPostUpgradeTest(),
+		kafkabrokerupgrade.SinkPostUpgradeTest(),
+	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }

@@ -146,6 +146,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/apiextensions-apiserver v0.21.4 // indirect
+	k8s.io/apiserver v0.21.4 // indirect
 	k8s.io/code-generator v0.21.4 // indirect
 	k8s.io/component-base v0.21.4 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
@@ -168,6 +169,6 @@ replace (
 	// Knative forks.
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211209091929-0757c1f1246f
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211201212309-356702dbe01b
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20211216103949-764b046ac45d
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220111143008-4ae265d2ff89
 	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211216123441-d433138b15d4
 )
