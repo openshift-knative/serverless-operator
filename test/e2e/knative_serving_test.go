@@ -38,34 +38,25 @@ func TestKnativeServing(t *testing.T) {
 			}
 		}
 
+		ingressDeployments := []string{"net-kourier-controller", "3scale-kourier-gateway"}
+		ingressNamespace := servingNamespace + "-ingress"
+
 		// If FULL_MESH is true, net-istio is used instead of net-kourier.
-		mesh := os.Getenv("FULL_MESH")
-		if mesh == "true" {
-			// Check the desired scale of ingress deployments in the knative serving namespace
-			for _, deployment := range []string{"net-istio-controller", "net-istio-webhook"} {
-				if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
-					t.Fatalf("Failed to verify default HA settings for %q: %v", deployment, err)
-				}
+		if os.Getenv("FULL_MESH") == "true" {
+			ingressDeployments = []string{"net-istio-controller", "net-istio-webhook"}
+			ingressNamespace = servingNamespace
+		}
+
+		// Check the desired scale of deployments in the ingress namespace.
+		for _, deployment := range ingressDeployments {
+			if err := test.CheckDeploymentScale(caCtx, ingressNamespace, deployment, haReplicas); err != nil {
+				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
-			// Check the status of ingress deployments in the knative serving namespace
-			for _, deployment := range []string{"net-istio-controller", "net-istio-webhook"} {
-				if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace); err != nil {
-					t.Fatalf("Deployment %s is not ready: %v", deployment, err)
-				}
-			}
-		} else {
-			// Check the desired scale of deployments in the ingress namespace.
-			ingressDeployments := []string{"net-kourier-controller", "3scale-kourier-gateway"}
-			for _, deployment := range ingressDeployments {
-				if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
-					t.Fatalf("Failed to verify default HA settings: %v", err)
-				}
-			}
-			// Check the status of deployments in the ingress namespace.
-			for _, deployment := range ingressDeployments {
-				if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace+"-ingress"); err != nil {
-					t.Fatalf("Deployment %s is not ready: %v", deployment, err)
-				}
+		}
+		// Check the status of deployments in the ingress namespace.
+		for _, deployment := range ingressDeployments {
+			if _, err := test.WithDeploymentReady(caCtx, deployment, ingressNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
 	})
