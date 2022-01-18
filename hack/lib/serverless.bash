@@ -188,10 +188,8 @@ spec:
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
-  - name: domain-mapping
-    replicas: 2
 EOF
-  yq merge "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
+  yq merge -a append "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
     oc apply -n "${SERVING_NAMESPACE}" -f -
 
   # metadata-webhook adds istio annotations for e2e test by webhook.
