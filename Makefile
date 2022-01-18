@@ -67,7 +67,7 @@ test-e2e-testonly:
 	./test/e2e-tests.sh
 
 test-e2e:
-	./hack/install.sh
+	DUMP_STATE="true" ./hack/install.sh
 	./test/e2e-tests.sh
 	./hack/teardown.sh
 
@@ -77,7 +77,7 @@ test-e2e-with-kafka-testonly:
 
 test-e2e-with-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_KAFKA="true" DUMP_STATE="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	./hack/teardown.sh
 
@@ -87,7 +87,7 @@ test-e2e-with-mesh-testonly:
 
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
-	FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true DUMP_STATE="true" ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
@@ -100,7 +100,7 @@ test-upstream-e2e-mesh-testonly:
 
 test-upstream-e2e-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
-	FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true DUMP_STATE="true" ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
@@ -110,7 +110,7 @@ test-upstream-e2e-no-upgrade-testonly:
 
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_KAFKA="true" DUMP_STATE="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
@@ -119,7 +119,7 @@ test-upstream-upgrade-testonly:
 
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" DUMP_STATE="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
@@ -130,12 +130,12 @@ test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
 test-ui-e2e:
-	./hack/install.sh
+	DUMP_STATE="true" ./hack/install.sh
 	./test/ui-e2e-tests.sh
 
 # Run all E2E tests.
 test-all-e2e:
-	./hack/install.sh
+	DUMP_STATE="true" ./hack/install.sh
 	./test/e2e-tests.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
