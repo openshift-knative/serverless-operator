@@ -152,10 +152,10 @@ function deploy_knativeserving_cr {
   # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
   # ensure compatibility with this resource and its spec in the current format.
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
-  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
-
   if [[ $FULL_MESH == "true" ]]; then
-    enable_net_istio
+    deploy_with_istio
+  else
+    oc apply -n "${SERVING_NAMESPACE}" "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
   fi
 
   oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
@@ -163,11 +163,13 @@ function deploy_knativeserving_cr {
   logger.success 'Knative Serving has been installed successfully.'
 }
 
-# enable_net_istio adds patch to KnativeServing:
+# deploy_with_istio installs KnativeServing with the patch:
 # - Set ingress.istio.enbled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
 #   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
-function enable_net_istio {
+function deploy_with_istio {
+  local rootdir patchfile
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   patchfile="$(mktemp -t knative-serving-XXXXX.yaml)"
   cat - << EOF > "${patchfile}"
 spec:
@@ -186,17 +188,8 @@ spec:
   - name: domain-mapping
     replicas: 2
 EOF
-
-  oc patch knativeserving knative-serving \
-    -n "${SERVING_NAMESPACE}" \
-    --type merge --patch-file="${patchfile}"
-
-  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
-
-  logger.success 'KnativeServing has been updated successfully.'
-
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  yq merge "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
+    oc apply -n "${SERVING_NAMESPACE}" -f -
 
   # metadata-webhook adds istio annotations for e2e test by webhook.
   oc apply -f "${rootdir}/serving/metadata-webhook/config"
