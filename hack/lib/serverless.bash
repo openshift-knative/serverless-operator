@@ -145,17 +145,14 @@ function deploy_knativeserving_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]"
 
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-
   # Install Knative Serving
   # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
   # ensure compatibility with this resource and its spec in the current format.
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
-  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
-
   if [[ $FULL_MESH == "true" ]]; then
-    enable_net_istio
+    deploy_with_istio
+  else
+    deploy_with_kourier
   fi
 
   oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
@@ -163,11 +160,19 @@ function deploy_knativeserving_cr {
   logger.success 'Knative Serving has been installed successfully.'
 }
 
-# enable_net_istio adds patch to KnativeServing:
+function deploy_with_kourier {
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
+}
+
+# deploy_with_istio installs KnativeServing with the patch:
 # - Set ingress.istio.enbled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
 #   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
-function enable_net_istio {
+function deploy_with_istio {
+  local rootdir patchfile
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   patchfile="$(mktemp -t knative-serving-XXXXX.yaml)"
   cat - << EOF > "${patchfile}"
 spec:
@@ -183,20 +188,9 @@ spec:
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
-  - name: domain-mapping
-    replicas: 2
 EOF
-
-  oc patch knativeserving knative-serving \
-    -n "${SERVING_NAMESPACE}" \
-    --type merge --patch-file="${patchfile}"
-
-  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
-
-  logger.success 'KnativeServing has been updated successfully.'
-
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  yq merge -a append "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
+    oc apply -n "${SERVING_NAMESPACE}" -f -
 
   # metadata-webhook adds istio annotations for e2e test by webhook.
   oc apply -f "${rootdir}/serving/metadata-webhook/config"
@@ -371,4 +365,44 @@ data:
       }
     }
 EOF
+}
+
+# == State dumps
+
+function dump_state.setup {
+  if (( INTERACTIVE )); then
+    logger.info 'Skipping dump because running as interactive user'
+    return 0
+  fi
+
+  error_handlers.register dump_state
+}
+
+function dump_state {
+  logger.info 'Dumping state...'
+  logger.debug 'Environment variables:'
+  env
+
+  dump_subscriptions
+  gather_knative_state
+}
+
+function dump_subscriptions {
+  logger.info "Dump of subscriptions.operators.coreos.com"
+  # This is for status checking.
+  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
+}
+
+function gather_knative_state {
+  logger.info 'Gather knative state'
+  local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
+  mkdir -p "$gather_dir"
+  IMAGE_OPTION=("--image=quay.io/openshift-knative/must-gather")
+  if [[ $FULL_MESH == true ]]; then
+    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7")
+  fi
+
+  oc --insecure-skip-tls-verify adm must-gather \
+    "${IMAGE_OPTION[@]}" \
+    --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }

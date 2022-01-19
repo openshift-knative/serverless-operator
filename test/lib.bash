@@ -248,46 +248,6 @@ function teardown {
   delete_users
 }
 
-# == State dumps
-
-function dump_state.setup {
-  if (( INTERACTIVE )); then
-    logger.info 'Skipping dump because running as interactive user'
-    return 0
-  fi
-
-  error_handlers.register dump_state
-}
-
-function dump_state {
-  logger.info 'Dumping state...'
-  logger.debug 'Environment variables:'
-  env
-
-  dump_subscriptions
-  gather_knative_state
-}
-
-function dump_subscriptions {
-  logger.info "Dump of subscriptions.operators.coreos.com"
-  # This is for status checking.
-  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
-}
-
-function gather_knative_state {
-  logger.info 'Gather knative state'
-  local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
-  mkdir -p "$gather_dir"
-  IMAGE_OPTION=("--image=quay.io/openshift-knative/must-gather")
-  if [[ $FULL_MESH == true ]]; then
-    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7")
-  fi
-
-  oc --insecure-skip-tls-verify adm must-gather \
-    "${IMAGE_OPTION[@]}" \
-    --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
-}
-
 function check_serverless_alerts {
   logger.info 'Checking Serverless alerts'
   local alerts_file monitoring_route num_alerts

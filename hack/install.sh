@@ -14,6 +14,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 set -Eeuo pipefail
 
 debugging.setup
+dump_state.setup
 
 create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
