@@ -12,9 +12,9 @@
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
     "chalk": "^4.1.2",
-    "cypress": "^8.6.0",
+    "cypress": "^9.3.1",
     "cypress-multi-reporters": "^1.5.0",
-    "cypress-terminal-report": "^3.3.4",
+    "cypress-terminal-report": "^3.4.1",
     "diff": "^5.0.0",
     "mocha": "^9.1.1",
     "mocha-junit-reporter": "^2.0.0",
