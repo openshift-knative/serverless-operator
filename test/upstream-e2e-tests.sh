@@ -12,32 +12,28 @@ fi
 debugging.setup
 dump_state.setup
 
-teardown_serverless
-create_namespaces
-install_catalogsource
 logger.success '🚀 Cluster prepared for testing.'
 
+create_namespaces "${TEST_NAMESPACES[@]}"
 # Install ServiceMesh and enable mTLS.
-if [[ $FULL_MESH == true ]]; then
-  UNINSTALL_MESH="false" install_mesh
-else
+if [[ $FULL_MESH != true ]]; then
   trust_router_ca
 fi
 
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
-  install_serverless_previous
   # Set KafkaChannel as default for upgrade tests.
-  if [[ $INSTALL_KAFKA == "true" ]]; then
+  if [[ $TEST_KNATIVE_KAFKA == "true" ]]; then
     ensure_kafka_channel_default
   fi
   run_rolling_upgrade_tests
-  teardown_serverless
 fi
 
 # Run upstream knative serving, eventing and eventing-kafka tests
 if [[ $TEST_KNATIVE_E2E == true ]]; then
-  ensure_serverless_installed
+  # TODO: Remove this when upstream tests can use in-cluster config.
+  # See https://github.com/knative/eventing/issues/5996 (the same issue affects Eventing Kafka)
+  ensure_kubeconfig
   if [[ $TEST_KNATIVE_KAFKA == true ]]; then
     upstream_knative_eventing_kafka_e2e
   fi

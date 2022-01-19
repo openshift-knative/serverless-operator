@@ -6,9 +6,13 @@ import (
 	"os"
 	"strconv"
 
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorcommon "knative.dev/operator/pkg/reconciler/common"
+	"knative.dev/pkg/logging"
 
 	mfc "github.com/manifestival/controller-runtime-client"
+
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+
 	mf "github.com/manifestival/manifestival"
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -76,17 +80,29 @@ func newReconciler(mgr manager.Manager) (*ReconcileKnativeKafka, error) {
 		return nil, fmt.Errorf("failed to load KafkaSource manifest: %w", err)
 	}
 
+	kafkaControllerManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKACONTROLLER_MANIFEST_PATH")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kafka Control-Plane manifest: %w", err)
+	}
+
 	kafkaBrokerManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKABROKER_MANIFEST_PATH")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
 	}
 
+	kafkaSinkManifest, err := mf.ManifestFrom(mf.Path(os.Getenv("KAFKASINK_MANIFEST_PATH")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load KafkaBroker manifest: %w", err)
+	}
+
 	reconcileKnativeKafka := ReconcileKnativeKafka{
-		client:                  mgr.GetClient(),
-		scheme:                  mgr.GetScheme(),
-		rawKafkaChannelManifest: kafkaChannelManifest,
-		rawKafkaSourceManifest:  kafkaSourceManifest,
-		rawKafkaBrokerManifest:  kafkaBrokerManifest,
+		client:                     mgr.GetClient(),
+		scheme:                     mgr.GetScheme(),
+		rawKafkaChannelManifest:    kafkaChannelManifest,
+		rawKafkaSourceManifest:     kafkaSourceManifest,
+		rawKafkaControllerManifest: kafkaControllerManifest,
+		rawKafkaBrokerManifest:     kafkaBrokerManifest,
+		rawKafkaSinkManifest:       kafkaSinkManifest,
 	}
 	return &reconcileKnativeKafka, nil
 }
@@ -124,11 +140,13 @@ var _ reconcile.Reconciler = &ReconcileKnativeKafka{}
 type ReconcileKnativeKafka struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client                  client.Client
-	scheme                  *runtime.Scheme
-	rawKafkaChannelManifest mf.Manifest
-	rawKafkaSourceManifest  mf.Manifest
-	rawKafkaBrokerManifest  mf.Manifest
+	client                     client.Client
+	scheme                     *runtime.Scheme
+	rawKafkaChannelManifest    mf.Manifest
+	rawKafkaSourceManifest     mf.Manifest
+	rawKafkaControllerManifest mf.Manifest
+	rawKafkaBrokerManifest     mf.Manifest
+	rawKafkaSinkManifest       mf.Manifest
 }
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
@@ -241,9 +259,13 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *serve
 
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
-	rbacProxyTranform, err := monitoring.GetRBACProxyInjectTransformer(r.client)
-	if err != nil {
-		return err
+	// If in deletion we don't apply any monitoring transformer to kafka components and transformer will be nil and skipped.
+	var rbacProxyTranform mf.Transformer
+	if instance.GetDeletionTimestamp() == nil {
+		var err error
+		if rbacProxyTranform, err = monitoring.GetRBACProxyInjectTransformer(r.client); err != nil {
+			return err
+		}
 	}
 	m, err := manifest.Transform(
 		mf.InjectOwner(instance),
@@ -252,8 +274,9 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
-		updateEventingKafka(instance.Spec.Channel),
-		configureKafkaBroker(instance.Spec.Broker),
+		configureLegacyEventingKafka(instance.Spec.Channel),
+		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
+		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
@@ -389,6 +412,8 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *serverlessoperatorv
 type manifestBuild int
 
 const (
+	broker                                 = "BROKER"
+	sink                                   = "SINK"
 	manifestBuildEnabledOnly manifestBuild = iota
 	manifestBuildDisabledOnly
 	manifestBuildAll
@@ -415,10 +440,22 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
-	// here add the two broker files
+	// Kafka Control Plane
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && enableControlPlaneManifest(instance.Spec)) || (build == manifestBuildDisabledOnly && !enableControlPlaneManifest(instance.Spec)) {
+		// TODO: RBAC
+		resources = append(resources, r.rawKafkaControllerManifest.Resources()...)
+	}
+
+	// Kafka Broker Data Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
 		// TODO: RBAC
 		resources = append(resources, r.rawKafkaBrokerManifest.Resources()...)
+	}
+
+	// Kafka Sink Data Plan
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Sink.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Sink.Enabled) {
+		// TODO: RBAC
+		resources = append(resources, r.rawKafkaSinkManifest.Resources()...)
 	}
 
 	manifest, err := mf.ManifestFrom(
@@ -431,7 +468,11 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	return &manifest, nil
 }
 
-func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
+func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) bool {
+	return spec.Broker.Enabled || spec.Sink.Enabled
+}
+
+func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
 
@@ -460,25 +501,56 @@ func updateEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Tra
 	}
 }
 
-// setBootstrapServers sets Kafka bootstrapServers value in kafka-broker-config
-func configureKafkaBroker(kafkaBroker serverlessoperatorv1alpha1.Broker) mf.Transformer {
+// configureEventingKafka configures the new Knative Eventing components for Apache Kafka
+func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		// patch the deployment and enable the relevant controllers
+		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
+
+			var disabledKafkaControllers = common.StringMap{
+				broker: "broker-controller,trigger-controller",
+				sink:   "sink-controller",
+			}
+
+			var deployment = &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
+				return err
+			}
+
+			if spec.Broker.Enabled {
+				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(broker)
+			}
+			if spec.Sink.Enabled {
+				// only sink: we remove the Sink controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(sink)
+			}
+
+			// render the actual argument
+			// todo: if we have no disabled controllers left we should filter for the proper argument and remove just that!
+			deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledKafkaControllers.StringValues()}
+
+			return scheme.Scheme.Convert(deployment, u, nil)
+		}
+
+		// configure the broker itself
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-broker-config" {
 			log.Info("Found ConfigMap kafka-broker-config, updating it with values from spec")
 
-			if err := unstructured.SetNestedField(u.Object, kafkaBroker.BootstrapServers, "data", "bootstrap.servers"); err != nil {
+			kafkaBrokerDefaultConfig := spec.Broker.DefaultConfig
+			if err := unstructured.SetNestedField(u.Object, kafkaBrokerDefaultConfig.BootstrapServers, "data", "bootstrap.servers"); err != nil {
 				return err
 			}
 
-			if err := unstructured.SetNestedField(u.Object, strconv.FormatInt(int64(kafkaBroker.NumPartitions), 10), "data", "default.topic.partitions"); err != nil {
+			if err := unstructured.SetNestedField(u.Object, strconv.FormatInt(int64(kafkaBrokerDefaultConfig.NumPartitions), 10), "data", "default.topic.partitions"); err != nil {
 				return err
 			}
 
-			if err := unstructured.SetNestedField(u.Object, strconv.FormatInt(int64(kafkaBroker.ReplicationFactor), 10), "data", "default.topic.replication.factor"); err != nil {
+			if err := unstructured.SetNestedField(u.Object, strconv.FormatInt(int64(kafkaBrokerDefaultConfig.ReplicationFactor), 10), "data", "default.topic.replication.factor"); err != nil {
 				return err
 			}
-			if kafkaBroker.AuthSecretName != "" {
-				if err := unstructured.SetNestedField(u.Object, kafkaBroker.AuthSecretName, "data", "auth.secret.ref.name"); err != nil {
+			if kafkaBrokerDefaultConfig.AuthSecretName != "" {
+				if err := unstructured.SetNestedField(u.Object, kafkaBrokerDefaultConfig.AuthSecretName, "data", "auth.secret.ref.name"); err != nil {
 					return err
 				}
 			}

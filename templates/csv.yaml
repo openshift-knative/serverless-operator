@@ -32,6 +32,14 @@ metadata:
             "name": "knative-kafka"
           },
           "spec": {
+            "broker": {
+              "enabled": false,
+              "defaultConfig": {
+                "numPartitions": 10,
+                "replicationFactor": 3,
+                "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
+              }
+            },
             "source": {
               "enabled": false
             },
@@ -461,7 +469,7 @@ spec:
                       [
                         "sh",
                         "-c",
-                        "cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*",
+                        "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*",
                       ]
                     volumeMounts:
                       - mountPath: /cli-artifacts
@@ -510,8 +518,12 @@ spec:
                         value: deploy/resources/knativekafka/channel
                       - name: KAFKASOURCE_MANIFEST_PATH
                         value: deploy/resources/knativekafka/source
+                      - name: KAFKACONTROLLER_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/controller
                       - name: KAFKABROKER_MANIFEST_PATH
                         value: deploy/resources/knativekafka/broker
+                      - name: KAFKASINK_MANIFEST_PATH
+                        value: deploy/resources/knativekafka/sink
                       - name: QUICKSTART_MANIFEST_PATH
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH

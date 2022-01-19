@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: metadata-webhook
+  namespace: serving-tests
+  labels:
+    app: webhook
+spec:
+  podSelector:
+    matchLabels:
+      app: webhook
+  ingress:
+  - {}

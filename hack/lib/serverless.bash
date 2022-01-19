@@ -145,17 +145,14 @@ function deploy_knativeserving_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]"
 
-  local rootdir
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-
   # Install Knative Serving
   # Deploy the full version of KnativeServing (vs. minimal KnativeServing). The future releases should
   # ensure compatibility with this resource and its spec in the current format.
   # This is a way to test backwards compatibility of the product with the older full-blown configuration.
-  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
-
   if [[ $FULL_MESH == "true" ]]; then
-    enable_net_istio
+    deploy_with_istio
+  else
+    deploy_with_kourier
   fi
 
   oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
@@ -163,11 +160,19 @@ function deploy_knativeserving_cr {
   logger.success 'Knative Serving has been installed successfully.'
 }
 
-# enable_net_istio adds patch to KnativeServing:
+function deploy_with_kourier {
+  local rootdir
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  oc apply -n "${SERVING_NAMESPACE}" -f "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml"
+}
+
+# deploy_with_istio installs KnativeServing with the patch:
 # - Set ingress.istio.enbled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
 #   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
-function enable_net_istio {
+function deploy_with_istio {
+  local rootdir patchfile
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   patchfile="$(mktemp -t knative-serving-XXXXX.yaml)"
   cat - << EOF > "${patchfile}"
 spec:
@@ -183,20 +188,12 @@ spec:
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
-  - name: domain-mapping
-    replicas: 2
 EOF
-
-  oc patch knativeserving knative-serving \
-    -n "${SERVING_NAMESPACE}" \
-    --type merge --patch-file="${patchfile}"
-
-  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
-
-  logger.success 'KnativeServing has been updated successfully.'
+  yq merge -a append "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
+    oc apply -n "${SERVING_NAMESPACE}" -f -
 
   # metadata-webhook adds istio annotations for e2e test by webhook.
-  oc apply -f https://raw.githubusercontent.com/nak3/metadata-webhook/main/examples/release.yaml
+  oc apply -f "${rootdir}/serving/metadata-webhook/config"
 }
 
 function deploy_knativeeventing_cr {
@@ -244,7 +241,8 @@ metadata:
 spec:
   broker:
     enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
+    defaultConfig:
+      bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
   source:
     enabled: true
   channel:
@@ -284,80 +282,6 @@ function ensure_kafka_channel_default {
   logger.success 'KafkaChannel is set as default.'
 }
 
-
-function ensure_kafka_no_auth {
-  logger.info 'Ensure Knative Kafka using no Kafka auth'
-
-  # Apply Knative Kafka
-  cat <<EOF | oc apply -f - || return $?
-apiVersion: operator.serverless.openshift.io/v1alpha1
-kind: KnativeKafka
-metadata:
-  name: knative-kafka
-  namespace: ${EVENTING_NAMESPACE}
-spec:
-  source:
-    enabled: true
-  channel:
-    enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
-EOF
-
-  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
-
-  logger.success 'Knative Kafka has been set to use no auth successfully.'
-}
-
-function ensure_kafka_tls_auth {
-  logger.info 'Ensure Knative Kafka using TLS auth'
-
-  # Apply Knative Kafka
-  cat <<EOF | oc apply -f - || return $?
-apiVersion: operator.serverless.openshift.io/v1alpha1
-kind: KnativeKafka
-metadata:
-  name: knative-kafka
-  namespace: ${EVENTING_NAMESPACE}
-spec:
-  source:
-    enabled: true
-  channel:
-    enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9093
-    authSecretNamespace: default
-    authSecretName: my-tls-secret
-EOF
-
-  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
-
-  logger.success 'Knative Kafka has been set to use TLS auth successfully.'
-}
-
-function ensure_kafka_sasl_auth {
-  logger.info 'Ensure Knative Kafka using SASL auth'
-
-  # Apply Knative Kafka
-  cat <<EOF | oc apply -f - || return $?
-apiVersion: operator.serverless.openshift.io/v1alpha1
-kind: KnativeKafka
-metadata:
-  name: knative-kafka
-  namespace: ${EVENTING_NAMESPACE}
-spec:
-  source:
-    enabled: true
-  channel:
-    enabled: true
-    bootstrapServers: my-cluster-kafka-bootstrap.kafka:9094
-    authSecretNamespace: default
-    authSecretName: my-sasl-secret
-EOF
-
-  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
-
-  logger.success 'Knative Kafka has been set to use SASL auth successfully.'
-}
-
 function teardown_serverless {
   logger.warn '😭  Teardown Serverless...'
 
@@ -367,44 +291,46 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no knative serving pods running'
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get namespace "${SERVING_NAMESPACE}" &>/dev/null; then
     oc delete namespace "${SERVING_NAMESPACE}"
   fi
   logger.info 'Ensure no ingress pods running'
   timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${INGRESS_NAMESPACE}" >/dev/null 2>&1; then
-    oc delete namespace "${INGRESS_NAMESPACE}"
-  fi
-  # KnativeKafka must be deleted before KnativeEventing due to https://issues.redhat.com/browse/SRVKE-667
-  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeKafka CR'
-    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
-  fi
+  timeout 600 "[[ \$(oc get ns ${INGRESS_NAMESPACE} --no-headers | wc -l) == 1 ]]"
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
     # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
     oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
   fi
+  # Order of deletion should not matter for Kafka and Eventing (SRVKE-667)
+  # Try delete Kafka after Eventing
+  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeKafka CR'
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
+  fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
   timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+  if oc get namespace "${EVENTING_NAMESPACE}" &>/dev/null; then
     oc delete namespace "${EVENTING_NAMESPACE}"
   fi
-
+  logger.info 'Deleting subscription'
   oc delete subscriptions.operators.coreos.com \
     -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
     --ignore-not-found
+  logger.info 'Deleting ClusterServiceVersion'
   for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
       | grep "${OPERATOR}" | cut -f1 -d' '); do
     oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
   done
+  logger.info 'Ensure no operators present'
+  timeout 600 "[[ \$(oc get deployments -n ${OPERATORS_NAMESPACE} -oname | grep -c 'knative') != 0 ]]"
+  logger.info 'Deleting operators namespace'
   oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
-
+  logger.info 'Ensure not CRDs left'
   if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
     oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
   fi
-
   logger.success 'Serverless has been uninstalled.'
 }
 
@@ -439,4 +365,44 @@ data:
       }
     }
 EOF
+}
+
+# == State dumps
+
+function dump_state.setup {
+  if (( INTERACTIVE )); then
+    logger.info 'Skipping dump because running as interactive user'
+    return 0
+  fi
+
+  error_handlers.register dump_state
+}
+
+function dump_state {
+  logger.info 'Dumping state...'
+  logger.debug 'Environment variables:'
+  env
+
+  dump_subscriptions
+  gather_knative_state
+}
+
+function dump_subscriptions {
+  logger.info "Dump of subscriptions.operators.coreos.com"
+  # This is for status checking.
+  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
+}
+
+function gather_knative_state {
+  logger.info 'Gather knative state'
+  local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
+  mkdir -p "$gather_dir"
+  IMAGE_OPTION=("--image=quay.io/openshift-knative/must-gather")
+  if [[ $FULL_MESH == true ]]; then
+    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7")
+  fi
+
+  oc --insecure-skip-tls-verify adm must-gather \
+    "${IMAGE_OPTION[@]}" \
+    --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }

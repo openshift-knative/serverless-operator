@@ -27,17 +27,17 @@ index 000000000..f7ba08f82
 +	return false, nil
 +}
 diff --git a/vendor/knative.dev/pkg/test/spoof/spoof.go b/vendor/knative.dev/pkg/test/spoof/spoof.go
-index f2baa4edf..ec812f751 100644
+index 147a64adc..1cf0ddd7c 100644
 --- a/vendor/knative.dev/pkg/test/spoof/spoof.go
 +++ b/vendor/knative.dev/pkg/test/spoof/spoof.go
 @@ -164,7 +164,7 @@ func (sc *SpoofingClient) Do(req *http.Request, errorRetryCheckers ...interface{
  // If no retry checkers are specified `DefaultErrorRetryChecker` will be used.
  func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, checkers ...interface{}) (*Response, error) {
  	if len(checkers) == 0 {
--		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker)}
-+		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(RouteInconsistencyRetryChecker)}
+-		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker)}
++		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker), ResponseRetryChecker(RouteInconsistencyRetryChecker)}
  	}
- 
+
  	var resp *Response
 @@ -252,6 +252,9 @@ func DefaultErrorRetryChecker(err error) (bool, error) {
  	if isNoRouteToHostError(err) {
@@ -48,4 +48,4 @@ index f2baa4edf..ec812f751 100644
 +	}
  	return false, err
  }
- 
+

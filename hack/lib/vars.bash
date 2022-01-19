@@ -42,9 +42,9 @@ export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
 export ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
 
-declare -a NAMESPACES
-NAMESPACES=("${ZIPKIN_NAMESPACE}" "${OPERATORS_NAMESPACE}")
-export NAMESPACES
+declare -a SYSTEM_NAMESPACES
+SYSTEM_NAMESPACES=("${ZIPKIN_NAMESPACE}" "${OPERATORS_NAMESPACE}")
+export SYSTEM_NAMESPACES
 export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 # Change this when forcing the upgrade to an image that is not yet available via upgrade channel

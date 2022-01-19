@@ -1,0 +1,14 @@
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
+index 8b3260fa4..9027e215e 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
+@@ -2541,7 +2541,8 @@ spec:
+                       type: string
+                     spec:
+                       description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+-                      type: string
++                      type: object
++                      x-kubernetes-preserve-unknown-fields: true
+                 reply:
+                   description: Reply is a Reference to where the result of the last Subscriber gets sent to.
+                   type: object

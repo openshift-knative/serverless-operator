@@ -24,7 +24,3 @@ function upstream_knative_eventing_e2e {
   logger.info 'Starting eventing conformance tests'
   run_conformance_tests
 }
-
-function prepare_knative_eventing_tests {
-  logger.info 'Nothing to prepare for Eventing upgrade tests'
-}

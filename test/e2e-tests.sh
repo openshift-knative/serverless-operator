@@ -9,32 +9,24 @@ set -Eeuo pipefail
 if [ -n "$OPENSHIFT_CI" ]; then
   env
 fi
-debugging.setup
-dump_state.setup
-
-create_namespaces
-create_htpasswd_users
-add_roles
-
-install_catalogsource
-logger.success '🚀 Cluster prepared for testing.'
-
-# Run serverless-operator specific tests.
-serverless_operator_e2e_tests
-if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  install_strimzi
-  serverless_operator_kafka_e2e_tests
-fi
+debugging.setup # both install and test
+dump_state.setup # test
 
 if [[ $FULL_MESH == "true" ]]; then
   # net-istio does not use knative-serving-ingress namespace.
   export INGRESS_NAMESPACE="knative-serving"
-  UNINSTALL_MESH="false" install_mesh
-  ensure_serverless_installed
-  enable_net_istio
 else
-  ensure_serverless_installed
   trust_router_ca
+fi
+
+logger.success '🚀 Cluster prepared for testing.'
+
+# Run serverless-operator specific tests.
+create_namespaces "${TEST_NAMESPACES[@]}"
+create_htpasswd_users && add_roles
+serverless_operator_e2e_tests
+if [[ $TEST_KNATIVE_KAFKA == true ]]; then
+  serverless_operator_kafka_e2e_tests
 fi
 
 [ -n "$OPENSHIFT_CI" ] && setup_quick_api_deprecation_alerts
@@ -44,12 +36,7 @@ downstream_serving_e2e_tests
 downstream_eventing_e2e_tests
 downstream_monitoring_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
-  ensure_kafka_no_auth
   downstream_knative_kafka_e2e_tests
-  # ensure_kafka_tls_auth
-  # downstream_knative_kafka_e2e_tests
-  # ensure_kafka_sasl_auth
-  # downstream_knative_kafka_e2e_tests
 fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts

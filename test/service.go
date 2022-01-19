@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -75,8 +74,8 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 	if err != nil {
 		return err
 	}
-	if d.Status.ReadyReplicas != int32(scale) {
-		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", d.Status.ReadyReplicas, scale)
+	if *d.Spec.Replicas != int32(scale) {
+		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", *d.Spec.Replicas, scale)
 	}
 	return nil
 }
@@ -125,31 +124,6 @@ func WaitForDomainMappingState(ctx *Context, name, namespace string, inState fun
 		return lastState, fmt.Errorf("knative service %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
-}
-
-func WaitForOperatorDepsDeleted(ctx *Context) error {
-	serverlessDependencies := []string{"knative-openshift-ingress",
-		"knative-serving-operator", "knative-eventing-operator", "knative-openshift"}
-
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(context.Background(), metav1.ListOptions{})
-		if err != nil {
-			return true, err
-		}
-		for _, deployment := range existingDeployments.Items {
-			for _, serverlessDep := range serverlessDependencies {
-				if strings.Contains(deployment.Name, serverlessDep) {
-					return false, err
-				}
-			}
-		}
-		return true, err
-	})
-
-	if waitErr != nil {
-		return fmt.Errorf("serverless operator dependencies not deleted in time: %w", waitErr)
-	}
-	return nil
 }
 
 func IsServiceReady(s *servingv1.Service, err error) (bool, error) {

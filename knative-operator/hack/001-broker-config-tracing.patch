@@ -1,8 +1,8 @@
-diff --git a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-controller.yaml
-index 6392bef4..3ae92ec6 100644
---- a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-controller.yaml
-+++ b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-controller.yaml
-@@ -29,67 +29,6 @@ data:
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+index 923078b98..67c586a06 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+@@ -643,67 +643,6 @@ data:
        </root>
      </configuration>
  
@@ -68,5 +68,5 @@ index 6392bef4..3ae92ec6 100644
 -    sample-rate: "0.1"
 -
  ---
- # Copyright 2020 The Knative Authors
+ # Copyright 2021 The Knative Authors
  #

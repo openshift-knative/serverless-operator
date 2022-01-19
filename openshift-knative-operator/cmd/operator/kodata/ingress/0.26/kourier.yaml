@@ -113,7 +113,7 @@ data:
                 endpoint:
                   address:
                     socket_address:
-                      address: "net-kourier-controller.knative-serving-ingress"
+                      address: "net-kourier-controller"
                       port_value: 18000
           http2_protocol_options: {}
           type: STRICT_DNS

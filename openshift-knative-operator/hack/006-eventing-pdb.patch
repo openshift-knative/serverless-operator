@@ -1,9 +1,9 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
 index bbce3549..8b3260fa 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/2-eventing-core.yaml
 @@ -966,7 +966,7 @@ metadata:
-     app.kubernetes.io/version: "0.26.0"
+     app.kubernetes.io/version: "1.0.0"
      app.kubernetes.io/part-of: knative-eventing
  spec:
 -  minAvailable: 80%

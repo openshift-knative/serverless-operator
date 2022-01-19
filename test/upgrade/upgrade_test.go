@@ -22,16 +22,17 @@ package upgrade_test
 import (
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
-	"knative.dev/eventing-kafka/test/upgrade/continual"
-
 	"go.uber.org/zap"
+	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
+	"knative.dev/eventing-kafka/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
 // FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
@@ -54,6 +55,7 @@ func TestServerlessUpgrade(t *testing.T) {
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkaupgrade.SourceContinualTests(continual.SourceTestOptions{}),
+				kafkabrokerupgrade.BrokerContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
@@ -61,6 +63,9 @@ func TestServerlessUpgrade(t *testing.T) {
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
+					}
+					if err := installation.EnableKafkaSink(ctx); err != nil {
+						c.T.Error("Failed to enable KafkaSink on KnativeKafka resource:", err)
 					}
 				}),
 			},
@@ -111,6 +116,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		eventingupgrade.PreUpgradeTest(),
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
+		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
@@ -123,12 +129,14 @@ func preUpgradeTests() []pkgupgrade.Operation {
 }
 
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
-	tests := []pkgupgrade.Operation{
-		waitForServicesReady(ctx),
-		eventingupgrade.PostUpgradeTest(),
+	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
+	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
+	tests = append(tests,
 		kafkaupgrade.ChannelPostUpgradeTest(),
 		kafkaupgrade.SourcePostUpgradeTest(),
-	}
+		kafkabrokerupgrade.BrokerPostUpgradeTest(),
+		kafkabrokerupgrade.SinkPostUpgradeTest(),
+	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }

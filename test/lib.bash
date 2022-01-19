@@ -7,9 +7,9 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
-NAMESPACES+=("${TEST_NAMESPACE}")
-NAMESPACES+=("serverless-tests2")
-NAMESPACES+=("serverless-tests-mesh")
+declare -a TEST_NAMESPACES
+TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests2" "serverless-tests-mesh")
+export TEST_NAMESPACES
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/eventing.bash"
@@ -80,9 +80,6 @@ function serverless_operator_e2e_tests {
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
-
-  # make sure knative-serving-ingress namespace is deleted.
-  timeout 600 "[[ \$(oc get ns ${SERVING_NAMESPACE}-ingress --no-headers | wc -l) == 1 ]]"
 }
 
 function serverless_operator_kafka_e2e_tests {
@@ -119,12 +116,10 @@ function downstream_serving_e2e_tests {
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
-      --kubeconfig "${kubeconfigs[0]}" \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   else
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
-      --kubeconfig "${kubeconfigs[0]}" \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   fi
@@ -142,7 +137,6 @@ function downstream_eventing_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
@@ -159,7 +153,6 @@ function downstream_knative_kafka_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
-    --kubeconfig "${kubeconfigs[0]}" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
@@ -185,15 +178,7 @@ function downstream_monitoring_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local image_version image_template channels
-
-  # Save the rootdir before changing dir
-  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
-
-  prepare_knative_eventing_tests
-  prepare_knative_serving_tests
-
-  cd "$rootdir"
+  local image_version image_template channels common_opts
 
   image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
@@ -201,27 +186,50 @@ function run_rolling_upgrade_tests {
 
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
-  EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false \
-  EVENTING_UPGRADE_TESTS_SERVING_USE=true \
-  EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola \
-  GO_TEST_VERBOSITY=standard-verbose \
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" \
-  go_test_e2e -tags=upgrade -timeout=30m \
-    ./test/upgrade \
-    -channels="${channels}" \
-    --kubeconfigs "${KUBECONFIG}" \
-    --imagetemplate "${image_template}" \
-    --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
-    --csv="${CURRENT_CSV}" \
-    --servingversion="${KNATIVE_SERVING_VERSION}" \
-    --eventingversion="${KNATIVE_EVENTING_VERSION}" \
-    --kafkaversion="${KNATIVE_EVENTING_KAFKA_VERSION}" \
-    --openshiftimage="${UPGRADE_OCP_IMAGE}" \
-    --resolvabledomain \
-    --https
+  export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
+  export EVENTING_UPGRADE_TESTS_SERVING_USE=true
+  export EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola
+  export EVENTING_UPGRADE_TESTS_FINISHEDSLEEP="20s"
+  export GATEWAY_OVERRIDE="kourier"
+  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
+  export GO_TEST_VERBOSITY=standard-verbose
+  export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  # Delete the leftover services.
-  oc delete ksvc --all -n serving-tests
+  common_opts=(./test/upgrade "-tags=upgrade" \
+    "--kubeconfigs=${KUBECONFIG}" \
+    "--channels=${channels}" \
+    "--imagetemplate=${image_template}" \
+    "--catalogsource=${OLM_SOURCE}" \
+    "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
+    "--csv=${CURRENT_CSV}" \
+    "--servingversion=${KNATIVE_SERVING_VERSION}" \
+    "--eventingversion=${KNATIVE_EVENTING_VERSION}" \
+    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_VERSION}" \
+    --resolvabledomain \
+    --https)
+
+  if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
+    # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
+    if ! oc get namespace serving-tests &>/dev/null; then
+      oc create namespace serving-tests
+    fi
+    go_test_e2e -run=TestServerlessUpgrade -timeout=30m "${common_opts[@]}"
+  fi
+
+  # For reuse in downstream test executions. Might be run after Serverless
+  # upgrade or independently.
+  if [[ "${UPGRADE_CLUSTER}" == "true" ]]; then
+    if oc get namespace serving-tests &>/dev/null; then
+      oc delete namespace serving-tests
+    fi
+    oc create namespace serving-tests
+    go_test_e2e -run=TestClusterUpgrade -timeout=190m "${common_opts[@]}" \
+      --openshiftimage="${UPGRADE_OCP_IMAGE}" \
+      --upgradeopenshift
+  fi
+
+  # Delete the leftover namespace with services.
+  oc delete namespace serving-tests
 
   logger.success 'Upgrade tests passed'
 }
@@ -234,49 +242,10 @@ function teardown {
   logger.warn "Teardown 💀"
   teardown_serverless
   teardown_tracing
-  delete_namespaces
+  # shellcheck disable=SC2153
+  delete_namespaces "${SYSTEM_NAMESPACES[@]}" "${TEST_NAMESPACES[@]}"
   delete_catalog_source
   delete_users
-}
-
-# == State dumps
-
-function dump_state.setup {
-  if (( INTERACTIVE )); then
-    logger.info 'Skipping dump because running as interactive user'
-    return 0
-  fi
-
-  error_handlers.register dump_state
-}
-
-function dump_state {
-  logger.info 'Dumping state...'
-  logger.debug 'Environment variables:'
-  env
-
-  dump_subscriptions
-  gather_knative_state
-}
-
-function dump_subscriptions {
-  logger.info "Dump of subscriptions.operators.coreos.com"
-  # This is for status checking.
-  oc get subscriptions.operators.coreos.com -o yaml --all-namespaces || true
-}
-
-function gather_knative_state {
-  logger.info 'Gather knative state'
-  local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
-  mkdir -p "$gather_dir"
-  IMAGE_OPTION=("--image=quay.io/openshift-knative/must-gather")
-  if [[ $FULL_MESH == true ]]; then
-    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7")
-  fi
-
-  oc --insecure-skip-tls-verify adm must-gather \
-    "${IMAGE_OPTION[@]}" \
-    --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
 
 function check_serverless_alerts {
@@ -325,43 +294,9 @@ function create_htpasswd_users {
   local occmd num_users
   num_users=${num_users:-3}
   logger.info "Creating htpasswd for ${num_users} users"
-
-  if oc get secret htpass-secret -n openshift-config -o jsonpath='{.data.htpasswd}' 2>/dev/null | base64 -d > users.htpasswd; then
-    logger.info 'Secret htpass-secret already existed, updating it.'
-    # Add a newline to the end of the file if not already present (htpasswd will butcher it otherwise).
-    [ -n "$(tail -c1 users.htpasswd)" ] && echo >> users.htpasswd
-  else
-    touch users.htpasswd
-  fi
-
-  logger.info 'Add users to htpasswd'
   for i in $(seq 1 "$num_users"); do
-    htpasswd -b users.htpasswd "user${i}" "password${i}"
+    add_user "user${i}" "password${i}"
   done
-
-  oc create secret generic htpass-secret \
-    --from-file=htpasswd="$(pwd)/users.htpasswd" \
-    -n openshift-config \
-    --dry-run=client -o yaml | oc apply -f -
-
-  if oc get oauth.config.openshift.io cluster > /dev/null 2>&1; then
-    oc replace -f openshift/identity/htpasswd.yaml
-  else
-    oc apply -f openshift/identity/htpasswd.yaml
-  fi
-
-  logger.info 'Generate kubeconfig for each user'
-
-  ctx=$(oc config current-context)
-  cluster=$(oc config view -ojsonpath="{.contexts[?(@.name == \"$ctx\")].context.cluster}")
-  server=$(oc config view -ojsonpath="{.clusters[?(@.name == \"$cluster\")].cluster.server}")
-  logger.debug "Context: $ctx, Cluster: $cluster, Server: $server"
-
-  for i in $(seq 1 "$num_users"); do
-    occmd="bash -c '! oc login --insecure-skip-tls-verify=true --kubeconfig=user${i}.kubeconfig --username=user${i} --password=password${i} ${server} > /dev/null'"
-    timeout 600 "${occmd}"
-  done
-
   logger.success "${num_users} htpasswd users created"
 }
 
@@ -370,6 +305,15 @@ function add_roles {
   oc adm policy add-role-to-user admin user1 -n "$TEST_NAMESPACE"
   oc adm policy add-role-to-user edit user2 -n "$TEST_NAMESPACE"
   oc adm policy add-role-to-user view user3 -n "$TEST_NAMESPACE"
+}
+
+function ensure_kubeconfig {
+  if [[ -z "$KUBECONFIG" ]]; then
+    add_user "kubeadmin" "$(head -c 128 < /dev/urandom | base64 | fold -w 8 | head -n 1)"
+    oc adm policy add-cluster-role-to-user cluster-admin kubeadmin
+    KUBECONFIG="$(pwd)/kubeadmin.kubeconfig"
+    export KUBECONFIG
+  fi
 }
 
 function delete_users {

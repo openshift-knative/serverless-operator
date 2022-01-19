@@ -34,6 +34,14 @@ spec:
             - channel
             - source
             properties:
+              config:
+                additionalProperties:
+                  additionalProperties:
+                    type: string
+                  type: object
+                description: A means to override the corresponding entries in the
+                  upstream configmaps
+                type: object
               channel:
                 description: Allows configuration for KafkaChannel installation
                 properties:
@@ -66,30 +74,44 @@ spec:
                 required:
                 - enabled
                 type: object
+              sink:
+                description: Allows configuration for KafkaSink installation
+                properties:
+                  enabled:
+                    description: Enabled defines if the KafkaSink installation is
+                      enabled
+                    type: boolean
+                required:
+                  - enabled
+                type: object
               broker:
                 description: Allows configuration for KafkaBroker installation
                 properties:
-                  bootstrapServers:
-                    description: BootstrapServers is comma separated string of bootstrapservers
-                      that the KafkaBrokers will use
-                    type: string
                   enabled:
                     description: Enabled defines if the KafkaBroker installation is
                       enabled
                     type: boolean
-                  numPartitions:
-                    description: NumPartitions is the number of partitions of a Kafka topic. By default, it is set to 10.
-                    type: integer
-                    default: 10
-                  replicationFactor:
-                    description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 1.
-                    type: integer
-                    maximum: 32767
-                    default: 3
-                  authSecretName:
-                    description: AuthSecretName is the name of the secret that contains Kafka
-                      auth configuration for the Broker.
-                    type: string
+                  defaultConfig:
+                    description: Takes the default configuration settings for Kafka based brokers
+                    properties:
+                      bootstrapServers:
+                        description: BootstrapServers is comma separated string of bootstrapservers
+                          that the KafkaBrokers will use
+                        type: string
+                      numPartitions:
+                        description: NumPartitions is the number of partitions of a Kafka topic. By default, it is set to 10.
+                        type: integer
+                        default: 10
+                      replicationFactor:
+                        description: ReplicationFactor is the replication factor of a Kafka topic. By default, it is set to 3.
+                        type: integer
+                        maximum: 32767
+                        default: 3
+                      authSecretName:
+                        description: AuthSecretName is the name of the secret that contains Kafka
+                          auth configuration for the Broker.
+                        type: string
+                    type: object
                 required:
                   - enabled
                 type: object

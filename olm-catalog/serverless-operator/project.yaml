@@ -1,11 +1,11 @@
 ---
 project:
   name: serverless-operator
-  version: 1.20.0
+  version: 1.21.0
 
 olm:
-  replaces: 1.19.0
-  skipRange: '>=1.19.0 <1.20.0'
+  replaces: 1.20.0
+  skipRange: '>=1.20.0 <1.21.0'
   channels:
     default: 'stable'
     list:
@@ -18,16 +18,16 @@ requirements:
   nodejs: 14.x
   ocpVersion:
     min: '4.6'
-    label: 'v4.6-v4.9'
+    label: 'v4.6-v4.10'
 
 dependencies:
-  serving: 0.26.0
-  kourier: 0.26.0
-  net_istio: 0.26.0
+  serving: 1.0.1
+  kourier: 1.0.1
+  net_istio: 1.0.0
   maistra: 2.1.0
 
-  eventing: 0.26.0
-  eventing_kafka: 0.26.0
-  eventing_kafka_broker: 0.26.0
+  eventing: 1.0.0
+  eventing_kafka: 1.0.0
+  eventing_kafka_broker: 1.0.0
   cli: 0.26.0
-  operator: 0.26.3
+  operator: 1.0.1

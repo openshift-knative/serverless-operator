@@ -35,8 +35,8 @@ function download {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     target_file="$target_dir/$index-$file"
-    url="https://github.com/knative/$component/releases/download/$version/$file"
 
+    url="https://github.com/knative/$component/releases/download/knative-$version/$file"
     wget --no-check-certificate "$url" -O "$target_file"
 
     # Break all image references so we know our overrides work correctly.
@@ -61,7 +61,7 @@ function download_ingress {
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/knative-sandbox/${component}/${version}/config/${file}"
+    url="https://raw.githubusercontent.com/knative-sandbox/${component}/knative-${version}/config/${file}"
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
@@ -73,7 +73,7 @@ function download_ingress {
 #
 # DOWNLOAD SERVING
 #
-download serving "$KNATIVE_SERVING_VERSION" "${serving_files[@]}"
+download serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
 
 # Drop namespace from manifest.
 git apply "$root/openshift-knative-operator/hack/001-serving-namespace-deletion.patch"
@@ -87,13 +87,16 @@ git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
-url="https://github.com/knative-sandbox/net-kourier/releases/download/v$(metadata.get dependencies.kourier)/kourier.yaml"
+url="https://github.com/knative-sandbox/net-kourier/releases/download/knative-v$(metadata.get dependencies.kourier)/kourier.yaml"
 kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
-sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller.knative-serving-ingress/g' "$kourier_file"
+sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller/g' "$kourier_file"
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
+
+# Add networkpolicy for webhook when net-istio is enabled.
+git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
 
 # Make Kourier rollout in a more defensive way so no requests get dropped.
 # TODO: Can probably be removed in 1.21 and/or be sent upstream.
@@ -118,5 +121,5 @@ git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
 # This is the eventing counterpart of SRVKS-670.
 git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
-# Add networkpolicy for webhook when net-istio is enabled.
-git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"
+# TODO: Remove this when we update to upstream 1.1 (for SO 1.22)
+git apply "$root/openshift-knative-operator/hack/009-sequence.patch"

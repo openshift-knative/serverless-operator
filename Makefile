@@ -12,7 +12,8 @@ install:
 install-operator:
 	INSTALL_SERVING="false" INSTALL_EVENTING="false" ./hack/install.sh
 
-install-all: install-strimzi
+install-all:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	INSTALL_KAFKA="true" ./hack/install.sh
 
 install-serving:
@@ -33,6 +34,9 @@ uninstall-strimzi:
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
+install-previous-with-kafka:
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+
 install-mesh:
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 
@@ -45,6 +49,9 @@ install-full-mesh:
 uninstall-full-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
 
+install-with-mesh-enabled:
+  FULL_MESH=true ./hack/install.sh
+
 teardown:
 	./hack/teardown.sh
 
@@ -53,52 +60,87 @@ test-unit:
 	go test ./knative-operator/...
 	go test ./openshift-knative-operator/...
 	go test ./serving/ingress/...
+	go test ./serving/metadata-webhook/...
 
 # Run only SERVING/EVENTING E2E tests from the current repo.
-test-e2e:
+test-e2e-testonly:
 	./test/e2e-tests.sh
 
+test-e2e:
+	./hack/install.sh
+	./test/e2e-tests.sh
+	./hack/teardown.sh
+
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
+test-e2e-with-kafka-testonly:
+	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+
 test-e2e-with-kafka:
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
+	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+mesh
+test-e2e-with-mesh-testonly:
+	FULL_MESH=true ./test/e2e-tests.sh
+
 test-e2e-with-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
-# Run upstream E2E tests including upgrades (Serving, Eventing, ...).
-test-upstream-e2e:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true ./test/upstream-e2e-tests.sh
-
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
-test-upstream-e2e-mesh: test-e2e-with-mesh
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true INSTALL_KAFKA=false TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+test-upstream-e2e-mesh-testonly:
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
+test-upstream-e2e-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true ./test/e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
+test-upstream-e2e-no-upgrade-testonly:
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
+test-upstream-upgrade-testonly:
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade
 
 # Run Console UI e2e tests.
-test-ui-e2e:
+test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-# Run all E2E tests. Used by periodic CI jobs.
-test-all-e2e: test-e2e test-upstream-e2e test-ui-e2e
+test-ui-e2e:
+	./hack/install.sh
+	./test/ui-e2e-tests.sh
+
+# Run all E2E tests.
+test-all-e2e:
+	./hack/install.sh
+	./test/e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	./test/ui-e2e-tests.sh
+	./hack/teardown.sh
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:

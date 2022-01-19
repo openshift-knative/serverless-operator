@@ -16,9 +16,16 @@ type KnativeKafkaSpec struct {
 	// +optional
 	Source Source `json:"source,omitempty"`
 
+	// Allows configuration for KafkaSink installation
+	// +optional
+	Sink Sink `json:"sink,omitempty"`
 	// Allows configuration for KafkaChannel installation
 	// +optional
 	Channel Channel `json:"channel,omitempty"`
+
+	// A means to override the corresponding entries in the upstream configmaps
+	// +optional
+	Config operatorv1alpha1.ConfigMapData `json:"config,omitempty"`
 
 	// HighAvailability allows specification of HA control plane.
 	// +optional
@@ -57,11 +64,7 @@ type KnativeKafkaList struct {
 	Items           []KnativeKafka `json:"items"`
 }
 
-// Broker allows configuration for KafkaBroker installation
-type Broker struct {
-	// Enabled defines if the KafkaBroker installation is enabled
-	Enabled bool `json:"enabled"`
-
+type BrokerDefaultConfig struct {
 	// BootstrapServers is the default comma-separated string of bootstrapservers that the
 	// brokers will use, but can be overridden on the individual broker object's config map.
 	// +optional
@@ -79,9 +82,24 @@ type Broker struct {
 	AuthSecretName string `json:"authSecretName"`
 }
 
+// Broker allows configuration for KafkaBroker installation
+type Broker struct {
+	// Enabled defines if the KafkaBroker installation is enabled
+	Enabled bool `json:"enabled"`
+
+	// DefaultConfig settings for the Openshift cluster
+	DefaultConfig BrokerDefaultConfig `json:"defaultConfig"`
+}
+
 // Source allows configuration for KafkaSource installation
 type Source struct {
 	// Enabled defines if the KafkaSource installation is enabled
+	Enabled bool `json:"enabled"`
+}
+
+// Sink allows configuration for KafkaSink installation
+type Sink struct {
+	// Enabled defines if the KafkaSink installation is enabled
 	Enabled bool `json:"enabled"`
 }
 

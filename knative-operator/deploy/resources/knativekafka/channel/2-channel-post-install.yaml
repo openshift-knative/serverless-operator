@@ -12,44 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: eventing-kafka-v0.26-channel-post-install-job
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: "v0.26.0"
-
----
-# Copyright 2021 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: eventing-kafka-v0.26-channel-post-install-job
+  name: knative-eventing-kafka-channel-post-install-job-role
   labels:
-    eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "v1.0.0"
 rules:
+  # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
-      - "messaging.knative.dev"
+      - "apiextensions.k8s.io"
     resources:
-      - "kafkachannels"
+      - "customresourcedefinitions"
+      - "customresourcedefinitions/status"
     verbs:
       - "get"
       - "list"
       - "update"
+      - "patch"
+      - "watch"
+  # Our own resources we care about.
+  - apiGroups:
+      - "messaging.knative.dev"
+    resources:
+      - "kafkachannels"
+      - "kafkachannels/finalizers"
+      - "kafkachannels/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces"
+    verbs:
+      - "get"
+      - "list"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -66,82 +68,27 @@ rules:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: eventing-kafka-v0.26-channel-post-install-job
+  name: knative-eventing-kafka-channel-post-install-job
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.26.0"
-rules:
-  - apiGroups:
-      - "" # Core API Group
-    resources:
-      - configmaps
-      - secrets
-    verbs:
-      - get
-      - list
-
+    kafka.eventing.knative.dev/release: "v1.0.0"
 ---
-# Copyright 2021 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: eventing-kafka-v0.26-channel-post-install-job
+  name: knative-eventing-kafka-channel-post-install-job-role-binding
   labels:
-    kafka.eventing.knative.dev/release: "v0.26.0"
+    kafka.eventing.knative.dev/release: "v1.0.0"
 subjects:
   - kind: ServiceAccount
-    name: eventing-kafka-v0.26-channel-post-install-job
+    name: knative-eventing-kafka-channel-post-install-job
     namespace: knative-eventing
 roleRef:
   kind: ClusterRole
-  name: eventing-kafka-v0.26-channel-post-install-job
-  apiGroup: rbac.authorization.k8s.io
-
----
-# Copyright 2021 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: eventing-kafka-v0.26-channel-post-install-job
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: "v0.26.0"
-subjects:
-  - kind: ServiceAccount
-    name: eventing-kafka-v0.26-channel-post-install-job
-    namespace: knative-eventing
-roleRef:
-  kind: Role
-  name: eventing-kafka-v0.26-channel-post-install-job
+  name: knative-eventing-kafka-channel-post-install-job-role
   apiGroup: rbac.authorization.k8s.io
 
 ---
@@ -162,37 +109,27 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: v0.26-eventing-kafka-channel-post-install-job
+  name: storage-version-migration-kafka-channel-1.0.0
   namespace: knative-eventing
   labels:
-    app: "kafkachannel-retentionduration-update"
-    kafka.eventing.knative.dev/release: "v0.26.0"
+    app: "storage-version-migration-eventing-kafka-channel"
+    kafka.eventing.knative.dev/release: "v1.0.0"
 spec:
   backoffLimit: 10
   template:
     metadata:
       labels:
-        app: "kafkachannel-v0.26-post-install"
-        eventing.knative.dev/release: devel
+        app: "storage-version-migration-eventing-kafka-channel"
+        kafka.eventing.knative.dev/release: "v1.0.0"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: eventing-kafka-v0.26-channel-post-install-job
+      serviceAccountName: knative-eventing-kafka-channel-post-install-job
       restartPolicy: OnFailure
       containers:
-        - name: post-install
+        - name: migrate
           image: TO_BE_REPLACED
-          env:
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-          volumeMounts:
-            - name: config-kafka
-              mountPath: /etc/config-kafka
-      volumes:
-        - name: config-kafka
-          configMap:
-            name: config-kafka
+          args:
+            - "kafkachannels.messaging.knative.dev"
 
 ---

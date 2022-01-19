@@ -10,7 +10,12 @@ function ensure_namespace {
 
 function create_namespaces {
   logger.info 'Create namespaces'
-  for ns in "${NAMESPACES[@]}"; do
+  if [[ $# -eq 0 ]]; then
+    echo "Pass an array with namespaces as arg[1]" && exit 1
+  fi
+  local namespaces
+  namespaces=("$@")
+  for ns in "${namespaces[@]}"; do
     ensure_namespace "${ns}"
   done
   # Create an OperatorGroup if there are no other ones in the namespace.
@@ -23,17 +28,22 @@ metadata:
   namespace: ${OPERATORS_NAMESPACE}
 EOF
   fi
-  logger.success "Namespaces have been created: ${NAMESPACES[*]}"
+  logger.success "Namespaces have been created: ${namespaces[*]}"
 }
 
 function delete_namespaces {
   logger.info "Deleting namespaces"
-  for ns in "${NAMESPACES[@]}"; do
+  if [[ $# -eq 0 ]]; then
+      echo "Pass an array with namespaces as arg[1]" && exit 1
+  fi
+  local namespaces
+  namespaces=("$@")
+  for ns in "${namespaces[@]}"; do
     if oc get ns "${ns}" >/dev/null 2>&1; then
       logger.info "Waiting until there are no pods in ${ns} to safely remove it..."
       timeout 600 "[[ \$(oc get pods -n $ns --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
       oc delete ns "$ns"
     fi
   done
-  logger.success "Namespaces have been deleted."
+  logger.success "Namespaces have been deleted: ${namespaces[*]}"
 }

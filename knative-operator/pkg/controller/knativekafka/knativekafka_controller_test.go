@@ -368,7 +368,7 @@ func TestUpdateEventingKafka(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := updateEventingKafka(test.kafkaChannel)(test.obj)
+			err := configureLegacyEventingKafka(test.kafkaChannel)(test.obj)
 			if err != nil {
 				t.Fatalf("setAuthSecretNamespace/setAuthSecretName: (%v)", err)
 			}
@@ -382,10 +382,10 @@ func TestUpdateEventingKafka(t *testing.T) {
 
 func TestBrokerCfg(t *testing.T) {
 	tests := []struct {
-		name        string
-		obj         *unstructured.Unstructured
-		kafkaBroker v1alpha1.Broker
-		expect      *unstructured.Unstructured
+		name         string
+		obj          *unstructured.Unstructured
+		knativeKafka v1alpha1.KnativeKafkaSpec
+		expect       *unstructured.Unstructured
 	}{{
 		name: "Update kafka-broker-config with all arguments",
 		obj: &unstructured.Unstructured{
@@ -397,11 +397,15 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -429,10 +433,14 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -459,11 +467,15 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -485,11 +497,15 @@ func TestBrokerCfg(t *testing.T) {
 				},
 			},
 		},
-		kafkaBroker: v1alpha1.Broker{
-			AuthSecretName:    "my-secret",
-			NumPartitions:     12,
-			ReplicationFactor: 3,
-			BootstrapServers:  "example.com:1234",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				DefaultConfig: v1alpha1.BrokerDefaultConfig{
+					AuthSecretName:    "my-secret",
+					NumPartitions:     12,
+					ReplicationFactor: 3,
+					BootstrapServers:  "example.com:1234",
+				},
+			},
 		},
 		expect: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -504,7 +520,7 @@ func TestBrokerCfg(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := configureKafkaBroker(test.kafkaBroker)(test.obj)
+			err := configureEventingKafka(test.knativeKafka)(test.obj)
 			if err != nil {
 				t.Fatalf("configureKafkaBroker: (%v)", err)
 			}
@@ -514,6 +530,102 @@ func TestBrokerCfg(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDisabledControllers(t *testing.T) {
+	tests := []struct {
+		name         string
+		knativeKafka v1alpha1.KnativeKafkaSpec
+		expect       *unstructured.Unstructured
+	}{{
+		name: "just broker",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: true,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: false,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "sink-controller"),
+	}, {
+		name: "just sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: false,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: true,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller"),
+	}, {
+		name: "broker and sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: true,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: true,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, ""),
+	}, {
+		name: "no broker and no sink",
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Broker: v1alpha1.Broker{
+				Enabled: false,
+			},
+			Sink: v1alpha1.Sink{
+				Enabled: false,
+			},
+		},
+		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller"),
+	}}
+
+	for _, test := range tests {
+		// by default we assume all disabled:
+		defaultDeployment := makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller")
+		t.Run(test.name, func(t *testing.T) {
+			err := configureEventingKafka(test.knativeKafka)(defaultDeployment)
+			if err != nil {
+				t.Fatalf("configureKafkaBroker: (%v)", err)
+			}
+
+			if !cmp.Equal(test.expect, defaultDeployment) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(defaultDeployment, test.expect))
+			}
+		})
+	}
+}
+
+func makeEventingKafkaDeployment(t *testing.T, disabledControllers string) *unstructured.Unstructured {
+	d := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kafka-controller",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "controller",
+						},
+					},
+				},
+			},
+		},
+	}
+	d.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledControllers}
+
+	result := &unstructured.Unstructured{}
+	err := scheme.Scheme.Convert(d, result, nil)
+	if err != nil {
+		t.Fatalf("Could not create unstructured Deployment: %v, err: %v", d, err)
+	}
+
+	return result
+
 }
 
 func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
