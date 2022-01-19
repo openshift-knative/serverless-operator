@@ -584,7 +584,8 @@ func TestDisabledControllers(t *testing.T) {
 	}}
 
 	for _, test := range tests {
-		defaultDeployment := makeEventingKafkaDeployment(t, "")
+		// by default we assume all disabled:
+		defaultDeployment := makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller")
 		t.Run(test.name, func(t *testing.T) {
 			err := configureEventingKafka(test.knativeKafka)(defaultDeployment)
 			if err != nil {
