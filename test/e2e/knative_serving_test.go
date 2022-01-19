@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"os"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -36,16 +37,25 @@ func TestKnativeServing(t *testing.T) {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
-		// Check the desired scale of deployments in the ingress namespace.
+
 		ingressDeployments := []string{"net-kourier-controller", "3scale-kourier-gateway"}
+		ingressNamespace := servingNamespace + "-ingress"
+
+		// If FULL_MESH is true, net-istio is used instead of net-kourier.
+		if os.Getenv("FULL_MESH") == "true" {
+			ingressDeployments = []string{"net-istio-controller", "net-istio-webhook"}
+			ingressNamespace = servingNamespace
+		}
+
+		// Check the desired scale of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
-			if err := test.CheckDeploymentScale(caCtx, servingNamespace+"-ingress", deployment, haReplicas); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, ingressNamespace, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings: %v", err)
 			}
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
-			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace+"-ingress"); err != nil {
+			if _, err := test.WithDeploymentReady(caCtx, deployment, ingressNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
