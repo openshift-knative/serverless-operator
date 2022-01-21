@@ -30,12 +30,19 @@ async function applyPatches() {
           }).catch(callback)
       },
       patched: (index, content, callback) => {
+        if (content === false) {
+          console.debug(`>>> Already patched: ${chalk.yellow(index.newFileName)}`)
+          return callback()
+        }
         console.debug(`>>> Patched new file: ${chalk.green(index.newFileName)}`)
         fs.writeFile(path.join(installDir, index.newFileName), content, enc)
           .then(callback)
           .catch(callback)
       },
-      complete: () => {
+      complete: (err) => {
+        if (err !== undefined) {
+          throw err
+        }
         console.log(`>> Successfully applied patch ${chalk.cyan(relativeFilename)}`)
       }
     })
