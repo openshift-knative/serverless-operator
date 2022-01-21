@@ -24,7 +24,5 @@ module.exports = (on, config) => {
   config.env.OCP_USERNAME = process.env.OCP_USERNAME || 'kube:admin'
   config.env.OCP_PASSWORD = process.env.OCP_PASSWORD
 
-  require('cypress-terminal-report/src/installLogsPrinter')(on)
-
   return config
 }

@@ -37,6 +37,9 @@ CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpat
 INSTALL_SERVERLESS="${INSTALL_SERVERLESS:-true}"
 # use dev to run test development UI
 NPM_TARGET="${NPM_TARGET:-test}"
+if [[ "${NPM_TARGET}" == 'test' ]]; then
+  export CYPRESS_NO_COMMAND_LOG=1
+fi
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 create_namespaces
