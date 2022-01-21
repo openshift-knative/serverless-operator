@@ -10,6 +10,7 @@ aliases:
   - warrenvw
   - rhuss
   - openshift-cherrypick-robot
+  - skonto
   serverless-reviewers:
   - alanfx
   - aliok
