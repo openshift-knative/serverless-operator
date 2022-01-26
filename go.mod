@@ -167,8 +167,8 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.21.4
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20211209091929-0757c1f1246f
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211201212309-356702dbe01b
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220111143008-4ae265d2ff89
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211216123441-d433138b15d4
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220125153345-225c5a251635
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20211223120410-88668cdac7f8
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220113113449-44ba376d972a
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20211220155231-6c2520b46edf
 )
