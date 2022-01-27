@@ -3,9 +3,6 @@ kind: KnativeServing
 metadata:
   name: knative-serving
 spec:
-  deployments:
-  - name: domain-mapping
-    replicas: 2
   config:
     autoscaler:
       container-concurrency-target-default: "100"
