@@ -3,8 +3,11 @@ package knativekafka
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 	"sigs.k8s.io/yaml"
@@ -534,9 +537,9 @@ func TestBrokerCfg(t *testing.T) {
 
 func TestDisabledControllers(t *testing.T) {
 	tests := []struct {
-		name         string
-		knativeKafka v1alpha1.KnativeKafkaSpec
-		expect       *unstructured.Unstructured
+		name                        string
+		knativeKafka                v1alpha1.KnativeKafkaSpec
+		expectedDisabledControllers []string
 	}{{
 		name: "just broker",
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -547,7 +550,7 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: false,
 			},
 		},
-		expect: makeEventingKafkaDeployment(t, "sink-controller"),
+		expectedDisabledControllers: []string{"sink-controller"},
 	}, {
 		name: "just sink",
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -558,7 +561,7 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: true,
 			},
 		},
-		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller"),
+		expectedDisabledControllers: []string{"broker-controller", "trigger-controller"},
 	}, {
 		name: "broker and sink",
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -569,7 +572,7 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: true,
 			},
 		},
-		expect: makeEventingKafkaDeployment(t, ""),
+		expectedDisabledControllers: []string{},
 	}, {
 		name: "no broker and no sink",
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -580,26 +583,35 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: false,
 			},
 		},
-		expect: makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller"),
+		expectedDisabledControllers: []string{"broker-controller", "trigger-controller", "sink-controller"},
 	}}
 
 	for _, test := range tests {
-		// by default we assume all disabled:
-		defaultDeployment := makeEventingKafkaDeployment(t, "broker-controller,trigger-controller,sink-controller")
+		defaultDeployment := makeEventingKafkaDeployment(t) //, "")
 		t.Run(test.name, func(t *testing.T) {
 			err := configureEventingKafka(test.knativeKafka)(defaultDeployment)
 			if err != nil {
 				t.Fatalf("configureKafkaBroker: (%v)", err)
 			}
 
-			if !cmp.Equal(test.expect, defaultDeployment) {
-				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(defaultDeployment, test.expect))
+			// disabled controller arguments are stored on first container, as first arguemt
+			disabledControllerArgs := extractDeployment(t, defaultDeployment).Spec.Template.Spec.Containers[0].Args[0]
+			for _, v := range test.expectedDisabledControllers {
+				assert.True(t, strings.Contains(disabledControllerArgs, v))
 			}
 		})
 	}
 }
 
-func makeEventingKafkaDeployment(t *testing.T, disabledControllers string) *unstructured.Unstructured {
+func extractDeployment(t *testing.T, resource *unstructured.Unstructured) *appsv1.Deployment {
+	var deployment = &appsv1.Deployment{}
+	if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
+		t.Fatalf("Could not create Deployment: %v, err: %v", resource, err)
+	}
+	return deployment
+}
+
+func makeEventingKafkaDeployment(t *testing.T) *unstructured.Unstructured {
 	d := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kafka-controller",
@@ -616,7 +628,6 @@ func makeEventingKafkaDeployment(t *testing.T, disabledControllers string) *unst
 			},
 		},
 	}
-	d.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledControllers}
 
 	result := &unstructured.Unstructured{}
 	err := scheme.Scheme.Convert(d, result, nil)
@@ -625,7 +636,6 @@ func makeEventingKafkaDeployment(t *testing.T, disabledControllers string) *unst
 	}
 
 	return result
-
 }
 
 func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
