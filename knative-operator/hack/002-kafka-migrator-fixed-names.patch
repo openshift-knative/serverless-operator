@@ -7,7 +7,7 @@ index 64d9a4b5d..39eb40282 100644
  kind: Job
  metadata:
 -  generateName: storage-version-migration-eventing-kafka-channel-
-+  name: storage-version-migration-kafka-channel-1.0.0
++  name: storage-version-migration-kafka-channel-1.1.0
    namespace: knative-eventing
    labels:
      app: "storage-version-migration-eventing-kafka-channel"
@@ -20,38 +20,17 @@ index d85c336df..56bc88a68 100644
  kind: Job
  metadata:
 -  generateName: storage-version-migration-eventing-kafka-source-
-+  name: storage-version-migration-kafka-source-1.0.0
++  name: storage-version-migration-kafka-source-1.1.0
    namespace: knative-eventing
    labels:
      app: "storage-version-migration-eventing-kafka-source"
-diff --git a/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml b/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-index 56bc88a68..87aef13e6 100644
---- a/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-+++ b/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-@@ -15,7 +15,7 @@
- apiVersion: rbac.authorization.k8s.io/v1
- kind: ClusterRole
- metadata:
--  name: knative-eventing-kafka-channel-post-install-job-role
-+  name: knative-eventing-kafka-source-post-install-job-role
-   labels:
-     kafka.eventing.knative.dev/release: "v1.0.0"
- rules:
-@@ -131,6 +131,6 @@ spec:
-         - name: migrate
-           image: TO_BE_REPLACED
-           args:
--            - "kafkasources.messaging.knative.dev"
-+            - "kafkasources.sources.knative.dev"
-
- ---
 diff --git a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
 index 39eb40282..dda18c4d2 100644
 --- a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
 @@ -115,7 +115,6 @@ metadata:
      app: "storage-version-migration-eventing-kafka-channel"
-     kafka.eventing.knative.dev/release: "v1.0.0"
+     kafka.eventing.knative.dev/release: "v1.1.0"
  spec:
 -  ttlSecondsAfterFinished: 600
    backoffLimit: 10
@@ -63,7 +42,7 @@ index 87aef13e6..bf5ff4d7c 100644
 +++ b/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
 @@ -115,7 +115,6 @@ metadata:
      app: "storage-version-migration-eventing-kafka-source"
-     kafka.eventing.knative.dev/release: "v1.0.0"
+     kafka.eventing.knative.dev/release: "v1.1.0"
  spec:
 -  ttlSecondsAfterFinished: 600
    backoffLimit: 10

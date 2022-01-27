@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 data:
   config-kafka-broker-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -135,7 +135,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 rules:
   - apiGroups:
       - "*"
@@ -166,7 +166,7 @@ metadata:
   name: knative-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -187,7 +187,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-broker-data-plane
@@ -198,8 +198,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 ---
----
-
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -213,7 +211,6 @@ roleRef:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -221,7 +218,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-dispatcher
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   selector:
     matchLabels:
@@ -231,7 +228,7 @@ spec:
       name: kafka-broker-dispatcher
       labels:
         app: kafka-broker-dispatcher
-        kafka.eventing.knative.dev/release: devel
+        kafka.eventing.knative.dev/release: "devel"
     spec:
       serviceAccountName: knative-kafka-broker-data-plane
       securityContext:
@@ -337,7 +334,7 @@ spec:
           configMap:
             name: kafka-broker-brokers-triggers
         - name: cache
-          emptyDir: { }
+          emptyDir: {}
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -348,8 +345,8 @@ spec:
       dnsConfig:
         options:
           - name: single-request-reopen
----
 
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -363,7 +360,6 @@ spec:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -371,7 +367,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   selector:
     matchLabels:
@@ -381,7 +377,7 @@ spec:
       name: kafka-broker-receiver
       labels:
         app: kafka-broker-receiver
-        kafka.eventing.knative.dev/release: devel
+        kafka.eventing.knative.dev/release: "devel"
     spec:
       serviceAccountName: knative-kafka-broker-data-plane
       securityContext:
@@ -498,7 +494,7 @@ spec:
           configMap:
             name: config-kafka-broker-data-plane
         - name: cache
-          emptyDir: { }
+          emptyDir: {}
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -507,7 +503,6 @@ spec:
             name: config-tracing
       restartPolicy: Always
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -515,7 +510,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   selector:
     app: kafka-broker-receiver
@@ -528,4 +523,7 @@ spec:
       port: 9090
       protocol: TCP
       targetPort: 9090
+---
+
+
 ---

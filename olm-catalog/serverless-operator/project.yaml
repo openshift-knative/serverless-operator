@@ -27,7 +27,7 @@ dependencies:
   maistra: 2.1.0
 
   eventing: 1.0.0
-  eventing_kafka: 1.0.0
-  eventing_kafka_broker: 1.0.0
+  eventing_kafka: 1.1.0
+  eventing_kafka_broker: 1.1.3
   cli: 0.26.0
   operator: 1.0.1

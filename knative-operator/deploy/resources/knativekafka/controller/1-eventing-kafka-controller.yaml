@@ -17,10 +17,34 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
+  bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
+
+---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-channel-config
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: "devel"
+data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 
 ---
@@ -45,7 +69,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   group: eventing.knative.dev
   names:
@@ -191,6 +215,39 @@ spec:
 #          namespace: knative-eventing
 
 ---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: eventing-kafka-source-observer
+  labels:
+    kafka.eventing.knative.dev/release: "devel"
+    duck.knative.dev/source: "true"
+rules:
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "kafkasources"
+    verbs:
+      - get
+      - list
+      - watch
+
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -210,7 +267,7 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 data:
   config.xml: |
     <configuration>
@@ -242,7 +299,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -285,7 +342,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -322,7 +379,7 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 rules:
   - apiGroups:
       - "*"
@@ -413,6 +470,24 @@ rules:
       - kafkachannels/finalizers
     verbs:
       - update
+  # sources.knative.dev resources and finalizers we care about.
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - kafkasources
+      - kafkasources/status
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - kafkasources/finalizers
+    verbs:
+      - update
 
 ---
 # Copyright 2020 The Knative Authors
@@ -434,7 +509,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -455,7 +530,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -470,7 +545,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -501,7 +576,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   selector:
     matchLabels:
@@ -511,7 +586,7 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        kafka.eventing.knative.dev/release: devel
+        kafka.eventing.knative.dev/release: "devel"
     spec:
       securityContext:
         runAsNonRoot: true
@@ -537,17 +612,23 @@ spec:
               value: knative-eventing
             - name: SINK_DATA_PLANE_CONFIG_MAP_NAMESPACE
               value: knative-eventing
+            - name: SOURCE_DATA_PLANE_CONFIG_MAP_NAMESPACE
+              value: knative-eventing
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAME
               value: kafka-broker-brokers-triggers
             - name: CHANNEL_DATA_PLANE_CONFIG_MAP_NAME
               value: kafka-channel-channels-subscriptions
             - name: SINK_DATA_PLANE_CONFIG_MAP_NAME
               value: kafka-sink-sinks
+            - name: SOURCE_DATA_PLANE_CONFIG_MAP_NAME
+              value: kafka-source-sources
             - name: BROKER_DATA_PLANE_CONFIG_FORMAT
               value: json
             - name: CHANNEL_DATA_PLANE_CONFIG_FORMAT
               value: json
             - name: SINK_DATA_PLANE_CONFIG_FORMAT
+              value: json
+            - name: SOURCE_DATA_PLANE_CONFIG_FORMAT
               value: json
             - name: BROKER_INGRESS_NAME
               value: kafka-broker-ingress
@@ -555,12 +636,22 @@ spec:
               value: kafka-channel-ingress
             - name: SINK_INGRESS_NAME
               value: kafka-sink-ingress
+            - name: SOURCE_INGRESS_NAME
+              value: kafka-source-ingress
             - name: BROKER_GENERAL_CONFIG_MAP_NAME
               value: kafka-broker-config
             - name: CHANNEL_GENERAL_CONFIG_MAP_NAME
-              value: kafka-broker-config
+              value: kafka-channel-config
             - name: SINK_GENERAL_CONFIG_MAP_NAME
               value: kafka-broker-config
+            - name: SOURCE_GENERAL_CONFIG_MAP_NAME
+              value: kafka-broker-config
+            - name: BROKER_INGRESS_POD_PORT
+              value: "8080"
+            - name: CHANNEL_INGRESS_POD_PORT
+              value: "8080"
+            - name: SINK_INGRESS_POD_PORT
+              value: "8080"
             - name: BROKER_SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -570,6 +661,10 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: SINK_SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SOURCE_SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
@@ -619,7 +714,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -683,6 +778,14 @@ rules:
       - "namespaces/finalizers"
     verbs:
       - "update"
+  # Eventing resources care about
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - "brokers"
+    verbs:
+      - list
+      - get
 
 ---
 # Copyright 2020 The Knative Authors
@@ -704,7 +807,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -725,7 +828,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -755,7 +858,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -788,7 +891,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 # The data is populated at install time.
 
 ---
@@ -811,7 +914,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -845,7 +948,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   selector:
     matchLabels:
@@ -854,7 +957,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        kafka.eventing.knative.dev/release: devel
+        kafka.eventing.knative.dev/release: "devel"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -928,7 +1031,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: devel
+    kafka.eventing.knative.dev/release: "devel"
 spec:
   ports:
     - name: https-webhook
