@@ -27,8 +27,8 @@ func TestKnativeServing(t *testing.T) {
 	t.Run("verify correct deployment shape", func(t *testing.T) {
 		servingDeployments := []string{"activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook"}
 
-		// Check the desired scale of deployments in the knative serving namespace
 		for _, deployment := range servingDeployments {
+			// Check the desired scale of deployments in the knative serving namespace
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment, err)
 			}
