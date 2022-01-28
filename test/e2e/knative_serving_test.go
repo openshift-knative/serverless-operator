@@ -32,9 +32,8 @@ func TestKnativeServing(t *testing.T) {
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment, haReplicas); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment, err)
 			}
-		}
-		// Check the status of deployments in the knative serving namespace
-		for _, deployment := range servingDeployments {
+
+			// Check the status of deployments in the knative serving namespace
 			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
