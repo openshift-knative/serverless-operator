@@ -528,6 +528,10 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				// only sink: we remove the manifestBuildEnabledOnly && instance.Spec.Source.Sink controllers from the list of disabled controllers
 				disabledKafkaControllers.Remove(sinkController)
 			}
+			if spec.Source.Enabled {
+				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(sourceController)
+			}
 
 			// render the actual argument
 			// todo: if we have no disabled controllers left we should filter for the proper argument and remove just that!
