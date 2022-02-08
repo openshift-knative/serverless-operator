@@ -138,6 +138,8 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
 	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+	// Ensure cleanup through PostDowngradeTest.
+	tests = append(tests, servingupgrade.ServicePostDowngradeTest())
 	return tests
 }
 

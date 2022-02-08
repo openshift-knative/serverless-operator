@@ -227,7 +227,7 @@ function run_rolling_upgrade_tests {
       --upgradeopenshift
   fi
 
-  # Delete the leftover namespace with services.
+  # Delete the leftover namespace.
   oc delete namespace serving-tests
 
   logger.success 'Upgrade tests passed'
