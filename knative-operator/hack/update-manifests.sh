@@ -69,8 +69,5 @@ git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
 # For now we remove the CRDs, since the "broker" does not yet do anything with them
 git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
 
-# For now we need to add prober env variables.
-git apply "$root/knative-operator/hack/004-kafka-broker-prober-env.patch"
-
-# For now we need to add broker read access to the webhook.
-git apply "$root/knative-operator/hack/005-kafka-broker-webhook-role.patch"
+# Remove the config for the new, unused channel
+git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"

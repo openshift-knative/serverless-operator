@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	"sigs.k8s.io/controller-runtime/pkg/source"
+
 	operatorcommon "knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/pkg/logging"
 
@@ -32,7 +34,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 	"sigs.k8s.io/yaml"
@@ -412,8 +413,9 @@ func (r *ReconcileKnativeKafka) deleteKnativeKafka(instance *serverlessoperatorv
 type manifestBuild int
 
 const (
-	broker                                 = "BROKER"
-	sink                                   = "SINK"
+	brokerController                       = "BROKER"
+	sinkController                         = "SINK"
+	sourceController                       = "SOURCE"
 	manifestBuildEnabledOnly manifestBuild = iota
 	manifestBuildDisabledOnly
 	manifestBuildAll
@@ -508,8 +510,9 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
 
 			var disabledKafkaControllers = common.StringMap{
-				broker: "broker-controller,trigger-controller",
-				sink:   "sink-controller",
+				brokerController: "broker-controller,trigger-controller",
+				sinkController:   "sink-controller",
+				sourceController: "source-controller",
 			}
 
 			var deployment = &appsv1.Deployment{}
@@ -519,11 +522,11 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 
 			if spec.Broker.Enabled {
 				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
-				disabledKafkaControllers.Remove(broker)
+				disabledKafkaControllers.Remove(brokerController)
 			}
 			if spec.Sink.Enabled {
 				// only sink: we remove the Sink controllers from the list of disabled controllers
-				disabledKafkaControllers.Remove(sink)
+				disabledKafkaControllers.Remove(sinkController)
 			}
 
 			// render the actual argument
