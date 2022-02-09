@@ -46,7 +46,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.6/serverless/serving-creating-managing-apps.html#creating-serverless-applications-using-the-openshift-container-platform-web-console)
+          more](https://docs.openshift.com/container-platform/4.9/applications/odc-viewing-application-composition-using-topology-view.html)
           about this topic.
         instructions: >-
           #### To verify the application was successfully created:
