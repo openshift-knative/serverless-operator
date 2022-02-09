@@ -44,8 +44,9 @@ func TestServerlessUpgrade(t *testing.T) {
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:  preUpgradeTests(),
-			PostUpgrade: postUpgradeTests(ctx),
+			PreUpgrade:    preUpgradeTests(),
+			PostUpgrade:   postUpgradeTests(ctx),
+			PostDowngrade: postDowngradeTests(),
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
@@ -138,9 +139,14 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
 	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
-	// Ensure cleanup through PostDowngradeTest.
-	tests = append(tests, servingupgrade.ServicePostDowngradeTest())
 	return tests
+}
+
+func postDowngradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		// Ensure cleanup through PostDowngradeTest.
+		servingupgrade.ServicePostDowngradeTest(),
+	}
 }
 
 func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
