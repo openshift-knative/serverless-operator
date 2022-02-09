@@ -82,7 +82,7 @@ kafka_image "storage-version-migration-kafka-channel-$(metadata.get dependencies
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"      "${eventing_kafka_broker}-broker-receiver"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafka_broker}-broker-dispatcher"
 kafka_image "kafka-controller__controller"                      "${eventing_kafka_broker}-broker-kafka-controller"
-kafka_image "kafka-sink-receiver__kafka-sink-receiver"          "${eventing_kafka_broker}-sink-receiver"
+kafka_image "kafka-sink-receiver__kafka-sink-receiver"          "${eventing_kafka_broker}-broker-receiver"
 kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"    "${eventing_kafka_broker}-broker-webhook-kafka"
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"

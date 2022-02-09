@@ -651,7 +651,7 @@ spec:
                       - name: "KAFKA_IMAGE_kafka-controller__controller"
                         value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-kafka-controller"
                       - name: "KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-sink-receiver"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-receiver"
                       - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
                         value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-webhook-kafka"
                       - name: "KNATIVE_EVENTING_KAFKA_VERSION"
@@ -892,7 +892,7 @@ spec:
     - name: "KAFKA_IMAGE_kafka-controller__controller"
       image: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-kafka-controller"
     - name: "KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver"
-      image: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-sink-receiver"
+      image: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-receiver"
     - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
       image: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-webhook-kafka"
   replaces: serverless-operator.v1.20.0
