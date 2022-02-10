@@ -67,7 +67,7 @@ func isServiceMeshInstalled(ctx *test.Context) bool {
 	return false
 }
 
-// Following https://docs.openshift.com/container-platform/4.6/serverless/networking/serverless-ossm.html
+// Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
 func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testNamespace string) {
 	test.CreateServiceMeshMemberRollV1(ctx, test.ServiceMeshMemberRollV1("default", serviceMeshNamespace, testNamespace))
 
