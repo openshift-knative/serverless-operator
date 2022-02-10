@@ -6,4 +6,4 @@ COPY --from=registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-
 COPY --from=registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-src /go/src/knative.dev/eventing-kafka/ /go/src/knative.dev/eventing-kafka/
 COPY --from=registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-src /go/src/knative.dev/eventing-kafka-broker/ /go/src/knative.dev/eventing-kafka-broker/
 
-RUN chmod g+w /go/src/knative.dev/serving/ && chmod g+w /go/src/knative.dev/eventing/ && chmod g+w /go/src/knative.dev/eventing-kafka/
+RUN chmod g+w /go/src/knative.dev/serving/ && chmod g+w /go/src/knative.dev/eventing/ && chmod g+w /go/src/knative.dev/eventing-kafka/ && chmod g+w /go/src/knative.dev/eventing-kafka-broker/
