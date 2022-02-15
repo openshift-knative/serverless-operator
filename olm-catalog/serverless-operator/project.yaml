@@ -30,5 +30,5 @@ dependencies:
   eventing: 1.0.0
   eventing_kafka: 1.0.0
   eventing_kafka_broker: 1.0.0
-  cli: 0.26.0
+  cli: 1.0.0
   operator: 1.0.1
