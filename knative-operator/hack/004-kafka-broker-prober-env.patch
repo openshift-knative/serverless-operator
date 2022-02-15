@@ -1,0 +1,15 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+index b9979867..3e18c798 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+@@ -561,6 +561,10 @@ spec:
+               value: kafka-broker-config
+             - name: SINK_GENERAL_CONFIG_MAP_NAME
+               value: kafka-broker-config
++            - name: BROKER_INGRESS_POD_PORT
++              value: "8080"
++            - name: SINK_INGRESS_POD_PORT
++              value: "8080"
+             - name: BROKER_SYSTEM_NAMESPACE
+               valueFrom:
+                 fieldRef:
