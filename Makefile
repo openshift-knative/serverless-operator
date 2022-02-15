@@ -52,6 +52,18 @@ uninstall-full-mesh:
 install-with-mesh-enabled:
 	FULL_MESH=true ./hack/install.sh
 
+install-tracing-zipkin:
+	./hack/tracing.sh
+
+uninstall-tracing-zipkin:
+	UNINSTALL_TRACING=true ./hack/tracing.sh
+
+install-tracing-opentelemetry:
+	TRACING_BACKEND=otel ./hack/tracing.sh
+
+uninstall-tracing-opentelemetry:
+	UNINSTALL_TRACING=true TRACING_BACKEND=otel ./hack/tracing.sh
+
 teardown:
 	./hack/teardown.sh
 
@@ -77,9 +89,10 @@ test-e2e-with-kafka-testonly:
 
 test-e2e-with-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	TRACING_BACKEND=otel ./hack/tracing.sh
 	INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
-	./hack/teardown.sh
+	TRACING_BACKEND=otel ./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
@@ -110,7 +123,8 @@ test-upstream-e2e-no-upgrade-testonly:
 
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
+	./hack/tracing.sh
+	INSTALL_KAFKA="true" ENABLE_TRACING="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
@@ -119,7 +133,8 @@ test-upstream-upgrade-testonly:
 
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+	./hack/tracing.sh
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ENABLE_TRACING="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
