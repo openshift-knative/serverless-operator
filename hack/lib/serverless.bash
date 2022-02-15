@@ -155,6 +155,10 @@ function deploy_knativeserving_cr {
     deploy_with_kourier
   fi
 
+  if [[ $ENABLE_TRACING == "true" ]]; then
+    enable_serving_tracing
+  fi
+
   oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
 
   logger.success 'Knative Serving has been installed successfully.'
@@ -219,6 +223,10 @@ spec:
       loglevel.inmemorychannel-dispatcher: "debug"
       loglevel.mt-broker-controller: "debug"
 EOF
+
+  if [[ $ENABLE_TRACING == "true" ]]; then
+    enable_eventing_tracing
+  fi
 
   oc wait --for=condition=Ready knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" --timeout=900s
 
