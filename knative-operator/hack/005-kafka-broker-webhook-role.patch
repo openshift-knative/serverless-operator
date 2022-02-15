@@ -1,0 +1,21 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+index 3e18c798..537e7a77 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
+@@ -688,6 +688,16 @@ rules:
+     verbs:
+       - "update"
+ 
++  # Eventing resources care about
++  - apiGroups:
++      - "eventing.knative.dev"
++    resources:
++      - "brokers"
++    verbs:
++      - list
++      - get
++      - watch
++
+ ---
+ # Copyright 2020 The Knative Authors
+ #
