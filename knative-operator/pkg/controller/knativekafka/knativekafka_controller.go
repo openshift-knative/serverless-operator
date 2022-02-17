@@ -50,7 +50,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
+	KafkaHAComponents = []string{"kafka-ch-controller"}
 )
 
 type EventingKafkaConfig struct {
@@ -432,20 +432,20 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		resources = append(resources, channelRBACProxy.Resources()...)
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
-
-	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
-		sourceRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSourceComponents)
-		if err != nil {
-			return nil, err
-		}
-		resources = append(resources, sourceRBACProxy.Resources()...)
-		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
-	}
-
 	// Kafka Control Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && enableControlPlaneManifest(instance.Spec)) || (build == manifestBuildDisabledOnly && !enableControlPlaneManifest(instance.Spec)) {
 		// TODO: RBAC
 		resources = append(resources, r.rawKafkaControllerManifest.Resources()...)
+	}
+
+	// Kafka Source Data Plan
+	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
+		//sourceRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSourceComponents)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//resources = append(resources, sourceRBACProxy.Resources()...)
+		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
 	// Kafka Broker Data Plane
@@ -471,7 +471,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 }
 
 func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) bool {
-	return spec.Broker.Enabled || spec.Sink.Enabled
+	return spec.Broker.Enabled || spec.Sink.Enabled || spec.Source.Enabled
 }
 
 func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
@@ -525,8 +525,12 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				disabledKafkaControllers.Remove(brokerController)
 			}
 			if spec.Sink.Enabled {
-				// only sink: we remove the Sink controllers from the list of disabled controllers
+				// only sink: we remove the manifestBuildEnabledOnly && instance.Spec.Source.Sink controllers from the list of disabled controllers
 				disabledKafkaControllers.Remove(sinkController)
+			}
+			if spec.Source.Enabled {
+				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(sourceController)
 			}
 
 			// render the actual argument
