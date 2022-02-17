@@ -9,7 +9,7 @@ root="$(dirname "${BASH_SOURCE[0]}")/../.."
 source "$root/hack/lib/__sources__.bash"
 
 kafka_channel_files=(channel-consolidated channel-post-install)
-kafka_source_files=(source source-post-install)
+kafka_source_files=(eventing-kafka-source)
 kafka_controller_files=(eventing-kafka-controller)
 kafka_broker_files=(eventing-kafka-broker)
 kafka_sink_files=(eventing-kafka-sink)
@@ -42,7 +42,6 @@ function download_kafka {
 }
 
 download_kafka eventing-kafka channel "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_channel_files[@]}"
-download_kafka eventing-kafka source "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_source_files[@]}"
 
 # For 1.17 we still skip HPA
 git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
@@ -62,6 +61,9 @@ download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERS
 
 #Data-Plane Files Sink:
 download_kafka eventing-kafka-broker sink "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_sink_files[@]}"
+
+#Data-Plane Files Source:
+download_kafka eventing-kafka-broker source "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_source_files[@]}"
 
 # That CM is already there, with Eventing
 git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
