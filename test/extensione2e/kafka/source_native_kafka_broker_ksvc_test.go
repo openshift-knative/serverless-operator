@@ -2,8 +2,11 @@ package knativekafkae2e
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
@@ -15,8 +18,9 @@ import (
 )
 
 const (
-	nativeKafkaBrokerName = "smoke-test-native-kafka-channel-broker"
-	kafkaTriggerName      = "smoke-test-trigger"
+	nativeKafkaBrokerName = "smoke-test-native-kafka-broker"
+	kafkaTriggerName      = "smoke-test-kafka-trigger"
+	kafkaTriggerKsvcName  = helloWorldService + "-" + kafkaTriggerName
 )
 
 var (
@@ -74,17 +78,34 @@ var (
 )
 
 func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
+	ctx := context.Background()
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkaTriggerName, metav1.DeleteOptions{})
+		ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
+		defer cancel()
+
+		if err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(ctx, nativeKafkaBrokerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			br, _ := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
+			brStr, _ := json.Marshal(br)
+			t.Errorf("failed to delete broker %s/%s: %v\n%s\n", testNamespace, nativeKafkaBrokerName, err, string(brStr))
+		}
+		if err := client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(ctx, pingSourceName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete pingsource %s/%s: %v", testNamespace, pingSourceName, err)
+		}
+		if err := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(ctx, kafkaTriggerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			tr, _ := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Get(ctx, kafkaTriggerName, metav1.GetOptions{})
+			trStr, _ := json.Marshal(tr)
+			t.Errorf("failed to delete trigger %s/%s: %v\n%s\n", testNamespace, kafkaTriggerName, err, string(trStr))
+		}
+		if err := client.Clients.Serving.ServingV1().Services(testNamespace).Delete(ctx, kafkaTriggerKsvcName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete ksvc %s/%s: %v", testNamespace, kafkaTriggerKsvcName, err)
+		}
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-native-kafka-channel-broker", testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
