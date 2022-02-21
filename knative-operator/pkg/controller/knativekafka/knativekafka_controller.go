@@ -50,7 +50,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller-manager"}
+	KafkaHAComponents = []string{"kafka-ch-controller"}
 )
 
 type EventingKafkaConfig struct {

@@ -696,10 +696,6 @@ func TestCheckHAComponent(t *testing.T) {
 		deploymentName: "kafka-webhook",
 		shouldFail:     true,
 	}, {
-		name:           "kafka source controller",
-		deploymentName: "kafka-controller-manager",
-		shouldFail:     false,
-	}, {
 		name:           "kafka channel dispatcher",
 		deploymentName: "kafka-ch-dispatcher",
 		shouldFail:     true,
