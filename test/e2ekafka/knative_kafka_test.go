@@ -24,7 +24,7 @@ var knativeKafkaChannelControlPlaneDeploymentNames = []string{
 }
 
 var knativeKafkaSourceControlPlaneDeploymentNames = []string{
-	"kafka-controller-manager",
+	"kafka-controller",
 }
 
 var knativeKafkaBrokerControlPlaneDeploymentNames = []string{
