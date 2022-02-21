@@ -3,19 +3,19 @@ package knativekafkae2e
 import (
 	"testing"
 
-	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
-	"knative.dev/pkg/tracker"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
-	kafkabindingsv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
+	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
+	kafkasourcesv1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
 )
 
 func init() {
-	kafkabindingsv1beta1.AddToScheme(scheme.Scheme)
+	kafkasourcesv1beta1.AddToScheme(scheme.Scheme)
 }
 
 func TestKafkaUserPermissions(t *testing.T) {
@@ -25,51 +25,55 @@ func TestKafkaUserPermissions(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, paCtx, editCtx, viewCtx) })
 	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
-	kafkaBindingsGVR := kafkabindingsv1beta1.SchemeGroupVersion.WithResource("kafkabindings")
+	kafkaSourcesGVR := kafkasourcesv1beta1.SchemeGroupVersion.WithResource("kafkasources")
 
-	kafkaBinding := &kafkabindingsv1beta1.KafkaBinding{
+	kafkaSource := &kafkasourcesv1beta1.KafkaSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "my-kafka-binding",
 		},
-		Spec: kafkabindingsv1beta1.KafkaBindingSpec{
-			KafkaAuthSpec: kafkabindingsv1beta1.KafkaAuthSpec{
+		Spec: kafkasourcesv1beta1.KafkaSourceSpec{
+			KafkaAuthSpec: kafkabindingv1beta1.KafkaAuthSpec{
 				BootstrapServers: []string{"myserver:9092"},
 			},
-			BindingSpec: duckv1alpha1.BindingSpec{
-				Subject: tracker.Reference{
-					APIVersion: "batch/v1",
-					Kind:       "Job",
-					Name:       "my-job",
+			Topics:        []string{"my-topic"},
+			ConsumerGroup: "my-cg",
+			SourceSpec: duckv1.SourceSpec{
+				Sink: duckv1.Destination{
+					Ref: &duckv1.KReference{
+						APIVersion: ksvcAPIVersion,
+						Kind:       ksvcKind,
+						Name:       "fakeKSVC",
+					},
 				},
 			},
 		},
 	}
 
 	objects := map[schema.GroupVersionResource]*unstructured.Unstructured{
-		kafkaBindingsGVR: {},
+		kafkaSourcesGVR: {},
 	}
 
-	if err := scheme.Scheme.Convert(kafkaBinding, objects[kafkaBindingsGVR], nil); err != nil {
-		t.Fatalf("Failed to convert KafkaBinding: %v", err)
+	if err := scheme.Scheme.Convert(kafkaSource, objects[kafkaSourcesGVR], nil); err != nil {
+		t.Fatalf("Failed to convert KafkaSource: %v", err)
 	}
 
 	tests := []test.UserPermissionTest{{
 		Name:        "project admin user",
 		UserContext: paCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaBindingsGVR: test.AllowAll,
+			kafkaSourcesGVR: test.AllowAll,
 		},
 	}, {
 		Name:        "edit user",
 		UserContext: editCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaBindingsGVR: test.AllowAll,
+			kafkaSourcesGVR: test.AllowAll,
 		},
 	}, {
 		Name:        "view user",
 		UserContext: viewCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaBindingsGVR: test.AllowViewOnly,
+			kafkaSourcesGVR: test.AllowViewOnly,
 		},
 	}}
 
