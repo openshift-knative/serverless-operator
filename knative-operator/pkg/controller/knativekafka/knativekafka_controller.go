@@ -16,9 +16,6 @@ import (
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	mf "github.com/manifestival/manifestival"
-	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -34,6 +31,10 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 
 	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 	"sigs.k8s.io/yaml"
@@ -434,7 +435,11 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	}
 	// Kafka Control Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && enableControlPlaneManifest(instance.Spec)) || (build == manifestBuildDisabledOnly && !enableControlPlaneManifest(instance.Spec)) {
-		// TODO: RBAC
+		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaControllerComponents)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, rbacProxy.Resources()...)
 		resources = append(resources, r.rawKafkaControllerManifest.Resources()...)
 	}
 
@@ -450,13 +455,21 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 
 	// Kafka Broker Data Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
-		// TODO: RBAC
+		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaBrokerDataPlaneComponents)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, rbacProxy.Resources()...)
 		resources = append(resources, r.rawKafkaBrokerManifest.Resources()...)
 	}
 
 	// Kafka Sink Data Plan
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Sink.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Sink.Enabled) {
-		// TODO: RBAC
+		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSinkDataPlaneComponents)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, rbacProxy.Resources()...)
 		resources = append(resources, r.rawKafkaSinkManifest.Resources()...)
 	}
 
