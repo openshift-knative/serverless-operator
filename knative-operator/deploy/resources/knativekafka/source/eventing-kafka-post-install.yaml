@@ -177,7 +177,6 @@ metadata:
     app: kafka-controller-post-install
     kafka.eventing.knative.dev/release: "devel"
 spec:
-  ttlSecondsAfterFinished: 600
   backoffLimit: 10
   template:
     metadata:
