@@ -426,16 +426,17 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	var resources []unstructured.Unstructured
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
-		channelRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaChannelComponents)
+		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaChannelController, monitoring.KafkaChannelWebhook)
 		if err != nil {
 			return nil, err
 		}
-		resources = append(resources, channelRBACProxy.Resources()...)
+		resources = append(resources, rbacProxy.Resources()...)
 		resources = append(resources, r.rawKafkaChannelManifest.Resources()...)
 	}
+
 	// Kafka Control Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && enableControlPlaneManifest(instance.Spec)) || (build == manifestBuildDisabledOnly && !enableControlPlaneManifest(instance.Spec)) {
-		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaControllerComponents)
+		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaController, monitoring.KafkaWebhook)
 		if err != nil {
 			return nil, err
 		}
@@ -455,7 +456,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 
 	// Kafka Broker Data Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Broker.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Broker.Enabled) {
-		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaBrokerDataPlaneComponents)
+		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaBrokerReceiver, monitoring.KafkaBrokerDispatcher)
 		if err != nil {
 			return nil, err
 		}
@@ -465,7 +466,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 
 	// Kafka Sink Data Plan
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Sink.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Sink.Enabled) {
-		rbacProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSinkDataPlaneComponents)
+		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaSinkReceiver)
 		if err != nil {
 			return nil, err
 		}
