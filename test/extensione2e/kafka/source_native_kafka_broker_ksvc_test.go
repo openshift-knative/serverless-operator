@@ -3,11 +3,13 @@ package knativekafkae2e
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
@@ -101,6 +103,11 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 		if err := client.Clients.Serving.ServingV1().Services(testNamespace).Delete(ctx, kafkaTriggerKsvcName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			t.Errorf("failed to delete ksvc %s/%s: %v", testNamespace, kafkaTriggerKsvcName, err)
 		}
+
+		err := wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
@@ -130,4 +137,26 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 
 	// Wait for text in kservice
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+}
+
+func waitForBrokerDeletion(ctx context.Context, client *test.Context, t *testing.T) wait.ConditionFunc {
+	return func() (bool, error) {
+		br, err := client.
+			Clients.
+			Eventing.
+			EventingV1().
+			Brokers(testNamespace).
+			Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		if err != nil {
+			return false, fmt.Errorf("failed to get broker %s/%s: %w", testNamespace, nativeKafkaBrokerName, err)
+		}
+
+		brBytes, _ := json.MarshalIndent(br, "", " ")
+		t.Logf("Broker still present\n%s\n", string(brBytes))
+
+		return false, nil
+	}
 }
