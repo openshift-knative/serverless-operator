@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-kafka-source-post-install-job-role
   labels:
-    kafka.eventing.knative.dev/release: "v1.0.0"
+    kafka.eventing.knative.dev/release: "v1.1.0"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -74,14 +74,14 @@ metadata:
   name: knative-eventing-kafka-source-post-install-job
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v1.0.0"
+    kafka.eventing.knative.dev/release: "v1.1.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-kafka-source-post-install-job-role-binding
   labels:
-    kafka.eventing.knative.dev/release: "v1.0.0"
+    kafka.eventing.knative.dev/release: "v1.1.0"
 subjects:
   - kind: ServiceAccount
     name: knative-eventing-kafka-source-post-install-job
@@ -109,18 +109,18 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: storage-version-migration-kafka-source-1.0.0
+  name: storage-version-migration-kafka-source-1.1.0
   namespace: knative-eventing
   labels:
     app: "storage-version-migration-eventing-kafka-source"
-    kafka.eventing.knative.dev/release: "v1.0.0"
+    kafka.eventing.knative.dev/release: "v1.1.0"
 spec:
   backoffLimit: 10
   template:
     metadata:
       labels:
         app: "storage-version-migration-eventing-kafka-source"
-        kafka.eventing.knative.dev/release: "v1.0.0"
+        kafka.eventing.knative.dev/release: "v1.1.0"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
