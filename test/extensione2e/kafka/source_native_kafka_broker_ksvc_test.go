@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -107,6 +108,22 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 		err := wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		cmName := nativeKafkaBroker.Spec.Config.Name
+		cmNamepace := nativeKafkaBroker.Spec.Config.Namespace
+		cm, err := client.Clients.Kube.
+			CoreV1().
+			ConfigMaps(cmNamepace).
+			Get(ctx, cmName, metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("failed to get ConfigMap")
+		}
+		for _, f := range cm.GetFinalizers() {
+			if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, testNamespace) {
+				cmBytes, _ := json.MarshalIndent(cm, "", " ")
+				t.Fatalf("ConfigMap still contains the finalizer %s\n%s\n", f, string(cmBytes))
+			}
 		}
 	}
 	test.CleanupOnInterrupt(t, cleanup)
