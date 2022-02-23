@@ -1,8 +1,8 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-index 923078b98..67c586a06 100644
+index 9d06587dd..e3beb0ea5 100644
 --- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-@@ -643,67 +643,6 @@ data:
+@@ -633,67 +633,6 @@ data:
        </root>
      </configuration>
  
@@ -27,7 +27,7 @@ index 923078b98..67c586a06 100644
 -  name: config-tracing
 -  namespace: knative-eventing
 -  labels:
--    kafka.eventing.knative.dev/release: devel
+-    kafka.eventing.knative.dev/release: "devel"
 -    knative.dev/config-propagation: original
 -    knative.dev/config-category: eventing
 -  annotations:
