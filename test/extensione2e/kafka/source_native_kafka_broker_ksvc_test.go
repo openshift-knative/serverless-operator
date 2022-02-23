@@ -2,9 +2,15 @@ package knativekafkae2e
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
@@ -15,8 +21,9 @@ import (
 )
 
 const (
-	nativeKafkaBrokerName = "smoke-test-native-kafka-channel-broker"
-	kafkaTriggerName      = "smoke-test-trigger"
+	nativeKafkaBrokerName = "smoke-test-native-kafka-broker"
+	kafkaTriggerName      = "smoke-test-kafka-trigger"
+	kafkaTriggerKsvcName  = helloWorldService + "-" + kafkaTriggerName
 )
 
 var (
@@ -74,17 +81,55 @@ var (
 )
 
 func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
+	ctx := context.Background()
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkaTriggerName, metav1.DeleteOptions{})
+		ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
+		defer cancel()
+
+		if err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(ctx, nativeKafkaBrokerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			br, _ := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
+			brStr, _ := json.Marshal(br)
+			t.Errorf("failed to delete broker %s/%s: %v\n%s\n", testNamespace, nativeKafkaBrokerName, err, string(brStr))
+		}
+		if err := client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(ctx, pingSourceName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete pingsource %s/%s: %v", testNamespace, pingSourceName, err)
+		}
+		if err := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(ctx, kafkaTriggerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			tr, _ := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Get(ctx, kafkaTriggerName, metav1.GetOptions{})
+			trStr, _ := json.Marshal(tr)
+			t.Errorf("failed to delete trigger %s/%s: %v\n%s\n", testNamespace, kafkaTriggerName, err, string(trStr))
+		}
+		if err := client.Clients.Serving.ServingV1().Services(testNamespace).Delete(ctx, kafkaTriggerKsvcName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete ksvc %s/%s: %v", testNamespace, kafkaTriggerKsvcName, err)
+		}
+
+		err := wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		cmName := nativeKafkaBroker.Spec.Config.Name
+		cmNamepace := nativeKafkaBroker.Spec.Config.Namespace
+		cm, err := client.Clients.Kube.
+			CoreV1().
+			ConfigMaps(cmNamepace).
+			Get(ctx, cmName, metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("failed to get ConfigMap")
+		}
+		for _, f := range cm.GetFinalizers() {
+			if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, testNamespace) {
+				cmBytes, _ := json.MarshalIndent(cm, "", " ")
+				t.Fatalf("ConfigMap still contains the finalizer %s\n%s\n", f, string(cmBytes))
+			}
+		}
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-native-kafka-channel-broker", testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, testNamespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -109,4 +154,26 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 
 	// Wait for text in kservice
 	servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+}
+
+func waitForBrokerDeletion(ctx context.Context, client *test.Context, t *testing.T) wait.ConditionFunc {
+	return func() (bool, error) {
+		br, err := client.
+			Clients.
+			Eventing.
+			EventingV1().
+			Brokers(testNamespace).
+			Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		if err != nil {
+			return false, fmt.Errorf("failed to get broker %s/%s: %w", testNamespace, nativeKafkaBrokerName, err)
+		}
+
+		brBytes, _ := json.MarshalIndent(br, "", " ")
+		t.Logf("Broker still present\n%s\n", string(brBytes))
+
+		return false, nil
+	}
 }
