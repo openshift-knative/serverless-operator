@@ -40,8 +40,13 @@ func ImageTransform(overrideMap map[string]string, log logr.Logger) mf.Transform
 			podSpec = &ds.Spec.Template.Spec
 		case "Job":
 			job := &batchv1.Job{}
+
 			if err := scheme.Scheme.Convert(u, job, nil); err != nil {
 				return fmt.Errorf("failed to convert Unstructured to Job: %w", err)
+			}
+
+			if job.GetName() == "" {
+				job.SetName(fmt.Sprintf("%s%s", job.GetGenerateName(), "eventing-kafka"))
 			}
 
 			obj = job

@@ -123,3 +123,6 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # TODO: Remove this when we update to upstream 1.1 (for SO 1.22)
 git apply "$root/openshift-knative-operator/hack/009-sequence.patch"
+
+# For we change the name of the image
+git apply "$root/openshift-knative-operator/hack/010-hack-storage-version-migrator-name.patch"

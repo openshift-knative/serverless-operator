@@ -162,10 +162,10 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: v0.26-eventing-kafka-channel-post-install-job
+  generateName: kafka-channel-post-install-
   namespace: knative-eventing
   labels:
-    app: "kafkachannel-retentionduration-update"
+    app: "kafka-channel-post-install"
     kafka.eventing.knative.dev/release: "v0.26.0"
 spec:
   ttlSecondsAfterFinished: 600
@@ -173,7 +173,7 @@ spec:
   template:
     metadata:
       labels:
-        app: "kafkachannel-v0.26-post-install"
+        app: "kafka-channel-post-install"
         eventing.knative.dev/release: devel
       annotations:
         sidecar.istio.io/inject: "false"

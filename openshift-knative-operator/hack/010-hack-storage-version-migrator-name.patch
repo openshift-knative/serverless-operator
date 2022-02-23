@@ -1,0 +1,39 @@
+diff --git a/hack/generate/csv.sh b/hack/generate/csv.sh
+index 9ddba9552..64007c41d 100755
+--- a/hack/generate/csv.sh
++++ b/hack/generate/csv.sh
+@@ -59,7 +59,7 @@ image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependen
+ image "eventing-controller__eventing-controller"    "${eventing}-controller"
+ image "sugar-controller__controller"                "${eventing}-sugar-controller"
+ image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
+-image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
++image "strg-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
+ image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
+ image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
+ image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/6-eventing-post-install.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/6-eventing-post-install.yaml
+index 395b14b8f..306a444f5 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/6-eventing-post-install.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.26.0/6-eventing-post-install.yaml
+@@ -152,10 +152,10 @@ roleRef:
+ apiVersion: batch/v1
+ kind: Job
+ metadata:
+-  generateName: storage-version-migration-eventing-
++  generateName: strg-version-migration-eventing-
+   namespace: knative-eventing
+   labels:
+-    app: "storage-version-migration-eventing"
++    app: "strg-version-migration-eventing"
+     eventing.knative.dev/release: "v0.26.0"
+ spec:
+   ttlSecondsAfterFinished: 600
+@@ -163,7 +163,7 @@ spec:
+   template:
+     metadata:
+       labels:
+-        app: "storage-version-migration-eventing"
++        app: "strg-version-migration-eventing"
+         eventing.knative.dev/release: "v0.26.0"
+       annotations:
+         sidecar.istio.io/inject: "false"

@@ -59,7 +59,7 @@ image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependen
 image "eventing-controller__eventing-controller"    "${eventing}-controller"
 image "sugar-controller__controller"                "${eventing}-sugar-controller"
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
-image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
+image "strg-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
 image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
 image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
 image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
@@ -75,7 +75,7 @@ kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-ad
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
-kafka_image "v0.26-eventing-kafka-channel-post-install-job__post-install" "${eventing_kafka}-post-install"
+kafka_image "kafka-channel-post-install-eventing-kafka__post-install" "${eventing_kafka}-post-install"
 
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"      "${eventing_kafka}-broker-receiver"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafka}-broker-dispatcher"
