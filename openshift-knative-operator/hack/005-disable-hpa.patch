@@ -1,8 +1,8 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/4-mt-channel-broker.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/4-mt-channel-broker.yaml
-index 93720c3d..ef84892b 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/4-mt-channel-broker.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.0.0/4-mt-channel-broker.yaml
-@@ -594,68 +594,3 @@ spec:
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/4-mt-channel-broker.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/4-mt-channel-broker.yaml
+index 7aa83ba1b..240fee8b3 100644
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/4-mt-channel-broker.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/4-mt-channel-broker.yaml
+@@ -609,68 +609,3 @@ spec:
                containerPort: 8008
  
  ---
@@ -26,10 +26,10 @@ index 93720c3d..ef84892b 100644
 -  name: broker-ingress-hpa
 -  namespace: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v1.0.0"
--    app.kubernetes.io/name: broker-ingress
--    app.kubernetes.io/version: "1.0.0"
--    app.kubernetes.io/part-of: knative-eventing
+-    eventing.knative.dev/release: "v1.1.0"
+-    app.kubernetes.io/component: broker-ingress
+-    app.kubernetes.io/version: "1.1.0"
+-    app.kubernetes.io/name: knative-eventing
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1
@@ -51,10 +51,10 @@ index 93720c3d..ef84892b 100644
 -  name: broker-filter-hpa
 -  namespace: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v1.0.0"
--    app.kubernetes.io/name: broker-filter
--    app.kubernetes.io/version: "1.0.0"
--    app.kubernetes.io/part-of: knative-eventing
+-    eventing.knative.dev/release: "v1.1.0"
+-    app.kubernetes.io/component: broker-filter
+-    app.kubernetes.io/version: "1.1.0"
+-    app.kubernetes.io/name: knative-eventing
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1
