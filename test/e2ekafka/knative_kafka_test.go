@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 )
 
 const (
@@ -98,9 +99,20 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify Kafka control plane metrics work correctly", func(t *testing.T) {
-		// Kafka control plane metrics should work
 		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaQueries); err != nil {
 			t.Fatal("Failed to verify that Kafka control plane metrics work correctly", err)
+		}
+	})
+
+	t.Run("verify Kafka Broker data plane metrics work correctly", func(t *testing.T) {
+		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaBrokerDataPlaneQueries); err != nil {
+			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
+		}
+	})
+
+	t.Run("verify Kafka controller metrics work correctly", func(t *testing.T) {
+		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaControllerQueries); err != nil {
+			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
 		}
 	})
 

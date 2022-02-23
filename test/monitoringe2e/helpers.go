@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/openshift-knative/serverless-operator/test"
 
 	prom "github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
@@ -47,6 +48,18 @@ var (
 		"kafka_controller_go_mallocs",
 		"kafkachannel_webhook_go_mallocs",
 		"kafkachannel_dispatcher_go_mallocs",
+	}
+
+	KafkaBrokerDataPlaneQueries = []string{
+		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", namespace=\"knative-eventing\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\",}[5m])) by (name, namespace_name)",
+		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name)",
+		"sum(event_count_1_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
+		"sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
+	}
+
+	KafkaControllerQueries = []string{
+		"sum(rate(kafka_broker_controller_reconcile_latency_bucket{le=\"100\", job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m])) / sum(rate(kafka_broker_controller_reconcile_latency_count{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m]))",
+		"sum(kafka_broker_controller_workqueue_depth{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}) by (name)",
 	}
 
 	serverlessComponentQueries = []string{
