@@ -8,14 +8,16 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +30,9 @@ import (
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 )
 
 var (
@@ -710,4 +715,102 @@ func TestCheckHAComponent(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMonitoringResources(t *testing.T) {
+
+	kk := &v1alpha1.KnativeKafka{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knative-kafka",
+			Namespace: "knative-eventing",
+		},
+		Spec: v1alpha1.KnativeKafkaSpec{
+			Broker:  v1alpha1.Broker{Enabled: true},
+			Source:  v1alpha1.Source{Enabled: false},
+			Sink:    v1alpha1.Sink{Enabled: true},
+			Channel: v1alpha1.Channel{Enabled: false},
+		},
+	}
+
+	t.Setenv("KAFKACHANNEL_MANIFEST_PATH", "../../../deploy/resources/knativekafka/channel")
+	t.Setenv("KAFKASOURCE_MANIFEST_PATH", "../../../deploy/resources/knativekafka/source")
+	t.Setenv("KAFKACONTROLLER_MANIFEST_PATH", "../../../deploy/resources/knativekafka/controller")
+	t.Setenv("KAFKABROKER_MANIFEST_PATH", "../../../deploy/resources/knativekafka/broker")
+	t.Setenv("KAFKASINK_MANIFEST_PATH", "../../../deploy/resources/knativekafka/sink")
+
+	r, err := newReconciler(&MockManager{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manifests, err := r.buildManifest(kk, manifestBuildEnabledOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	crGvk := schema.GroupVersionKind{
+		Group:   rbacv1.SchemeGroupVersion.Group,
+		Version: rbacv1.SchemeGroupVersion.Version,
+		Kind:    "ClusterRoleBinding",
+	}
+	svGvk := schema.GroupVersionKind{
+		Group:   monitoringv1.SchemeGroupVersion.Group,
+		Version: monitoringv1.SchemeGroupVersion.Version,
+		Kind:    "ServiceMonitor",
+	}
+	svcGvk := schema.GroupVersionKind{
+		Group:   corev1.SchemeGroupVersion.Group,
+		Version: corev1.SchemeGroupVersion.Version,
+		Kind:    "Service",
+	}
+
+	expected := map[schema.GroupVersionKind]sets.String{
+		crGvk: sets.NewString(
+			"rbac-proxy-reviews-prom-rb-kafka-controller",
+			"rbac-proxy-reviews-prom-rb-kafka-webhook-eventing",
+			"rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane",
+			"rbac-proxy-reviews-prom-rb-knative-kafka-sink-data-plane",
+		),
+		svGvk: sets.NewString(
+			"kafka-controller-sm",
+			"kafka-webhook-eventing-sm",
+			"kafka-broker-receiver-sm",
+			"kafka-broker-dispatcher-sm",
+			"kafka-sink-receiver-sm",
+		),
+		svcGvk: sets.NewString(
+			"kafka-controller-sm-service",
+			"kafka-webhook-eventing-sm-service",
+			"kafka-broker-receiver-sm-service",
+			"kafka-broker-dispatcher-sm-service",
+			"kafka-sink-receiver-sm-service",
+		),
+	}
+
+	for _, r := range manifests.Resources() {
+		if expected, ok := expected[r.GroupVersionKind()]; ok {
+			if !expected.Has(r.GetName()) {
+				t.Log(r)
+			}
+			expected.Delete(r.GetName())
+		}
+	}
+
+	for k, v := range expected {
+		if v.Len() > 0 {
+			t.Errorf("failed to find %+v, missing %v", k, v.List())
+		}
+	}
+}
+
+type MockManager struct {
+	manager.Manager
+}
+
+func (m *MockManager) GetClient() client.Client {
+	return nil
+}
+
+func (m *MockManager) GetScheme() *runtime.Scheme {
+	return nil
 }
