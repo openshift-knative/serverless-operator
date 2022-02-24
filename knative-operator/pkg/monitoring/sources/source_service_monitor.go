@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/pkg/kmeta"
+	"knative.dev/pkg/kmap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -59,7 +59,7 @@ func createServiceMonitorManifest(labels map[string]string, depName string, ns s
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
 			Namespace: ns,
-			Labels:    kmeta.CopyMap(labels),
+			Labels:    kmap.Copy(labels),
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{{
@@ -68,7 +68,7 @@ func createServiceMonitorManifest(labels map[string]string, depName string, ns s
 				TargetPort: intstr.FromInt(9090),
 				Protocol:   "TCP",
 			}},
-			Selector: kmeta.CopyMap(labels),
+			Selector: kmap.Copy(labels),
 		}}
 	sms.Labels["name"] = sms.Name
 	if err := scheme.Scheme.Convert(&sms, svU, nil); err != nil {
@@ -78,7 +78,7 @@ func createServiceMonitorManifest(labels map[string]string, depName string, ns s
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
 			Namespace: ns,
-			Labels:    kmeta.CopyMap(labels),
+			Labels:    kmap.Copy(labels),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{Port: "http-metrics"}},

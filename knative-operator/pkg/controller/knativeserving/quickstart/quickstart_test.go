@@ -9,7 +9,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	apierrs "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -19,7 +18,6 @@ func init() {
 }
 
 func TestQuickstartErrors(t *testing.T) {
-	ks := &operatorv1alpha1.KnativeServing{}
 	someErr := errors.New("test")
 
 	tests := []struct {
@@ -37,10 +35,10 @@ func TestQuickstartErrors(t *testing.T) {
 	}}
 
 	for _, test := range tests {
-		if err := Apply(ks, &fakeClient{err: test.err}); !errors.Is(err, test.expected) {
+		if err := Apply(&fakeClient{err: test.err}); !errors.Is(err, test.expected) {
 			t.Errorf("Apply() = %v, want %v", err, test.expected)
 		}
-		if err := Delete(ks, &fakeClient{err: test.err}); !errors.Is(err, test.expected) {
+		if err := Delete(&fakeClient{err: test.err}); !errors.Is(err, test.expected) {
 			t.Errorf("Delete() = %v, want %v", err, test.expected)
 		}
 	}

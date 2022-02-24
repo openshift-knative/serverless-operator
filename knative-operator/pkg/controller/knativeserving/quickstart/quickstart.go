@@ -8,7 +8,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	apierrs "k8s.io/apimachinery/pkg/api/meta"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,7 +17,7 @@ const EnvKey = "QUICKSTART_MANIFEST_PATH"
 var log = common.Log.WithName("quickstart")
 
 // Apply applies Quickstart resources.
-func Apply(instance *operatorv1alpha1.KnativeServing, api client.Client) error {
+func Apply(api client.Client) error {
 	manifest, err := mfc.NewManifest(manifestPath(), api, mf.UseLogger(log.WithName("mf")))
 	if err != nil {
 		return fmt.Errorf("failed to load quickstart manifest: %w", err)
@@ -37,7 +36,7 @@ func Apply(instance *operatorv1alpha1.KnativeServing, api client.Client) error {
 }
 
 // Delete deletes Quickstart resources.
-func Delete(instance *operatorv1alpha1.KnativeServing, api client.Client) error {
+func Delete(api client.Client) error {
 	log.Info("Deleting Quickstarts")
 	manifest, err := mfc.NewManifest(manifestPath(), api, mf.UseLogger(log.WithName("mf")))
 	if err != nil {

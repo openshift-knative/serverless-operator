@@ -51,15 +51,23 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
-	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{})
+	if err = caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove service", err)
+	}
 
 	// Check that Kube service still responds
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
-	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
-	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	if err = caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove route", err)
+	}
+	if err = caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove service", err)
+	}
+	if err = caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove deployment", err)
+	}
 
 	// Deploy Knative service in the namespace first
 	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
@@ -94,15 +102,23 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
-	caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
-	caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{})
+	if err = caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove route", err)
+	}
+	if err = caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove service", err)
+	}
+	if err = caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove deployment", err)
+	}
 
 	// Check that Knative service still responds
 	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Delete the Knative service
-	caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{})
+	if err = caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatal("Failed to remove service", err)
+	}
 }
 
 func withRouteForServiceReady(ctx *test.Context, serviceName, namespace string) (*routev1.Route, error) {
