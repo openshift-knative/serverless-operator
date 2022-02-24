@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.6
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.0
@@ -64,6 +63,7 @@ require (
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-kit/log v0.1.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.0 // indirect
+	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-logr/zapr v0.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
