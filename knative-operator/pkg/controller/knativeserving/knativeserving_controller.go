@@ -314,7 +314,7 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1alpha1.
 }
 
 func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1alpha1.KnativeServing) error {
-	return quickstart.Apply(instance, r.client)
+	return quickstart.Apply(r.client)
 }
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
@@ -350,7 +350,7 @@ func (r *ReconcileKnativeServing) delete(instance *operatorv1alpha1.KnativeServi
 	}
 
 	log.Info("Deleting quickstart")
-	if err := quickstart.Delete(instance, r.client); err != nil {
+	if err := quickstart.Delete(r.client); err != nil {
 		return fmt.Errorf("failed to delete quickstarts: %w", err)
 	}
 

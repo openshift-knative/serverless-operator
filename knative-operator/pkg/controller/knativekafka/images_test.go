@@ -227,19 +227,19 @@ func TestResourceTransform(t *testing.T) {
 func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	// test for deployment
 	unstructuredDeployment := util.MakeUnstructured(t, util.MakeDeployment(tt.name, corev1.PodSpec{Containers: tt.containers}))
-	deploymentTransform := ImageTransform(tt.overrideMap, log)
+	deploymentTransform := ImageTransform(tt.overrideMap)
 	deploymentTransform(&unstructuredDeployment)
 	validateUnstructuredDeploymentChanged(t, tt, &unstructuredDeployment)
 
 	// test for daemonSet
 	unstructuredDaemonSet := util.MakeUnstructured(t, makeDaemonSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
-	daemonSetTransform := ImageTransform(tt.overrideMap, log)
+	daemonSetTransform := ImageTransform(tt.overrideMap)
 	daemonSetTransform(&unstructuredDaemonSet)
 	validateUnstructuredDaemonSetChanged(t, tt, &unstructuredDaemonSet)
 
 	// test for job
 	unstructuredJob := util.MakeUnstructured(t, makeJob(tt.name, corev1.PodSpec{Containers: tt.containers}))
-	jobTransform := ImageTransform(tt.overrideMap, log)
+	jobTransform := ImageTransform(tt.overrideMap)
 	jobTransform(&unstructuredJob)
 	validateUnstructuredJobChanged(t, tt, &unstructuredJob)
 }

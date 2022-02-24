@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/networking/pkg/apis/networking"
 	networkingv1alpha1 "knative.dev/networking/pkg/apis/networking/v1alpha1"
-	"knative.dev/pkg/kmeta"
+	"knative.dev/pkg/kmap"
 	"knative.dev/pkg/ptr"
 	"knative.dev/serving/pkg/apis/config"
 )
@@ -85,7 +85,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	// Set timeout for OpenShift Route
 	annotations[TimeoutAnnotation] = DefaultTimeout
 
-	labels := kmeta.UnionMaps(ci.Labels, map[string]string{
+	labels := kmap.Union(ci.Labels, map[string]string{
 		networking.IngressLabelKey:        ci.GetName(),
 		OpenShiftIngressLabelKey:          ci.GetName(),
 		OpenShiftIngressNamespaceLabelKey: ci.GetNamespace(),

@@ -3,7 +3,6 @@ package knativekafka
 import (
 	"fmt"
 
-	"github.com/go-logr/logr"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -16,7 +15,7 @@ import (
 var delimiter = "/"
 
 // ImageTransform updates image with a new registry and tag
-func ImageTransform(overrideMap map[string]string, log logr.Logger) mf.Transformer {
+func ImageTransform(overrideMap map[string]string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		var podSpec *corev1.PodSpec
 		var obj metav1.Object

@@ -247,7 +247,7 @@ func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serve
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -278,7 +278,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		configureLegacyEventingKafka(instance.Spec.Channel),
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
-		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
+		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
 		rbacProxyTranform,
