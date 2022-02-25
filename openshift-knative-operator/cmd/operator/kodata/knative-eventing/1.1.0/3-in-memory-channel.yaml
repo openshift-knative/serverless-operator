@@ -17,9 +17,9 @@ kind: Namespace
 metadata:
   name: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 
 ---
 # Copyright 2021 The Knative Authors
@@ -42,18 +42,18 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -69,9 +69,9 @@ metadata:
   namespace: knative-eventing
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -86,9 +86,9 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller-resolver
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
     name: imc-controller
@@ -119,18 +119,18 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
     name: imc-dispatcher
@@ -161,10 +161,10 @@ metadata:
   name: config-imc-event-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/name: imc-controller
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/component: imc-controller
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 data:
   MaxIdleConnections: "1000"
   MaxIdleConnectionsPerHost: "100"
@@ -190,11 +190,11 @@ metadata:
   name: config-observability
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
   annotations:
     knative.dev/example-checksum: "f46cf09d"
 data:
@@ -267,13 +267,13 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
   annotations:
-    knative.dev/example-checksum: "4002b4c2"
+    knative.dev/example-checksum: "c8f8c47b"
 data:
   _example: |
     ################################
@@ -290,17 +290,12 @@ data:
     # this example block and unindented to be in the data block
     # to actually change the configuration.
     #
-    # This may be "zipkin" or "stackdriver", the default is "none"
+    # This may be "zipkin" or "none", the default is "none"
     backend: "none"
 
     # URL to zipkin collector where traces are sent.
     # This must be specified when backend is "zipkin"
     zipkin-endpoint: "http://zipkin.istio-system.svc.cluster.local:9411/api/v2/spans"
-
-    # The GCP project into which stackdriver metrics will be written
-    # when backend is "stackdriver".  If unspecified, the project-id
-    # is read from GCP metadata when running on GCP.
-    stackdriver-project-id: "my-project"
 
     # Enable zipkin debug mode. This allows all spans to be sent to the server
     # bypassing sampling.
@@ -330,11 +325,11 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     knative.dev/high-availability: "true"
-    app.kubernetes.io/name: imc-controller
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/component: imc-controller
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels: &labels
@@ -344,9 +339,9 @@ spec:
     metadata:
       labels:
         !!merge <<: *labels
-        app.kubernetes.io/name: imc-controller
-        app.kubernetes.io/version: "1.0.0"
-        app.kubernetes.io/part-of: knative-eventing
+        app.kubernetes.io/component: imc-controller
+        app.kubernetes.io/version: "1.1.0"
+        app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
         podAntiAffinity:
@@ -384,6 +379,11 @@ spec:
                   fieldPath: metadata.name
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
           ports:
             - name: metrics
               containerPort: 9090
@@ -410,10 +410,10 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/name: imc-controller
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
-    eventing.knative.dev/release: "v1.0.0"
+    app.kubernetes.io/component: imc-controller
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
   name: inmemorychannel-webhook
   namespace: knative-eventing
 spec:
@@ -451,12 +451,12 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
-    app.kubernetes.io/name: imc-dispatcher
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/component: imc-dispatcher
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     messaging.knative.dev/channel: in-memory-channel
@@ -491,11 +491,11 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     knative.dev/high-availability: "true"
-    app.kubernetes.io/name: imc-dispatcher
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/component: imc-dispatcher
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels: &labels
@@ -505,9 +505,9 @@ spec:
     metadata:
       labels:
         !!merge <<: *labels
-        app.kubernetes.io/name: imc-dispatcher
-        app.kubernetes.io/version: "1.0.0"
-        app.kubernetes.io/part-of: knative-eventing
+        app.kubernetes.io/component: imc-dispatcher
+        app.kubernetes.io/version: "1.1.0"
+        app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
         podAntiAffinity:
@@ -561,6 +561,13 @@ spec:
               protocol: TCP
             - containerPort: 9090
               name: metrics
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
 
 ---
 # Copyright 2019 The Knative Authors
@@ -581,12 +588,12 @@ kind: CustomResourceDefinition
 metadata:
   name: inmemorychannels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
   versions:
@@ -827,10 +834,10 @@ kind: ClusterRole
 metadata:
   name: imc-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
   - apiGroups:
@@ -863,10 +870,10 @@ kind: ClusterRole
 metadata:
   name: imc-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v1.0.0"
+    eventing.knative.dev/release: "v1.1.0"
     duck.knative.dev/channelable: "true"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
   - apiGroups:
@@ -903,9 +910,9 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -1042,9 +1049,9 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -1114,9 +1121,9 @@ metadata:
   namespace: knative-eventing
   name: knative-inmemorychannel-webhook
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -1151,9 +1158,9 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1185,9 +1192,9 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.inmemorychannel.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 webhooks:
   - admissionReviewVersions: ["v1"]
     clientConfig:
@@ -1220,9 +1227,9 @@ metadata:
   name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.0.0"
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/part-of: knative-eventing
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/name: knative-eventing
 # The data is populated at install time.
 
 ---
