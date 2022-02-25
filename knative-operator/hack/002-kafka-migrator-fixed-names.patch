@@ -17,22 +17,3 @@ index 79d8982fd..026388099 100644
    backoffLimit: 10
    template:
      metadata:
-diff --git a/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml b/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-index 0e89ed907..23bc7791e 100644
---- a/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-+++ b/knative-operator/deploy/resources/knativekafka/source/2-source-post-install.yaml
-@@ -109,13 +109,12 @@ roleRef:
- apiVersion: batch/v1
- kind: Job
- metadata:
--  generateName: storage-version-migration-eventing-kafka-source-
-+  name: storage-version-migration-kafka-source-1.1.0
-   namespace: knative-eventing
-   labels:
-     app: "storage-version-migration-eventing-kafka-source"
-     kafka.eventing.knative.dev/release: "v1.1.0"
- spec:
--  ttlSecondsAfterFinished: 600
-   backoffLimit: 10
-   template:
-     metadata:
