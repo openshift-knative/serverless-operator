@@ -71,8 +71,6 @@ image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 
-kafka_image "kafka-controller-manager__manager"    "${eventing_kafka}-source-controller"
-kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-adapter"
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
