@@ -239,6 +239,8 @@ metadata:
   name: knative-kafka
   namespace: ${EVENTING_NAMESPACE}
 spec:
+  sink:
+    enabled: true
   broker:
     enabled: true
     defaultConfig:
