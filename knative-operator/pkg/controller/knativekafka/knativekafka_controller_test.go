@@ -33,6 +33,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 )
 
 var (
@@ -764,6 +765,21 @@ func TestMonitoringResources(t *testing.T) {
 		Kind:    "Service",
 	}
 
+	components := []monitoring.Component{
+		monitoring.KafkaController,
+		monitoring.KafkaWebhook,
+		monitoring.KafkaBrokerReceiver,
+		monitoring.KafkaBrokerDispatcher,
+		monitoring.KafkaSinkReceiver,
+	}
+	svcs := sets.NewString()
+	sMon := sets.NewString()
+
+	for _, c := range components {
+		svcs.Insert(c.Name + "-sm-service")
+		sMon.Insert(c.Name + "-sm")
+	}
+
 	expected := map[schema.GroupVersionKind]sets.String{
 		crGvk: sets.NewString(
 			"rbac-proxy-reviews-prom-rb-kafka-controller",
@@ -771,20 +787,8 @@ func TestMonitoringResources(t *testing.T) {
 			"rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane",
 			"rbac-proxy-reviews-prom-rb-knative-kafka-sink-data-plane",
 		),
-		svGvk: sets.NewString(
-			"kafka-controller-sm",
-			"kafka-webhook-eventing-sm",
-			"kafka-broker-receiver-sm",
-			"kafka-broker-dispatcher-sm",
-			"kafka-sink-receiver-sm",
-		),
-		svcGvk: sets.NewString(
-			"kafka-controller-sm-service",
-			"kafka-webhook-eventing-sm-service",
-			"kafka-broker-receiver-sm-service",
-			"kafka-broker-dispatcher-sm-service",
-			"kafka-sink-receiver-sm-service",
-		),
+		svGvk:  sMon,
+		svcGvk: svcs,
 	}
 
 	for _, r := range manifests.Resources() {
