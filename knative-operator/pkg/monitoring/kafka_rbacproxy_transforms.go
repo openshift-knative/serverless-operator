@@ -46,9 +46,9 @@ var (
 		ServiceAccountName: "kafka-webhook",
 	}
 
-	KafkaSourceController = Component{
-		Name:               "kafka-controller-manager",
-		ServiceAccountName: "kafka-controller-manager",
+	KafkaSourceDispatcher = Component{
+		Name:               "kafka-source-dispatcher",
+		ServiceAccountName: "knative-kafka-source-data-plane",
 	}
 
 	deployments = []string{
@@ -59,7 +59,7 @@ var (
 		KafkaSinkReceiver.Name,
 		KafkaChannelController.Name,
 		KafkaChannelWebhook.Name,
-		KafkaSourceController.Name,
+		KafkaSourceDispatcher.Name,
 	}
 )
 
