@@ -55,8 +55,8 @@ func TestServerlessUpgrade(t *testing.T) {
 					eventingupgrade.ContinualTest(),
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
-				kafkaupgrade.SourceContinualTests(continual.SourceTestOptions{}),
 				kafkabrokerupgrade.BrokerContinualTests(),
+				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
@@ -64,9 +64,6 @@ func TestServerlessUpgrade(t *testing.T) {
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					if err := installation.UpgradeServerless(ctx); err != nil {
 						c.T.Error("Serverless upgrade failed:", err)
-					}
-					if err := installation.EnableKafkaSink(ctx); err != nil {
-						c.T.Error("Failed to enable KafkaSink on KnativeKafka resource:", err)
 					}
 				}),
 			},
@@ -118,6 +115,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
+		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
