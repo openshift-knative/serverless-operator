@@ -444,13 +444,13 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 		resources = append(resources, r.rawKafkaControllerManifest.Resources()...)
 	}
 
-	// Kafka Source Data Plan
+	// Kafka Source Data Plane
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Source.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Source.Enabled) {
-		//sourceRBACProxy, err := monitoring.AddRBACProxySupportToManifest(instance, monitoring.KafkaSourceComponents)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//resources = append(resources, sourceRBACProxy.Resources()...)
+		sourceRBACProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaSourceDispatcher)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, sourceRBACProxy.Resources()...)
 		resources = append(resources, r.rawKafkaSourceManifest.Resources()...)
 	}
 
