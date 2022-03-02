@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	KnativeSystemNamespaceKey = "knative.openshift.io/system-namespace"
+	commonLabelKey = "app.openshift.io/part-of"
 )
 
 func ServiceMeshControlPlaneV1(name, namespace string) *unstructured.Unstructured {
@@ -139,7 +139,7 @@ func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									KnativeSystemNamespaceKey: "true",
+									"app.openshift.io/part-of": "openshift-serverless",
 								},
 							},
 						},

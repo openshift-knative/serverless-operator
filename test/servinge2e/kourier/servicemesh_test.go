@@ -72,8 +72,6 @@ func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testN
 	test.CreateServiceMeshMemberRollV1(ctx, test.ServiceMeshMemberRollV1("default", serviceMeshNamespace, testNamespace))
 
 	test.CreateNetworkPolicy(ctx, test.AllowFromServingSystemNamespaceNetworkPolicy(testNamespace))
-	test.LabelNamespace(ctx, "knative-serving", test.KnativeSystemNamespaceKey, "true")
-	test.LabelNamespace(ctx, "knative-serving-ingress", test.KnativeSystemNamespaceKey, "true")
 }
 
 func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Context)) {
