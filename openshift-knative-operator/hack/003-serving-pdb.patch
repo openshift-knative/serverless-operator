@@ -1,10 +1,10 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.0.1/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.0.1/2-serving-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.1.2/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.1.2/2-serving-core.yaml
 index 4a5ce15f..634b6cc9 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.0.1/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.0.1/2-serving-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.1.2/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.1.2/2-serving-core.yaml
 @@ -4793,7 +4793,7 @@ metadata:
-     app.kubernetes.io/version: "1.0.1"
-     app.kubernetes.io/part-of: knative-serving
+     app.kubernetes.io/version: "1.1.2"
+     serving.knative.dev/release: "v1.1.2"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 1
@@ -12,8 +12,8 @@ index 4a5ce15f..634b6cc9 100644
      matchLabels:
        app: activator
 @@ -5487,7 +5487,7 @@ metadata:
-     app.kubernetes.io/version: "1.0.1"
-     app.kubernetes.io/part-of: knative-serving
+     app.kubernetes.io/version: "1.1.2"
+     serving.knative.dev/release: "v1.1.2"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 1
