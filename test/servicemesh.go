@@ -11,10 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-const (
-	commonLabelKey = "app.openshift.io/part-of"
-)
-
 func ServiceMeshControlPlaneV1(name, namespace string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
