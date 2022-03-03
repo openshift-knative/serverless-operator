@@ -135,7 +135,7 @@ func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"app.openshift.io/part-of": "openshift-serverless",
+									"serverless.knative.openshift.io/part-of": "openshift-serverless",
 								},
 							},
 						},

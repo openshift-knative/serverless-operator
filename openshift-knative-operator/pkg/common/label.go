@@ -12,7 +12,7 @@ func InjectCommonLabel() mf.Transformer {
 		if labels == nil {
 			labels = make(map[string]string, 1)
 		}
-		labels["app.openshift.io/part-of"] = "openshift-serverless"
+		labels[ServerlessCommonLabelKey] = ServerlessCommonLabelValue
 		u.SetLabels(labels)
 		return nil
 	}
