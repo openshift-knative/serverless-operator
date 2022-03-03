@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-// InjectEnvironmentIntoDeployment injects the common label into the resources.
+// InjectCommonLabel injects the common label into the resources.
 func InjectCommonLabel() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		labels := u.GetLabels()
