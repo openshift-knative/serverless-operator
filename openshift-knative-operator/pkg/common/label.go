@@ -2,6 +2,7 @@ package common
 
 import (
 	mf "github.com/manifestival/manifestival"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -12,7 +13,7 @@ func InjectCommonLabel() mf.Transformer {
 		if labels == nil {
 			labels = make(map[string]string, 1)
 		}
-		labels[ServerlessCommonLabelKey] = ServerlessCommonLabelValue
+		labels[socommon.ServerlessCommonLabelKey] = socommon.ServerlessCommonLabelValue
 		u.SetLabels(labels)
 		return nil
 	}
