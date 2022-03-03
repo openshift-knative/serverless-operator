@@ -1364,7 +1364,7 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Knative Eventing - Broker/Trigger",
+      "title": "Knative Eventing - Channel-based Broker/Trigger",
       "uid": "e2WkUxtWz",
       "version": 31
     }
