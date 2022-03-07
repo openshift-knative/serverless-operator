@@ -122,9 +122,7 @@ spec:
 
     - Services are loosely coupled during development and deployed independently to production
     - A producer can generate events before a consumer is listening, and a consumer can express an interest in an event or class of events that are not yet being produced.
-    - Services can be connected to create new applications
-       * without modifying producer or consumer, and
-       * with the ability to select a specific subset of events from a particular producer
+    - Services can be connected to create new applications without modifying producer or consumer, and with the ability to select a specific subset of events from a particular producer.
 
     ## Serverless functions
     Serverless functions extend Knative allowing developers to write functions that let them focus on business logic.
