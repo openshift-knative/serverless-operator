@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -135,7 +136,7 @@ func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"knative.openshift.io/part-of": "openshift-serverless",
+									socommon.ServerlessCommonLabelKey: socommon.ServerlessCommonLabelValue,
 								},
 							},
 						},

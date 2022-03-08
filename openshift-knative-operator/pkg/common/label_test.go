@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -23,7 +24,7 @@ func TestInjectCommonLabelIntoNamespace(t *testing.T) {
 				},
 			},
 		},
-		want: "openshift-serverless",
+		want: socommon.ServerlessCommonLabelValue,
 	}, {
 		name: "do not inject common label into deployment",
 		in: &unstructured.Unstructured{
@@ -44,8 +45,8 @@ func TestInjectCommonLabelIntoNamespace(t *testing.T) {
 				t.Fatal("Unexpected error from transformer", err)
 			}
 
-			if !cmp.Equal(u.GetLabels()["knative.openshift.io/part-of"], test.want) {
-				t.Errorf("Unexpected label: Got = %q, want = %q", u.GetLabels()["knative.openshift.io/part-of"], test.want)
+			if !cmp.Equal(u.GetLabels()[socommon.ServerlessCommonLabelKey], test.want) {
+				t.Errorf("Unexpected label: Got = %q, want = %q", u.GetLabels()[socommon.ServerlessCommonLabelKey], test.want)
 			}
 		})
 	}
