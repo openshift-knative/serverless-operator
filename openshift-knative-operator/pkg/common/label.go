@@ -6,9 +6,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-// InjectCommonLabel injects the common label into the resources.
-func InjectCommonLabel() mf.Transformer {
+// InjectCommonLabelIntoNamespace injects the common label into the namespaces.
+func InjectCommonLabelIntoNamespace() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "Namespace" {
+			return nil
+		}
 		labels := u.GetLabels()
 		if labels == nil {
 			labels = make(map[string]string, 1)

@@ -64,7 +64,7 @@ func (e *extension) Manifests(ks operatorv1alpha1.KComponent) ([]mf.Manifest, er
 
 func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transformer {
 	return append([]mf.Transformer{
-		common.InjectCommonLabel(),
+		common.InjectCommonLabelIntoNamespace(),
 		common.InjectEnvironmentIntoDeployment("controller", "controller",
 			corev1.EnvVar{Name: "HTTP_PROXY", Value: os.Getenv("HTTP_PROXY")},
 			corev1.EnvVar{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
