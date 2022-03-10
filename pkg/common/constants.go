@@ -1,6 +1,7 @@
 package common
 
 const (
+	DownstreamDomain         = "knative.openshift.io"
 	ServingDownstreamDomain  = "serving.knative.openshift.io"
 	EventingDownstreamDomain = "eventing.knative.openshift.io"
 
@@ -9,4 +10,7 @@ const (
 	ServingOwnerNamespace  = ServingDownstreamDomain + "/ownerNamespace"
 	EventingOwnerName      = EventingDownstreamDomain + "/ownerName"
 	EventingOwnerNamespace = EventingDownstreamDomain + "/ownerNamespace"
+
+	ServerlessCommonLabelKey   = DownstreamDomain + "/part-of"
+	ServerlessCommonLabelValue = "openshift-serverless"
 )
