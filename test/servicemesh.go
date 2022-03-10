@@ -2,14 +2,12 @@ package test
 
 import (
 	"context"
-	"fmt"
 
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 func ServiceMeshControlPlaneV1(name, namespace string) *unstructured.Unstructured {
@@ -162,16 +160,4 @@ func CreateNetworkPolicy(ctx *Context, networkPolicy *networkingv1.NetworkPolicy
 	})
 
 	return createdNetworkPolicy
-}
-
-func LabelNamespace(ctx *Context, namespace, key, value string) {
-	_, err := ctx.Clients.Kube.CoreV1().Namespaces().Patch(
-		context.Background(),
-		namespace,
-		types.MergePatchType,
-		[]byte(fmt.Sprintf("{\"metadata\":{\"labels\":{\"%s\":\"%s\"}}}", key, value)),
-		metav1.PatchOptions{})
-	if err != nil {
-		ctx.T.Fatalf("Error labelling namespace %q: %v", namespace, err)
-	}
 }
