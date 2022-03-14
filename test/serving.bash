@@ -27,7 +27,6 @@ function prepare_knative_serving_tests {
   # Add networkpolicy to test namespace and label to serving namespaces for testing under the strict networkpolicy.
   add_networkpolicy "serving-tests"
   add_networkpolicy "serving-tests-alt"
-  add_systemnamespace_label
 
   export GATEWAY_OVERRIDE="kourier"
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
