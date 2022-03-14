@@ -110,9 +110,6 @@ function downstream_serving_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  # Add system-namespace labels for TestNetworkPolicy and ServiceMesh tests.
-  add_systemnamespace_label
-
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
@@ -328,11 +325,6 @@ function delete_users {
   rm -fv users.htpasswd
 }
 
-function add_systemnamespace_label {
-  oc label namespace "$SERVING_NAMESPACE" knative.openshift.io/system-namespace=true --overwrite         || true
-  oc label namespace "$INGRESS_NAMESPACE" knative.openshift.io/system-namespace=true --overwrite || true
-}
-
 function add_networkpolicy {
   local NAMESPACE=${1:?Pass a namespace as arg[1]}
   cat <<EOF | oc apply -f -
@@ -348,14 +340,14 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-from-serving-system-namespace
+  name: allow-from-system-namespace
   namespace: "$NAMESPACE"
 spec:
   ingress:
   - from:
     - namespaceSelector:
         matchLabels:
-          knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/part-of: "openshift-serverless"
   podSelector: {}
   policyTypes:
   - Ingress

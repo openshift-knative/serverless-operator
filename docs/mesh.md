@@ -32,27 +32,20 @@ spec:
     # Add namespace you want to include mesh.
 ```
 
-and add `knative.openshift.io/system-namespace` label to system namespaces.
-
-```
-oc label namespace knative-serving knative.openshift.io/system-namespace=true
-oc label namespace knative-serving-ingress knative.openshift.io/system-namespace=true
-```
-
 and add `NetworkPolicy` in your namespace.
 
 ```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-from-serving-system-namespace
+  name: allow-from-system-namespace
   namespace: $NAMESPACE_YOU_WANT_TO_ADD
 spec:
   ingress:
   - from:
     - namespaceSelector:
         matchLabels:
-          knative.openshift.io/system-namespace: "true"
+          knative.openshift.io/part-of: "openshift-serverless"
   podSelector: {}
   policyTypes:
   - Ingress

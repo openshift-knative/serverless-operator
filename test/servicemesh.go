@@ -124,7 +124,7 @@ func CreateServiceMeshMemberRollV1(ctx *Context, smmr *unstructured.Unstructured
 func AllowFromServingSystemNamespaceNetworkPolicy(namespace string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "allow-from-serving-system-namespace",
+			Name:      "allow-from-system-namespace",
 			Namespace: namespace,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
