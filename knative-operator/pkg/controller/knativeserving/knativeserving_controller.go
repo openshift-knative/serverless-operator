@@ -69,6 +69,9 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if ns, required := os.LookupEnv(requiredNsEnvName); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
+			Labels: map[string]string{
+				socommon.ServerlessCommonLabelKey: socommon.ServerlessCommonLabelValue,
+			},
 		}})
 	}
 

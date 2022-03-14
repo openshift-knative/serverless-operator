@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -48,6 +49,9 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if ns, required := os.LookupEnv(requiredNsEnvName); required {
 		client.Create(context.Background(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
+			Labels: map[string]string{
+				socommon.ServerlessCommonLabelKey: socommon.ServerlessCommonLabelValue,
+			},
 		}})
 	}
 
