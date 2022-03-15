@@ -16,10 +16,18 @@
 // Additionally, this package contains common utilities for working with the
 // new generic constructs, to supplement the standard library APIs. Notably,
 // the StructuralTerms API computes a minimal representation of the structural
+<<<<<<< HEAD
 // restrictions on a type parameter.
 //
 // An external version of these APIs is available in the
 // golang.org/x/exp/typeparams module.
+=======
+// restrictions on a type parameter. In the future, this API may be available
+// from go/types.
+//
+// See the example/README.md for a more detailed guide on how to update tools
+// to support generics.
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 package typeparams
 
 import (

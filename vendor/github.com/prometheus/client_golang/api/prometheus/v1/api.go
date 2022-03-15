@@ -1052,7 +1052,11 @@ func (h *httpAPI) WalReplay(ctx context.Context) (WalReplayStatus, error) {
 	return res, json.Unmarshal(body, &res)
 }
 
+<<<<<<< HEAD
 func (h *httpAPI) QueryExemplars(ctx context.Context, query string, startTime, endTime time.Time) ([]ExemplarQueryResult, error) {
+=======
+func (h *httpAPI) QueryExemplars(ctx context.Context, query string, startTime time.Time, endTime time.Time) ([]ExemplarQueryResult, error) {
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	u := h.client.URL(epQueryExemplars, nil)
 	q := u.Query()
 

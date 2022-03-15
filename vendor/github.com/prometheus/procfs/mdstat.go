@@ -166,10 +166,13 @@ func parseMDStat(mdStatData []byte) ([]MDStat, error) {
 }
 
 func evalStatusLine(deviceLine, statusLine string) (active, total, down, size int64, err error) {
+<<<<<<< HEAD
 	statusFields := strings.Fields(statusLine)
 	if len(statusFields) < 1 {
 		return 0, 0, 0, 0, fmt.Errorf("unexpected statusLine %q", statusLine)
 	}
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 	sizeStr := statusFields[0]
 	size, err = strconv.ParseInt(sizeStr, 10, 64)

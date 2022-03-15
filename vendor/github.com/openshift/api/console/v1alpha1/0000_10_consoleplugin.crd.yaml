@@ -1,81 +1,119 @@
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: consoleplugins.console.openshift.io
   annotations:
-    include.release.openshift.io/self-managed-high-availability: "true"
-    displayName: ConsolePlugin
+    api-approved.openshift.io: https://github.com/openshift/api/pull/764
     description: Extension for configuring openshift web console plugins.
+    displayName: ConsolePlugin
+    include.release.openshift.io/ibm-cloud-managed: "true"
+    include.release.openshift.io/self-managed-high-availability: "true"
+    include.release.openshift.io/single-node-developer: "true"
+  name: consoleplugins.console.openshift.io
 spec:
-  scope: Cluster
   group: console.openshift.io
-  preserveUnknownFields: false
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
   names:
-    plural: consoleplugins
-    singular: consoleplugin
     kind: ConsolePlugin
     listKind: ConsolePluginList
-  "validation":
-    "openAPIV3Schema":
-      description: ConsolePlugin is an extension for customizing OpenShift web console
-        by dynamically loading code from another service running on the cluster.
-      type: object
-      required:
-      - metadata
-      - spec
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: ConsolePluginSpec is the desired plugin configuration.
+    plural: consoleplugins
+    singular: consoleplugin
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: "ConsolePlugin is an extension for customizing OpenShift web console by dynamically loading code from another service running on the cluster. \n Compatibility level 4: No compatibility is provided, the API can change at any point for any reason. These capabilities should not be used by applications needing long term support."
           type: object
           required:
-          - displayName
-          - service
+            - metadata
+            - spec
           properties:
-            displayName:
-              description: displayName is the display name of the plugin.
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
               type: string
-            service:
-              description: service is a Kubernetes Service that exposes the plugin
-                using a deployment with an HTTP server. The Service must use HTTPS
-                and service serving certificate. The console backend will proxy the
-                plugins assets from the Service using the service CA bundle.
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: ConsolePluginSpec is the desired plugin configuration.
               type: object
               required:
-              - basePath
-              - name
-              - namespace
-              - port
+                - service
               properties:
-                basePath:
-                  description: basePath is the path to the plugin's assets. The primary
-                    asset it the manifest file called `plugin-manifest.json`, which
-                    is a JSON document that contains metadata about the plugin and
-                    the extensions.
+                displayName:
+                  description: displayName is the display name of the plugin.
                   type: string
-                name:
-                  description: name of Service that is serving the plugin.
-                  type: string
-                namespace:
-                  description: namespace of Service that is serving the plugin.
-                  type: string
-                port:
-                  description: port on which the Service that is serving the plugin
-                    is listening to.
-                  type: integer
-                  format: int32
+                  minLength: 1
+                proxy:
+                  description: proxy is a list of Services that the plugin needs to connect to.
+                  type: object
+                  properties:
+                    services:
+                      description: "services is a list of in-cluster Services that the plugin will connect to. The Service must use HTTPS. Console backend exposes the following endpoint in order to proxy communication between the plugin and the Service: \n /api/proxy/namespace/<service-namespace>/service/<service-name>:<port-number>/<request-path>?<optional-query-parameters> \n Request example path: \n /api/proxy/namespace/helm/service/helm-charts:8443/releases?limit=10"
+                      type: array
+                      items:
+                        description: ConsolePluginProxyService holds information on Service to which console's backend will proxy the plugin's requests.
+                        type: object
+                        required:
+                          - name
+                          - namespace
+                          - port
+                        properties:
+                          authorize:
+                            description: "authorize indicates if the proxied request will logged-in user's OpenShift access token in the \"Authorization\" request header: \n Authorization: Bearer sha256~kV46hPnEYhCWFnB85r5NrprAxggzgb6GOeLbgcKNsH0 \n By default the access token is not part of the proxied request."
+                            type: boolean
+                            default: false
+                          caCertificate:
+                            description: caCertificate provides the cert authority certificate contents, in case the proxied Service is using custom service CA. By default service CA bundle is used.
+                            type: string
+                            pattern: ^-----BEGIN CERTIFICATE-----([\s\S]*)-----END CERTIFICATE-----\s?$
+                          name:
+                            description: name of Service that the plugin needs to connect to.
+                            type: string
+                            maxLength: 128
+                            minLength: 1
+                          namespace:
+                            description: namespace of Service that the plugin needs to connect to
+                            type: string
+                            maxLength: 128
+                            minLength: 1
+                          port:
+                            description: port on which the Service that the plugin needs to connect to is listening on.
+                            type: integer
+                            format: int32
+                            maximum: 65535
+                            minimum: 1
+                service:
+                  description: service is a Kubernetes Service that exposes the plugin using a deployment with an HTTP server. The Service must use HTTPS and Service serving certificate. The console backend will proxy the plugins assets from the Service using the service CA bundle.
+                  type: object
+                  required:
+                    - basePath
+                    - name
+                    - namespace
+                    - port
+                  properties:
+                    basePath:
+                      description: basePath is the path to the plugin's assets. The primary asset it the manifest file called `plugin-manifest.json`, which is a JSON document that contains metadata about the plugin and the extensions.
+                      type: string
+                      default: /
+                      minLength: 1
+                      pattern: ^/
+                    name:
+                      description: name of Service that is serving the plugin assets.
+                      type: string
+                      maxLength: 128
+                      minLength: 1
+                    namespace:
+                      description: namespace of Service that is serving the plugin assets.
+                      type: string
+                      maxLength: 128
+                      minLength: 1
+                    port:
+                      description: port on which the Service that is serving the plugin is listening to.
+                      type: integer
+                      format: int32
+                      maximum: 65535
+                      minimum: 1
+      served: true
+      storage: true

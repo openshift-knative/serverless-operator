@@ -64,7 +64,11 @@ func InstrumentHandlerInFlight(g prometheus.Gauge, next http.Handler) http.Handl
 // names are "code" and "method". The function panics otherwise. For the "method"
 // label a predefined default label value set is used to filter given values.
 // Values besides predefined values will count as `unknown` method.
+<<<<<<< HEAD
 // `WithExtraMethods` can be used to add more methods to the set. The Observe
+=======
+//`WithExtraMethods` can be used to add more methods to the set. The Observe
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 // method of the Observer in the ObserverVec is called with the request duration
 // in seconds. Partitioning happens by HTTP status code and/or HTTP method if
 // the respective instance label names are present in the ObserverVec. For
@@ -78,9 +82,15 @@ func InstrumentHandlerInFlight(g prometheus.Gauge, next http.Handler) http.Handl
 // Note that this method is only guaranteed to never observe negative durations
 // if used with Go1.9+.
 func InstrumentHandlerDuration(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc {
+<<<<<<< HEAD
 	hOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(hOpts)
+=======
+	mwOpts := &option{}
+	for _, o := range opts {
+		o(mwOpts)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	code, method := checkLabels(obs)
@@ -91,17 +101,23 @@ func InstrumentHandlerDuration(obs prometheus.ObserverVec, next http.Handler, op
 			d := newDelegator(w, nil)
 			next.ServeHTTP(d, r)
 
+<<<<<<< HEAD
 			exemplarObserve(
 				obs.With(labels(code, method, r.Method, d.Status(), hOpts.extraMethods...)),
 				time.Since(now).Seconds(),
 				hOpts.getExemplarFn(r.Context()),
 			)
 		}
+=======
+			obs.With(labels(code, method, r.Method, d.Status(), mwOpts.extraMethods...)).Observe(time.Since(now).Seconds())
+		})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		next.ServeHTTP(w, r)
+<<<<<<< HEAD
 
 		exemplarObserve(
 			obs.With(labels(code, method, r.Method, 0, hOpts.extraMethods...)),
@@ -109,6 +125,10 @@ func InstrumentHandlerDuration(obs prometheus.ObserverVec, next http.Handler, op
 			hOpts.getExemplarFn(r.Context()),
 		)
 	}
+=======
+		obs.With(labels(code, method, r.Method, 0, mwOpts.extraMethods...)).Observe(time.Since(now).Seconds())
+	})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // InstrumentHandlerCounter is a middleware that wraps the provided http.Handler
@@ -129,9 +149,15 @@ func InstrumentHandlerDuration(obs prometheus.ObserverVec, next http.Handler, op
 //
 // See the example for InstrumentHandlerDuration for example usage.
 func InstrumentHandlerCounter(counter *prometheus.CounterVec, next http.Handler, opts ...Option) http.HandlerFunc {
+<<<<<<< HEAD
 	hOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(hOpts)
+=======
+	mwOpts := &option{}
+	for _, o := range opts {
+		o(mwOpts)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	code, method := checkLabels(counter)
@@ -140,6 +166,7 @@ func InstrumentHandlerCounter(counter *prometheus.CounterVec, next http.Handler,
 		return func(w http.ResponseWriter, r *http.Request) {
 			d := newDelegator(w, nil)
 			next.ServeHTTP(d, r)
+<<<<<<< HEAD
 
 			exemplarAdd(
 				counter.With(labels(code, method, r.Method, d.Status(), hOpts.extraMethods...)),
@@ -147,16 +174,25 @@ func InstrumentHandlerCounter(counter *prometheus.CounterVec, next http.Handler,
 				hOpts.getExemplarFn(r.Context()),
 			)
 		}
+=======
+			counter.With(labels(code, method, r.Method, d.Status(), mwOpts.extraMethods...)).Inc()
+		})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
+<<<<<<< HEAD
 		exemplarAdd(
 			counter.With(labels(code, method, r.Method, 0, hOpts.extraMethods...)),
 			1,
 			hOpts.getExemplarFn(r.Context()),
 		)
 	}
+=======
+		counter.With(labels(code, method, r.Method, 0, mwOpts.extraMethods...)).Inc()
+	})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // InstrumentHandlerTimeToWriteHeader is a middleware that wraps the provided
@@ -182,9 +218,15 @@ func InstrumentHandlerCounter(counter *prometheus.CounterVec, next http.Handler,
 //
 // See the example for InstrumentHandlerDuration for example usage.
 func InstrumentHandlerTimeToWriteHeader(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc {
+<<<<<<< HEAD
 	hOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(hOpts)
+=======
+	mwOpts := &option{}
+	for _, o := range opts {
+		o(mwOpts)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	code, method := checkLabels(obs)
@@ -192,11 +234,15 @@ func InstrumentHandlerTimeToWriteHeader(obs prometheus.ObserverVec, next http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		d := newDelegator(w, func(status int) {
+<<<<<<< HEAD
 			exemplarObserve(
 				obs.With(labels(code, method, r.Method, status, hOpts.extraMethods...)),
 				time.Since(now).Seconds(),
 				hOpts.getExemplarFn(r.Context()),
 			)
+=======
+			obs.With(labels(code, method, r.Method, status, mwOpts.extraMethods...)).Observe(time.Since(now).Seconds())
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 		})
 		next.ServeHTTP(d, r)
 	}
@@ -222,10 +268,19 @@ func InstrumentHandlerTimeToWriteHeader(obs prometheus.ObserverVec, next http.Ha
 //
 // See the example for InstrumentHandlerDuration for example usage.
 func InstrumentHandlerRequestSize(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.HandlerFunc {
+<<<<<<< HEAD
 	hOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(hOpts)
 	}
+=======
+	mwOpts := &option{}
+	for _, o := range opts {
+		o(mwOpts)
+	}
+
+	code, method := checkLabels(obs)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 	code, method := checkLabels(obs)
 	if code {
@@ -233,23 +288,33 @@ func InstrumentHandlerRequestSize(obs prometheus.ObserverVec, next http.Handler,
 			d := newDelegator(w, nil)
 			next.ServeHTTP(d, r)
 			size := computeApproximateRequestSize(r)
+<<<<<<< HEAD
 			exemplarObserve(
 				obs.With(labels(code, method, r.Method, d.Status(), hOpts.extraMethods...)),
 				float64(size),
 				hOpts.getExemplarFn(r.Context()),
 			)
 		}
+=======
+			obs.With(labels(code, method, r.Method, d.Status(), mwOpts.extraMethods...)).Observe(float64(size))
+		})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
 		size := computeApproximateRequestSize(r)
+<<<<<<< HEAD
 		exemplarObserve(
 			obs.With(labels(code, method, r.Method, 0, hOpts.extraMethods...)),
 			float64(size),
 			hOpts.getExemplarFn(r.Context()),
 		)
 	}
+=======
+		obs.With(labels(code, method, r.Method, 0, mwOpts.extraMethods...)).Observe(float64(size))
+	})
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // InstrumentHandlerResponseSize is a middleware that wraps the provided
@@ -272,9 +337,15 @@ func InstrumentHandlerRequestSize(obs prometheus.ObserverVec, next http.Handler,
 //
 // See the example for InstrumentHandlerDuration for example usage.
 func InstrumentHandlerResponseSize(obs prometheus.ObserverVec, next http.Handler, opts ...Option) http.Handler {
+<<<<<<< HEAD
 	hOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(hOpts)
+=======
+	mwOpts := &option{}
+	for _, o := range opts {
+		o(mwOpts)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 
 	code, method := checkLabels(obs)
@@ -282,11 +353,15 @@ func InstrumentHandlerResponseSize(obs prometheus.ObserverVec, next http.Handler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		d := newDelegator(w, nil)
 		next.ServeHTTP(d, r)
+<<<<<<< HEAD
 		exemplarObserve(
 			obs.With(labels(code, method, r.Method, d.Status(), hOpts.extraMethods...)),
 			float64(d.Written()),
 			hOpts.getExemplarFn(r.Context()),
 		)
+=======
+		obs.With(labels(code, method, r.Method, d.Status(), mwOpts.extraMethods...)).Observe(float64(d.Written()))
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	})
 }
 

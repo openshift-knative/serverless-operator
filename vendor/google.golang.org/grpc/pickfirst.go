@@ -153,8 +153,13 @@ func (b *pickfirstBalancer) Close() {
 }
 
 func (b *pickfirstBalancer) ExitIdle() {
+<<<<<<< HEAD
 	if b.subConn != nil && b.state == connectivity.Idle {
 		b.subConn.Connect()
+=======
+	if b.sc != nil && b.state == connectivity.Idle {
+		b.sc.Connect()
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 }
 

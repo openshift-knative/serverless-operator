@@ -179,6 +179,7 @@ func (w *mergingWalker) visitListItems(t *schema.List, lhs, rhs value.List) (err
 	}
 	out := make([]interface{}, 0, outLen)
 
+<<<<<<< HEAD
 	rhsOrder, observedRHS, rhsErrs := w.indexListPathElements(t, rhs)
 	errs = append(errs, rhsErrs...)
 	lhsOrder, observedLHS, lhsErrs := w.indexListPathElements(t, lhs)
@@ -260,6 +261,72 @@ func (w *mergingWalker) visitListItems(t *schema.List, lhs, rhs value.List) (err
 					sharedOrder = sharedOrder[1:]
 				}
 			}
+=======
+	lhsOrder := make([]fieldpath.PathElement, 0, lLen)
+
+	// First, collect all LHS children.
+	observedLHS := fieldpath.MakePathElementValueMap(lLen)
+	if lhs != nil {
+		for i := 0; i < lhs.Length(); i++ {
+			child := lhs.At(i)
+			pe, err := listItemToPathElement(w.allocator, w.schema, t, i, child)
+			if err != nil {
+				errs = append(errs, errorf("lhs: element %v: %v", i, err.Error())...)
+				// If we can't construct the path element, we can't
+				// even report errors deeper in the schema, so bail on
+				// this element.
+				continue
+			}
+			if _, ok := observedLHS.Get(pe); ok {
+				errs = append(errs, errorf("lhs: duplicate entries for key %v", pe.String())...)
+			}
+			observedLHS.Insert(pe, child)
+			lhsOrder = append(lhsOrder, pe)
+		}
+	}
+
+	// Then merge with RHS children.
+	observedRHS := fieldpath.MakePathElementSet(rLen)
+	if rhs != nil {
+		for i := 0; i < rhs.Length(); i++ {
+			child := rhs.At(i)
+			pe, err := listItemToPathElement(w.allocator, w.schema, t, i, child)
+			if err != nil {
+				errs = append(errs, errorf("rhs: element %v: %v", i, err.Error())...)
+				// If we can't construct the path element, we can't
+				// even report errors deeper in the schema, so bail on
+				// this element.
+				continue
+			}
+			if observedRHS.Has(pe) {
+				errs = append(errs, errorf("rhs: duplicate entries for key %v", pe.String())...)
+				continue
+			}
+			observedRHS.Insert(pe)
+			w2 := w.prepareDescent(pe, t.ElementType)
+			w2.rhs = child
+			if lchild, ok := observedLHS.Get(pe); ok {
+				w2.lhs = lchild
+			}
+			errs = append(errs, w2.merge(pe.String)...)
+			if w2.out != nil {
+				out = append(out, *w2.out)
+			}
+			w.finishDescent(w2)
+		}
+	}
+
+	for _, pe := range lhsOrder {
+		if observedRHS.Has(pe) {
+			continue
+		}
+		value, _ := observedLHS.Get(pe)
+		w2 := w.prepareDescent(pe, t.ElementType)
+		w2.lhs = value
+		errs = append(errs, w2.merge(pe.String)...)
+		if w2.out != nil {
+			out = append(out, *w2.out)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 		}
 	}
 

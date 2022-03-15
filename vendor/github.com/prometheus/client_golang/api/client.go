@@ -17,7 +17,10 @@ package api
 import (
 	"bytes"
 	"context"
+<<<<<<< HEAD
 	"errors"
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	"net"
 	"net/http"
 	"net/url"

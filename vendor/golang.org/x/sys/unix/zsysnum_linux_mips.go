@@ -430,5 +430,8 @@ const (
 	SYS_LANDLOCK_RESTRICT_SELF       = 4446
 	SYS_PROCESS_MRELEASE             = 4448
 	SYS_FUTEX_WAITV                  = 4449
+<<<<<<< HEAD
 	SYS_SET_MEMPOLICY_HOME_NODE      = 4450
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 )

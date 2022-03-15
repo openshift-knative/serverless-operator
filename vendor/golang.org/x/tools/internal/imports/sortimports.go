@@ -65,7 +65,11 @@ func sortImports(localPrefix string, tokFile *token.File, f *ast.File) {
 // mergeImports merges all the import declarations into the first one.
 // Taken from golang.org/x/tools/ast/astutil.
 // This does not adjust line numbers properly
+<<<<<<< HEAD
 func mergeImports(f *ast.File) {
+=======
+func mergeImports(fset *token.FileSet, f *ast.File) {
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	if len(f.Decls) <= 1 {
 		return
 	}
@@ -246,14 +250,23 @@ func sortSpecs(localPrefix string, tokFile *token.File, f *ast.File, specs []ast
 		for previousLine := line - 1; previousLine >= firstSpecLine; {
 			// MergeLine can panic. Avoid the panic at the cost of not removing the blank line
 			// golang/go#50329
+<<<<<<< HEAD
 			if previousLine > 0 && previousLine < tokFile.LineCount() {
 				tokFile.MergeLine(previousLine) // has side effects!
+=======
+			if previousLine > 0 && previousLine < fset.File(p).LineCount() {
+				fset.File(p).MergeLine(previousLine)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 				previousLine--
 			} else {
 				// try to gather some data to diagnose how this could happen
 				req := "Please report what the imports section of your go file looked like."
 				log.Printf("panic avoided: first:%d line:%d previous:%d max:%d. %s",
+<<<<<<< HEAD
 					firstSpecLine, line, previousLine, tokFile.LineCount(), req)
+=======
+					firstSpecLine, line, previousLine, fset.File(p).LineCount(), req)
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 			}
 		}
 	}

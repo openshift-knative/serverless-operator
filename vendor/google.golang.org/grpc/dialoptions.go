@@ -53,6 +53,7 @@ type dialOptions struct {
 	chainUnaryInts  []UnaryClientInterceptor
 	chainStreamInts []StreamClientInterceptor
 
+<<<<<<< HEAD
 	cp                          Compressor
 	dc                          Decompressor
 	bs                          internalbackoff.Strategy
@@ -64,6 +65,21 @@ type dialOptions struct {
 	copts                       transport.ConnectOptions
 	callOptions                 []CallOption
 	channelzParentID            *channelz.Identifier
+=======
+	cp              Compressor
+	dc              Decompressor
+	bs              internalbackoff.Strategy
+	block           bool
+	returnLastError bool
+	timeout         time.Duration
+	scChan          <-chan ServiceConfig
+	authority       string
+	copts           transport.ConnectOptions
+	callOptions     []CallOption
+	// This is used by WithBalancerName dial option.
+	balancerBuilder             balancer.Builder
+	channelzParentID            int64
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	disableServiceConfig        bool
 	disableRetry                bool
 	disableHealthCheck          bool
@@ -293,8 +309,13 @@ func WithReturnConnectionError() DialOption {
 // WithCredentialsBundle or WithPerRPCCredentials) which require transport
 // security is incompatible and will cause grpc.Dial() to fail.
 //
+<<<<<<< HEAD
 // Deprecated: use WithTransportCredentials and insecure.NewCredentials()
 // instead. Will be supported throughout 1.x.
+=======
+// Deprecated: use insecure.NewCredentials() instead.
+// Will be supported throughout 1.x.
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 func WithInsecure() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.copts.TransportCredentials = insecure.NewCredentials()

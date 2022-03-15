@@ -11,8 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+<<<<<<< HEAD
 //go:build !windows && !js
 // +build !windows,!js
+=======
+//go:build !windows
+// +build !windows
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 package prometheus
 

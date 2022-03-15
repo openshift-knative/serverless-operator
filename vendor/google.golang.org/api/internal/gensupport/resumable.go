@@ -13,9 +13,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+<<<<<<< HEAD
 
 	"github.com/google/uuid"
 	"google.golang.org/api/internal"
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 )
 
 // ResumableUpload is used by the generated APIs to provide resumable uploads.
@@ -38,6 +41,7 @@ type ResumableUpload struct {
 
 	// Retry optionally configures retries for requests made against the upload.
 	Retry *RetryConfig
+<<<<<<< HEAD
 
 	// ChunkRetryDeadline configures the per-chunk deadline after which no further
 	// retries should happen.
@@ -47,6 +51,8 @@ type ResumableUpload struct {
 	// headers.
 	invocationID string
 	attempts     int
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // Progress returns the number of bytes uploaded at this point.
@@ -178,6 +184,7 @@ func (rx *ResumableUpload) Upload(ctx context.Context) (resp *http.Response, err
 	}
 	// Configure retryable error criteria.
 	errorFunc := rx.Retry.errorFunc()
+<<<<<<< HEAD
 
 	// Configure per-chunk retry deadline.
 	var retryDeadline time.Duration
@@ -186,12 +193,18 @@ func (rx *ResumableUpload) Upload(ctx context.Context) (resp *http.Response, err
 	} else {
 		retryDeadline = defaultRetryDeadline
 	}
+=======
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 	// Send all chunks.
 	for {
 		var pause time.Duration
 
+<<<<<<< HEAD
 		// Each chunk gets its own initialized-at-zero backoff and invocation ID.
+=======
+		// Each chunk gets its own initialized-at-zero backoff.
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 		bo := rx.Retry.backoff()
 		quitAfter := time.After(retryDeadline)
 		rx.attempts = 1

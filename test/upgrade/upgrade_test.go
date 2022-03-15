@@ -109,7 +109,11 @@ func TestClusterUpgrade(t *testing.T) {
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{
 				pkgupgrade.NewOperation("OpenShift Upgrade", func(c pkgupgrade.Context) {
-					if err := installation.UpgradeOpenShift(ctx); err != nil {
+					upgradeFunc := installation.UpgradeOpenShift
+					if test.Flags.EUSUpgrade {
+						upgradeFunc = installation.UpgradeEUS
+					}
+					if err := upgradeFunc(ctx); err != nil {
 						c.T.Error("OpenShift upgrade failed:", err)
 					}
 				}),

@@ -193,7 +193,11 @@ type BuildOptions struct {
 	// server can ignore this field.
 	Authority string
 	// ChannelzParentID is the parent ClientConn's channelz ID.
+<<<<<<< HEAD
 	ChannelzParentID *channelz.Identifier
+=======
+	ChannelzParentID int64
+>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	// CustomUserAgent is the custom user agent set on the parent ClientConn.
 	// The balancer should set the same custom user agent if it creates a
 	// ClientConn.

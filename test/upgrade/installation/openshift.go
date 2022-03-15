@@ -7,6 +7,9 @@ import (
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	machineconfigv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -87,4 +90,69 @@ func IsClusterVersionWithImageReady(image string) ClusterVersionInStateFunc {
 		}
 		return false
 	}
+}
+
+func UpgradeEUS(ctx *test.Context) error {
+	if updated, err := allMachineConfigPoolsUpdated(ctx); err != nil || !updated {
+		return fmt.Errorf("unable to proceed with upgrades: %w", err)
+	}
+
+	pauseMachineConfigPool(ctx, true)
+
+	if err := UpgradeOpenShift(ctx); err != nil {
+		return fmt.Errorf("failed to upgrade to odd OpenShift release: %w", err)
+	}
+
+	if err := UpgradeOpenShift(ctx); err != nil {
+		return fmt.Errorf("failed to upgrade to even OpenShift release: %w", err)
+	}
+
+	pauseMachineConfigPool(ctx, false)
+
+	if err := wait.PollImmediate(30*time.Second, 3*time.Hour, func() (bool, error) {
+		return allMachineConfigPoolsUpdated(ctx)
+	}); err != nil {
+		return fmt.Errorf("machineconfig pools not updated: %w", err)
+	}
+
+	return nil
+}
+
+func allMachineConfigPoolsUpdated(ctx *test.Context) (bool, error) {
+	poolList, err := ctx.Clients.MachineConfigPool.MachineconfigurationV1().
+		MachineConfigPools().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return false, fmt.Errorf("unable to list machineconfig pools: %w", err)
+	}
+	for _, mcp := range poolList.Items {
+		if !isMachineConfigPoolUpdated(mcp) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func isMachineConfigPoolUpdated(mcp machineconfigv1.MachineConfigPool) bool {
+	updated := false
+	for _, cond := range mcp.Status.Conditions {
+		if cond.Type == machineconfigv1.MachineConfigPoolUpdated &&
+			cond.Status == v1.ConditionTrue {
+			updated = true
+		}
+	}
+	return updated
+}
+
+func pauseMachineConfigPool(ctx *test.Context, pause bool) error {
+	if _, err := ctx.Clients.Dynamic.
+		Resource(machineconfigv1.GroupVersion.WithResource("machineconfigpool")).
+		Patch(context.Background(),
+			"worker",
+			types.MergePatchType,
+			[]byte(fmt.Sprintf(`{"spec":{"paused": %t}}`, pause)),
+			metav1.PatchOptions{},
+		); err != nil {
+		return err
+	}
+	return nil
 }
