@@ -38,8 +38,7 @@ class ShowcaseKservice {
   }
 
   checkScale(scale) {
-    const selector = 'div.pf-topology-container__with-sidebar ' +
-      'div.odc-revision-deployment-list__pod svg tspan'
+    const selector = 'div.odc-revision-deployment-list__pod svg tspan'
     const timeout = Cypress.config().defaultCommandTimeout
     try {
       // TODO: Remove the increased timeout when https://issues.redhat.com/browse/ODC-5685 is fixed.
@@ -83,9 +82,9 @@ class ShowcaseKservice {
   }
 
   isServiceDeployed() {
-    return new Cypress.Promise((resolve, reject) => {
-      cy.exec(`kubectl get kservice ${this.name} \
-          -n ${this.namespace}`, { failOnNonZeroExit: false }).then(result => {
+    return new Cypress.Promise((resolve, _) => {
+      const cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace}`
+      cy.exec(cmd, { failOnNonZeroExit: false }).then(result => {
         resolve(result.code === 0)
       })
     })
@@ -102,6 +101,21 @@ class ShowcaseKservice {
   }
 
   doRemoveApp() {
+    const env = new Environment()
+    const rng = env.random().next()
+    const self = this
+    const ways = [
+      () => { return self.removeAppViaKubectl() },
+      // FIXME: This do not work on OCP 4.10+ See: https://issues.redhat.com/browse/OCPBUGSM-41912
+      // () => { return self.removeAppViaUI() },
+    ]
+    const idx = Math.floor(rng * ways.length)
+    const way = ways[idx]
+    return way()
+  }
+
+  // FIXME: This do not work on OCP 4.10+ See: https://issues.redhat.com/browse/OCPBUGSM-41912
+  removeAppViaUI() {
     cy.visit(this.topologyUrl())
     cy.get('div.pf-topology-content')
       .contains(this.app).click()
@@ -115,17 +129,29 @@ class ShowcaseKservice {
     cy.contains('No resources found')
   }
 
-  showServiceDetails() {
+  removeAppViaKubectl() {
+    const cmd = `kubectl delete all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace}`
+    cy.exec(cmd).then(result => {
+      if (result.code !== 0) {
+        throw new Error(`Command failed with code ${result.code}: \`${cmd}\`.\nStdout: ${result.stdout}\nStderr: ${result.stderr}`)
+      }
+    })
+  }
+
+  showServiceDetails(scrollTo = 'Location:') {
     cy.visit(this.topologyUrl())
     cy.get('div.pf-topology-content')
-      .contains(this.name).click()
-    cy.contains('Location:')
+      .get('#serving\\.knative\\.dev\\~v1\\~Service_label')
+      .click() // closes the sidebar if open
+    cy.get('div.pf-topology-content')
+      .contains(this.name)
+      .click() // opens the sidebar
+    cy.contains(scrollTo)
       .scrollIntoView()
   }
 
   topologyUrl(kind = 'list') {
     const ver = environment.ocpVersion()
-    debugger
     if (ver.satisfies('>=4.9')) {
       return `/topology/ns/${this.namespace}?view=${kind}`
     } else {
