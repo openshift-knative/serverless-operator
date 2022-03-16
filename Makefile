@@ -50,7 +50,7 @@ uninstall-full-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
 
 install-with-mesh-enabled:
-  FULL_MESH=true ./hack/install.sh
+	FULL_MESH=true ./hack/install.sh
 
 teardown:
 	./hack/teardown.sh
