@@ -123,3 +123,7 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # TODO: Remove this when we update to upstream 1.1 (for SO 1.22)
 git apply "$root/openshift-knative-operator/hack/009-sequence.patch"
+
+# Fix for SRVKE-1171
+git apply "$root/openshift-knative-operator/hack/010-eventing-channel-dead-letter-sink-uri.patch"
+
