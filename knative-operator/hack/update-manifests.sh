@@ -74,3 +74,6 @@ git apply "$root/knative-operator/hack/004-kafka-broker-prober-env.patch"
 
 # For now we need to add broker read access to the webhook.
 git apply "$root/knative-operator/hack/005-kafka-broker-webhook-role.patch"
+
+# Fix for SRVKE-1171
+git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
