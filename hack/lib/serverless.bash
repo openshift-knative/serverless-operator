@@ -192,6 +192,8 @@ EOF
   yq merge -a append "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$patchfile" | \
     oc apply -n "${SERVING_NAMESPACE}" -f -
 
+  # Create serving-tests namespace only when it does not exist.
+  ensure_namespace serving-tests
   # metadata-webhook adds istio annotations for e2e test by webhook.
   oc apply -f "${rootdir}/serving/metadata-webhook/config"
 }
