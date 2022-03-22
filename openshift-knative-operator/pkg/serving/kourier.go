@@ -12,6 +12,11 @@ import (
 const (
 	providerLabel           = "networking.knative.dev/ingress-provider"
 	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
+	networkCMName           = "network"
+
+	// TODO: Use "knative.dev/networking/pkg/config" once the repo pulled Knative 1.6.
+	// Backport messes up the dependencies.
+	InternalEncryptionKey = "internal-encryption"
 )
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
@@ -44,9 +49,15 @@ func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
 }
 
-func addKourierEnvValues() mf.Transformer {
-	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller",
+func addKourierEnvValues(ks operatorv1alpha1.KComponent) mf.Transformer {
+	envVars := []corev1.EnvVar{
 		corev1.EnvVar{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
 		corev1.EnvVar{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
-	)
+	}
+	if ks.GetSpec().GetConfig()[networkCMName][InternalEncryptionKey] != "" {
+		envVars = append(envVars,
+			corev1.EnvVar{Name: "CERTS_SECRET_NAMESPACE", Value: "openshift-ingress"},
+			corev1.EnvVar{Name: "CERTS_SECRET_NAME", Value: "router-certs-default"})
+	}
+	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller", envVars...)
 }

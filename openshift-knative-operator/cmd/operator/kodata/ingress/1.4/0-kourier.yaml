@@ -503,3 +503,16 @@ spec:
   type: ClusterIP
 
 ---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: knative-serving-certs
+  namespace: kourier-system
+  labels:
+    networking.knative.dev/ingress-provider: kourier
+    app.kubernetes.io/component: net-kourier
+    app.kubernetes.io/name: knative-serving
+    serving-certs-ctrl: "data-plane"
+    networking.internal.knative.dev/certificate-uid: "serving-ingress-certs"
+# The data is populated when internal-encryption is enabled.

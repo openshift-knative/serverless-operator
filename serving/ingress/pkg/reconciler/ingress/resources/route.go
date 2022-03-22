@@ -142,6 +142,19 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		},
 	}
 
+	// Use passthrough type for OpenShift Ingress -> Kourier Gateawy to encrypt the traffic
+	// when Internal TLS is enabled.
+	// In other words, do not use edge termination which makes plain traffic.
+	if isInternalEncryptionEnabled(rule) {
+		route.Spec.Port = &routev1.RoutePort{
+			TargetPort: intstr.FromString(HTTPSPort),
+		}
+		route.Spec.TLS = &routev1.TLSConfig{
+			Termination:                   routev1.TLSTerminationPassthrough,
+			InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+		}
+	}
+
 	// Target the HTTPS port and configure passthrough when:
 	// * the passthrough annotation is set.
 	// * the ingress.spec.tls is set. (DomainMapping with BYP cert.)
@@ -152,6 +165,23 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	}
 
 	return route, nil
+}
+
+// isInternalEncryptionEnabled determines whether internal-encryption is enabled or not.
+// In general, we can determine it by the value internal-encryption in config-network, however the serverless ingress does not
+// watch the ConfigMap. Therefore we determine it by ServiceHTTPSPort(443) port for the backend in Kingress.
+func isInternalEncryptionEnabled(rule networkingv1alpha1.IngressRule) bool {
+	if rule.HTTP == nil {
+		return false
+	}
+	for _, path := range rule.HTTP.Paths {
+		for _, split := range path.Splits {
+			if split.IngressBackend.ServicePort == intstr.FromInt(networking.ServiceHTTPSPort) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func routeName(uid, host string) string {
