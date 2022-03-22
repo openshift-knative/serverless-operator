@@ -83,9 +83,10 @@ class ShowcaseKservice {
 
   isServiceDeployed() {
     return new Cypress.Promise((resolve, _) => {
-      const cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace}`
+      const cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace} -o name`
       cy.exec(cmd, { failOnNonZeroExit: false }).then(result => {
-        resolve(result.code === 0)
+        let out = result.stdout.trim()
+        resolve(result.code === 0 && out.length > 0)
       })
     })
   }
@@ -101,21 +102,6 @@ class ShowcaseKservice {
   }
 
   doRemoveApp() {
-    const env = new Environment()
-    const rng = env.random().next()
-    const self = this
-    const ways = [
-      () => { return self.removeAppViaKubectl() },
-      // FIXME: This do not work on OCP 4.10+ See: https://issues.redhat.com/browse/OCPBUGSM-41912
-      // () => { return self.removeAppViaUI() },
-    ]
-    const idx = Math.floor(rng * ways.length)
-    const way = ways[idx]
-    return way()
-  }
-
-  // FIXME: This do not work on OCP 4.10+ See: https://issues.redhat.com/browse/OCPBUGSM-41912
-  removeAppViaUI() {
     cy.visit(this.topologyUrl())
     cy.get('div.pf-topology-content')
       .contains(this.app).click()
@@ -127,15 +113,6 @@ class ShowcaseKservice {
       .type(this.app)
     cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
     cy.contains('No resources found')
-  }
-
-  removeAppViaKubectl() {
-    const cmd = `kubectl delete all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace}`
-    cy.exec(cmd).then(result => {
-      if (result.code !== 0) {
-        throw new Error(`Command failed with code ${result.code}: \`${cmd}\`.\nStdout: ${result.stdout}\nStderr: ${result.stderr}`)
-      }
-    })
   }
 
   showServiceDetails(scrollTo = 'Location:') {
