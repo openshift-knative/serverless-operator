@@ -1,8 +1,3 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: knative-serving
----
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
