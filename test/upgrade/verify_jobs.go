@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"golang.org/x/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	testlib "knative.dev/eventing/test/lib"
@@ -36,29 +37,39 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 		return fmt.Errorf("failed to list jobs in namespace %s: %w", cfg.Namespace, err)
 	}
 
-	for _, j := range jobs.Items {
-		err := wait.Poll(5*time.Second, 4*time.Minute, func() (done bool, err error) {
-			j, err := client.Kube.
-				BatchV1().
-				Jobs(cfg.Namespace).
-				Get(ctx, j.Name, metav1.GetOptions{})
-			if err != nil {
-				return false, err
-			}
-
-			if j.Status.Failed == *j.Spec.BackoffLimit {
-				return false, fmt.Errorf("job %s/%s failed: %+v", j.Namespace, j.Name, j.Status)
-			}
-
-			return j.Status.Succeeded > 0, nil
-		})
-		if err != nil {
-			return fmt.Errorf("job %s/%s didn't reach completion: %w", cfg.Namespace, j.GetName(), err)
-		}
-	}
-
 	if len(jobs.Items) == 0 && cfg.FailOnNoJobs {
 		return fmt.Errorf("no jobs found in namespace %s", cfg.Namespace)
+	}
+
+	kubeClient := client.Kube
+
+	eg, ctx := errgroup.WithContext(ctx)
+	for _, j := range jobs.Items {
+		j := j
+		eg.Go(func() error {
+			return wait.Poll(5*time.Second, 10*time.Minute, func() (done bool, err error) {
+				j, err := kubeClient.
+					BatchV1().
+					Jobs(cfg.Namespace).
+					Get(ctx, j.Name, metav1.GetOptions{})
+				if err != nil {
+					return false, err
+				}
+
+				if j.Status.Failed > 0 {
+					c.T.Logf("Job %s/%s failed %d times", j.Namespace, j.Name, j.Status.Failed)
+				}
+
+				if j.Status.Failed == *j.Spec.BackoffLimit {
+					return false, fmt.Errorf("job %s/%s failed: %+v", j.Namespace, j.Name, j.Status)
+				}
+
+				return j.Status.Succeeded > 0, nil
+			})
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return fmt.Errorf("jobs in %s didn't run successfully: %w", cfg.Namespace, err)
 	}
 
 	return nil
