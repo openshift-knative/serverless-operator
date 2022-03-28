@@ -1237,6 +1237,9 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
+# k8s.io/klog v1.0.0
+## explicit; go 1.12
+k8s.io/klog
 # k8s.io/klog/v2 v2.40.1 => k8s.io/klog/v2 v2.8.0
 ## explicit; go 1.13
 k8s.io/klog/v2
@@ -1334,6 +1337,15 @@ knative.dev/eventing/test/lib/duck
 knative.dev/eventing/test/lib/recordevents
 knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
+knative.dev/eventing/test/rekt/resources/addressable
+knative.dev/eventing/test/rekt/resources/broker
+knative.dev/eventing/test/rekt/resources/channel
+knative.dev/eventing/test/rekt/resources/channel_impl
+knative.dev/eventing/test/rekt/resources/delivery
+knative.dev/eventing/test/rekt/resources/parallel
+knative.dev/eventing/test/rekt/resources/sequence
+knative.dev/eventing/test/rekt/resources/subscription
+knative.dev/eventing/test/rekt/resources/trigger
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/upgrade
 knative.dev/eventing/test/upgrade/prober
@@ -1380,6 +1392,7 @@ knative.dev/eventing-kafka/test
 knative.dev/eventing-kafka/test/e2e/helpers
 knative.dev/eventing-kafka/test/lib
 knative.dev/eventing-kafka/test/lib/resources
+knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/continual
 knative.dev/eventing-kafka/test/upgrade/installation
@@ -1529,6 +1542,17 @@ knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
+# knative.dev/reconciler-test v0.0.0-20220118183433-c8bfbe66bada
+## explicit; go 1.16
+knative.dev/reconciler-test/pkg/environment
+knative.dev/reconciler-test/pkg/feature
+knative.dev/reconciler-test/pkg/images
+knative.dev/reconciler-test/pkg/k8s
+knative.dev/reconciler-test/pkg/knative
+knative.dev/reconciler-test/pkg/manifest
+knative.dev/reconciler-test/pkg/milestone
+knative.dev/reconciler-test/pkg/state
+knative.dev/reconciler-test/resources/svc
 # knative.dev/serving v0.29.2 => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 ## explicit; go 1.16
 knative.dev/serving/pkg/apis/autoscaling

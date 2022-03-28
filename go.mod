@@ -34,6 +34,8 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
+require k8s.io/klog v1.0.0 // indirect
+
 require (
 	cloud.google.com/go v0.99.0 // indirect
 	cloud.google.com/go/storage v1.18.2 // indirect
@@ -151,6 +153,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704 // indirect
 	knative.dev/caching v0.0.0-20220223181140-b3aed5c4e283 // indirect
+	knative.dev/reconciler-test v0.0.0-20220118183433-c8bfbe66bada
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 )
 

@@ -1,0 +1,17 @@
+apiVersion: serving.knative.dev/{{ .version }}
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace }}
+spec:
+  template:
+    spec:
+      containers:
+        - image: {{ .image }}
+          {{ if .env }}
+          env:
+          {{ range .env }}
+            - name: {{ .Name }}
+              value: {{ .Value }}
+          {{ end }}
+          {{ end }}
