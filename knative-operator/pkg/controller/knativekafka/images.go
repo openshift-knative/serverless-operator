@@ -57,6 +57,8 @@ func ImageTransform(overrideMap map[string]string) mf.Transformer {
 			// Replace direct image YAML references.
 			if image, ok := overrideMap[obj.GetName()+delimiter+container.Name]; ok {
 				container.Image = image
+			} else if image, ok := overrideMap[obj.GetGenerateName()+delimiter+container.Name]; ok {
+				container.Image = image
 			} else if image, ok := overrideMap[container.Name]; ok {
 				container.Image = image
 			}

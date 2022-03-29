@@ -1,0 +1,13 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+index 02638809..46876f95 100644
+--- a/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
++++ b/knative-operator/deploy/resources/knativekafka/channel/2-channel-post-install.yaml
+@@ -109,7 +109,7 @@ roleRef:
+ apiVersion: batch/v1
+ kind: Job
+ metadata:
+-  name: storage-version-migration-kafka-channel-1.1.0
++  generateName: storage-version-migration-kafka-channel-
+   namespace: knative-eventing
+   labels:
+     app: "storage-version-migration-eventing-kafka-channel"

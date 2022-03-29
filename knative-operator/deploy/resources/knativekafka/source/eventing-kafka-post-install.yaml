@@ -171,7 +171,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kafka-controller-post-install
+  generateName: kafka-controller-post-install-
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
@@ -309,7 +309,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: knative-kafka-storage-version-migrator
+  generateName: knative-kafka-storage-version-migrator-
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"

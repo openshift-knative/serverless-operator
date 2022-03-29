@@ -77,3 +77,5 @@ git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"
 # Fix for SRVKE-1171
 git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
 git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
+
+git apply "$root/knative-operator/hack/013-eventing-generate-name-jobs.patch"
