@@ -76,8 +76,8 @@ kafka_image "KAFKA_RA_IMAGE"                       "${eventing_kafka}-receive-ad
 kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
 kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
 kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
-kafka_image "storage-version-migration-kafka-source-$(metadata.get dependencies.eventing_kafka)__migrate" "${eventing_kafka}-storage-version-migration"
-kafka_image "storage-version-migration-kafka-channel-$(metadata.get dependencies.eventing_kafka)__migrate" "${eventing_kafka}-storage-version-migration"
+kafka_image "storage-version-migration-kafka-channel-__migrate" "${eventing_kafka}-storage-version-migration"
+kafka_image "storage-version-migration-kafka-source-__migrate" "${eventing_kafka}-storage-version-migration"
 
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"      "${eventing_kafka_broker}-broker-receiver"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafka_broker}-broker-dispatcher"
