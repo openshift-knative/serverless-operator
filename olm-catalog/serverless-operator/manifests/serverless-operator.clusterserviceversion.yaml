@@ -484,7 +484,7 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.0:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.1:client-plugin-event-sender"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -508,7 +508,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v1.0.0:kn-cli-artifacts
+                    image: registry.ci.openshift.org/openshift/knative-v1.1.0:kn-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -627,7 +627,7 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.0:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.1:client-plugin-event-sender"
                       - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
                         value: "registry.ci.openshift.org/openshift/knative-v1.1.0:knative-eventing-kafka-consolidated-controller"
                       - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
@@ -868,7 +868,7 @@ spec:
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.ci.openshift.org/knative/release-1.0:client-plugin-event-sender"
+      image: "registry.ci.openshift.org/knative/release-1.1:client-plugin-event-sender"
     - name: "KAFKA_IMAGE_kafka-ch-controller__controller"
       image: "registry.ci.openshift.org/openshift/knative-v1.1.0:knative-eventing-kafka-consolidated-controller"
     - name: "KAFKA_IMAGE_DISPATCHER_IMAGE"
