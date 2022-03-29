@@ -30,7 +30,7 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 	}, {
 		// we have this file not numbered, because we manually put it in
 		// in releaase-1.2 (upstream) we will download the file
-		path:  "./source/eventing-kafka-post-install.yaml",
+		path:  "./controller/eventing-kafka-post-install.yaml",
 		fails: false,
 	}, {
 		path:  "./controller/1-eventing-kafka-controller.yaml",
