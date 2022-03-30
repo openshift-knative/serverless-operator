@@ -63,19 +63,8 @@ EOF
 
 function enable_eventing_tracing {
   logger.info "Configuring tracing for Eventing"
-
-  cat <<EOF | oc apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-tracing
-  namespace: ${EVENTING_NAMESPACE}
-data:
-  enable: "true"
-  zipkin-endpoint: "http://zipkin.${ZIPKIN_NAMESPACE}.svc.cluster.local:9411/api/v2/spans"
-  sample-rate: "1.0"
-  debug: "true"
-EOF
+  oc -n "${EVENTING_NAMESPACE}" patch knativeeventing/knative-eventing --type=merge \
+    --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"http://zipkin.'"${ZIPKIN_NAMESPACE}"'.svc.cluster.local:9411/api/v2/spans", "debug":"true", "sample-rate":"1.0"}}}}'
 }
 
 function teardown_tracing {
