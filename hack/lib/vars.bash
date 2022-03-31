@@ -41,7 +41,7 @@ export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
 export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
 export TRACING_NAMESPACE="${TRACING_NAMESPACE:-istio-system}"
-export TRACING_BACKEND="${TRACING_BACKEND:-zipkin}"
+export TRACING_BACKEND="${TRACING_BACKEND:-otel}"
 
 declare -a SYSTEM_NAMESPACES
 SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
@@ -69,4 +69,4 @@ export INSTALL_SERVING="${INSTALL_SERVING:-true}"
 export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
 export FULL_MESH="${FULL_MESH:-false}"
-export ENABLE_TRACING="${ENABLE_TRACING:-false}"
+export ENABLE_TRACING="${ENABLE_TRACING:-true}"
