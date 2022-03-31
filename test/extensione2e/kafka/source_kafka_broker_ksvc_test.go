@@ -99,7 +99,7 @@ func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", testNamespace, image, nil)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}

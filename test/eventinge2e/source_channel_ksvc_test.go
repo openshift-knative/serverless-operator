@@ -32,7 +32,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image, nil)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}

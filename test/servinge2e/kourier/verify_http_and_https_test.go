@@ -17,7 +17,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image)
+	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image, nil)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}

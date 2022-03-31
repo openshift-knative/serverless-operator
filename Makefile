@@ -88,11 +88,11 @@ test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 test-e2e-with-kafka:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	#UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=otel ./hack/tracing.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
-	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
-	TRACING_BACKEND=otel ./hack/teardown.sh
+	INSTALL_KAFKA="true" ENABLE_TRACING="true" TRACING_BACKEND=otel ./hack/install.sh
+	#TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	#TRACING_BACKEND=otel ./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:

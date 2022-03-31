@@ -41,7 +41,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Deploy Knative service in the same namespace
-	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image, nil)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -70,7 +70,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Deploy Knative service in the namespace first
-	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image, nil)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
