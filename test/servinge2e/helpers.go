@@ -34,3 +34,13 @@ func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.UR
 		t.Fatalf("The Route at domain %s didn't serve the expected text %q: %v", routeURL, expectedText, err)
 	}
 }
+
+func MakeSpoofingClient(ctx *test.Context, url *url.URL) (*spoof.SpoofingClient, error) {
+	return pkgTest.NewSpoofingClient(
+		context.Background(),
+		ctx.Clients.Kube,
+		ctx.T.Logf,
+		url.Hostname(),
+		true,
+		servingTest.AddRootCAtoTransport(context.Background(), ctx.T.Logf, &servingTest.Clients{KubeClient: ctx.Clients.Kube}, true))
+}
