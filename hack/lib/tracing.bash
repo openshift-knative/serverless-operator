@@ -85,7 +85,7 @@ function install_opentelemetry_tracing {
   fi
   logger.info "Install Distributed Tracing Data Collection Operator"
   install_opentelemetry_operator
-  install_opentelemetrycollector_cr
+  install_opentelemetrycollector
 }
 
 function install_jaeger_operator {
@@ -129,9 +129,17 @@ EOF
   timeout 600 "[[ \$(oc get ClusterServiceVersion -n $target_namespace $current_csv -o jsonpath='{.status.phase}') != Succeeded ]]"
 }
 
-function install_opentelemetrycollector_cr {
+function install_opentelemetrycollector {
   logger.info "Install OpenTelemetryCollector CR"
-  cat <<EOF | oc apply -f -
+  # Workaround for TBD
+  timeout 30 "! apply_opentelemetry_cr"
+  logger.info "Wait for collector deployment to be available"
+  timeout 600 "[[ \$(oc get deployment -n ${TRACING_NAMESPACE} cluster-collector-collector --no-headers | wc -l) != 1 ]]"
+  oc wait --for=condition=Available deployment cluster-collector-collector --timeout=300s -n "${TRACING_NAMESPACE}"
+}
+
+function apply_opentelemetry_cr {
+  cat <<EOF | oc apply -f - || return 1
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
@@ -156,10 +164,6 @@ spec:
           processors: []
           exporters: [jaeger, logging]
 EOF
-
- logger.info "Wait for collector deployment to be available"
- timeout 600 "[[ \$(oc get deployment -n ${TRACING_NAMESPACE} cluster-collector-collector --no-headers | wc -l) != 1 ]]"
- oc wait --for=condition=Available deployment cluster-collector-collector --timeout=300s -n "${TRACING_NAMESPACE}"
 }
 
 function install_jaeger_cr {
