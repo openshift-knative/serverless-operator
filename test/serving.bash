@@ -60,7 +60,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Enable persistent volume claims feature flags for the respective tests.
   oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
     --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-claim: "enabled"}}}}'
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-claim": "enabled"}}}}'
 
   oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
     --type=merge \
