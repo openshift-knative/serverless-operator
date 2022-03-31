@@ -52,6 +52,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --type=merge \
     --patch='{"spec": {"config": { "features": {"kubernetes.podspec-volumes-emptydir": "enabled"}}}}'
 
+  # Enable init containers for the respective tests.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-init-containers": "enabled"}}}}'
+
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
@@ -72,9 +77,10 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e emptydir" -timeout=30m -parallel=$parallel \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
+    ./test/e2e/initcontainers \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
