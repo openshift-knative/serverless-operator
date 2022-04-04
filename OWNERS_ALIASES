@@ -2,7 +2,6 @@ aliases:
   serverless-approvers:
   - alanfx
   - aliok
-  - devguyio
   - jcrossley3
   - lberk
   - matzew
@@ -14,7 +13,6 @@ aliases:
   serverless-reviewers:
   - alanfx
   - aliok
-  - devguyio
   - dsimansk
   - jcrossley3
   - lberk
