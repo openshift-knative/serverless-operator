@@ -38,6 +38,10 @@ func TestTraceStartedAtQueueProxy(t *testing.T) {
 
 func tracingTest(t *testing.T, activatorInPath bool) {
 	ctx := test.SetupClusterAdmin(t)
+	if test.IsServiceMeshInstalled(ctx) {
+		// Traces look different when ServiceMesh is installed.
+		t.Skip("ServiceMesh installed, skipping tracing test.")
+	}
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	defer test.CleanupAll(t, ctx)
 	name := strings.ToLower(t.Name())
