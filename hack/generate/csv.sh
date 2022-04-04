@@ -150,6 +150,7 @@ for name in "${kafka_images[@]}"; do
 done
 
 # Add Knative Kafka version to the downstream operator
+add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
 add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_VERSION" "$(metadata.get dependencies.eventing_kafka)"
 
 # Override the image for the CLI artifact deployment

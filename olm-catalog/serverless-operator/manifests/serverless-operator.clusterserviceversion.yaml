@@ -651,6 +651,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-receiver"
                       - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
                         value: "registry.ci.openshift.org/openshift/knative-v1.0.0:knative-eventing-kafka-broker-webhook-kafka"
+                      - name: "CURRENT_VERSION"
+                        value: "1.22.0"
                       - name: "KNATIVE_EVENTING_KAFKA_VERSION"
                         value: "1.0.0"
                     securityContext:
