@@ -58,6 +58,15 @@ rules:
     resourceNames:
       - kafka-source-webhook
       - kafka-controller
+      - kafka-controller-manager-sm-service
+    verbs:
+      - delete
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    resourceNames:
+      - kafka-controller-manager-sm
     verbs:
       - delete
   - apiGroups:
