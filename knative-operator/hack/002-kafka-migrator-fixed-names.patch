@@ -7,7 +7,7 @@ index 64d9a4b5d..39eb40282 100644
  kind: Job
  metadata:
 -  generateName: storage-version-migration-eventing-kafka-channel-
-+  name: storage-version-migration-kafka-channel-1.0.0
++  generateName: storage-version-migration-kafka-channel-
    namespace: knative-eventing
    labels:
      app: "storage-version-migration-eventing-kafka-channel"
@@ -20,7 +20,7 @@ index d85c336df..56bc88a68 100644
  kind: Job
  metadata:
 -  generateName: storage-version-migration-eventing-kafka-source-
-+  name: storage-version-migration-kafka-source-1.0.0
++  generateName: storage-version-migration-kafka-source-
    namespace: knative-eventing
    labels:
      app: "storage-version-migration-eventing-kafka-source"

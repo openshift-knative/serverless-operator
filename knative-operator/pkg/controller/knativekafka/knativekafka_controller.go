@@ -6,6 +6,9 @@ import (
 	"os"
 	"strconv"
 
+	batchv1 "k8s.io/api/batch/v1"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+
 	operatorcommon "knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/pkg/logging"
 
@@ -14,9 +17,6 @@ import (
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	mf "github.com/manifestival/manifestival"
-	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -26,16 +26,18 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 	"sigs.k8s.io/yaml"
+
+	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 )
 
 const (
@@ -280,6 +282,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_"), log),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
+		replaceJobGenerateName(),
 		rbacProxyTranform,
 	)
 	if err != nil {
@@ -287,6 +290,26 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 	}
 	*manifest = m
 	return nil
+}
+
+func replaceJobGenerateName() mf.Transformer {
+	version := os.Getenv("CURRENT_VERSION")
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Job" {
+			job := &batchv1.Job{}
+			if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+				return err
+			}
+			if job.GetName() == "" && job.GetGenerateName() != "" {
+				job.SetName(fmt.Sprintf("%s%s", job.GetGenerateName(), version))
+				job.SetGenerateName("")
+			} else {
+				job.SetName(fmt.Sprintf("%s-%s", job.GetName(), version))
+			}
+			return scheme.Scheme.Convert(job, u, nil)
+		}
+		return nil
+	}
 }
 
 // Install Knative Kafka components

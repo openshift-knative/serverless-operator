@@ -32,6 +32,7 @@ import (
 	servingupgrade "knative.dev/serving/test/upgrade"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
@@ -138,6 +139,10 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
 	)
+	tests = append(tests, upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-eventing",
+		FailOnNoJobs: true,
+	}))
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
