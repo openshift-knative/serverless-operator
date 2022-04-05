@@ -57,6 +57,22 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --type=merge \
     --patch='{"spec": {"config": { "features": {"kubernetes.podspec-init-containers": "enabled"}}}}'
 
+  # Enable persistent volume claims feature flags for the respective tests.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-claim": "enabled"}}}}'
+
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-write": "enabled"}}}}'
+
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+    --type=merge \
+    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-securitycontext": "enabled"}}}}'
+
+  # Create a persistent volume claim for the respective tests
+  oc apply -f ./test/config/pvc/pvc.yaml
+
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
@@ -81,6 +97,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
     ./test/e2e/initcontainers \
+    ./test/e2e/pvc \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
