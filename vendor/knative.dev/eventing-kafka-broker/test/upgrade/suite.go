@@ -28,17 +28,14 @@ func Suite() pkgupgrade.Suite {
 		Tests: pkgupgrade.Tests{
 			PreUpgrade: []pkgupgrade.Operation{
 				BrokerPreUpgradeTest(),
-				SinkPreUpgradeTest(),
 			},
 			PostUpgrade: []pkgupgrade.Operation{
 				BrokerPostUpgradeTest(),
-				SinkPostUpgradeTest(),
 			},
 			PostDowngrade: []pkgupgrade.Operation{
 				BrokerPostDowngradeTest(),
-				SinkPostDowngradeTest(),
 			},
-			Continual: ContinualTests(),
+			Continual: BrokerContinualTests(),
 		},
 		Installations: pkgupgrade.Installations{
 			Base: []pkgupgrade.Operation{
