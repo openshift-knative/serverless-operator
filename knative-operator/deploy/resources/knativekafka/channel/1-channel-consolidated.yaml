@@ -502,6 +502,40 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kafka-ch-controller-addressable-resolver
+  labels:
+    kafka.eventing.knative.dev/release: devel
+subjects:
+  - kind: ServiceAccount
+    name: kafka-ch-controller
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: addressable-resolver
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kafka-ch-dispatcher-addressable-resolver
+  labels:
+    kafka.eventing.knative.dev/release: devel
+subjects:
+  - kind: ServiceAccount
+    name: kafka-ch-dispatcher
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: addressable-resolver
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
