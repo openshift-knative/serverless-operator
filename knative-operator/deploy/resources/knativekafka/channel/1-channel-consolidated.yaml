@@ -1115,7 +1115,7 @@ metadata:
   labels:
     kafka.eventing.knative.dev/release: "v1.2.1"
 spec:
-  minAvailable: 80%
+  minAvailable: 0
   selector:
     matchLabels:
       app: kafka-webhook
