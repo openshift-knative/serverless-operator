@@ -12,13 +12,7 @@ describe('OCP UI for Serverless', () => {
     describe('with authenticated via Web Console', () => {
       openshiftConsole.login()
     })
-    describe('remove kservice', () => {
-      showcaseKsvc.removeApp()
-    })
-  })
-
-  afterEach(() => {
-    describe('remove kservice', () => {
+    describe('remove app', () => {
       showcaseKsvc.removeApp()
     })
   })
@@ -50,9 +44,8 @@ describe('OCP UI for Serverless', () => {
       showcaseKsvc.deployImage()
     })
     describe('add two revisions to traffic distribution', () => {
-      cy.visit(showcaseKsvc.topologyUrl())
-      cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
+      showcaseKsvc.showServiceDetails()
+
       cy.contains('Actions').click()
       cy.contains(`Edit ${showcaseKsvc.name}`).click()
       cy.get('input[name=searchTerm]')
@@ -60,11 +53,11 @@ describe('OCP UI for Serverless', () => {
         .type(showcaseKsvc.image.updated)
       cy.contains('Validated')
       cy.get('button[type=submit]').click()
-      cy.url().should('include', showcaseKsvc.namespace)
+      cy.url()
+        .should('not.include', '/edit/')
+        .should('include', showcaseKsvc.namespace)
       cy.contains(showcaseKsvc.app)
-      cy.visit(showcaseKsvc.topologyUrl())
-      cy.get('div.pf-topology-content')
-        .contains(showcaseKsvc.name).click()
+      showcaseKsvc.showServiceDetails()
       cy.contains('Set traffic distribution', {matchCase: false}).click()
       cy.get('input[name="trafficSplitting.0.percent"]')
         .clear()
@@ -81,6 +74,10 @@ describe('OCP UI for Serverless', () => {
       cy.contains('Select a Revision', {matchCase: false}).click()
       cy.get('ul.pf-c-dropdown__menu button').click()
       cy.get('button[type=submit]').click()
+
+      // FIXME: Remove after fixing https://issues.redhat.com/browse/OCPBUGSM-41966
+      showcaseKsvc.showServiceDetails()
+
       cy.contains('51%')
       cy.contains('49%')
     })
