@@ -280,10 +280,10 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		configureLegacyEventingKafka(instance.Spec.Channel),
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
+		replaceJobGenerateName(),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
-		replaceJobGenerateName(),
 		rbacProxyTranform,
 	)
 	if err != nil {
