@@ -49,9 +49,6 @@ git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
 # SRVKE-919: Change the minavailable pdb for kafka-webhook to 0
 git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 
-# For now we use fixed names
-git apply "$root/knative-operator/hack/002-kafka-migrator-fixed-names.patch"
-
 # Kafka Broker content:
 # Control-Plane files:
 download_kafka eventing-kafka-broker controller "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_controller_files[@]}"
@@ -77,8 +74,6 @@ git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"
 # Fix for SRVKE-1171
 git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
 git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
-
-git apply "$root/knative-operator/hack/013-eventing-generate-name-jobs.patch"
 
 # SRVKE-1184 Migration to Broker components
 git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.patch"
