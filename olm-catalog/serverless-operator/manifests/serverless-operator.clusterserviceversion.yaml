@@ -649,7 +649,7 @@ spec:
                       - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
                         value: "registry.ci.openshift.org/openshift/knative-v1.1.3:knative-eventing-kafka-broker-webhook-kafka"
                       - name: "KAFKA_IMAGE_kafka-controller-post-install-__post-install"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.1.3:knative-eventing-kafka-broker-post-install"
+                        value: "quay.io/pierdipi/post-install-556eadd8a59c2213d960089c7a8fad4a@sha256:43eba6d7a827d9d7aee95ea91379e8415752c1a3c089e0948a98da9552ff34bd"
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator-__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-v1.1.0:knative-eventing-storage-version-migration"
                       - name: "CURRENT_VERSION"
@@ -892,7 +892,7 @@ spec:
     - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
       image: "registry.ci.openshift.org/openshift/knative-v1.1.3:knative-eventing-kafka-broker-webhook-kafka"
     - name: "KAFKA_IMAGE_kafka-controller-post-install-__post-install"
-      image: "registry.ci.openshift.org/openshift/knative-v1.1.3:knative-eventing-kafka-broker-post-install"
+      image: "quay.io/pierdipi/post-install-556eadd8a59c2213d960089c7a8fad4a@sha256:43eba6d7a827d9d7aee95ea91379e8415752c1a3c089e0948a98da9552ff34bd"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator-__migrate"
       image: "registry.ci.openshift.org/openshift/knative-v1.1.0:knative-eventing-storage-version-migration"
   replaces: serverless-operator.v1.21.0
