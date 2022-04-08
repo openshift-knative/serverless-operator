@@ -1,11 +1,35 @@
 diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-index e3beb0ea5..475a9fb84 100644
+index 23bcca357..e6caefbb5 100644
 --- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
 +++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-@@ -47,272 +47,6 @@ metadata:
- data:
+@@ -23,299 +23,6 @@ data:
+   default.topic.replication.factor: "3"
    bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
  
+----
+-# Copyright 2021 The Knative Authors
+-#
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#     http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
+-apiVersion: v1
+-kind: ConfigMap
+-metadata:
+-  name: kafka-channel-config
+-  namespace: knative-eventing
+-  labels:
+-    kafka.eventing.knative.dev/release: "devel"
+-data:
+-  bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
+-
 ----
 -# Copyright 2020 The Knative Authors
 -#
@@ -26,7 +50,7 @@ index e3beb0ea5..475a9fb84 100644
 -metadata:
 -  name: kafkachannels.messaging.knative.dev
 -  labels:
--    kafka.eventing.knative.dev/release: "v20211214-f1bb19a50"
+-    kafka.eventing.knative.dev/release: "v20220113-afceb5404"
 -    knative.dev/crd-install: "true"
 -    messaging.knative.dev/subscribable: "true"
 -    duck.knative.dev/addressable: "true"
@@ -213,6 +237,9 @@ index e3beb0ea5..475a9fb84 100644
 -                    namespace:
 -                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
 -                      type: string
+-                deadLetterSinkUri:
+-                  description: DeadLetterSinkURI is the resolved URI of the dead letter ref if one is specified in the Spec.Delivery.
+-                  type: string
 -                observedGeneration:
 -                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
 -                  type: integer
@@ -273,5 +300,5 @@ index e3beb0ea5..475a9fb84 100644
 -
 -
  ---
- # Copyright 2020 The Knative Authors
+ # Copyright 2021 The Knative Authors
  #
