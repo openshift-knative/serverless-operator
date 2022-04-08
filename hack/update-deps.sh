@@ -13,19 +13,19 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.0"
+KN_VERSION="release-1.2"
 EVENTING_VERSION="release-v1.0"
 EVENTING_KAFKA_VERSION="release-v1.0"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.0"
-SERVING_VERSION="release-v1.0.1"
+SERVING_VERSION="release-v1.2.0"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "knative.dev/hack@${KN_VERSION}"
+  "knative.dev/hack@v0.0.0-20220224013837-e1785985d364"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
-  "knative.dev/pkg@${KN_VERSION}"
+  "knative.dev/pkg@v0.0.0-20220223180940-4fcbc1bc12e8"
 )
 
 FLOATING_FORK_DEPS=(
