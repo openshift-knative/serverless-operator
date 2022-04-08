@@ -10,6 +10,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
 )
 
 const (
@@ -124,5 +125,12 @@ func TestKnativeKafka(t *testing.T) {
 		if err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Delete(context.Background(), ch.Name, metav1.DeleteOptions{}); err != nil {
 			t.Fatal("Failed to remove Knative Channel", err)
 		}
+	})
+
+	t.Run("Verify job succeeded", func(t *testing.T) {
+		upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
+			Namespace:    knativeKafkaNamespace,
+			FailOnNoJobs: true,
+		})
 	})
 }
