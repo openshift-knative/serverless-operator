@@ -5,6 +5,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
 )
 
 const (
@@ -51,5 +52,12 @@ func TestKnativeEventing(t *testing.T) {
 
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
 		VerifyNoDisallowedImageReference(t, caCtx, eventingNamespace)
+	})
+
+	t.Run("Verify job succeeded", func(t *testing.T) {
+		upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
+			Namespace:    eventingNamespace,
+			FailOnNoJobs: true,
+		})
 	})
 }
