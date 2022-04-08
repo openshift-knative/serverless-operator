@@ -9,18 +9,30 @@ import (
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
+var gatewayResources = map[string]string{
+	"knative-serving":        "Namespace",
+	"kourier":                "Service",
+	"kourier-internal":       "Service",
+	"3scale-kourier-gateway": "Deployment",
+	"kourier-bootstrap":      "ConfigMap",
+}
+
 const (
 	providerLabel           = "networking.knative.dev/ingress-provider"
 	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
 )
 
-// overrideKourierNamespace overrides the namespace of all Kourier related resources to
+// overrideKourierNamespace overrides the namespace of Kourier Gateway related resources to
 // the -ingress suffix to be backwards compatible.
 func overrideKourierNamespace(ks operatorv1alpha1.KComponent) mf.Transformer {
 	nsInjector := mf.InjectNamespace(kourierNamespace(ks.GetNamespace()))
 	return func(u *unstructured.Unstructured) error {
 		provider := u.GetLabels()[providerLabel]
 		if provider != "kourier" {
+			return nil
+		}
+
+		if gatewayResources[u.GetName()] != u.GetKind() {
 			return nil
 		}
 
