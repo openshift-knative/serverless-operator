@@ -588,7 +588,7 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.0:knative-serving-domain-mapping"
                       - name: "IMAGE_domainmapping-webhook"
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.0:knative-serving-domain-mapping-webhook"
-                      - name: "IMAGE_storage-version-migration-serving-serving-1.1.2__migrate"
+                      - name: "IMAGE_storage-version-migration-serving-serving-1.2.0__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.0:knative-serving-storage-version-migration"
                       - name: "IMAGE_kourier-gateway"
                         value: "quay.io/maistra/proxyv2-ubi8:2.1.0"
