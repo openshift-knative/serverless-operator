@@ -88,6 +88,11 @@ type RevisionSpec struct {
 	// (send network traffic). If unspecified, a system default will be provided.
 	// +optional
 	TimeoutSeconds *int64 `json:"timeoutSeconds,omitempty"`
+
+	// MaxDurationSeconds is the maximum duration in seconds a request will be allowed
+	// to stay open.
+	// +optional
+	MaxDurationSeconds *int64 `json:"maxDurationSeconds,omitempty"`
 }
 
 const (
@@ -136,6 +141,15 @@ type RevisionStatus struct {
 	// ref: http://bit.ly/image-digests
 	// +optional
 	ContainerStatuses []ContainerStatus `json:"containerStatuses,omitempty"`
+
+	// InitContainerStatuses is a slice of images present in .Spec.InitContainer[*].Image
+	// to their respective digests and their container name.
+	// The digests are resolved during the creation of Revision.
+	// ContainerStatuses holds the container name and image digests
+	// for both serving and non serving containers.
+	// ref: http://bit.ly/image-digests
+	// +optional
+	InitContainerStatuses []ContainerStatus `json:"initContainerStatuses,omitempty"`
 
 	// ActualReplicas reflects the amount of ready pods running this revision.
 	// +optional

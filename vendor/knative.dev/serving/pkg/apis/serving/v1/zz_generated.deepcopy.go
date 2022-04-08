@@ -230,6 +230,11 @@ func (in *RevisionSpec) DeepCopyInto(out *RevisionSpec) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.MaxDurationSeconds != nil {
+		in, out := &in.MaxDurationSeconds, &out.MaxDurationSeconds
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
@@ -249,6 +254,11 @@ func (in *RevisionStatus) DeepCopyInto(out *RevisionStatus) {
 	in.Status.DeepCopyInto(&out.Status)
 	if in.ContainerStatuses != nil {
 		in, out := &in.ContainerStatuses, &out.ContainerStatuses
+		*out = make([]ContainerStatus, len(*in))
+		copy(*out, *in)
+	}
+	if in.InitContainerStatuses != nil {
+		in, out := &in.InitContainerStatuses, &out.InitContainerStatuses
 		*out = make([]ContainerStatus, len(*in))
 		copy(*out, *in)
 	}
