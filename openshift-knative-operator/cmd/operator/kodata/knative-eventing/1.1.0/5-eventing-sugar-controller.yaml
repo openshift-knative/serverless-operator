@@ -18,7 +18,7 @@ metadata:
   name: sugar-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
 spec:
   selector:
     matchLabels: &labels

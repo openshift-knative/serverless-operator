@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.2.1/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.2.1/2-eventing-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/2-eventing-core.yaml
 index 813f9bece..c5b131005 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.2.1/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.2.1/2-eventing-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/2-eventing-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/1.1.0/2-eventing-core.yaml
 @@ -11,29 +11,6 @@
  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  # See the License for the specific language governing permissions and
@@ -11,8 +11,8 @@ index 813f9bece..c5b131005 100644
 -metadata:
 -  name: knative-eventing
 -  labels:
--    eventing.knative.dev/release: "v1.2.1"
--    app.kubernetes.io/version: "1.2.1"
+-    eventing.knative.dev/release: "v1.1.0"
+-    app.kubernetes.io/version: "1.1.0"
 -    app.kubernetes.io/name: knative-eventing
 -
 ----

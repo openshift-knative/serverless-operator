@@ -16,8 +16,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   # Configs resources and status we care about.
@@ -59,8 +59,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -101,8 +101,8 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 
 ---
@@ -124,8 +124,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -165,8 +165,8 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 
 ---
@@ -189,8 +189,8 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-mt-channel-broker-controller
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -221,8 +221,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -253,8 +253,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    eventing.knative.dev/release: "v1.2.1"
-    app.kubernetes.io/version: "1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -286,9 +286,9 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
     app.kubernetes.io/component: broker-filter
-    app.kubernetes.io/version: "1.2.1"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -298,9 +298,9 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: filter
-        eventing.knative.dev/release: "v1.2.1"
+        eventing.knative.dev/release: "v1.1.0"
         app.kubernetes.io/component: broker-filter
-        app.kubernetes.io/version: "1.2.1"
+        app.kubernetes.io/version: "1.1.0"
         app.kubernetes.io/name: knative-eventing
     spec:
       serviceAccountName: mt-broker-filter
@@ -371,9 +371,9 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: filter
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
     app.kubernetes.io/component: broker-filter
-    app.kubernetes.io/version: "1.2.1"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
   name: broker-filter
   namespace: knative-eventing
@@ -411,9 +411,9 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
     app.kubernetes.io/component: broker-ingress
-    app.kubernetes.io/version: "1.2.1"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -423,9 +423,9 @@ spec:
     metadata:
       labels:
         eventing.knative.dev/brokerRole: ingress
-        eventing.knative.dev/release: "v1.2.1"
+        eventing.knative.dev/release: "v1.1.0"
         app.kubernetes.io/component: broker-ingress
-        app.kubernetes.io/version: "1.2.1"
+        app.kubernetes.io/version: "1.1.0"
         app.kubernetes.io/name: knative-eventing
     spec:
       serviceAccountName: mt-broker-ingress
@@ -496,9 +496,9 @@ kind: Service
 metadata:
   labels:
     eventing.knative.dev/brokerRole: ingress
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
     app.kubernetes.io/component: broker-ingress
-    app.kubernetes.io/version: "1.2.1"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
   name: broker-ingress
   namespace: knative-eventing
@@ -536,9 +536,9 @@ metadata:
   name: mt-broker-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: "v1.1.0"
     app.kubernetes.io/component: mt-broker-controller
-    app.kubernetes.io/version: "1.2.1"
+    app.kubernetes.io/version: "1.1.0"
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -548,9 +548,9 @@ spec:
     metadata:
       labels:
         app: mt-broker-controller
-        eventing.knative.dev/release: "v1.2.1"
+        eventing.knative.dev/release: "v1.1.0"
         app.kubernetes.io/component: broker-controller
-        app.kubernetes.io/version: "1.2.1"
+        app.kubernetes.io/version: "1.1.0"
         app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
