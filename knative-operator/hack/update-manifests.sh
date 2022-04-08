@@ -65,11 +65,8 @@ download_kafka eventing-kafka-broker source "$KNATIVE_EVENTING_KAFKA_BROKER_VERS
 # That CM is already there, with Eventing
 git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
 
-# For now we remove the CRDs, since the "broker" does not yet do anything with them
-git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
-
-# Remove the config for the new, unused channel
-git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"
+# Patches to not yet include the new channel
+git apply "$root/knative-operator/hack/003-remove-kafka-channel-files.patch"
 
 # Fix for SRVKE-1171
 git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
