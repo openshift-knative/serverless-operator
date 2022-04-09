@@ -60,7 +60,8 @@ func replaceGWNamespace() mf.Transformer {
 				for j := range c.Env {
 					envVar := &c.Env[j]
 					if envVar.Name == kourierGatewayNSEnvVarKey {
-						envVar.Value = deployment.GetNamespace()
+						//envVar.Value = deployment.GetNamespace()
+						envVar.Value = "knative-serving-ingress"
 					}
 				}
 			}
