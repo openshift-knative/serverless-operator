@@ -47,7 +47,7 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 	for _, j := range jobs.Items {
 		j := j
 		eg.Go(func() error {
-			return wait.Poll(5*time.Second, 10*time.Minute, func() (done bool, err error) {
+			err := wait.Poll(5*time.Second, 10*time.Minute, func() (done bool, err error) {
 				j, err := kubeClient.
 					BatchV1().
 					Jobs(cfg.Namespace).
@@ -66,6 +66,10 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 
 				return j.Status.Succeeded > 0, nil
 			})
+			if err != nil {
+				return fmt.Errorf("%w, job:\n%+v", err, j)
+			}
+			return nil
 		})
 	}
 	if err := eg.Wait(); err != nil {
