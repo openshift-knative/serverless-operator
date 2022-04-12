@@ -46,6 +46,13 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, j := range jobs.Items {
 		j := j
+
+		if j.Status.Succeeded > 0 {
+			// We don't need to wait for a job that is already succeeded.
+			// In addition, an already succeeded job might go away due to the job's TTL.
+			continue
+		}
+
 		eg.Go(func() error {
 			return wait.Poll(5*time.Second, 10*time.Minute, func() (done bool, err error) {
 				j, err := kubeClient.
