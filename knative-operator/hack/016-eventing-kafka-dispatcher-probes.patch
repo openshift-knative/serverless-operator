@@ -1,0 +1,54 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
+index f69388e9..dda39e17 100644
+--- a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
++++ b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
+@@ -302,20 +302,16 @@ spec:
+           # TODO set resources (limits and requests)
+           livenessProbe:
+             failureThreshold: 3
+-            httpGet:
++            tcpSocket:
+               port: 9090
+-              path: /metrics
+-              scheme: HTTP
+             initialDelaySeconds: 10
+             periodSeconds: 3
+             successThreshold: 1
+             timeoutSeconds: 1
+           readinessProbe:
+             failureThreshold: 3
+-            httpGet:
++            tcpSocket:
+               port: 9090
+-              path: /metrics
+-              scheme: HTTP
+             initialDelaySeconds: 10
+             periodSeconds: 3
+             successThreshold: 1
+diff --git a/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml b/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
+index f3316595..8237afdb 100644
+--- a/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
++++ b/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
+@@ -302,20 +302,16 @@ spec:
+           # TODO set resources (limits and requests)
+           livenessProbe:
+             failureThreshold: 3
+-            httpGet:
++            tcpSocket:
+               port: 9090
+-              path: /metrics
+-              scheme: HTTP
+             initialDelaySeconds: 10
+             periodSeconds: 3
+             successThreshold: 1
+             timeoutSeconds: 1
+           readinessProbe:
+             failureThreshold: 3
+-            httpGet:
++            tcpSocket:
+               port: 9090
+-              path: /metrics
+-              scheme: HTTP
+             initialDelaySeconds: 10
+             periodSeconds: 3
+             successThreshold: 1

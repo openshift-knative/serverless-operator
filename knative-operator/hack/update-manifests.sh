@@ -80,3 +80,6 @@ git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.p
 
 # Tmp fix for channel post job
 git apply "$root/knative-operator/hack/015-eventing-kafkachannel-no-generated-name-for-post-install.patch"
+
+# SRVKE-1162: potential fix
+git apply "$root/knative-operator/hack/016-eventing-kafka-dispatcher-probes.patch"
