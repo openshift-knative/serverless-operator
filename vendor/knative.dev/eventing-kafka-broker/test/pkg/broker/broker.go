@@ -28,7 +28,6 @@ import (
 	"knative.dev/eventing/test/lib/resources"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
-	"knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/broker"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/kafka"
 	testingpkg "knative.dev/eventing-kafka-broker/test/pkg/testing"
 )
@@ -49,9 +48,9 @@ func Creator(client *eventingtestlib.Client, version string) string {
 				Namespace: namespace,
 			},
 			Data: map[string]string{
-				broker.BootstrapServersConfigMapKey:              testingpkg.BootstrapServersPlaintext,
-				broker.DefaultTopicNumPartitionConfigMapKey:      fmt.Sprintf("%d", testingpkg.NumPartitions),
-				broker.DefaultTopicReplicationFactorConfigMapKey: fmt.Sprintf("%d", testingpkg.ReplicationFactor),
+				kafka.BootstrapServersConfigMapKey:              testingpkg.BootstrapServersPlaintext,
+				kafka.DefaultTopicNumPartitionConfigMapKey:      fmt.Sprintf("%d", testingpkg.NumPartitions),
+				kafka.DefaultTopicReplicationFactorConfigMapKey: fmt.Sprintf("%d", testingpkg.ReplicationFactor),
 			},
 		}
 		cm, err := client.Kube.CoreV1().ConfigMaps(namespace).Create(context.Background(), cm, metav1.CreateOptions{})

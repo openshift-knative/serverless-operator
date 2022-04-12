@@ -24,8 +24,8 @@ export CERT_MANAGER_VERSION="latest"
 export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 export ISTIO_VERSION="latest"
 export KOURIER_VERSION=""
-export AMBASSADOR_VERSION=""
 export CONTOUR_VERSION=""
+export GATEWAY_API_VERSION=""
 export CERTIFICATE_CLASS=""
 # Only build linux/amd64 bit images
 export KO_FLAGS="${KO_FLAGS:---platform=linux/amd64}"
@@ -54,6 +54,8 @@ export SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-$(uuidgen | tr 'A-Z' 'a-z')}"
 # Keep this in sync with test/ha/ha.go
 readonly REPLICAS=3
 readonly BUCKETS=10
+
+export PVC=${PVC:-1}
 
 # Receives the latest serving version and searches for the same version with major and minor and searches for the latest patch
 function latest_net_istio_version() {
@@ -143,13 +145,6 @@ function parse_flags() {
       readonly INGRESS_CLASS="kourier.ingress.networking.knative.dev"
       return 2
       ;;
-    --ambassador-version)
-      # currently, the value of --ambassador-version is ignored
-      # latest version of Ambassador pinned in third_party will be installed
-      readonly AMBASSADOR_VERSION=$2
-      readonly INGRESS_CLASS="ambassador.ingress.networking.knative.dev"
-      return 2
-      ;;
     --contour-version)
       # currently, the value of --contour-version is ignored
       # latest version of Contour pinned in third_party will be installed
@@ -157,11 +152,12 @@ function parse_flags() {
       readonly INGRESS_CLASS="contour.ingress.networking.knative.dev"
       return 2
       ;;
-    --kong-version)
-      # currently, the value of --kong-version is ignored
-      # latest version of Kong pinned in third_party will be installed
-      readonly KONG_VERSION=$2
-      readonly INGRESS_CLASS="kong"
+    --gateway-api-version)
+      # currently, the value of --gateway-api-version is ignored
+      # latest version of Contour pinned in third_party will be installed
+      readonly GATEWAY_API_VERSION=$2
+      readonly INGRESS_CLASS="gateway-api.ingress.networking.knative.dev"
+      readonly SHORT=1
       return 2
       ;;
     --system-namespace)
@@ -225,6 +221,11 @@ function knative_setup() {
     fi
   fi
 
+  # Install gateway-api and istio. Gateway API CRD must be installed before Istio.
+  if is_ingress_class gateway-api; then
+    stage_gateway_api_resources
+  fi
+
   stage_test_resources
 
   install "${INSTALL_SERVING_VERSION}" "${INSTALL_ISTIO_VERSION}"
@@ -261,6 +262,10 @@ function install() {
   if is_ingress_class istio; then
     # Istio - see cluster_setup for how the files are staged
     YTT_FILES+=("${E2E_YAML_DIR}/istio/${ingress_version}/install")
+  elif is_ingress_class gateway-api; then
+    # This installs an istio version that works with the v1alpha1 gateway api
+    YTT_FILES+=("${E2E_YAML_DIR}/gateway-api/install")
+    YTT_FILES+=("${REPO_ROOT_DIR}/third_party/${ingress}-latest")
   else
     YTT_FILES+=("${REPO_ROOT_DIR}/third_party/${ingress}-latest")
   fi
@@ -281,6 +286,10 @@ function install() {
   if (( KIND )); then
     YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/kind/core")
     YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/kind/ingress/${ingress}-kind.yaml")
+  fi
+
+  if (( PVC )); then
+    YTT_FILES+=("${REPO_ROOT_DIR}/test/config/pvc/pvc.yaml")
   fi
 
   local ytt_result=$(mktemp)

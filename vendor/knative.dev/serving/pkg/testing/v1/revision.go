@@ -220,6 +220,34 @@ func WithRevisionObservedGeneration(gen int64) RevisionOption {
 	}
 }
 
+func WithRevisionInitContainers() RevisionOption {
+	return func(r *v1.Revision) {
+		r.Spec.InitContainers = []corev1.Container{{
+			Name:  "init1",
+			Image: "initimage",
+		}, {
+			Name:  "init2",
+			Image: "initimage",
+		}}
+	}
+}
+
+func WithRevisionPVC() RevisionOption {
+	return func(r *v1.Revision) {
+		r.Spec.Volumes = []corev1.Volume{{
+			Name: "claimvolume",
+			VolumeSource: corev1.VolumeSource{PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+				ClaimName: "myclaim",
+				ReadOnly:  false,
+			}}},
+		}
+		r.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{{
+			Name:      "claimvolume",
+			MountPath: "/data",
+		}}
+	}
+}
+
 // Revision creates a revision object with given ns/name and options.
 func Revision(namespace, name string, ro ...RevisionOption) *v1.Revision {
 	r := &v1.Revision{
