@@ -1,22 +1,16 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-index 94ae62506..7144ed431 100644
+index a9556e66..15fa6a7a 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-@@ -709,64 +709,6 @@ spec:
-                               type: array
-                           type: object
-                       type: object
+@@ -738,52 +738,6 @@ spec:
+                             type: object
+                         type: object
+                       type: array
 -              source:
 -                description: The source configuration for Knative Eventing
 -                properties:
 -                  ceph:
 -                    description: Ceph settings
--                    properties:
--                      enabled:
--                        type: boolean
--                    type: object
--                  couchdb:
--                    description: Apache CouchDB settings
 -                    properties:
 -                      enabled:
 -                        type: boolean
@@ -41,12 +35,6 @@ index 94ae62506..7144ed431 100644
 -                    type: object
 -                  natss:
 -                    description: NATS Streaming settings
--                    properties:
--                      enabled:
--                        type: boolean
--                    type: object
--                  prometheus:
--                    description: Prometheus settings
 -                    properties:
 -                      enabled:
 -                        type: boolean
