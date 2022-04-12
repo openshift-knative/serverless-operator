@@ -80,5 +80,8 @@ git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-res
 
 git apply "$root/knative-operator/hack/013-eventing-generate-name-jobs.patch"
 
+# SRVKE-1202 temporary fix for a missing ConfigMap knative-eventing/config-kafka-source-defaults
+git apply "$root/knative-operator/hack/017-eventing-kafka-configmap-knative-eventing-config-kafka-source-defaults.patch"
+
 # SRVKE-1184 Migration to Broker components
 git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.patch"
