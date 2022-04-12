@@ -82,3 +82,6 @@ git apply "$root/knative-operator/hack/013-eventing-generate-name-jobs.patch"
 
 # SRVKE-1184 Migration to Broker components
 git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.patch"
+
+# SRVKE-1162: potential fix
+git apply "$root/knative-operator/hack/016-eventing-kafka-dispatcher-probes.patch"
