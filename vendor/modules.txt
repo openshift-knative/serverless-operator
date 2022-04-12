@@ -1368,7 +1368,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka v0.27.0 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
+# knative.dev/eventing-kafka v0.29.0 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
 ## explicit; go 1.16
 knative.dev/eventing-kafka/pkg/apis/bindings
 knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1
