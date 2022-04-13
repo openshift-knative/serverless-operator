@@ -22,13 +22,13 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	bindings "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 	sources "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
 	eventingkafkaupgrade "knative.dev/eventing-kafka/test/upgrade/continual"
 	"knative.dev/eventing/test/upgrade/prober/sut"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/ptr"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 
 	eventingkafkatestlib "knative.dev/eventing-kafka/test/lib"
@@ -61,7 +61,7 @@ func (o *KafkaSinkSourceTestOptions) setDefaults() {
 			Name: "sink-kafka-sink-source-continual-test",
 			Spec: eventing.KafkaSinkSpec{
 				Topic:             defaultTopic,
-				NumPartitions:     ptr.Int32(10),
+				NumPartitions:     pointer.Int32(10),
 				ReplicationFactor: &rf,
 				BootstrapServers:  []string{testingpkg.BootstrapServersPlaintext},
 			},
