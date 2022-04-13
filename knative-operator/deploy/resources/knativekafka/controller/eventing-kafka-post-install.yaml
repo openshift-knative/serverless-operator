@@ -325,7 +325,6 @@ metadata:
     app: "knative-kafka-storage-version-migrator"
     kafka.eventing.knative.dev/release: devel
 spec:
-  ttlSecondsAfterFinished: 600
   backoffLimit: 10
   template:
     metadata:
