@@ -696,6 +696,14 @@ func TestCheckHAComponent(t *testing.T) {
 		deploymentName string
 		shouldFail     bool
 	}{{
+		name:           "Eventing Kafka Controller",
+		deploymentName: "kafka-controller",
+		shouldFail:     false,
+	}, {
+		name:           "Eventing Kafka Webhook",
+		deploymentName: "kafka-webhook-eventing",
+		shouldFail:     false,
+	}, {
 		name:           "kafka channel controller",
 		deploymentName: "kafka-ch-controller",
 		shouldFail:     false,
