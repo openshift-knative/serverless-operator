@@ -26,9 +26,12 @@ github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 ## explicit
 github.com/PuerkitoBio/urlesc
-# github.com/Shopify/sarama v1.30.0
-## explicit; go 1.13
+# github.com/Shopify/sarama v1.30.1
+## explicit; go 1.16
 github.com/Shopify/sarama
+# github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
+## explicit; go 1.16
+github.com/antlr/antlr4/runtime/Go/antlr
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
@@ -52,7 +55,16 @@ github.com/cespare/xxhash/v2
 # github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1
 ## explicit; go 1.14
 github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2
-# github.com/cloudevents/sdk-go/v2 v2.4.1
+# github.com/cloudevents/sdk-go/sql/v2 v2.8.0
+## explicit; go 1.14
+github.com/cloudevents/sdk-go/sql/v2
+github.com/cloudevents/sdk-go/sql/v2/expression
+github.com/cloudevents/sdk-go/sql/v2/function
+github.com/cloudevents/sdk-go/sql/v2/gen
+github.com/cloudevents/sdk-go/sql/v2/parser
+github.com/cloudevents/sdk-go/sql/v2/runtime
+github.com/cloudevents/sdk-go/sql/v2/utils
+# github.com/cloudevents/sdk-go/v2 v2.8.0
 ## explicit; go 1.14
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
@@ -156,9 +168,6 @@ github.com/evanphx/json-patch/v5
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/ghodss/yaml v1.0.0
-## explicit
-github.com/ghodss/yaml
 # github.com/go-kit/log v0.1.0
 ## explicit; go 1.16
 github.com/go-kit/log
@@ -352,35 +361,6 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
-# github.com/nxadm/tail v1.4.8
-## explicit; go 1.13
-github.com/nxadm/tail
-github.com/nxadm/tail/ratelimiter
-github.com/nxadm/tail/util
-github.com/nxadm/tail/watch
-github.com/nxadm/tail/winfile
-# github.com/onsi/ginkgo v1.16.5
-## explicit; go 1.16
-github.com/onsi/ginkgo
-github.com/onsi/ginkgo/config
-github.com/onsi/ginkgo/formatter
-github.com/onsi/ginkgo/internal/codelocation
-github.com/onsi/ginkgo/internal/containernode
-github.com/onsi/ginkgo/internal/failer
-github.com/onsi/ginkgo/internal/global
-github.com/onsi/ginkgo/internal/leafnodes
-github.com/onsi/ginkgo/internal/remote
-github.com/onsi/ginkgo/internal/spec
-github.com/onsi/ginkgo/internal/spec_iterator
-github.com/onsi/ginkgo/internal/specrunner
-github.com/onsi/ginkgo/internal/suite
-github.com/onsi/ginkgo/internal/testingtproxy
-github.com/onsi/ginkgo/internal/writer
-github.com/onsi/ginkgo/reporters
-github.com/onsi/ginkgo/reporters/stenographer
-github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
-github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
-github.com/onsi/ginkgo/types
 # github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
 ## explicit; go 1.15
 github.com/openshift/api/config/v1
@@ -812,9 +792,6 @@ google.golang.org/protobuf/types/known/wrapperspb
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
-## explicit
-gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
@@ -934,7 +911,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.21.4 => k8s.io/apiserver v0.21.4
+# k8s.io/apiserver v0.22.5 => k8s.io/apiserver v0.21.4
 ## explicit; go 1.16
 k8s.io/apiserver/pkg/storage/names
 # k8s.io/client-go v0.22.5 => k8s.io/client-go v0.21.4
@@ -1273,7 +1250,7 @@ k8s.io/kube-openapi/pkg/generators/rules
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b
+# k8s.io/utils v0.0.0-20211208161948-7d6a63dca704
 ## explicit; go 1.12
 k8s.io/utils/buffer
 k8s.io/utils/integer
@@ -1283,7 +1260,7 @@ k8s.io/utils/trace
 ## explicit; go 1.15
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.29.0 => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
+# knative.dev/eventing v0.29.1 => github.com/openshift/knative-eventing v0.99.1-0.20220408065219-104a546bc063
 ## explicit; go 1.16
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1368,7 +1345,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka v0.27.0 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
+# knative.dev/eventing-kafka v0.29.1 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf32
 ## explicit; go 1.16
 knative.dev/eventing-kafka/pkg/apis/bindings
 knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1
@@ -1378,6 +1355,7 @@ knative.dev/eventing-kafka/pkg/apis/messaging
 knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/apis/sources/config
 knative.dev/eventing-kafka/pkg/apis/sources/v1beta1
+knative.dev/eventing-kafka/pkg/channel/consolidated/apis/messaging
 knative.dev/eventing-kafka/pkg/channel/consolidated/reconciler/testing
 knative.dev/eventing-kafka/pkg/channel/distributed/common/kafka/constants
 knative.dev/eventing-kafka/pkg/client/clientset/versioned
@@ -1552,7 +1530,7 @@ knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/serving v0.29.2 => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+# knative.dev/serving v0.29.2 => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 ## explicit; go 1.16
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1638,10 +1616,10 @@ sigs.k8s.io/yaml
 # k8s.io/client-go => k8s.io/client-go v0.21.4
 # k8s.io/code-generator => k8s.io/code-generator v0.21.4
 # k8s.io/component-base => k8s.io/component-base v0.21.4
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
-# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220408065219-104a546bc063
+# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf32
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412082434-af580b16c8a1
-# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0

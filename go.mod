@@ -22,8 +22,8 @@ require (
 	k8s.io/api v0.22.5
 	k8s.io/apimachinery v0.22.5
 	k8s.io/client-go v0.22.5
-	knative.dev/eventing v0.29.0
-	knative.dev/eventing-kafka v0.27.0
+	knative.dev/eventing v0.29.1
+	knative.dev/eventing-kafka v0.29.1
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20220224013837-e1785985d364
 	knative.dev/networking v0.0.0-20220120043934-ec785540a732
@@ -42,13 +42,15 @@ require (
 	contrib.go.opencensus.io/exporter/zipkin v0.1.2 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
-	github.com/Shopify/sarama v1.30.0 // indirect
+	github.com/Shopify/sarama v1.30.1 // indirect
+	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.4.1 // indirect
+	github.com/cloudevents/sdk-go/sql/v2 v2.8.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.8.0 // indirect
 	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect
 	github.com/cncf/xds/go v0.0.0-20211130200136-a8f946100490 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -61,7 +63,6 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-kit/log v0.1.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.0 // indirect
 	github.com/go-logr/logr v1.2.2 // indirect
@@ -100,8 +101,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
-	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/openzipkin/zipkin-go v0.3.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.2 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
@@ -141,18 +140,17 @@ require (
 	google.golang.org/grpc v1.43.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/apiextensions-apiserver v0.22.5 // indirect
-	k8s.io/apiserver v0.21.4 // indirect
+	k8s.io/apiserver v0.22.5 // indirect
 	k8s.io/code-generator v0.22.5 // indirect
 	k8s.io/component-base v0.21.4 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.40.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
-	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
+	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704 // indirect
 	knative.dev/caching v0.0.0-20220223181140-b3aed5c4e283 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 )
@@ -168,10 +166,10 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.21.4
 
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220408065219-104a546bc063
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf32
 	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412082434-af580b16c8a1
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 )
 
 replace (
