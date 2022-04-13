@@ -14,8 +14,8 @@ cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
 KN_VERSION="release-1.2"
-EVENTING_VERSION="release-v1.0"
-EVENTING_KAFKA_VERSION="release-v1.0"
+EVENTING_VERSION="release-v1.2"
+EVENTING_KAFKA_VERSION="release-v1.2"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.0"
 SERVING_VERSION="release-v1.2.0"
 
