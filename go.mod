@@ -145,7 +145,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.22.5 // indirect
 	k8s.io/apiserver v0.22.5 // indirect
 	k8s.io/code-generator v0.22.5 // indirect
-	k8s.io/component-base v0.21.4 // indirect
+	k8s.io/component-base v0.22.5 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.40.1 // indirect
@@ -157,13 +157,13 @@ require (
 
 replace (
 	// Kubernetes v1.21.4
-	k8s.io/api => k8s.io/api v0.21.4
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
-	k8s.io/apiserver => k8s.io/apiserver v0.21.4
-	k8s.io/client-go => k8s.io/client-go v0.21.4
-	k8s.io/code-generator => k8s.io/code-generator v0.21.4
-	k8s.io/component-base => k8s.io/component-base v0.21.4
+	k8s.io/api => k8s.io/api v0.22.5
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.22.5
+	k8s.io/apimachinery => k8s.io/apimachinery v0.22.5
+	k8s.io/apiserver => k8s.io/apiserver v0.22.5
+	k8s.io/client-go => k8s.io/client-go v0.22.5
+	k8s.io/code-generator => k8s.io/code-generator v0.22.5
+	k8s.io/component-base => k8s.io/component-base v0.22.5
 
 	// Knative forks.
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220408065219-104a546bc063
