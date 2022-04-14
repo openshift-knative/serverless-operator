@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+const (
+	Namespace  = "serverless-tests"
+	Namespace2 = "serverless-tests2"
+)
+
 // Flags holds the initialized test flags
 var Flags = initializeFlags()
 

@@ -27,16 +27,16 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), brokerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), brokerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -51,14 +51,14 @@ apiVersion: %q
 kind: %q`, channelAPIVersion, channelKind),
 		},
 	}
-	configMap, err := client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), cm, metav1.CreateOptions{})
+	configMap, err := client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Create(context.Background(), cm, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create ConfigMap: ", err)
 	}
 	br := &eventingv1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      brokerName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: eventingv1.BrokerSpec{
 			Config: &duckv1.KReference{
@@ -68,14 +68,14 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	broker, err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), br, metav1.CreateOptions{})
+	broker, err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Create(context.Background(), br, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create broker: ", err)
 	}
 	tr := &eventingv1.Trigger{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      triggerName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: eventingv1.TriggerSpec{
 			Broker: broker.Name,
@@ -88,7 +88,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(context.Background(), tr, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Create(context.Background(), tr, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
@@ -96,7 +96,7 @@ kind: %q`, channelAPIVersion, channelKind),
 	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
@@ -111,7 +111,7 @@ kind: %q`, channelAPIVersion, channelKind),
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

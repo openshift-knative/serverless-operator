@@ -28,7 +28,6 @@ const (
 	kafkaSourceName     = "smoke-ks"
 	kafkaTopicName      = "smoke-topic"
 	kafkaConsumerGroup  = "smoke-cg"
-	testNamespace       = "serverless-tests"
 	image               = "gcr.io/knative-samples/helloworld-go"
 	helloWorldService   = "helloworld-go"
 	ksvcAPIVersion      = "serving.knative.dev/v1"
@@ -54,7 +53,7 @@ func createCronJobObj(name, topic, server string) *batchv1beta1.CronJob {
 	return &batchv1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: batchv1beta1.CronJobSpec{
 			Schedule: "* * * * *",
@@ -82,7 +81,7 @@ func createKafkaSourceObj(sourceName, sinkName, topicName string, auth kafkabind
 	return kafkasourcev1beta1.KafkaSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: kafkasourcev1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: auth,
@@ -108,7 +107,7 @@ func createKafkaTopicObj(topicName string) unstructured.Unstructured {
 			"kind":       kafkaTopicKind,
 			"metadata": map[string]interface{}{
 				"name":      topicName,
-				"namespace": testNamespace,
+				"namespace": test.Namespace,
 				"labels": map[string]interface{}{
 					strimziClusterLabel: clusterName,
 				},
@@ -127,36 +126,36 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
+		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
-		deleteJobs(t, client, testNamespace, cronJobName)
-		deletePods(t, client, testNamespace, cronJobName)
-		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().Secrets(testNamespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
-		removePullSecretFromSA(t, client, testNamespace, serviceAccount, tlsSecret)
-		removePullSecretFromSA(t, client, testNamespace, serviceAccount, saslSecret)
+		deleteJobs(t, client, test.Namespace, cronJobName)
+		deletePods(t, client, test.Namespace, cronJobName)
+		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
+		removePullSecretFromSA(t, client, test.Namespace, serviceAccount, tlsSecret)
+		removePullSecretFromSA(t, client, test.Namespace, serviceAccount, saslSecret)
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
 	// Get Secret Name -> AuthSecretName
-	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, testNamespace, serviceAccount)
+	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, testNamespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, test.Namespace)
 	}
 
-	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, testNamespace, serviceAccount)
+	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, testNamespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, test.Namespace)
 	}
 
 	tests := map[string]kafkabindingv1beta1.KafkaAuthSpec{
@@ -243,28 +242,28 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	for name, tc := range tests {
 		name := name
 		// Setup a knative service
-		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, testNamespace, image)
+		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, image)
 		if err != nil {
 			t.Fatalf("Knative Service(%s) not ready: %v", ksvc.GetName(), err)
 		}
 
 		// Create kafkatopic
 		kafkaTopicObj := createKafkaTopicObj(kafkaTopicName + "-" + name)
-		_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(testNamespace).Create(context.Background(), &kafkaTopicObj, metav1.CreateOptions{})
+		_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Create(context.Background(), &kafkaTopicObj, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create KafkaTopic(%s): %v", kafkaTopicObj.GetName(), err)
 		}
 
 		// create kafka source
 		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, kafkaTopicName+"-"+name, tc)
-		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(testNamespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
+		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create kafkaSource(%s): %v", kafkaSource.GetName(), err)
 		}
 
 		// send event to kafka topic
 		cj := createCronJobObj(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
-		_, err = client.Clients.Kube.BatchV1beta1().CronJobs(testNamespace).Create(context.Background(), cj, metav1.CreateOptions{})
+		_, err = client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 		}

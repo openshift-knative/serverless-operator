@@ -17,7 +17,7 @@ func TestKnativeServiceHTTPS(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc, err := test.WithServiceReady(caCtx, "https-service", testNamespace, image)
+	ksvc, err := test.WithServiceReady(caCtx, "https-service", test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -49,7 +49,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc := test.Service("redirect-service", testNamespace, image, nil)
+	ksvc := test.Service("redirect-service", test.Namespace, image, nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{"networking.knative.dev/httpOption": "redirected"}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 

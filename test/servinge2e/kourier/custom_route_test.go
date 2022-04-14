@@ -38,7 +38,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	// Create Kservice with disable Annotation.
-	ksvc := test.Service(serviceName, testNamespace, image, nil)
+	ksvc := test.Service(serviceName, test.Namespace, image, nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{resources.DisableRouteAnnotation: "true"}
 	ksvc = withServiceReadyOrFail(caCtx, ksvc)
 
@@ -90,7 +90,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	dm := &servingv1alpha1.DomainMapping{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        domainMappingName,
-			Namespace:   testNamespace,
+			Namespace:   test.Namespace,
 			Annotations: map[string]string{resources.DisableRouteAnnotation: "true"},
 		},
 		Spec: servingv1alpha1.DomainMappingSpec{

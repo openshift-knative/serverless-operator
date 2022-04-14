@@ -56,7 +56,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 	for _, scenario := range tests {
 		scenario := scenario
 		t.Run(scenario.name, func(t *testing.T) {
-			testServiceToService(t, caCtx, testNamespace, scenario)
+			testServiceToService(t, caCtx, test.Namespace, scenario)
 		})
 	}
 }

@@ -14,7 +14,6 @@ import (
 
 const (
 	pingSourceName    = "smoke-test-ping"
-	testNamespace     = "serverless-tests"
 	image             = "gcr.io/knative-samples/helloworld-go"
 	helloWorldService = "helloworld-go"
 	helloWorldText    = "Hello World!"
@@ -26,13 +25,13 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -40,7 +39,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
@@ -55,7 +54,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

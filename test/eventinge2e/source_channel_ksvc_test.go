@@ -24,15 +24,15 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
-		client.Clients.Eventing.MessagingV1().Channels(testNamespace).Delete(context.Background(), channelName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Subscriptions(test.Namespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Channels(test.Namespace).Delete(context.Background(), channelName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -40,17 +40,17 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 	imc := &messagingv1.Channel{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      channelName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 	}
-	channel, err := client.Clients.Eventing.MessagingV1().Channels(testNamespace).Create(context.Background(), imc, metav1.CreateOptions{})
+	channel, err := client.Clients.Eventing.MessagingV1().Channels(test.Namespace).Create(context.Background(), imc, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Channel: ", err)
 	}
 	subscription := &messagingv1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      subscriptionName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: messagingv1.SubscriptionSpec{
 			Channel: duckv1.KReference{
@@ -67,14 +67,14 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(testNamespace).Create(context.Background(), subscription, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.MessagingV1().Subscriptions(test.Namespace).Create(context.Background(), subscription, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Subscription: ", err)
 	}
 	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
@@ -89,7 +89,7 @@ func TestKnativeSourceChannelKnativeService(t *testing.T) {
 			},
 		},
 	}
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), ps, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Create(context.Background(), ps, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Knative PingSource not created: %+V", err)
 	}

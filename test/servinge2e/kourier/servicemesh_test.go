@@ -113,7 +113,7 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 			version.smcpCreationFunc(ctx)
 
 			// Follow documented steps to add a namespace to ServiceMesh (including NetworkPolicy setup and namespace labels)
-			setupNamespaceForServiceMesh(ctx, serviceMeshTestNamespaceName, testNamespace)
+			setupNamespaceForServiceMesh(ctx, serviceMeshTestNamespaceName, test.Namespace)
 
 			test.WaitForServiceMeshControlPlaneReady(ctx, smcpName, serviceMeshTestNamespaceName)
 
@@ -191,7 +191,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		for _, scenario := range tests {
 			scenario := scenario
 			t.Run(scenario.name, func(t *testing.T) {
-				testServiceToService(t, ctx, testNamespace, scenario)
+				testServiceToService(t, ctx, test.Namespace, scenario)
 			})
 		}
 	})
@@ -355,7 +355,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), testNamespace, "quay.io/openshift-knative/hello-openshift", nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift", nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
@@ -375,7 +375,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 					"kind":       "Policy",
 					"metadata": map[string]interface{}{
 						"name":      "default",
-						"namespace": testNamespace,
+						"namespace": test.Namespace,
 					},
 					"spec": map[string]interface{}{
 						"principalBinding": "USE_ORIGIN",
@@ -418,7 +418,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 					"kind":       "RequestAuthentication",
 					"metadata": map[string]interface{}{
 						"name":      "jwt-example",
-						"namespace": testNamespace,
+						"namespace": test.Namespace,
 					},
 					"spec": map[string]interface{}{
 						"jwtRules": []map[string]interface{}{
@@ -445,7 +445,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 					"kind":       "AuthorizationPolicy",
 					"metadata": map[string]interface{}{
 						"name":      "allowlist-by-paths",
-						"namespace": testNamespace,
+						"namespace": test.Namespace,
 					},
 					"spec": map[string]interface{}{
 						"action": "ALLOW",
@@ -481,7 +481,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 					"kind":       "AuthorizationPolicy",
 					"metadata": map[string]interface{}{
 						"name":      "require-jwt",
-						"namespace": testNamespace,
+						"namespace": test.Namespace,
 					},
 					"spec": map[string]interface{}{
 						"action": "ALLOW",
@@ -506,7 +506,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		}
 
 		// Create a test ksvc, should be accessible only via proper JWT token
-		testKsvc := test.Service("jwt-test", testNamespace, image, map[string]string{
+		testKsvc := test.Service("jwt-test", test.Namespace, image, map[string]string{
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
@@ -656,7 +656,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", testNamespace, image, nil)
+	aux := test.Service("aux", test.Namespace, image, nil)
 	aux = withServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)
