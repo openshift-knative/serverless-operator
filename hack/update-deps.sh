@@ -22,10 +22,8 @@ SERVING_VERSION="release-v1.2.0"
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "knative.dev/hack@v0.0.0-20220224013837-e1785985d364"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
-  "knative.dev/pkg@v0.0.0-20220223180940-4fcbc1bc12e8"
 )
 
 FLOATING_FORK_DEPS=(
