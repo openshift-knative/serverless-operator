@@ -1162,6 +1162,8 @@ github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf3
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf32/go.mod h1:Y9+hHdaYCmD46PPOU2pAfWCUXJyIfgJOnkWZwsBAEoU=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412212939-47403883d2b5 h1:C6nYs/Jonj3ErRU70pZvJFg6AltP53IZTWQlRpMLCpM=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412212939-47403883d2b5/go.mod h1:qzil1pdlffB19OJ12zd3IOOsHzp8E0VBHowsl382tW8=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220414070255-17ea43c52646 h1:HzhbrWUlWM7N0FllPlkFEwmaP+X8dbarh1fQl1tczkQ=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220414070255-17ea43c52646/go.mod h1:qzil1pdlffB19OJ12zd3IOOsHzp8E0VBHowsl382tW8=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=
