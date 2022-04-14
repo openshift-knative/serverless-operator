@@ -821,7 +821,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/api v0.22.5 => k8s.io/api v0.21.4
+# k8s.io/api v0.22.5 => k8s.io/api v0.22.5
 ## explicit; go 1.16
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -868,7 +868,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.22.5 => k8s.io/apiextensions-apiserver v0.21.4
+# k8s.io/apiextensions-apiserver v0.22.5 => k8s.io/apiextensions-apiserver v0.22.5
 ## explicit; go 1.16
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
@@ -881,7 +881,7 @@ k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextension
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1/fake
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1
-# k8s.io/apimachinery v0.22.5 => k8s.io/apimachinery v0.21.4
+# k8s.io/apimachinery v0.22.5 => k8s.io/apimachinery v0.22.5
 ## explicit; go 1.16
 k8s.io/apimachinery/pkg/api/apitesting/fuzzer
 k8s.io/apimachinery/pkg/api/equality
@@ -934,10 +934,10 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.21.4 => k8s.io/apiserver v0.21.4
+# k8s.io/apiserver v0.22.5
 ## explicit; go 1.16
 k8s.io/apiserver/pkg/storage/names
-# k8s.io/client-go v0.22.5 => k8s.io/client-go v0.21.4
+# k8s.io/client-go v0.22.5 => k8s.io/client-go v0.22.5
 ## explicit; go 1.16
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -1173,6 +1173,8 @@ k8s.io/client-go/listers/storage/v1alpha1
 k8s.io/client-go/listers/storage/v1beta1
 k8s.io/client-go/metadata
 k8s.io/client-go/pkg/apis/clientauthentication
+k8s.io/client-go/pkg/apis/clientauthentication/install
+k8s.io/client-go/pkg/apis/clientauthentication/v1
 k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1
 k8s.io/client-go/pkg/apis/clientauthentication/v1beta1
 k8s.io/client-go/pkg/version
@@ -1207,7 +1209,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.22.5 => k8s.io/code-generator v0.21.4
+# k8s.io/code-generator v0.22.5 => k8s.io/code-generator v0.22.5
 ## explicit; go 1.16
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -1242,7 +1244,7 @@ k8s.io/code-generator/cmd/set-gen
 k8s.io/code-generator/pkg/namer
 k8s.io/code-generator/pkg/util
 k8s.io/code-generator/third_party/forked/golang/reflect
-# k8s.io/component-base v0.21.4 => k8s.io/component-base v0.21.4
+# k8s.io/component-base v0.22.5
 ## explicit; go 1.16
 k8s.io/component-base/config
 k8s.io/component-base/config/v1alpha1
@@ -1258,9 +1260,6 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/klog v1.0.0
-## explicit; go 1.12
-k8s.io/klog
 # k8s.io/klog/v2 v2.40.1 => k8s.io/klog/v2 v2.8.0
 ## explicit; go 1.13
 k8s.io/klog/v2
@@ -1426,7 +1425,7 @@ knative.dev/eventing-kafka-broker/test/upgrade/installation
 ## explicit; go 1.14
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20220120043934-ec785540a732 => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
+# knative.dev/networking v0.0.0-20220120043934-ec785540a732
 ## explicit; go 1.16
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1471,8 +1470,8 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20220223180940-4fcbc1bc12e8 => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
-## explicit; go 1.14
+# knative.dev/pkg v0.0.0-20220223180940-4fcbc1bc12e8
+## explicit; go 1.17
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/ducktypes
@@ -1552,7 +1551,7 @@ knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/serving v0.29.2 => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+# knative.dev/serving v0.29.2 => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 ## explicit; go 1.16
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1631,20 +1630,16 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# k8s.io/api => k8s.io/api v0.21.4
-# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
-# k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
-# k8s.io/apiserver => k8s.io/apiserver v0.21.4
-# k8s.io/client-go => k8s.io/client-go v0.21.4
-# k8s.io/code-generator => k8s.io/code-generator v0.21.4
-# k8s.io/component-base => k8s.io/component-base v0.21.4
+# k8s.io/api => k8s.io/api v0.22.5
+# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.22.5
+# k8s.io/apimachinery => k8s.io/apimachinery v0.22.5
+# k8s.io/client-go => k8s.io/client-go v0.22.5
+# k8s.io/code-generator => k8s.io/code-generator v0.22.5
 # knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412082434-af580b16c8a1
-# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+# knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 # k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-# knative.dev/networking => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
-# knative.dev/pkg => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
