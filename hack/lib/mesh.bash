@@ -89,9 +89,7 @@ function deploy_gateways {
       --key="${out_dir}"/wildcard.key \
       --cert="${out_dir}"/wildcard.crt --dry-run=client -o yaml | oc apply -f -
 
-  if ! oc get namespace "${SERVING_NAMESPACE}" &>/dev/null; then
-    oc create namespace "${SERVING_NAMESPACE}"
-  fi
+  oc apply -f "${resources_dir}"/namespace.yaml || return $?
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
   oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
 }
