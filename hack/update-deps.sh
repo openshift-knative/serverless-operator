@@ -26,7 +26,7 @@ FLOATING_DEPS=(
   "knative.dev/operator@${KN_VERSION}"
 )
 
-FLOATING_FORK_DEPS=(
+REPLACE_DEPS=(
   "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
   "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
   "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
@@ -50,7 +50,7 @@ readonly GO_GET
 if (( GO_GET )); then
   export GOPROXY="https://proxy.golang.org,direct"
   # Treat forks specifically due to https://github.com/golang/go/issues/32721
-  for dep in "${FLOATING_FORK_DEPS[@]}"; do
+  for dep in "${REPLACE_DEPS[@]}"; do
     go mod edit -replace "${dep}"
     # Let the dependency update the magic SHA otherwise the
     # following "go mod edit" will fail.
