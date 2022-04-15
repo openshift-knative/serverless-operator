@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"golang.org/x/sync/errgroup"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	testlib "knative.dev/eventing/test/lib"
@@ -59,6 +60,9 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 					BatchV1().
 					Jobs(cfg.Namespace).
 					Get(ctx, j.Name, metav1.GetOptions{})
+				if apierrors.IsNotFound(err) {
+					return true, nil
+				}
 				if err != nil {
 					return false, err
 				}

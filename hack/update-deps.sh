@@ -22,10 +22,8 @@ SERVING_VERSION="release-v1.2.0"
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "knative.dev/hack@v0.0.0-20220224013837-e1785985d364"
   "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
-  "knative.dev/pkg@v0.0.0-20220223180940-4fcbc1bc12e8"
 )
 
 FLOATING_FORK_DEPS=(
@@ -33,6 +31,8 @@ FLOATING_FORK_DEPS=(
   "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
   "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
   "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
+  "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
+  "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
