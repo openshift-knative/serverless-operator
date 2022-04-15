@@ -31,6 +31,8 @@ FLOATING_FORK_DEPS=(
   "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
   "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
   "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
+  "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
+  "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
