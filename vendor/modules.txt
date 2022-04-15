@@ -1235,9 +1235,6 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/klog v1.0.0
-## explicit; go 1.12
-k8s.io/klog
 # k8s.io/klog/v2 v2.40.1 => k8s.io/klog/v2 v2.8.0
 ## explicit; go 1.13
 k8s.io/klog/v2
@@ -1400,11 +1397,11 @@ knative.dev/eventing-kafka-broker/test/pkg/testing
 knative.dev/eventing-kafka-broker/test/upgrade
 knative.dev/eventing-kafka-broker/test/upgrade/continual
 knative.dev/eventing-kafka-broker/test/upgrade/installation
-# knative.dev/hack v0.0.0-20220224013837-e1785985d364
+# knative.dev/hack v0.0.0-20220224013837-e1785985d364 => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
 ## explicit; go 1.14
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20220120043934-ec785540a732 => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
+# knative.dev/networking v0.0.0-20220120043934-ec785540a732 => knative.dev/networking v0.0.0-20220120043934-ec785540a732
 ## explicit; go 1.16
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1424,7 +1421,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.29.2
+# knative.dev/operator v0.29.2 => knative.dev/operator v0.29.2
 ## explicit; go 1.16
 knative.dev/operator/pkg/apis/operator/v1alpha1
 knative.dev/operator/pkg/client/clientset/versioned
@@ -1449,7 +1446,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20220301181942-2fdd5f232e77 => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
+# knative.dev/pkg v0.0.0-20220223180940-4fcbc1bc12e8 => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
 ## explicit; go 1.14
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1624,5 +1621,7 @@ sigs.k8s.io/yaml
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 # k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-# knative.dev/networking => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
-# knative.dev/pkg => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
+# knative.dev/networking => knative.dev/networking v0.0.0-20220120043934-ec785540a732
+# knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
+# knative.dev/operator => knative.dev/operator v0.29.2
+# knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30

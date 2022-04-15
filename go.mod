@@ -28,7 +28,7 @@ require (
 	knative.dev/hack v0.0.0-20220224013837-e1785985d364
 	knative.dev/networking v0.0.0-20220120043934-ec785540a732
 	knative.dev/operator v0.29.2
-	knative.dev/pkg v0.0.0-20220301181942-2fdd5f232e77
+	knative.dev/pkg v0.0.0-20220223180940-4fcbc1bc12e8
 	knative.dev/serving v0.29.2
 	sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/yaml v1.3.0
@@ -147,7 +147,6 @@ require (
 	k8s.io/code-generator v0.22.5 // indirect
 	k8s.io/component-base v0.21.4 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.40.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704 // indirect
@@ -180,6 +179,10 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 
 	// Needed by metadata webhook and other components
-	knative.dev/networking => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
+	knative.dev/networking => knative.dev/networking v0.0.0-20220120043934-ec785540a732
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
 )
+
+replace knative.dev/operator => knative.dev/operator v0.29.2
+
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
