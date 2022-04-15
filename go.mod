@@ -157,15 +157,6 @@ require (
 )
 
 replace (
-	// Kubernetes v1.21.4
-	k8s.io/api => k8s.io/api v0.21.4
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
-	k8s.io/apiserver => k8s.io/apiserver v0.21.4
-	k8s.io/client-go => k8s.io/client-go v0.21.4
-	k8s.io/code-generator => k8s.io/code-generator v0.21.4
-	k8s.io/component-base => k8s.io/component-base v0.21.4
-
 	// Knative forks.
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
