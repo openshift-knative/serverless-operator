@@ -39,7 +39,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 	kafkaChannelBroker = &eventingv1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      kafkaChannelBrokerName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: eventingv1.BrokerSpec{
 			Config: &duckv1.KReference{
@@ -53,7 +53,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 	trigger = &eventingv1.Trigger{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      kafkatriggerName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: eventingv1.TriggerSpec{
 			Broker: kafkaChannelBrokerName,
@@ -70,7 +70,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 	brokerPingSource = &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
@@ -91,39 +91,39 @@ func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(context.Background(), kafkaChannelBrokerName, metav1.DeleteOptions{})
-		client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Delete(context.Background(), kafkaChannelTemplateConfigMapName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), kafkaChannelBrokerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
+		client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Delete(context.Background(), kafkatriggerName, metav1.DeleteOptions{})
+		client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Delete(context.Background(), kafkaChannelTemplateConfigMapName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
 
 	// Create the configmap
-	_, err = client.Clients.Kube.CoreV1().ConfigMaps(testNamespace).Create(context.Background(), kafkaChannelTemplateConfigMap, metav1.CreateOptions{})
+	_, err = client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Create(context.Background(), kafkaChannelTemplateConfigMap, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Channel Template ConfigMap: ", err)
 	}
 
 	// Create the (kafka backed) kafkaChannelBroker
-	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), kafkaChannelBroker, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Create(context.Background(), kafkaChannelBroker, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Kafka Backed Broker: ", err)
 	}
 
 	// Create the Trigger
-	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(context.Background(), trigger, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Create(context.Background(), trigger, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
 
 	// Create the source
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), brokerPingSource, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Create(context.Background(), brokerPingSource, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create pingsource: ", err)
 	}

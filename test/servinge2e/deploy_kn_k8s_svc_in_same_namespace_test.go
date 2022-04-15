@@ -19,16 +19,16 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	//Create deployment
-	err := test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	err := test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, image)
 	if err != nil {
 		t.Fatal("Deployment not created", err)
 	}
 	// Deploy plain Kube service
-	svc, err := createKubeService(caCtx, kubeHelloworldService, testNamespace2)
+	svc, err := createKubeService(caCtx, kubeHelloworldService, test.Namespace2)
 	if err != nil {
 		t.Fatal("Kubernetes service not created", err)
 	}
-	route, err := withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	route, err := withRouteForServiceReady(caCtx, svc.Name, test.Namespace2)
 	if err != nil {
 		t.Fatal("Failed to create route for service", svc.Name, err)
 	}
@@ -41,7 +41,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Deploy Knative service in the same namespace
-	ksvc, err := test.WithServiceReady(caCtx, helloworldService, testNamespace2, image)
+	ksvc, err := test.WithServiceReady(caCtx, helloworldService, test.Namespace2, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -51,7 +51,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Delete Knative service
-	if err = caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Serving.ServingV1().Services(test.Namespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove service", err)
 	}
 
@@ -59,18 +59,18 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	if err = caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Route.Routes(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove route", err)
 	}
-	if err = caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Kube.CoreV1().Services(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove service", err)
 	}
-	if err = caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Kube.AppsV1().Deployments(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove deployment", err)
 	}
 
 	// Deploy Knative service in the namespace first
-	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, testNamespace2, image)
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, test.Namespace2, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -79,16 +79,16 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	//Create deployment
-	err = test.CreateDeployment(caCtx, kubeHelloworldService, testNamespace2, image)
+	err = test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, image)
 	if err != nil {
 		t.Fatal("Deployment not created", err)
 	}
 	// Deploy plain Kube service
-	svc, err = createKubeService(caCtx, kubeHelloworldService, testNamespace2)
+	svc, err = createKubeService(caCtx, kubeHelloworldService, test.Namespace2)
 	if err != nil {
 		t.Fatal("Kubernetes service not created", err)
 	}
-	route, err = withRouteForServiceReady(caCtx, svc.Name, testNamespace2)
+	route, err = withRouteForServiceReady(caCtx, svc.Name, test.Namespace2)
 	if err != nil {
 		t.Fatal("Failed to create route for service", svc.Name, err)
 	}
@@ -102,13 +102,13 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Remove the Kube service
-	if err = caCtx.Clients.Route.Routes(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Route.Routes(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove route", err)
 	}
-	if err = caCtx.Clients.Kube.CoreV1().Services(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Kube.CoreV1().Services(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove service", err)
 	}
-	if err = caCtx.Clients.Kube.AppsV1().Deployments(testNamespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Kube.AppsV1().Deployments(test.Namespace2).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove deployment", err)
 	}
 
@@ -116,7 +116,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Delete the Knative service
-	if err = caCtx.Clients.Serving.ServingV1().Services(testNamespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
+	if err = caCtx.Clients.Serving.ServingV1().Services(test.Namespace2).Delete(context.Background(), ksvc.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatal("Failed to remove service", err)
 	}
 }

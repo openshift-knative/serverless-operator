@@ -30,7 +30,7 @@ var (
 	nativeKafkaBroker = &eventingv1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        nativeKafkaBrokerName,
-			Namespace:   testNamespace,
+			Namespace:   test.Namespace,
 			Annotations: map[string]string{"eventing.knative.dev/broker.class": "Kafka"},
 		},
 		Spec: eventingv1.BrokerSpec{
@@ -46,7 +46,7 @@ var (
 	triggerForNativeBroker = &eventingv1.Trigger{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      kafkaTriggerName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: eventingv1.TriggerSpec{
 			Broker: nativeKafkaBrokerName,
@@ -63,7 +63,7 @@ var (
 	nativeKafkaBrokerPingSource = &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
-			Namespace: testNamespace,
+			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
 			Data: helloWorldText,
@@ -88,21 +88,21 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
 		defer cancel()
 
-		if err := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Delete(ctx, nativeKafkaBrokerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			br, _ := client.Clients.Eventing.EventingV1().Brokers(testNamespace).Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
+		if err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(ctx, nativeKafkaBrokerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			br, _ := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
 			brStr, _ := json.Marshal(br)
-			t.Errorf("failed to delete broker %s/%s: %v\n%s\n", testNamespace, nativeKafkaBrokerName, err, string(brStr))
+			t.Errorf("failed to delete broker %s/%s: %v\n%s\n", test.Namespace, nativeKafkaBrokerName, err, string(brStr))
 		}
-		if err := client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Delete(ctx, pingSourceName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			t.Errorf("failed to delete pingsource %s/%s: %v", testNamespace, pingSourceName, err)
+		if err := client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(ctx, pingSourceName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete pingsource %s/%s: %v", test.Namespace, pingSourceName, err)
 		}
-		if err := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Delete(ctx, kafkaTriggerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			tr, _ := client.Clients.Eventing.EventingV1().Triggers(testNamespace).Get(ctx, kafkaTriggerName, metav1.GetOptions{})
+		if err := client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Delete(ctx, kafkaTriggerName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			tr, _ := client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Get(ctx, kafkaTriggerName, metav1.GetOptions{})
 			trStr, _ := json.Marshal(tr)
-			t.Errorf("failed to delete trigger %s/%s: %v\n%s\n", testNamespace, kafkaTriggerName, err, string(trStr))
+			t.Errorf("failed to delete trigger %s/%s: %v\n%s\n", test.Namespace, kafkaTriggerName, err, string(trStr))
 		}
-		if err := client.Clients.Serving.ServingV1().Services(testNamespace).Delete(ctx, kafkaTriggerKsvcName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			t.Errorf("failed to delete ksvc %s/%s: %v", testNamespace, kafkaTriggerKsvcName, err)
+		if err := client.Clients.Serving.ServingV1().Services(test.Namespace).Delete(ctx, kafkaTriggerKsvcName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("failed to delete ksvc %s/%s: %v", test.Namespace, kafkaTriggerKsvcName, err)
 		}
 
 		err := wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
@@ -120,7 +120,7 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 			t.Fatalf("failed to get ConfigMap")
 		}
 		for _, f := range cm.GetFinalizers() {
-			if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, testNamespace) {
+			if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, test.Namespace) {
 				cmBytes, _ := json.MarshalIndent(cm, "", " ")
 				t.Fatalf("ConfigMap still contains the finalizer %s\n%s\n", f, string(cmBytes))
 			}
@@ -129,25 +129,25 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, testNamespace, image)
+	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
 
 	// Create the (native) Kafka Broker
-	_, err = client.Clients.Eventing.EventingV1().Brokers(testNamespace).Create(context.Background(), nativeKafkaBroker, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Create(context.Background(), nativeKafkaBroker, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create Kafka Backed Broker: ", err)
 	}
 
 	// Create the Trigger
-	_, err = client.Clients.Eventing.EventingV1().Triggers(testNamespace).Create(context.Background(), triggerForNativeBroker, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Create(context.Background(), triggerForNativeBroker, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create trigger: ", err)
 	}
 
 	// Create the source
-	_, err = client.Clients.Eventing.SourcesV1().PingSources(testNamespace).Create(context.Background(), nativeKafkaBrokerPingSource, metav1.CreateOptions{})
+	_, err = client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Create(context.Background(), nativeKafkaBrokerPingSource, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatal("Unable to create pingsource: ", err)
 	}
@@ -162,13 +162,13 @@ func waitForBrokerDeletion(ctx context.Context, client *test.Context, t *testing
 			Clients.
 			Eventing.
 			EventingV1().
-			Brokers(testNamespace).
+			Brokers(test.Namespace).
 			Get(ctx, nativeKafkaBrokerName, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil
 		}
 		if err != nil {
-			return false, fmt.Errorf("failed to get broker %s/%s: %w", testNamespace, nativeKafkaBrokerName, err)
+			return false, fmt.Errorf("failed to get broker %s/%s: %w", test.Namespace, nativeKafkaBrokerName, err)
 		}
 
 		brBytes, _ := json.MarshalIndent(br, "", " ")
