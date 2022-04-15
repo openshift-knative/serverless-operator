@@ -26,7 +26,7 @@ index 500b1998d..c9caae14a 100644
 -  name: kafka-webhook
 -  namespace: knative-eventing
 -  labels:
--    kafka.eventing.knative.dev/release: "v1.1.0"
+-    kafka.eventing.knative.dev/release: "v1.2.0"
 -spec:
 -  scaleTargetRef:
 -    apiVersion: apps/v1
