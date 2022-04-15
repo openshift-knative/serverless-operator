@@ -1425,7 +1425,7 @@ knative.dev/eventing-kafka-broker/test/upgrade/installation
 ## explicit; go 1.14
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20220120043934-ec785540a732 => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
+# knative.dev/networking v0.0.0-20220120043934-ec785540a732
 ## explicit; go 1.16
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1638,6 +1638,5 @@ sigs.k8s.io/yaml
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 # k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-# knative.dev/networking => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
-# knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
 # knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
+# knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
