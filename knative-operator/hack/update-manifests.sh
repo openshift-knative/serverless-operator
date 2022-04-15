@@ -80,8 +80,5 @@ git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.p
 # SRVKE-1202 temporary fix for a missing ConfigMap knative-eventing/config-kafka-source-defaults
 git apply "$root/knative-operator/hack/017-eventing-kafka-configmap-knative-eventing-config-kafka-source-defaults.patch"
 
-# Tmp fix for channel post job
-git apply "$root/knative-operator/hack/015-eventing-kafkachannel-no-generated-name-for-post-install.patch"
-
 # SRVKE-1162: potential fix
 git apply "$root/knative-operator/hack/016-eventing-kafka-dispatcher-probes.patch"
