@@ -145,11 +145,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/apiextensions-apiserver v0.22.5 // indirect
-	k8s.io/apiserver v0.21.4 // indirect
+	k8s.io/apiserver v0.22.5 // indirect
 	k8s.io/code-generator v0.22.5 // indirect
-	k8s.io/component-base v0.21.4 // indirect
+	k8s.io/component-base v0.22.5 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.40.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
@@ -158,20 +157,11 @@ require (
 )
 
 replace (
-	// Kubernetes v1.21.4
-	k8s.io/api => k8s.io/api v0.21.4
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
-	k8s.io/apiserver => k8s.io/apiserver v0.21.4
-	k8s.io/client-go => k8s.io/client-go v0.21.4
-	k8s.io/code-generator => k8s.io/code-generator v0.21.4
-	k8s.io/component-base => k8s.io/component-base v0.21.4
-
 	// Knative forks.
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220331162435-b93f6ffdf2e5
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331132250-5e770359a891
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220412082434-af580b16c8a1
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220407204305-c6952920993c
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220414115850-759c7996dcdf
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
 )
 
 replace (
@@ -180,8 +170,8 @@ replace (
 	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-
-	// Needed by metadata webhook and other components
-	knative.dev/networking => knative.dev/networking v0.0.0-20211101215640-8c71a2708e7d
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20211210132429-e86584fd3c69
 )
+
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
+
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
