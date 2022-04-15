@@ -1638,5 +1638,5 @@ sigs.k8s.io/yaml
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 # k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-# knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
+# knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30

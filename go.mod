@@ -172,6 +172,6 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 )
 
-replace knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
-
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220222214439-083dd97300e1
+
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
