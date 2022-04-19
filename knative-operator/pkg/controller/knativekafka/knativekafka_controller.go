@@ -439,6 +439,7 @@ const (
 	brokerController                       = "BROKER"
 	sinkController                         = "SINK"
 	sourceController                       = "SOURCE"
+	channelController                      = "CHANNEL"
 	manifestBuildEnabledOnly manifestBuild = iota
 	manifestBuildDisabledOnly
 	manifestBuildAll
@@ -549,6 +550,8 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				brokerController: "broker-controller,trigger-controller",
 				sinkController:   "sink-controller",
 				sourceController: "source-controller",
+				// TODO Dynamically handle Channel enabled/disabled controller
+				channelController: "channel-controller",
 			}
 
 			var deployment = &appsv1.Deployment{}
