@@ -53,7 +53,6 @@ func TestServerlessUpgrade(t *testing.T) {
 					servingupgrade.ProbeTest(),
 					servingupgrade.AutoscaleSustainingWithTBCTest(),
 					servingupgrade.AutoscaleSustainingTest(),
-					eventingupgrade.ContinualTest(),
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkabrokerupgrade.BrokerContinualTests(),
