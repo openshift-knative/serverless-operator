@@ -52,7 +52,7 @@ var (
 	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
-	KafkaHAComponents = []string{"kafka-ch-controller", "kafka-controller", "kafka-webhook-eventing"}
+	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 )
 
 type EventingKafkaConfig struct {
@@ -448,7 +448,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 	var resources []unstructured.Unstructured
 
 	if build == manifestBuildAll || (build == manifestBuildEnabledOnly && instance.Spec.Channel.Enabled) || (build == manifestBuildDisabledOnly && !instance.Spec.Channel.Enabled) {
-		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaChannelController, monitoring.KafkaChannelWebhook)
+		rbacProxy, err := monitoring.AddRBACProxyToManifest(instance, monitoring.KafkaChannelReceiver, monitoring.KafkaChannelDispatcher)
 		if err != nil {
 			return nil, err
 		}

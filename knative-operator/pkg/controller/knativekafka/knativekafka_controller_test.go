@@ -56,16 +56,17 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		name:     "Create CR with channel and source enabled",
 		instance: makeCr(withChannelEnabled, withSourceEnabled),
 		exists: []types.NamespacedName{
-			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			// TODO: commented out, since rbac injection is missing
-			// {Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-receiver", Namespace: "knative-eventing"},
+			{Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{},
 	}, {
 		name:     "Create CR with channel enabled and source disabled",
 		instance: makeCr(withChannelEnabled),
 		exists: []types.NamespacedName{
-			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-receiver", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
 			{Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
@@ -73,19 +74,20 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	}, {
 		name:     "Create CR with channel disabled and source enabled",
 		instance: makeCr(withSourceEnabled),
-		exists:   []types.NamespacedName{
-			// TODO: commented out, since rbac injection is missing
-			// {Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
+		exists: []types.NamespacedName{
+			{Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
 		},
 		doesNotExist: []types.NamespacedName{
-			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-receiver", Namespace: "knative-eventing"},
 		},
 	}, {
 		name:     "Create CR with channel and source disabled",
 		instance: makeCr(),
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
-			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-channel-receiver", Namespace: "knative-eventing"},
 			{Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
 		},
 	}, {
@@ -102,12 +104,12 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewClientBuilder().WithObjects(test.instance, &operatorv1alpha1.KnativeEventing{}).Build()
 
-			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/channel/1-channel-consolidated.yaml"))
+			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/channel/eventing-kafka-channel.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaChannel manifest: %v", err)
 			}
 
-			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/source/1-eventing-kafka-source.yaml"))
+			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/source/eventing-kafka-source.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaSource manifest: %v", err)
 			}
@@ -152,7 +154,8 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 				// Check if the clusterrolebinding for the Kafka deployment is created
 				crb := &rbacv1.ClusterRoleBinding{}
-				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", deployment.Name)}, crb)
+				name := monitoring.IndexByName[deployment.Name]
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", name.ServiceAccountName)}, crb)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
@@ -702,10 +705,6 @@ func TestCheckHAComponent(t *testing.T) {
 	}, {
 		name:           "Eventing Kafka Webhook",
 		deploymentName: "kafka-webhook-eventing",
-		shouldFail:     false,
-	}, {
-		name:           "kafka channel controller",
-		deploymentName: "kafka-ch-controller",
 		shouldFail:     false,
 	}, {
 		name:           "kafka webhook",
