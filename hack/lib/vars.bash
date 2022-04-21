@@ -14,6 +14,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.s
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
+# TODO(matzew): SRVKE-1076remove this when kafka e2e tests have been migrated
 export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-v$(metadata.get dependencies.eventing_kafka_broker)}"
 
