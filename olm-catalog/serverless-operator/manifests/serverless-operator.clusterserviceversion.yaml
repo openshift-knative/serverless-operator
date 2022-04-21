@@ -648,6 +648,8 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
                       - name: "CURRENT_VERSION"
                         value: "1.23.0"
+                      - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
+                        value: "1.2.3"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
