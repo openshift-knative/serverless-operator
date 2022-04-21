@@ -648,8 +648,6 @@ spec:
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-post-install"
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
-                      - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator-__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
                       - name: "CURRENT_VERSION"
                         value: "1.23.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
@@ -888,8 +886,6 @@ spec:
     - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
       image: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-post-install"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
-    - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator-__migrate"
       image: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
   replaces: serverless-operator.v1.22.0
   version: 1.23.0
