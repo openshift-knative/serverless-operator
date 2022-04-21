@@ -19,17 +19,16 @@ const (
 	knativeKafkaNamespace = "knative-eventing"
 )
 
-var knativeKafkaChannelControlPlaneDeploymentNames = []string{
-	"kafka-ch-controller",
-	"kafka-webhook",
-	"kafka-ch-dispatcher",
+var kafkaChannelDeployments = []string{
+	"kafka-channel-dispatcher",
+	"kafka-channel-receiver",
 }
 
-var knativeKafkaSourceControlPlaneDeploymentNames = []string{
-	"kafka-controller",
+var kafkaSourceDeployments = []string{
+	"kafka-source-dispatcher",
 }
 
-var knativeKafkaBrokerControlPlaneDeploymentNames = []string{
+var kafkaControlPlaneDeployments = []string{
 	"kafka-controller",
 	"kafka-webhook-eventing",
 }
@@ -73,8 +72,8 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
-		for i := range knativeKafkaChannelControlPlaneDeploymentNames {
-			deploymentName := knativeKafkaChannelControlPlaneDeploymentNames[i]
+		for i := range kafkaChannelDeployments {
+			deploymentName := kafkaChannelDeployments[i]
 			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
@@ -82,17 +81,17 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape for KafkaSource", func(t *testing.T) {
-		for i := range knativeKafkaSourceControlPlaneDeploymentNames {
-			deploymentName := knativeKafkaSourceControlPlaneDeploymentNames[i]
+		for i := range kafkaSourceDeployments {
+			deploymentName := kafkaSourceDeployments[i]
 			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
 	})
 
-	t.Run("verify correct deployment shape for Kafka Broker", func(t *testing.T) {
-		for i := range knativeKafkaBrokerControlPlaneDeploymentNames {
-			deploymentName := knativeKafkaBrokerControlPlaneDeploymentNames[i]
+	t.Run("verify correct deployment shape for Kafka control plane", func(t *testing.T) {
+		for i := range kafkaControlPlaneDeployments {
+			deploymentName := kafkaControlPlaneDeployments[i]
 			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}

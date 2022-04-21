@@ -12,7 +12,6 @@ registry_host='registry.ci.openshift.org'
 registry="${registry_host}/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
 eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
-eventing_kafka="${registry}/knative-v$(metadata.get dependencies.eventing_kafka):knative-eventing-kafka"
 eventing_kafka_broker="${registry}/knative-v$(metadata.get dependencies.eventing_kafka_broker):knative-eventing-kafka"
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
@@ -71,22 +70,16 @@ image "pingsource-mt-adapter__dispatcher"           "${eventing}-mtping"
 image "APISERVER_RA_IMAGE"   "${eventing}-apiserver-receive-adapter"
 image "DISPATCHER_IMAGE"     "${eventing}-channel-dispatcher"
 
-kafka_image "kafka-ch-controller__controller"      "${eventing_kafka}-consolidated-controller"
-kafka_image "DISPATCHER_IMAGE"                     "${eventing_kafka}-consolidated-dispatcher"
-kafka_image "kafka-webhook__kafka-webhook"         "${eventing_kafka}-webhook"
-kafka_image "storage-version-migration-kafka-channel-$(metadata.get dependencies.eventing_kafka)__migrate" "${eventing_kafka}-storage-version-migration"
-
-kafka_image "kafka-broker-receiver__kafka-broker-receiver"      "${eventing_kafka_broker}-broker-receiver"
-kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"  "${eventing_kafka_broker}-broker-dispatcher"
-kafka_image "kafka-controller__controller"                      "${eventing_kafka_broker}-broker-kafka-controller"
-kafka_image "kafka-sink-receiver__kafka-sink-receiver"          "${eventing_kafka_broker}-broker-receiver"
-kafka_image "kafka-source-dispatcher__kafka-source-dispatcher"  "${eventing_kafka_broker}-broker-dispatcher"
-kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"    "${eventing_kafka_broker}-broker-webhook-kafka"
-kafka_image "kafka-controller-post-install-__post-install"    "${eventing_kafka_broker}-broker-post-install"
-
-## Todo: For the source we currently reuse one one from eventing core.
-## We might want to rethink this. for direct build on the "broker" repo.
-kafka_image "knative-kafka-storage-version-migrator-__migrate"    "${eventing}-storage-version-migration"
+kafka_image "kafka-broker-receiver__kafka-broker-receiver"       "${eventing_kafka_broker}-broker-receiver"
+kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"   "${eventing_kafka_broker}-broker-dispatcher"
+kafka_image "kafka-channel-receiver__kafka-channel-receiver"     "${eventing_kafka_broker}-broker-receiver"
+kafka_image "kafka-channel-dispatcher__kafka-channel-dispatcher" "${eventing_kafka_broker}-broker-dispatcher"
+kafka_image "kafka-controller__controller"                       "${eventing_kafka_broker}-broker-kafka-controller"
+kafka_image "kafka-sink-receiver__kafka-sink-receiver"           "${eventing_kafka_broker}-broker-receiver"
+kafka_image "kafka-source-dispatcher__kafka-source-dispatcher"   "${eventing_kafka_broker}-broker-dispatcher"
+kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"     "${eventing_kafka_broker}-broker-webhook-kafka"
+kafka_image "kafka-controller-post-install__post-install"        "${eventing_kafka_broker}-broker-post-install"
+kafka_image "knative-kafka-storage-version-migrator__migrate"    "${eventing}-storage-version-migration" # Use eventing core image
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
@@ -154,7 +147,7 @@ done
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
-add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_VERSION" "$(metadata.get dependencies.eventing_kafka)"
+add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "$(metadata.get dependencies.eventing_kafka_broker)"
 
 # Override the image for the CLI artifact deployment
 yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
