@@ -8,31 +8,30 @@ root="$(dirname "${BASH_SOURCE[0]}")/../.."
 # shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
-kafka_channel_files=(channel-consolidated channel-post-install)
-kafka_source_files=(eventing-kafka-source)
-kafka_controller_files=(eventing-kafka-controller)
-kafka_broker_files=(eventing-kafka-broker)
-kafka_sink_files=(eventing-kafka-sink)
+kafka_controller_files=(eventing-kafka-controller.yaml eventing-kafka-post-install.yaml)
+kafka_broker_files=(eventing-kafka-broker.yaml)
+kafka_channel_files=(eventing-kafka-channel.yaml)
+kafka_source_files=(eventing-kafka-source.yaml)
+kafka_sink_files=(eventing-kafka-sink.yaml)
+component_dir="$root/knative-operator/deploy/resources/knativekafka"
 
 function download_kafka {
-  component=$1
-  subdir=$2
-  version=$3
-  shift
-  shift
+  subdir=$1
   shift
 
   files=("$@")
 
-  component_dir="$root/knative-operator/deploy/resources/knativekafka"
-  target_dir="${component_dir}"
+  rm -rf "${component_dir:?}/${subdir}"
+  mkdir -p "${component_dir:?}/${subdir}"
 
   for (( i=0; i<${#files[@]}; i++ ));
   do
-    index=$(( i+1 ))
-    file="${files[$i]}.yaml"
-    target_file="$target_dir/$subdir/$index-$file"
-    url="https://github.com/knative-sandbox/$component/releases/download/knative-$version/$file"
+    file="${files[$i]}"
+    target_file="$component_dir/$subdir/$file"
+    branch=$(metadata.get dependencies.eventing_kafka_broker_artifacts_branch)
+    url="https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/${branch}/openshift/release/artifacts/$file"
+
+    echo "Downloading file from ${url}"
 
     wget --no-check-certificate "$url" -O "$target_file"
 
@@ -41,45 +40,19 @@ function download_kafka {
   done
 }
 
-download_kafka eventing-kafka channel "$KNATIVE_EVENTING_KAFKA_VERSION" "${kafka_channel_files[@]}"
+rm -rf "${component_dir}/controller"
+rm -rf "${component_dir}/broker"
+rm -rf "${component_dir}/channel"
+rm -rf "${component_dir}/source"
+rm -rf "${component_dir}/sink"
 
-# For 1.17 we still skip HPA
-git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
+download_kafka controller "${kafka_controller_files[@]}"
+download_kafka broker "${kafka_broker_files[@]}"
+download_kafka channel "${kafka_channel_files[@]}"
+download_kafka sink "${kafka_sink_files[@]}"
+download_kafka source "${kafka_source_files[@]}"
 
-# SRVKE-919: Change the minavailable pdb for kafka-webhook to 0
-git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
-
-# Kafka Broker content:
-# Control-Plane files:
-download_kafka eventing-kafka-broker controller "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_controller_files[@]}"
-
-#Data-Plane Files Broker:
-download_kafka eventing-kafka-broker broker "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_broker_files[@]}"
-
-#Data-Plane Files Sink:
-download_kafka eventing-kafka-broker sink "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_sink_files[@]}"
-
-#Data-Plane Files Source:
-download_kafka eventing-kafka-broker source "$KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${kafka_source_files[@]}"
-
-# That CM is already there, with Eventing
-git apply "$root/knative-operator/hack/001-broker-config-tracing.patch"
-
-# For now we remove the CRDs, since the "broker" does not yet do anything with them
-git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
-
-# Remove the config for the new, unused channel
-git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"
-
-# Fix for SRVKE-1171
-git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
-git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
-
-# SRVKE-1184 Migration to Broker components
-git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.patch"
-
-# SRVKE-1202 temporary fix for a missing ConfigMap knative-eventing/config-kafka-source-defaults
-git apply "$root/knative-operator/hack/017-eventing-kafka-configmap-knative-eventing-config-kafka-source-defaults.patch"
-
-# SRVKE-1162: potential fix
-git apply "$root/knative-operator/hack/016-eventing-kafka-dispatcher-probes.patch"
+# __Note__
+# artifacts are downloaded from midstream openshift/release/artifacts directory.
+# Before adding patches to this file consider sending a patch to midstream and then by just running
+# `make generated-files` the patch will appear in the final bundled artifacts.
