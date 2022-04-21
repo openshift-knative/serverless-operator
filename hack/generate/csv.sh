@@ -149,6 +149,7 @@ done
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
+add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "$(metadata.get dependencies.eventing_kafka_broker)"
 
 # Override the image for the CLI artifact deployment
 yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
