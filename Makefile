@@ -52,6 +52,18 @@ uninstall-full-mesh:
 install-with-mesh-enabled:
 	FULL_MESH=true ./hack/install.sh
 
+install-tracing-zipkin:
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
+
+uninstall-tracing-zipkin:
+	UNINSTALL_TRACING=true TRACING_BACKEND=zipkin ./hack/tracing.sh
+
+install-tracing-opentelemetry:
+	./hack/tracing.sh
+
+uninstall-tracing-opentelemetry:
+	UNINSTALL_TRACING=true ./hack/tracing.sh
+
 teardown:
 	./hack/teardown.sh
 
@@ -67,6 +79,7 @@ test-e2e-testonly:
 	./test/e2e-tests.sh
 
 test-e2e:
+	./hack/tracing.sh
 	./hack/install.sh
 	./test/e2e-tests.sh
 	./hack/teardown.sh
@@ -77,6 +90,7 @@ test-e2e-with-kafka-testonly:
 
 test-e2e-with-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	./hack/tracing.sh
 	INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	./hack/teardown.sh
@@ -87,6 +101,7 @@ test-e2e-with-mesh-testonly:
 
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	./hack/tracing.sh
 	FULL_MESH=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 
@@ -100,7 +115,8 @@ test-upstream-e2e-mesh-testonly:
 
 test-upstream-e2e-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
-	FULL_MESH=true ./hack/install.sh
+	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
+	FULL_MESH=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
@@ -110,7 +126,8 @@ test-upstream-e2e-no-upgrade-testonly:
 
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
+	INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
@@ -119,7 +136,8 @@ test-upstream-upgrade-testonly:
 
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.

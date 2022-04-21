@@ -40,10 +40,11 @@ export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
 export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
 export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
 # eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
-export ZIPKIN_NAMESPACE="${ZIPKIN_NAMESPACE:-istio-system}"
+export TRACING_NAMESPACE="${TRACING_NAMESPACE:-istio-system}"
+export TRACING_BACKEND="${TRACING_BACKEND:-otel}"
 
 declare -a SYSTEM_NAMESPACES
-SYSTEM_NAMESPACES=("${ZIPKIN_NAMESPACE}" "${OPERATORS_NAMESPACE}")
+SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
 export SYSTEM_NAMESPACES
 export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
@@ -68,3 +69,4 @@ export INSTALL_SERVING="${INSTALL_SERVING:-true}"
 export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
 export FULL_MESH="${FULL_MESH:-false}"
+export ENABLE_TRACING="${ENABLE_TRACING:-true}"
