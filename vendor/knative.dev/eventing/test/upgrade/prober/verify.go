@@ -85,10 +85,6 @@ func (p *prober) Verify() (eventErrs []error, eventsSent int) {
 		elapsed, report.EventsSent, report.State)
 	p.log.Infof("Availability: %.3f%%, Requests sent: %d.",
 		availRate, report.TotalRequests)
-	stepNo := "10" // Try getting trace for event #10
-	if err := p.exportTrace(p.getTraceForStepEvent(stepNo), fmt.Sprintf("step-%s.json", stepNo)); err != nil {
-		p.log.Warnf("Failed to export trace for Step event #%s: %v", stepNo, err)
-	}
 	for i, t := range report.Thrown.Missing {
 		eventErrs = append(eventErrs, errors.New(t))
 		if i > exportTraceLimit {
