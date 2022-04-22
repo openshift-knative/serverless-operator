@@ -439,6 +439,7 @@ const (
 	brokerController                       = "BROKER"
 	sinkController                         = "SINK"
 	sourceController                       = "SOURCE"
+	channelController                      = "CHANNEL"
 	manifestBuildEnabledOnly manifestBuild = iota
 	manifestBuildDisabledOnly
 	manifestBuildAll
@@ -507,7 +508,7 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 }
 
 func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) bool {
-	return spec.Broker.Enabled || spec.Sink.Enabled || spec.Source.Enabled
+	return spec.Broker.Enabled || spec.Sink.Enabled || spec.Source.Enabled || spec.Channel.Enabled
 }
 
 func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
@@ -546,9 +547,10 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
 
 			var disabledKafkaControllers = common.StringMap{
-				brokerController: "broker-controller,trigger-controller",
-				sinkController:   "sink-controller",
-				sourceController: "source-controller",
+				brokerController:  "broker-controller,trigger-controller",
+				sinkController:    "sink-controller",
+				sourceController:  "source-controller",
+				channelController: "channel-controller",
 			}
 
 			var deployment = &appsv1.Deployment{}
@@ -561,12 +563,16 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				disabledKafkaControllers.Remove(brokerController)
 			}
 			if spec.Sink.Enabled {
-				// only sink: we remove the manifestBuildEnabledOnly && instance.Spec.Source.Sink controllers from the list of disabled controllers
+				// sink is enabled, so we remove all of its controllers from the list of disabled controllers
 				disabledKafkaControllers.Remove(sinkController)
 			}
 			if spec.Source.Enabled {
-				// broker is enabled, so we remove all of its controllers from the list of disabled controllers
+				// source is enabled, so we remove all of its controllers from the list of disabled controllers
 				disabledKafkaControllers.Remove(sourceController)
+			}
+			if spec.Channel.Enabled {
+				// channel is enabled, so we remove all of its controllers from the list of disabled controllers
+				disabledKafkaControllers.Remove(channelController)
 			}
 
 			// render the actual argument
