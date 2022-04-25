@@ -115,20 +115,10 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 	traceOperationName string,
 	traceServiceNamePrefix string,
 	serviceNamePrefixes ...string) error {
-	podList, err := ctx.Clients.Kube.CoreV1().Pods(tracingNamespace).List(
-		context.Background(),
-		metav1.ListOptions{LabelSelector: "app=" + jaegerName})
-	if err != nil {
-		return fmt.Errorf("error listing app=%s pods: %w", jaegerName, err)
-	}
 
-	if len(podList.Items) != 1 {
-		return fmt.Errorf("expecting exactly 1 jaeger pod, got %d", len(podList.Items))
-	}
-
-	portForward, err := test.PortForward(podList.Items[0], 16685)
+	portForward, err := setupPortForward(ctx)
 	if err != nil {
-		return fmt.Errorf("error creating port-forward: %w", err)
+		return err
 	}
 	defer portForward.Close()
 
@@ -141,25 +131,10 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 
 	queryClient := jaegerapi.NewQueryServiceClient(conn)
 
-	// First list all services so that we can find the one matching the prefix we know (as we only know the ksvc name).
-	getServicesResponse, err := queryClient.GetServices(context.Background(), &jaegerapi.GetServicesRequest{})
+	// First find the Jaeger service matching the prefix we know (as we only know the ksvc name).
+	serviceName, err := getJaegerService(ctx, queryClient, traceServiceNamePrefix)
 	if err != nil {
-		return fmt.Errorf("error getting services: %w", err)
-	}
-
-	var serviceName string
-	for _, service := range getServicesResponse.Services {
-		ctx.T.Logf("service: %s", service)
-		if strings.HasPrefix(service, traceServiceNamePrefix) {
-			if serviceName != "" {
-				return fmt.Errorf("service: %s: found more than one service with %q prefix in Jaeger", service, traceServiceNamePrefix)
-			}
-			serviceName = service
-		}
-	}
-
-	if serviceName == "" {
-		return fmt.Errorf("didn't find any services with %q prefix in Jaeger", traceServiceNamePrefix)
+		return err
 	}
 
 	// Find all traces matching our service name and the given operation name.
@@ -170,24 +145,13 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("error getting FindTraces client: %w", err)
+		return fmt.Errorf("error finding traces: %w", err)
 	}
 
-	traces := make(map[string][]jaegermodel.Span)
-
 	// Spans from a single trace can be in different chunks, so gather all traces together first.
-	for {
-		chunk, err := traceClient.Recv()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("error recv traces: %w", err)
-		}
-
-		for _, span := range chunk.Spans {
-			traces[span.TraceID.String()] = append(traces[span.TraceID.String()], span)
-		}
+	traces, err := receiveTraces(traceClient)
+	if err != nil {
+		return err
 	}
 
 	// We did requestCount requests (+a few during waitForNo503OrFail).
@@ -195,36 +159,105 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 		return fmt.Errorf("expected at least %d traces, got %d", requestCount, len(traces))
 	}
 
-	for traceID, spans := range traces {
-		// All the serviceNamePrefixes should be covered by some traces, so we'll note the matched ones in a boolean array.
-		found := make([]bool, len(serviceNamePrefixes))
-
+	// All the serviceNamePrefixes should be covered by some traces, so we'll note the matched ones in a boolean array.
+	var coveredPrefixes map[string]bool
+	for traceID, traceSpans := range traces {
 		ctx.T.Logf("Trace %s:", traceID)
-
-		for _, span := range spans {
-			ctx.T.Logf("  %s(%s)", span.Process.ServiceName, span.OperationName)
-
-			matchesAny := false
-			for i, serviceNamePrefix := range serviceNamePrefixes {
-				if strings.HasPrefix(span.Process.ServiceName, serviceNamePrefix) {
-					matchesAny = true
-					found[i] = true
-				}
-			}
-
-			// Verify there is no span in the traces that doesn't match any of the serviceNamePrefixes.
-			if !matchesAny {
-				return fmt.Errorf("span %s(%s) doesn't match any of the expected prefixes (%v)", span.Process.ServiceName, span.OperationName, serviceNamePrefixes)
-			}
+		coveredPrefixes, err = assertTraceCoversPrefixes(ctx, traceSpans, serviceNamePrefixes, coveredPrefixes)
+		if err != nil {
+			return err
 		}
+	}
 
-		// Verify trace spans cover all services in serviceNamePrefixes.
-		for i, serviceNamePrefix := range serviceNamePrefixes {
-			if !found[i] {
-				return fmt.Errorf("Trace does not contain a span matching serviceName prefix %q", serviceNamePrefix)
-			}
+	// Verify each item from serviceNamePrefixes is covered by at least one trace.
+	for _, prefix := range serviceNamePrefixes {
+		if !coveredPrefixes[prefix] {
+			return fmt.Errorf("trace does not contain a span matching serviceName prefix %q", prefix)
 		}
 	}
 
 	return nil
+}
+
+// assertTraceCoversPrefixes asserts that the trace covers at least one serviceNamePrefix.
+// Modifies the coveredPrefixes map with any new covered prefixes and returns it.
+func assertTraceCoversPrefixes(ctx *test.Context, traceSpans []jaegermodel.Span, serviceNamePrefixes []string, coveredPrefixes map[string]bool) (map[string]bool, error) {
+	for _, span := range traceSpans {
+		ctx.T.Logf("  %s(%s)", span.Process.ServiceName, span.OperationName)
+
+		matchesAny := false
+		for _, serviceNamePrefix := range serviceNamePrefixes {
+			if strings.HasPrefix(span.Process.ServiceName, serviceNamePrefix) {
+				matchesAny = true
+				coveredPrefixes[serviceNamePrefix] = true
+			}
+		}
+
+		// Verify there is no span in the traces that doesn't match any of the serviceNamePrefixes.
+		if !matchesAny {
+			return nil, fmt.Errorf("span %s(%s) doesn't match any of the expected prefixes (%v)", span.Process.ServiceName, span.OperationName, serviceNamePrefixes)
+		}
+	}
+	return coveredPrefixes, nil
+}
+
+func receiveTraces(traceClient jaegerapi.QueryService_FindTracesClient) (map[string][]jaegermodel.Span, error) {
+	traces := make(map[string][]jaegermodel.Span)
+	for {
+		chunk, err := traceClient.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error recv traces: %w", err)
+		}
+
+		for _, span := range chunk.Spans {
+			traces[span.TraceID.String()] = append(traces[span.TraceID.String()], span)
+		}
+	}
+	return traces, nil
+}
+
+func setupPortForward(ctx *test.Context) (*test.PortForwardType, error) {
+	podList, err := ctx.Clients.Kube.CoreV1().Pods(tracingNamespace).List(
+		context.Background(),
+		metav1.ListOptions{LabelSelector: "app=" + jaegerName})
+	if err != nil {
+		return nil, fmt.Errorf("error listing app=%s pods: %w", jaegerName, err)
+	}
+
+	if len(podList.Items) != 1 {
+		return nil, fmt.Errorf("expecting exactly 1 jaeger pod, got %d", len(podList.Items))
+	}
+
+	portForward, err := test.PortForward(podList.Items[0], 16685)
+	if err != nil {
+		return nil, fmt.Errorf("error creating port-forward: %w", err)
+	}
+
+	return portForward, nil
+}
+
+func getJaegerService(ctx *test.Context, queryClient jaegerapi.QueryServiceClient, traceServiceNamePrefix string) (string, error) {
+	getServicesResponse, err := queryClient.GetServices(context.Background(), &jaegerapi.GetServicesRequest{})
+	if err != nil {
+		return "", fmt.Errorf("error getting services: %w", err)
+	}
+
+	var serviceName string
+	for _, service := range getServicesResponse.Services {
+		ctx.T.Logf("service: %s", service)
+		if strings.HasPrefix(service, traceServiceNamePrefix) {
+			if serviceName != "" {
+				return "", fmt.Errorf("service: %s: found more than one service with %q prefix in Jaeger", service, traceServiceNamePrefix)
+			}
+			serviceName = service
+		}
+	}
+
+	if serviceName == "" {
+		return "", fmt.Errorf("didn't find any services with %q prefix in Jaeger", traceServiceNamePrefix)
+	}
+	return serviceName, nil
 }
