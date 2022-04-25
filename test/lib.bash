@@ -170,6 +170,16 @@ function downstream_monitoring_e2e_tests {
     "$@"
 }
 
+function downstream_kitchensink_e2e_tests {
+  logger.info "Running Knative kitchensink tests"
+
+  # Used by the tests to get common ConfigMaps like config-logging
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
+  export SYSTEM_NAMESPACE
+
+  go_test_e2e -timeout=60m -parallel=8 ./test/kitchensinke2e "$@"
+}
+
 # == Upgrade testing
 
 function run_rolling_upgrade_tests {
