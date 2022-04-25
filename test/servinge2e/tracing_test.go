@@ -190,11 +190,12 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 		}
 	}
 
-	// Count all the matched traces.
-	count := 0
-	for traceID, spans := range traces {
-		count++
+	// We did requestCount requests (+a few during waitForNo503OrFail).
+	if len(traces) < requestCount {
+		return fmt.Errorf("expected at least %d traces, got %d", requestCount, len(traces))
+	}
 
+	for traceID, spans := range traces {
 		// All the serviceNamePrefixes should be covered by some traces, so we'll note the matched ones in a boolean array.
 		found := make([]bool, len(serviceNamePrefixes))
 
@@ -223,11 +224,6 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 				return fmt.Errorf("Trace does not contain a span matching serviceName prefix %q", serviceNamePrefix)
 			}
 		}
-	}
-
-	// We did requestCount requests (+a few during waitForNo503OrFail).
-	if count < requestCount {
-		return fmt.Errorf("expected at least %d traces, got %d", requestCount, count)
 	}
 
 	return nil
