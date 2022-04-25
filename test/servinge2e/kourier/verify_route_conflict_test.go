@@ -42,7 +42,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 
 		t.Logf("older: %v, newer: %v", older, newer)
 
-		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, image, nil)
+		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, image)
 		if err != nil {
 			t.Fatal("Knative Service not ready", err)
 		}

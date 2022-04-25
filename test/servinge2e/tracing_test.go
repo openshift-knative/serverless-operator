@@ -51,10 +51,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	if activatorInPath {
 		annotations = nil
 	}
-	ksvc, err := test.WithServiceReady(ctx, name, testNamespace, image, annotations)
-	if err != nil {
-		t.Fatal("Knative Service not ready:", err)
-	}
+	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, image, annotations))
 
 	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), helloworldText)
 
@@ -64,6 +61,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	if activatorInPath {
 		serviceNamePrefixes = append(serviceNamePrefixes, "activator-service")
 	}
+	var err error
 	// Verify all the traces of our service also contain spans from the activator.
 	// Tracing is asynchronous, retry on failures until timeout is reached.
 	if waitErr := wait.PollImmediate(time.Second, 30*time.Second, func() (bool, error) {

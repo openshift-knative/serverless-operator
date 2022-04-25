@@ -343,7 +343,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		jwksKsvc.ObjectMeta.Labels = map[string]string{
 			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
-		jwksKsvc = withServiceReadyOrFail(ctx, jwksKsvc)
+		jwksKsvc = test.WithServiceReadyOrFail(ctx, jwksKsvc)
 
 		smcpVersion, _, _ := test.GetServiceMeshControlPlaneVersion(ctx, "basic", serviceMeshTestNamespaceName)
 		// If "version" exists and is a v1, use the obsolete "Policy"
@@ -490,7 +490,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
-		testKsvc = withServiceReadyOrFail(ctx, testKsvc)
+		testKsvc = test.WithServiceReadyOrFail(ctx, testKsvc)
 
 		// Wait until the Route is ready and also verify the route returns a 401 or 403 without a token
 		if _, err := pkgTest.CheckEndpointState(
@@ -637,7 +637,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
 	aux := test.Service("aux", test.Namespace, image, nil)
-	aux = withServiceReadyOrFail(ctx, aux)
+	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)
 	if err != nil {

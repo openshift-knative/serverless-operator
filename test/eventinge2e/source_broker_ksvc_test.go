@@ -36,7 +36,7 @@ func TestKnativeSourceBrokerTriggerKnativeService(t *testing.T) {
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image, nil)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image)
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
