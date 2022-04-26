@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	image          = "gcr.io/knative-samples/helloworld-go"
+	image          = "quay.io/openshift-knative/hello-openshift"
 	helloworldText = "Hello World!"
 )
 
