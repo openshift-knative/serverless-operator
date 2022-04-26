@@ -66,7 +66,7 @@ func WithServiceReadyOrFail(ctx *Context, service *servingv1.Service) *servingv1
 }
 
 func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
-	service, err := CreateService(ctx, name, namespace, image, nil)
+	service, err := CreateService(ctx, name, namespace, image)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.S
 	return service, nil
 }
 
-func CreateService(ctx *Context, name, namespace, image string, annotations map[string]string) (*servingv1.Service, error) {
-	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), Service(name, namespace, image, annotations), metav1.CreateOptions{})
+func CreateService(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
+	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), Service(name, namespace, image, nil), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}

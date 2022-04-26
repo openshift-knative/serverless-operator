@@ -49,7 +49,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 
 		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
-		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image, nil)
+		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
 		if err != nil {
 			t.Fatal("Failed to create conflicting Knative Service", err)
 		}

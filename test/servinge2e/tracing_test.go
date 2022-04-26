@@ -26,6 +26,7 @@ const (
 	requestCount     = 100
 	tracingNamespace = "istio-system"
 	jaegerName       = "jaeger"
+	jaegerQueryPort  = 16685
 )
 
 func TestTraceStartedAtActivator(t *testing.T) {
@@ -160,7 +161,7 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 	}
 
 	// All the serviceNamePrefixes should be covered by some traces, so we'll note the matched ones in a boolean array.
-	var coveredPrefixes map[string]bool
+	coveredPrefixes := make(map[string]bool)
 	for traceID, traceSpans := range traces {
 		ctx.T.Logf("Trace %s:", traceID)
 		coveredPrefixes, err = assertTraceCoversPrefixes(ctx, traceSpans, serviceNamePrefixes, coveredPrefixes)
@@ -231,7 +232,7 @@ func setupPortForward(ctx *test.Context) (*test.PortForwardType, error) {
 		return nil, fmt.Errorf("expecting exactly 1 jaeger pod, got %d", len(podList.Items))
 	}
 
-	portForward, err := test.PortForward(podList.Items[0], 16685)
+	portForward, err := test.PortForward(podList.Items[0], jaegerQueryPort)
 	if err != nil {
 		return nil, fmt.Errorf("error creating port-forward: %w", err)
 	}
