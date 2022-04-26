@@ -151,6 +151,15 @@ test-ui-e2e:
 	./hack/install.sh
 	./test/ui-e2e-tests.sh
 
+# Run only kitchensink e2e tests
+test-kitchensink-e2e-testonly:
+	./test/kitchensink-e2e-tests.sh
+
+test-kitchensink-e2e:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	INSTALL_KAFKA="true" ./hack/install.sh
+	./test/kitchensink-e2e-tests.sh
+
 # Run all E2E tests.
 test-all-e2e:
 	./hack/install.sh
