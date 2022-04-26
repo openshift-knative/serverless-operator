@@ -28,7 +28,7 @@ const (
 	kafkaSourceName     = "smoke-ks"
 	kafkaTopicName      = "smoke-topic"
 	kafkaConsumerGroup  = "smoke-cg"
-	image               = "gcr.io/knative-samples/helloworld-go"
+	image               = "quay.io/openshift-knative/helloworld-go"
 	helloWorldService   = "helloworld-go"
 	ksvcAPIVersion      = "serving.knative.dev/v1"
 	ksvcKind            = "Service"
