@@ -11,7 +11,7 @@ import (
 
 const (
 	image          = "quay.io/openshift-knative/hello-openshift"
-	helloworldText = "Hello World!"
+	helloworldText = "Hello OpenShift!"
 )
 
 func withServiceReadyOrFail(ctx *test.Context, service *servingv1.Service) *servingv1.Service {
