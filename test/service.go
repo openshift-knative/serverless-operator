@@ -45,6 +45,26 @@ func Service(name, namespace, image string, annotations map[string]string) *serv
 	return s
 }
 
+func WithServiceReadyOrFail(ctx *Context, service *servingv1.Service) *servingv1.Service {
+	service, err := ctx.Clients.Serving.ServingV1().Services(service.Namespace).Create(context.Background(), service, metav1.CreateOptions{})
+	if err != nil {
+		ctx.T.Fatalf("Error creating ksvc: %v", err)
+	}
+
+	// Let the ksvc be deleted after test
+	ctx.AddToCleanup(func() error {
+		ctx.T.Logf("Cleaning up Knative Service '%s/%s'", service.Namespace, service.Name)
+		return ctx.Clients.Serving.ServingV1().Services(service.Namespace).Delete(context.Background(), service.Name, metav1.DeleteOptions{})
+	})
+
+	service, err = WaitForServiceState(ctx, service.Name, service.Namespace, IsServiceReady)
+	if err != nil {
+		ctx.T.Fatalf("Error waiting for ksvc readiness: %v", err)
+	}
+
+	return service
+}
+
 func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
 	service, err := CreateService(ctx, name, namespace, image)
 	if err != nil {

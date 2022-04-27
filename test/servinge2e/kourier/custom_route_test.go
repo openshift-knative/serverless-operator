@@ -40,7 +40,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	// Create Kservice with disable Annotation.
 	ksvc := test.Service(serviceName, test.Namespace, image, nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{resources.DisableRouteAnnotation: "true"}
-	ksvc = withServiceReadyOrFail(caCtx, ksvc)
+	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 
 	// Verify that operator did not create OpenShift route.
 	routes, err := caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), metav1.ListOptions{

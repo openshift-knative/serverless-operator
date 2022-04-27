@@ -19,12 +19,10 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
 	"knative.dev/serving/pkg/apis/autoscaling"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	network "knative.dev/networking/pkg"
@@ -48,24 +46,6 @@ const (
 	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
 	istioInjectKey               = "sidecar.istio.io/inject"
 )
-
-func isServiceMeshInstalled(ctx *test.Context) bool {
-	_, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource{
-		Group:    "apiextensions.k8s.io",
-		Version:  "v1",
-		Resource: "customresourcedefinitions",
-	}).Get(context.Background(), "servicemeshcontrolplanes.maistra.io", metav1.GetOptions{})
-
-	if err == nil {
-		return true
-	}
-
-	if !errors.IsNotFound(err) {
-		ctx.T.Fatalf("Error checking if servicemeshcontrolplanes.maistra.io CRD exists: %v", err)
-	}
-
-	return false
-}
 
 // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
 func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testNamespace string) {
@@ -105,7 +85,7 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 			test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 			defer test.CleanupAll(t, ctx)
 
-			if !isServiceMeshInstalled(ctx) {
+			if !test.IsServiceMeshInstalled(ctx) {
 				t.Skip("ServiceMeshControlPlane CRD not found, use \"make install-mesh\" to install ServiceMesh")
 			}
 
@@ -363,7 +343,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		jwksKsvc.ObjectMeta.Labels = map[string]string{
 			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
-		jwksKsvc = withServiceReadyOrFail(ctx, jwksKsvc)
+		jwksKsvc = test.WithServiceReadyOrFail(ctx, jwksKsvc)
 
 		smcpVersion, _, _ := test.GetServiceMeshControlPlaneVersion(ctx, "basic", serviceMeshTestNamespaceName)
 		// If "version" exists and is a v1, use the obsolete "Policy"
@@ -510,7 +490,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
-		testKsvc = withServiceReadyOrFail(ctx, testKsvc)
+		testKsvc = test.WithServiceReadyOrFail(ctx, testKsvc)
 
 		// Wait until the Route is ready and also verify the route returns a 401 or 403 without a token
 		if _, err := pkgTest.CheckEndpointState(
@@ -657,7 +637,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
 	aux := test.Service("aux", test.Namespace, image, nil)
-	aux = withServiceReadyOrFail(ctx, aux)
+	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)
 	if err != nil {

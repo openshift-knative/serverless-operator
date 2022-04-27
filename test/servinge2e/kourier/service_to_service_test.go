@@ -66,13 +66,13 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	service := test.Service(tc.name, namespace, image, tc.annotations)
 	service.ObjectMeta.Labels = tc.labels
 
-	service = withServiceReadyOrFail(ctx, service)
+	service = test.WithServiceReadyOrFail(ctx, service)
 	serviceURL := service.Status.URL.URL()
 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
 	if service.GetLabels()[network.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-		httpProxy := withServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
+		httpProxy := test.WithServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
 		serviceURL = httpProxy.Status.URL.URL()
 	}
 
