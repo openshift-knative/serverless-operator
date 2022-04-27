@@ -254,14 +254,6 @@ func getSelectorLabels(component string) map[string]string {
 		labels["eventing.knative.dev/brokerRole"] = "filter"
 	case "mt-broker-ingress":
 		labels["eventing.knative.dev/brokerRole"] = "ingress"
-	case "kafka-controller-manager":
-		labels["control-plane"] = "kafka-controller-manager"
-	case "kafka-ch-controller":
-		labels["messaging.knative.dev/channel"] = "kafka-channel"
-		labels["messaging.knative.dev/role"] = "controller"
-	case "kafka-ch-dispatcher":
-		labels["messaging.knative.dev/channel"] = "kafka-channel"
-		labels["messaging.knative.dev/role"] = "dispatcher"
 	default:
 		labels["app"] = component
 	}

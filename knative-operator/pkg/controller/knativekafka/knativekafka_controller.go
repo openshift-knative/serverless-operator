@@ -281,8 +281,6 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
-		replicasTransform(manifest.Client),
-		configMapHashTransform(manifest.Client),
 		replaceJobGenerateName(),
 		rbacProxyTranform,
 	)

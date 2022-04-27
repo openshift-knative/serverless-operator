@@ -95,8 +95,8 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		instance: makeCr(withChannelEnabled, withSourceEnabled, withDeleted),
 		exists:   []types.NamespacedName{},
 		doesNotExist: []types.NamespacedName{
-			{Name: "kafka-ch-controller", Namespace: "knative-eventing"},
-			{Name: "kafka-source-dispatcher", Namespace: "knative-eventing"},
+			{Name: "kafka-controller", Namespace: "knative-eventing"},
+			{Name: "kafka-webhook", Namespace: "knative-eventing"},
 		},
 	}}
 
@@ -709,10 +709,6 @@ func TestCheckHAComponent(t *testing.T) {
 	}, {
 		name:           "kafka webhook",
 		deploymentName: "kafka-webhook",
-		shouldFail:     true,
-	}, {
-		name:           "kafka channel dispatcher",
-		deploymentName: "kafka-ch-dispatcher",
 		shouldFail:     true,
 	}}
 	for _, tc := range cases {
