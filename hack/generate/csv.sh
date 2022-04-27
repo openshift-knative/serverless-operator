@@ -61,7 +61,7 @@ image "sugar-controller__controller"                "${eventing}-sugar-controlle
 image "eventing-webhook__eventing-webhook"          "${eventing}-webhook"
 image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${eventing}-storage-version-migration"
 image "mt-broker-controller__mt-broker-controller"  "${eventing}-mtchannel-broker"
-image "mt-broker-filter__filter"                    "${eventing}-mtbroker-filter"
+image "mt-broker-filter__filter"                    "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-mtbroker-filter"
 image "mt-broker-ingress__ingress"                  "${eventing}-mtbroker-ingress"
 image "imc-controller__controller"                  "${eventing}-channel-controller"
 image "imc-dispatcher__dispatcher"                  "${eventing}-channel-dispatcher"
