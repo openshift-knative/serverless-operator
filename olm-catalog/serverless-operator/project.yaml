@@ -28,7 +28,7 @@ dependencies:
   maistra: 2.1.0
 
   eventing: 1.2.1
-  eventing_kafka: 1.1.0
+  eventing_kafka: 1.2.1
   # eventing-kafka-broker promotion version without the `knative-v` prefix
   eventing_kafka_broker: 1.2.3
   # eventing-kafka-broker midstream branch name
