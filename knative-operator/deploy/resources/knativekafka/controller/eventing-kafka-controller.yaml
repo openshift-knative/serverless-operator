@@ -875,6 +875,7 @@ rules:
       - "*"
     resources:
       - configmaps
+      - services
     verbs:
       - get
       - list
