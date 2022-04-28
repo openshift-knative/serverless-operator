@@ -165,10 +165,10 @@ require (
 
 replace (
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220421094847-2f5934a57f07
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220331121128-d72948ffaf32
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220421085255-bd4340fb17e9
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220413035834-cc8e56c905aa
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220427101530-5a779a5c3f55
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220427170443-321d4a2b113a
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220422063503-04b2eff6d979
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220421145848-cbcc812ef96f
 )
 
 replace (
