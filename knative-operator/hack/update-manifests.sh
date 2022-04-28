@@ -71,8 +71,6 @@ git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
 # Remove the config for the new, unused channel
 git apply "$root/knative-operator/hack/004-remove_new_channel_cfg.patch"
 
-# Fix for SRVKE-1171
-git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
 git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
 
 # SRVKE-1184 Migration to Broker components
