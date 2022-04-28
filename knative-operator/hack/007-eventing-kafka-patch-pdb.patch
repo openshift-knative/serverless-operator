@@ -4,7 +4,7 @@ index c9caae14a..5d64f171c 100644
 +++ b/knative-operator/deploy/resources/knativekafka/channel/1-channel-consolidated.yaml
 @@ -1061,7 +1061,7 @@ metadata:
    labels:
-     kafka.eventing.knative.dev/release: "v1.1.0"
+     kafka.eventing.knative.dev/release: "v1.2.1"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 0
