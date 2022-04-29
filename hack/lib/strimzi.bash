@@ -48,6 +48,7 @@ function install_strimzi_cluster {
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
           transaction.state.log.min.isr: 2
+          auto.create.topics.enable: false
           inter.broker.protocol.version: "3.1"
         storage:
           type: jbod
