@@ -88,3 +88,6 @@ git apply "$root/knative-operator/hack/014-eventing-kafka-lease-name-remapping.p
 
 # SRVKE-1162: potential fix
 git apply "$root/knative-operator/hack/016-eventing-kafka-dispatcher-probes.patch"
+
+# SRVKE-1212: disable fips until it is possible
+git apply "$root/knative-operator/hack/018-disable-fips.patch"
