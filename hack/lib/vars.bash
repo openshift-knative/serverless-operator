@@ -28,6 +28,7 @@ export CURRENT_VERSION PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
 export KNATIVE_EVENTING_HOME="${GOPATH}/src/knative.dev/eventing"
 export KNATIVE_EVENTING_KAFKA_HOME="${GOPATH}/src/knative.dev/eventing-kafka"
+export KNATIVE_EVENTING_KAFKA_BROKER_HOME="${GOPATH}/src/knative.dev/eventing-kafka-broker"
 
 export DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
 export INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
