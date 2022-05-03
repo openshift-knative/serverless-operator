@@ -20,7 +20,7 @@ function upstream_knative_eventing_kafka_e2e {
 
   # Config tracing config.
   export CONFIG_TRACING_CONFIG
-  CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
+  CONFIG_TRACING_CONFIG="test/config/100-config-tracing.yaml"
 
   # shellcheck disable=SC1091
   source "${KNATIVE_EVENTING_KAFKA_BROKER_HOME}/openshift/e2e-common.sh"
