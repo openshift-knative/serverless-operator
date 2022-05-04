@@ -1,0 +1,44 @@
+diff --git a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
+index 5943ea254..8a9b4af5e 100644
+--- a/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
++++ b/knative-operator/deploy/resources/knativekafka/broker/1-eventing-kafka-broker.yaml
+@@ -297,6 +297,7 @@ spec:
+             - "java"
+           args:
+             - "-Dlogback.configurationFile=/etc/logging/config.xml"
++            - "-Dcom.redhat.fips=false"
+             - "-jar"
+             - "/app/app.jar"
+           # TODO set resources (limits and requests)
+@@ -453,6 +454,7 @@ spec:
+             - "java"
+           args:
+             - "-Dlogback.configurationFile=/etc/logging/config.xml"
++            - "-Dcom.redhat.fips=false"
+             - "-jar"
+             - "/app/app.jar"
+           # TODO set resources (limits and requests)
+diff --git a/knative-operator/deploy/resources/knativekafka/sink/1-eventing-kafka-sink.yaml b/knative-operator/deploy/resources/knativekafka/sink/1-eventing-kafka-sink.yaml
+index b6f2682fa..e0e6359c3 100644
+--- a/knative-operator/deploy/resources/knativekafka/sink/1-eventing-kafka-sink.yaml
++++ b/knative-operator/deploy/resources/knativekafka/sink/1-eventing-kafka-sink.yaml
+@@ -243,6 +243,7 @@ spec:
+             - "java"
+           args:
+             - "-Dlogback.configurationFile=/etc/logging/config.xml"
++            - "-Dcom.redhat.fips=false"
+             - "-jar"
+             - "/app/app.jar"
+           # TODO set resources (limits and requests)
+diff --git a/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml b/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
+index 8237afdb6..8a70302b9 100644
+--- a/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
++++ b/knative-operator/deploy/resources/knativekafka/source/1-eventing-kafka-source.yaml
+@@ -297,6 +297,7 @@ spec:
+             - "java"
+           args:
+             - "-Dlogback.configurationFile=/etc/logging/config.xml"
++            - "-Dcom.redhat.fips=false"
+             - "-jar"
+             - "/app/app.jar"
+           # TODO set resources (limits and requests)
