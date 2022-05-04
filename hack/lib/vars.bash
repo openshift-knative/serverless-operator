@@ -11,6 +11,8 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
 
+export STRIMZI_VERSION=0.28.0
+
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
