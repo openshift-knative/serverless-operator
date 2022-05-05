@@ -30,7 +30,7 @@ var (
 			Name: kafkaChannelTemplateConfigMapName,
 		},
 		Data: map[string]string{
-			"channelTemplateSpec": fmt.Sprintf(`
+			"channel-template-spec": fmt.Sprintf(`
 apiVersion: %q
 kind: %q`, channelAPIVersion, kafkaChannelKind),
 		},
