@@ -8,7 +8,7 @@ function upstream_knative_eventing_kafka_e2e {
 
   local random_ns
 
-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_KAFKA_VERSION}:knative-eventing-kafka-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-kafka-test-{{.Name}}"
 
   cd "$KNATIVE_EVENTING_KAFKA_HOME"
 
