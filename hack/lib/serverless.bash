@@ -279,7 +279,7 @@ function ensure_kafka_channel_default {
         "default-ch-config": "'"${defaultChConfig//$'\n'/\\n}"'"
       },
       "config-br-default-channel": {
-        "channelTemplateSpec": "'"${channelTemplateSpec//$'\n'/\\n}"'"
+        "channel-template-spec": "'"${channelTemplateSpec//$'\n'/\\n}"'"
       }
     }
   }

@@ -10,7 +10,7 @@ data:
   default.topic.replication.factor: "{{ .kafkaBroker.replicationFactor }}"
   {{ end }}
   {{ if .kafkaChannel }}
-  channelTemplateSpec: |
+  channel-template-spec: |
     apiVersion: messaging.knative.dev/{{ .kafkaChannel.version }}
     kind: KafkaChannel
     spec:
@@ -18,7 +18,7 @@ data:
       replicationFactor: {{ .kafkaChannel.replicationFactor }}
   {{ end }}
   {{ if .inMemoryChannel }}
-  channelTemplateSpec: |
+  channel-template-spec: |
     apiVersion: messaging.knative.dev/{{ .inMemoryChannel.version }}
     kind: InMemoryChannel
   {{ end}}
