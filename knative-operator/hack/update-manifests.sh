@@ -86,3 +86,6 @@ download_kafka controller "${kafka_controller_files[@]}"
 download_kafka broker "${kafka_broker_files[@]}"
 download_kafka sink "${kafka_sink_files[@]}"
 download_kafka source "${kafka_source_files[@]}"
+
+# For now we remove the CRDs, since the "broker" does not yet do anything with them
+git apply "$root/knative-operator/hack/003-broker-remove-duplicated-crds.patch"
