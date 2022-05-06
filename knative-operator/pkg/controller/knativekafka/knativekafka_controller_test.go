@@ -107,7 +107,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				t.Fatalf("failed to load KafkaChannel manifest: %v", err)
 			}
 
-			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/source/1-eventing-kafka-source.yaml"))
+			kafkaSourceManifest, err := mf.ManifestFrom(mf.Path("testdata/source/eventing-kafka-source.yaml"))
 			if err != nil {
 				t.Fatalf("failed to load KafkaSource manifest: %v", err)
 			}
