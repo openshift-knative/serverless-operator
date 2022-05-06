@@ -645,7 +645,7 @@ spec:
                       - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-webhook-kafka"
                       - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
-                        value: "docker.io/aliok/post-install-556eadd8a59c2213d960089c7a8fad4a@sha256:4fc202b0b094be7332616a87280af735dd57b7e610101dc9501e81489ca81aa0"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-post-install"
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
                       - name: "CURRENT_VERSION"
@@ -884,7 +884,7 @@ spec:
     - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
       image: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-webhook-kafka"
     - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
-      image: "docker.io/aliok/post-install-556eadd8a59c2213d960089c7a8fad4a@sha256:4fc202b0b094be7332616a87280af735dd57b7e610101dc9501e81489ca81aa0"
+      image: "registry.ci.openshift.org/openshift/knative-v1.2.3:knative-eventing-kafka-broker-post-install"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-v1.2.1:knative-eventing-storage-version-migration"
   replaces: serverless-operator.v1.22.0
