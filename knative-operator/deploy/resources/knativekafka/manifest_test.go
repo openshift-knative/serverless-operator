@@ -25,7 +25,7 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path:  "./channel/2-channel-post-install.yaml",
 		fails: false,
 	}, {
-		path:  "./source/1-eventing-kafka-source.yaml",
+		path:  "./source/eventing-kafka-source.yaml",
 		fails: false,
 	}, {
 		// we have this file not numbered, because we manually put it in
@@ -33,13 +33,13 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path:  "./controller/eventing-kafka-post-install.yaml",
 		fails: false,
 	}, {
-		path:  "./controller/1-eventing-kafka-controller.yaml",
+		path:  "./controller/eventing-kafka-controller.yaml",
 		fails: false,
 	}, {
-		path:  "./broker/1-eventing-kafka-broker.yaml",
+		path:  "./broker/eventing-kafka-broker.yaml",
 		fails: false,
 	}, {
-		path:  "./sink/1-eventing-kafka-sink.yaml",
+		path:  "./sink/eventing-kafka-sink.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",

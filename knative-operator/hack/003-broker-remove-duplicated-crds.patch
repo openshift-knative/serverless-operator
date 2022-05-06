@@ -1,12 +1,11 @@
-diff --git a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-index e3beb0ea5..475a9fb84 100644
---- a/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-+++ b/knative-operator/deploy/resources/knativekafka/controller/1-eventing-kafka-controller.yaml
-@@ -47,272 +47,6 @@ metadata:
+diff --git a/knative-operator/deploy/resources/knativekafka/controller/eventing-kafka-controller.yaml b/knative-operator/deploy/resources/knativekafka/controller/eventing-kafka-controller.yaml
+index 9b79327ca..07f1b4ee3 100644
+--- a/knative-operator/deploy/resources/knativekafka/controller/eventing-kafka-controller.yaml
++++ b/knative-operator/deploy/resources/knativekafka/controller/eventing-kafka-controller.yaml
+@@ -356,274 +356,6 @@ metadata:
  data:
    bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
- 
-----
+ ---
 -# Copyright 2020 The Knative Authors
 -#
 -# Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +36,7 @@ index e3beb0ea5..475a9fb84 100644
 -      served: true
 -      storage: true
 -      subresources:
--        status: {}
+-        status: { }
 -      schema:
 -        openAPIV3Schema:
 -          description: 'KafkaChannel is a resource representing a Channel that is backed by a topic of an Apache Kafka cluster.'
@@ -213,6 +212,9 @@ index e3beb0ea5..475a9fb84 100644
 -                    namespace:
 -                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
 -                      type: string
+-                deadLetterSinkUri:
+-                  description: DeadLetterSinkURI is the resolved URI of the dead letter sink that will be used as a fallback when not specified by Subscriptions.
+-                  type: string
 -                observedGeneration:
 -                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
 -                  type: integer
@@ -264,14 +266,14 @@ index e3beb0ea5..475a9fb84 100644
 -  conversion:
 -    strategy: Webhook
 -    webhook:
--      conversionReviewVersions: ["v1", "v1beta1"]
+-      conversionReviewVersions: [ "v1", "v1beta1" ]
 -      clientConfig:
 -        service:
 -          name: kafka-webhook
 -          namespace: knative-eventing
+-
 ----
--
--
- ---
- # Copyright 2020 The Knative Authors
- #
+----
+ apiVersion: v1
+ kind: ConfigMap
+ metadata:
