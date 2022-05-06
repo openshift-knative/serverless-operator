@@ -1,3 +1,6 @@
+---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,13 +14,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 data:
   config-kafka-broker-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -115,8 +119,9 @@ data:
     idleTimeout=10000
   config-kafka-broker-httpserver.properties: |
     idleTimeout=0
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -130,12 +135,13 @@ data:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 rules:
   - apiGroups:
       - "*"
@@ -145,8 +151,9 @@ rules:
       - get
       - list
       - watch
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -160,15 +167,17 @@ rules:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: knative-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
-
+    kafka.eventing.knative.dev/release: v1.2.3
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -182,12 +191,13 @@ metadata:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-broker-data-plane
@@ -196,8 +206,9 @@ roleRef:
   kind: ClusterRole
   name: knative-kafka-broker-data-plane
   apiGroup: rbac.authorization.k8s.io
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -211,6 +222,7 @@ roleRef:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -218,7 +230,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-dispatcher
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 spec:
   selector:
     matchLabels:
@@ -228,8 +240,25 @@ spec:
       name: kafka-broker-dispatcher
       labels:
         app: kafka-broker-dispatcher
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: v1.2.3
     spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-broker-dispatcher
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: kafka-broker-dispatcher
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       serviceAccountName: knative-kafka-broker-data-plane
       securityContext:
         runAsNonRoot: true
@@ -297,6 +326,7 @@ spec:
             - "java"
           args:
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
+            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
@@ -310,8 +340,10 @@ spec:
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
-            tcpSocket:
+            httpGet:
               port: 9090
+              path: /metrics
+              scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
@@ -330,7 +362,7 @@ spec:
           configMap:
             name: kafka-broker-brokers-triggers
         - name: cache
-          emptyDir: {}
+          emptyDir: { }
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -341,8 +373,9 @@ spec:
       dnsConfig:
         options:
           - name: single-request-reopen
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -356,6 +389,7 @@ spec:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -363,7 +397,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 spec:
   selector:
     matchLabels:
@@ -373,12 +407,16 @@ spec:
       name: kafka-broker-receiver
       labels:
         app: kafka-broker-receiver
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: v1.2.3
     spec:
-      serviceAccountName: knative-kafka-broker-data-plane
-      securityContext:
-        runAsNonRoot: true
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-broker-receiver
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -388,6 +426,9 @@ spec:
                     app: kafka-broker-receiver
                 topologyKey: kubernetes.io/hostname
               weight: 100
+      serviceAccountName: knative-kafka-broker-data-plane
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: kafka-broker-receiver
           image: TO_BE_REPLACED
@@ -453,6 +494,7 @@ spec:
             - "java"
           args:
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
+            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
@@ -490,7 +532,7 @@ spec:
           configMap:
             name: config-kafka-broker-data-plane
         - name: cache
-          emptyDir: {}
+          emptyDir: { }
         - name: kafka-broker-config-logging
           configMap:
             name: kafka-config-logging
@@ -499,6 +541,7 @@ spec:
             name: config-tracing
       restartPolicy: Always
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -506,7 +549,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 spec:
   selector:
     app: kafka-broker-receiver
@@ -520,64 +563,3 @@ spec:
       protocol: TCP
       targetPort: 9090
 ---
-
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-kafka-source-defaults
-  namespace: knative-eventing
-  labels:
-    kafka.eventing.knative.dev/release: devel
-  annotations:
-    knative.dev/example-checksum: "b6ed351d"
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # autoscalingClass is the autoscaler class name to use.
-    # valid value: keda.autoscaling.knative.dev
-    # autoscalingClass: ""
-
-    # minScale is the minimum number of replicas to scale down to.
-    # minScale: "1"
-
-    # maxScale is the maximum number of replicas to scale up to.
-    # maxScale: "1"
-
-    # pollingInterval is the interval in seconds KEDA uses to poll metrics.
-    # pollingInterval: "30"
-
-    # cooldownPeriod is the period of time in seconds KEDA waits until it scales down.
-    # cooldownPeriod: "300"
-
-    # kafkaLagThreshold is the lag (ie. number of messages in a partition) threshold for KEDA to scale up sources.
-    # kafkaLagThreshold: "10"
