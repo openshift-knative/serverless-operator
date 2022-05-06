@@ -52,7 +52,6 @@ git apply "$root/knative-operator/hack/001-eventing-kafka-remove_hpa.patch"
 git apply "$root/knative-operator/hack/007-eventing-kafka-patch-pdb.patch"
 
 # Fix for SRVKE-1171
-git apply "$root/knative-operator/hack/011-eventing-kafkachannel-dead-letter-sink-uri.patch"
 git apply "$root/knative-operator/hack/012-eventing-kafkachannel-addressable-resolver-binding.patch"
 
 function download_kafka {
