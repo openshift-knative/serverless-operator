@@ -262,7 +262,6 @@ spec:
             - "java"
           args:
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
@@ -324,6 +323,10 @@ spec:
   ports:
     - name: http
       port: 80
+      protocol: TCP
+      targetPort: 8080
+    - name: http-container
+      port: 8080
       protocol: TCP
       targetPort: 8080
     - name: http-metrics
