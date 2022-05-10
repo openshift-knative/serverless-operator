@@ -78,7 +78,7 @@ kafka_image "kafka-controller__controller"                       "${eventing_kaf
 kafka_image "kafka-sink-receiver__kafka-sink-receiver"           "${eventing_kafka_broker}-broker-receiver"
 kafka_image "kafka-source-dispatcher__kafka-source-dispatcher"   "${eventing_kafka_broker}-broker-dispatcher"
 kafka_image "kafka-webhook-eventing__kafka-webhook-eventing"     "${eventing_kafka_broker}-broker-webhook-kafka"
-kafka_image "kafka-controller-post-install__post-install"        "${eventing_kafka_broker}-broker-post-install"
+kafka_image "kafka-controller-post-install__post-install"        "quay.io/pierdipi/post-install-556eadd8a59c2213d960089c7a8fad4a@sha256:5985f9fd2a488cd0f7e49c010877e826abd0ee42c7815f93ed59b62cc0e1b387"
 kafka_image "knative-kafka-storage-version-migrator__migrate"    "${eventing}-storage-version-migration" # Use eventing core image
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
