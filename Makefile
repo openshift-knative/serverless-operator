@@ -195,6 +195,12 @@ release-files:
 	./hack/generate/dockerfile.sh \
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
+	./hack/generate/dockerfile.sh \
+  	templates/index.Dockerfile \
+  	olm-catalog/serverless-operator/index/Dockerfile
+	./hack/generate/index.sh \
+		templates/index.yaml \
+		olm-catalog/serverless-operator/index/configs/index.yaml
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
