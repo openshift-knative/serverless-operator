@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+	"os"
+	"path/filepath"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -93,6 +95,12 @@ func (p *prober) deploySender() {
 
 func (p *prober) removeSender() {
 	p.log.Info("Remove of sender deployment: ", sender.Name)
+
+	// Before removing the sender same logs.
+	
+	if err := p.client.ExportLogs(filepath.Join(os.Getenv("ARTIFACTS"), "upgrade")); err != nil {
+		p.client.T.Logf("Failed to export logs: %v", err)	
+	}
 
 	foreground := metav1.DeletePropagationForeground
 	dOpts := metav1.DeleteOptions{PropagationPolicy: &foreground}
