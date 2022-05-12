@@ -5,8 +5,8 @@ COPY --from=quay.io/operator-framework/opm:latest /bin/opm /bin/opm
 # Copy declarative config root into image at /configs
 COPY configs /configs
 
-RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml &&
-  /bin/opm --skip-tls-verify render -o yaml registry.ci.openshift.org/openshift/openshift-serverless-v__PREVIOUS_VERSION__:serverless-stop-bundle \
+RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
+RUN /bin/opm --skip-tls-verify render -o yaml registry.ci.openshift.org/openshift/openshift-serverless-v__PREVIOUS_VERSION__:serverless-stop-bundle \
   registry.ci.openshift.org/openshift/openshift-serverless-nightly:serverless-bundle >> /configs/index.yaml
 
 # The base image is expected to contain
