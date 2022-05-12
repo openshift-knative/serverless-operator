@@ -88,12 +88,19 @@ git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
 url="https://github.com/knative-sandbox/net-kourier/releases/download/knative-v$(metadata.get dependencies.kourier)/kourier.yaml"
-kourier_file="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/kourier.yaml"
+kourier_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+kourier_file="$kourier_dir/0-kourier.yaml"
 wget --no-check-certificate "$url" -O "$kourier_file"
 # TODO: [SRVKS-610] These values should be replaced by operator instead of sed.
 sed -i -e 's/net-kourier-controller.knative-serving/net-kourier-controller/g' "$kourier_file"
 # Break all image references so we know our overrides work correctly.
 yaml.break_image_references "$kourier_file"
+# Download config-network.yaml for Kourier. This is necessary as kourier uses different namespace (knative-serving-ingress).
+config_network_url="https://raw.githubusercontent.com/knative/networking/release-$(versions.major_minor "${KNATIVE_SERVING_VERSION}")/config/config-network.yaml"
+config_network="$kourier_dir/1-config-network.yaml"
+wget --no-check-certificate "$config_network_url" -O "$config_network"
+sed -i -e '/labels:$/a \    app.kubernetes.io\/component: kourier' "$config_network"
+sed -i -e '/labels:$/a \    networking.knative.dev\/ingress-provider: kourier' "$config_network"
 
 # Add networkpolicy for webhook when net-istio is enabled.
 git apply "$root/openshift-knative-operator/hack/007-networkpolicy-mesh.patch"

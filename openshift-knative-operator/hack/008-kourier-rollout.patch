@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/kourier.yaml b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/kourier.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-kourier.yaml b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-kourier.yaml
 index 7eb03ed2..019d4d18 100644
---- a/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/kourier.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/kourier.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-kourier.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-kourier.yaml
 @@ -260,6 +260,11 @@ metadata:
      app.kubernetes.io/name: knative-serving
      serving.knative.dev/release: "v1.2.0"
