@@ -53,6 +53,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v4
         with:
+          path: ./src/github.com/${{ github.repository }}
           branch: auto/update-generated-files
           title: "Run make generated-files"
           commit-message: "Run make generated-files"
