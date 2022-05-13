@@ -209,7 +209,7 @@ function run_rolling_upgrade_tests {
     "--csv=${CURRENT_CSV}" \
     "--servingversion=${KNATIVE_SERVING_VERSION}" \
     "--eventingversion=${KNATIVE_EVENTING_VERSION}" \
-    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_VERSION}" \
+    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
     --resolvabledomain \
     --https)
 

@@ -1,3 +1,6 @@
+---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,13 +14,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 data:
   config-kafka-sink-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -50,8 +54,9 @@ data:
     # transactional.id=null
   config-kafka-sink-httpserver.properties: |
     idleTimeout=0
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,12 +70,13 @@ data:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 rules:
   - apiGroups:
       - "*"
@@ -80,8 +86,9 @@ rules:
       - get
       - list
       - watch
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -95,15 +102,17 @@ rules:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "devel"
-
+    kafka.eventing.knative.dev/release: v1.2.3
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,12 +126,13 @@ metadata:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -131,8 +141,9 @@ roleRef:
   kind: ClusterRole
   name: knative-kafka-sink-data-plane
   apiGroup: rbac.authorization.k8s.io
-
 ---
+---
+
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -146,6 +157,7 @@ roleRef:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -153,7 +165,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 spec:
   selector:
     matchLabels:
@@ -163,12 +175,16 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        kafka.eventing.knative.dev/release: "devel"
+        kafka.eventing.knative.dev/release: v1.2.3
     spec:
-      serviceAccountName: knative-kafka-sink-data-plane
-      securityContext:
-        runAsNonRoot: true
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-sink-receiver
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -178,6 +194,9 @@ spec:
                     app: kafka-sink-receiver
                 topologyKey: kubernetes.io/hostname
               weight: 100
+      serviceAccountName: knative-kafka-sink-data-plane
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: kafka-sink-receiver
           image: TO_BE_REPLACED
@@ -280,7 +299,7 @@ spec:
           configMap:
             name: config-kafka-sink-data-plane
         - name: cache
-          emptyDir: {}
+          emptyDir: { }
         - name: kafka-sink-config-logging
           configMap:
             name: kafka-config-logging
@@ -289,6 +308,7 @@ spec:
             name: config-tracing
       restartPolicy: Always
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -296,7 +316,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: "devel"
+    kafka.eventing.knative.dev/release: v1.2.3
 spec:
   selector:
     app: kafka-sink-receiver
@@ -305,11 +325,12 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 8080
+    - name: http-container
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
     - name: http-metrics
       port: 9090
       protocol: TCP
       targetPort: 9090
----
-
-
 ---

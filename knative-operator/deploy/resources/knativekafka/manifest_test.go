@@ -19,27 +19,22 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		path  string
 		fails bool
 	}{{
-		path:  "./channel/1-channel-consolidated.yaml",
+		path:  "./channel/eventing-kafka-channel.yaml",
 		fails: false,
 	}, {
-		path:  "./channel/2-channel-post-install.yaml",
+		path:  "./source/eventing-kafka-source.yaml",
 		fails: false,
 	}, {
-		path:  "./source/1-eventing-kafka-source.yaml",
-		fails: false,
-	}, {
-		// we have this file not numbered, because we manually put it in
-		// in releaase-1.2 (upstream) we will download the file
 		path:  "./controller/eventing-kafka-post-install.yaml",
 		fails: false,
 	}, {
-		path:  "./controller/1-eventing-kafka-controller.yaml",
+		path:  "./controller/eventing-kafka-controller.yaml",
 		fails: false,
 	}, {
-		path:  "./broker/1-eventing-kafka-broker.yaml",
+		path:  "./broker/eventing-kafka-broker.yaml",
 		fails: false,
 	}, {
-		path:  "./sink/1-eventing-kafka-sink.yaml",
+		path:  "./sink/eventing-kafka-sink.yaml",
 		fails: false,
 	}, {
 		path:  "./testdata/config-logging.yaml",

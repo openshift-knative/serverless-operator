@@ -37,13 +37,13 @@ var (
 		ServiceAccountName: "knative-kafka-sink-data-plane",
 	}
 
-	KafkaChannelController = Component{
-		Name:               "kafka-ch-controller",
-		ServiceAccountName: "kafka-ch-controller",
+	KafkaChannelReceiver = Component{
+		Name:               "kafka-channel-receiver",
+		ServiceAccountName: "knative-kafka-channel-data-plane",
 	}
-	KafkaChannelWebhook = Component{
-		Name:               "kafka-webhook",
-		ServiceAccountName: "kafka-webhook",
+	KafkaChannelDispatcher = Component{
+		Name:               "kafka-channel-dispatcher",
+		ServiceAccountName: "knative-kafka-channel-data-plane",
 	}
 
 	KafkaSourceDispatcher = Component{
@@ -57,9 +57,20 @@ var (
 		KafkaBrokerReceiver.Name,
 		KafkaBrokerDispatcher.Name,
 		KafkaSinkReceiver.Name,
-		KafkaChannelController.Name,
-		KafkaChannelWebhook.Name,
+		KafkaChannelReceiver.Name,
+		KafkaChannelDispatcher.Name,
 		KafkaSourceDispatcher.Name,
+	}
+
+	IndexByName = map[string]Component{
+		KafkaController.Name:        KafkaController,
+		KafkaWebhook.Name:           KafkaWebhook,
+		KafkaBrokerReceiver.Name:    KafkaBrokerReceiver,
+		KafkaBrokerDispatcher.Name:  KafkaBrokerDispatcher,
+		KafkaSinkReceiver.Name:      KafkaSinkReceiver,
+		KafkaChannelReceiver.Name:   KafkaChannelReceiver,
+		KafkaChannelDispatcher.Name: KafkaChannelDispatcher,
+		KafkaSourceDispatcher.Name:  KafkaSourceDispatcher,
 	}
 )
 
