@@ -277,7 +277,6 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
-		configureLegacyEventingKafka(instance.Spec.Channel),
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
@@ -509,35 +508,6 @@ func (r *ReconcileKnativeKafka) buildManifest(instance *serverlessoperatorv1alph
 
 func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) bool {
 	return spec.Broker.Enabled || spec.Sink.Enabled || spec.Source.Enabled || spec.Channel.Enabled
-}
-
-func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
-
-			// set the values from our operator
-			kafkacfg := EventingKafkaConfig{
-				Kafka: kafkaconfig.EKKafkaConfig{
-					Brokers:             kafkachannel.BootstrapServers,
-					AuthSecretName:      kafkachannel.AuthSecretName,
-					AuthSecretNamespace: kafkachannel.AuthSecretNamespace,
-				},
-			}
-
-			// write to yaml
-			configBytes, err := yaml.Marshal(kafkacfg)
-			if err != nil {
-				return err
-			}
-
-			// update the config map data
-			log.Info("Found ConfigMap config-kafka, updating it with broker and auth info from spec")
-			if err := unstructured.SetNestedField(u.Object, string(configBytes), "data", "eventing-kafka"); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
 }
 
 // configureEventingKafka configures the new Knative Eventing components for Apache Kafka
