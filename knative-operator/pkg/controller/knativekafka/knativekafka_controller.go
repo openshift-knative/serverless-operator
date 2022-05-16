@@ -33,12 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
-	"sigs.k8s.io/yaml"
-
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 )
 
 const (
