@@ -33,10 +33,12 @@ require (
 	knative.dev/pkg v0.0.0-20220223180940-4fcbc1bc12e8
 	knative.dev/serving v0.29.2
 	sigs.k8s.io/controller-runtime v0.9.7
-	sigs.k8s.io/yaml v1.3.0
 )
 
-require k8s.io/klog v1.0.0 // indirect
+require (
+	k8s.io/klog v1.0.0 // indirect
+	sigs.k8s.io/yaml v1.3.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.99.0 // indirect
