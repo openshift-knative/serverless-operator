@@ -33,12 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
-	"sigs.k8s.io/yaml"
-
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 )
 
 const (
@@ -277,7 +275,6 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
 		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
-		configureLegacyEventingKafka(instance.Spec.Channel),
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
@@ -511,35 +508,6 @@ func enableControlPlaneManifest(spec serverlessoperatorv1alpha1.KnativeKafkaSpec
 	return spec.Broker.Enabled || spec.Sink.Enabled || spec.Source.Enabled || spec.Channel.Enabled
 }
 
-func configureLegacyEventingKafka(kafkachannel serverlessoperatorv1alpha1.Channel) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "ConfigMap" && u.GetName() == "config-kafka" {
-
-			// set the values from our operator
-			kafkacfg := EventingKafkaConfig{
-				Kafka: kafkaconfig.EKKafkaConfig{
-					Brokers:             kafkachannel.BootstrapServers,
-					AuthSecretName:      kafkachannel.AuthSecretName,
-					AuthSecretNamespace: kafkachannel.AuthSecretNamespace,
-				},
-			}
-
-			// write to yaml
-			configBytes, err := yaml.Marshal(kafkacfg)
-			if err != nil {
-				return err
-			}
-
-			// update the config map data
-			log.Info("Found ConfigMap config-kafka, updating it with broker and auth info from spec")
-			if err := unstructured.SetNestedField(u.Object, string(configBytes), "data", "eventing-kafka"); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
 // configureEventingKafka configures the new Knative Eventing components for Apache Kafka
 func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
@@ -603,6 +571,29 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 					return err
 				}
 			}
+		}
+
+		// configure the channel itself
+		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-channel-config" {
+			log.Info("Found ConfigMap kafka-channel-config, updating it with values from spec")
+
+			kafkaChannelConfig := spec.Channel
+			if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.BootstrapServers, "data", "bootstrap.servers"); err != nil {
+				return err
+			}
+
+			if kafkaChannelConfig.AuthSecretName != "" {
+				if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.AuthSecretName, "data", "auth.secret.ref.name"); err != nil {
+					return err
+				}
+			}
+
+			if kafkaChannelConfig.AuthSecretNamespace != "" {
+				if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.AuthSecretNamespace, "data", "auth.secret.ref.namespace"); err != nil {
+					return err
+				}
+			}
+
 		}
 		return nil
 	}

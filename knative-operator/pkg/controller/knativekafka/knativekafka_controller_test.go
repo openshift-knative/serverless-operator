@@ -7,28 +7,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/sets"
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/yaml"
-
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
@@ -200,200 +197,6 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	}
 }
 
-func TestUpdateEventingKafka(t *testing.T) {
-	tests := []struct {
-		name         string
-		obj          *unstructured.Unstructured
-		kafkaChannel v1alpha1.Channel
-		expect       *unstructured.Unstructured
-	}{{
-		name: "Update config-kafka with all arguments",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			AuthSecretName:      "my-secret",
-			BootstrapServers:    "example.com:1234",
-			AuthSecretNamespace: "my-ns",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": "kafka:\n  authSecretName: my-secret\n  authSecretNamespace: my-ns\n  brokers: example.com:1234\n",
-				},
-			},
-		},
-	}, {
-		name: "Update config-kafka with only brokers",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			BootstrapServers: "example.com:1234",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": "kafka:\n  brokers: example.com:1234\n",
-				},
-			},
-		},
-	}, {
-		name: "Update config-kafka - overwrite all arguments",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": marshalEventingKafkaConfig(EventingKafkaConfig{
-						Kafka: kafkaconfig.EKKafkaConfig{
-							Brokers:             "TO_BE_OVERWRITTEN",
-							AuthSecretName:      "TO_BE_OVERWRITTEN",
-							AuthSecretNamespace: "TO_BE_OVERWRITTEN",
-						},
-					}),
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			BootstrapServers:    "example.com:1234",
-			AuthSecretName:      "my-secret",
-			AuthSecretNamespace: "my-ns",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": "kafka:\n  authSecretName: my-secret\n  authSecretNamespace: my-ns\n  brokers: example.com:1234\n",
-				},
-			},
-		},
-	}, {
-		name: "Update config-kafka - overwrite only brokers",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": marshalEventingKafkaConfig(EventingKafkaConfig{
-						Kafka: kafkaconfig.EKKafkaConfig{
-							Brokers: "TO_BE_OVERWRITTEN",
-						},
-					}),
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			BootstrapServers: "example.com:1234",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-				"data": map[string]interface{}{
-					"eventing-kafka": "kafka:\n  brokers: example.com:1234\n",
-				},
-			},
-		},
-	}, {
-		name: "Do not update other configmaps",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-foo",
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			AuthSecretName:      "my-secret",
-			AuthSecretNamespace: "my-ns",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config-foo",
-				},
-			},
-		},
-	}, {
-		name: "Do not update other resources",
-		obj: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Secret",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-		kafkaChannel: v1alpha1.Channel{
-			AuthSecretName:      "my-secret",
-			AuthSecretNamespace: "my-ns",
-		},
-		expect: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "Secret",
-				"metadata": map[string]interface{}{
-					"name": "config-kafka",
-				},
-			},
-		},
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := configureLegacyEventingKafka(test.kafkaChannel)(test.obj)
-			if err != nil {
-				t.Fatalf("setAuthSecretNamespace/setAuthSecretName: (%v)", err)
-			}
-
-			if !cmp.Equal(test.expect, test.obj) {
-				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
-			}
-		})
-	}
-}
-
 func TestBrokerCfg(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -546,6 +349,142 @@ func TestBrokerCfg(t *testing.T) {
 	}
 }
 
+func TestChannelCfg(t *testing.T) {
+	tests := []struct {
+		name         string
+		obj          *unstructured.Unstructured
+		knativeKafka v1alpha1.KnativeKafkaSpec
+		expect       *unstructured.Unstructured
+	}{{
+		name: "Update kafka-channel-config with all arguments",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-channel-config",
+				},
+			},
+		},
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Channel: v1alpha1.Channel{
+				AuthSecretName:      "my-secret",
+				AuthSecretNamespace: "my-secret-ns",
+				BootstrapServers:    "example.com:1234",
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-channel-config",
+				},
+				"data": map[string]interface{}{
+					"bootstrap.servers":         "example.com:1234",
+					"auth.secret.ref.name":      "my-secret",
+					"auth.secret.ref.namespace": "my-secret-ns",
+				},
+			},
+		},
+	}, {
+		name: "Update kafka-broker-config with bootstrap server setting only",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-channel-config",
+				},
+			},
+		},
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Channel: v1alpha1.Channel{
+				BootstrapServers: "example.com:1234",
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-channel-config",
+				},
+				"data": map[string]interface{}{
+					"bootstrap.servers": "example.com:1234",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other configmaps",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Channel: v1alpha1.Channel{
+				BootstrapServers:    "example.com:1234",
+				AuthSecretName:      "my-secret",
+				AuthSecretNamespace: "my-secret-ns",
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-foo",
+				},
+			},
+		},
+	}, {
+		name: "Do not update other resources",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Channel: v1alpha1.Channel{
+				AuthSecretName:      "my-secret",
+				AuthSecretNamespace: "my-secret-ns",
+				BootstrapServers:    "example.com:1234",
+			},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Secret",
+				"metadata": map[string]interface{}{
+					"name": "config-kafka",
+				},
+			},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := configureEventingKafka(test.knativeKafka)(test.obj)
+			if err != nil {
+				t.Fatalf("configureKafkaChannel: (%v)", err)
+			}
+
+			if !cmp.Equal(test.expect, test.obj) {
+				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
+			}
+		})
+	}
+}
+
 func TestDisabledControllers(t *testing.T) {
 	tests := []struct {
 		name                        string
@@ -647,11 +586,6 @@ func makeEventingKafkaDeployment(t *testing.T) *unstructured.Unstructured {
 	}
 
 	return result
-}
-
-func marshalEventingKafkaConfig(kafka EventingKafkaConfig) string {
-	configBytes, _ := yaml.Marshal(kafka)
-	return string(configBytes)
 }
 
 func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
