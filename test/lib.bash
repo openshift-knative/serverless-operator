@@ -255,6 +255,11 @@ function check_serverless_alerts {
     jq -c '.data | map(select((.labels.service != "pingsource-mt-adapter") and (.labels.namespace == "'"${OPERATORS_NAMESPACE}"'" or .labels.namespace == "'"${EVENTING_NAMESPACE}"'" or .labels.namespace == "'"${SERVING_NAMESPACE}"'" or .labels.namespace == "'"${INGRESS_NAMESPACE}"'")))' > "${alerts_file}"
 
   num_alerts=$(jq 'length' "${alerts_file}")
+  num_apiremoved_alerts=$(jq '.[].labels.alertname=="APIRemovedInNextEUSReleaseInUse-quick"' "${alerts_file}" | wc -l)
+  if [ "${num_apiremoved_alerts}" = "${num_alerts}" ]; then
+    echo -e "\n\nSkip APIRemovedInNextEUSReleaseInUse-quick alerts. Please see SRVCOM-1857 and bz2079314\n"
+    return 0
+  fi
   if [ ! "${num_alerts}" = "0" ]; then
     echo -e "\n\nERROR: Non-zero number of alerts: ${num_alerts}. Check ${alerts_file}\n"
     jq . "${alerts_file}"
