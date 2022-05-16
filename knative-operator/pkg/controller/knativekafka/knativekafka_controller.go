@@ -604,6 +604,29 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				}
 			}
 		}
+
+		// configure the channel itself
+		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-channel-config" {
+			log.Info("Found ConfigMap kafka-channel-config, updating it with values from spec")
+
+			kafkaChannelConfig := spec.Channel
+			if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.BootstrapServers, "data", "bootstrap.servers"); err != nil {
+				return err
+			}
+
+			if kafkaChannelConfig.AuthSecretName != "" {
+				if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.AuthSecretName, "data", "auth.secret.ref.name"); err != nil {
+					return err
+				}
+			}
+
+			if kafkaChannelConfig.AuthSecretNamespace != "" {
+				if err := unstructured.SetNestedField(u.Object, kafkaChannelConfig.AuthSecretNamespace, "data", "auth.secret.ref.namespace"); err != nil {
+					return err
+				}
+			}
+
+		}
 		return nil
 	}
 }
