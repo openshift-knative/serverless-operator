@@ -73,6 +73,7 @@ func ChannelTest(opts ChannelTestOptions) pkgupgrade.BackgroundOperation {
 // continual manner during the whole upgrade and downgrade process asserting
 // that all event are propagated well.
 func BrokerBackedByChannelTest(opts ChannelTestOptions) pkgupgrade.BackgroundOperation {
+	//TEST
 	opts = opts.withDefaults()
 	return continualVerification(
 		"BrokerBackedByChannelContinualTest",
