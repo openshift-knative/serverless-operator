@@ -235,9 +235,13 @@ EOF
     "--catalogsource=${OLM_SOURCE}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
+    "--csvprevious=${PREVIOUS_CSV}" \
     "--servingversion=${KNATIVE_SERVING_VERSION}" \
     "--eventingversion=${KNATIVE_EVENTING_VERSION}" \
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
+    "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
+    "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS}" \
+    "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS}" \
     --resolvabledomain \
     --https)
 
@@ -246,7 +250,7 @@ EOF
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=90m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgrade -timeout=120m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
@@ -256,7 +260,7 @@ EOF
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
-    go_test_e2e -run=TestClusterUpgrade -timeout=190m "${common_opts[@]}" \
+    go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
   fi

@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 
 	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,8 +17,10 @@ const (
 	// Interval specifies the time between two polls.
 	Interval = 10 * time.Second
 	// Timeout specifies the timeout for the function PollImmediate to reach a certain status.
-	Timeout            = 5 * time.Minute
-	OperatorsNamespace = "openshift-serverless"
+	Timeout                   = 5 * time.Minute
+	OperatorsNamespace        = "openshift-serverless"
+	OLMNamespace              = "openshift-marketplace"
+	ServerlessOperatorPackage = "serverless-operator"
 )
 
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*operatorsv1alpha1.Subscription, error) {
@@ -47,4 +48,41 @@ func IsCSVSucceeded(c *operatorsv1alpha1.ClusterServiceVersion, err error) (bool
 		return false, nil
 	}
 	return c.Status.Phase == "Succeeded", err
+}
+
+func DeleteClusterServiceVersion(ctx *Context, name, namespace string) error {
+	return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+}
+
+func DeleteSubscription(ctx *Context, name, namespace string) error {
+	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+}
+
+func Subscription(subscriptionName, startingCSV string) *operatorsv1alpha1.Subscription {
+	return &operatorsv1alpha1.Subscription{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       operatorsv1alpha1.SubscriptionKind,
+			APIVersion: operatorsv1alpha1.SubscriptionCRDAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: OperatorsNamespace,
+			Name:      subscriptionName,
+		},
+		Spec: &operatorsv1alpha1.SubscriptionSpec{
+			CatalogSource:          Flags.CatalogSource,
+			CatalogSourceNamespace: OLMNamespace,
+			Package:                ServerlessOperatorPackage,
+			Channel:                Flags.Channel,
+			InstallPlanApproval:    operatorsv1alpha1.ApprovalManual,
+			StartingCSV:            startingCSV,
+		},
+	}
+}
+
+func CreateSubscription(ctx *Context, name, startingCSV string) (*operatorsv1alpha1.Subscription, error) {
+	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name, startingCSV), metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return subs, nil
 }
