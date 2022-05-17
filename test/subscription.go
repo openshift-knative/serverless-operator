@@ -70,8 +70,7 @@ func Subscription(subscriptionName string) *operatorsv1alpha1.Subscription {
 			Package:                ServerlessOperatorPackage,
 			Channel:                Flags.Channel,
 			InstallPlanApproval:    operatorsv1alpha1.ApprovalManual,
-			//TODO: Pass this as a flag, similar to --csv=serverless-operator.v1.23.0
-			StartingCSV: "serverless-operator.v1.22.0",
+			StartingCSV:            Flags.CSVPrevious,
 		},
 	}
 }
@@ -81,27 +80,5 @@ func CreateSubscription(ctx *Context, name string) (*operatorsv1alpha1.Subscript
 	if err != nil {
 		return nil, err
 	}
-	//ctx.AddToCleanup(func() error {
-	//	ctx.T.Logf("Cleaning up Subscription '%s/%s'", subs.Namespace, subs.Name)
-	//	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(subs.Namespace).Delete(context.Background(), subs.Name, metav1.DeleteOptions{})
-	//})
 	return subs, nil
 }
-
-//func WaitForSubscriptionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.Subscription, err error) (bool, error)) (*operatorsv1alpha1.Subscription, error) {
-//	var lastState *operatorsv1alpha1.Subscription
-//	var err error
-//	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-//		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(context.Background(), name, metav1.GetOptions{})
-//		return inState(lastState, err)
-//	})
-//
-//	if waitErr != nil {
-//		return lastState, fmt.Errorf("subscription %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
-//	}
-//	return lastState, nil
-//}
-//
-//func IsSubscriptionInstalledCSVPresent(s *operatorsv1alpha1.Subscription, err error) (bool, error) {
-//	return s.Status.InstalledCSV != "" && s.Status.InstalledCSV != "<none>", err
-//}

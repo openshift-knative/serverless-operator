@@ -69,7 +69,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, "serverless-operator.v1.22.0" /*test.Flags.CSV*/, test.Flags.CatalogSource)
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource)
 	if err != nil {
 		return err
 	}
@@ -78,35 +78,34 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	if _, err := test.WaitForClusterServiceVersionState(ctx, "serverless-operator.v1.22.0" /*test.Flags.CSV*/, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
+	if _, err := test.WaitForClusterServiceVersionState(ctx, test.Flags.CSVPrevious, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
 		return err
 	}
 
-	//TODO: Pass correct Serving, Eventing, Kafka version through flags, refactor
 	knativeServing := "knative-serving"
 	if _, err := v1a1test.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
-		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
+		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
 	); err != nil {
-		return fmt.Errorf("serving upgrade failed: %w", err)
+		return fmt.Errorf("serving downgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
 	if _, err := v1a1test.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
-		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
+		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
 	); err != nil {
-		return fmt.Errorf("eventing upgrade failed: %w", err)
+		return fmt.Errorf("eventing downgrade failed: %w", err)
 	}
 
 	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
-		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v")),
+		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
 	); err != nil {
-		return fmt.Errorf("knative kafka upgrade failed: %w", err)
+		return fmt.Errorf("knative kafka downgrade failed: %w", err)
 	}
 
 	return nil
