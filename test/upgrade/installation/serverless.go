@@ -53,3 +53,61 @@ func UpgradeServerless(ctx *test.Context) error {
 
 	return nil
 }
+
+func DowngradeServerless(ctx *test.Context) error {
+	const subscription = "serverless-operator"
+
+	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
+	if err := test.WaitForServerlessOperatorsDeleted(ctx); err != nil {
+		return err
+	}
+
+	if _, err := test.CreateSubscription(ctx, subscription); err != nil {
+		return err
+	}
+
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, "serverless-operator.v1.22.0" /*test.Flags.CSV*/, test.Flags.CatalogSource)
+	if err != nil {
+		return err
+	}
+
+	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
+		return err
+	}
+
+	if _, err := test.WaitForClusterServiceVersionState(ctx, "serverless-operator.v1.22.0" /*test.Flags.CSV*/, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
+		return err
+	}
+
+	//TODO: Pass correct Serving, Eventing, Kafka version through flags, refactor
+	knativeServing := "knative-serving"
+	if _, err := v1a1test.WaitForKnativeServingState(ctx,
+		knativeServing,
+		knativeServing,
+		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
+	); err != nil {
+		return fmt.Errorf("serving upgrade failed: %w", err)
+	}
+
+	knativeEventing := "knative-eventing"
+	if _, err := v1a1test.WaitForKnativeEventingState(ctx,
+		knativeEventing,
+		knativeEventing,
+		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
+	); err != nil {
+		return fmt.Errorf("eventing upgrade failed: %w", err)
+	}
+
+	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
+		"knative-kafka",
+		knativeEventing,
+		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v")),
+	); err != nil {
+		return fmt.Errorf("knative kafka upgrade failed: %w", err)
+	}
+
+	return nil
+}

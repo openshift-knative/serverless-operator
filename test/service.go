@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -220,3 +221,23 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 }
 
 func int32Ptr(i int32) *int32 { return &i }
+
+func WaitForServerlessOperatorsDeleted(ctx *Context) error {
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(context.Background(), metav1.ListOptions{})
+		if err != nil {
+			return true, err
+		}
+		for _, deployment := range existingDeployments.Items {
+			if strings.Contains(deployment.Name, "knative") {
+				return false, nil
+			}
+		}
+		return true, err
+	})
+
+	if waitErr != nil {
+		return fmt.Errorf("serverless operator dependencies not deleted in time: %w", waitErr)
+	}
+	return nil
+}

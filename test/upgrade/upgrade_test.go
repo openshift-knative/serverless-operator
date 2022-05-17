@@ -67,6 +67,13 @@ func TestServerlessUpgrade(t *testing.T) {
 					}
 				}),
 			},
+			DowngradeWith: []pkgupgrade.Operation{
+				pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
+					if err := installation.DowngradeServerless(ctx); err != nil {
+						c.T.Error("Serverless downgrade failed:", err)
+					}
+				}),
+			},
 		},
 	}
 	suite.Execute(cfg)
