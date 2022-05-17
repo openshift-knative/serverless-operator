@@ -12,133 +12,59 @@ function ensure_catalogsource_installed {
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  local rootdir pull_user
+  local rootdir csv index_image
 
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  index_image=registry.ci.openshift.org/openshift/openshift-serverless-nightly:serverless-index
 
-  # Add a user that is allowed to pull images from the registry.
-  pull_user="puller"
-  add_user "$pull_user" "puller"
-  oc -n "$OLM_NAMESPACE" policy add-role-to-user registry-viewer "$pull_user"
-  token=$(oc --kubeconfig=${pull_user}.kubeconfig whoami -t)
-
-  csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-
-  logger.debug "Create a backup of the CSV so we don't pollute the repository."
-  mkdir -p "${rootdir}/_output"
-  cp "$csv" "${rootdir}/_output/bkp.yaml"
-
-  if [ -n "$OPENSHIFT_CI" ]; then
-    # Image variables supplied by ci-operator.
-    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
-  elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-    sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
-    sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
-  fi
-
+  # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
+  # Otherwise the latest nightly build will be used for CatalogSource.
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-    logger.info 'Listing CSV content'
-    cat "$csv"
-  fi
+    index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
-  if ! oc get buildconfigs serverless-bundle -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
-    logger.info 'Create a bundle image build'
-    oc -n "${OLM_NAMESPACE}" new-build --binary \
-      --strategy=docker --name serverless-bundle
-  else
-    logger.info 'Serverless bundle image build is already created'
-  fi
+    csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
 
-  # Fetch previously created ConfigMap or remove empty file
-  oc -n "${OLM_NAMESPACE}" get configmap serverless-bundle-sha1sums \
-    -o jsonpath='{.data.serverless-bundle\.sha1sum}' \
-    > "${rootdir}/_output/serverless-bundle.sha1sum" 2>/dev/null \
-    || rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
-
-  if ! [ -f "${rootdir}/_output/serverless-bundle.sha1sum" ] || \
-      ! sha1sum --check --status "${rootdir}/_output/serverless-bundle.sha1sum"; then
-    logger.info 'Build the bundle image in the cluster-internal registry.'
-    oc -n "${OLM_NAMESPACE}" start-build serverless-bundle \
-      --from-dir "${rootdir}/olm-catalog/serverless-operator" -F
+    logger.debug "Create a backup of the CSV so we don't pollute the repository."
     mkdir -p "${rootdir}/_output"
-    find "${rootdir}/olm-catalog/serverless-operator" -type f -exec sha1sum {} + \
-      > "${rootdir}/_output/serverless-bundle.sha1sum"
-    oc -n "${OLM_NAMESPACE}" delete configmap serverless-bundle-sha1sums --ignore-not-found=true
-    oc -n "${OLM_NAMESPACE}" create configmap serverless-bundle-sha1sums \
-      --from-file="${rootdir}/_output/serverless-bundle.sha1sum"
-    rm -f "${rootdir}/_output/serverless-bundle.sha1sum"
-  else
-    logger.info 'Serverless bundle build is up-to-date.'
+    cp "$csv" "${rootdir}/_output/bkp.yaml"
+
+    if [ -n "$OPENSHIFT_CI" ]; then
+      # Image variables supplied by ci-operator.
+      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
+    elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
+    fi
+
+    cat "$csv"
+
+    build_image "serverless-bundle" "${rootdir}/olm-catalog/serverless-operator"
+
+    logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
+    mv "${rootdir}/_output/bkp.yaml" "$csv"
+
+    # TODO: Use proper secrets for OPM instead of unauthenticated user,
+    # See https://github.com/operator-framework/operator-registry/issues/919
+
+    # Allow OPM to pull the serverless-bundle from openshift-marketplace ns from internal registry.
+    oc adm policy add-role-to-group system:image-puller system:unauthenticated --namespace openshift-marketplace
+
+    local index_build_dir=${rootdir}/olm-catalog/serverless-operator/index
+
+    logger.debug "Create a backup of the index Dockerfile."
+    cp "${index_build_dir}/Dockerfile" "${rootdir}/_output/bkp.Dockerfile"
+
+    # Replace the nightly bundle reference with the previously built bundle
+    sed -i "s_\(.*\)\(registry.ci.openshift.org/openshift/openshift-serverless-nightly:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${index_build_dir}/Dockerfile"
+
+    build_image "serverless-index" "${index_build_dir}"
+
+    logger.debug 'Undo potential changes to the index Dockerfile.'
+    mv "${rootdir}/_output/bkp.Dockerfile" "${index_build_dir}/Dockerfile"
   fi
-
-  logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
-  mv "${rootdir}/_output/bkp.yaml" "$csv"
-
-  logger.debug "HACK: Allow to run the index pod as privileged so it has \
-necessary access to run the podman commands."
-  oc -n "$OLM_NAMESPACE" adm policy add-scc-to-user privileged -z default
-
-  logger.info 'Install the index deployment.'
-  # This image was built using the Dockerfile at 'olm-catalog/serverless-operator/index.Dockerfile'.
-  cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: serverless-index
-  labels:
-    app: serverless-index
-spec:
-  selector:
-    matchLabels:
-      app: serverless-index
-  template:
-    metadata:
-      labels:
-        app: serverless-index
-    spec:
-      containers:
-      - name: registry
-        image: quay.io/openshift-knative/serverless-index:v1.14.3
-        securityContext:
-          privileged: true
-        ports:
-        - containerPort: 50051
-          name: grpc
-          protocol: TCP
-        readinessProbe:
-          exec:
-            command:
-            - grpc_health_probe
-            - -addr=localhost:50051
-        command:
-        - /bin/sh
-        - -c
-        - |-
-          podman login -u $pull_user -p $token image-registry.openshift-image-registry.svc:5000 && \
-          /bin/opm registry add -d index.db --container-tool=podman --mode=replaces -b registry.ci.openshift.org/openshift/openshift-serverless-v$PREVIOUS_VERSION:serverless-stop-bundle,image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle && \
-          /bin/opm registry serve -d index.db -p 50051
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: serverless-index
-  labels:
-    app: serverless-index
-spec:
-  selector:
-    app: serverless-index
-  ports:
-    - protocol: TCP
-      port: 50051
-      targetPort: 50051
-EOF
-
-  logger.info 'Wait for the index pod to be up to avoid inconsistencies with the catalog source.'
-  oc wait deployment -n "$OLM_NAMESPACE" serverless-index --for=condition=Available --timeout=600s
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
@@ -147,7 +73,7 @@ kind: CatalogSource
 metadata:
   name: ${OPERATOR}
 spec:
-  address: serverless-index.${OLM_NAMESPACE}.svc:50051
+  image: ${index_image}
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc
@@ -155,6 +81,43 @@ EOF
 
   logger.success "CatalogSource installed successfully"
 }
+
+function build_image {
+  local name build_dir
+  name=${1:?Pass a name of image to be built as arg[1]}
+  build_dir=${2:?Pass a directory path for the build as arg[2]}
+
+  if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
+    logger.info "Create an image build for ${name}"
+    oc -n "${OLM_NAMESPACE}" new-build --binary \
+      --strategy=docker --name "$name"
+  else
+    logger.info "${name} image build is already created"
+  fi
+
+  # Fetch previously created ConfigMap or remove empty file
+  oc -n "${OLM_NAMESPACE}" get configmap "${name}-sha1sums" \
+    -o jsonpath='{.data.'"$name"'\.sha1sum}' \
+    > "${rootdir}/_output/${name}.sha1sum" 2>/dev/null \
+    || rm -f "${rootdir}/_output/${name}.sha1sum"
+
+  if ! [ -f "${rootdir}/_output/${name}.sha1sum" ] || \
+      ! sha1sum --check --status "${rootdir}/_output/${name}.sha1sum"; then
+    logger.info 'Build the image in the cluster-internal registry.'
+    oc -n "${OLM_NAMESPACE}" start-build "${name}" \
+      --from-dir "${build_dir}" -F
+    mkdir -p "${rootdir}/_output"
+    find "${build_dir}" -type f -exec sha1sum {} + \
+      > "${rootdir}/_output/${name}.sha1sum"
+    oc -n "${OLM_NAMESPACE}" delete configmap "${name}-sha1sums" --ignore-not-found=true
+    oc -n "${OLM_NAMESPACE}" create configmap "${name}-sha1sums" \
+      --from-file="${rootdir}/_output/${name}.sha1sum"
+    rm -f "${rootdir}/_output/${name}.sha1sum"
+  else
+    logger.info "${name} build is up-to-date."
+  fi
+}
+
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
