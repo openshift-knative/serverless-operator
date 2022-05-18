@@ -232,10 +232,12 @@ function teardown_opentelemetry_tracing {
     oc delete -n openshift-operators "${csv}" --ignore-not-found
   fi
 
+  # Do not remove Jaeger if it's part of Service Mesh
   if [[ $(oc get crd servicemeshcontrolplanes.maistra.io --no-headers | wc -l) != 1 ]]; then
-    # Do not remove Jaeger if it's part of Service Mesh
-    oc delete -n "${TRACING_NAMESPACE}" jaeger.jaegertracing.io jaeger
-    timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment jaeger --no-headers | wc -l) != 0 ]]"
+    if [[ $(oc get crd jaeger.jaegertracing.io --no-headers | wc -l) != 0 ]]; then
+      oc delete -n "${TRACING_NAMESPACE}" jaeger.jaegertracing.io jaeger --ignore-not-found
+      timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment jaeger --no-headers | wc -l) != 0 ]]"
+    fi
     oc delete -n openshift-operators subscriptions.operators.coreos.com jaeger-product --ignore-not-found
     if oc get csv -n openshift-operators -oname | grep jaeger-operator &>/dev/null; then
       csv=$(oc get csv -n openshift-operators -oname | grep jaeger-operator)
