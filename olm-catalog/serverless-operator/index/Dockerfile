@@ -7,7 +7,7 @@ COPY configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN /bin/opm --skip-tls-verify render -o yaml registry.ci.openshift.org/knative/openshift-serverless-v1.22.0:serverless-stop-bundle \
-  registry.ci.openshift.org/openshift/openshift-serverless-nightly:serverless-bundle >> /configs/index.yaml
+  registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-bundle >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
