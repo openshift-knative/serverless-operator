@@ -58,7 +58,7 @@ function install_catalogsource {
     cp "${index_build_dir}/Dockerfile" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace the nightly bundle reference with the previously built bundle
-    sed -i "s_\(.*\)\(registry.ci.openshift.org/openshift/openshift-serverless-nightly:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${index_build_dir}/Dockerfile"
+    sed -i "s_\(.*\)\(registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${index_build_dir}/Dockerfile"
 
     build_image "serverless-index" "${index_build_dir}"
 
