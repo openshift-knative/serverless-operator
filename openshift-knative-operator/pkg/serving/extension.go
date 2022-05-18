@@ -63,7 +63,7 @@ func (e *extension) Manifests(ks operatorv1alpha1.KComponent) ([]mf.Manifest, er
 }
 
 func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transformer {
-	return append([]mf.Transformer{
+	tf := []mf.Transformer{
 		common.InjectCommonLabelIntoNamespace(),
 		common.InjectEnvironmentIntoDeployment("controller", "controller",
 			corev1.EnvVar{Name: "HTTP_PROXY", Value: os.Getenv("HTTP_PROXY")},
@@ -72,7 +72,13 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 		),
 		overrideKourierNamespace(ks),
 		addHTTPOptionDisabledEnvValue(),
-	}, monitoring.GetServingTransformers(ks)...)
+	}
+
+	if err := checkMinimumVersion(e.kubeclient.Discovery(), "1.21.0"); err != nil {
+		tf = append(tf, common.DowngradePodDisruptionBudget())
+	}
+
+	return append(tf, monitoring.GetServingTransformers(ks)...)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
