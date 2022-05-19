@@ -7,12 +7,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/utils/pointer"
 	kafkasinksv1alpha1 "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 	kafkasourcesv1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/ptr"
 )
 
 func init() {
@@ -62,10 +62,10 @@ func TestKafkaUserPermissions(t *testing.T) {
 	kafkaSink := &kafkasinksv1alpha1.KafkaSink{
 		Spec: kafkasinksv1alpha1.KafkaSinkSpec{
 			Topic:             "my-topic",
-			NumPartitions:     pointer.Int32Ptr(10),
+			NumPartitions:     ptr.Int32(10),
 			ReplicationFactor: func(rf int16) *int16 { return &rf }(1),
 			BootstrapServers:  []string{"myserver:9092"},
-			ContentMode:       pointer.StringPtr(kafkasinksv1alpha1.ModeStructured),
+			ContentMode:       ptr.String(kafkasinksv1alpha1.ModeStructured),
 		},
 	}
 
