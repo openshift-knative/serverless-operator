@@ -68,17 +68,6 @@ EOF
   oc wait deployment --all --timeout=600s --for=condition=Available -n "${TRACING_NAMESPACE}"
 }
 
-function teardown_zipkin_tracing {
-  logger.warn 'Teardown Zipkin'
-
-  oc delete service    -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
-  oc delete deployment -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
-
-  timeout 600 "[[ \$(oc get pods -n ${TRACING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-
-  logger.success 'Tracing is uninstalled.'
-}
-
 function install_opentelemetry_tracing {
   logger.info "Install OpenTelemetry Tracing"
   if [[ $(oc get crd servicemeshcontrolplanes.maistra.io --no-headers | wc -l) != 1 ]]; then
@@ -210,17 +199,14 @@ function get_tracing_endpoint {
 }
 
 function teardown_tracing {
-  if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
-    teardown_zipkin_tracing
-  else
-    teardown_opentelemetry_tracing
-  fi
-}
-
-function teardown_opentelemetry_tracing {
-  logger.warn 'Teardown OpenTelemetry Tracing'
+  logger.warn 'Teardown Tracing'
   local csv
 
+  # Teardown Zipkin
+  oc delete service    -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
+  oc delete deployment -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
+
+  # Teardown OpenTelemetry
   if oc get -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector &>/dev/null; then
     oc delete -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector
     timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment cluster-collector-collector --no-headers | wc -l) != 0 ]]"
@@ -234,7 +220,7 @@ function teardown_opentelemetry_tracing {
 
   # Do not remove Jaeger if it's part of Service Mesh
   if [[ $(oc get crd servicemeshcontrolplanes.maistra.io --no-headers | wc -l) != 1 ]]; then
-    if [[ $(oc get crd jaeger.jaegertracing.io --no-headers | wc -l) != 0 ]]; then
+    if [[ $(oc get -n "${TRACING_NAMESPACE}" jaeger.jaegertracing.io jaeger --no-headers | wc -l) != 0 ]]; then
       oc delete -n "${TRACING_NAMESPACE}" jaeger.jaegertracing.io jaeger --ignore-not-found
       timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment jaeger --no-headers | wc -l) != 0 ]]"
     fi
@@ -244,6 +230,8 @@ function teardown_opentelemetry_tracing {
       oc delete -n openshift-operators "${csv}" --ignore-not-found
     fi
   fi
+
+  timeout 600 "[[ \$(oc get pods -n ${TRACING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
 
   logger.success 'Tracing is uninstalled.'
 }
