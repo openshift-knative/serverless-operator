@@ -33,5 +33,5 @@ dependencies:
   eventing_kafka_broker: 1.2.3
   # eventing-kafka-broker midstream branch name
   eventing_kafka_broker_artifacts_branch: release-v1.2
-  cli: 1.1.0
+  cli: 1.2.0
   operator: 1.2.2
