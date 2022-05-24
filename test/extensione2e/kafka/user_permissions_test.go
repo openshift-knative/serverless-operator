@@ -3,19 +3,23 @@ package knativekafkae2e
 import (
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-
-	"github.com/openshift-knative/serverless-operator/test"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+	kafkasinksv1alpha1 "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
+	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 	kafkasourcesv1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/ptr"
 )
 
 func init() {
 	kafkasourcesv1beta1.AddToScheme(scheme.Scheme)
+	kafkachannelv1beta1.AddToScheme(scheme.Scheme)
+	kafkabindingv1beta1.AddToScheme(scheme.Scheme)
+	kafkasinksv1alpha1.AddToScheme(scheme.Scheme)
 }
 
 func TestKafkaUserPermissions(t *testing.T) {
@@ -26,11 +30,10 @@ func TestKafkaUserPermissions(t *testing.T) {
 	defer test.CleanupAll(t, paCtx, editCtx, viewCtx)
 
 	kafkaSourcesGVR := kafkasourcesv1beta1.SchemeGroupVersion.WithResource("kafkasources")
+	kafkaChannelsGVR := kafkachannelv1beta1.SchemeGroupVersion.WithResource("kafkachannels")
+	kafkaSinksGVR := kafkasinksv1alpha1.SchemeGroupVersion.WithResource("kafkasinks")
 
 	kafkaSource := &kafkasourcesv1beta1.KafkaSource{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "my-kafka-binding",
-		},
 		Spec: kafkasourcesv1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: kafkabindingv1beta1.KafkaAuthSpec{
 				BootstrapServers: []string{"myserver:9092"},
@@ -49,31 +52,62 @@ func TestKafkaUserPermissions(t *testing.T) {
 		},
 	}
 
+	kafkaChannel := &kafkachannelv1beta1.KafkaChannel{
+		Spec: kafkachannelv1beta1.KafkaChannelSpec{
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		},
+	}
+
+	kafkaSink := &kafkasinksv1alpha1.KafkaSink{
+		Spec: kafkasinksv1alpha1.KafkaSinkSpec{
+			Topic:             "my-topic",
+			NumPartitions:     ptr.Int32(10),
+			ReplicationFactor: func(rf int16) *int16 { return &rf }(1),
+			BootstrapServers:  []string{"myserver:9092"},
+			ContentMode:       ptr.String(kafkasinksv1alpha1.ModeStructured),
+		},
+	}
+
 	objects := map[schema.GroupVersionResource]*unstructured.Unstructured{
-		kafkaSourcesGVR: {},
+		kafkaSourcesGVR:  {},
+		kafkaChannelsGVR: {},
+		kafkaSinksGVR:    {},
 	}
 
 	if err := scheme.Scheme.Convert(kafkaSource, objects[kafkaSourcesGVR], nil); err != nil {
 		t.Fatalf("Failed to convert KafkaSource: %v", err)
+	}
+	if err := scheme.Scheme.Convert(kafkaChannel, objects[kafkaChannelsGVR], nil); err != nil {
+		t.Fatalf("Failed to convert KafkaChannel: %v", err)
+	}
+	if err := scheme.Scheme.Convert(kafkaSink, objects[kafkaSinksGVR], nil); err != nil {
+		t.Fatalf("Failed to convert KafkaSink: %v", err)
 	}
 
 	tests := []test.UserPermissionTest{{
 		Name:        "project admin user",
 		UserContext: paCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaSourcesGVR: test.AllowAll,
+			kafkaSourcesGVR:  test.AllowAll,
+			kafkaChannelsGVR: test.AllowAll,
+			kafkaSinksGVR:    test.AllowAll,
 		},
 	}, {
 		Name:        "edit user",
 		UserContext: editCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaSourcesGVR: test.AllowAll,
+			kafkaSourcesGVR:  test.AllowAll,
+			kafkaChannelsGVR: test.AllowAll,
+			kafkaSinksGVR:    test.AllowAll,
 		},
 	}, {
 		Name:        "view user",
 		UserContext: viewCtx,
 		AllowedOperations: map[schema.GroupVersionResource]test.AllowedOperations{
-			kafkaSourcesGVR: test.AllowViewOnly,
+			kafkaSourcesGVR:  test.AllowViewOnly,
+			kafkaChannelsGVR: test.AllowViewOnly,
+			kafkaSinksGVR:    test.AllowViewOnly,
 		},
 	}}
 
