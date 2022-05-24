@@ -53,12 +53,12 @@ spec:
               apiVersion: v1
               fieldPath: metadata.namespace
         - name: JAVA_OPTS
-          value: '-Xms128m -Xmx7G -XX:+ExitOnOutOfMemoryError'
+          value: '-Xms128m -Xmx9G -XX:+ExitOnOutOfMemoryError'
         - name: MEM_MAX_SPANS
           value: '10000000'
         resources:
           limits:
-            memory: 8Gi
+            memory: 10Gi
           requests:
             memory: 256Mi
 ---
