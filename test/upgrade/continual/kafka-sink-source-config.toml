@@ -11,4 +11,4 @@ target = '{{- .ForwarderTarget -}}'
 [receiver]
   [receiver.errors]
     # Value in nanoseconds
-    unavailablePeriodToReport = 10000000000
+    unavailablePeriodToReport = 90000000000
