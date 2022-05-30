@@ -15,6 +15,8 @@ kafka_source_files=(eventing-kafka-source.yaml)
 kafka_sink_files=(eventing-kafka-sink.yaml)
 component_dir="$root/knative-operator/deploy/resources/knativekafka"
 
+export KNATIVE_EVENTING_KAFKA_BROKER_MANIFESTS_DIR=${KNATIVE_EVENTING_KAFKA_BROKER_MANIFESTS_DIR:-""}
+
 function download_kafka {
   subdir=$1
   shift
@@ -24,16 +26,17 @@ function download_kafka {
   rm -rf "${component_dir:?}/${subdir}"
   mkdir -p "${component_dir:?}/${subdir}"
 
-  for (( i=0; i<${#files[@]}; i++ ));
-  do
+  for ((i = 0; i < ${#files[@]}; i++)); do
     file="${files[$i]}"
     target_file="$component_dir/$subdir/$file"
-    branch=$(metadata.get dependencies.eventing_kafka_broker_artifacts_branch)
-    url="https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/${branch}/openshift/release/artifacts/$file"
-
-    echo "Downloading file from ${url}"
-
-    wget --no-check-certificate "$url" -O "$target_file"
+    if [[ ${KNATIVE_EVENTING_KAFKA_BROKER_MANIFESTS_DIR} = "" ]]; then
+      branch=$(metadata.get dependencies.eventing_kafka_broker_artifacts_branch)
+      url="https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/${branch}/openshift/release/artifacts/$file"
+      echo "Downloading file from ${url}"
+      wget --no-check-certificate "$url" -O "$target_file"
+    else
+      cp "${KNATIVE_EVENTING_KAFKA_BROKER_MANIFESTS_DIR}/${file}" "$target_file"
+    fi
 
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$target_file"
