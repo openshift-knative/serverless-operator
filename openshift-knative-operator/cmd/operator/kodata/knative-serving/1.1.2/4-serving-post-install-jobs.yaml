@@ -1,6 +1,6 @@
 
 ---
-# /tmp/tmp.Edjrsh4tnc/serving-storage-version-migration.yaml
+# /tmp/tmp.Edjrsh4tnc/serving-strg-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: storage-version-migration-serving-
+  generateName: strg-version-migration-serving-
   namespace: knative-serving
   labels:
-    app: storage-version-migration-serving
+    app: strg-version-migration-serving
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/component: storage-version-migration-job
+    app.kubernetes.io/component: strg-version-migration-job
     app.kubernetes.io/version: "1.1.2"
     serving.knative.dev/release: "v1.1.2"
 spec:
@@ -34,9 +34,9 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        app: storage-version-migration-serving
+        app: strg-version-migration-serving
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/component: storage-version-migration-job
+        app.kubernetes.io/component: strg-version-migration-job
         app.kubernetes.io/version: "1.1.2"
     spec:
       serviceAccountName: controller
