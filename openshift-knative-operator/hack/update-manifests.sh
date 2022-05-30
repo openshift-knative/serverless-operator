@@ -11,11 +11,13 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
-eventing_files=(eventing-crds eventing-core in-memory-channel mt-channel-broker eventing-sugar-controller eventing-post-install)
+eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-channel-broker.yaml eventing-sugar-controller.yaml eventing-post-install.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
 istio_files=(200-clusterrole 400-config-istio 500-controller 500-webhook-deployment 500-webhook-secret 500-webhook-service 600-mutating-webhook 600-validating-webhook)
+
+export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
 
 function download {
   component=$1
@@ -38,6 +40,35 @@ function download {
 
     url="https://github.com/knative/$component/releases/download/knative-$version/$file"
     wget --no-check-certificate "$url" -O "$target_file"
+
+    # Break all image references so we know our overrides work correctly.
+    yaml.break_image_references "$target_file"
+  done
+}
+
+function download_eventing {
+  component=$1
+  version=$2
+  shift
+  shift
+
+  files=("$@")
+
+  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  target_dir="${component_dir}/${version:1}"
+  rm -r "$component_dir"
+  mkdir -p "$target_dir"
+
+  for ((i = 0; i < ${#files[@]}; i++)); do
+    index=$(( i+1 ))
+    if [[ ${KNATIVE_EVENTING_MANIFESTS_DIR} = "" ]]; then
+      file="${files[$i]}"
+      target_file="$target_dir/$index-$file"
+      url="https://github.com/knative/$component/releases/download/knative-$version/$file"
+      wget --no-check-certificate "$url" -O "$target_file"
+    else
+      cp "${KNATIVE_EVENTING_MANIFESTS_DIR}/${file}" "$target_file"
+    fi
 
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$target_file"
@@ -112,7 +143,7 @@ git apply "$root/openshift-knative-operator/hack/008-kourier-rollout.patch"
 #
 # DOWNLOAD EVENTING
 #
-download eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
+download_eventing eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
 
 # Drop namespace from manifest.
 git apply "$root/openshift-knative-operator/hack/001-eventing-namespace-deletion.patch"
