@@ -123,3 +123,6 @@ git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
 
 # Fix for SRVKE-1171
 git apply "$root/openshift-knative-operator/hack/010-eventing-channel-dead-letter-sink-uri.patch"
+
+# For SRVCOM-1873 we temporary change the name to a different one.
+git apply "$root/openshift-knative-operator/hack/010-hack-storage-version-migrator-name.patch"

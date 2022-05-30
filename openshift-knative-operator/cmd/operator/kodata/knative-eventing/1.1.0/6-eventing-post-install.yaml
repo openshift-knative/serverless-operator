@@ -172,10 +172,10 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: storage-version-migration-eventing-
+  generateName: strg-version-migration-eventing-
   namespace: knative-eventing
   labels:
-    app: "storage-version-migration-eventing"
+    app: "strg-version-migration-eventing"
     eventing.knative.dev/release: "v1.1.0"
 spec:
   ttlSecondsAfterFinished: 600
@@ -183,7 +183,7 @@ spec:
   template:
     metadata:
       labels:
-        app: "storage-version-migration-eventing"
+        app: "strg-version-migration-eventing"
         eventing.knative.dev/release: "v1.1.0"
       annotations:
         sidecar.istio.io/inject: "false"
