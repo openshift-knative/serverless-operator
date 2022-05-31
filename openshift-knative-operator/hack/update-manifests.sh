@@ -148,16 +148,7 @@ git apply "$root/openshift-knative-operator/hack/008-kourier-rollout.patch"
 #
 download_eventing eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
 
-# Drop namespace from manifest.
-git apply "$root/openshift-knative-operator/hack/001-eventing-namespace-deletion.patch"
-
-# Extra ClusterRole for downstream, so that users can get the CMs of knative-eventing
-# TODO: propose to upstream
-git apply "$root/openshift-knative-operator/hack/002-openshift-eventing-role.patch"
-
-# # For SRVKE-934 we disable HPA:
-git apply "$root/openshift-knative-operator/hack/005-disable-hpa.patch"
-
-# TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
-# This is the eventing counterpart of SRVKS-670.
-git apply "$root/openshift-knative-operator/hack/006-eventing-pdb.patch"
+# __Note__
+# artifacts are downloaded from midstream openshift/release/artifacts directory.
+# Before adding patches to this file consider sending a patch to midstream and then by just running
+# `make generated-files` the patch will appear in the final bundled artifacts.
