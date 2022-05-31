@@ -53,6 +53,7 @@ function download_eventing {
   shift
 
   files=("$@")
+  echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
   target_dir="${component_dir}/${version:1}"
@@ -61,10 +62,12 @@ function download_eventing {
 
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
+    file="${files[$i]}"
+    target_file="$target_dir/$index-$file"
     if [[ ${KNATIVE_EVENTING_MANIFESTS_DIR} = "" ]]; then
-      file="${files[$i]}"
-      target_file="$target_dir/$index-$file"
-      url="https://github.com/knative/$component/releases/download/knative-$version/$file"
+      branch=$(metadata.get dependencies.eventing_artifacts_branch)
+      url="https://raw.githubusercontent.com/openshift/eventing/${branch}/openshift/release/artifacts/$file"
+      echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"
     else
       cp "${KNATIVE_EVENTING_MANIFESTS_DIR}/${file}" "$target_file"

@@ -1,3 +1,4 @@
+---
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,7 @@ metadata:
   name: sugar-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: v1.3.2
 spec:
   selector:
     matchLabels: &labels
@@ -30,42 +31,42 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels: *labels
-                topologyKey: kubernetes.io/hostname
-              weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels: *labels
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       serviceAccountName: eventing-controller
       enableServiceLinks: false
       containers:
-        - name: controller
-          image: TO_BE_REPLACED
-          env:
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: CONFIG_OBSERVABILITY_NAME
-              value: config-observability
-            - name: METRICS_DOMAIN
-              value: knative.dev/sugar-controller
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - all
-          ports:
-            - name: metrics
-              containerPort: 9090
-            - name: profiling
-              containerPort: 8008
+      - name: controller
+        image: TO_BE_REPLACED
+        env:
+          - name: CONFIG_LOGGING_NAME
+            value: config-logging
+          - name: CONFIG_OBSERVABILITY_NAME
+            value: config-observability
+          - name: METRICS_DOMAIN
+            value: knative.dev/sugar-controller
+          - name: SYSTEM_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
 
----
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - all
+
+        ports:
+        - name: metrics
+          containerPort: 9090
+        - name: profiling
+          containerPort: 8008
