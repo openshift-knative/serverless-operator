@@ -226,7 +226,9 @@ function override_storage_version_migration_images {
   local csv images name
   csv=${1:?Pass csv as arg[1]}
   # Get all storage version-related images.
-  images=($(grep storage-version-migration "$csv" | grep "image:" | awk '{ print $2 }' | awk -F"\"" '{ print $2 }'))
+  while IFS=$'\n' read -r line; do
+    images+=("$line");
+  done < <(grep storage-version-migration "$csv" | grep "image:" | awk '{ print $2 }' | awk -F"\"" '{ print $2 }')
   for image_pullspec in "${images[@]}"; do
     name=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
     oc tag -n "$OPERATORS_NAMESPACE" "$image_pullspec" "${name}:latest" --reference-policy=local
