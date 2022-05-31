@@ -216,28 +216,22 @@ function add_user {
   logger.info "Kubeconfig for user ${name} created"
 }
 
-# Use images from internal registry in order to test issues such as SRVCOM-1873
+# Use images from quay registry in order to test issues such as SRVCOM-1873
 # during upgrades. The issue is only reproducible if Knative version is identical
 # before/after upgrade but the migrator Job spec/image changes. Before upgrade,
 # the images are pulled from CI registry and after upgrade they're pulled from
-# internal registry. This way the Job spec is changed even though Knative version
+# quay.io. This way the Job spec is changes even though Knative version
 # remains same.
 function override_storage_version_migration_images {
-  local csv images name
+  local csv images name version
   csv=${1:?Pass csv as arg[1]}
-  # Get all storage version-related images.
+  # Get all storage version migration images.
   while IFS=$'\n' read -r line; do
     images+=("$line");
   done < <(grep storage-version-migration "$csv" | grep "image:" | awk '{ print $2 }' | awk -F"\"" '{ print $2 }')
   for image_pullspec in "${images[@]}"; do
     name=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
-    oc tag -n "$OPERATORS_NAMESPACE" "$image_pullspec" "${name}:latest" --reference-policy=local
-    sed -i "s,${image_pullspec},image-registry.openshift-image-registry.svc:5000/${OPERATORS_NAMESPACE}/${name}," "$csv"
+    version=$(echo "$image_pullspec" | awk -F":" '{ print $1 }' | awk -F"knative-" '{ print $2 }')
+    sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
   done
-  oc policy add-role-to-group \
-    system:image-puller system:serviceaccounts:knative-serving \
-    --namespace="$OPERATORS_NAMESPACE"
-  oc policy add-role-to-group \
-    system:image-puller system:serviceaccounts:knative-eventing \
-    --namespace="$OPERATORS_NAMESPACE"
 }
