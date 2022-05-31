@@ -133,6 +133,8 @@ function delete_catalog_source {
   oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
   oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index-sha1sums
+  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle-sha1sums
   oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle
   logger.info "Wait for the ${OPERATOR} pod to disappear"
