@@ -39,4 +39,5 @@ dependencies:
   previous:
     serving: 1.1.2
     eventing: 1.1.0
+    eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.1.3
