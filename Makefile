@@ -138,8 +138,8 @@ test-upstream-upgrade-testonly:
 test-upstream-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
-	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true SCALE_UP=6 ./test/upstream-e2e-tests.sh
+	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade
