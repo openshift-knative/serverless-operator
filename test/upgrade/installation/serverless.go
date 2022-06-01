@@ -61,11 +61,15 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	if err := test.DeleteClusterServiceVersion(ctx, test.Flags.CSV, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
 	if err := test.WaitForServerlessOperatorsDeleted(ctx); err != nil {
 		return err
 	}
 
-	if _, err := test.CreateSubscription(ctx, subscription); err != nil {
+	if _, err := test.CreateSubscription(ctx, subscription, test.Flags.CSVPrevious); err != nil {
 		return err
 	}
 

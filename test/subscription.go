@@ -50,11 +50,15 @@ func IsCSVSucceeded(c *operatorsv1alpha1.ClusterServiceVersion, err error) (bool
 	return c.Status.Phase == "Succeeded", err
 }
 
+func DeleteClusterServiceVersion(ctx *Context, name, namespace string) error {
+	return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
+}
+
 func DeleteSubscription(ctx *Context, name, namespace string) error {
 	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 }
 
-func Subscription(subscriptionName string) *operatorsv1alpha1.Subscription {
+func Subscription(subscriptionName, startingCSV string) *operatorsv1alpha1.Subscription {
 	return &operatorsv1alpha1.Subscription{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       operatorsv1alpha1.SubscriptionKind,
@@ -70,13 +74,13 @@ func Subscription(subscriptionName string) *operatorsv1alpha1.Subscription {
 			Package:                ServerlessOperatorPackage,
 			Channel:                Flags.Channel,
 			InstallPlanApproval:    operatorsv1alpha1.ApprovalManual,
-			StartingCSV:            Flags.CSVPrevious,
+			StartingCSV:            startingCSV,
 		},
 	}
 }
 
-func CreateSubscription(ctx *Context, name string) (*operatorsv1alpha1.Subscription, error) {
-	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name), metav1.CreateOptions{})
+func CreateSubscription(ctx *Context, name, startingCSV string) (*operatorsv1alpha1.Subscription, error) {
+	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name, startingCSV), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
