@@ -222,7 +222,7 @@ function run_rolling_upgrade_tests {
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=90m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgrade -timeout=120m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
@@ -232,7 +232,7 @@ function run_rolling_upgrade_tests {
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
-    go_test_e2e -run=TestClusterUpgrade -timeout=190m "${common_opts[@]}" \
+    go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
   fi
