@@ -16,6 +16,7 @@ set -Eeuo pipefail
 debugging.setup
 dump_state.setup
 
+scale_up_workers
 create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
 ensure_catalogsource_installed
