@@ -185,10 +185,38 @@ function downstream_kitchensink_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local image_version image_template channels common_opts
+  local base serving_image_version eventing_image_version eventing_kafka_image_version eventing_kafka_broker_image_version image_template channels common_opts
 
-  image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
-  image_template="quay.io/openshift-knative/{{.Name}}:v${image_version}"
+  serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
+  eventing_image_version=$(versions.major_minor "${KNATIVE_EVENTING_VERSION}")
+  eventing_kafka_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_VERSION}")
+  eventing_kafka_broker_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}")
+
+  # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
+  base="quay.io/openshift-knative/{{.Name}}:v"
+  image_template=$(
+    cat <<-EOF
+$base{{- with .Name }}
+{{- if eq .      "wathola-kafka-sender"}}$eventing_kafka_image_version
+{{- else if eq . "kafka-consumer"      }}$eventing_kafka_broker_image_version
+{{- else if eq . "event-flaker"        }}$eventing_image_version
+{{- else if eq . "event-library"       }}$eventing_image_version
+{{- else if eq . "event-sender"        }}$eventing_image_version
+{{- else if eq . "eventshub"           }}$eventing_image_version
+{{- else if eq . "heartbeats"          }}$eventing_image_version
+{{- else if eq . "performance"         }}$eventing_image_version
+{{- else if eq . "print"               }}$eventing_image_version
+{{- else if eq . "recordevents"        }}$eventing_image_version
+{{- else if eq . "request-sender"      }}$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}$eventing_image_version
+{{- else if eq . "wathola-forwarder"   }}$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}$eventing_image_version
+{{- else if eq . "wathola-sender"      }}$eventing_image_version
+{{- else                               }}$serving_image_version{{end -}}
+{{end -}}
+EOF
+)
+
   channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
