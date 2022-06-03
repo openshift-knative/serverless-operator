@@ -1,7 +1,7 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.2.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.2.0/2-serving-core.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.3.0/2-serving-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.3.0/2-serving-core.yaml
 index dd7a139c..fef3b547 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.2.0/2-serving-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.2.0/2-serving-core.yaml
+--- a/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.3.0/2-serving-core.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/knative-serving/1.3.0/2-serving-core.yaml
 @@ -4858,7 +4858,7 @@ spec:
  # Activator PDB. Currently we permit unavailability of 20% of tasks at the same time.
  # Given the subsetting and that the activators are partially stateful systems, we want
@@ -12,8 +12,8 @@ index dd7a139c..fef3b547 100644
  metadata:
    name: activator-pdb
 @@ -4869,7 +4869,7 @@ metadata:
-     app.kubernetes.io/version: "1.2.0"
-     serving.knative.dev/release: "v1.2.0"
+     app.kubernetes.io/version: "1.3.0"
+     serving.knative.dev/release: "v1.3.0"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 1
@@ -30,8 +30,8 @@ index dd7a139c..fef3b547 100644
  metadata:
    name: webhook-pdb
 @@ -5563,7 +5563,7 @@ metadata:
-     app.kubernetes.io/version: "1.2.0"
-     serving.knative.dev/release: "v1.2.0"
+     app.kubernetes.io/version: "1.3.0"
+     serving.knative.dev/release: "v1.3.0"
  spec:
 -  minAvailable: 80%
 +  minAvailable: 1

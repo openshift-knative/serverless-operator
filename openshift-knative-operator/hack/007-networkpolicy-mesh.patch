@@ -1,8 +1,8 @@
-diff --git a/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-networkpolicy-mesh.yaml b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-networkpolicy-mesh.yaml
+diff --git a/openshift-knative-operator/cmd/operator/kodata/ingress/1.3/0-networkpolicy-mesh.yaml b/openshift-knative-operator/cmd/operator/kodata/ingress/1.3/0-networkpolicy-mesh.yaml
 new file mode 100644
 index 00000000..3d46fbed
 --- /dev/null
-+++ b/openshift-knative-operator/cmd/operator/kodata/ingress/1.2/0-networkpolicy-mesh.yaml
++++ b/openshift-knative-operator/cmd/operator/kodata/ingress/1.3/0-networkpolicy-mesh.yaml
 @@ -0,0 +1,63 @@
 +apiVersion: networking.k8s.io/v1
 +kind: NetworkPolicy
