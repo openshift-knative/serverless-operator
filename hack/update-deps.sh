@@ -14,9 +14,9 @@ cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
 KN_VERSION="release-1.3"
-EVENTING_VERSION="release-v1.2"
-EVENTING_KAFKA_VERSION="release-v1.2"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.2"
+EVENTING_VERSION="release-v1.3"
+EVENTING_KAFKA_VERSION="release-v1.3"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.3"
 SERVING_VERSION="release-v1.3"
 
 # The list of dependencies that we track at HEAD and periodically
