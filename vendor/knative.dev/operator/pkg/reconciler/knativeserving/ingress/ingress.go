@@ -25,7 +25,8 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 )
 
@@ -48,7 +49,7 @@ func noneFilter(u *unstructured.Unstructured) bool {
 }
 
 // Filters makes sure the disabled ingress resources are removed from the manifest.
-func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
+func Filters(ks *v1beta1.KnativeServing) mf.Predicate {
 	var filters []mf.Predicate
 	if ks.Spec.Ingress == nil {
 		return istioFilter
@@ -69,7 +70,7 @@ func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 }
 
 // Transformers returns a list of transformers based on the enabled ingresses
-func Transformers(ctx context.Context, ks *v1alpha1.KnativeServing) []mf.Transformer {
+func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transformer {
 	if ks.Spec.Ingress == nil {
 		return istioTransformers(ctx, ks)
 	}
@@ -105,7 +106,7 @@ func getIngress(version string) (mf.Manifest, error) {
 }
 
 // AppendTargetIngresses appends the manifests of ingresses to be installed
-func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	m, err := getIngress(common.TargetVersion(instance))
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -120,7 +121,7 @@ func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance 
 }
 
 // AppendInstalledIngresses appends the installed manifests of ingresses
-func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)

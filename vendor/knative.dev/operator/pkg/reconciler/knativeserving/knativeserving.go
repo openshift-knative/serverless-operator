@@ -20,15 +20,16 @@ import (
 	"context"
 	"fmt"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
-	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
+	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/pkg/logging"
@@ -55,14 +56,14 @@ var _ knsreconciler.Interface = (*Reconciler)(nil)
 var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind removes all resources after deletion of a KnativeServing.
-func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.KnativeServing) pkgreconciler.Event {
+func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 
 	// Clean up the cache, if the Serving CR is deleted.
 	common.ClearCache()
 
 	// List all KnativeServings to determine if cluster-scoped resources should be deleted.
-	kss, err := r.operatorClientSet.OperatorV1alpha1().KnativeServings("").List(ctx, metav1.ListOptions{})
+	kss, err := r.operatorClientSet.OperatorV1beta1().KnativeServings("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list all KnativeServings: %w", err)
 	}
@@ -91,7 +92,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 
 // ReconcileKind compares the actual state with the desired, and attempts to
 // converge the two.
-func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServing) pkgreconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
@@ -123,17 +124,17 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 }
 
 // filterDisabledIngresses removes the disabled ingresses from the manifests
-func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	ks := instance.(*v1alpha1.KnativeServing)
+func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	ks := instance.(*v1beta1.KnativeServing)
 	*manifest = manifest.Filter(ingress.Filters(ks))
 	return nil
 }
 
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
-func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
+func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
 	logger := logging.FromContext(ctx)
-	instance := comp.(*v1alpha1.KnativeServing)
+	instance := comp.(*v1beta1.KnativeServing)
 	extra := []mf.Transformer{
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.AggregationRuleTransform(manifest.Client),
@@ -144,7 +145,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
-func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
+func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
 	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
@@ -153,7 +154,7 @@ func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent
 	return &installed, err
 }
 
-func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	platformManifests, err := r.extension.Manifests(instance)
 	if err != nil {
 		return err
