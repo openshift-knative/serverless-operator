@@ -13,11 +13,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.2"
-EVENTING_VERSION="release-v1.2"
-EVENTING_KAFKA_VERSION="release-v1.2"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.2"
-SERVING_VERSION="release-v1.2.0"
+KN_VERSION="release-1.3"
+EVENTING_VERSION="release-v1.3"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.3"
+SERVING_VERSION="release-v1.3"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
@@ -27,11 +26,11 @@ FLOATING_DEPS=(
 )
 
 REPLACE_DEPS=(
-  "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
-  "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
-  "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
-  "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
   "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
+  "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
+  "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
+  "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
+  "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
@@ -53,6 +52,7 @@ if (( GO_GET )); then
     go mod edit -replace "${dep}"
     # Let the dependency update the magic SHA otherwise the
     # following "go mod edit" will fail.
+    go mod tidy
     go mod vendor
   done
   go get -d "${FLOATING_DEPS[@]}"
