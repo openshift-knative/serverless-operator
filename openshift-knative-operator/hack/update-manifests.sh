@@ -66,7 +66,7 @@ function download_eventing {
     target_file="$target_dir/$index-$file"
     if [[ ${KNATIVE_EVENTING_MANIFESTS_DIR} = "" ]]; then
       branch=$(metadata.get dependencies.eventing_artifacts_branch)
-      url="https://raw.githubusercontent.com/openshift/eventing/${branch}/openshift/release/artifacts/$file"
+      url="https://raw.githubusercontent.com/openshift/knative-eventing/${branch}/openshift/release/artifacts/$file"
       echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"
     else
