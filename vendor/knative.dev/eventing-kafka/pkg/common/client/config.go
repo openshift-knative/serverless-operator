@@ -198,7 +198,6 @@ func (b *configBuilder) Build(ctx context.Context) (*sarama.Config, error) {
 
 		// We Always Want Success Messages From Producer
 		config.Producer.Return.Successes = true
-		config.Producer.RequiredAcks = sarama.WaitForAll
 	}
 
 	// then apply stuff from YAML

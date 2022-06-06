@@ -1327,8 +1327,6 @@ github.com/opencontainers/runtime-tools v0.0.0-20181011054405-1d69bd0f9c39/go.mo
 github.com/opencontainers/selinux v1.6.0/go.mod h1:VVGKuOLlE7v4PJyT6h7mNWvq1rzqiriPsEqVhc+svHE=
 github.com/opencontainers/selinux v1.8.0/go.mod h1:RScLhm78qiWa2gbVCcGkC7tCGdgk3ogry1nUQF8Evvo=
 github.com/opencontainers/selinux v1.8.2/go.mod h1:MUIHuUEvKB1wtJjQdOyYRgOnLD2xAPP8dBsCoU0KuF8=
-github.com/openshift-knative/eventing-kafka v0.19.1-0.20220427170443-321d4a2b113a h1:ytIlL3ZBbzBlHytma0iEHFl4ltfy2JoEVK44JB/ezok=
-github.com/openshift-knative/eventing-kafka v0.19.1-0.20220427170443-321d4a2b113a/go.mod h1:Y9+hHdaYCmD46PPOU2pAfWCUXJyIfgJOnkWZwsBAEoU=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220422063503-04b2eff6d979 h1:LpW8dCArMC0HlGI1097sPmSO38yB8QKjETQBrnCqV6U=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220422063503-04b2eff6d979/go.mod h1:ok+AdFFpC6IpnD+Onp3Iipz4MdGNcjm4i0NFHabmQHk=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
@@ -2619,6 +2617,8 @@ knative.dev/caching v0.0.0-20220118175933-0c1cc094a7f4/go.mod h1:OHsK3XaWmdi2/mP
 knative.dev/caching v0.0.0-20220223181140-b3aed5c4e283 h1:Fi+r3L6qFEuNKzs7L8yNYXCvtDgp74QFipVpr58WPRo=
 knative.dev/caching v0.0.0-20220223181140-b3aed5c4e283/go.mod h1:SWHtgT9Ap1s5RPv8glyyzHVmF6Sg2AFwIO8ktCgObvY=
 knative.dev/control-protocol v0.0.0-20220118185434-ad4ce9e9d455/go.mod h1:xiTC5Qt9GdPuhRknr0Oq744SsUqbkDx0oe04L9a+qYY=
+knative.dev/eventing-kafka v0.29.1 h1:5pbQBvbQEkcPr0ZTDmItXdozQCZNkzV9QTiqMDXU0JI=
+knative.dev/eventing-kafka v0.29.1/go.mod h1:Y9+hHdaYCmD46PPOU2pAfWCUXJyIfgJOnkWZwsBAEoU=
 knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30 h1:UkNpCWCMM5C4AeQ8aTrPTuR/6OeARiqk+LEQ6tuMP7c=
 knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack/schema v0.0.0-20220118141833-9b2ed8471e30/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
