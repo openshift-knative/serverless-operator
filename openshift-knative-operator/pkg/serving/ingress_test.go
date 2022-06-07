@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -29,7 +30,7 @@ func TestDefaultIngressClass(t *testing.T) {
 		in: &operatorv1alpha1.KnativeServing{
 			Spec: operatorv1alpha1.KnativeServingSpec{
 				Ingress: &operatorv1alpha1.IngressConfigs{
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -41,10 +42,10 @@ func TestDefaultIngressClass(t *testing.T) {
 		in: &operatorv1alpha1.KnativeServing{
 			Spec: operatorv1alpha1.KnativeServingSpec{
 				Ingress: &operatorv1alpha1.IngressConfigs{
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},

@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -603,7 +604,7 @@ func makeCr(mods ...func(*v1alpha1.KnativeKafka)) *v1alpha1.KnativeKafka {
 				Enabled:          false,
 				BootstrapServers: "foo.bar.com",
 			},
-			HighAvailability: &operatorv1alpha1.HighAvailability{
+			HighAvailability: &base.HighAvailability{
 				Replicas: 1,
 			},
 		},

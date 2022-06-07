@@ -15,7 +15,7 @@ import (
 
 	mfc "github.com/manifestival/controller-runtime-client"
 
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -239,7 +239,7 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *serverlessoperator
 // set defaults for Openshift
 func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if instance.Spec.HighAvailability == nil {
-		instance.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
+		instance.Spec.HighAvailability = &base.HighAvailability{
 			Replicas: 1,
 		}
 	}

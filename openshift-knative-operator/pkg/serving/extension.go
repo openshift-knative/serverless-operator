@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -58,11 +59,11 @@ type extension struct {
 	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Manifests(ks operatorv1alpha1.KComponent) ([]mf.Manifest, error) {
+func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
 	return monitoring.GetServingMonitoringPlatformManifests(ks)
 }
 
-func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transformer {
+func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 	return append([]mf.Transformer{
 		common.InjectCommonLabelIntoNamespace(),
 		common.InjectEnvironmentIntoDeployment("controller", "controller",
@@ -75,7 +76,7 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
-func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
+func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1alpha1.KnativeServing)
 	log := logging.FromContext(ctx)
 
@@ -87,7 +88,7 @@ func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KCompon
 	}
 
 	// Mark failed dependencies as succeeded since we're no longer using that mechanism anyway.
-	if ks.Status.GetCondition(operatorv1alpha1.DependenciesInstalled).IsFalse() {
+	if ks.Status.GetCondition(base.DependenciesInstalled).IsFalse() {
 		ks.Status.MarkDependenciesInstalled()
 	}
 
@@ -113,7 +114,7 @@ func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KCompon
 
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
-		ks.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
+		ks.Spec.HighAvailability = &base.HighAvailability{
 			Replicas: 2,
 		}
 	}
@@ -142,8 +143,8 @@ func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KCompon
 
 	// Add custom-certificates to the deployments (ConfigMap creation remains in the old
 	// operator for now)
-	if ks.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
-		ks.Spec.ControllerCustomCerts = operatorv1alpha1.CustomCerts{
+	if ks.Spec.ControllerCustomCerts == (base.CustomCerts{}) {
+		ks.Spec.ControllerCustomCerts = base.CustomCerts{
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}
@@ -161,7 +162,7 @@ func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KCompon
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
-func (e *extension) Finalize(ctx context.Context, comp operatorv1alpha1.KComponent) error {
+func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1alpha1.KnativeServing)
 
 	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.

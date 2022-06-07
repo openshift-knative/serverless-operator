@@ -1,14 +1,14 @@
 package v1alpha1
 
 import (
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/apis"
 )
 
 var (
 	kafkaCondSet = apis.NewLivingConditionSet(
-		operatorv1alpha1.DeploymentsAvailable,
-		operatorv1alpha1.InstallSucceeded,
+		base.DeploymentsAvailable,
+		base.InstallSucceeded,
 	)
 )
 
@@ -24,28 +24,28 @@ func (is *KnativeKafkaStatus) IsReady() bool {
 
 // MarkInstallSucceeded marks the InstallationSucceeded status as true.
 func (is *KnativeKafkaStatus) MarkInstallSucceeded() {
-	kafkaCondSet.Manage(is).MarkTrue(operatorv1alpha1.InstallSucceeded)
+	kafkaCondSet.Manage(is).MarkTrue(base.InstallSucceeded)
 }
 
 // MarkInstallFailed marks the InstallationSucceeded status as false with the given
 // message.
 func (is *KnativeKafkaStatus) MarkInstallFailed(msg string) {
 	kafkaCondSet.Manage(is).MarkFalse(
-		operatorv1alpha1.InstallSucceeded,
+		base.InstallSucceeded,
 		"Error",
 		"Install failed with message: %s", msg)
 }
 
 // MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
 func (is *KnativeKafkaStatus) MarkDeploymentsAvailable() {
-	kafkaCondSet.Manage(is).MarkTrue(operatorv1alpha1.DeploymentsAvailable)
+	kafkaCondSet.Manage(is).MarkTrue(base.DeploymentsAvailable)
 }
 
 // MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 // it's waiting for deployments.
 func (is *KnativeKafkaStatus) MarkDeploymentsNotReady() {
 	kafkaCondSet.Manage(is).MarkFalse(
-		operatorv1alpha1.DeploymentsAvailable,
+		base.DeploymentsAvailable,
 		"NotReady",
 		"Waiting on deployments")
 }

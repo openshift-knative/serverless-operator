@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
@@ -49,8 +50,8 @@ func TestReconcile(t *testing.T) {
 		name: "different HA settings",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					HighAvailability: &operatorv1alpha1.HighAvailability{
+				CommonSpec: base.CommonSpec{
+					HighAvailability: &base.HighAvailability{
 						Replicas: 3,
 					},
 				},
@@ -140,7 +141,7 @@ func TestMonitoring(t *testing.T) {
 		name: "enable monitoring when monitoring toggle = not defined, backend = defined and not `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
@@ -153,7 +154,7 @@ func TestMonitoring(t *testing.T) {
 		name: "disable monitoring when monitoring toggle is not defined, backend is `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
@@ -171,7 +172,7 @@ func TestMonitoring(t *testing.T) {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
@@ -186,7 +187,7 @@ func TestMonitoring(t *testing.T) {
 		name: "disable monitoring when monitoring toggle is on, backend is `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
@@ -208,7 +209,7 @@ func TestMonitoring(t *testing.T) {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
@@ -221,7 +222,7 @@ func TestMonitoring(t *testing.T) {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
 		in: &operatorv1alpha1.KnativeEventing{
 			Spec: operatorv1alpha1.KnativeEventingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
@@ -275,18 +276,18 @@ func ke(mods ...func(*operatorv1alpha1.KnativeEventing)) *operatorv1alpha1.Knati
 		},
 		Spec: operatorv1alpha1.KnativeEventingSpec{
 			SinkBindingSelectionMode: "inclusion",
-			CommonSpec: operatorv1alpha1.CommonSpec{
-				HighAvailability: &operatorv1alpha1.HighAvailability{
+			CommonSpec: base.CommonSpec{
+				HighAvailability: &base.HighAvailability{
 					Replicas: 2,
 				},
-				Registry: operatorv1alpha1.Registry{
+				Registry: base.Registry{
 					Default: "bar2",
 					Override: map[string]string{
 						"default": "bar2",
 						"foo":     "bar",
 					},
 				},
-				Resources: []operatorv1alpha1.ResourceRequirementsOverride{{
+				DeprecatedResources: []base.ResourceRequirementsOverride{{
 					Container: "eventing-webhook",
 					ResourceRequirements: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{

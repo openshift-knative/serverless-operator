@@ -2,7 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -25,11 +25,11 @@ type KnativeKafkaSpec struct {
 
 	// A means to override the corresponding entries in the upstream configmaps
 	// +optional
-	Config operatorv1alpha1.ConfigMapData `json:"config,omitempty"`
+	Config base.ConfigMapData `json:"config,omitempty"`
 
 	// HighAvailability allows specification of HA control plane.
 	// +optional
-	HighAvailability *operatorv1alpha1.HighAvailability `json:"high-availability,omitempty"`
+	HighAvailability *base.HighAvailability `json:"high-availability,omitempty"`
 }
 
 // KnativeKafkaStatus defines the observed state of KnativeKafka
