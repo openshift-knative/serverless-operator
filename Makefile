@@ -17,6 +17,9 @@ install-all:
 	./hack/tracing.sh
 	INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
+install-tracing:
+	./hack/tracing.sh
+
 install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 

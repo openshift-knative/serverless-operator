@@ -1,3 +1,4 @@
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,9 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    app.kubernetes.io/version: v1.3.2
+    app.kubernetes.io/name: knative-eventing
+    eventing.knative.dev/release: v1.3.2
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -115,7 +118,6 @@ rules:
     verbs:
       - "get"
       - "list"
-
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -137,14 +139,19 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: v1.3.2
+    app.kubernetes.io/version: v1.3.2
+    app.kubernetes.io/name: knative-eventing
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    eventing.knative.dev/release: "v1.2.1"
+    eventing.knative.dev/release: v1.3.2
+    app.kubernetes.io/version: v1.3.2
+    app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
     name: knative-eventing-post-install-job
@@ -153,7 +160,6 @@ roleRef:
   kind: ClusterRole
   name: knative-eventing-post-install-job-role
   apiGroup: rbac.authorization.k8s.io
-
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -176,7 +182,10 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "storage-version-migration-eventing"
-    eventing.knative.dev/release: "v1.2.1"
+    app.kubernetes.io/name: knative-eventing
+    app.kubernetes.io/component: storage-version-migration-job
+    app.kubernetes.io/version: v1.3.2
+    eventing.knative.dev/release: v1.3.2
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -184,7 +193,10 @@ spec:
     metadata:
       labels:
         app: "storage-version-migration-eventing"
-        eventing.knative.dev/release: "v1.2.1"
+        app.kubernetes.io/name: knative-eventing
+        app.kubernetes.io/component: storage-version-migration-job
+        app.kubernetes.io/version: v1.3.2
+        eventing.knative.dev/release: v1.3.2
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -212,6 +224,5 @@ spec:
             runAsNonRoot: true
             capabilities:
               drop:
-                - all
+              - all
 
----
