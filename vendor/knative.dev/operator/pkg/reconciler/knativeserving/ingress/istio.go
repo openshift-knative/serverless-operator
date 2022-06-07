@@ -22,19 +22,20 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/logging"
 )
 
 var istioFilter = ingressFilter("istio")
 
-func istioTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
+func istioTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{gatewayTransform(instance, logger)}
 }
 
-func gatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Update the deployment with the new registry and tag
 		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
@@ -51,21 +52,21 @@ func gatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.Sugared
 	}
 }
 
-func ingressGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func ingressGateway(instance *servingv1beta1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeIngressGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeIngressGateway
 	}
-	return &instance.Spec.DeprecatedKnativeIngressGateway
+	return nil
 }
 
-func localGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func localGateway(instance *servingv1beta1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeLocalGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeLocalGateway
 	}
-	return &instance.Spec.DeprecatedClusterLocalGateway
+	return nil
 }
 
-func updateIstioGateway(override *servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateIstioGateway(override *base.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	if override != nil && len(override.Selector) > 0 {
 		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", override)
 		unstructured.SetNestedStringMap(u.Object, override.Selector, "spec", "selector")

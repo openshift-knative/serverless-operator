@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package base
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -125,9 +125,10 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Resources overrides containers' resource requirements.
+	// DEPRECATED.
+	// DeprecatedResources overrides containers' resource requirements.
 	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
@@ -162,7 +163,7 @@ func (c *CommonSpec) GetRegistry() *Registry {
 
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
-	return c.Resources
+	return c.DeprecatedResources
 }
 
 // GetVersion implements KComponentSpec.
@@ -196,7 +197,7 @@ func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
 type ConfigMapData map[string]map[string]string
 
 // Registry defines image overrides of knative images.
-// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1beta1.Image.
 // The default value is used as a default format to override for all knative deployments.
 // The override values are specific to each knative deployment.
 type Registry struct {
@@ -273,4 +274,14 @@ type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	Replicas int32 `json:"replicas"`
+}
+
+// CustomCerts refers to either a ConfigMap or Secret containing valid
+// CA certificates
+type CustomCerts struct {
+	// One of ConfigMap or Secret
+	Type string `json:"type"`
+
+	// The name of the ConfigMap or Secret
+	Name string `json:"name"`
 }

@@ -23,13 +23,14 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const istioAnnotationName = "sidecar.istio.io/inject"
 
 // JobTransform updates the job with the expected value for the key app in the label
-func JobTransform(obj v1alpha1.KComponent) mf.Transformer {
+func JobTransform(obj base.KComponent) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Job" {
 			job := &batchv1.Job{}
@@ -38,7 +39,7 @@ func JobTransform(obj v1alpha1.KComponent) mf.Transformer {
 			}
 
 			component := "serving"
-			if _, ok := obj.(*v1alpha1.KnativeEventing); ok {
+			if _, ok := obj.(*v1beta1.KnativeEventing); ok {
 				component = "eventing"
 			}
 			if job.GetName() == "" {

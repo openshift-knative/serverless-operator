@@ -1194,7 +1194,7 @@ k8s.io/utils/trace
 ## explicit; go 1.15
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.30.3-0.20220420143529-0764365a1b4d => github.com/openshift/knative-eventing v0.99.1-0.20220603105300-22ade8652ac1
+# knative.dev/eventing v0.30.3-0.20220420143529-0764365a1b4d => github.com/openshift/knative-eventing v0.99.1-0.20220607073913-98d790b24e18
 ## explicit; go 1.16
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1329,7 +1329,7 @@ knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/continual
 knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220531092543-6533810512a9
+# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220607060312-b020a61d55f4
 ## explicit; go 1.16
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1
@@ -1369,23 +1369,29 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.30.2 => knative.dev/operator v0.29.2
+# knative.dev/operator v0.30.2
 ## explicit; go 1.16
+knative.dev/operator/pkg/apis/operator
+knative.dev/operator/pkg/apis/operator/base
 knative.dev/operator/pkg/apis/operator/v1alpha1
+knative.dev/operator/pkg/apis/operator/v1beta1
 knative.dev/operator/pkg/client/clientset/versioned
 knative.dev/operator/pkg/client/clientset/versioned/scheme
 knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1
+knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1
 knative.dev/operator/pkg/client/informers/externalversions
 knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces
 knative.dev/operator/pkg/client/informers/externalversions/operator
 knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1
+knative.dev/operator/pkg/client/informers/externalversions/operator/v1beta1
 knative.dev/operator/pkg/client/injection/client
 knative.dev/operator/pkg/client/injection/informers/factory
-knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing
-knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving
-knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing
-knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving
+knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeeventing
+knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeserving
+knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing
+knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving
 knative.dev/operator/pkg/client/listers/operator/v1alpha1
+knative.dev/operator/pkg/client/listers/operator/v1beta1
 knative.dev/operator/pkg/reconciler/common
 knative.dev/operator/pkg/reconciler/common/testing
 knative.dev/operator/pkg/reconciler/knativeeventing
@@ -1565,9 +1571,9 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220603105300-22ade8652ac1
+# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220607073913-98d790b24e18
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141527-4852175c67a7
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220531092543-6533810512a9
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220607060312-b020a61d55f4
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220603141301-7e612b35a9b3
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0

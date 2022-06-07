@@ -18,12 +18,13 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 var (
-	_ KComponent     = (*KnativeEventing)(nil)
-	_ KComponentSpec = (*KnativeEventingSpec)(nil)
+	_ base.KComponent     = (*KnativeEventing)(nil)
+	_ base.KComponentSpec = (*KnativeEventingSpec)(nil)
 )
 
 // KnativeEventing is the Schema for the eventings API
@@ -39,18 +40,18 @@ type KnativeEventing struct {
 }
 
 // GetSpec implements KComponent
-func (ke *KnativeEventing) GetSpec() KComponentSpec {
+func (ke *KnativeEventing) GetSpec() base.KComponentSpec {
 	return &ke.Spec
 }
 
 // GetStatus implements KComponent
-func (ke *KnativeEventing) GetStatus() KComponentStatus {
+func (ke *KnativeEventing) GetStatus() base.KComponentStatus {
 	return &ke.Status
 }
 
 // KnativeEventingSpec defines the desired state of KnativeEventing
 type KnativeEventingSpec struct {
-	CommonSpec `json:",inline"`
+	base.CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
 	// If no value is provided, MTChannelBasedBroker will be used.
@@ -95,64 +96,14 @@ type KnativeEventingList struct {
 
 // SourceConfigs specifies options for the eventing sources.
 type SourceConfigs struct {
-	Awssqs     AwssqsSourceConfiguration     `json:"awssqs"`
-	Ceph       CephSourceConfiguration       `json:"ceph"`
-	Couchdb    CouchdbSourceConfiguration    `json:"couchdb"`
-	Github     GithubSourceConfiguration     `json:"github"`
-	Gitlab     GitlabSourceConfiguration     `json:"gitlab"`
-	Kafka      KafkaSourceConfiguration      `json:"kafka"`
-	Natss      NatssSourceConfiguration      `json:"natss"`
-	Prometheus PrometheusSourceConfiguration `json:"prometheus"`
-	Rabbitmq   RabbitmqSourceConfiguration   `json:"rabbitmq"`
-	Redis      RedisSourceConfiguration      `json:"redis"`
-}
-
-// AwssqsSourceConfiguration specifies whether to enable the awssqs source.
-type AwssqsSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// CephSourceConfiguration specifies whether to enable the ceph source.
-type CephSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// CouchdbSourceConfiguration specifies whether to enable the couchdb source.
-type CouchdbSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// GithubSourceConfiguration specifies whether to enable the github source.
-type GithubSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// GitlabSourceConfiguration specifies whether to enable the gitlab source.
-type GitlabSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// KafkaSourceConfiguration specifies whether to enable the kafka source.
-type KafkaSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// NatssSourceConfiguration specifies whether to enable the natss source.
-type NatssSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// PrometheusSourceConfiguration specifies whether to enable the prometheus source.
-type PrometheusSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// RabbitmqSourceConfiguration specifies whether to enable the rabbitmq source.
-type RabbitmqSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
-}
-
-// RedisSourceConfiguration specifies whether to enable the redis source.
-type RedisSourceConfiguration struct {
-	Enabled bool `json:"enabled"`
+	Awssqs     base.AwssqsSourceConfiguration     `json:"awssqs"`
+	Ceph       base.CephSourceConfiguration       `json:"ceph"`
+	Couchdb    base.CouchdbSourceConfiguration    `json:"couchdb"`
+	Github     base.GithubSourceConfiguration     `json:"github"`
+	Gitlab     base.GitlabSourceConfiguration     `json:"gitlab"`
+	Kafka      base.KafkaSourceConfiguration      `json:"kafka"`
+	Natss      base.NatssSourceConfiguration      `json:"natss"`
+	Prometheus base.PrometheusSourceConfiguration `json:"prometheus"`
+	Rabbitmq   base.RabbitmqSourceConfiguration   `json:"rabbitmq"`
+	Redis      base.RedisSourceConfiguration      `json:"redis"`
 }
