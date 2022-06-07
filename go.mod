@@ -165,9 +165,9 @@ require (
 
 replace (
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220603105300-22ade8652ac1
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220607073913-98d790b24e18
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141527-4852175c67a7
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220531092543-6533810512a9
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220607060312-b020a61d55f4
 	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220603141301-7e612b35a9b3
 )
 
@@ -182,8 +182,6 @@ replace (
 	k8s.io/client-go v0.23.4 => k8s.io/client-go v0.22.5
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 )
-
-replace knative.dev/operator v0.30.2 => knative.dev/operator v0.29.2
 
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220314165618-a637a96a1bd9
 
