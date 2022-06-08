@@ -18,7 +18,7 @@ requirements:
   nodejs: 14.x
   ocpVersion:
     min: '4.6'
-    max: '4.9'
+    max: '4.10'
     label: 'v4.6'
 
 dependencies:
