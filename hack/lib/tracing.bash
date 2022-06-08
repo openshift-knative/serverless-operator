@@ -180,14 +180,14 @@ function enable_eventing_tracing {
   logger.info "Configuring tracing for Eventing"
   local endpoint
   endpoint=$(get_tracing_endpoint)
-  oc -n "${EVENTING_NAMESPACE}" patch knativeeventing/knative-eventing --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "debug":"true", "sample-rate":"1.0"}}}}'
+  oc -n "${EVENTING_NAMESPACE}" patch knativeeventing/knative-eventing --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "sample-rate":"'"${SAMPLE_RATE}"'"}}}}'
 }
 
 function enable_serving_tracing {
   logger.info "Configuring tracing for Serving"
   local endpoint
   endpoint=$(get_tracing_endpoint)
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "sample-rate":"1.0"}}}}'
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "sample-rate":"'"${SAMPLE_RATE}"'"}}}}'
 }
 
 function get_tracing_endpoint {
