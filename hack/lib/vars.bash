@@ -76,3 +76,4 @@ export FULL_MESH="${FULL_MESH:-false}"
 export ENABLE_TRACING="${ENABLE_TRACING:-false}"
 # Define sample-rate for tracing.
 export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
+export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
