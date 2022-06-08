@@ -2,14 +2,44 @@
 
 function install_tracing {
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
+    if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
+      dedicate_node_to_zipkin
+    fi
     install_zipkin_tracing
   else
     install_opentelemetry_tracing
   fi
 }
 
+function dedicate_node_to_zipkin {
+  logger.info "Placing zipkin taint on first worker node"
+  local zipkin_node
+  zipkin_node=$(oc get node -l 'zipkin,node-role.kubernetes.io/worker' -oname | head -1)
+  if [[ -z "$zipkin_node"  ]]; then
+    zipkin_node=$(oc get node -l 'node-role.kubernetes.io/worker' -oname | head -1)
+    # Add label for placing the Zipkin pod via nodeAffinity
+    oc label "$zipkin_node" zipkin=
+    # Add taint to prevent pods other than Zipkin from scheduling there
+    oc adm taint --overwrite=true node "$zipkin_node" zipkin:NoSchedule
+  fi
+}
+
 function install_zipkin_tracing {
   logger.info "Installing Zipkin in namespace ${TRACING_NAMESPACE}"
+  local nodeAffinity=""
+  if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
+  nodeAffinity=$(cat <<-EOF
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: zipkin
+                operator: Exists
+EOF
+)
+  fi
+
   cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Service
@@ -61,6 +91,11 @@ spec:
             memory: 10Gi
           requests:
             memory: 256Mi
+      tolerations:
+      - key: zipkin
+        operator: Exists
+        effect: NoSchedule
+${nodeAffinity}
 ---
 EOF
 
@@ -200,11 +235,17 @@ function get_tracing_endpoint {
 
 function teardown_tracing {
   logger.warn 'Teardown Tracing'
-  local csv
+  local csv zipkin_node
 
   # Teardown Zipkin
   oc delete service    -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
   oc delete deployment -n "${TRACING_NAMESPACE}" zipkin --ignore-not-found
+
+  zipkin_node=$(oc get node -l 'zipkin,node-role.kubernetes.io/worker' -oname | head -1)
+  if [[ -n "$zipkin_node"  ]]; then
+    oc label "$zipkin_node" zipkin-
+    oc adm taint node "$zipkin_node" zipkin:NoSchedule-
+  fi
 
   # Teardown OpenTelemetry
   if oc get -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector &>/dev/null; then
