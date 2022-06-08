@@ -74,3 +74,5 @@ export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
 export FULL_MESH="${FULL_MESH:-false}"
 export ENABLE_TRACING="${ENABLE_TRACING:-false}"
+# Define sample-rate for tracing.
+export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
