@@ -8,7 +8,7 @@ import (
 )
 
 func enableSecretInformerFiltering(ks operatorv1alpha1.KComponent) mf.Transformer {
-	if v, ok := ks.GetAnnotations()["knative.dev/enable-secret-informer-filtering-by-cert-uid"]; ok {
+	if v, ok := ks.GetAnnotations()["serverless.openshift.io/enable-secret-informer-filtering"]; ok {
 		return common.InjectEnvironmentIntoDeployment("net-istio-controller", "controller",
 			corev1.EnvVar{Name: "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID", Value: v})
 	}
