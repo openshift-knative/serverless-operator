@@ -177,7 +177,7 @@ function downstream_kitchensink_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=60m -parallel=8 ./test/kitchensinke2e "$@"
+  go_test_e2e -failfast -timeout=120m -parallel=8 ./test/kitchensinke2e "$@"
 }
 
 # == Upgrade testing
