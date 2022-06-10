@@ -72,6 +72,7 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 		),
 		overrideKourierNamespace(ks),
 		addHTTPOptionDisabledEnvValue(),
+		enableSecretInformerFiltering(ks),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
