@@ -241,7 +241,7 @@ EOF
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
     "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS}" \
-    "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS}" \
+    "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS}" \
     --resolvabledomain \
     --https)
 
