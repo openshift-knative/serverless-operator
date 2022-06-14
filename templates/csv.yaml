@@ -131,8 +131,8 @@ spec:
     Serverless functions bring greater efficiency, more scalability and faster development that facilitate rapid go-to-market.
 
     Other features include:
-    - Based on Buildpacks
-    - Quarkus, Node and Go support
+    - Build strategies including Source-to-Image (S2I) and Buildpacks
+    - Multiple runtimes, including Node.js, Quarkus and Go
     - Local developer experience through the kn CLI
     - Project templates
     - Support for receiving CloudEvents and plain HTTP requests
