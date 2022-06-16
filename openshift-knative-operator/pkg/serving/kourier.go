@@ -44,8 +44,9 @@ func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
 }
 
-func addHTTPOptionDisabledEnvValue() mf.Transformer {
+func addKourierEnvValues() mf.Transformer {
 	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller",
 		corev1.EnvVar{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
+		corev1.EnvVar{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
 	)
 }

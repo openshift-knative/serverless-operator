@@ -78,7 +78,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name: "controller",
-						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}, {Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}},
+						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}, {Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}, {Name: "SERVING_NAMESPACE", Value: "knative-serving"}},
 					}},
 				},
 			},
@@ -95,7 +95,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 		t.Fatal("Failed to convert deployment to unstructured", err)
 	}
 
-	addHTTPOptionDisabledEnvValue()(got)
+	addKourierEnvValues()(got)
 
 	if !cmp.Equal(got, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
