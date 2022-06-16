@@ -6,9 +6,10 @@ aliases:
   - lberk
   - matzew
   - mgencur
-  - warrenvw
-  - rhuss
+  - nak3
   - openshift-cherrypick-robot
+  - pierDipi
+  - rhuss
   - skonto
   serverless-reviewers:
   - alanfx
@@ -18,7 +19,7 @@ aliases:
   - lberk
   - matzew
   - mgencur
-  - navidshaikh
+  - nak3
+  - pierDipi
   - rhuss
   - skonto
-  - warrenvw
