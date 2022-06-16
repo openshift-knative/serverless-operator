@@ -15,6 +15,20 @@ client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
 
+function default_knative_serving_images() {
+  local serving
+  serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
+  export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-"${serving}-queue"}
+  export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"${serving}-activator"}
+  export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler"}
+  export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-"${serving}-autoscaler-hpa"}
+  export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"${serving}-controller"}
+  export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-"${serving}-webhook"}
+  export KNATIVE_SERVING_DOMAIN_MAPPING=${KNATIVE_SERVING_DOMAIN_MAPPING:-"${serving}-domain-mapping"}
+  export KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK=${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK:-"${serving}-domain-mapping-webhook"}
+  export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-"${serving}-storage-version-migration"}
+}
+
 function default_knative_eventing_images() {
   local eventing
   eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
@@ -43,6 +57,7 @@ function default_knative_eventing_kafka_broker_images() {
 
 default_knative_eventing_images
 default_knative_eventing_kafka_broker_images
+default_knative_serving_images
 
 declare -a images
 declare -A images_addresses
@@ -66,15 +81,15 @@ function kafka_image {
   kafka_images_addresses["${name}"]="${address}"
 }
 
-image "queue-proxy"    "${serving}-queue"
-image "activator"      "${serving}-activator"
-image "autoscaler"     "${serving}-autoscaler"
-image "autoscaler-hpa" "${serving}-autoscaler-hpa"
-image "controller__controller"     "${serving}-controller"
-image "webhook__webhook" "${serving}-webhook"
-image "domain-mapping" "${serving}-domain-mapping"
-image "domainmapping-webhook" "${serving}-domain-mapping-webhook"
-image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${serving}-storage-version-migration"
+image "queue-proxy"    "${KNATIVE_SERVING_QUEUE}"
+image "activator"      "${KNATIVE_SERVING_ACTIVATOR}"
+image "autoscaler"     "${KNATIVE_SERVING_AUTOSCALER}"
+image "autoscaler-hpa" "${KNATIVE_SERVING_AUTOSCALER_HPA}"
+image "controller__controller"     "${KNATIVE_SERVING_CONTROLLER}"
+image "webhook__webhook" "${KNATIVE_SERVING_WEBHOOK}"
+image "domain-mapping" "${KNATIVE_SERVING_DOMAIN_MAPPING}"
+image "domainmapping-webhook" "${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK}"
+image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}"
 
 image "kourier-gateway" "quay.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
 image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"

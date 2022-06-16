@@ -27,6 +27,8 @@ dependencies:
   net_istio: 1.3.0
   maistra: 2.1.0
 
+  serving_artifacts_branch: image_injection_1.3
+
   eventing: 1.3.2
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.3
