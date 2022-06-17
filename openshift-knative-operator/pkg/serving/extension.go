@@ -71,7 +71,7 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
 		overrideKourierNamespace(ks),
-		addHTTPOptionDisabledEnvValue(),
+		addKourierEnvValues(),
 		enableSecretInformerFiltering(ks),
 	}, monitoring.GetServingTransformers(ks)...)
 }
