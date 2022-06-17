@@ -168,11 +168,11 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 }
 
 func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
-	sa, err := caCtx.Clients.Kube.CoreV1().ServiceAccounts("openshift-monitoring").Get(context.Background(), "prometheus-k8s", metav1.GetOptions{})
+	secrets, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		return "", fmt.Errorf("error getting service account prometheus-k8s: %w", err)
+		return "", fmt.Errorf("error listing secrets in namespace openshift-monitoring: %w", err)
 	}
-	tokenSecret := getSecretNameForToken(sa.Secrets)
+	tokenSecret := getSecretNameForToken(secrets.Items)
 	if tokenSecret == "" {
 		return "", errors.New("token name for prometheus-k8s service account not found")
 	}
@@ -187,9 +187,9 @@ func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
 	return string(tokenContents), nil
 }
 
-func getSecretNameForToken(secrets []corev1.ObjectReference) string {
+func getSecretNameForToken(secrets []corev1.Secret) string {
 	for _, sec := range secrets {
-		if strings.Contains(sec.Name, "token") {
+		if strings.HasPrefix(sec.Name, "prometheus-k8s-token") {
 			return sec.Name
 		}
 	}
