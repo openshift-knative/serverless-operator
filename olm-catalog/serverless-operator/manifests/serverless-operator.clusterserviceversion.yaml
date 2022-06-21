@@ -3,7 +3,6 @@ kind: ClusterServiceVersion
 metadata:
   annotations:
     operatorframework.io/suggested-namespace: "openshift-serverless"
-    operatorframework.io/cluster-monitoring: "true"
     operators.openshift.io/infrastructure-features: '["disconnected", "fips", "proxy-aware"]'
     operators.openshift.io/valid-subscription: '["OpenShift Container Platform", "OpenShift Platform Plus"]'
     alm-examples: |-
