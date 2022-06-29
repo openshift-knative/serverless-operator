@@ -211,18 +211,26 @@ EOF
   timeout 300 "[[ \$(oc get jaeger.jaegertracing.io jaeger -n ${TRACING_NAMESPACE} -o jsonpath='{.status.phase}') != Running ]]"
 }
 
-function enable_eventing_tracing {
-  logger.info "Configuring tracing for Eventing"
-  local endpoint
-  endpoint=$(get_tracing_endpoint)
-  oc -n "${EVENTING_NAMESPACE}" patch knativeeventing/knative-eventing --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "sample-rate":"'"${SAMPLE_RATE}"'"}}}}'
-}
+function enable_tracing {
+  local custom_resource tracing_endpoint tracing_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
 
-function enable_serving_tracing {
-  logger.info "Configuring tracing for Serving"
-  local endpoint
-  endpoint=$(get_tracing_endpoint)
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving --type=merge --patch='{"spec": {"config": { "tracing": {"enable":"true","backend":"zipkin", "zipkin-endpoint":"'"${endpoint}"'", "sample-rate":"'"${SAMPLE_RATE}"'"}}}}'
+  tracing_endpoint=$(get_tracing_endpoint)
+  tracing_patch="$(mktemp -t tracing-XXXXX.yaml)"
+  cat - << EOF > "$tracing_patch"
+spec:
+  config:
+    tracing:
+      backend: zipkin
+      debug: "true"
+      enable: "true"
+      sample-rate: "${SAMPLE_RATE}"
+      zipkin-endpoint: "${tracing_endpoint}"
+EOF
+
+  yq merge --inplace --arrays=append --overwrite "$custom_resource" "$tracing_patch"
+
+  rm -f "${tracing_patch}"
 }
 
 function get_tracing_endpoint {
