@@ -118,7 +118,7 @@ function download_ingress {
 # setup with net-kourier. Thus it will not use the release artifacts generated under openshift-knative-operator/cmd/kodata/knative-serving.
 # Instead openshift-knative/serving uses its own generated ci manifests and sets KNATIVE_SERVING_TEST_MANIFESTS_DIR.
 # Extensive Serving testing is done at this repo only. For the latter we do use manifests under openshift-knative-operator/cmd/kodata/knative-serving which are fetched from the midstream
-# repo. TODO: unify the artifacts at the mid stream repo.
+# repo.
 if [[ ${KNATIVE_SERVING_TEST_MANIFESTS_DIR} = "" ]]; then
   download_serving serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
 fi
