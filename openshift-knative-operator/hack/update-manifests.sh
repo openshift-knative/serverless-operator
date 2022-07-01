@@ -114,9 +114,9 @@ function download_ingress {
 # DOWNLOAD SERVING
 #
 
-# When openshift/knative-serving uses this repo to run a job (eg. PR against openshift-knative/serving) it will use a minimum
+# When openshift/knative-serving uses this repo to run a job (eg. PR against openshift/knative-serving) it will use a minimum
 # setup with net-kourier. Thus it will not use the release artifacts generated under openshift-knative-operator/cmd/kodata/knative-serving.
-# Instead openshift-knative/serving uses its own generated ci manifests and sets KNATIVE_SERVING_TEST_MANIFESTS_DIR.
+# Instead openshift/knative-serving uses its own generated ci manifests and sets KNATIVE_SERVING_TEST_MANIFESTS_DIR.
 # Extensive Serving testing is done at this repo only. For the latter we do use manifests under openshift-knative-operator/cmd/kodata/knative-serving which are fetched from the midstream
 # repo.
 if [[ ${KNATIVE_SERVING_TEST_MANIFESTS_DIR} = "" ]]; then
