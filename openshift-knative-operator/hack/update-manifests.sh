@@ -18,8 +18,10 @@ eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-
 istio_files=(200-clusterrole 400-config-istio 500-controller 500-webhook-deployment 500-webhook-secret 500-webhook-service 600-mutating-webhook 600-validating-webhook)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
+export KNATIVE_SERVING_MANIFESTS_DIR=${KNATIVE_SERVING_MANIFESTS_DIR:-""}
+export KNATIVE_SERVING_TEST_MANIFESTS_DIR=${KNATIVE_SERVING_TEST_MANIFESTS_DIR:-""}
 
-function download {
+function download_serving {
   component=$1
   version=$2
   shift
@@ -32,15 +34,19 @@ function download {
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
+  branch=$(metadata.get dependencies.serving_artifacts_branch)
   for (( i=0; i<${#files[@]}; i++ ));
   do
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
     target_file="$target_dir/$index-$file"
 
-    url="https://github.com/knative/$component/releases/download/knative-$version/$file"
-    wget --no-check-certificate "$url" -O "$target_file"
-
+    if [[ ${KNATIVE_SERVING_MANIFESTS_DIR} = "" ]]; then
+      url="https://raw.githubusercontent.com/openshift/serving/${branch}/openshift/release/artifacts/$index-$file"
+      wget --no-check-certificate "$url" -O "$target_file"
+    else
+      cp "${KNATIVE_SERVING_MANIFESTS_DIR}/${file}" "$target_file"
+    fi
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$target_file"
   done
@@ -107,17 +113,19 @@ function download_ingress {
 #
 # DOWNLOAD SERVING
 #
-download serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
 
-# Drop namespace from manifest.
-git apply "$root/openshift-knative-operator/hack/001-serving-namespace-deletion.patch"
+# When openshift/knative-serving uses this repo to run a job (eg. PR against openshift/knative-serving) it will use a minimum
+# setup with net-kourier. Thus it will not use the release artifacts generated under openshift-knative-operator/cmd/kodata/knative-serving.
+# Instead openshift/knative-serving uses its own generated ci manifests and sets KNATIVE_SERVING_TEST_MANIFESTS_DIR.
+# Extensive Serving testing is done at this repo only. For the latter we do use manifests under openshift-knative-operator/cmd/kodata/knative-serving which are fetched from the midstream
+# repo.
+if [[ ${KNATIVE_SERVING_TEST_MANIFESTS_DIR} = "" ]]; then
+  download_serving serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
+fi
 
-# Extra role for downstream, so that users can get the autoscaling CM to fetch defaults.
-git apply "$root/openshift-knative-operator/hack/002-openshift-serving-role.patch"
-
-# TODO: Remove this once upstream fixed https://github.com/knative/operator/issues/376.
-# See also https://issues.redhat.com/browse/SRVKS-670.
-git apply "$root/openshift-knative-operator/hack/003-serving-pdb.patch"
+#
+# DOWNLOAD INGRESS
+#
 
 download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
 
