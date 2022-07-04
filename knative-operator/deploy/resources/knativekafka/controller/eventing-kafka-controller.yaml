@@ -918,6 +918,7 @@ rules:
     verbs:
       - list
       - get
+      - update
       - watch
 
   # Scheduler permissions
