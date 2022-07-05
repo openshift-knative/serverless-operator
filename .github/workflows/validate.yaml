@@ -50,12 +50,12 @@ jobs:
       #   when it's manually triggered or a scheduled run, create a PR
       #   when there are changes detected.
       - name: Create Pull Request
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         uses: peter-evans/create-pull-request@v4
         with:
           path: ./src/github.com/${{ github.repository }}
-          branch: auto/update-generated-files
-          title: "Run make generated-files"
+          branch: auto/update-generated-files-${{ github.ref }}
+          title: "[${{ github.ref }}] Run make generated-files"
           commit-message: "Run make generated-files"
           delete-branch: true
           body: |
