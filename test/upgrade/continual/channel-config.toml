@@ -7,3 +7,8 @@ interval = {{ .Config.Interval.Nanoseconds }}
 
 [forwarder]
 target = '{{- .ForwarderTarget -}}'
+
+[receiver]
+  [receiver.errors]
+    # Value in nanoseconds
+    unavailablePeriodToReport = 5000000000
