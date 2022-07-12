@@ -67,13 +67,7 @@ func TestServerlessUpgrade(t *testing.T) {
 					}
 				}),
 			},
-			DowngradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
-					if err := installation.DowngradeServerless(ctx); err != nil {
-						c.T.Error("Serverless downgrade failed:", err)
-					}
-				}),
-			},
+			DowngradeWith: downgrade(ctx),
 		},
 	}
 	suite.Execute(cfg)
@@ -152,6 +146,9 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 }
 
 func postDowngradeTests() []pkgupgrade.Operation {
+	if test.Flags.SkipDowngrade {
+		return nil
+	}
 	tests := servingupgrade.ServingPostDowngradeTests()
 	tests = append(tests,
 		servingupgrade.CRDStoredVersionPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
@@ -163,6 +160,19 @@ func postDowngradeTests() []pkgupgrade.Operation {
 		kafkabrokerupgrade.SinkPostDowngradeTest(),
 	)
 	return tests
+}
+
+func downgrade(ctx *test.Context) []pkgupgrade.Operation {
+	if test.Flags.SkipDowngrade {
+		return nil
+	}
+	return []pkgupgrade.Operation{
+		pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
+			if err := installation.DowngradeServerless(ctx); err != nil {
+				c.T.Error("Serverless downgrade failed:", err)
+			}
+		}),
+	}
 }
 
 func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
