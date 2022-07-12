@@ -34,7 +34,7 @@ type FlagsStruct struct {
 	OpenShiftImage          string // Target OpenShift image for upgrades
 	UpgradeOpenShift        bool   // Whether to upgrade the OpenShift cluster
 	SkipServingPreUpgrade   bool   // Whether to skip Serving pre-upgrade tests
-	SkipDowngrade           bool   // Whether to skip post-downgrade tests.
+	SkipDowngrade           bool   // Whether to skip post-downgrade tests
 }
 
 func initializeFlags() *FlagsStruct {

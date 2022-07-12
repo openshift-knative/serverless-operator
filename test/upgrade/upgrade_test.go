@@ -147,7 +147,7 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 
 func postDowngradeTests() []pkgupgrade.Operation {
 	if test.Flags.SkipDowngrade {
-		return []pkgupgrade.Operation{}
+		return nil
 	}
 	tests := servingupgrade.ServingPostDowngradeTests()
 	tests = append(tests,
@@ -164,7 +164,7 @@ func postDowngradeTests() []pkgupgrade.Operation {
 
 func downgrade(ctx *test.Context) []pkgupgrade.Operation {
 	if test.Flags.SkipDowngrade {
-		return []pkgupgrade.Operation{}
+		return nil
 	}
 	return []pkgupgrade.Operation{
 		pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
