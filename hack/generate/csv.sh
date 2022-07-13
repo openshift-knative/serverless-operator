@@ -55,9 +55,21 @@ function default_knative_eventing_kafka_broker_images() {
   export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-"${eventing_kafka_broker}-post-install"}
 }
 
+function default_knative_ingress_images() {
+  local knative_kourier knative_istio
+  knative_kourier="${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${knative_kourier}"}
+  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
+
+  knative_istio="${registry}/knative-v$(metadata.get dependencies.net_istio)"
+  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${knative_istio}:net-istio-controller"}
+  export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-"${knative_istio}:net-istio-webhook"}
+}
+
 default_knative_eventing_images
 default_knative_eventing_kafka_broker_images
 default_knative_serving_images
+default_knative_ingress_images
 
 declare -a images
 declare -A images_addresses
@@ -91,12 +103,12 @@ image "domain-mapping" "${KNATIVE_SERVING_DOMAIN_MAPPING}"
 image "domainmapping-webhook" "${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK}"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}"
 
-image "kourier-gateway" "quay.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"
-image "kourier-control" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
-image "net-kourier-controller__controller" "${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+image "kourier-gateway" "${KNATIVE_KOURIER_GATEWAY}"
+image "kourier-control" "${KNATIVE_KOURIER_CONTROL}"
+image "net-kourier-controller__controller" "${KNATIVE_KOURIER_CONTROL}"
 
-image "net-istio-controller__controller" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-controller"
-image "net-istio-webhook__webhook" "${registry}/knative-v$(metadata.get dependencies.net_istio):net-istio-webhook"
+image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}"
+image "net-istio-webhook__webhook" "${KNATIVE_ISTIO_WEBHOOK}"
 
 image "eventing-controller__eventing-controller"                                                   "${KNATIVE_EVENTING_CONTROLLER}"
 image "sugar-controller__controller"                                                               "${KNATIVE_EVENTING_SUGAR_CONTROLLER}"
