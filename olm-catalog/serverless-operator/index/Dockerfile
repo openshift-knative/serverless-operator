@@ -6,7 +6,7 @@ COPY --from=quay.io/openshift/origin-operator-registry:4.11 /bin/opm /bin/opm
 COPY configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
-RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v1.23.0:serverless-stop-bundle \
+RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v1.24.0:serverless-stop-bundle \
   registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-bundle >> /configs/index.yaml
 
 # The base image is expected to contain
