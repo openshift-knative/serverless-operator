@@ -142,6 +142,10 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		FailOnNoJobs: true,
 	}))
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+	tests = append(tests, upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-serving",
+		FailOnNoJobs: true,
+	}))
 	return tests
 }
 
