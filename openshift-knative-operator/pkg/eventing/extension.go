@@ -34,7 +34,7 @@ func (e *extension) Manifests(ke operatorv1alpha1.KComponent) ([]mf.Manifest, er
 }
 
 func (e *extension) Transformers(ke operatorv1alpha1.KComponent) []mf.Transformer {
-	return append([]mf.Transformer{common.InjectCommonLabelIntoNamespace()},
+	return append([]mf.Transformer{common.InjectCommonLabelIntoNamespace(), common.VersionedJobNameTransform()},
 		monitoring.GetEventingTransformers(ke)...)
 }
 

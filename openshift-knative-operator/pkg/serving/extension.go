@@ -73,6 +73,7 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 		overrideKourierNamespace(ks),
 		addKourierEnvValues(),
 		enableSecretInformerFiltering(ks),
+		common.VersionedJobNameTransform(),
 	}, monitoring.GetServingTransformers(ks)...)
 }
 
