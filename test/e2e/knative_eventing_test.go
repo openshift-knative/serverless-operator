@@ -55,7 +55,7 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("Verify job succeeded", func(t *testing.T) {
-		upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
+		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    eventingNamespace,
 			FailOnNoJobs: true,
 		})
