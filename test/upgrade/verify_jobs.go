@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/pkg/test/upgrade"
 )
 
@@ -18,19 +18,16 @@ type VerifyPostJobsConfig struct {
 	FailOnNoJobs bool
 }
 
-func VerifyPostInstallJobs(cfg VerifyPostJobsConfig) upgrade.Operation {
+func VerifyPostInstallJobs(ctx *test.Context, cfg VerifyPostJobsConfig) upgrade.Operation {
 	return upgrade.NewOperation("Verify jobs in "+cfg.Namespace, func(c upgrade.Context) {
-		if err := verifyPostInstallJobs(context.Background(), c, cfg); err != nil {
+		if err := verifyPostInstallJobs(context.Background(), ctx, c, cfg); err != nil {
 			c.T.Error(err)
 		}
 	})
 }
 
-func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPostJobsConfig) error {
-	client := testlib.Setup(c.T, false)
-	defer testlib.TearDown(client)
-
-	jobs, err := client.Kube.
+func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade.Context, cfg VerifyPostJobsConfig) error {
+	jobs, err := testCtx.Clients.Kube.
 		BatchV1().
 		Jobs(cfg.Namespace).
 		List(ctx, metav1.ListOptions{Limit: 500 /* Use a very large number to avoid handling pagination */})
@@ -41,8 +38,7 @@ func verifyPostInstallJobs(ctx context.Context, c upgrade.Context, cfg VerifyPos
 	if len(jobs.Items) == 0 && cfg.FailOnNoJobs {
 		return fmt.Errorf("no jobs found in namespace %s", cfg.Namespace)
 	}
-
-	kubeClient := client.Kube
+	kubeClient := testCtx.Clients.Kube
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, j := range jobs.Items {

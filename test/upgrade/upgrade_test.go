@@ -130,6 +130,14 @@ func preUpgradeTests() []pkgupgrade.Operation {
 
 func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
+	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-serving",
+		FailOnNoJobs: true,
+	}))
+	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-eventing",
+		FailOnNoJobs: true,
+	}))
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
 	tests = append(tests,
 		kafkaupgrade.ChannelPostUpgradeTest(),
@@ -137,10 +145,6 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
 	)
-	tests = append(tests, upgrade.VerifyPostInstallJobs(upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-eventing",
-		FailOnNoJobs: true,
-	}))
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
