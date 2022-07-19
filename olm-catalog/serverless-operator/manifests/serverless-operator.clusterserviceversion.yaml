@@ -485,7 +485,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.3:client-plugin-event-sender"
                       - name: "CURRENT_VERSION"
-                        value: "1.24.0"
+                        value: "1.25.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
