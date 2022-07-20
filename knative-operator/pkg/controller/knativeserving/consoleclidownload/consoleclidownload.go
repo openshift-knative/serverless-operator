@@ -161,7 +161,7 @@ func populateKnConsoleCLIDownload(baseURL string, instance *operatorv1alpha1.Kna
 		},
 		Spec: consolev1.ConsoleCLIDownloadSpec{
 			DisplayName: "kn - OpenShift Serverless Command Line Interface (CLI)",
-			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving and Eventing resources without writing a single line of YAML.",
+			Description: "The OpenShift Serverless client `kn` is a CLI tool that allows you to fully manage OpenShift Serverless Serving, Eventing, and Function resources without writing a single line of YAML.",
 			Links: []consolev1.CLIDownloadLink{{
 				Text: "Download kn for Linux for x86_64",
 				Href: baseURL + "/kn-linux-amd64.tar.gz",
