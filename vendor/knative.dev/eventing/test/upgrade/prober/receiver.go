@@ -114,7 +114,7 @@ func (p *prober) createReceiverDeployment() *appsv1.Deployment {
 							MountPath: p.config.ConfigMountPoint,
 						}},
 						ReadinessProbe: &corev1.Probe{
-							Handler: corev1.Handler{
+							ProbeHandler: corev1.ProbeHandler{
 								HTTPGet: &corev1.HTTPGetAction{
 									Path: p.config.HealthEndpoint,
 									Port: intstr.FromInt(watholaconfig.DefaultReceiverPort),
