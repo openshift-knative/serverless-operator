@@ -1,6 +1,7 @@
 ---
 project:
   name: serverless-operator
+  # For minor and major version bumps, bump all `dependencies.previous` to whatever `dependencies` has set.
   version: 1.25.0
 
 olm:
