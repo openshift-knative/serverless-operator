@@ -34,10 +34,11 @@ export RUN_HTTP01_AUTO_TLS_TESTS=0
 export HTTPS=0
 export SHORT=0
 export ENABLE_HA=0
+export ENABLE_TLS=${ENABLE_TLS:-0}
 export MESH=0
 export PERF=0
-export KIND=0
-export CLUSTER_DOMAIN=cluster.local
+export KIND=${KIND:-0}
+export CLUSTER_DOMAIN=${CLUSTER_DOMAIN:-cluster.local}
 
 # List of custom YAMLs to install, if specified (space-separated).
 export INSTALL_CUSTOM_YAMLS=""
@@ -57,6 +58,7 @@ readonly REPLICAS=3
 readonly BUCKETS=10
 
 export PVC=${PVC:-1}
+export QUOTA=${QUOTA:-1}
 
 # Receives the latest serving version and searches for the same version with major and minor and searches for the latest patch
 function latest_net_istio_version() {
@@ -301,6 +303,10 @@ function install() {
     YTT_FILES+=("${REPO_ROOT_DIR}/test/config/pvc/pvc.yaml")
   fi
 
+  if (( QUOTA )); then
+    YTT_FILES+=("${REPO_ROOT_DIR}/test/config/resource-quota/resource-quota.yaml")
+  fi
+
   local ytt_result=$(mktemp)
   local ytt_post_install_result=$(mktemp)
   local ytt_flags=""
@@ -350,6 +356,15 @@ function install() {
     # # lease resources at the old sharding factor, so clean these up.
     # kubectl -n ${SYSTEM_NAMESPACE} delete leases --all
     wait_for_leader_controller || return 1
+  fi
+
+  if (( ENABLE_TLS )); then
+    echo "Generate certificates"
+    bash ${REPO_ROOT_DIR}/test/generate-cert.sh
+
+    echo "Patch to activator to serve TLS"
+    kubectl apply -n ${SYSTEM_NAMESPACE} -f ${REPO_ROOT_DIR}/test/config/tls/config-network.yaml
+    kubectl delete pod -n ${SYSTEM_NAMESPACE} -l app=activator
   fi
 }
 
