@@ -1,6 +1,8 @@
-FROM openshift/origin-base as builder
+FROM quay.io/openshift/origin-operator-registry:4.11 AS opm
 
-COPY --from=quay.io/openshift/origin-operator-registry:4.11 /bin/opm /bin/opm
+FROM quay.io/openshift/origin-base:4.11 as builder
+
+COPY --from=opm /bin/opm /bin/opm
 
 # Copy declarative config root into image at /configs
 COPY configs /configs
@@ -11,7 +13,7 @@ RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM quay.io/openshift/origin-operator-registry:4.11
+FROM opm
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
