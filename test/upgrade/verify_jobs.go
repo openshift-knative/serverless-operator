@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"knative.dev/pkg/test/upgrade"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 type VerifyPostJobsConfig struct {
@@ -51,7 +52,7 @@ func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade
 		}
 
 		eg.Go(func() error {
-			err := wait.PollUntil(5*time.Second, func() (bool, error) {
+			pollErr := wait.PollUntil(5*time.Second, func() (bool, error) {
 				j, err := kubeClient.
 					BatchV1().
 					Jobs(cfg.Namespace).
@@ -73,14 +74,14 @@ func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade
 
 				return j.Status.Succeeded > 0, nil
 			}, ctx.Done())
-			if err != nil {
-				return fmt.Errorf("%w, job:\n%+v", err, j)
+			if pollErr != nil {
+				return fmt.Errorf("%w, job:\n%+v", pollErr, j)
 			}
 			return nil
 		})
 	}
-	if err := eg.Wait(); err != nil {
-		return fmt.Errorf("jobs in %s didn't run successfully: %w", cfg.Namespace, err)
+	if egErr := eg.Wait(); err != nil {
+		return fmt.Errorf("jobs in %s didn't run successfully: %w", cfg.Namespace, egErr)
 	}
 
 	return nil
