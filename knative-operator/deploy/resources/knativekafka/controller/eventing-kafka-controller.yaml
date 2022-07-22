@@ -21,7 +21,7 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
@@ -48,7 +48,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   group: eventing.knative.dev
   names:
@@ -229,7 +229,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v20220302-f4dfb1493"
+    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -318,7 +318,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -329,6 +329,65 @@ rules:
       - get
       - list
       - watch
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-kafka-source-defaults
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: v1.4.0
+  annotations:
+    knative.dev/example-checksum: "b6ed351d"
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # autoscalingClass is the autoscaler class name to use.
+    # valid value: keda.autoscaling.knative.dev
+    # autoscalingClass: ""
+
+    # minScale is the minimum number of replicas to scale down to.
+    # minScale: "1"
+
+    # maxScale is the maximum number of replicas to scale up to.
+    # maxScale: "1"
+
+    # pollingInterval is the interval in seconds KEDA uses to poll metrics.
+    # pollingInterval: "30"
+
+    # cooldownPeriod is the period of time in seconds KEDA waits until it scales down.
+    # cooldownPeriod: "300"
+
+    # kafkaLagThreshold is the lag (ie. number of messages in a partition) threshold for KEDA to scale up sources.
+    # kafkaLagThreshold: "10"
 ---
 ---
 
@@ -352,7 +411,7 @@ metadata:
   name: kafka-channel-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 ---
@@ -375,7 +434,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v20220302-f4dfb1493"
+    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -644,37 +703,11 @@ metadata:
   name: config-kafka-descheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-    #
-    # These predicate plugins are used to filter out pods that
-    # a vreplica cannot be removed from due to not satisfying the
-    # predicate condition. For each pod, the descheduler
-    # will call filter plugins in their configured order.
-    # predicates: |+
+    predicates: |+
                     []
-    #
-    # These priority plugins are used to score each pod that
-    # has passed the filtering phase. The scheduler will then
-    # select the pod with the highest weighted score sum to
-    # remove vreplica from. If two pods have an equal score,
-    # a pod is chosen randomly.
-    # priorities: |+
+    priorities: |+
                   [
                     {"Name": "RemoveWithEvenPodSpreadPriority",
                     "Weight": 10,
@@ -689,8 +722,37 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: config-kafka-features
+  namespace: knative-eventing
+  annotations:
+    knative.dev/example-checksum: "e914c9f1"
+data:
+  _example: |-
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    #
+    # Controls whether the dispatcher should use the rate limiter based on the number of virtual replicas.
+    # 1. Enabled: The rate limiter is applied.
+    # 2. Disabled: The rate limiter is not applied.
+    dispatcher.rate-limiter: "disabled"
+  dispatcher.rate-limiter: "disabled"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
   name: config-kafka-leader-election
   namespace: knative-eventing
   annotations:
@@ -756,48 +818,24 @@ metadata:
   name: config-kafka-scheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-    #
-    # These predicate plugins are used to filter out pods that
-    # a vreplica cannot be placed on due to not satisfying the
-    # predicate condition. For each pod, the scheduler
-    # will call filter plugins in their configured order.
-    # predicates: |+
+    predicates: |+
                   [
                     {"Name": "PodFitsResources"},
                     {"Name": "NoMaxResourceCount",
-                    "Args": "{\"NumPartitions\": 100}"},
-                    {"Name": "EvenPodSpread",
-                    "Args": "{\"MaxSkew\": 2}"}
+                    "Args": "{\"NumPartitions\": 100}"}
                   ]
-    #
-    # These priority plugins are used to score each pod that
-    # has passed the filtering phase. The scheduler will then
-    # select the pod with the highest weighted score sum. If
-    # two pods have an equal score, a pod is chosen randomly.
-    # priorities: |+
+    priorities: |+
                   [
                     {"Name": "AvailabilityZonePriority",
                     "Weight": 10,
                     "Args":  "{\"MaxSkew\": 2}"},
                     {"Name": "LowestOrdinalPriority",
-                    "Weight": 2}
+                    "Weight": 2},
+                    {"Name": "EvenPodSpread",
+                    "Weight": 2,
+                    "Args": "{\"MaxSkew\": 2}"}
                   ]
 ---
 ---
@@ -822,7 +860,7 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
   config.xml: |
     <configuration>
@@ -853,7 +891,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -896,7 +934,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -936,7 +974,7 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 rules:
   - apiGroups:
       - "*"
@@ -958,6 +996,16 @@ rules:
       - update
       - get
       - watch
+  - apiGroups:
+      - "*"
+    resources:
+      - pods/finalizers
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
   - apiGroups:
       - "*"
     resources:
@@ -1024,6 +1072,7 @@ rules:
       - watch
       - patch
       - update
+      - delete
   - apiGroups:
       - "internal.kafka.eventing.knative.dev"
     resources:
@@ -1031,7 +1080,7 @@ rules:
       - "consumergroups/finalizers"
     verbs:
       - update
-
+      - delete
   # Eventing resources and statuses we care about
   - apiGroups:
       - "eventing.knative.dev"
@@ -1128,7 +1177,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 ---
 ---
 
@@ -1151,7 +1200,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1167,7 +1216,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1200,7 +1249,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   selector:
     matchLabels:
@@ -1210,13 +1259,20 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
     spec:
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
       serviceAccountName: kafka-controller
 
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-controller
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -1303,10 +1359,26 @@ spec:
 
             - name: BROKER_DEFAULT_BACKOFF_DELAY_MS
               value: "1000" # 1 second
+            - name: CHANNEL_DEFAULT_BACKOFF_DELAY_MS
+              value: "1000" # 1 second
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+
+            # How often (in seconds) the autoscaler tries to scale down the statefulset.
+            - name: AUTOSCALER_REFRESH_PERIOD
+              value: '100'
+
+            # The number of virtual replicas each adapter pod can handle.
+            - name: POD_CAPACITY
+              value: '20'
+
+            - name: SCHEDULER_CONFIG
+              value: 'config-kafka-scheduler'
+
+            - name: DESCHEDULER_CONFIG
+              value: 'config-kafka-descheduler'
 
             - name: CONFIG_LEADERELECTION_NAME
               value: config-kafka-leader-election
@@ -1352,7 +1424,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -1464,7 +1536,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 ---
 ---
 
@@ -1487,7 +1559,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -1517,7 +1589,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 webhooks:
   - admissionReviewVersions: [ "v1", "v1beta1" ]
     clientConfig:
@@ -1548,7 +1620,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: pods.defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 webhooks:
   # Dispatcher pods webhook config.
   - admissionReviewVersions: [ "v1", "v1beta1" ]
@@ -1590,7 +1662,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 # The data is populated at install time.
 ---
 # Copyright 2020 The Knative Authors
@@ -1612,7 +1684,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -1645,7 +1717,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   selector:
     matchLabels:
@@ -1654,7 +1726,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -1669,7 +1741,7 @@ spec:
 
       serviceAccountName: kafka-webhook-eventing
       securityContext:
-        runAsNonRoot: false
+        runAsNonRoot: true
 
       containers:
         - name: kafka-webhook-eventing
@@ -1740,7 +1812,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   ports:
     - name: https-webhook

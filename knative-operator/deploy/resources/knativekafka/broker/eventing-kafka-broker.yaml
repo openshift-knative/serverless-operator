@@ -21,7 +21,7 @@ metadata:
   name: config-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 data:
   config-kafka-broker-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -141,7 +141,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 rules:
   - apiGroups:
       - "*"
@@ -174,7 +174,7 @@ metadata:
   name: knative-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 ---
 ---
 
@@ -197,7 +197,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-broker-data-plane
@@ -230,7 +230,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-dispatcher
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   selector:
     matchLabels:
@@ -240,7 +240,7 @@ spec:
       name: kafka-broker-dispatcher
       labels:
         app: kafka-broker-dispatcher
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -327,7 +327,6 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
@@ -398,7 +397,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   selector:
     matchLabels:
@@ -408,7 +407,7 @@ spec:
       name: kafka-broker-receiver
       labels:
         app: kafka-broker-receiver
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -496,7 +495,6 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           # TODO set resources (limits and requests)
@@ -551,7 +549,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   selector:
     app: kafka-broker-receiver
