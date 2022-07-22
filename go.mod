@@ -21,16 +21,16 @@ require (
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.45.0
-	k8s.io/api v0.23.4
-	k8s.io/apimachinery v0.23.4
-	k8s.io/client-go v0.23.4
-	knative.dev/eventing v0.30.3-0.20220420143529-0764365a1b4d
-	knative.dev/eventing-kafka v0.30.1-0.20220509122433-a5f80fcb248a
+	k8s.io/api v0.23.5
+	k8s.io/apimachinery v0.23.5
+	k8s.io/client-go v0.23.5
+	knative.dev/eventing v0.32.0
+	knative.dev/eventing-kafka v0.32.0
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20220314052818-c9c3ea17a2e9
-	knative.dev/networking v0.0.0-20220302134042-e8b2eb995165
-	knative.dev/operator v0.30.2
-	knative.dev/pkg v0.0.0-20220314170718-721abec0a377
+	knative.dev/hack v0.0.0-20220524153203-12d3e2a7addc
+	knative.dev/networking v0.0.0-20220412163509-1145ec58c8be
+	knative.dev/operator v0.31.2
+	knative.dev/pkg v0.0.0-20220524202603-19adf798efb8
 	knative.dev/serving v0.30.0
 	sigs.k8s.io/controller-runtime v0.9.7
 )
@@ -39,6 +39,7 @@ require (
 	cloud.google.com/go/compute v1.5.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	k8s.io/klog v1.0.0 // indirect
+	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
@@ -150,25 +151,25 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.22.5 // indirect
-	k8s.io/apiserver v0.22.5 // indirect
-	k8s.io/code-generator v0.22.5 // indirect
-	k8s.io/component-base v0.22.5 // indirect
-	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
-	k8s.io/klog/v2 v2.40.1 // indirect
+	k8s.io/apiextensions-apiserver v0.23.4 // indirect
+	k8s.io/apiserver v0.23.4 // indirect
+	k8s.io/code-generator v0.23.5 // indirect
+	k8s.io/component-base v0.23.4 // indirect
+	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b // indirect
+	k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89 // indirect
 	k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/caching v0.0.0-20220311005831-b2a3f59d7175 // indirect
-	knative.dev/reconciler-test v0.0.0-20220303141206-84821d26ed1f
+	knative.dev/caching v0.0.0-20220412163508-8b5c244b8182 // indirect
+	knative.dev/reconciler-test v0.0.0-20220524205904-f750f80bfc7e
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
 replace (
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220603105300-22ade8652ac1
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141527-4852175c67a7
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220531092543-6533810512a9
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220603141301-7e612b35a9b3
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220712171311-f13c06f7b804
+	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141528-c59955f23883
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220721145144-249d203ec40e
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
 )
 
 replace (
@@ -177,14 +178,11 @@ replace (
 	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 
-	k8s.io/api v0.23.4 => k8s.io/api v0.22.5
-	k8s.io/apimachinery v0.23.4 => k8s.io/apimachinery v0.22.5
-	k8s.io/client-go v0.23.4 => k8s.io/client-go v0.22.5
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 )
 
-replace knative.dev/operator v0.30.2 => knative.dev/operator v0.29.2
+replace knative.dev/operator v0.31.2 => knative.dev/operator v0.29.2
 
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220314165618-a637a96a1bd9
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
 
-replace knative.dev/hack => knative.dev/hack v0.0.0-20220224013837-e1785985d364
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0

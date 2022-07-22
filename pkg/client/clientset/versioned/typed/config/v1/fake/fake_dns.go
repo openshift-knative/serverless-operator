@@ -94,7 +94,7 @@ func (c *FakeDNSs) UpdateStatus(ctx context.Context, dNS *configv1.DNS, opts v1.
 // Delete takes name of the dNS and deletes it. Returns an error if one occurs.
 func (c *FakeDNSs) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewRootDeleteAction(dnssResource, name), &configv1.DNS{})
+		Invokes(testing.NewRootDeleteActionWithOptions(dnssResource, name, opts), &configv1.DNS{})
 	return err
 }
 
