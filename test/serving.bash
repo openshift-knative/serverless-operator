@@ -73,6 +73,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Create a persistent volume claim for the respective tests
   oc apply -f ./test/config/pvc/pvc.yaml
 
+  # Apply resource quota in rq-test namespace, needed for the related e2e test.
+  oc apply -f ./test/config/resource-quota/resource-quota.yaml
+
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
