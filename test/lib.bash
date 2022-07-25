@@ -193,26 +193,26 @@ function run_rolling_upgrade_tests {
   eventing_kafka_broker_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}")
 
   # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
-  base="quay.io/openshift-knative/{{.Name}}:v"
+  base="quay.io/openshift-knative/"
   image_template=$(
     cat <<-EOF
 $base{{- with .Name }}
-{{- if eq .      "wathola-kafka-sender"}}$eventing_kafka_image_version
-{{- else if eq . "kafka-consumer"      }}$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}$eventing_image_version
-{{- else if eq . "event-library"       }}$eventing_image_version
-{{- else if eq . "event-sender"        }}$eventing_image_version
-{{- else if eq . "eventshub"           }}$eventing_image_version
-{{- else if eq . "heartbeats"          }}$eventing_image_version
-{{- else if eq . "performance"         }}$eventing_image_version
-{{- else if eq . "print"               }}$eventing_image_version
-{{- else if eq . "recordevents"        }}$eventing_image_version
-{{- else if eq . "request-sender"      }}$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}$eventing_image_version
-{{- else if eq . "wathola-sender"      }}$eventing_image_version
-{{- else                               }}$serving_image_version{{end -}}
+{{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
+{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:knative-v$eventing_kafka_broker_image_version
+{{- else if eq . "event-flaker"        }}{{.}}:v$eventing_image_version
+{{- else if eq . "event-library"       }}{{.}}:v$eventing_image_version
+{{- else if eq . "event-sender"        }}{{.}}:v$eventing_image_version
+{{- else if eq . "eventshub"           }}{{.}}:v$eventing_image_version
+{{- else if eq . "heartbeats"          }}{{.}}:v$eventing_image_version
+{{- else if eq . "performance"         }}{{.}}:v$eventing_image_version
+{{- else if eq . "print"               }}{{.}}:v$eventing_image_version
+{{- else if eq . "recordevents"        }}{{.}}:v$eventing_image_version
+{{- else if eq . "request-sender"      }}{{.}}:v$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}{{.}}:v$eventing_image_version
+{{- else if eq . "wathola-forwarder"   }}{{.}}:v$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}{{.}}:v$eventing_image_version
+{{- else if eq . "wathola-sender"      }}{{.}}:v$eventing_image_version
+{{- else                               }}{{.}}:v$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
