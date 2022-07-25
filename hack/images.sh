@@ -5,7 +5,8 @@
 
 set -Eeuo pipefail
 
-source "$(dirname $0)/lib/__sources__.bash"
+# shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 
 root_dir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
