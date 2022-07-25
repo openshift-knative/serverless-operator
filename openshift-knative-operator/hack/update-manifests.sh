@@ -111,7 +111,7 @@ function download_ingress {
 
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/skonto/${component}/${branch}/openshift/release/artifacts/$index-$file"
+    url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$index-$file"
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
