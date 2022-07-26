@@ -11,7 +11,7 @@ source "$root/hack/lib/__sources__.bash"
 # These files could in theory change from release to release, though their names should
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
-eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-channel-broker.yaml eventing-sugar-controller.yaml eventing-post-install.yaml)
+eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-channel-broker.yaml eventing-post-install.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
