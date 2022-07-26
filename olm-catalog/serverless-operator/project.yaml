@@ -29,7 +29,9 @@ dependencies:
 
   # versions for networking components
   kourier: 1.4.0
+  net_kourier_artifacts_branch: release-1.4
   net_istio: 1.4.0
+  net_istio_artifacts_branch: release-1.4
   maistra: 2.1.0
 
   eventing: 1.3.2
