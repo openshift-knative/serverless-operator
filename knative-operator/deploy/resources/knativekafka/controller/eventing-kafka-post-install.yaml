@@ -20,7 +20,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 rules:
   - apiGroups:
       - apps
@@ -227,7 +227,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -248,7 +248,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -317,7 +317,7 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 
 ---
 
@@ -326,7 +326,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -357,7 +357,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -388,7 +388,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -396,7 +396,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -434,7 +434,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    kafka.eventing.knative.dev/release: v1.3.2
+    kafka.eventing.knative.dev/release: v1.4.0
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -442,7 +442,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        kafka.eventing.knative.dev/release: v1.3.2
+        kafka.eventing.knative.dev/release: v1.4.0
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -451,6 +451,9 @@ spec:
       containers:
         - name: migrate
           image: TO_BE_REPLACED
+          env:
+            - name: IGNORE_NOT_FOUND
+              value: "true"
           args:
             - "kafkasources.sources.knative.dev"
             - "kafkachannels.messaging.knative.dev"

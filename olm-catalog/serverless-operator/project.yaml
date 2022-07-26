@@ -40,9 +40,9 @@ dependencies:
 
   eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion version without the `knative-v` prefix
-  eventing_kafka_broker: 1.3.2
+  eventing_kafka_broker: 1.4
   # eventing-kafka-broker midstream branch name
-  eventing_kafka_broker_artifacts_branch: release-v1.3
+  eventing_kafka_broker_artifacts_branch: release-v1.4
   cli: 1.3.1
   operator: 1.2.2
   # Previous versions required for downgrade testing
