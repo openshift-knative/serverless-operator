@@ -242,8 +242,6 @@ func getDefaultMetricsPort(name string) string {
 func getSelectorLabels(component string) map[string]string {
 	labels := map[string]string{}
 	switch component {
-	case "sugar-controller":
-		labels["eventing.knative.dev/role"] = component
 	case "imc-controller":
 		labels["messaging.knative.dev/channel"] = "in-memory-channel"
 		labels["messaging.knative.dev/role"] = "controller"

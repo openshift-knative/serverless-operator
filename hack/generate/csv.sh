@@ -111,7 +111,6 @@ image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}"
 image "net-istio-webhook__webhook" "${KNATIVE_ISTIO_WEBHOOK}"
 
 image "eventing-controller__eventing-controller"                                                   "${KNATIVE_EVENTING_CONTROLLER}"
-image "sugar-controller__controller"                                                               "${KNATIVE_EVENTING_SUGAR_CONTROLLER}"
 image "eventing-webhook__eventing-webhook"                                                         "${KNATIVE_EVENTING_WEBHOOK}"
 image "storage-version-migration-eventing-eventing-$(metadata.get dependencies.eventing)__migrate" "${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION}"
 image "mt-broker-controller__mt-broker-controller"                                                 "${KNATIVE_EVENTING_MTCHANNEL_BROKER}"
