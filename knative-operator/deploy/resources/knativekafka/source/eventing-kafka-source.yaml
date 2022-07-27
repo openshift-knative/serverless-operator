@@ -21,7 +21,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4.0
+    kafka.eventing.knative.dev/release: v1.4
 data:
   config-kafka-source-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -141,7 +141,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4.0
+    kafka.eventing.knative.dev/release: v1.4
 rules:
   - apiGroups:
       - "*"
@@ -174,7 +174,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4.0
+    kafka.eventing.knative.dev/release: v1.4
 ---
 ---
 
@@ -197,7 +197,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4.0
+    kafka.eventing.knative.dev/release: v1.4
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -230,7 +230,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: v1.4.0
+    kafka.eventing.knative.dev/release: v1.4
 spec:
   selector:
     matchLabels:
@@ -240,7 +240,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        kafka.eventing.knative.dev/release: v1.4.0
+        kafka.eventing.knative.dev/release: v1.4
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
