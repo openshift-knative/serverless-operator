@@ -226,6 +226,17 @@ spec:
       loglevel.kafkachannel-controller: "debug"
       loglevel.inmemorychannel-dispatcher: "debug"
       loglevel.mt-broker-controller: "debug"
+    sugar:
+      namespace-selector: |
+        matchExpressions:
+        - key: "e2e.eventing.knative.dev/injection"
+          operator: "In"
+          values: ["enabled"]
+      trigger-selector: |
+        matchExpressions:
+        - key: "e2e.eventing.knative.dev/injection"
+          operator: "In"
+          values: ["enabled"]
 EOF
 
   if [[ $ENABLE_TRACING == "true" ]]; then
