@@ -142,10 +142,6 @@ download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_fi
 
 SKIP_TARGET_DELETION=true download_ingress net-kourier "v$(metadata.get dependencies.net_kourier)" "${kourier_files[@]}"
 
-# Add knative-serving-certs, which is used by internal TLS, to Kourier manifest.
-# Only downstream needs this as we deploy Kourier in knative-serving-ingress.
-git apply "$root/openshift-knative-operator/hack/009-kourier-cert.patch"
-
 #
 # DOWNLOAD EVENTING
 #
