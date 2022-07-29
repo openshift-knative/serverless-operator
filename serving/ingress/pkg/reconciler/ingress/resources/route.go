@@ -142,7 +142,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		},
 	}
 
-	// Use passthrough type for OpenShift Ingress -> Kourier Gateawy to encrypt the traffic
+	// Use passthrough type for OpenShift Ingress -> Kourier Gateway to encrypt the traffic
 	// when Internal TLS is enabled.
 	// In other words, do not use edge termination which makes plain traffic.
 	if isInternalEncryptionEnabled(rule) {
