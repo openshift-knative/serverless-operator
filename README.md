@@ -58,6 +58,16 @@ need to run `docker login` to be able to push images. Now run
 `make images` and all images in this repository will now be built and
 pushed to your docker repository.
 
+#### Creating the images on cluster
+
+`make images` requires docker or podman to build images, by setting
+`ON_CLUSTER_BUILDS=true` env variable, `make images` will build images
+using OpenShift Build and they will be available at the in-cluster
+registry `image-registry.openshift-image-registry.svc:5000/openshift-marketplace/<image_name>`.
+
+To install the system using those images, use
+`DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace`
+
 ### Installing the system
 
 Use the appropriate make targets or scripts in `hack`:
