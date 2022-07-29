@@ -336,7 +336,6 @@ func TestMakeRoute(t *testing.T) {
 			name: "internal encryption is enabled",
 			ingress: ingress(
 				withRules(rule(withHosts([]string{localDomain, externalDomain}), withHTTPSBackendService())),
-				//withRules(rule(withHTTPSBackendService())),
 			),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{

@@ -51,8 +51,8 @@ func kourierNamespace(servingNs string) string {
 
 func addKourierEnvValues(ks operatorv1alpha1.KComponent) mf.Transformer {
 	envVars := []corev1.EnvVar{
-		corev1.EnvVar{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
-		corev1.EnvVar{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
+		{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
+		{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
 	}
 	if ks.GetSpec().GetConfig()[networkCMName][InternalEncryptionKey] != "" {
 		envVars = append(envVars,
