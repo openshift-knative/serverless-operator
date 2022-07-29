@@ -25,7 +25,7 @@ requirements:
 dependencies:
   serving: 1.4.0
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.4
+  serving_artifacts_branch: fix_pdb_1.4
 
   # versions for networking components
   kourier: 1.4.0
