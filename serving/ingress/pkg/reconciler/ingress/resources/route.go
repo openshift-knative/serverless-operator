@@ -142,23 +142,11 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		},
 	}
 
-	// Use passthrough type for OpenShift Ingress -> Kourier Gateway to encrypt the traffic
-	// when Internal TLS is enabled.
-	// In other words, do not use edge termination which makes plain traffic.
-	if isInternalEncryptionEnabled(rule) {
-		route.Spec.Port = &routev1.RoutePort{
-			TargetPort: intstr.FromString(HTTPSPort),
-		}
-		route.Spec.TLS = &routev1.TLSConfig{
-			Termination:                   routev1.TLSTerminationPassthrough,
-			InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
-		}
-	}
-
 	// Target the HTTPS port and configure passthrough when:
 	// * the passthrough annotation is set.
 	// * the ingress.spec.tls is set. (DomainMapping with BYP cert.)
-	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 {
+	// * the internal-encryption is enabled.
+	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 || isInternalEncryptionEnabled(rule) {
 		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
 		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
 		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
