@@ -2,6 +2,7 @@ package serving
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -13,7 +14,7 @@ const istioIngressClassName = "istio.ingress.networking.knative.dev"
 func defaultToKourier(ks *operatorv1alpha1.KnativeServing) {
 	if ks.Spec.Ingress == nil {
 		ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-			Kourier: operatorv1alpha1.KourierIngressConfiguration{
+			Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
 			},
 		}

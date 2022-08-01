@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -61,7 +61,7 @@ func injectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 	}
 }
 
-func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *operatorv1alpha1.CommonSpec, ns string) error {
+func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *base.CommonSpec, ns string) error {
 	if ShouldEnableMonitoring(spec.GetConfig()) {
 		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
@@ -77,7 +77,7 @@ func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *op
 	return nil
 }
 
-func ShouldEnableMonitoring(config operatorv1alpha1.ConfigMapData) bool {
+func ShouldEnableMonitoring(config base.ConfigMapData) bool {
 	backend := config[ObservabilityCMName][ObservabilityBackendKey]
 	if backend == "none" || backend == "opencensus" {
 		return false

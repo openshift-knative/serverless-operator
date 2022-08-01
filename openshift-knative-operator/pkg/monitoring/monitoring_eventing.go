@@ -6,6 +6,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -17,7 +18,7 @@ func ReconcileMonitoringForEventing(ctx context.Context, api kubernetes.Interfac
 	return reconcileMonitoring(ctx, api, &ke.Spec.CommonSpec, ke.GetNamespace())
 }
 
-func GetEventingTransformers(comp operatorv1alpha1.KComponent) []mf.Transformer {
+func GetEventingTransformers(comp base.KComponent) []mf.Transformer {
 	// When monitoring is off we keep around the required resources, only rbac-proxy is removed
 	transformers := []mf.Transformer{injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace)}
 	if ShouldEnableMonitoring(comp.GetSpec().GetConfig()) {
@@ -26,7 +27,7 @@ func GetEventingTransformers(comp operatorv1alpha1.KComponent) []mf.Transformer 
 	return transformers
 }
 
-func GetEventingMonitoringPlatformManifests(ke operatorv1alpha1.KComponent) ([]mf.Manifest, error) {
+func GetEventingMonitoringPlatformManifests(ke base.KComponent) ([]mf.Manifest, error) {
 	rbacManifest, err := getRBACManifest()
 	if err != nil {
 		return nil, err

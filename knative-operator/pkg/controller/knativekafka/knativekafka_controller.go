@@ -17,7 +17,7 @@ import (
 
 	mfc "github.com/manifestival/controller-runtime-client"
 
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -275,8 +276,8 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *serverlessoperator
 // set defaults for Openshift
 func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if instance.Spec.HighAvailability == nil {
-		instance.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
-			Replicas: 1,
+		instance.Spec.HighAvailability = &base.HighAvailability{
+			Replicas: ptr.Int32(1),
 		}
 	}
 
@@ -311,7 +312,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
 		}),
-		setKafkaDeployments(instance.Spec.HighAvailability.Replicas),
+		setKafkaDeployments(*instance.Spec.HighAvailability.Replicas),
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
