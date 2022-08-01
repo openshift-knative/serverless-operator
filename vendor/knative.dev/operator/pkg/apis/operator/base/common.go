@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package base
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -69,6 +69,9 @@ type KComponentSpec interface {
 
 	// GetDeploymentOverride gets the deployment configurations to override.
 	GetDeploymentOverride() []DeploymentOverride
+
+	// GetServiceOverride gets the service configurations to override.
+	GetServiceOverride() []ServiceOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -125,13 +128,18 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Resources overrides containers' resource requirements.
+	// DEPRECATED.
+	// DeprecatedResources overrides containers' resource requirements.
 	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
 	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
+
+	// ServiceOverride overrides Service configurations such as labels and annotations.
+	// +optional
+	ServiceOverride []ServiceOverride `json:"services,omitempty"`
 
 	// Override containers' resource requirements
 	// +optional
@@ -162,7 +170,7 @@ func (c *CommonSpec) GetRegistry() *Registry {
 
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
-	return c.Resources
+	return c.DeprecatedResources
 }
 
 // GetVersion implements KComponentSpec.
@@ -190,13 +198,18 @@ func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
 	return c.DeploymentOverride
 }
 
+// GetServiceOverride implements KComponentSpec.
+func (c *CommonSpec) GetServiceOverride() []ServiceOverride {
+	return c.ServiceOverride
+}
+
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
 // level key is the key to the ConfigMap itself (i.e. "logging") while the second level
 // is the data to be filled into the respective ConfigMap.
 type ConfigMapData map[string]map[string]string
 
 // Registry defines image overrides of knative images.
-// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1beta1.Image.
 // The default value is used as a default format to override for all knative deployments.
 // The override values are specific to each knative deployment.
 type Registry struct {
@@ -232,7 +245,7 @@ type DeploymentOverride struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	// +optional
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// NodeSelector overrides nodeSelector for the deployment.
 	// +optional
@@ -249,6 +262,20 @@ type DeploymentOverride struct {
 	// Resources overrides resources for the containers.
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+}
+
+// ServiceOverride defines the configurations of the service to override.
+type ServiceOverride struct {
+	// Name is the name of the service to override.
+	Name string `json:"name"`
+
+	// Labels overrides labels for the service and its template.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations overrides labels for the service and its template.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's
@@ -272,5 +299,15 @@ type Manifest struct {
 type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
-	Replicas int32 `json:"replicas"`
+	Replicas *int32 `json:"replicas"`
+}
+
+// CustomCerts refers to either a ConfigMap or Secret containing valid
+// CA certificates
+type CustomCerts struct {
+	// One of ConfigMap or Secret
+	Type string `json:"type"`
+
+	// The name of the ConfigMap or Secret
+	Name string `json:"name"`
 }

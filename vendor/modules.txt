@@ -1217,7 +1217,7 @@ k8s.io/utils/internal/third_party/forked/golang/net
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20220412163508-8b5c244b8182
+# knative.dev/caching v0.0.0-20220505013701-23602d6882e2
 ## explicit; go 1.15
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
@@ -1396,23 +1396,29 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.31.2 => knative.dev/operator v0.29.2
+# knative.dev/operator v0.31.2
 ## explicit; go 1.16
+knative.dev/operator/pkg/apis/operator
+knative.dev/operator/pkg/apis/operator/base
 knative.dev/operator/pkg/apis/operator/v1alpha1
+knative.dev/operator/pkg/apis/operator/v1beta1
 knative.dev/operator/pkg/client/clientset/versioned
 knative.dev/operator/pkg/client/clientset/versioned/scheme
 knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1
+knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1
 knative.dev/operator/pkg/client/informers/externalversions
 knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces
 knative.dev/operator/pkg/client/informers/externalversions/operator
 knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1
+knative.dev/operator/pkg/client/informers/externalversions/operator/v1beta1
 knative.dev/operator/pkg/client/injection/client
 knative.dev/operator/pkg/client/injection/informers/factory
-knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing
-knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving
-knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing
-knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving
+knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeeventing
+knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeserving
+knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing
+knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving
 knative.dev/operator/pkg/client/listers/operator/v1alpha1
+knative.dev/operator/pkg/client/listers/operator/v1beta1
 knative.dev/operator/pkg/reconciler/common
 knative.dev/operator/pkg/reconciler/common/testing
 knative.dev/operator/pkg/reconciler/knativeeventing
@@ -1513,7 +1519,7 @@ knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.30.0 => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
+# knative.dev/serving v0.31.0 => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
 ## explicit; go 1.17
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 
 	types "k8s.io/apimachinery/pkg/types"
 	cache "k8s.io/client-go/tools/cache"
-	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	reconciler "knative.dev/pkg/reconciler"
 )
 
@@ -83,7 +83,7 @@ func (s *state) isNotLeaderNorObserver() bool {
 	return false
 }
 
-func (s *state) reconcileMethodFor(o *v1alpha1.KnativeServing) (string, doReconcile) {
+func (s *state) reconcileMethodFor(o *v1beta1.KnativeServing) (string, doReconcile) {
 	if o.GetDeletionTimestamp().IsZero() {
 		if s.isLeader {
 			return reconciler.DoReconcileKind, s.reconciler.ReconcileKind
