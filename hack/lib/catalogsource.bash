@@ -53,6 +53,10 @@ function install_catalogsource {
     # Allow OPM to pull the serverless-bundle from openshift-marketplace ns from internal registry.
     oc adm policy add-role-to-group system:image-puller system:unauthenticated --namespace openshift-marketplace
 
+    # export ON_CLUSTER_BUILDS=true; make images
+    # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
+
     local index_build_dir=${rootdir}/olm-catalog/serverless-operator/index
 
     logger.debug "Create a backup of the index Dockerfile."
