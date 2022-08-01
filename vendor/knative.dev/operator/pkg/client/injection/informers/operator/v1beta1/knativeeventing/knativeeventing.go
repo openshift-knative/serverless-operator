@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	cache "k8s.io/client-go/tools/cache"
-	apisoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	apisoperatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
-	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1"
+	v1beta1 "knative.dev/operator/pkg/client/informers/externalversions/operator/v1beta1"
 	client "knative.dev/operator/pkg/client/injection/client"
 	factory "knative.dev/operator/pkg/client/injection/informers/factory"
-	operatorv1alpha1 "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/listers/operator/v1beta1"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -45,7 +45,7 @@ type Key struct{}
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := factory.Get(ctx)
-	inf := f.Operator().V1alpha1().KnativeEventings()
+	inf := f.Operator().V1beta1().KnativeEventings()
 	return context.WithValue(ctx, Key{}, inf), inf.Informer()
 }
 
@@ -55,13 +55,13 @@ func withDynamicInformer(ctx context.Context) context.Context {
 }
 
 // Get extracts the typed informer from the context.
-func Get(ctx context.Context) v1alpha1.KnativeEventingInformer {
+func Get(ctx context.Context) v1beta1.KnativeEventingInformer {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1.KnativeEventingInformer from context.")
+			"Unable to fetch knative.dev/operator/pkg/client/informers/externalversions/operator/v1beta1.KnativeEventingInformer from context.")
 	}
-	return untyped.(v1alpha1.KnativeEventingInformer)
+	return untyped.(v1beta1.KnativeEventingInformer)
 }
 
 type wrapper struct {
@@ -72,18 +72,18 @@ type wrapper struct {
 	resourceVersion string
 }
 
-var _ v1alpha1.KnativeEventingInformer = (*wrapper)(nil)
-var _ operatorv1alpha1.KnativeEventingLister = (*wrapper)(nil)
+var _ v1beta1.KnativeEventingInformer = (*wrapper)(nil)
+var _ operatorv1beta1.KnativeEventingLister = (*wrapper)(nil)
 
 func (w *wrapper) Informer() cache.SharedIndexInformer {
-	return cache.NewSharedIndexInformer(nil, &apisoperatorv1alpha1.KnativeEventing{}, 0, nil)
+	return cache.NewSharedIndexInformer(nil, &apisoperatorv1beta1.KnativeEventing{}, 0, nil)
 }
 
-func (w *wrapper) Lister() operatorv1alpha1.KnativeEventingLister {
+func (w *wrapper) Lister() operatorv1beta1.KnativeEventingLister {
 	return w
 }
 
-func (w *wrapper) KnativeEventings(namespace string) operatorv1alpha1.KnativeEventingNamespaceLister {
+func (w *wrapper) KnativeEventings(namespace string) operatorv1beta1.KnativeEventingNamespaceLister {
 	return &wrapper{client: w.client, namespace: namespace, resourceVersion: w.resourceVersion}
 }
 
@@ -95,8 +95,8 @@ func (w *wrapper) SetResourceVersion(resourceVersion string) {
 	w.resourceVersion = resourceVersion
 }
 
-func (w *wrapper) List(selector labels.Selector) (ret []*apisoperatorv1alpha1.KnativeEventing, err error) {
-	lo, err := w.client.OperatorV1alpha1().KnativeEventings(w.namespace).List(context.TODO(), v1.ListOptions{
+func (w *wrapper) List(selector labels.Selector) (ret []*apisoperatorv1beta1.KnativeEventing, err error) {
+	lo, err := w.client.OperatorV1beta1().KnativeEventings(w.namespace).List(context.TODO(), v1.ListOptions{
 		LabelSelector:   selector.String(),
 		ResourceVersion: w.resourceVersion,
 	})
@@ -109,8 +109,8 @@ func (w *wrapper) List(selector labels.Selector) (ret []*apisoperatorv1alpha1.Kn
 	return ret, nil
 }
 
-func (w *wrapper) Get(name string) (*apisoperatorv1alpha1.KnativeEventing, error) {
-	return w.client.OperatorV1alpha1().KnativeEventings(w.namespace).Get(context.TODO(), name, v1.GetOptions{
+func (w *wrapper) Get(name string) (*apisoperatorv1beta1.KnativeEventing, error) {
+	return w.client.OperatorV1beta1().KnativeEventings(w.namespace).Get(context.TODO(), name, v1.GetOptions{
 		ResourceVersion: w.resourceVersion,
 	})
 }
