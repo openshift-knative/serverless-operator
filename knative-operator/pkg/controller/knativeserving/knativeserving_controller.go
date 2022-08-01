@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -203,8 +204,8 @@ func (r *ReconcileKnativeServing) ensureFinalizers(instance *operatorv1alpha1.Kn
 // create the configmap to be injected with custom certs
 func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv1alpha1.KnativeServing) error {
 	certs := instance.Spec.ControllerCustomCerts
-	if instance.Spec.ControllerCustomCerts == (operatorv1alpha1.CustomCerts{}) {
-		certs = operatorv1alpha1.CustomCerts{
+	if instance.Spec.ControllerCustomCerts == (base.CustomCerts{}) {
+		certs = base.CustomCerts{
 			Name: "config-service-ca",
 			Type: "ConfigMap",
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	mfc "github.com/manifestival/controller-runtime-client"
@@ -22,7 +23,7 @@ const ConfigManagedNamespace = "openshift-config-managed"
 const DashboardsManifestPathEnvVar = "DASHBOARDS_ROOT_MANIFEST_PATH"
 
 // Apply applies dashboard resources under the manifestSubPath directory.
-func Apply(manifestSubPath string, instance operatorv1alpha1.KComponent, api client.Client) error {
+func Apply(manifestSubPath string, instance base.KComponent, api client.Client) error {
 	err := api.Get(context.TODO(), client.ObjectKey{Name: ConfigManagedNamespace}, &corev1.Namespace{})
 	if apierrors.IsNotFound(err) {
 		log.Info(fmt.Sprintf("namespace %q not found. Skipping to create dashboard.", ConfigManagedNamespace))
@@ -43,7 +44,7 @@ func Apply(manifestSubPath string, instance operatorv1alpha1.KComponent, api cli
 }
 
 // Delete deletes dashboard resources.
-func Delete(manifestSubPath string, instance operatorv1alpha1.KComponent, api client.Client) error {
+func Delete(manifestSubPath string, instance base.KComponent, api client.Client) error {
 	manifest, err := manifest(getDashboardsPath(manifestSubPath), getAnnotationsFromInstance(instance), api)
 	if err != nil {
 		return fmt.Errorf("failed to load dashboards manifests: %w", err)
@@ -72,7 +73,7 @@ func manifest(path string, owner mf.Transformer, apiclient client.Client) (mf.Ma
 	return manifest, nil
 }
 
-func getAnnotationsFromInstance(instance operatorv1alpha1.KComponent) mf.Transformer {
+func getAnnotationsFromInstance(instance base.KComponent) mf.Transformer {
 	switch instance.(type) {
 	case *operatorv1alpha1.KnativeEventing:
 		return common.SetAnnotations(map[string]string{

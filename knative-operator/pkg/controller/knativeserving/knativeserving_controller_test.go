@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -190,7 +191,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			Namespace: "knative-serving",
 		},
 		Spec: operatorv1alpha1.KnativeServingSpec{
-			ControllerCustomCerts: operatorv1alpha1.CustomCerts{
+			ControllerCustomCerts: base.CustomCerts{
 				Name: "test-cm",
 				Type: "ConfigMap",
 			},
