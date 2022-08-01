@@ -216,17 +216,20 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 		return manifests, nil
 	}
 
-	targetVersion := SanitizeSemver(version)
-	key := getVersionKey(instance)
-	for _, u := range manifests.Resources() {
-		// Check the labels of the resources one by one to see if the version matches the target version in terms of
-		// major.minor.
-		manifestVersion := u.GetLabels()[key]
-		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
-			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
-				"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
-		}
-	}
+	// We support only one version, there is no need to check manifest consistency and it is actually a pain to experiment
+	// with future releases.
+	//
+	//targetVersion := SanitizeSemver(version)
+	//key := getVersionKey(instance)
+	//for _, u := range manifests.Resources() {
+	//	// Check the labels of the resources one by one to see if the version matches the target version in terms of
+	//	// major.minor.
+	//	manifestVersion := u.GetLabels()[key]
+	//	if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
+	//		return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
+	//			"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
+	//	}
+	//}
 
 	return manifests, nil
 }
