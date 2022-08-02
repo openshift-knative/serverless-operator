@@ -12,7 +12,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -92,7 +92,7 @@ func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request recon
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
-	eventing := &operatorv1alpha1.KnativeEventing{}
+	eventing := &operatorv1beta1.KnativeEventing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: "knative-eventing", Name: "knative-eventing"}, eventing); err != nil {
 		return reconcile.Result{}, err
 	}

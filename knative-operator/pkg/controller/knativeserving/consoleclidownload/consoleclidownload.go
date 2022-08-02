@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,7 +27,7 @@ var (
 )
 
 // Apply installs kn ConsoleCLIDownload and its required resources
-func Apply(instance *operatorv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	route, err := reconcileKnConsoleCLIDownloadRoute(apiclient, instance)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func Apply(instance *operatorv1alpha1.KnativeServing, apiclient client.Client, s
 	return reconcileKnConsoleCLIDownload(apiclient, instance, route)
 }
 
-func reconcileKnConsoleCLIDownloadRoute(apiclient client.Client, instance *operatorv1alpha1.KnativeServing) (*routev1.Route, error) {
+func reconcileKnConsoleCLIDownloadRoute(apiclient client.Client, instance *operatorv1beta1.KnativeServing) (*routev1.Route, error) {
 	log.Info("Installing kn ConsoleCLIDownload Route")
 	ctx := context.Background()
 
@@ -68,7 +68,7 @@ func reconcileKnConsoleCLIDownloadRoute(apiclient client.Client, instance *opera
 
 // reconcileKnConsoleCLIDownload reconciles kn ConsoleCLIDownload by finding
 // kn download resource route URL and populating spec accordingly
-func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1alpha1.KnativeServing, route *routev1.Route) error {
+func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1beta1.KnativeServing, route *routev1.Route) error {
 	log.Info("Installing kn ConsoleCLIDownload")
 	ctx := context.TODO()
 
@@ -108,7 +108,7 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1
 }
 
 // Delete deletes kn ConsoleCLIDownload CO and respective deployment resources
-func Delete(instance *operatorv1alpha1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+func Delete(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	log.Info("Deleting kn ConsoleCLIDownload CO")
 	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", instance)); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
@@ -122,7 +122,7 @@ func Delete(instance *operatorv1alpha1.KnativeServing, apiclient client.Client, 
 	return nil
 }
 
-func makeRoute(instance *operatorv1alpha1.KnativeServing) *routev1.Route {
+func makeRoute(instance *operatorv1beta1.KnativeServing) *routev1.Route {
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      knCLIDownload,
@@ -150,7 +150,7 @@ func makeRoute(instance *operatorv1alpha1.KnativeServing) *routev1.Route {
 
 // populateKnConsoleCLIDownload populates kn ConsoleCLIDownload object and its SPEC
 // using route's baseURL
-func populateKnConsoleCLIDownload(baseURL string, instance *operatorv1alpha1.KnativeServing) *consolev1.ConsoleCLIDownload {
+func populateKnConsoleCLIDownload(baseURL string, instance *operatorv1beta1.KnativeServing) *consolev1.ConsoleCLIDownload {
 	return &consolev1.ConsoleCLIDownload{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: knCLIDownload,

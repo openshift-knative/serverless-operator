@@ -11,7 +11,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -38,7 +38,7 @@ func (m StringMap) StringValues() string {
 }
 
 // Configure is a  helper to set a value for a key, potentially overriding existing contents.
-func Configure(ks *operatorv1alpha1.KnativeServing, cm, key, value string) bool {
+func Configure(ks *operatorv1beta1.KnativeServing, cm, key, value string) bool {
 	if ks.Spec.Config == nil {
 		ks.Spec.Config = map[string]map[string]string{}
 	}

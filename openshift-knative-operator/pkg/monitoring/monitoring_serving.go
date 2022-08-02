@@ -7,14 +7,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 var (
 	servingDeployments = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook")
 )
 
-func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface, ks *operatorv1alpha1.KnativeServing) error {
+func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface, ks *operatorv1beta1.KnativeServing) error {
 	return reconcileMonitoring(ctx, api, &ks.Spec.CommonSpec, ks.GetNamespace())
 }
 

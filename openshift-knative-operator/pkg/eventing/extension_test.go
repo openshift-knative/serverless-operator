@@ -17,6 +17,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	rcommon "knative.dev/operator/pkg/reconciler/common"
+
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
 

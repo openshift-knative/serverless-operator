@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -78,13 +78,13 @@ func init() {
 
 // TestSourceReconcile runs Reconcile to verify if monitoring resources are created/deleted for sources.
 func TestSourceReconcile(t *testing.T) {
-	eventingInstance := &operatorv1alpha1.KnativeEventing{
+	eventingInstance := &operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-eventing",
 			Namespace: "knative-eventing",
 		},
 	}
-	keUpdate(eventingInstance, func(ke *operatorv1alpha1.KnativeEventing) {
+	keUpdate(eventingInstance, func(ke *operatorv1beta1.KnativeEventing) {
 		common.Configure(&ke.Spec.CommonSpec, okomon.ObservabilityCMName, okomon.ObservabilityBackendKey, "prometheus")
 	})
 	cl := fake.NewClientBuilder().
@@ -142,7 +142,7 @@ func TestSourceReconcile(t *testing.T) {
 }
 
 func TestSourceMonitoringReconcile(t *testing.T) {
-	eventingInstance := &operatorv1alpha1.KnativeEventing{
+	eventingInstance := &operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "knative-eventing",
 			Namespace: "knative-eventing",
@@ -171,7 +171,7 @@ func TestSourceMonitoringReconcile(t *testing.T) {
 	}
 	checkPrometheusResources(cl, false, t)
 	newEventingInstance := eventingInstance.DeepCopy()
-	newEventingInstance = keUpdate(newEventingInstance, func(ke *operatorv1alpha1.KnativeEventing) {
+	newEventingInstance = keUpdate(newEventingInstance, func(ke *operatorv1beta1.KnativeEventing) {
 		common.Configure(&ke.Spec.CommonSpec, okomon.ObservabilityCMName, okomon.ObservabilityBackendKey, "none")
 	})
 	if err := cl.Update(context.TODO(), newEventingInstance); err != nil {
@@ -238,7 +238,7 @@ func checkError(err error, shouldExist bool, t *testing.T) bool {
 	return false
 }
 
-func keUpdate(instance *operatorv1alpha1.KnativeEventing, mods ...func(*operatorv1alpha1.KnativeEventing)) *operatorv1alpha1.KnativeEventing {
+func keUpdate(instance *operatorv1beta1.KnativeEventing, mods ...func(*operatorv1beta1.KnativeEventing)) *operatorv1beta1.KnativeEventing {
 	for _, mod := range mods {
 		mod(instance)
 	}

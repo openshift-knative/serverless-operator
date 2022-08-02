@@ -6,7 +6,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/util/sets"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
@@ -98,7 +98,7 @@ func AddRBACProxyToManifest(instance *serverlessoperatorv1alpha1.KnativeKafka, c
 }
 
 func GetRBACProxyInjectTransformer(apiClient client.Client) (mf.Transformer, error) {
-	eventingList := &operatorv1alpha1.KnativeEventingList{}
+	eventingList := &operatorv1beta1.KnativeEventingList{}
 	err := apiClient.List(context.Background(), eventingList)
 	if err != nil {
 		return nil, err

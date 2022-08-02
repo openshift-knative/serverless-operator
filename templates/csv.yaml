@@ -8,7 +8,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "operator.knative.dev/v1alpha1",
+          "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeServing",
           "metadata": {
             "name": "knative-serving"
@@ -17,7 +17,7 @@ metadata:
           }
         },
         {
-          "apiVersion": "operator.knative.dev/v1alpha1",
+          "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeEventing",
           "metadata": {
             "name": "knative-eventing"
@@ -682,7 +682,28 @@ spec:
             - knativeservings
       sideEffects: None
       webhookPath: /mutate-knativeservings
-
+    - generateName: conversion.knativeservings.operator.knative.dev
+      type: ConversionWebhook
+      admissionReviewVersions:
+        - v1alpha1
+        - v1beta1
+      containerPort: 8443
+      deploymentName: knative-operator
+      sideEffects: None
+      webhookPath: /resource-conversion
+      conversionCRDs:
+        - knativeservings.operator.knative.dev
+    - generateName: conversion.knativeeventings.operator.knative.dev
+      type: ConversionWebhook
+      admissionReviewVersions:
+        - v1alpha1
+        - v1beta1
+      containerPort: 8443
+      deploymentName: knative-operator
+      sideEffects: None
+      webhookPath: /resource-conversion
+      conversionCRDs:
+        - knativeeventings.operator.knative.dev
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.

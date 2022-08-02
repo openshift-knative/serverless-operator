@@ -1,4 +1,4 @@
-package v1alpha1
+package v1beta1
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-func KnativeEventing(name, namespace string) *operatorv1alpha1.KnativeEventing {
-	return &operatorv1alpha1.KnativeEventing{
+func KnativeEventing(name, namespace string) *operatorv1beta1.KnativeEventing {
+	return &operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -20,7 +20,7 @@ func KnativeEventing(name, namespace string) *operatorv1alpha1.KnativeEventing {
 	}
 }
 
-func WithKnativeEventingReady(ctx *test.Context, name, namespace string) (*operatorv1alpha1.KnativeEventing, error) {
+func WithKnativeEventingReady(ctx *test.Context, name, namespace string) (*operatorv1beta1.KnativeEventing, error) {
 	eventing, err := CreateKnativeEventing(ctx, name, namespace)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func WithKnativeEventingReady(ctx *test.Context, name, namespace string) (*opera
 	return eventing, nil
 }
 
-func CreateKnativeEventing(ctx *test.Context, name, namespace string) (*operatorv1alpha1.KnativeEventing, error) {
+func CreateKnativeEventing(ctx *test.Context, name, namespace string) (*operatorv1beta1.KnativeEventing, error) {
 	eventing, err := ctx.Clients.Operator.KnativeEventings(namespace).Create(context.Background(), KnativeEventing(name, namespace), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func DeleteKnativeEventing(ctx *test.Context, name, namespace string) error {
 
 	// Wait until the KnativeEventing got removed.
 	_, err := WaitForKnativeEventingState(ctx, name, namespace,
-		func(s *operatorv1alpha1.KnativeEventing, err error) (bool, error) {
+		func(s *operatorv1beta1.KnativeEventing, err error) (bool, error) {
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -59,9 +59,9 @@ func DeleteKnativeEventing(ctx *test.Context, name, namespace string) error {
 	return err
 }
 
-func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inState EventingInStateFunc) (*operatorv1alpha1.KnativeEventing, error) {
+func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inState EventingInStateFunc) (*operatorv1beta1.KnativeEventing, error) {
 	var (
-		lastState *operatorv1alpha1.KnativeEventing
+		lastState *operatorv1beta1.KnativeEventing
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
@@ -75,14 +75,14 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 	return lastState, nil
 }
 
-func IsKnativeEventingReady(e *operatorv1alpha1.KnativeEventing, err error) (bool, error) {
+func IsKnativeEventingReady(e *operatorv1beta1.KnativeEventing, err error) (bool, error) {
 	return e.Status.IsReady(), err
 }
 
-type EventingInStateFunc func(e *operatorv1alpha1.KnativeEventing, err error) (bool, error)
+type EventingInStateFunc func(e *operatorv1beta1.KnativeEventing, err error) (bool, error)
 
 func IsKnativeEventingWithVersionReady(version string) EventingInStateFunc {
-	return func(e *operatorv1alpha1.KnativeEventing, err error) (bool, error) {
+	return func(e *operatorv1beta1.KnativeEventing, err error) (bool, error) {
 		return e.Status.Version == version && e.Status.IsReady(), err
 	}
 }

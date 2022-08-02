@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -26,7 +26,7 @@ var _ admission.Handler = (*Configurator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ks := &operatorv1alpha1.KnativeServing{}
+	ks := &operatorv1beta1.KnativeServing{}
 
 	err := v.decoder.Decode(req, ks)
 	if err != nil {
@@ -51,7 +51,7 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 // extension code of openshift-knative-operator already), but it fixes a UX nit where
 // Kourier would be shown as enabled: false to the user if the ingress object is
 // specified.
-func defaultToKourier(ks *operatorv1alpha1.KnativeServing) {
+func defaultToKourier(ks *operatorv1beta1.KnativeServing) {
 	if ks.Spec.Ingress == nil {
 		return
 	}

@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
@@ -41,7 +41,7 @@ func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
-	ke := comp.(*operatorv1alpha1.KnativeEventing)
+	ke := comp.(*operatorv1beta1.KnativeEventing)
 
 	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ke.Namespace != requiredNs {

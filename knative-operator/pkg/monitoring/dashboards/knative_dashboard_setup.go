@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"knative.dev/operator/pkg/apis/operator/base"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
@@ -75,12 +75,12 @@ func manifest(path string, owner mf.Transformer, apiclient client.Client) (mf.Ma
 
 func getAnnotationsFromInstance(instance base.KComponent) mf.Transformer {
 	switch instance.(type) {
-	case *operatorv1alpha1.KnativeEventing:
+	case *operatorv1beta1.KnativeEventing:
 		return common.SetAnnotations(map[string]string{
 			socommon.EventingOwnerName:      instance.GetName(),
 			socommon.EventingOwnerNamespace: instance.GetNamespace(),
 		})
-	case *operatorv1alpha1.KnativeServing:
+	case *operatorv1beta1.KnativeServing:
 		return common.SetAnnotations(map[string]string{
 			socommon.ServingOwnerName:      instance.GetName(),
 			socommon.ServingOwnerNamespace: instance.GetNamespace(),
