@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -a __sources=(metadata vars common ui scaleup namespaces catalogsource serverless tracing mesh strimzi tracing)
+declare -a __sources=(metadata vars common ui scaleup namespaces catalogsource serverless tracing mesh strimzi tracing clusterlogging)
 
 for source in "${__sources[@]}"; do
   # shellcheck disable=SC1091,SC1090

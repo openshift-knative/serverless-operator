@@ -68,6 +68,9 @@ install-tracing-opentelemetry:
 uninstall-tracing-opentelemetry:
 	UNINSTALL_TRACING=true ./hack/tracing.sh
 
+install-cluster-logging:
+	./hack/clusterlogging.sh
+
 teardown:
 	./hack/teardown.sh
 
