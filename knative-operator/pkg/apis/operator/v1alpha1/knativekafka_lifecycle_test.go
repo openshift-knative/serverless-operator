@@ -18,11 +18,16 @@ func TestKnativeKafkaHappyPath(t *testing.T) {
 	ks.MarkInstallSucceeded()
 	// Dependencies are assumed successful too.
 	apistest.CheckConditionOngoing(ks, operatorv1alpha1.DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, StatefulSetsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
+	}
 
 	// Deployments are not available at first.
 	ks.MarkDeploymentsNotReady()
 	apistest.CheckConditionFailed(ks, operatorv1alpha1.DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, StatefulSetsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
 	if ready := ks.IsReady(); ready {
 		t.Errorf("ks.IsReady() = %v, want false", ready)
@@ -31,10 +36,21 @@ func TestKnativeKafkaHappyPath(t *testing.T) {
 	// Deployments become ready and we're good.
 	ks.MarkDeploymentsAvailable()
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, StatefulSetsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
+	}
+
+	ks.MarkStatefulSetsAvailable()
+	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
+
 	if ready := ks.IsReady(); !ready {
 		t.Errorf("ks.IsReady() = %v, want true", ready)
 	}
+
 }
 
 func TestKnativeKafkaErrorPath(t *testing.T) {
@@ -57,9 +73,17 @@ func TestKnativeKafkaErrorPath(t *testing.T) {
 		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
 
+	ks.MarkStatefulSetNotReady()
+	apistest.CheckConditionFailed(ks, StatefulSetsAvailable, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
+	}
+
 	// Deployments become ready
 	ks.MarkDeploymentsAvailable()
+	ks.MarkStatefulSetsAvailable()
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, StatefulSetsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, operatorv1alpha1.InstallSucceeded, t)
 	if ready := ks.IsReady(); !ready {
 		t.Errorf("ks.IsReady() = %v, want true", ready)
