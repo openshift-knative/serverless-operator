@@ -11,12 +11,12 @@ source "$root/hack/lib/__sources__.bash"
 version=${OPERATOR_VERSION:-v$(metadata.get dependencies.operator)}
 
 target_dir="$root/olm-catalog/serverless-operator/manifests/"
-target_serving_file="$target_dir/operator_v1alpha1_knativeserving_crd.yaml"
-target_eventing_file="$target_dir/operator_v1alpha1_knativeeventing_crd.yaml"
+target_serving_file="$target_dir/operator_v1beta1_knativeserving_crd.yaml"
+target_eventing_file="$target_dir/operator_v1beta1_knativeeventing_crd.yaml"
 rm -rf "$target_serving_file" "$target_eventing_file"
 
-serving_url="https://raw.githubusercontent.com/knative/operator/knative-${version}/config/300-serving.yaml"
-eventing_url="https://raw.githubusercontent.com/knative/operator/knative-${version}/config/300-eventing.yaml"
+serving_url="https://raw.githubusercontent.com/knative/operator/knative-${version}/config/crd/bases/operator.knative.dev_knativeservings.yaml"
+eventing_url="https://raw.githubusercontent.com/knative/operator/knative-${version}/config/crd/bases/operator.knative.dev_knativeeventings.yaml"
 
 wget --no-check-certificate "$serving_url" -O "$target_serving_file"
 wget --no-check-certificate "$eventing_url" -O "$target_eventing_file"
@@ -27,8 +27,8 @@ git apply "$root/olm-catalog/serverless-operator/hack/001-eventing-sinkbinding-d
 # Drop unsupported fields from the Serving CRD.
 git apply "$root/olm-catalog/serverless-operator/hack/002-serving-drop-unsupported-fields.patch"
 
-# Drop unsupported fields from the Eventing CRD.
-git apply "$root/olm-catalog/serverless-operator/hack/003-eventing-drop-unsupported-fields.patch"
-
-# Drop unsupported sources field from the Eventing CRD.
-git apply "$root/olm-catalog/serverless-operator/hack/004-eventing-drop-unsupported-sources.patch"
+## Drop unsupported fields from the Eventing CRD.
+#git apply "$root/olm-catalog/serverless-operator/hack/003-eventing-drop-unsupported-fields.patch"
+#
+## Drop unsupported sources field from the Eventing CRD.
+#git apply "$root/olm-catalog/serverless-operator/hack/004-eventing-drop-unsupported-sources.patch"

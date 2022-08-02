@@ -21,7 +21,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/operator/pkg/apis/operator/base"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
@@ -80,7 +80,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
-	ks := comp.(*operatorv1alpha1.KnativeServing)
+	ks := comp.(*operatorv1beta1.KnativeServing)
 	log := logging.FromContext(ctx)
 
 	// Make sure Knative Serving is always installed in the defined namespace.
@@ -166,7 +166,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 }
 
 func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
-	ks := comp.(*operatorv1alpha1.KnativeServing)
+	ks := comp.(*operatorv1beta1.KnativeServing)
 
 	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.
 	// See: https://github.com/manifestival/manifestival/issues/85

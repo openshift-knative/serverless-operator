@@ -66,7 +66,7 @@ Then, create or update KnativeServing with the following options.
 
 ```shell
 cat <<EOF | oc apply -f -
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving

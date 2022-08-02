@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	v1a1test "github.com/openshift-knative/serverless-operator/test/v1alpha1"
+	v1b1test "github.com/openshift-knative/serverless-operator/test/v1beta1"
 )
 
 func UpgradeServerless(ctx *test.Context) error {
@@ -26,27 +26,27 @@ func UpgradeServerless(ctx *test.Context) error {
 	}
 
 	knativeServing := "knative-serving"
-	if _, err := v1a1test.WaitForKnativeServingState(ctx,
+	if _, err := v1b1test.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
-		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
+		v1b1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v")),
 	); err != nil {
 		return fmt.Errorf("serving upgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
-	if _, err := v1a1test.WaitForKnativeEventingState(ctx,
+	if _, err := v1b1test.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
-		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
+		v1b1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v")),
 	); err != nil {
 		return fmt.Errorf("eventing upgrade failed: %w", err)
 	}
 
-	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
+	if _, err := v1b1test.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
-		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v")),
+		v1b1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v")),
 	); err != nil {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
@@ -87,27 +87,27 @@ func DowngradeServerless(ctx *test.Context) error {
 	}
 
 	knativeServing := "knative-serving"
-	if _, err := v1a1test.WaitForKnativeServingState(ctx,
+	if _, err := v1b1test.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
-		v1a1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
+		v1b1test.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("serving downgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
-	if _, err := v1a1test.WaitForKnativeEventingState(ctx,
+	if _, err := v1b1test.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
-		v1a1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
+		v1b1test.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("eventing downgrade failed: %w", err)
 	}
 
-	if _, err := v1a1test.WaitForKnativeKafkaState(ctx,
+	if _, err := v1b1test.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
-		v1a1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
+		v1b1test.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("knative kafka downgrade failed: %w", err)
 	}

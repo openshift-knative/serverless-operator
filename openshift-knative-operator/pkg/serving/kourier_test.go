@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestOverrideKourierNamespace(t *testing.T) {
@@ -27,7 +27,7 @@ func TestOverrideKourierNamespace(t *testing.T) {
 		Name:       "bar",
 	}})
 
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
@@ -139,7 +139,7 @@ func TestOverrideKourierNamespaceOther(t *testing.T) {
 	}})
 	want := other.DeepCopy()
 
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",

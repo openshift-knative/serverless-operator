@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
-	manifests, err := GetEventingMonitoringPlatformManifests(&operatorv1alpha1.KnativeEventing{
+	manifests, err := GetEventingMonitoringPlatformManifests(&operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{Namespace: eventingNamespace},
 	})
 	if err != nil {

@@ -1,4 +1,4 @@
-package v1alpha1
+package v1beta1
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-func KnativeServing(name, namespace string) *operatorv1alpha1.KnativeServing {
-	return &operatorv1alpha1.KnativeServing{
+func KnativeServing(name, namespace string) *operatorv1beta1.KnativeServing {
+	return &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -20,7 +20,7 @@ func KnativeServing(name, namespace string) *operatorv1alpha1.KnativeServing {
 	}
 }
 
-func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*operatorv1alpha1.KnativeServing, error) {
+func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*operatorv1beta1.KnativeServing, error) {
 	serving, err := CreateKnativeServing(ctx, name, namespace)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func WithKnativeServingReady(ctx *test.Context, name, namespace string) (*operat
 	return serving, nil
 }
 
-func CreateKnativeServing(ctx *test.Context, name, namespace string) (*operatorv1alpha1.KnativeServing, error) {
+func CreateKnativeServing(ctx *test.Context, name, namespace string) (*operatorv1beta1.KnativeServing, error) {
 	serving, err := ctx.Clients.Operator.KnativeServings(namespace).Create(context.Background(), KnativeServing(name, namespace), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 
 	// Wait until the KnativeServing got removed.
 	_, err := WaitForKnativeServingState(ctx, name, namespace,
-		func(s *operatorv1alpha1.KnativeServing, err error) (bool, error) {
+		func(s *operatorv1beta1.KnativeServing, err error) (bool, error) {
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -59,9 +59,9 @@ func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 	return err
 }
 
-func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState ServingInStateFunc) (*operatorv1alpha1.KnativeServing, error) {
+func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inState ServingInStateFunc) (*operatorv1beta1.KnativeServing, error) {
 	var (
-		lastState *operatorv1alpha1.KnativeServing
+		lastState *operatorv1beta1.KnativeServing
 		err       error
 	)
 	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
@@ -75,14 +75,14 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 	return lastState, nil
 }
 
-func IsKnativeServingReady(s *operatorv1alpha1.KnativeServing, err error) (bool, error) {
+func IsKnativeServingReady(s *operatorv1beta1.KnativeServing, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }
 
-type ServingInStateFunc func(s *operatorv1alpha1.KnativeServing, err error) (bool, error)
+type ServingInStateFunc func(s *operatorv1beta1.KnativeServing, err error) (bool, error)
 
 func IsKnativeServingWithVersionReady(version string) ServingInStateFunc {
-	return func(s *operatorv1alpha1.KnativeServing, err error) (bool, error) {
+	return func(s *operatorv1beta1.KnativeServing, err error) (bool, error) {
 		return s.Status.Version == version && s.Status.IsReady(), err
 	}
 }
