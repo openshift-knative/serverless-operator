@@ -50,7 +50,23 @@ func TestOverrideKourierNamespace(t *testing.T) {
 	}
 }
 
-func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
+func TestKourierEnvValue(t *testing.T) {
+	ks := &operatorv1alpha1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "test",
+		},
+		Spec: operatorv1alpha1.KnativeServingSpec{
+			CommonSpec: operatorv1alpha1.CommonSpec{
+				Config: operatorv1alpha1.ConfigMapData{
+					"network": map[string]string{
+						InternalEncryptionKey: "true",
+					},
+				},
+			},
+		},
+	}
+
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   "net-kourier-controller",
@@ -78,7 +94,13 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name: "controller",
-						Env:  []corev1.EnvVar{{Name: "a", Value: "b"}, {Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"}, {Name: "SERVING_NAMESPACE", Value: "knative-serving"}},
+						Env: []corev1.EnvVar{
+							{Name: "a", Value: "b"},
+							{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
+							{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
+							{Name: "CERTS_SECRET_NAMESPACE", Value: "openshift-ingress"},
+							{Name: "CERTS_SECRET_NAME", Value: "router-certs-default"},
+						},
 					}},
 				},
 			},
@@ -95,7 +117,7 @@ func TestAddHTTPOptionDisabledEnvValue(t *testing.T) {
 		t.Fatal("Failed to convert deployment to unstructured", err)
 	}
 
-	addKourierEnvValues()(got)
+	addKourierEnvValues(ks)(got)
 
 	if !cmp.Equal(got, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))

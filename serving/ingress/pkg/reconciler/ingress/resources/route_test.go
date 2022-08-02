@@ -332,6 +332,44 @@ func TestMakeRoute(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "internal encryption is enabled",
+			ingress: ingress(
+				withRules(rule(withHosts([]string{localDomain, externalDomain}), withHTTPSBackendService())),
+			),
+			want: []*routev1.Route{{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
+					},
+					Annotations: map[string]string{
+						TimeoutAnnotation: DefaultTimeout,
+					},
+					Namespace: lbNamespace,
+					Name:      routeName0,
+				},
+				Spec: routev1.RouteSpec{
+					Host: externalDomain,
+					To: routev1.RouteTargetReference{
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString(HTTPSPort),
+					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationPassthrough,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
+				},
+			}},
+		},
 	}
 
 	for _, test := range tests {
@@ -441,5 +479,19 @@ func withLocalVisibilityRule(rule *networkingv1alpha1.IngressRule) {
 func withHosts(hosts []string) ruleOption {
 	return func(rule *networkingv1alpha1.IngressRule) {
 		rule.Hosts = hosts
+	}
+}
+
+func withHTTPSBackendService() ruleOption {
+	return func(rule *networkingv1alpha1.IngressRule) {
+		rule.HTTP.Paths = []networkingv1alpha1.HTTPIngressPath{{
+			Splits: []networkingv1alpha1.IngressBackendSplit{{
+				IngressBackend: networkingv1alpha1.IngressBackend{
+					ServiceNamespace: "ns",
+					ServiceName:      "something",
+					ServicePort:      intstr.FromInt(networking.ServiceHTTPSPort),
+				},
+			}},
+		}}
 	}
 }

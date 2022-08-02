@@ -145,13 +145,31 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	// Target the HTTPS port and configure passthrough when:
 	// * the passthrough annotation is set.
 	// * the ingress.spec.tls is set. (DomainMapping with BYP cert.)
-	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 {
+	// * the internal-encryption is enabled.
+	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 || isInternalEncryptionEnabled(rule) {
 		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
 		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
 		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
 	}
 
 	return route, nil
+}
+
+// isInternalEncryptionEnabled determines whether internal-encryption is enabled or not.
+// In general, we can determine it by the value internal-encryption in config-network, however the serverless ingress does not
+// watch the ConfigMap. Therefore we determine it by ServiceHTTPSPort(443) port for the backend in Kingress.
+func isInternalEncryptionEnabled(rule networkingv1alpha1.IngressRule) bool {
+	if rule.HTTP == nil {
+		return false
+	}
+	for _, path := range rule.HTTP.Paths {
+		for _, split := range path.Splits {
+			if split.IngressBackend.ServicePort == intstr.FromInt(networking.ServiceHTTPSPort) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func routeName(uid, host string) string {
