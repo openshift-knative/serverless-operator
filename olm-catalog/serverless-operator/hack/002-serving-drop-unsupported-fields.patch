@@ -1,7 +1,7 @@
-diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
-index c6b427c1..ff2deb7e 100644
---- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
-+++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeserving_crd.yaml
+diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
+index 552deb4f..5de1fdfd 100644
+--- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
++++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 @@ -46,27 +46,8 @@ spec:
              type: object
            spec:
@@ -98,9 +98,9 @@ index c6b427c1..ff2deb7e 100644
 -                    type: object
 -                type: object
                resources:
-                 description: A mapping of deployment name to resource requirements
-                 items:
-@@ -896,9 +825,6 @@ spec:
+                 description: A mapping of deployment name to resource requirements. This field
+                   is deprecated. Use `spec.deployments.resources`
+@@ -897,9 +826,6 @@ spec:
                        type: object
                    type: object
                  type: array
@@ -110,3 +110,60 @@ index c6b427c1..ff2deb7e 100644
              type: object
            status:
              description: Status defines the observed state of KnativeServing
+@@ -984,17 +910,8 @@ spec:
+             type: object
+           spec:
+             description: Spec defines the desired state of KnativeServing
++            x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
+             properties:
+-              additionalManifests:
+-                description: A list of the additional serving manifests, which will
+-                  be installed by the operator
+-                items:
+-                  properties:
+-                    URL:
+-                      description: The link of the additional manifest URL
+-                      type: string
+-                  type: object
+-                type: array
+               config:
+                 additionalProperties:
+                   additionalProperties:
+@@ -1717,13 +1634,8 @@ spec:
+                       type: object
+               ingress:
+                 description: The ingress configuration for Knative Serving
++                x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
+                 properties:
+-                  contour:
+-                    description: Contour settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+                   istio:
+                     description: Istio settings
+                     properties:
+@@ -1843,9 +1755,6 @@ spec:
+               observedGeneration:
+                 description: The generation last processed by the controller
+                 type: integer
+-              version:
+-                description: The version of the installed release
+-                type: string
+             type: object
+         type: object
+     additionalPrinterColumns:
+@@ -1865,11 +1781,4 @@ spec:
+     singular: knativeserving
+   scope: Namespaced
+   conversion:
+-    strategy: Webhook
+-    webhook:
+-      conversionReviewVersions: ["v1alpha1", "v1beta1"]
+-      clientConfig:
+-        service:
+-          name: operator-webhook
+-          namespace: default
+-          path: /resource-conversion
++    strategy: None

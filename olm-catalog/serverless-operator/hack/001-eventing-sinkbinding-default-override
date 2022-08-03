@@ -1,8 +1,8 @@
-diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-index 08877c51..ef7efd15 100644
---- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-+++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-@@ -180,7 +180,7 @@ spec:
+diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
+index e36178a6..8b79a033 100644
+--- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
++++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
+@@ -875,7 +875,7 @@ spec:
                    If the value is `inclusion`, only namespaces/objects labelled as
                    `bindings.knative.dev/include:true` will be considered. If `exclusion`
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
@@ -11,16 +11,12 @@ index 08877c51..ef7efd15 100644
                  type: string
                version:
                  description: The version of Knative Eventing to be installed
-diff --git a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
-index 8373873c..fb8df7d2 100644
---- a/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
-+++ b/openshift-knative-operator/cmd/operator/kodata/knative-eventing/0.22.0/2-eventing-core.yaml
-@@ -895,7 +895,7 @@ spec:
-               # will be considered by the sinkbinding webhook;
-               # If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
-               # will NOT be considered by the sinkbinding webhook.
--              # The default is `exclusion`.
-+              # The default for Openshift Serverless is `inclusion`.
-             - name: SINK_BINDING_SELECTION_MODE
-               value: "exclusion"
-             - name: POD_NAME
+@@ -1771,7 +1771,7 @@ spec:
+                   If the value is `inclusion`, only namespaces/objects labelled as
+                   `bindings.knative.dev/include:true` will be considered. If `exclusion`
+                   is selected, only `bindings.knative.dev/exclude:true` label is checked
+-                  and these will NOT be considered. The default is `exclusion`.
++                  and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
+                 type: string
+               version:
+                 description: The version of Knative Eventing to be installed

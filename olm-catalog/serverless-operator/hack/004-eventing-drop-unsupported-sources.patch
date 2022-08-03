@@ -1,7 +1,7 @@
-diff --git a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-index a9556e66..15fa6a7a 100644
---- a/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
-+++ b/olm-catalog/serverless-operator/manifests/operator_v1alpha1_knativeeventing_crd.yaml
+diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
+index 04846601..e60a116d 100644
+--- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
++++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 @@ -738,52 +738,6 @@ spec:
                              type: object
                          type: object
@@ -53,5 +53,58 @@ index a9556e66..15fa6a7a 100644
 -                    type: object
 -                type: object
                resources:
-                 description: A mapping of deployment name to resource requirements
-                 items:
+                 description: A mapping of deployment name to resource requirements. This field
+                   is deprecated. Use `spec.deployments.resources`
+@@ -1625,52 +1579,6 @@ spec:
+                         type: string
+                       description: Annotations overrides labels for the service
+                       type: object
+-              source:
+-                description: The source configuration for Knative Eventing
+-                properties:
+-                  ceph:
+-                    description: Ceph settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  github:
+-                    description: GitHub settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  gitlab:
+-                    description: GitLab settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  kafka:
+-                    description: Apache Kafka settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  natss:
+-                    description: NATS Streaming settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  rabbitmq:
+-                    description: RabbitMQ settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  redis:
+-                    description: Redis settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                type: object
+               sinkBindingSelectionMode:
+                 description: Specifies the selection mode for the sinkbinding webhook.
+                   If the value is `inclusion`, only namespaces/objects labelled as

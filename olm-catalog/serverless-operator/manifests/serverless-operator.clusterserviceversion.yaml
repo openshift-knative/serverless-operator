@@ -201,7 +201,30 @@ spec:
             path: conditions
             x-descriptors:
               - "urn:alm:descriptor:io.kubernetes.conditions"
+        version: v1beta1
+      - description: Represents an installation of a particular version of Knative Serving
+        displayName: Knative Serving
+        kind: KnativeServing
+        name: knativeservings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Serving installed
+            displayName: Version
+            path: version
+          - description: Conditions of Knative Serving installed
+            displayName: Conditions
+            path: conditions
+            x-descriptors:
+              - "urn:alm:descriptor:io.kubernetes.conditions"
         version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Eventing
+        displayName: Knative Eventing
+        kind: KnativeEventing
+        name: knativeeventings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Eventing installed
+            displayName: Version
+            path: version
+        version: v1beta1
       - description: Represents an installation of a particular version of Knative Eventing
         displayName: Knative Eventing
         kind: KnativeEventing
@@ -411,6 +434,8 @@ spec:
                     ports:
                       - containerPort: 9090
                         name: metrics
+                      - containerPort: 8443
+                        name: https-webhook
                     env:
                       - name: POD_NAME
                         valueFrom:
@@ -430,6 +455,8 @@ spec:
                         value: "knative-eventing"
                       - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
+                      - name: WEBHOOK_NAME
+                        value: "knative-operator-service"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v1.5.0:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -709,6 +736,7 @@ spec:
       type: ValidatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
+        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -716,7 +744,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -728,6 +756,7 @@ spec:
       type: ValidatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
+        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -735,7 +764,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -766,6 +795,7 @@ spec:
       type: MutatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
+        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -773,7 +803,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -785,6 +815,7 @@ spec:
       type: MutatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
+        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -792,7 +823,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -806,6 +837,7 @@ spec:
         - v1alpha1
         - v1beta1
       containerPort: 8443
+      targetPort: 8443
       deploymentName: knative-operator
       sideEffects: None
       webhookPath: /resource-conversion
@@ -817,6 +849,7 @@ spec:
         - v1alpha1
         - v1beta1
       containerPort: 8443
+      targetPort: 8443
       deploymentName: knative-operator
       sideEffects: None
       webhookPath: /resource-conversion

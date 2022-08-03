@@ -120,7 +120,7 @@ function approve_csv {
   oc patch "$install_plan" -n "${OPERATORS_NAMESPACE}" \
     --type merge --patch '{"spec":{"approved":true}}'
 
-  if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
+  if ! timeout 600 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
     oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
     return 105
   fi
