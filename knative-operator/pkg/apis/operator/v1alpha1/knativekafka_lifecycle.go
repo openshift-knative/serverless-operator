@@ -5,9 +5,16 @@ import (
 	"knative.dev/pkg/apis"
 )
 
+const (
+	// StatefulSetsAvailable is a Condition indicating whether or not the StatefulSets of
+	// the respective component have come up successfully.
+	StatefulSetsAvailable apis.ConditionType = "StatefulSetsAvailable"
+)
+
 var (
 	kafkaCondSet = apis.NewLivingConditionSet(
 		operatorv1alpha1.DeploymentsAvailable,
+		StatefulSetsAvailable,
 		operatorv1alpha1.InstallSucceeded,
 	)
 )
@@ -48,4 +55,18 @@ func (is *KnativeKafkaStatus) MarkDeploymentsNotReady() {
 		operatorv1alpha1.DeploymentsAvailable,
 		"NotReady",
 		"Waiting on deployments")
+}
+
+// MarkStatefulSetsAvailable marks the StatefulSetAvailable status as true.
+func (is *KnativeKafkaStatus) MarkStatefulSetsAvailable() {
+	kafkaCondSet.Manage(is).MarkTrue(StatefulSetsAvailable)
+}
+
+// MarkStatefulSetNotReady marks the StatefulSetsAvailable status as false and calls out
+// it's waiting for StatefulSet.
+func (is *KnativeKafkaStatus) MarkStatefulSetNotReady() {
+	kafkaCondSet.Manage(is).MarkFalse(
+		StatefulSetsAvailable,
+		"NotReady",
+		"Waiting on StatefulSets")
 }

@@ -107,7 +107,7 @@ func GetRBACProxyInjectTransformer(apiClient client.Client) (mf.Transformer, err
 		return nil, errors.New("eventing instance not found")
 	}
 	if monitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
-		return monitoring.InjectRbacProxyContainerToDeployments(sets.NewString(deployments...)), nil
+		return monitoring.InjectRbacProxyContainer(sets.NewString(deployments...)), nil
 	}
 	return nil, nil
 }

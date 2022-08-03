@@ -21,7 +21,7 @@ func GetEventingTransformers(comp operatorv1alpha1.KComponent) []mf.Transformer 
 	// When monitoring is off we keep around the required resources, only rbac-proxy is removed
 	transformers := []mf.Transformer{injectNamespaceWithSubject(comp.GetNamespace(), OpenshiftMonitoringNamespace)}
 	if ShouldEnableMonitoring(comp.GetSpec().GetConfig()) {
-		transformers = append(transformers, InjectRbacProxyContainerToDeployments(eventingDeployments))
+		transformers = append(transformers, InjectRbacProxyContainer(eventingDeployments))
 	}
 	return transformers
 }

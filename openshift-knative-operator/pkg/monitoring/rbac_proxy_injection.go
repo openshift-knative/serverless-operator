@@ -19,16 +19,39 @@ const (
 	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
 )
 
-func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transformer {
+func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		var podSpec *corev1.PodSpec
+		var convert func(spec *corev1.PodSpec) error
+
+		if u.GetKind() == "StatefulSet" && deployments.Has(u.GetName()) {
+			ss := &appsv1.StatefulSet{}
+			if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+				return fmt.Errorf("failed to transform Unstructred into Deployment: %w", err)
+			}
+			podSpec = &ss.Spec.Template.Spec
+			convert = func(spec *corev1.PodSpec) error {
+				ss.Spec.Template.Spec = *podSpec
+				return scheme.Scheme.Convert(ss, u, nil)
+			}
+		}
+
 		if u.GetKind() == "Deployment" && deployments.Has(u.GetName()) {
 			var dep = &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
 				return fmt.Errorf("failed to transform Unstructred into Deployment: %w", err)
 			}
+			podSpec = &dep.Spec.Template.Spec
+			convert = func(spec *corev1.PodSpec) error {
+				dep.Spec.Template.Spec = *podSpec
+				return scheme.Scheme.Convert(dep, u, nil)
+			}
+		}
+
+		if podSpec != nil {
 
 			// Make sure we export metrics only locally.
-			firstContainer := &dep.Spec.Template.Spec.Containers[0]
+			firstContainer := &podSpec.Containers[0]
 			firstContainer.Env = append(firstContainer.Env, corev1.EnvVar{
 				Name:  "METRICS_PROMETHEUS_HOST",
 				Value: "127.0.0.1",
@@ -36,7 +59,7 @@ func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transform
 
 			// Add an RBAC proxy to the deployment as it's second container.
 			// Order is important here as there is an assumption elsewhere about the first container being the component one.
-			volumeName := fmt.Sprintf("secret-%s-sm-service-tls", dep.Name)
+			volumeName := fmt.Sprintf("secret-%s-sm-service-tls", u.GetName())
 			mountPath := "/etc/tls/private"
 			rbacProxyContainer := corev1.Container{
 				Name:  rbacContainerName,
@@ -52,23 +75,23 @@ func InjectRbacProxyContainerToDeployments(deployments sets.String) mf.Transform
 					}},
 				Args: []string{
 					"--secure-listen-address=0.0.0.0:8444",
-					fmt.Sprintf("--upstream=http://127.0.0.1:%s/", getDefaultMetricsPort(dep.Name)),
+					fmt.Sprintf("--upstream=http://127.0.0.1:%s/", getDefaultMetricsPort(u.GetName())),
 					"--tls-cert-file=" + filepath.Join(mountPath, "tls.crt"),
 					"--tls-private-key-file=" + filepath.Join(mountPath, "tls.key"),
 					"--logtostderr=true",
 					"--v=10",
 				},
 			}
-			dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers, rbacProxyContainer)
-			dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
+			podSpec.Containers = append(podSpec.Containers, rbacProxyContainer)
+			podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName: fmt.Sprintf("%s-sm-service-tls", dep.Name),
+						SecretName: fmt.Sprintf("%s-sm-service-tls", u.GetName()),
 					},
 				},
 			})
-			return scheme.Scheme.Convert(dep, u, nil)
+			return convert(podSpec)
 		}
 		return nil
 	}

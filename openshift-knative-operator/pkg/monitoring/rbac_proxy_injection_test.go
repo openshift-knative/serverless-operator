@@ -60,7 +60,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 		t.Fatalf("Failed to construct manifest: %s", err)
 	}
 
-	if manifest, err = manifest.Transform(InjectRbacProxyContainerToDeployments(sets.NewString(in.Name))); err != nil {
+	if manifest, err = manifest.Transform(InjectRbacProxyContainer(sets.NewString(in.Name))); err != nil {
 		t.Fatalf("Unable to transform test manifest: %s", err)
 	}
 

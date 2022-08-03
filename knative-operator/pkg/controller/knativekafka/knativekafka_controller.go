@@ -34,10 +34,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
+
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 )
 
 const (
@@ -217,6 +218,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperato
 		r.transform,
 		r.apply,
 		r.checkDeployments,
+		r.checkStatefulSets,
 	}
 
 	return executeStages(instance, manifest, stages)
@@ -279,8 +281,6 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
-		replicasTransform(manifest.Client),
-		configMapHashTransform(manifest.Client),
 		socommon.VersionedJobNameTransform(),
 		rbacProxyTranform,
 	)
@@ -339,6 +339,31 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 	return nil
 }
 
+func (r *ReconcileKnativeKafka) checkStatefulSets(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+	log.Info("Checking statefulsets")
+	for _, u := range manifest.Filter(mf.ByKind("StatefulSet")).Resources() {
+		u := u // To avoid memory aliasing
+		resource, err := manifest.Client.Get(&u)
+		if err != nil {
+			instance.Status.MarkStatefulSetNotReady()
+			if errors.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+		ss := &appsv1.StatefulSet{}
+		if err := scheme.Scheme.Convert(resource, ss, nil); err != nil {
+			return err
+		}
+		if !isStatefulSetAvailable(ss) {
+			instance.Status.MarkStatefulSetNotReady()
+			return nil
+		}
+	}
+	instance.Status.MarkStatefulSetsAvailable()
+	return nil
+}
+
 // Delete Knative Kafka resources
 func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if len(manifest.Resources()) <= 0 {
@@ -362,6 +387,13 @@ func isDeploymentAvailable(d *appsv1.Deployment) bool {
 		}
 	}
 	return false
+}
+
+func isStatefulSetAvailable(ss *appsv1.StatefulSet) bool {
+	if ss.Spec.Replicas == nil {
+		return ss.Status.ReadyReplicas == 1
+	}
+	return *ss.Spec.Replicas == ss.Status.ReadyReplicas
 }
 
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
