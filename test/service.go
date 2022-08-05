@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -99,6 +101,20 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", *d.Spec.Replicas, scale)
 	}
 	return nil
+}
+
+func CheckNoDeployment(ctx *Context, ns, name string) error {
+	return wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
+		_, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil && apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		if err != nil {
+			return false, err
+		}
+
+		return false, nil
+	})
 }
 
 func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *servingv1.Service, err error) (bool, error)) (*servingv1.Service, error) {
