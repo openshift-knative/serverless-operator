@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 )
@@ -103,9 +104,9 @@ func CheckDeploymentScale(ctx *Context, ns, name string, scale int) error {
 	return nil
 }
 
-func CheckNoDeployment(ctx *Context, ns, name string) error {
+func CheckNoDeployment(kube *kubernetes.Clientset, ns, name string) error {
 	return wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
-		_, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
+		_, err := kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil && apierrors.IsNotFound(err) {
 			return true, nil
 		}

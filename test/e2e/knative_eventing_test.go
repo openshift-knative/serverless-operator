@@ -54,7 +54,7 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("Verify sugar controller deletion", func(t *testing.T) {
-		if err := test.CheckNoDeployment(caCtx, eventingNamespace, "sugar-controller"); err != nil {
+		if err := test.CheckNoDeployment(caCtx.Clients.Kube, eventingNamespace, "sugar-controller"); err != nil {
 			t.Errorf("sugar-controller is still present: %v", err)
 		}
 	})
