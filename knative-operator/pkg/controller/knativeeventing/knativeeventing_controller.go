@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -204,7 +203,7 @@ func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventin
 				Name:      "sugar-controller",
 			},
 		}
-		if err := nsClient.Delete(ctx, sugarControllerDeployment); err != nil && !apierrors.IsNotFound(err) {
+		if err := nsClient.Delete(ctx, sugarControllerDeployment); err != nil && !errors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete deployment %s/%s: %w", sugarControllerDeployment.Namespace, sugarControllerDeployment.Name, err)
 		}
 
@@ -214,7 +213,7 @@ func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventin
 				Name:      "sugar-controller-sm-service",
 			},
 		}
-		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !apierrors.IsNotFound(err) {
+		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !errors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete service %s/%s: %w", sugarControllerServiceForMonitoring.Namespace, sugarControllerServiceForMonitoring.Name, err)
 		}
 
@@ -224,7 +223,7 @@ func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventin
 				Name:      "sugar-controller-sm",
 			},
 		}
-		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !apierrors.IsNotFound(err) {
+		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !errors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete service monitor %s/%s: %w", sugarControllerServiceMonitor.Namespace, sugarControllerServiceMonitor.Name, err)
 		}
 
