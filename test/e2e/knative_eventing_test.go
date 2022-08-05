@@ -65,4 +65,6 @@ func TestKnativeEventing(t *testing.T) {
 			FailOnNoJobs: true,
 		})
 	})
+
+	VerifyDashboards(t, caCtx, EventingDashboards)
 }
