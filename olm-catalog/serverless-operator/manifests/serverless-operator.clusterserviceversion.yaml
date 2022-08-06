@@ -455,6 +455,8 @@ spec:
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
                       - name: WEBHOOK_NAME
                         value: "knative-operator-service"
+                      - name: USE_OLM_TLS
+                        value: "true"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v1.4.0:knative-serving-queue"
                       - name: "IMAGE_activator"
