@@ -14,7 +14,6 @@ import (
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/signals"
 	"knative.dev/pkg/webhook"
-	"knative.dev/pkg/webhook/certificates"
 	"knative.dev/pkg/webhook/resourcesemantics/conversion"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/eventing"
@@ -26,11 +25,10 @@ func main() {
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
 		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
-		SecretName:  "operator-webhook-certs",
+		SecretName:  "knative-operator-service-cert",
 	})
 
 	sharedmain.WebhookMainWithContext(ctx, "knative-operator",
-		certificates.NewController,
 		newConversionController,
 		knativeeventing.NewExtendedController(eventing.NewExtension),
 		knativeserving.NewExtendedController(serving.NewExtension),
