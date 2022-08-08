@@ -61,7 +61,7 @@ func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
 }
 
-func addKourierEnvValues(ks operatorv1alpha1.KComponent) mf.Transformer {
+func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 	envVars := []corev1.EnvVar{
 		{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
 		{Name: "SERVING_NAMESPACE", Value: "knative-serving"},

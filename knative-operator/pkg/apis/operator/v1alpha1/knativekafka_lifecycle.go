@@ -14,7 +14,7 @@ const (
 var (
 	kafkaCondSet = apis.NewLivingConditionSet(
 		base.DeploymentsAvailable,
-    StatefulSetsAvailable,
+		StatefulSetsAvailable,
 		base.InstallSucceeded,
 	)
 )
