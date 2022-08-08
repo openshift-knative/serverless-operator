@@ -129,7 +129,7 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context, instance *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context, instance *operatorv1beta1.KnativeEventing) error {
 	stages := []func(*operatorv1beta1.KnativeEventing) error{
 		r.ensureFinalizers,
 		r.deleteSugar(ctx),
@@ -192,8 +192,8 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 	return nil
 }
 
-func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventing *operatorv1alpha1.KnativeEventing) error {
-	return func(eventing *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventing *operatorv1beta1.KnativeEventing) error {
+	return func(eventing *operatorv1beta1.KnativeEventing) error {
 		ns := "knative-eventing"
 		nsClient := client.NewNamespacedClient(r.client, ns)
 

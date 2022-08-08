@@ -212,7 +212,7 @@ function deploy_knativeeventing_cr {
 
   # Install Knative Eventing
   cat <<EOF > "$eventing_cr"
-apiVersion: operator.knative.dev/v1beta1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
   name: knative-eventing
