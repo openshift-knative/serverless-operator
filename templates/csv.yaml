@@ -243,6 +243,8 @@ spec:
               resources:
                 - deployments
                 - deployments/finalizers # For monitoring resources to set their ownerRef correctly
+                - statefulsets
+                - statefulsets/finalizers # For monitoring resources to set their ownerRef correctly
               verbs:
                 - "*"
             - apiGroups:
