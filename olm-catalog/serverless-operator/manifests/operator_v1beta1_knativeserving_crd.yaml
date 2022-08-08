@@ -1706,9 +1706,6 @@ spec:
                       image location of the individual knative image.
                     type: object
                 type: object
-              version:
-                description: The version of Knative Serving to be installed
-                type: string
             type: object
           status:
             description: Status defines the observed state of KnativeServing
@@ -1755,6 +1752,9 @@ spec:
               observedGeneration:
                 description: The generation last processed by the controller
                 type: integer
+              version:
+                description: The version of the installed release
+                type: string
             type: object
         type: object
     additionalPrinterColumns:

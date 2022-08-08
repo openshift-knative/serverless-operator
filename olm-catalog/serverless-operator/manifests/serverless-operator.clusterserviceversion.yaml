@@ -429,6 +429,24 @@ spec:
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
                     imagePullPolicy: Always
+                    readinessProbe:
+                      periodSeconds: 1
+                      httpGet:
+                        scheme: HTTPS
+                        port: 8443
+                        httpHeaders:
+                          - name: k-kubelet-probe
+                            value: "webhook"
+                      livenessProbe:
+                        periodSeconds: 1
+                        httpGet:
+                          scheme: HTTPS
+                          port: 8443
+                          httpHeaders:
+                            - name: k-kubelet-probe
+                              value: "webhook"
+                        failureThreshold: 6
+                        initialDelaySeconds: 20
                     ports:
                       - containerPort: 9090
                         name: metrics
