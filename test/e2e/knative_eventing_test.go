@@ -53,10 +53,18 @@ func TestKnativeEventing(t *testing.T) {
 		VerifyNoDisallowedImageReference(t, caCtx, eventingNamespace)
 	})
 
+	t.Run("Verify sugar controller deletion", func(t *testing.T) {
+		if err := test.CheckNoDeployment(caCtx.Clients.Kube, eventingNamespace, "sugar-controller"); err != nil {
+			t.Errorf("sugar-controller is still present: %v", err)
+		}
+	})
+
 	t.Run("Verify job succeeded", func(t *testing.T) {
 		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    eventingNamespace,
 			FailOnNoJobs: true,
 		})
 	})
+
+	VerifyDashboards(t, caCtx, EventingDashboards)
 }

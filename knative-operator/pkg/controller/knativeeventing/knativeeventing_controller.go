@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
-	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -24,6 +22,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 )
 
 const (
@@ -110,7 +113,7 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 	}
 
 	instance := original.DeepCopy()
-	reconcileErr := r.reconcileKnativeEventing(instance)
+	reconcileErr := r.reconcileKnativeEventing(ctx, instance)
 
 	if !equality.Semantic.DeepEqual(original.Status, instance.Status) {
 		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
@@ -126,9 +129,10 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeEventing) reconcileKnativeEventing(instance *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context, instance *operatorv1alpha1.KnativeEventing) error {
 	stages := []func(*operatorv1alpha1.KnativeEventing) error{
 		r.ensureFinalizers,
+		r.deleteSugar(ctx),
 		r.installDashboards,
 	}
 	for _, stage := range stages {
@@ -186,4 +190,43 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1alpha1.KnativeEven
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
 	}
 	return nil
+}
+
+func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventing *operatorv1alpha1.KnativeEventing) error {
+	return func(eventing *operatorv1alpha1.KnativeEventing) error {
+		ns := "knative-eventing"
+		nsClient := client.NewNamespacedClient(r.client, ns)
+
+		sugarControllerDeployment := &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns,
+				Name:      "sugar-controller",
+			},
+		}
+		if err := nsClient.Delete(ctx, sugarControllerDeployment); err != nil && !errors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete deployment %s/%s: %w", sugarControllerDeployment.Namespace, sugarControllerDeployment.Name, err)
+		}
+
+		sugarControllerServiceForMonitoring := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns,
+				Name:      "sugar-controller-sm-service",
+			},
+		}
+		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !errors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete service %s/%s: %w", sugarControllerServiceForMonitoring.Namespace, sugarControllerServiceForMonitoring.Name, err)
+		}
+
+		sugarControllerServiceMonitor := &monitoringv1.ServiceMonitor{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns,
+				Name:      "sugar-controller-sm",
+			},
+		}
+		if err := nsClient.Delete(ctx, sugarControllerServiceForMonitoring); err != nil && !errors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete service monitor %s/%s: %w", sugarControllerServiceMonitor.Namespace, sugarControllerServiceMonitor.Name, err)
+		}
+
+		return nil
+	}
 }

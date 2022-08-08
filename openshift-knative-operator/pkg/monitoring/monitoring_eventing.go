@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	eventingDeployments = sets.NewString("eventing-controller", "eventing-webhook", "imc-controller", "imc-dispatcher", "mt-broker-controller", "mt-broker-filter", "mt-broker-ingress", "sugar-controller")
+	eventingDeployments = sets.NewString("eventing-controller", "eventing-webhook", "imc-controller", "imc-dispatcher", "mt-broker-controller", "mt-broker-filter", "mt-broker-ingress")
 )
 
 func ReconcileMonitoringForEventing(ctx context.Context, api kubernetes.Interface, ke *operatorv1alpha1.KnativeEventing) error {
