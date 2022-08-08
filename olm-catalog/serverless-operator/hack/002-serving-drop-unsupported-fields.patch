@@ -144,16 +144,16 @@ index 552deb4f..5de1fdfd 100644
                    istio:
                      description: Istio settings
                      properties:
-@@ -1843,9 +1755,6 @@ spec:
-               observedGeneration:
-                 description: The generation last processed by the controller
-                 type: integer
+@@ -1706,9 +1794,6 @@ spec:
+                       image location of the individual knative image.
+                     type: object
+                 type: object
 -              version:
--                description: The version of the installed release
+-                description: The version of Knative Serving to be installed
 -                type: string
              type: object
-         type: object
-     additionalPrinterColumns:
+           status:
+             description: Status defines the observed state of KnativeServing
 @@ -1865,11 +1781,4 @@ spec:
      singular: knativeserving
    scope: Namespaced
