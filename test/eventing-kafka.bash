@@ -29,3 +29,18 @@ function upstream_knative_eventing_kafka_e2e {
   logger.info 'Starting eventing-kafka tests'
   run_e2e_tests
 }
+
+function upstream_knative_eventing_kafka_broker_e2e {
+  logger.info 'Running eventing-kafka-broker tests'
+
+  cd "$KNATIVE_EVENTING_KAFKA_BROKER_HOME"
+
+  # shellcheck disable=SC1091
+  source "${KNATIVE_EVENTING_KAFKA_BROKER_HOME}/openshift/e2e-common.sh"
+
+  logger.info 'Starting eventing-kafka-broker tests'
+
+  run_e2e_tests
+  run_conformance_tests
+  run_e2e_new_tests
+}
