@@ -1,0 +1,10 @@
+spec:
+  defaultBrokerClass: Kafka
+  config:
+    config-br-defaults:
+      default-br-config: |
+        clusterDefault:
+          apiVersion: v1
+          kind: ConfigMap
+          name: kafka-broker-config
+          namespace: knative-eventing

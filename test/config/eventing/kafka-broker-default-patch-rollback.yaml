@@ -1,0 +1,4 @@
+spec:
+  defaultBrokerClass: null
+  config:
+    config-br-defaults: null
