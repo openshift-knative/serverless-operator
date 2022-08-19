@@ -123,7 +123,13 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		return err
 	}
 
-	gvkToResource := common.BuildGVKToResourceMap(r.rawKafkaChannelManifest, r.rawKafkaSourceManifest)
+	gvkToResource := common.BuildGVKToResourceMap(
+		r.rawKafkaControllerManifest,
+		r.rawKafkaBrokerManifest,
+		r.rawKafkaChannelManifest,
+		r.rawKafkaSourceManifest,
+		r.rawKafkaSinkManifest,
+	)
 
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
