@@ -292,7 +292,7 @@ function check_serverless_alerts {
   alerts_file="${ARTIFACTS:-/tmp}/alerts.json"
   monitoring_route=$(oc -n openshift-monitoring get routes alertmanager-main -oyaml -ojsonpath='{.spec.host}')
   # TODO(SRVKE-669) remove the filter for the pingsource-mt-adapter service once issue is fixed.
-  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring create token prometheus-k8s)" \
+  curl -k -H "Authorization: Bearer $(oc -n openshift-monitoring sa get-token prometheus-k8s || oc -n openshift-monitoring create token prometheus-k8s)" \
     "https://${monitoring_route}/api/v1/alerts" | \
     jq -c '.data | map(select((.labels.service != "pingsource-mt-adapter") and (.labels.namespace == "'"${OPERATORS_NAMESPACE}"'" or .labels.namespace == "'"${EVENTING_NAMESPACE}"'" or .labels.namespace == "'"${SERVING_NAMESPACE}"'" or .labels.namespace == "'"${INGRESS_NAMESPACE}"'")))' > "${alerts_file}"
 
