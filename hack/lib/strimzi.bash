@@ -147,6 +147,10 @@ metadata:
   labels:
     app: kafka-ui
 spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - env:
       - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
@@ -155,6 +159,11 @@ spec:
         value: my-cluster
       image: quay.io/openshift-knative/kafka-ui:0.1.0
       name: user-container
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
 EOF
 
   oc -n kafka expose pod kafka-ui --port=8080
