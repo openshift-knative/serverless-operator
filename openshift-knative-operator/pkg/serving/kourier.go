@@ -1,6 +1,8 @@
 package serving
 
 import (
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
@@ -17,6 +19,16 @@ const (
 	// TODO: Use "knative.dev/networking/pkg/config" once the repo pulled Knative 1.6.
 	// Backport messes up the dependencies.
 	InternalEncryptionKey = "internal-encryption"
+
+	// IngressDefaultCertificateKey is the OpenShift Ingress default certificate name.
+	// The default cert name is different when users changed the default ingress certificate name via IngressController CR (SRVKS-955).
+	IngressDefaultCertificateKey = "openshift-ingress-default-certificate"
+
+	// ingressDefaultCertificateNameSpace is the namespace where the default ingress certificate is deployed.
+	ingressDefaultCertificateNameSpace = "openshift-ingress"
+
+	// ingressDefaultCertificateName is the name of the default ingress certificate.
+	ingressDefaultCertificateName = "router-certs-default"
 )
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
@@ -54,10 +66,18 @@ func addKourierEnvValues(ks operatorv1alpha1.KComponent) mf.Transformer {
 		{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
 		{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
 	}
-	if ks.GetSpec().GetConfig()[networkCMName][InternalEncryptionKey] != "" {
-		envVars = append(envVars,
-			corev1.EnvVar{Name: "CERTS_SECRET_NAMESPACE", Value: "openshift-ingress"},
-			corev1.EnvVar{Name: "CERTS_SECRET_NAME", Value: "router-certs-default"})
+
+	networkCM := ks.GetSpec().GetConfig()[networkCMName]
+	if encrypt := networkCM[InternalEncryptionKey]; strings.ToLower(encrypt) == "true" {
+		if certName := networkCM[IngressDefaultCertificateKey]; certName != "" {
+			envVars = append(envVars,
+				corev1.EnvVar{Name: "CERTS_SECRET_NAMESPACE", Value: ingressDefaultCertificateNameSpace},
+				corev1.EnvVar{Name: "CERTS_SECRET_NAME", Value: certName})
+		} else {
+			envVars = append(envVars,
+				corev1.EnvVar{Name: "CERTS_SECRET_NAMESPACE", Value: ingressDefaultCertificateNameSpace},
+				corev1.EnvVar{Name: "CERTS_SECRET_NAME", Value: ingressDefaultCertificateName})
+		}
 	}
 	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller", envVars...)
 }
