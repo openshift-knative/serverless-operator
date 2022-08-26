@@ -43,6 +43,10 @@ function install_strimzi_cluster {
             tls: true
             authentication:
               type: scram-sha-512
+        authorization:
+          superUsers:
+            - ANONYMOUS
+          type: simple
         config:
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
@@ -85,6 +89,41 @@ metadata:
 spec:
   authentication:
     type: tls
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for consuming from a topic.
+      - resource:
+          type: topic
+          name: "*"
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Read
+        host: "*"
+      # Example ACL rules for producing to a topic.
+      - resource:
+          type: topic
+          name: "*"
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Create
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
 EOF
 
   header "Applying Strimzi SASL Admin User"
@@ -99,6 +138,41 @@ metadata:
 spec:
   authentication:
     type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for consuming from knative-messaging-kafka using consumer group my-group
+      - resource:
+          type: topic
+          name: "*"
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Read
+        host: "*"
+      # Example ACL rules for producing to topic knative-messaging-kafka
+      - resource:
+          type: topic
+          name: "*"
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Create
+        host: "*"
+      - resource:
+          type: topic
+          name: "*"
+        operation: Describe
+        host: "*"
 EOF
 
   header "Waiting for Strimzi admin users to become ready"
