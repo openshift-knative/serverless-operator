@@ -25,7 +25,7 @@ func main() {
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
 		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
-		SecretName:  "knative-operator-service-cert",
+		SecretName:  "knative-operator-webhook-service-cert",
 	})
 
 	sharedmain.WebhookMainWithContext(ctx, "knative-operator",

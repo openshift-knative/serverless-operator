@@ -27,11 +27,11 @@ require (
 	knative.dev/eventing v0.32.3-0.20220802081716-359f0e21b3c7
 	knative.dev/eventing-kafka v0.32.2
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20220524153203-12d3e2a7addc
+	knative.dev/hack v0.0.0-20220601014117-bafe4b15ca50
 	knative.dev/networking v0.0.0-20220412163509-1145ec58c8be
 	knative.dev/operator v0.31.2
-	knative.dev/pkg v0.0.0-20220524202603-19adf798efb8
-	knative.dev/serving v0.31.0
+	knative.dev/pkg v0.0.0-20220601013938-bac16f2394ce
+	knative.dev/serving v0.32.0
 	sigs.k8s.io/controller-runtime v0.9.7
 )
 
@@ -39,6 +39,8 @@ require (
 	cloud.google.com/go/compute v1.5.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	istio.io/api v0.0.0-20220420164308-b6a03a9e477e // indirect
+	istio.io/client-go v1.13.3 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
@@ -160,7 +162,7 @@ require (
 	k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89 // indirect
 	k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/caching v0.0.0-20220505013701-23602d6882e2 // indirect
+	knative.dev/caching v0.0.0-20220601013938-730d5b7c3c47 // indirect
 	knative.dev/reconciler-test v0.0.0-20220524205904-f750f80bfc7e
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
@@ -185,3 +187,5 @@ replace (
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
 
 replace knative.dev/hack => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0
+
+replace knative.dev/operator => knative.dev/operator v0.32.2
