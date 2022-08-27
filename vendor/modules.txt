@@ -162,6 +162,7 @@ github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
 # github.com/golang/snappy v0.0.4
@@ -729,6 +730,7 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/fieldmaskpb
+google.golang.org/protobuf/types/known/structpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
 # gopkg.in/inf.v0 v0.9.1
@@ -740,6 +742,24 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
+# istio.io/api v0.0.0-20220420164308-b6a03a9e477e
+## explicit; go 1.17
+istio.io/api/analysis/v1alpha1
+istio.io/api/extensions/v1alpha1
+istio.io/api/meta/v1alpha1
+istio.io/api/networking/v1alpha3
+istio.io/api/networking/v1beta1
+istio.io/api/security/v1beta1
+istio.io/api/telemetry/v1alpha1
+istio.io/api/type/v1beta1
+# istio.io/client-go v1.13.3
+## explicit; go 1.16
+istio.io/client-go/pkg/apis/extensions/v1alpha1
+istio.io/client-go/pkg/apis/networking/v1alpha3
+istio.io/client-go/pkg/apis/networking/v1beta1
+istio.io/client-go/pkg/apis/security/v1beta1
+istio.io/client-go/pkg/apis/telemetry/v1alpha1
+istio.io/client-go/pkg/clientset/versioned/scheme
 # k8s.io/api v0.23.5
 ## explicit; go 1.16
 k8s.io/api/admission/v1
@@ -1223,7 +1243,7 @@ k8s.io/utils/internal/third_party/forked/golang/net
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20220505013701-23602d6882e2
+# knative.dev/caching v0.0.0-20220601013938-730d5b7c3c47
 ## explicit; go 1.15
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
@@ -1378,7 +1398,7 @@ knative.dev/eventing-kafka-broker/test/pkg/testing
 knative.dev/eventing-kafka-broker/test/upgrade
 knative.dev/eventing-kafka-broker/test/upgrade/continual
 knative.dev/eventing-kafka-broker/test/upgrade/installation
-# knative.dev/hack v0.0.0-20220524153203-12d3e2a7addc => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0
+# knative.dev/hack v0.0.0-20220601014117-bafe4b15ca50 => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0
 ## explicit; go 1.14
 knative.dev/hack
 knative.dev/hack/shell
@@ -1402,7 +1422,7 @@ knative.dev/networking/pkg/client/injection/informers/factory
 knative.dev/networking/pkg/client/injection/informers/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/injection/reconciler/networking/v1alpha1/ingress
 knative.dev/networking/pkg/client/listers/networking/v1alpha1
-# knative.dev/operator v0.31.2
+# knative.dev/operator v0.31.2 => knative.dev/operator v0.32.2
 ## explicit; go 1.16
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1433,8 +1453,9 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20220524202603-19adf798efb8 => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
+# knative.dev/pkg v0.0.0-20220601013938-bac16f2394ce => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
 ## explicit; go 1.17
+knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/ducktypes
@@ -1528,7 +1549,7 @@ knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.31.0 => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
+# knative.dev/serving v0.32.0 => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
 ## explicit; go 1.17
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1621,3 +1642,4 @@ sigs.k8s.io/yaml
 # k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
 # knative.dev/hack => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0
+# knative.dev/operator => knative.dev/operator v0.32.2

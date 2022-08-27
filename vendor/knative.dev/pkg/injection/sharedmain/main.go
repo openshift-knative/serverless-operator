@@ -245,6 +245,7 @@ func MainWithConfig(ctx context.Context, component string, cfg *rest.Config, cto
 	// If we have one or more admission controllers, then start the webhook
 	// and pass them in.
 	var wh *webhook.Webhook
+	log.Println("Berfore wh list")
 	if len(webhooks) > 0 {
 		// Register webhook metrics
 		webhook.RegisterMetrics()
@@ -254,6 +255,7 @@ func MainWithConfig(ctx context.Context, component string, cfg *rest.Config, cto
 			logger.Fatalw("Failed to create webhook", zap.Error(err))
 		}
 		eg.Go(func() error {
+			fmt.Println("Berfore wh run")
 			return wh.Run(ctx.Done())
 		})
 	}
@@ -265,7 +267,8 @@ func MainWithConfig(ctx context.Context, component string, cfg *rest.Config, cto
 	if wh != nil {
 		wh.InformersHaveSynced()
 	}
-	logger.Info("Starting controllers...")
+	log.Println("Starting controllers...")
+	log.Println("Start........................")
 	eg.Go(func() error {
 		return controller.StartAll(ctx, controllers...)
 	})
