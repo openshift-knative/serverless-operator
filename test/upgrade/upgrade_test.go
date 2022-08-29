@@ -45,9 +45,12 @@ func TestServerlessUpgrade(t *testing.T) {
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(ctx),
-			PostDowngrade: postDowngradeTests(),
+			PreUpgrade:  preUpgradeTests(),
+			PostUpgrade: postUpgradeTests(ctx),
+			PostDowngrade: []pkgupgrade.Operation{
+				// Ensure cleanup through PostDowngradeTest.
+				servingupgrade.ServicePostDowngradeTest(),
+			},
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
@@ -67,7 +70,6 @@ func TestServerlessUpgrade(t *testing.T) {
 					}
 				}),
 			},
-			DowngradeWith: downgrade(ctx),
 		},
 	}
 	suite.Execute(cfg)
