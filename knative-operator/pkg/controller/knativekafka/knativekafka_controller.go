@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	socommon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -139,7 +141,39 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		}
 	}
 
+	// Add eventing core resources to watch
+	gvkToEventingResource := map[schema.GroupVersionKind]client.Object{
+		corev1.SchemeGroupVersion.WithKind("ConfigMap"): &corev1.ConfigMap{},
+	}
+
+	for _, t := range gvkToEventingResource {
+		err = c.Watch(&source.Kind{Type: t}, globalResync(context.Background(), r))
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func globalResync(ctx context.Context, r *ReconcileKnativeKafka) handler.EventHandler {
+	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
+		systemNamespace := os.Getenv(common.NamespaceEnvKey)
+		if object.GetNamespace() != systemNamespace {
+			return nil
+		}
+		kks := &serverlessoperatorv1alpha1.KnativeKafkaList{}
+		if err := r.client.List(ctx, kks); err != nil {
+			log.Error(err, "failed to list KnativeKafka objects")
+		}
+		requests := make([]reconcile.Request, 0, len(kks.Items))
+		for _, kk := range kks.Items {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{Namespace: kk.GetNamespace(), Name: kk.GetName()},
+			})
+		}
+		return requests
+	})
 }
 
 // blank assignment to verify that ReconcileKnativeKafka implements reconcile.Reconciler
@@ -288,6 +322,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
 		socommon.VersionedJobNameTransform(),
+		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
 		rbacProxyTranform,
 	)
 	if err != nil {
