@@ -56,7 +56,7 @@ SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
 export SYSTEM_NAMESPACES
 export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
-export SKIP_DOWNGRADE="${SKIP_DOWNGRADE:-"false"}"
+export SKIP_DOWNGRADE="${SKIP_DOWNGRADE:-"true"}"
 # Change this when forcing the upgrade to an image that is not yet available via upgrade channel
 export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 

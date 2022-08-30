@@ -403,7 +403,7 @@ spec:
         - args:
             - --base-id 1
             - -c /tmp/config/envoy-bootstrap.yaml
-            - --log-level info
+            - --log-level debug
           command:
             - /usr/local/bin/envoy
           image: TO_BE_REPLACED
