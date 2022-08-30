@@ -25,7 +25,6 @@ import (
 	"go.uber.org/zap"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
-	"knative.dev/eventing-kafka/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -45,18 +44,18 @@ func TestServerlessUpgrade(t *testing.T) {
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(ctx),
+			//PreUpgrade:    preUpgradeTests(),
+			//PostUpgrade:   postUpgradeTests(ctx),
 			PostDowngrade: postDowngradeTests(),
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
+					//servingupgrade.AutoscaleSustainingWithTBCTest(),
+					//servingupgrade.AutoscaleSustainingTest(),
 				},
-				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
-				kafkabrokerupgrade.BrokerContinualTests(),
-				kafkabrokerupgrade.SinkContinualTests(),
+				//kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
+				//kafkabrokerupgrade.BrokerContinualTests(),
+				//kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
@@ -138,15 +137,15 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		Namespace:    "knative-eventing",
 		FailOnNoJobs: true,
 	}))
-	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
-	tests = append(tests,
-		kafkaupgrade.ChannelPostUpgradeTest(),
-		kafkaupgrade.SourcePostUpgradeTest(),
-		kafkabrokerupgrade.BrokerPostUpgradeTest(),
-		kafkabrokerupgrade.SinkPostUpgradeTest(),
-		upgrade.VerifySugarControllerDeletion(ctx),
-	)
-	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+	//tests = append(tests, eventingupgrade.PostUpgradeTests()...)
+	//tests = append(tests,
+	//	kafkaupgrade.ChannelPostUpgradeTest(),
+	//	kafkaupgrade.SourcePostUpgradeTest(),
+	//	kafkabrokerupgrade.BrokerPostUpgradeTest(),
+	//	kafkabrokerupgrade.SinkPostUpgradeTest(),
+	//	upgrade.VerifySugarControllerDeletion(ctx),
+	//)
+	//tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
 

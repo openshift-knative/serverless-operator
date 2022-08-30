@@ -175,7 +175,9 @@ func (m *manager) Spawn(url *url.URL) Prober {
 					p.logf("response: %s", res)
 					p.failures.Inc()
 					if strings.Contains(url.String(), "upgrade-probe") {
-						log.Fatalf("Failed exit here...")
+						fmt.Printf("response: %s\n", res)
+						fmt.Printf("%q status = %d, want: %d\n", p.url, res.StatusCode, http.StatusOK)
+						log.Fatal("Failed exit here...")
 					}
 				}
 			}
