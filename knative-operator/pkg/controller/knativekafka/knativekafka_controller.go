@@ -334,6 +334,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		replicasTransform(manifest.Client),
 		configMapHashTransform(manifest.Client),
 		socommon.VersionedJobNameTransform(),
+		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, dependentConfigMaps),
 		rbacProxyTranform,
 	)
 	if err != nil {
