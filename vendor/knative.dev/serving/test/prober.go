@@ -24,6 +24,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"testing"
 
@@ -173,7 +174,9 @@ func (m *manager) Spawn(url *url.URL) Prober {
 					p.logf("%q status = %d, want: %d", p.url, res.StatusCode, http.StatusOK)
 					p.logf("response: %s", res)
 					p.failures.Inc()
-					log.Fatalf("Failed exit here...")
+					if strings.Contains(url.String(), "upgrade-probe") {
+						log.Fatalf("Failed exit here...")
+					}
 				}
 			}
 		}
