@@ -173,7 +173,7 @@ EOF
 function add_upstream_operator_deployment_env {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
-  path: spec.install.spec.deployments(name==knative-operator).spec.template.spec.containers(name==knative-operator).env[+]
+  path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
   value:
     name: "${2}"
     value: "${3}"

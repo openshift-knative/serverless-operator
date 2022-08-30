@@ -314,6 +314,7 @@ spec:
                 - apiextensions.k8s.io
               resources:
                 - customresourcedefinitions
+                - customresourcedefinitions/status
               verbs:
                 - "*"
             - apiGroups:
@@ -420,18 +421,20 @@ spec:
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
         # itself.
-        - name: knative-operator
+        - name: knative-operator-webhook
           spec:
             replicas: 1
             selector:
               matchLabels:
                 name: knative-operator
+                extra: webhook
             template:
               metadata:
                 annotations:
                   sidecar.istio.io/inject: "false"
                 labels:
                   name: knative-operator
+                  extra: webhook
               spec:
                 serviceAccountName: knative-operator
                 containers:
@@ -439,24 +442,6 @@ spec:
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
                     imagePullPolicy: Always
-                    readinessProbe:
-                      periodSeconds: 1
-                      httpGet:
-                        scheme: HTTPS
-                        port: 8443
-                        httpHeaders:
-                          - name: k-kubelet-probe
-                            value: "webhook"
-                      livenessProbe:
-                        periodSeconds: 1
-                        httpGet:
-                          scheme: HTTPS
-                          port: 8443
-                          httpHeaders:
-                            - name: k-kubelet-probe
-                              value: "webhook"
-                        failureThreshold: 6
-                        initialDelaySeconds: 20
                     ports:
                       - containerPort: 9090
                         name: metrics
@@ -740,7 +725,7 @@ spec:
         - v1beta1
       containerPort: 8443
       targetPort: 8443
-      deploymentName: knative-operator
+      deploymentName: knative-operator-webhook
       sideEffects: None
       webhookPath: /resource-conversion
       conversionCRDs:
@@ -752,7 +737,7 @@ spec:
         - v1beta1
       containerPort: 8443
       targetPort: 8443
-      deploymentName: knative-operator
+      deploymentName: knative-operator-webhook
       sideEffects: None
       webhookPath: /resource-conversion
       conversionCRDs:

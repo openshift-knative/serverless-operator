@@ -58,10 +58,8 @@ func MigrateCustomResource(ctx context.Context, dynamicClient dynamic.Interface,
 			)
 
 			gr := schema.ParseGroupResource(crd)
-			fmt.Println("In the migrator....")
 			if err = migrator.Migrate(ctx, gr); err != nil {
 				if !apierrs.IsNotFound(err) {
-					fmt.Printf("ERR: %w", err)
 					return fmt.Errorf("Unable to migrate the existing custom resource from v1alpha1 to v1beta1: %w", err)
 				}
 			} else {

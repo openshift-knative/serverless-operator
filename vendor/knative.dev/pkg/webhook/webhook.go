@@ -245,9 +245,7 @@ func (wh *Webhook) Run(stop <-chan struct{}) error {
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		fmt.Println("In the WH")
 		if server.TLSConfig != nil {
-			fmt.Println("In the wh with tls....")
 			if err := server.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				logger.Errorw("ListenAndServeTLS for admission webhook returned error", zap.Error(err))
 				return err
