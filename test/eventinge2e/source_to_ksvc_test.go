@@ -14,7 +14,7 @@ import (
 
 const (
 	pingSourceName    = "smoke-test-ping"
-	image             = "quay.io/openshift-knative/helloworld-go"
+	image             = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
 	helloWorldService = "helloworld-go"
 	helloWorldText    = "Hello World!"
 	ksvcAPIVersion    = "serving.knative.dev/v1"

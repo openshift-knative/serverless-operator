@@ -422,3 +422,37 @@ function gather_knative_state {
     "${IMAGE_OPTION[@]}" \
     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
 }
+
+# delete serverless test resources
+function teardown_extras {
+  logger.warn "😭  Teardown serverless extras..."
+
+  # remove routes
+  logger.info 'Removing serverless test routes'
+  if oc get route -A | grep "metrics-eventing" >/dev/null 2>&1; then
+    oc delete --ignore-not-found=true route/metrics-eventing -n openshift-serverless
+  fi
+  if oc get route -A | grep "metrics-serving" >/dev/null 2>&1; then
+    oc delete --ignore-not-found=true route/metrics-serving -n openshift-serverless
+  fi
+  if oc get route myroute -n knative-serving-ingress >/dev/null 2>&1; then
+    oc delete --ignore-not-found=true route/myroute -n knative-serving-ingress
+  fi
+
+  # remove csv and subscriptions
+  logger.info 'Removing additional subscriptions and CSV'
+  if oc get subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators >/dev/null 2>&1; then
+    CSV=$(oc get subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
+    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
+    oc delete --ignore-not-found=true subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators
+  fi
+  oc delete --ignore-not-found=true subscriptions.operators.coreos.com serverless-operator-subscription -n openshift-operators
+  oc delete --ignore-not-found=true subscriptions.operators.coreos.com serverless-operator-subscription -n openshift-serverless
+
+  # remove admission services
+  logger.info 'Removing admission server services'
+  oc delete --ignore-not-found=true service/admission-server-service -n openshift-operators
+  oc delete --ignore-not-found=true service/admission-server-service -n openshift-serverless
+
+  logger.success "Serverless extras have been removed."
+}

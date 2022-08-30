@@ -1,0 +1,503 @@
+diff --git a/hack/helloworld.sh b/hack/helloworld.sh
+index 6888c88c..ed6b3e81 100755
+--- a/hack/helloworld.sh
++++ b/hack/helloworld.sh
+@@ -18,7 +18,7 @@ spec:
+   template:
+     spec:
+       containers:
+-        - image: gcr.io/knative-samples/helloworld-go
++        - image: ${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/helloworld:v1.3
+           env:
+             - name: TARGET
+               value: ${TARGET}
+diff --git a/hack/lib/catalogsource.bash b/hack/lib/catalogsource.bash
+index 0d0f38f2..a30fc13f 100644
+--- a/hack/lib/catalogsource.bash
++++ b/hack/lib/catalogsource.bash
+@@ -73,8 +73,9 @@ apiVersion: operators.coreos.com/v1alpha1
+ kind: CatalogSource
+ metadata:
+   name: ${OPERATOR}
++  namespace: openshift-marketplace
+ spec:
+-  image: ${index_image}
++  image: "IMAGE_INDEX_BUNDLE"
+   displayName: "Serverless Operator"
+   publisher: Red Hat
+   sourceType: grpc
+diff --git a/hack/lib/mesh.bash b/hack/lib/mesh.bash
+index ef39b8eb..ac84a124 100644
+--- a/hack/lib/mesh.bash
++++ b/hack/lib/mesh.bash
+@@ -20,6 +20,8 @@ function uninstall_mesh {
+ 
+ function deploy_servicemesh_operators {
+   logger.info "Installing service mesh operators in namespace openshift-operators"
++  logger.info "Operator source is $OLM_SOURCE"
++  sed -i "s|source: .*|source: $OLM_SOURCE|g" "${resources_dir}"/subscription.yaml
+   oc apply -f "${resources_dir}"/subscription.yaml || return $?
+ 
+   logger.info "Waiting until service mesh operators are available"
+@@ -28,8 +30,45 @@ function deploy_servicemesh_operators {
+ }
+ 
+ function undeploy_servicemesh_operators {
++  logger.warn 'Teardown service mesh'
++  logger.info "Deleting service mesh CSVs"
++  if oc get subscription.operators.coreos.com servicemeshoperator -n openshift-operators >/dev/null 2>&1; then
++    CSV=$(oc get subscription.operators.coreos.com servicemeshoperator -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
++    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
++  fi
++  if oc get subscription.operators.coreos.com kiali-ossm -n openshift-operators >/dev/null 2>&1; then
++    CSV=$(oc get subscription.operators.coreos.com kiali-ossm -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
++    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
++  fi
++  if oc get subscription.operators.coreos.com jaeger-product -n openshift-operators >/dev/null 2>&1; then
++    CSV=$(oc get subscription.operators.coreos.com jaeger-product -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
++    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
++  fi
++
++  logger.info "Deleting service mesh istio nodes"
++  oc delete --ignore-not-found=true daemonset.apps/istio-node -n openshift-operators
++  oc delete --ignore-not-found=true service/maistra-admission-controller -n openshift-operators
++
++  logger.info "Deleting service mesh webhooks and rbac resources"
++  oc delete --ignore-not-found=true validatingwebhookconfiguration openshift-operators.servicemesh-resources.maistra.io
++  oc delete --ignore-not-found=true mutatingwebhookconfigurations openshift-operators.servicemesh-resources.maistra.io
++  oc delete --ignore-not-found=true clusterrole istio-admin istio-cni istio-edit istio-view
++  oc delete --ignore-not-found=true clusterrolebinding istio-cni
++
+   logger.info "Deleting service mesh subscriptions"
+   oc delete subscriptions.operators.coreos.com -n openshift-operators servicemeshoperator kiali-ossm jaeger-product --ignore-not-found
++
++  logger.info "Deleting maistra CRDs"
++  if oc get crds -oname | grep -q 'maistra.io'; then
++    oc get crds -oname | grep 'maistra.io' | xargs -r oc delete
++  fi
++
++  logger.info "Deleting istio CRDs"
++  if oc get crds -oname | grep -q 'istio'; then
++    oc get crds -oname | grep 'istio' | xargs -r oc delete
++  fi
++
++  logger.success "Service mesh has been uninstalled"
+ }
+ 
+ function deploy_servicemeshcontrolplane {
+diff --git a/hack/lib/serverless.bash b/hack/lib/serverless.bash
+index f38a3f4c..810ce6b7 100644
+--- a/hack/lib/serverless.bash
++++ b/hack/lib/serverless.bash
+@@ -422,3 +422,37 @@ function gather_knative_state {
+     "${IMAGE_OPTION[@]}" \
+     --dest-dir "$gather_dir" > "${gather_dir}/gather-knative.log"
+ }
++
++# delete serverless test resources
++function teardown_extras {
++  logger.warn "😭  Teardown serverless extras..."
++
++  # remove routes
++  logger.info 'Removing serverless test routes'
++  if oc get route -A | grep "metrics-eventing" >/dev/null 2>&1; then
++    oc delete --ignore-not-found=true route/metrics-eventing -n openshift-serverless
++  fi
++  if oc get route -A | grep "metrics-serving" >/dev/null 2>&1; then
++    oc delete --ignore-not-found=true route/metrics-serving -n openshift-serverless
++  fi
++  if oc get route myroute -n knative-serving-ingress >/dev/null 2>&1; then
++    oc delete --ignore-not-found=true route/myroute -n knative-serving-ingress
++  fi
++
++  # remove csv and subscriptions
++  logger.info 'Removing additional subscriptions and CSV'
++  if oc get subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators >/dev/null 2>&1; then
++    CSV=$(oc get subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
++    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
++    oc delete --ignore-not-found=true subscription.operators.coreos.com "${OPERATOR}" -n openshift-operators
++  fi
++  oc delete --ignore-not-found=true subscriptions.operators.coreos.com serverless-operator-subscription -n openshift-operators
++  oc delete --ignore-not-found=true subscriptions.operators.coreos.com serverless-operator-subscription -n openshift-serverless
++
++  # remove admission services
++  logger.info 'Removing admission server services'
++  oc delete --ignore-not-found=true service/admission-server-service -n openshift-operators
++  oc delete --ignore-not-found=true service/admission-server-service -n openshift-serverless
++
++  logger.success "Serverless extras have been removed."
++}
+diff --git a/hack/lib/vars.bash b/hack/lib/vars.bash
+index 0dc83f30..77a139c7 100644
+--- a/hack/lib/vars.bash
++++ b/hack/lib/vars.bash
+@@ -54,7 +54,7 @@ export TRACING_BACKEND="${TRACING_BACKEND:-otel}"
+ declare -a SYSTEM_NAMESPACES
+ SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
+ export SYSTEM_NAMESPACES
+-export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
++export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"false"}"
+ export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
+ export SKIP_DOWNGRADE="${SKIP_DOWNGRADE:-"false"}"
+ # Change this when forcing the upgrade to an image that is not yet available via upgrade channel
+@@ -69,7 +69,7 @@ export OLM_CHANNEL
+ # Change this when upgrades need switching to a different channel
+ export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
+ export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
+-export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
++export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-false}"
+ export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"
+ export TEST_KNATIVE_KAFKA="${TEST_KNATIVE_KAFKA:-false}"
+ 
+@@ -80,5 +80,8 @@ export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
+ export FULL_MESH="${FULL_MESH:-false}"
+ export ENABLE_TRACING="${ENABLE_TRACING:-false}"
+ # Define sample-rate for tracing.
+-export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
++export SAMPLE_RATE="${SAMPLE_RATE:-"0.3"}"
+ export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
++
++# P/Z specific changes
++export IMAGE_REGISTRY_NAME="${IMAGE_REGISTRY_NAME:-quay.io}"
+diff --git a/hack/teardown.sh b/hack/teardown.sh
+index 04f5f794..804a4344 100755
+--- a/hack/teardown.sh
++++ b/hack/teardown.sh
+@@ -5,9 +5,53 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
+ 
+ set -Eeuo pipefail
+ 
++declare -a TEST_KN_NAMESPACE
++TEST_KN_NAMESPACE=("serverless-tests" "serverless-tests1" "serverless-tests2" "serverless-tests3" "serverless-tests-mesh")
++#export TEST_KN_NAMESPACE
++
++function teardown_test_data {
++   echo "Teardown operator test data 💀"
++   for NS in "${TEST_KN_NAMESPACE[@]}"; do
++      if oc get ns "${NS}" >/dev/null 2>&1; then
++         echo "Removing resources in $NS namespace"
++         oc delete --ignore-not-found=true --all -n "$NS" deployment >/dev/null 2>&1
++         oc delete --ignore-not-found=true --all -n "$NS" deployment.apps >/dev/null 2>&1
++         oc delete --ignore-not-found=true --all -n "$NS" replicaset.apps >/dev/null 2>&1
++         oc delete --ignore-not-found=true --all -n "$NS" pods >/dev/null 2>&1
++         oc delete --ignore-not-found=true --all -n "$NS" service >/dev/null 2>&1
++         oc delete --ignore-not-found=true --all -n "$NS" imagestream.image.openshift.io >/dev/null 2>&1
++         if oc get knativeservings.operator.knative.dev -n knative-serving >/dev/null 2>&1; then
++            oc delete --ignore-not-found=true --all -n "$NS" revision.serving.knative.dev >/dev/null 2>&1
++            oc delete --ignore-not-found=true --all -n "$NS" route.serving.knative.dev >/dev/null 2>&1
++            oc delete --ignore-not-found=true --all -n "$NS" service.serving.knative.dev >/dev/null 2>&1
++            oc delete --ignore-not-found=true --all -n "$NS" configuration.serving.knative.dev >/dev/null 2>&1
++         fi
++         oc delete ns "$NS" >/dev/null 2>&1
++      fi
++   done
++   echo "Teardown operator test data completed 🌟"
++}
++
+ debugging.setup
+ 
++teardown_test_data
+ teardown_serverless
++teardown_extras
+ teardown_tracing
++uninstall_mesh
+ delete_catalog_source
++delete_namespaces
+ delete_namespaces "${SYSTEM_NAMESPACES[@]}"
++
++# display data
++sleep 30
++oc get all -n knative-serving
++oc get all -n knative-serving-ingress
++oc get all -n knative-eventing
++oc get all -n openshift-operators
++oc get all -n openshift-serverless
++oc get all -n istio-system
++oc get all -n serverless
++for NS in "${TEST_KN_NAMESPACE[@]}"; do
++   oc get all -n "$NS"
++done
+diff --git a/test/eventing-kafka.bash b/test/eventing-kafka.bash
+index 219ba7a2..2d8fb20a 100644
+--- a/test/eventing-kafka.bash
++++ b/test/eventing-kafka.bash
+@@ -8,7 +8,7 @@ function upstream_knative_eventing_kafka_e2e {
+ 
+   local random_ns
+ 
+-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_KAFKA_VERSION}:knative-eventing-kafka-test-{{.Name}}"
++  export TEST_IMAGE_TEMPLATE=${IMAGE_REGISTRY_NAME}/openshift-knative-eventing-kafka-broker-test/{{.Name}}:v1.3
+ 
+   cd "$KNATIVE_EVENTING_KAFKA_HOME"
+ 
+diff --git a/test/eventing.bash b/test/eventing.bash
+index bdeaf186..eedd8f75 100644
+--- a/test/eventing.bash
++++ b/test/eventing.bash
+@@ -6,7 +6,7 @@ set -e
+ function upstream_knative_eventing_e2e {
+   logger.info 'Running eventing tests'
+ 
+-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
++  export TEST_IMAGE_TEMPLATE=${IMAGE_REGISTRY_NAME}/openshift-knative-eventing-test/{{.Name}}:v1.3
+ 
+   cd "${KNATIVE_EVENTING_HOME}"
+ 
+@@ -20,4 +20,8 @@ function upstream_knative_eventing_e2e {
+   # run_conformance_tests defined in knative-eventing
+   logger.info 'Starting eventing conformance tests'
+   run_conformance_tests
++
++  # run_e2e_rekt_tests defined in knative-eventing
++  logger.info 'Starting eventing run_e2e_rekt_tests'
++  run_e2e_rekt_tests
+ }
+diff --git a/test/eventinge2e/source_to_ksvc_test.go b/test/eventinge2e/source_to_ksvc_test.go
+index 98ac01d1..c4e8f15b 100644
+--- a/test/eventinge2e/source_to_ksvc_test.go
++++ b/test/eventinge2e/source_to_ksvc_test.go
+@@ -14,7 +14,7 @@ import (
+ 
+ const (
+ 	pingSourceName    = "smoke-test-ping"
+-	image             = "quay.io/openshift-knative/helloworld-go"
++	image             = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 	helloWorldService = "helloworld-go"
+ 	helloWorldText    = "Hello World!"
+ 	ksvcAPIVersion    = "serving.knative.dev/v1"
+diff --git a/test/extensione2e/kafka/kafka_source_to_ksvc_test.go b/test/extensione2e/kafka/kafka_source_to_ksvc_test.go
+index 849edfda..a6c49b12 100644
+--- a/test/extensione2e/kafka/kafka_source_to_ksvc_test.go
++++ b/test/extensione2e/kafka/kafka_source_to_ksvc_test.go
+@@ -28,7 +28,7 @@ const (
+ 	kafkaSourceName     = "smoke-ks"
+ 	kafkaTopicName      = "smoke-topic"
+ 	kafkaConsumerGroup  = "smoke-cg"
+-	image               = "quay.io/openshift-knative/helloworld-go"
++	image               = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 	helloWorldService   = "helloworld-go"
+ 	ksvcAPIVersion      = "serving.knative.dev/v1"
+ 	ksvcKind            = "Service"
+diff --git a/test/kitchensinke2e/ksvc/ksvc.go b/test/kitchensinke2e/ksvc/ksvc.go
+index 5f205b90..4f1652c5 100644
+--- a/test/kitchensinke2e/ksvc/ksvc.go
++++ b/test/kitchensinke2e/ksvc/ksvc.go
+@@ -15,7 +15,7 @@ import (
+ //go:embed *.yaml
+ var yaml embed.FS
+ 
+-const defaultImage = "quay.io/openshift-knative/helloworld-go"
++const defaultImage = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 
+ func GVR() schema.GroupVersionResource {
+ 	return schema.GroupVersionResource{Group: "serving.knative.dev", Version: "v1", Resource: "services"}
+diff --git a/test/lib.bash b/test/lib.bash
+index 6b8a0cff..3e6b5ed1 100644
+--- a/test/lib.bash
++++ b/test/lib.bash
+@@ -75,8 +75,13 @@ function serverless_operator_e2e_tests {
+     kubeconfigs+=("$(pwd)/${cfg}")
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
+ 
+-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
++  go_test_e2e -tags=e2e $run_flags ./test/e2e \
+     --channel "$OLM_CHANNEL" \
+     --kubeconfigs "${kubeconfigs_str}" \
+     "$@"
+@@ -92,8 +97,13 @@ function serverless_operator_kafka_e2e_tests {
+     kubeconfigs+=("$(pwd)/${cfg}")
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
+ 
+-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
++  go_test_e2e -tags=e2e $run_flags ./test/e2ekafka \
+     --channel "$OLM_CHANNEL" \
+     --kubeconfigs "${kubeconfigs_str}" \
+     "$@"
+@@ -110,13 +120,18 @@ function downstream_serving_e2e_tests {
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+ 
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
+   if [[ $FULL_MESH == "true" ]]; then
+     export GODEBUG="x509ignoreCN=0"
+-    go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
++    go_test_e2e $run_flags ./test/servinge2e/ \
+       --kubeconfigs "${kubeconfigs_str}" \
+       "$@"
+   else
+-    go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
++    go_test_e2e $run_flags ./test/servinge2e/... \
+       --kubeconfigs "${kubeconfigs_str}" \
+       "$@"
+   fi
+@@ -133,7 +148,13 @@ function downstream_eventing_e2e_tests {
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
+ 
+-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
++
++  go_test_e2e $run_flags ./test/eventinge2e \
+     --kubeconfigs "${kubeconfigs_str}" \
+     "$@"
+ }
+@@ -148,8 +169,13 @@ function downstream_knative_kafka_e2e_tests {
+     kubeconfigs+=("$(pwd)/${cfg}")
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
+ 
+-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
++  go_test_e2e $run_flags ./test/extensione2e/kafka \
+     --kubeconfigs "${kubeconfigs_str}" \
+     "$@"
+ }
+@@ -164,8 +190,13 @@ function downstream_monitoring_e2e_tests {
+     kubeconfigs+=("$(pwd)/${cfg}")
+   done
+   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
++  # check for test flags
++  local run_flags="-failfast -timeout=30m -parallel=1"
++  if [ -v OPERATOR_TEST_FLAGS ] && [ ! -z "$OPERATOR_TEST_FLAGS" ]; then
++    run_flags="$OPERATOR_TEST_FLAGS"
++  fi
+ 
+-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
++  go_test_e2e $run_flags ./test/monitoringe2e \
+     --kubeconfigs "${kubeconfigs_str}" \
+     "$@"
+ }
+diff --git a/test/serving.bash b/test/serving.bash
+index 53c00c53..9cb64cb8 100644
+--- a/test/serving.bash
++++ b/test/serving.bash
+@@ -73,7 +73,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
+   # Create a persistent volume claim for the respective tests
+   oc apply -f ./test/config/pvc/pvc.yaml
+ 
+-  image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
++  image_template=${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/{{.Name}}:v1.3
+   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
+   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
+ 
+@@ -102,7 +102,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
+     --imagetemplate "$image_template"
+ 
+   # Run the helloworld test with an image pulled into the internal registry.
+-  oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
++  oc tag -n serving-tests "quay.io/openshift-knative-serving-test" "helloworld:v1.3" --reference-policy=local
+   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
+     ${OPENSHIFT_TEST_OPTIONS} \
+     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
+diff --git a/test/servinge2e/helpers.go b/test/servinge2e/helpers.go
+index 21392668..4a9104cf 100644
+--- a/test/servinge2e/helpers.go
++++ b/test/servinge2e/helpers.go
+@@ -12,7 +12,7 @@ import (
+ )
+ 
+ const (
+-	image                 = "quay.io/openshift-knative/helloworld-go"
++	image                 = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 	helloworldService     = "helloworld-go"
+ 	helloworldService2    = "helloworld-go2"
+ 	kubeHelloworldService = "kube-helloworld-go"
+diff --git a/test/servinge2e/kourier/custom_route_test.go b/test/servinge2e/kourier/custom_route_test.go
+index f955c46f..c9e6e8ee 100644
+--- a/test/servinge2e/kourier/custom_route_test.go
++++ b/test/servinge2e/kourier/custom_route_test.go
+@@ -159,7 +159,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
+ 		t.Fatalf("Error polling custom domain: %v", err)
+ 	}
+ 	const expectedResponse = "Hello World!"
+-	if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
++        if resp.StatusCode != 200 || !strings.Contains(string(resp.Body), expectedResponse){
+ 		t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
+ 	}
+ }
+diff --git a/test/servinge2e/kourier/helpers.go b/test/servinge2e/kourier/helpers.go
+index a7d3666a..70a53110 100644
+--- a/test/servinge2e/kourier/helpers.go
++++ b/test/servinge2e/kourier/helpers.go
+@@ -9,7 +9,7 @@ import (
+ )
+ 
+ const (
+-	image          = "quay.io/openshift-knative/helloworld-go"
++	image          = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 	helloworldText = "Hello World!"
+ )
+ 
+diff --git a/test/servinge2e/kourier/servicemesh_test.go b/test/servinge2e/kourier/servicemesh_test.go
+index b40529eb..68f6fa82 100644
+--- a/test/servinge2e/kourier/servicemesh_test.go
++++ b/test/servinge2e/kourier/servicemesh_test.go
+@@ -43,8 +43,11 @@ type testCase struct {
+ 
+ const (
+ 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
+-	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
++	httpProxyImage               = "quay.io/openshift-knative-serving-test/httpproxy:v1.3"
++        helloworldImage              = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+ 	istioInjectKey               = "sidecar.istio.io/inject"
++        expectedResponse             = "Hello World!"
++        helloworldgo                 = "quay.io/openshift-knative-serving-test/hello-openshift:latest"
+ )
+ 
+ // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
+@@ -335,7 +338,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
+ 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
+ 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
+ 		// hence the random suffix for the jwks ksvc.
+-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift", nil)
++		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, helloworldgo, nil)
+ 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+ 			Name:  "RESPONSE",
+ 			Value: jwks,
+@@ -636,7 +639,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
+ 
+ func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
+ 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
+-	aux := test.Service("aux", test.Namespace, image, nil)
++	aux := test.Service("aux", test.Namespace, helloworldgo, nil)
+ 	aux = test.WithServiceReadyOrFail(ctx, aux)
+ 
+ 	ips, err := net.LookupIP(aux.Status.URL.Host)
+diff --git a/vendor/knative.dev/eventing-kafka/test/e2e/helpers/kafka_helper.go b/vendor/knative.dev/eventing-kafka/test/e2e/helpers/kafka_helper.go
+index 9c750aba..04f7ed82 100644
+--- a/vendor/knative.dev/eventing-kafka/test/e2e/helpers/kafka_helper.go
++++ b/vendor/knative.dev/eventing-kafka/test/e2e/helpers/kafka_helper.go
+@@ -51,7 +51,7 @@ const (
+ 	strimziTopicResource = "kafkatopics"
+ 	interval             = 3 * time.Second
+ 	timeout              = 4 * time.Minute
+-	kafkaCatImage        = "quay.io/openshift-knative/kafkacat:1.6.0"
++	kafkaCatImage        = "quay.io/openshift-knative-eventing-kafka-test/kafkacat:1.6.0"
+ )
+ 
+ var (
+

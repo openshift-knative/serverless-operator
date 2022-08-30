@@ -43,8 +43,11 @@ type testCase struct {
 
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
+	httpProxyImage               = "quay.io/openshift-knative-serving-test/httpproxy:v1.3"
+        helloworldImage              = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
 	istioInjectKey               = "sidecar.istio.io/inject"
+        expectedResponse             = "Hello World!"
+        helloworldgo                 = "quay.io/openshift-knative-serving-test/hello-openshift:latest"
 )
 
 // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
@@ -335,7 +338,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift", nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, helloworldgo, nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
@@ -636,7 +639,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", test.Namespace, image, nil)
+	aux := test.Service("aux", test.Namespace, helloworldgo, nil)
 	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)

@@ -159,7 +159,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 		t.Fatalf("Error polling custom domain: %v", err)
 	}
 	const expectedResponse = "Hello World!"
-	if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
+        if resp.StatusCode != 200 || !strings.Contains(string(resp.Body), expectedResponse){
 		t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
 	}
 }

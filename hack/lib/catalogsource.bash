@@ -73,8 +73,9 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: ${OPERATOR}
+  namespace: openshift-marketplace
 spec:
-  image: ${index_image}
+  image: "IMAGE_INDEX_BUNDLE"
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc

@@ -73,7 +73,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Create a persistent volume claim for the respective tests
   oc apply -f ./test/config/pvc/pvc.yaml
 
-  image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
+  image_template=${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/{{.Name}}:v1.3
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
 
@@ -102,7 +102,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
-  oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
+  oc tag -n serving-tests "quay.io/openshift-knative-serving-test" "helloworld:v1.3" --reference-policy=local
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
