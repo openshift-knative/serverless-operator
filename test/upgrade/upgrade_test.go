@@ -50,8 +50,8 @@ func TestServerlessUpgrade(t *testing.T) {
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
-					//servingupgrade.AutoscaleSustainingWithTBCTest(),
-					//servingupgrade.AutoscaleSustainingTest(),
+					servingupgrade.AutoscaleSustainingWithTBCTest(),
+					servingupgrade.AutoscaleSustainingTest(),
 				},
 				//kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				//kafkabrokerupgrade.BrokerContinualTests(),
