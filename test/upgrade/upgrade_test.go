@@ -138,15 +138,15 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		Namespace:    "knative-eventing",
 		FailOnNoJobs: true,
 	}))
-	//tests = append(tests, eventingupgrade.PostUpgradeTests()...)
-	//tests = append(tests,
-	//	kafkaupgrade.ChannelPostUpgradeTest(),
-	//	kafkaupgrade.SourcePostUpgradeTest(),
-	//	kafkabrokerupgrade.BrokerPostUpgradeTest(),
-	//	kafkabrokerupgrade.SinkPostUpgradeTest(),
-	//	upgrade.VerifySugarControllerDeletion(ctx),
-	//)
-	//tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
+	tests = append(tests,
+		kafkaupgrade.ChannelPostUpgradeTest(),
+		kafkaupgrade.SourcePostUpgradeTest(),
+		kafkabrokerupgrade.BrokerPostUpgradeTest(),
+		kafkabrokerupgrade.SinkPostUpgradeTest(),
+		upgrade.VerifySugarControllerDeletion(ctx),
+	)
+	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
 
