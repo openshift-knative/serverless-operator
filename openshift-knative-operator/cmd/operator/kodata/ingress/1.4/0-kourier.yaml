@@ -113,8 +113,8 @@ data:
                          comparison:
                            op: GE
                            value:
-                             default_value: 500
-                             runtime_key: "500"
+                             default_value: 400
+                             runtime_key: access_log.access_error.status
                     route_config:
                       virtual_hosts:
                         - name: admin_interface
