@@ -22,7 +22,7 @@ function default_knative_serving_images() {
   export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"${serving}-activator"}
   export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler"}
   export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-"${serving}-autoscaler-hpa"}
-  export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"${serving}-controller"}
+  export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"gcr.io/gcp-compute-engine-223401/controller-f6fdb41c6acbc726e29a3104ff2ef720@sha256:f9bf9d66c0287e42d4df11665567b196dba2a7fedb0d823c275428c4a119113c"}
   export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-"${serving}-webhook"}
   export KNATIVE_SERVING_DOMAIN_MAPPING=${KNATIVE_SERVING_DOMAIN_MAPPING:-"${serving}-domain-mapping"}
   export KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK=${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK:-"${serving}-domain-mapping-webhook"}
