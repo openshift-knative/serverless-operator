@@ -36,8 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
-
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
@@ -56,10 +54,6 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 )
-
-type EventingKafkaConfig struct {
-	Kafka kafkaconfig.EKKafkaConfig `json:"kafka,omitempty"`
-}
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
 
