@@ -8,6 +8,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
@@ -75,14 +76,37 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 	return lastState, nil
 }
 
+func WaitForKnativeEventingStateAlpha(ctx *test.Context, name, namespace string, inState EventingInStateFuncAlpha) (*operatorv1alpha1.KnativeEventing, error) {
+	var (
+		lastState *operatorv1alpha1.KnativeEventing
+		err       error
+	)
+	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+		lastState, err = ctx.Clients.OperatorAlpha.KnativeEventings(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		return inState(lastState, err)
+	})
+
+	if waitErr != nil {
+		return lastState, fmt.Errorf("knativeeventing %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
+	}
+	return lastState, nil
+}
+
 func IsKnativeEventingReady(e *operatorv1beta1.KnativeEventing, err error) (bool, error) {
 	return e.Status.IsReady(), err
 }
 
 type EventingInStateFunc func(e *operatorv1beta1.KnativeEventing, err error) (bool, error)
+type EventingInStateFuncAlpha func(e *operatorv1alpha1.KnativeEventing, err error) (bool, error)
 
 func IsKnativeEventingWithVersionReady(version string) EventingInStateFunc {
 	return func(e *operatorv1beta1.KnativeEventing, err error) (bool, error) {
+		return e.Status.Version == version && e.Status.IsReady(), err
+	}
+}
+
+func IsKnativeEventingWithVersionReadyAlpha(version string) EventingInStateFuncAlpha {
+	return func(e *operatorv1alpha1.KnativeEventing, err error) (bool, error) {
 		return e.Status.Version == version && e.Status.IsReady(), err
 	}
 }

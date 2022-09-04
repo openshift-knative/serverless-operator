@@ -12,6 +12,7 @@ import (
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client"
 	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 	monclientv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -19,6 +20,7 @@ import (
 
 	eventingversioned "knative.dev/eventing/pkg/client/clientset/versioned"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 
@@ -38,6 +40,7 @@ type Context struct {
 type Clients struct {
 	Kube               *kubernetes.Clientset
 	Operator           operatorv1beta1.OperatorV1beta1Interface
+	OperatorAlpha      operatorv1alpha1.OperatorV1alpha1Interface
 	Serving            *servingversioned.Clientset
 	Eventing           *eventingversioned.Clientset
 	OLM                olmversioned.Interface
@@ -48,6 +51,7 @@ type Clients struct {
 	ConsoleCLIDownload consolev1.ConsoleCLIDownloadInterface
 	MonitoringClient   monclientv1.MonitoringV1Interface
 	Kafka              *kafkaversioned.Clientset
+	APIExtensionClient *apiextension.Clientset
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -125,6 +129,7 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Kube = kubernetes.NewForConfigOrDie(cfg)
 	clients.Dynamic = dynamic.NewForConfigOrDie(cfg)
 	clients.Operator = operatorversioned.NewForConfigOrDie(cfg).OperatorV1beta1()
+	clients.OperatorAlpha = operatorversioned.NewForConfigOrDie(cfg).OperatorV1alpha1()
 	clients.Serving = servingversioned.NewForConfigOrDie(cfg)
 	clients.Eventing = eventingversioned.NewForConfigOrDie(cfg)
 	clients.Route = routev1.NewForConfigOrDie(cfg)
@@ -132,6 +137,11 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Kafka = kafkaversioned.NewForConfigOrDie(cfg)
 
 	clients.OLM, err = client.NewClient(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	clients.APIExtensionClient, err = apiextension.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
