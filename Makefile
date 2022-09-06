@@ -207,6 +207,9 @@ release-files:
 	./hack/generate/index.sh \
 		templates/index.yaml \
 		olm-catalog/serverless-operator/index/configs/index.yaml
+	./hack/generate/quickstart.sh \
+  	templates/serverless-application-quickstart.yaml \
+  	knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
