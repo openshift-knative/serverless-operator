@@ -148,7 +148,7 @@ function deploy_knativeserving_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
-  cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
+  cp "${rootdir}/test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" "$serving_cr"
 
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
@@ -183,7 +183,7 @@ function deploy_knativeserving_cr {
 # If ServiceMesh is enabled:
 # - Set ingress.istio.enbled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
-#   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
+#   as "test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_istio {
   local custom_resource istio_patch
   custom_resource=${1:?Pass a custom resource to be patched as arg[1]}

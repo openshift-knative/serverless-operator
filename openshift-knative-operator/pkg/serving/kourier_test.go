@@ -126,14 +126,14 @@ func TestKourierEnvValue(t *testing.T) {
 }
 
 func TestKourierInternalEncryptionOverrideCertName(t *testing.T) {
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
 		},
-		Spec: operatorv1alpha1.KnativeServingSpec{
-			CommonSpec: operatorv1alpha1.CommonSpec{
-				Config: operatorv1alpha1.ConfigMapData{
+		Spec: operatorv1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				Config: base.ConfigMapData{
 					"network": map[string]string{
 						InternalEncryptionKey:        "true",
 						IngressDefaultCertificateKey: "custom-cert",

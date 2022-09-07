@@ -30,5 +30,5 @@ git apply "$root/olm-catalog/serverless-operator/hack/002-serving-drop-unsupport
 # Drop unsupported fields from the Eventing CRD.
 git apply "$root/olm-catalog/serverless-operator/hack/003-eventing-drop-unsupported-fields.patch"
 
-## Drop unsupported sources field from the Eventing CRD.
+# Drop unsupported sources field from the Eventing CRD.
 git apply "$root/olm-catalog/serverless-operator/hack/004-eventing-drop-unsupported-sources.patch"

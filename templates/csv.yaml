@@ -427,20 +427,38 @@ spec:
             selector:
               matchLabels:
                 name: knative-operator
-                extra: webhook
+                serverless.openshift.io/is: webhook
             template:
               metadata:
                 annotations:
                   sidecar.istio.io/inject: "false"
                 labels:
                   name: knative-operator
-                  extra: webhook
+                  serverless.openshift.io/is: webhook
               spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
+                    readinessProbe:
+                      periodSeconds: 1
+                      httpGet:
+                        scheme: HTTPS
+                        port: 8443
+                        httpHeaders:
+                          - name: k-kubelet-probe
+                            value: "webhook"
+                      livenessProbe:
+                        periodSeconds: 1
+                        httpGet:
+                          scheme: HTTPS
+                          port: 8443
+                          httpHeaders:
+                            - name: k-kubelet-probe
+                              value: "webhook"
+                        failureThreshold: 6
+                        initialDelaySeconds: 20
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
