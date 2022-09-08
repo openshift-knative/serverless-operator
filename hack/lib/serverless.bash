@@ -156,6 +156,14 @@ function deploy_knativeserving_cr {
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
+  # When upgrading from 1.24 or older, disable internal TLS. It works since 1.25.
+  if [[ "$INSTALL_PREVIOUS_VERSION" == "true" ]]; then
+    if versions.le "$(versions.major_minor "$PREVIOUS_VERSION")" "1.24"; then
+      logger.warn "Disabling internal encryption. Unsupported version."
+      yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+    fi
+  fi
+
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$serving_cr"
   fi
