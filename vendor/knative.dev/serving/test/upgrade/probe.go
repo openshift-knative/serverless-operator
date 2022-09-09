@@ -35,11 +35,12 @@ func ProbeTest() pkgupgrade.BackgroundOperation {
 	var clients *test.Clients
 	var names *test.ResourceNames
 	var prober test.Prober
-	var cancel logstream.Canceler
+	var cancel, sysCancel logstream.Canceler
 	return pkgupgrade.NewBackgroundVerification("ProbeTest",
 		func(c pkgupgrade.Context) {
 			// Setup
 			clients = e2e.Setup(c.T)
+			sysCancel = logstream.Start(c.T)
 			cancel = logstream.StartForNamespaces(c.T, c.Log.Infof, "serving-tests")
 			names = &test.ResourceNames{
 				Service: "upgrade-probe",
@@ -61,6 +62,7 @@ func ProbeTest() pkgupgrade.BackgroundOperation {
 			test.EnsureTearDown(c.T, clients, names)
 			test.AssertProberSLO(c.T, prober, *successFraction)
 			c.T.Cleanup(cancel)
+			c.T.Cleanup(sysCancel)
 			c.T.Fail()
 		},
 	)
