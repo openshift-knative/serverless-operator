@@ -18,6 +18,7 @@ package logstream
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -47,29 +48,44 @@ func Start(t ti) Canceler {
 	// Do this lazily to make import ordering less important.
 	once.Do(func() {
 		if ns := os.Getenv(system.NamespaceEnvKey); ns != "" {
-			config, err := test.Flags.GetRESTConfig()
-			if err != nil {
-				t.Error("Error loading client config", "error", err)
-				return
-			}
-
-			kc, err := kubernetes.NewForConfig(config)
-			if err != nil {
-				t.Error("Error creating kubernetes client", "error", err)
-				return
-			}
-
+			var err error
 			// handle case when ns contains a csv list
 			namespaces := strings.Split(ns, ",")
-			stream = &shim{logstreamv2.FromNamespaces(context.Background(), kc, namespaces)}
-
+			if sysStream, err = initStream(namespaces, true /*filterLines*/); err != nil {
+				t.Error("Error initializing logstream", "error", err)
+			}
 		} else {
 			// Otherwise set up a null stream.
-			stream = &null{}
+			sysStream = &null{}
 		}
 	})
 
-	return stream.Start(t)
+	return sysStream.Start(t)
+}
+
+// StartForNamespaces begins streaming the logs from custom namespaces to `t.Log`.
+// Filtering of log lines is disabled in this case so all lines will be printed.
+// It returns a Canceler, which must be called before the test completes.
+func StartForNamespaces(t ti, namespaces ...string) Canceler {
+	userStream, err := initStream(namespaces, false /*filterLines*/)
+	if err != nil {
+		t.Error("Error initializing logstream", "error", err)
+	}
+	return userStream.Start(t)
+}
+
+func initStream(namespaces []string, filterLines bool) (streamer, error) {
+	config, err := test.Flags.GetRESTConfig()
+	if err != nil {
+		return &null{}, fmt.Errorf("error loading client config: %w", err)
+	}
+
+	kc, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return &null{}, fmt.Errorf("error creating kubernetes client: %w", err)
+	}
+
+	return &shim{logstreamv2.FromNamespaces(context.Background(), kc, namespaces, filterLines)}, nil
 }
 
 type streamer interface {
@@ -77,8 +93,8 @@ type streamer interface {
 }
 
 var (
-	stream streamer
-	once   sync.Once
+	sysStream streamer
+	once      sync.Once
 )
 
 type shim struct {

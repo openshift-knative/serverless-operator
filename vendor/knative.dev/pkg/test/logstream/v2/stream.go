@@ -34,33 +34,36 @@ import (
 	"knative.dev/pkg/ptr"
 )
 
-func FromNamespaces(ctx context.Context, c kubernetes.Interface, namespaces []string) Source {
+func FromNamespaces(ctx context.Context, c kubernetes.Interface, namespaces []string, filterLines bool) Source {
 	return &namespaceSource{
-		ctx:        ctx,
-		kc:         c,
-		namespaces: namespaces,
-		keys:       make(map[string]Callback, 1),
+		ctx:         ctx,
+		kc:          c,
+		namespaces:  namespaces,
+		keys:        make(map[string]Callback, 1),
+		filterLines: filterLines,
 	}
 }
 
-func FromNamespace(ctx context.Context, c kubernetes.Interface, namespace string) Source {
+func FromNamespace(ctx context.Context, c kubernetes.Interface, namespace string, filterLines bool) Source {
 	return &namespaceSource{
 		ctx:        ctx,
 		kc:         c,
 		namespaces: []string{namespace},
 		keys:       make(map[string]Callback, 1),
+		filterLines: filterLines,
 	}
 }
 
 type namespaceSource struct {
 	namespaces []string
-	kc         kubernetes.Interface
-	ctx        context.Context
+	kc         	kubernetes.Interface
+	ctx        	context.Context
 
-	m        sync.RWMutex
-	once     sync.Once
-	keys     map[string]Callback
-	watchErr error
+	m        		sync.RWMutex
+	once     		sync.Once
+	keys     		map[string]Callback
+	filterLines bool
+	watchErr 		error
 }
 
 func (s *namespaceSource) StartStream(name string, l Callback) (Canceler, error) {
@@ -136,7 +139,7 @@ func (s *namespaceSource) startForPod(pod *corev1.Pod) {
 		psn, pn, cn := pod.Namespace, pod.Name, container.Name
 
 		handleLine := s.handleLine
-		if wellKnownContainers.Has(cn) {
+		if wellKnownContainers.Has(cn) || !s.filterLines {
 			// Specialcase logs from chaosduck, queueproxy etc.
 			// - ChaosDuck logs enable easy
 			//   monitoring of killed pods throughout all tests.
