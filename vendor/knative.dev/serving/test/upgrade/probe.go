@@ -24,6 +24,7 @@ import (
 	"knative.dev/serving/test"
 	"knative.dev/serving/test/e2e"
 	v1test "knative.dev/serving/test/v1"
+	"knative.dev/pkg/test/logstream"
 )
 
 var successFraction = flag.Float64("probe.success_fraction", 1.0, "Fraction of probes required to pass during upgrade.")
@@ -34,10 +35,12 @@ func ProbeTest() pkgupgrade.BackgroundOperation {
 	var clients *test.Clients
 	var names *test.ResourceNames
 	var prober test.Prober
+	var cancel logstream.Canceler
 	return pkgupgrade.NewBackgroundVerification("ProbeTest",
 		func(c pkgupgrade.Context) {
 			// Setup
 			clients = e2e.Setup(c.T)
+			cancel = logstream.StartForNamespaces(c.T, c.Log.Infof, "serving-tests")
 			names = &test.ResourceNames{
 				Service: "upgrade-probe",
 				Image:   test.PizzaPlanet1,
@@ -57,6 +60,8 @@ func ProbeTest() pkgupgrade.BackgroundOperation {
 			// Verify
 			test.EnsureTearDown(c.T, clients, names)
 			test.AssertProberSLO(c.T, prober, *successFraction)
+			c.T.Cleanup(cancel)
+			c.T.Fail()
 		},
 	)
 }
