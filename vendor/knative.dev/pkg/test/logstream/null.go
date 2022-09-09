@@ -16,12 +16,16 @@ limitations under the License.
 
 package logstream
 
+import (
+	logstreamv2 "knative.dev/pkg/test/logstream/v2"
+)
+
 type null struct{}
 
 var _ streamer = (*null)(nil)
 
 // Start implements streamer
-func (*null) Start(t ti) Canceler {
+func (*null) Start(t ti, callback logstreamv2.Callback) Canceler {
 	t.Log("logstream was requested, but SYSTEM_NAMESPACE was unset.")
 	return func() {}
 }

@@ -60,18 +60,18 @@ func Start(t ti) Canceler {
 		}
 	})
 
-	return sysStream.Start(t)
+	return sysStream.Start(t, t.Logf)
 }
 
 // StartForNamespaces begins streaming the logs from custom namespaces to `t.Log`.
 // Filtering of log lines is disabled in this case so all lines will be printed.
 // It returns a Canceler, which must be called before the test completes.
-func StartForNamespaces(t ti, namespaces ...string) Canceler {
+func StartForNamespaces(t ti, callback logstreamv2.Callback, namespaces ...string) Canceler {
 	userStream, err := initStream(namespaces, false /*filterLines*/)
 	if err != nil {
 		t.Error("Error initializing logstream", "error", err)
 	}
-	return userStream.Start(t)
+	return userStream.Start(t, callback)
 }
 
 func initStream(namespaces []string, filterLines bool) (streamer, error) {
@@ -89,7 +89,7 @@ func initStream(namespaces []string, filterLines bool) (streamer, error) {
 }
 
 type streamer interface {
-	Start(t ti) Canceler
+	Start(t ti, callback logstreamv2.Callback) Canceler
 }
 
 var (
@@ -101,9 +101,9 @@ type shim struct {
 	logstreamv2.Source
 }
 
-func (s *shim) Start(t ti) Canceler {
+func (s *shim) Start(t ti, callback logstreamv2.Callback) Canceler {
 	name := helpers.ObjectPrefixForTest(t)
-	canceler, err := s.StartStream(name, t.Logf)
+	canceler, err := s.StartStream(name, callback)
 
 	if err != nil {
 		t.Error("Failed to start logstream", "error", err)
