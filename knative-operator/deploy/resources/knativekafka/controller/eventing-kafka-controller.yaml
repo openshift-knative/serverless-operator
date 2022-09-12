@@ -1297,22 +1297,31 @@ spec:
             - name: SOURCE_DATA_PLANE_CONFIG_MAP_NAMESPACE
               value: knative-eventing
 
-            - name: BROKER_DATA_PLANE_CONFIG_MAP_NAME
+            - name: BROKER_CONTRACT_CONFIG_MAP_NAME
               value: kafka-broker-brokers-triggers
-            - name: CHANNEL_DATA_PLANE_CONFIG_MAP_NAME
+            - name: CHANNEL_CONTRACT_CONFIG_MAP_NAME
               value: kafka-channel-channels-subscriptions
-            - name: SINK_DATA_PLANE_CONFIG_MAP_NAME
+            - name: SINK_CONTRACT_CONFIG_MAP_NAME
               value: kafka-sink-sinks
-            - name: SOURCE_DATA_PLANE_CONFIG_MAP_NAME
+            - name: SOURCE_CONTRACT_CONFIG_MAP_NAME
               value: kafka-source-sources
 
-            - name: BROKER_DATA_PLANE_CONFIG_FORMAT
+            - name: BROKER_DATA_PLANE_CONFIG_CONFIG_MAP_NAME
+              value: config-kafka-broker-data-plane
+            - name: SOURCE_DATA_PLANE_CONFIG_CONFIG_MAP_NAME
+              value: config-kafka-source-data-plane
+            - name: SINK_DATA_PLANE_CONFIG_CONFIG_MAP_NAME
+              value: config-kafka-source-data-plane
+            - name: CHANNEL_DATA_PLANE_CONFIG_CONFIG_MAP_NAME
+              value: config-kafka-source-data-plane
+
+            - name: BROKER_CONTRACT_CONFIG_MAP_FORMAT
               value: json
-            - name: CHANNEL_DATA_PLANE_CONFIG_FORMAT
+            - name: CHANNEL_CONTRACT_CONFIG_MAP_FORMAT
               value: json
-            - name: SINK_DATA_PLANE_CONFIG_FORMAT
+            - name: SINK_CONTRACT_CONFIG_MAP_FORMAT
               value: json
-            - name: SOURCE_DATA_PLANE_CONFIG_FORMAT
+            - name: SOURCE_CONTRACT_CONFIG_MAP_FORMAT
               value: json
 
             - name: BROKER_INGRESS_NAME
