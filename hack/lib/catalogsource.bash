@@ -67,6 +67,11 @@ function install_catalogsource {
     mv "${rootdir}/_output/bkp.Dockerfile" "${index_build_dir}/Dockerfile"
   fi
 
+# IMAGE_INDEX_BUNDLE decleare in var.bash as default null then work like existing if not null it will take the value from script iib images
+  if [ ! -n "${IMAGE_INDEX_BUNDLE:-}" ]; then
+      index_image="$IMAGE_INDEX_BUNDLE"
+  fi
+
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
 apiVersion: operators.coreos.com/v1alpha1
@@ -75,7 +80,7 @@ metadata:
   name: ${OPERATOR}
   namespace: openshift-marketplace
 spec:
-  image: "IMAGE_INDEX_BUNDLE"
+  image: ${index_image}
   displayName: "Serverless Operator"
   publisher: Red Hat
   sourceType: grpc

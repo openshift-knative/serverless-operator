@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 	"testing"
-
+        "os"
 	"github.com/openshift-knative/serverless-operator/test"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	image                 = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+        image:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/helloworld:v1.3"
 	helloworldService     = "helloworld-go"
 	helloworldService2    = "helloworld-go2"
 	kubeHelloworldService = "kube-helloworld-go"

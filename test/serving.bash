@@ -102,7 +102,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
-  oc tag -n serving-tests "quay.io/openshift-knative-serving-test/helloworld:v1.3" "helloworld:latest" --reference-policy=local
+  oc tag -n serving-tests ${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/helloworld:v1.3 "helloworld:latest" --reference-policy=local
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"

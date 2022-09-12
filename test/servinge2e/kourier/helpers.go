@@ -2,14 +2,14 @@ package kourier
 
 import (
 	"context"
-
+        "os"
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 )
 
 const (
-	image          = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+	image:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/helloworld:v1.3"
 	helloworldText = "Hello World!"
 )
 

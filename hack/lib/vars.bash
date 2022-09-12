@@ -54,7 +54,7 @@ export TRACING_BACKEND="${TRACING_BACKEND:-otel}"
 declare -a SYSTEM_NAMESPACES
 SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
 export SYSTEM_NAMESPACES
-export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"false"}"
+export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 export SKIP_DOWNGRADE="${SKIP_DOWNGRADE:-"false"}"
 # Change this when forcing the upgrade to an image that is not yet available via upgrade channel
@@ -69,7 +69,7 @@ export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
-export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-false}"
+export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
 export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"
 export TEST_KNATIVE_KAFKA="${TEST_KNATIVE_KAFKA:-false}"
 
@@ -85,3 +85,4 @@ export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
 
 # P/Z specific changes
 export IMAGE_REGISTRY_NAME="${IMAGE_REGISTRY_NAME:-quay.io}"
+export IMAGE_INDEX_BUNDLE="${IMAGE_INDEX_BUNDLE:-}"

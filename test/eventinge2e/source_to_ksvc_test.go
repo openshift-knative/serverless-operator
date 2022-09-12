@@ -3,18 +3,17 @@ package eventinge2e
 import (
 	"context"
 	"testing"
-
+        "os"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
+        sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
 	pingSourceName    = "smoke-test-ping"
-	image             = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+	image:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/helloworld:v1.3"
 	helloWorldService = "helloworld-go"
 	helloWorldText    = "Hello World!"
 	ksvcAPIVersion    = "serving.knative.dev/v1"

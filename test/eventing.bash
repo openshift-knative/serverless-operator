@@ -20,8 +20,4 @@ function upstream_knative_eventing_e2e {
   # run_conformance_tests defined in knative-eventing
   logger.info 'Starting eventing conformance tests'
   run_conformance_tests
-
-  # run_e2e_rekt_tests defined in knative-eventing
-  logger.info 'Starting eventing run_e2e_rekt_tests'
-  run_e2e_rekt_tests
 }

@@ -20,8 +20,6 @@ function uninstall_mesh {
 
 function deploy_servicemesh_operators {
   logger.info "Installing service mesh operators in namespace openshift-operators"
-  logger.info "Operator source is $OLM_SOURCE"
-  sed -i "s|source: .*|source: $OLM_SOURCE|g" "${resources_dir}"/subscription.yaml
   oc apply -f "${resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until service mesh operators are available"
@@ -30,21 +28,19 @@ function deploy_servicemesh_operators {
 }
 
 function undeploy_servicemesh_operators {
-  logger.warn 'Teardown service mesh'
-  logger.info "Deleting service mesh CSVs"
-  if oc get subscription.operators.coreos.com servicemeshoperator -n openshift-operators >/dev/null 2>&1; then
-    CSV=$(oc get subscription.operators.coreos.com servicemeshoperator -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
-    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
-  fi
-  if oc get subscription.operators.coreos.com kiali-ossm -n openshift-operators >/dev/null 2>&1; then
-    CSV=$(oc get subscription.operators.coreos.com kiali-ossm -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
-    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
-  fi
-  if oc get subscription.operators.coreos.com jaeger-product -n openshift-operators >/dev/null 2>&1; then
-    CSV=$(oc get subscription.operators.coreos.com jaeger-product -n openshift-operators -o=custom-columns=CURRENT_CSV:.status.currentCSV --no-headers=true)
-    oc delete --ignore-not-found=true clusterserviceversions.operators.coreos.com $CSV -n openshift-operators
-  fi
+  logger.info "Deleting service mesh subscriptions"
+  oc delete subscriptions.operators.coreos.com -n openshift-operators servicemeshoperator kiali-ossm jaeger-product --ignore-not-found
+  logger.info 'Deleting ClusterServiceVersion'
+  for csv in $(set +o pipefail && oc get csv -n openshift-operators --no-headers 2>/dev/null \
+      | grep 'servicemeshoperator\|jaeger\|kiali' | cut -f1 -d' '); do
+    oc delete csv -n openshift-operators "${csv}"
+  done
 
+  logger.info 'Ensure no operators present'
+  timeout 600 "[[ \$(oc get deployments -n openshift-operators -oname | grep -c 'servicemeshoperator\|jaeger\|kiali') != 0 ]]"
+
+  logger.info 'Deleting operators namespace'
+  oc delete namespace openshift-operators --ignore-not-found=true
   logger.info "Deleting service mesh istio nodes"
   oc delete --ignore-not-found=true daemonset.apps/istio-node -n openshift-operators
   oc delete --ignore-not-found=true service/maistra-admission-controller -n openshift-operators
@@ -53,23 +49,17 @@ function undeploy_servicemesh_operators {
   oc delete --ignore-not-found=true validatingwebhookconfiguration openshift-operators.servicemesh-resources.maistra.io
   oc delete --ignore-not-found=true mutatingwebhookconfigurations openshift-operators.servicemesh-resources.maistra.io
   oc delete --ignore-not-found=true clusterrole istio-admin istio-cni istio-edit istio-view
-  oc delete --ignore-not-found=true clusterrolebinding istio-cni
+  oc delete --ignore-not-found=true clusterrolebinding istio-cn
 
-  logger.info "Deleting service mesh subscriptions"
-  oc delete subscriptions.operators.coreos.com -n openshift-operators servicemeshoperator kiali-ossm jaeger-product --ignore-not-found
-
-  logger.info "Deleting maistra CRDs"
-  if oc get crds -oname | grep -q 'maistra.io'; then
-    oc get crds -oname | grep 'maistra.io' | xargs -r oc delete
+  logger.info 'Ensure not CRDs left'
+  if [[ ! $(oc get crd -oname | grep -c 'maistra.io') -eq 0 ]]; then
+    oc get crd -oname | grep 'maistra.io' | xargs oc delete --timeout=60s
   fi
-
-  logger.info "Deleting istio CRDs"
-  if oc get crds -oname | grep -q 'istio'; then
-    oc get crds -oname | grep 'istio' | xargs -r oc delete
+  if [[ ! $(oc get crd -oname | grep -c 'istio') -eq 0 ]]; then
+    oc get crd -oname | grep 'istio' | xargs oc delete --timeout=60s
   fi
-
   logger.success "Service mesh has been uninstalled"
-}
+  }
 
 function deploy_servicemeshcontrolplane {
   logger.info "Installing ServiceMeshControlPlane in namespace istio-system"
