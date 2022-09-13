@@ -68,15 +68,10 @@ function install_catalogsource {
   fi
 
 # IMAGE_INDEX_BUNDLE decleare in var.bash as default null then work like existing if not null it will take the value from script iib images
-  if [ -v IMAGE_INDEX_BUNDLE ] && [ ! -z "$IMAGE_INDEX_BUNDLE" ]; then
-      echo "Image index is : $IMAGE_INDEX_BUNDLE"
-      index_image="$IMAGE_INDEX_BUNDLE"
-  elif [ -v IMAGE_INDEX_BUNDLE ]
-       echo "Image index is : $IMAGE_INDEX_BUNDLE"
-  else
-       echo "Image index is not defined"
-  fi
-  
+if [ -n "${IMAGE_INDEX_BUNDLE:-}" ]; then
+    echo "Image index is : $IMAGE_INDEX_BUNDLE"
+    index_image="$IMAGE_INDEX_BUNDLE"
+fi
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
