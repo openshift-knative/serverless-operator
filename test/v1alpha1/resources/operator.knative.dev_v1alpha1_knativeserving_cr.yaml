@@ -4,6 +4,8 @@ metadata:
   name: knative-serving
 spec:
   config:
+    network:
+      internal-encryption: "true"
     autoscaler:
       container-concurrency-target-default: "100"
       container-concurrency-target-percentage: "1.0"

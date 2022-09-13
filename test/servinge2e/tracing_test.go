@@ -34,6 +34,7 @@ func TestTraceStartedAtActivator(t *testing.T) {
 }
 
 func TestTraceStartedAtQueueProxy(t *testing.T) {
+	t.Skip("Activator is always on the path. See SRVKS-784")
 	tracingTest(t, false /* activatorInPath */)
 }
 
