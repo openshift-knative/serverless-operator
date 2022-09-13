@@ -43,7 +43,7 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   cd "$KNATIVE_EVENTING_KAFKA_BROKER_HOME"
 
-  # shellcheck disable=SC1091
+  # shellcheck disable=SC1091,SC1090
   source "${KNATIVE_EVENTING_KAFKA_BROKER_HOME}/openshift/e2e-common.sh"
 
   logger.info 'Starting eventing-kafka-broker tests'
