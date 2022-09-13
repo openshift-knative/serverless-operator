@@ -71,7 +71,12 @@ function install_catalogsource {
   if [ -v IMAGE_INDEX_BUNDLE ] && [ ! -z "$IMAGE_INDEX_BUNDLE" ]; then
       echo "Image index is : $IMAGE_INDEX_BUNDLE"
       index_image="$IMAGE_INDEX_BUNDLE"
+  elif [ -v IMAGE_INDEX_BUNDLE ]
+       echo "Image index is : $IMAGE_INDEX_BUNDLE"
+  else
+       echo "Image index is not defined"
   fi
+  
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
