@@ -13,8 +13,8 @@ function upstream_knative_eventing_kafka_e2e {
   cd "$KNATIVE_EVENTING_KAFKA_HOME"
 
   # This the namespace used to install and test Knative Eventing-Kafka.
-  random_ns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2> /dev/null \
-    | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)"
+  random_ns="knative-eventing-$(LC_ALL=C dd if=/dev/urandom bs=256 count=1 2>/dev/null |
+    tr -dc 'a-z0-9' | fold -w 10 | head -n 1)"
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"${random_ns}"}"
   export SYSTEM_NAMESPACE
 
@@ -37,7 +37,7 @@ function upstream_knative_eventing_kafka_broker_e2e {
   root_dir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
   # Set Kafka Broker as default Broker class
-  oc patch knativeeventing -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch.yaml"
+  oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch.yaml"
 
   logger.info 'Running eventing-kafka-broker tests'
 
@@ -53,5 +53,5 @@ function upstream_knative_eventing_kafka_broker_e2e {
   run_e2e_new_tests
 
   # Rollback setting Kafka as default Broker class
-  oc patch knativeeventing -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"
+  oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"
 }
