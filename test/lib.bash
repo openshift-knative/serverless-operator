@@ -76,12 +76,12 @@ function serverless_operator_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]}" "$OPERATOR_TEST_FLAGS")
   fi
 
-  go_test_e2e -tags=e2e $run_flags ./test/e2e \
+  go_test_e2e -tags=e2e "${RUN_FLAGS[@]}" ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -98,12 +98,12 @@ function serverless_operator_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]" "$OPERATOR_TEST_FLAGS")
   fi
 
-  go_test_e2e -tags=e2e $run_flags ./test/e2ekafka \
+  go_test_e2e -tags=e2e "${RUN_FLAGS[@]}" ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
@@ -121,17 +121,17 @@ function downstream_serving_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]}" "$OPERATOR_TEST_FLAGS")
   fi
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
-    go_test_e2e $run_flags ./test/servinge2e/ \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   else
-    go_test_e2e $run_flags ./test/servinge2e/... \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/... \
       --kubeconfigs "${kubeconfigs_str}" \
       "$@"
   fi
@@ -149,12 +149,12 @@ function downstream_eventing_e2e_tests {
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]}" "$OPERATOR_TEST_FLAGS")
   fi
 
-  go_test_e2e $run_flags ./test/eventinge2e \
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
@@ -170,12 +170,12 @@ function downstream_knative_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]}" "$OPERATOR_TEST_FLAGS")
   fi
 
-  go_test_e2e $run_flags ./test/extensione2e/kafka \
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2e/kafka \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
@@ -191,12 +191,12 @@ function downstream_monitoring_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
   # check for test flags
-  local run_flags="-failfast -timeout=30m -parallel=1"
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    run_flags="$OPERATOR_TEST_FLAGS"
+    RUN_FLAGS=("${RUN_FLAGS[@]}" "$OPERATOR_TEST_FLAGS")
   fi
 
-  go_test_e2e $run_flags ./test/monitoringe2e \
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/monitoringe2e \
     --kubeconfigs "${kubeconfigs_str}" \
     "$@"
 }
