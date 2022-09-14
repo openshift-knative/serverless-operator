@@ -79,7 +79,6 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: ${OPERATOR}
-  namespace: openshift-marketplace
 spec:
   image: ${index_image}
   displayName: "Serverless Operator"

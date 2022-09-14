@@ -39,8 +39,6 @@ function undeploy_servicemesh_operators {
   logger.info 'Ensure no operators present'
   timeout 600 "[[ \$(oc get deployments -n openshift-operators -oname | grep -c 'servicemeshoperator\|jaeger\|kiali') != 0 ]]"
 
-  logger.info 'Deleting operators namespace'
-  oc delete namespace openshift-operators --ignore-not-found=true
   logger.info "Deleting service mesh istio nodes"
   oc delete --ignore-not-found=true daemonset.apps/istio-node -n openshift-operators
   oc delete --ignore-not-found=true service/maistra-admission-controller -n openshift-operators
