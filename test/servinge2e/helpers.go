@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 	"testing"
-        "os"
 	"github.com/openshift-knative/serverless-operator/test"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
@@ -12,11 +11,14 @@ import (
 )
 
 const (
-        image:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/helloworld:v1.3"
 	helloworldService     = "helloworld-go"
 	helloworldService2    = "helloworld-go2"
 	kubeHelloworldService = "kube-helloworld-go"
 	helloworldText        = "Hello World!"
+)
+
+var (
+	image = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/helloworld:v1.3"
 )
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {

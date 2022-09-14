@@ -18,7 +18,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-        "os"
 	"knative.dev/serving/pkg/apis/autoscaling"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -43,10 +42,13 @@ type testCase struct {
 
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	httpProxyImage:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/httpproxy:v1.3"
 	istioInjectKey = "sidecar.istio.io/inject"
-        helloworldgo:=(os.Getenv("IMAGE_REGISTRY_NAME"))+"/openshift-knative-serving-test/hello-openshift:latest"
 )
+var (
+	helloworldgo   = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/hello-openshift:latest"
+	httpProxyImage = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/httpproxy:v1.3"
+)
+
 
 // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
 func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testNamespace string) {

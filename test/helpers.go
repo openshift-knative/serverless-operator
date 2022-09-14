@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-
+        "os"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -24,4 +24,11 @@ func IsServiceMeshInstalled(ctx *Context) bool {
 	}
 
 	return false
+}
+
+func GetRegistryFromEnv() string {
+	if value, ok := os.LookupEnv("IMAGE_REGISTRY_NAME"); ok {
+		return value
+	}
+	return "quay.io"
 }
