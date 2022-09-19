@@ -87,7 +87,6 @@ spec:
   # Change the CatalogSource name
   source: serverless-operator-v1-24-0
   sourceNamespace: openshift-marketplace
-  # Automatic is fine and safe since there is only one version in the referenced catalog
   installPlanApproval: Automatic
 ```
 
@@ -107,7 +106,6 @@ spec:
   # Change the CatalogSource name
   source: serverless-operator-v1-25-0
   sourceNamespace: openshift-marketplace
-  # Automatic is fine and safe since there is only one version in the referenced catalog
   installPlanApproval: Automatic
 ```
 
@@ -146,6 +144,5 @@ KnativeEventing, and KnativeKafka resources won't work but Knative components wi
     # Change the CatalogSource name
     source: serverless-operator-v1-24-0
     sourceNamespace: openshift-marketplace
-    # Automatic is fine and safe since there is only one version in the referenced catalog
     installPlanApproval: Automatic
   ```
