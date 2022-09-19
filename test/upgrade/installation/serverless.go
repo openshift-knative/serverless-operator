@@ -75,6 +75,12 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	// Several steps are done below for managing CRDs.
+	// Move both CRDs (Serving, Eventing) to v1alpha1 by setting v1alpha1 served, storage fields to true.
+	// Set version v1beta1 served, storage fields to false.
+	// Remove the webhook definition in conversion strategy added by OLM and set strategy to None.
+	// Update CRD status field stored to have only v1alpha1.
+	// Do an empty patch to both CRs to trigger version change to v1alpha1 in etcd.
 	for _, name := range crds {
 		if err := moveCRDsToAlpha(ctx, name); err != nil {
 			return err

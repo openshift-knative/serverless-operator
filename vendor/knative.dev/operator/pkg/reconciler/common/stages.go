@@ -92,7 +92,7 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance base.K
 }
 
 func FilterNamespace(ns string) Stage {
-	return func(ctx context.Context, manifest *mf.Manifest, component v1alpha1.KComponent) error {
+	return func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
 		*manifest = manifest.Filter(mf.Not(
 			mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing")),
 		))
