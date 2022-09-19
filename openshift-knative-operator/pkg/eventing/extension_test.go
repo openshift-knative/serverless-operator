@@ -7,16 +7,21 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
+	mf "github.com/manifestival/manifestival"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	rcommon "knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
+
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
 )
 
 const requiredNs = "knative-eventing"
@@ -303,4 +308,31 @@ func ke(mods ...func(*operatorv1alpha1.KnativeEventing)) *operatorv1alpha1.Knati
 	}
 
 	return base
+}
+
+func TestFilterNamespace(t *testing.T) {
+
+	ns := &corev1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: corev1.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: requiredNs,
+		},
+	}
+
+	nsUnstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(ns)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources, _ := mf.ManifestFrom(mf.Slice{unstructured.Unstructured{Object: nsUnstr}})
+	require.Len(t, resources.Resources(), 1)
+
+	if err := rcommon.FilterNamespace(requiredNs)(context.Background(), &resources, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	require.Len(t, resources.Resources(), 0)
 }
