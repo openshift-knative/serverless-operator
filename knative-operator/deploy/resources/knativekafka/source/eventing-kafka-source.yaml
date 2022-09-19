@@ -21,7 +21,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 data:
   config-kafka-source-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -142,7 +142,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 rules:
   - apiGroups:
       - "*"
@@ -175,7 +175,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 ---
 ---
 
@@ -198,7 +198,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -231,7 +231,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 spec:
   selector:
     matchLabels:
@@ -241,7 +241,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        kafka.eventing.knative.dev/release: v1.4
+        kafka.eventing.knative.dev/release: v1.5
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -328,13 +328,9 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
-          resources:
-            requests:
-              cpu: 200m
-              memory: 300Mi
+          # TODO set resources (limits and requests)
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
