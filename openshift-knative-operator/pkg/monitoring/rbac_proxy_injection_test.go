@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/ptr"
 )
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
@@ -124,6 +125,13 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 							"--tls-private-key-file=/etc/tls/private/tls.key",
 							"--logtostderr=true",
 							"--v=10",
+						},
+						SecurityContext: &corev1.SecurityContext{
+							AllowPrivilegeEscalation: ptr.Bool(false),
+							ReadOnlyRootFilesystem:   ptr.Bool(true),
+							RunAsNonRoot:             ptr.Bool(true),
+							Capabilities:             &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}},
+							SeccompProfile:           &corev1.SeccompProfile{Type: corev1.SeccompProfileTypeRuntimeDefault},
 						},
 					}},
 				},

@@ -291,7 +291,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		}
 
 		// send event to kafka topic
-		if err := common.CheckMinimumVersion(client.Clients.Kube.Discovery(), "1.25.0"); err == nil {
+		if err := common.CheckMinimumVersion(client.Clients.Kube.Discovery(), "1.24.0"); err == nil {
 			cj := createCronJobObjV1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {

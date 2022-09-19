@@ -72,8 +72,8 @@ func (e *extension) Transformers(ks operatorv1alpha1.KComponent) []mf.Transforme
 		enableSecretInformerFiltering(ks),
 		common.VersionedJobNameTransform(),
 	}
-	tf = append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
-	return append(tf, monitoring.GetServingTransformers(ks)...)
+	tf = append(tf, monitoring.GetServingTransformers(ks)...)
+	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
