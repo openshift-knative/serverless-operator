@@ -53,7 +53,7 @@ spec:
   publisher: Red Hat
   sourceType: grpc
 ---
-# CatalogSource for main
+# CatalogSource for main (in development, unstable)
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
