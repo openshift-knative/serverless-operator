@@ -111,7 +111,7 @@ spec:
 
 ### Downgrade
 
-OLM doesn't support downgrades, so referencing a previous version in a Subscription isn't supported, so we need a few
+OLM **does not** support downgrades, so referencing a previous version in a Subscription isn't supported, so we need a few
 steps to work around the limitation.
 
 1. Delete the `Subscription`
