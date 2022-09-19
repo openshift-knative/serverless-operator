@@ -12,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/pkg/ptr"
 )
 
 const (
@@ -82,13 +81,6 @@ func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
 					"--logtostderr=true",
 					"--v=10",
 				},
-			}
-			rbacProxyContainer.SecurityContext = &corev1.SecurityContext{
-				AllowPrivilegeEscalation: ptr.Bool(false),
-				ReadOnlyRootFilesystem:   ptr.Bool(true),
-				RunAsNonRoot:             ptr.Bool(true),
-				Capabilities:             &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}},
-				SeccompProfile:           &corev1.SeccompProfile{Type: corev1.SeccompProfileTypeRuntimeDefault},
 			}
 			podSpec.Containers = append(podSpec.Containers, rbacProxyContainer)
 			podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
