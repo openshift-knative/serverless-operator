@@ -48,6 +48,6 @@ dependencies:
   # Previous versions required for downgrade testing
   previous:
     serving: 1.4.0
-    eventing: 1.4.0
+    eventing: 1.4
     eventing_kafka: 1.1.0
-    eventing_kafka_broker: 1.4.0
+    eventing_kafka_broker: 1.4
