@@ -27,20 +27,32 @@ function install_strimzi_cluster {
         version: 3.2.0
         replicas: 3
         listeners:
+          # PLAINTEXT
           - name: plain
             port: 9092
             type: internal
             tls: false
+          # SSL
           - name: tls
             port: 9093
             type: internal
             tls: true
             authentication:
               type: tls
-          - name: sasl
+          # protocol=SASL_SSL
+          # sasl.mechanism=SCRAM-SHA-512
+          - name: saslssl
             port: 9094
             type: internal
             tls: true
+            authentication:
+              type: scram-sha-512
+          # protocol=SASL_PLAINTEXT
+          # sasl.mechanism=SCRAM-SHA-512
+          - name: saslplain
+            port: 9095
+            type: internal
+            tls: false
             authentication:
               type: scram-sha-512
         authorization:
@@ -191,15 +203,12 @@ EOF
 
   header "Deleting existing Kafka user secrets"
 
-  if oc get secret my-tls-secret -n default >/dev/null 2>&1
-  then
-    oc delete secret -n default my-tls-secret
-  fi
-
-  if oc get secret my-sasl-secret -n default >/dev/null 2>&1
-  then
-    oc delete secret -n default my-sasl-secret
-  fi
+  oc delete secret -n default my-tls-secret --ignore-not-found
+  oc delete secret -n default my-sasl-secret --ignore-not-found
+  oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-tls-secret --ignore-not-found
+  oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-sasl-secret --ignore-not-found
+  oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-sasl-secret-legacy --ignore-not-found
+  oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-tls-secret-legacy --ignore-not-found
 
   header "Creating a Secret, containing TLS from Strimzi"
   STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
@@ -218,6 +227,43 @@ EOF
       --from-literal=password="$SASL_PASSWD" \
       --from-literal=saslType="SCRAM-SHA-512" \
       --from-literal=user="my-sasl-user"
+
+  oc create secret --namespace "${EVENTING_NAMESPACE}" generic strimzi-tls-secret \
+    --from-literal=ca.crt="$STRIMZI_CRT" \
+    --from-literal=user.crt="$TLSUSER_CRT" \
+    --from-literal=user.key="$TLSUSER_KEY" \
+    --from-literal=protocol="SSL" \
+    --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
+
+  oc create secret --namespace "${EVENTING_NAMESPACE}" generic strimzi-sasl-secret \
+    --from-literal=ca.crt="$STRIMZI_CRT" \
+    --from-literal=password="$SASL_PASSWD" \
+    --from-literal=user="my-sasl-user" \
+    --from-literal=protocol="SASL_SSL" \
+    --from-literal=sasl.mechanism="SCRAM-SHA-512" \
+    --from-literal=saslType="SCRAM-SHA-512" \
+    --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
+
+  oc create secret --namespace "${EVENTING_NAMESPACE}" generic strimzi-sasl-secret-legacy \
+    --from-literal=ca.crt="$STRIMZI_CRT" \
+    --from-literal=password="$SASL_PASSWD" \
+    --from-literal=user="my-sasl-user" \
+    --from-literal=saslType="SCRAM-SHA-512" \
+    --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
+
+  oc create secret --namespace "${EVENTING_NAMESPACE}" generic strimzi-sasl-plain-secret \
+    --from-literal=password="$SASL_PASSWD" \
+    --from-literal=user="my-sasl-user" \
+    --from-literal=protocol="SASL_PLAINTEXT" \
+    --from-literal=sasl.mechanism="SCRAM-SHA-512" \
+    --from-literal=saslType="SCRAM-SHA-512" \
+    --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
+
+  oc create secret --namespace "${SYSTEM_NAMESPACE}" generic strimzi-sasl-plain-secret-legacy \
+    --from-literal=password="$SASL_PASSWD" \
+    --from-literal=username="my-sasl-user" \
+    --from-literal=saslType="SCRAM-SHA-512" \
+    --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
 }
 
 function install_kafka_ui {
