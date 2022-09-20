@@ -324,7 +324,8 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 			return err
 		}
 	}
-	m, err := manifest.Transform(
+	tfs := []mf.Transformer{}
+	tfs = append(append(tfs,
 		mf.InjectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
@@ -335,9 +336,9 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
 		socommon.VersionedJobNameTransform(),
-		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, dependentConfigMaps),
-		rbacProxyTranform,
-	)
+		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
+		rbacProxyTranform), socommon.DeprecatedAPIsTranformersFromConfig()...)
+	m, err := manifest.Transform(tfs...)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
