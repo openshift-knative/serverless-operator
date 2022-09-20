@@ -21,7 +21,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 data:
   config-kafka-channel-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
@@ -141,7 +141,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 rules:
   - apiGroups:
       - "*"
@@ -174,7 +174,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 ---
 ---
 
@@ -197,7 +197,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -230,7 +230,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 spec:
   selector:
     matchLabels:
@@ -240,7 +240,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        kafka.eventing.knative.dev/release: v1.4
+        kafka.eventing.knative.dev/release: v1.5
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -327,13 +327,9 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
-          resources:
-            requests:
-              cpu: 200m
-              memory: 300Mi
+          # TODO set resources (limits and requests)
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -401,7 +397,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 spec:
   selector:
     matchLabels:
@@ -411,7 +407,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        kafka.eventing.knative.dev/release: v1.4
+        kafka.eventing.knative.dev/release: v1.5
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -499,13 +495,9 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
-          resources:
-            requests:
-              cpu: 200m
-              memory: 300Mi
+          # TODO set resources (limits and requests)
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -557,7 +549,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.4
+    kafka.eventing.knative.dev/release: v1.5
 spec:
   selector:
     app: kafka-channel-receiver
