@@ -48,6 +48,8 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   logger.info 'Starting eventing-kafka-broker tests'
 
+  export SYSTEM_NAMESPACE="${EVENTING_NAMESPACE}"
+
   run_e2e_tests
   run_conformance_tests
   run_e2e_new_tests
