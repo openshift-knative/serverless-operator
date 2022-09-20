@@ -883,12 +883,6 @@ spec:
     - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
       image: "registry.ci.openshift.org/openshift/knative-v1.5:knative-eventing-kafka-broker-post-install"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
-<<<<<<< HEAD
-      image: "registry.ci.openshift.org/openshift/knative-v1.4:knative-eventing-storage-version-migration"
+      image: "registry.ci.openshift.org/openshift/knative-v1.5:knative-eventing-storage-version-migration"
   replaces: serverless-operator.v1.25.0
   version: 1.26.0
-=======
-      image: "registry.ci.openshift.org/openshift/knative-v1.5:knative-eventing-storage-version-migration"
-  replaces: serverless-operator.v1.24.0
-  version: 1.25.0
->>>>>>> 01429deec (Bump eventing to v1.5)
