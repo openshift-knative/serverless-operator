@@ -328,9 +328,13 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
+            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
-          # TODO set resources (limits and requests)
+          resources:
+            requests:
+              cpu: 200m
+              memory: 300Mi
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
