@@ -759,7 +759,6 @@ spec:
       type: ValidatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -779,7 +778,6 @@ spec:
       type: ValidatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -818,7 +816,6 @@ spec:
       type: MutatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -838,7 +835,6 @@ spec:
       type: MutatingAdmissionWebhook
       deploymentName: knative-openshift
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 9876
       failurePolicy: Ignore
@@ -857,7 +853,6 @@ spec:
     - generateName: conversion.knativeservings.operator.knative.dev
       type: ConversionWebhook
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 8443
       targetPort: 8443
@@ -869,7 +864,6 @@ spec:
     - generateName: conversion.knativeeventings.operator.knative.dev
       type: ConversionWebhook
       admissionReviewVersions:
-        - v1alpha1
         - v1beta1
       containerPort: 8443
       targetPort: 8443
