@@ -259,7 +259,7 @@ EOF
     --from-literal=saslType="SCRAM-SHA-512" \
     --dry-run=client -o yaml | oc apply -n "${EVENTING_NAMESPACE}" -f -
 
-  oc create secret --namespace "${SYSTEM_NAMESPACE}" generic strimzi-sasl-plain-secret-legacy \
+  oc create secret --namespace "${EVENTING_NAMESPACE}" generic strimzi-sasl-plain-secret-legacy \
     --from-literal=password="$SASL_PASSWD" \
     --from-literal=username="my-sasl-user" \
     --from-literal=saslType="SCRAM-SHA-512" \
