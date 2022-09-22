@@ -2,7 +2,6 @@
 
 function install_tracing {
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
-    ZIPKIN_MEMORY_REQUESTS="256Mi"
     if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
       dedicate_node_to_zipkin
       ZIPKIN_MEMORY_REQUESTS="10Gi"
@@ -29,6 +28,7 @@ function dedicate_node_to_zipkin {
 function install_zipkin_tracing {
   logger.info "Installing Zipkin in namespace ${TRACING_NAMESPACE}"
   local nodeAffinity=""
+  local memory_requests=${ZIPKIN_MEMORY_REQUESTS:-"256Mi"}
   if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
   nodeAffinity=$(cat <<-EOF
       affinity:
@@ -92,7 +92,7 @@ spec:
           limits:
             memory: 10Gi
           requests:
-            memory: ${ZIPKIN_MEMORY_REQUESTS}
+            memory: ${memory_requests}
       tolerations:
       - key: zipkin
         operator: Exists
