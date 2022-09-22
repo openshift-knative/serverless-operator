@@ -546,8 +546,6 @@ spec:
                       capabilities:
                         drop:
                           - ALL
-                      seccompProfile:
-                        type: RuntimeDefault
         # Openshift specific extensions in the "old" operator format. Ships KnativeKafka and
         # other Openshift specifica that have not yet been moved to the operator above.
         - name: knative-openshift
@@ -576,8 +574,6 @@ spec:
                       capabilities:
                         drop:
                           - ALL
-                      seccompProfile:
-                        type: RuntimeDefault
                 containers:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
@@ -721,8 +717,6 @@ spec:
                       capabilities:
                         drop:
                           - ALL
-                      seccompProfile:
-                        type: RuntimeDefault
                 volumes:
                   - name: cli-artifacts
                     emptyDir: {}
@@ -769,8 +763,6 @@ spec:
                       capabilities:
                         drop:
                           - ALL
-                      seccompProfile:
-                        type: RuntimeDefault
   webhookdefinitions:
     - generateName: validating.knativeeventings.operator.serverless.openshift.io
       type: ValidatingAdmissionWebhook
