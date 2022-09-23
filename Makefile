@@ -132,7 +132,7 @@ test-upstream-e2e-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-kafka-no-upgrade-testonly:
-	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
@@ -144,7 +144,7 @@ test-upstream-e2e-kafka-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
-	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
