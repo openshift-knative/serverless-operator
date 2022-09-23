@@ -27,7 +27,7 @@ function dedicate_node_to_zipkin {
 
 function install_zipkin_tracing {
   logger.info "Installing Zipkin in namespace ${TRACING_NAMESPACE}"
-  local nodeAffinity=""
+  local ocp_version nodeAffinity=""
   local memory_requests=${ZIPKIN_MEMORY_REQUESTS:-"256Mi"}
   if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
   nodeAffinity=$(cat <<-EOF
@@ -109,6 +109,13 @@ spec:
 ${nodeAffinity}
 ---
 EOF
+
+  # Remove incompatible part for OCP 4.10 and older
+  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+  if versions.le "$(versions.major_minor "$ocp_version")" 4.10; then
+    oc patch -n "${TRACING_NAMESPACE}" deployment zipkin --type='json' \
+      -p "[{'op':'remove','path':'/spec/template/spec/securityContext/seccompProfile'}]"
+  fi
 
   logger.info "Waiting until Zipkin is available"
   oc wait deployment --all --timeout=600s --for=condition=Available -n "${TRACING_NAMESPACE}"
