@@ -73,6 +73,10 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: zipkin
         image: ghcr.io/openzipkin/zipkin:2
@@ -93,6 +97,11 @@ spec:
             memory: 10Gi
           requests:
             memory: ${memory_requests}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       tolerations:
       - key: zipkin
         operator: Exists
