@@ -199,19 +199,19 @@ function run_rolling_upgrade_tests {
 $base{{- with .Name }}
 {{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
 {{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:knative-v$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}{{.}}:v$eventing_image_version
-{{- else if eq . "event-library"       }}{{.}}:v$eventing_image_version
-{{- else if eq . "event-sender"        }}{{.}}:v$eventing_image_version
-{{- else if eq . "eventshub"           }}{{.}}:v$eventing_image_version
-{{- else if eq . "heartbeats"          }}{{.}}:v$eventing_image_version
-{{- else if eq . "performance"         }}{{.}}:v$eventing_image_version
-{{- else if eq . "print"               }}{{.}}:v$eventing_image_version
-{{- else if eq . "recordevents"        }}{{.}}:v$eventing_image_version
-{{- else if eq . "request-sender"      }}{{.}}:v$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}{{.}}:v$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}{{.}}:v$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}{{.}}:v$eventing_image_version
-{{- else if eq . "wathola-sender"      }}{{.}}:v$eventing_image_version
+{{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:knative-v$eventing_image_version
+{{- else if eq . "event-library"       }}knative-eventing-test-event-library:knative-v$eventing_image_version
+{{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:knative-v$eventing_image_version
+{{- else if eq . "eventshub"           }}knative-eventing-test-eventshub:knative-v$eventing_image_version
+{{- else if eq . "heartbeats"          }}knative-eventing-test-heartbeats:knative-v$eventing_image_version
+{{- else if eq . "performance"         }}knative-eventing-test-performance:knative-v$eventing_image_version
+{{- else if eq . "print"               }}knative-eventing-test-print:knative-v$eventing_image_version
+{{- else if eq . "recordevents"        }}knative-eventing-test-recordevents:knative-v$eventing_image_version
+{{- else if eq . "request-sender"      }}knative-eventing-test-request-sender:knative-v$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}knative-eventing-test-wathola-fetcher:knative-v$eventing_image_version
+{{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:knative-v$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:knative-v$eventing_image_version
+{{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:knative-v$eventing_image_version
 {{- else                               }}{{.}}:v$serving_image_version{{end -}}
 {{end -}}
 EOF
