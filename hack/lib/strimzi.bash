@@ -123,6 +123,12 @@ spec:
           name: "*"
         operation: Describe
         host: "*"
+      # Required ACL rule to be able to delete topics
+      - resource:
+          type: topic
+          name: "*"
+        operation: Delete
+        host: "*"
 EOF
 
   header "Applying Strimzi SASL Admin User"
@@ -171,6 +177,12 @@ spec:
           type: topic
           name: "*"
         operation: Describe
+        host: "*"
+      # Required ACL rule to be able to delete topics
+      - resource:
+          type: topic
+          name: "*"
+        operation: Delete
         host: "*"
 EOF
 
