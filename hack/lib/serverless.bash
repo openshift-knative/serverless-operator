@@ -347,7 +347,7 @@ function teardown_serverless {
     oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
   fi
   logger.info 'Ensure no knative eventing or knative kafka pods running'
-  timeout 600 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  timeout 700 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
   if oc get namespace "${EVENTING_NAMESPACE}" &>/dev/null; then
     oc delete namespace "${EVENTING_NAMESPACE}"
   fi
