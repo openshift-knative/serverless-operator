@@ -210,6 +210,10 @@ function override_storage_version_migration_images {
   for image_pullspec in "${images[@]}"; do
     name=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
     version=$(echo "$image_pullspec" | awk -F":" '{ print $1 }' | awk -F"knative-" '{ print $2 }')
-    sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
+    if [[ $name == *"eventing"* ]]; then
+      sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:knative-${version}," "$csv"
+    else
+      sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
+    fi
   done
 }
