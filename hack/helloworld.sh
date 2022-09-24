@@ -18,7 +18,7 @@ spec:
   template:
     spec:
       containers:
-        - image: ${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/helloworld:v1.3
+        - image: "${IMAGE_REGISTRY_NAME}/openshift-knative-serving-test/helloworld:v1.3"
           env:
             - name: TARGET
               value: ${TARGET}

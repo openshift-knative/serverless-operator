@@ -28,7 +28,6 @@ const (
 	kafkaSourceName     = "smoke-ks"
 	kafkaTopicName      = "smoke-topic"
 	kafkaConsumerGroup  = "smoke-cg"
-	image               = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
 	helloWorldService   = "helloworld-go"
 	ksvcAPIVersion      = "serving.knative.dev/v1"
 	ksvcKind            = "Service"
@@ -47,6 +46,7 @@ var (
 	tlsSecret            = "my-tls-secret"
 	saslSecret           = "my-sasl-secret"
 	kafkaGVR             = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
+	image                = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/helloworld:v1.3"
 )
 
 func createCronJobObj(name, topic, server string) *batchv1beta1.CronJob {
