@@ -78,7 +78,7 @@ function serverless_operator_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
 
   go_test_e2e -tags=e2e ${RUN_FLAGS[@]} ./test/e2e \
@@ -100,7 +100,7 @@ function serverless_operator_kafka_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
 
   go_test_e2e -tags=e2e ${RUN_FLAGS[@]} ./test/e2ekafka \
@@ -123,7 +123,7 @@ function downstream_serving_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
@@ -151,7 +151,7 @@ function downstream_eventing_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
 
   go_test_e2e ${RUN_FLAGS[@]} ./test/eventinge2e \
@@ -172,7 +172,7 @@ function downstream_knative_kafka_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
 
   go_test_e2e ${RUN_FLAGS[@]} ./test/extensione2e/kafka \
@@ -193,7 +193,7 @@ function downstream_monitoring_e2e_tests {
   # check for test flags
   RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
-    RUN_FLAGS=("${RUN_FLAGS[@]}" "${OPERATOR_TEST_FLAGS}")
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
   fi
 
   go_test_e2e ${RUN_FLAGS[@]} ./test/monitoringe2e \
