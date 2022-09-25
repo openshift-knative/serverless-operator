@@ -23,15 +23,15 @@ requirements:
     label: 'v4.6'
 
 dependencies:
-  serving: 1.4.0
+  serving: 1.5.0
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.4
+  serving_artifacts_branch: release-v1.5
 
   # versions for networking components
-  kourier: 1.4.0
-  net_kourier_artifacts_branch: release-1.4
-  net_istio: 1.4.0
-  net_istio_artifacts_branch: release-1.4
+  kourier: 1.5.0
+  net_kourier_artifacts_branch: release-1.5
+  net_istio: 1.5.0
+  net_istio_artifacts_branch: release-1.5
   maistra: 2.1.0
 
   eventing: 1.5
