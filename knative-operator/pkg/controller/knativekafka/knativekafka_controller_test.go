@@ -651,7 +651,7 @@ func TestCheckHAComponent(t *testing.T) {
 	}}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := checkHAComponent(tc.deploymentName)
+			result := contains(KafkaHAComponents, tc.deploymentName)
 			if result == tc.shouldFail {
 				t.Errorf("Got: %v, want: %v\n", result, tc.shouldFail)
 			}

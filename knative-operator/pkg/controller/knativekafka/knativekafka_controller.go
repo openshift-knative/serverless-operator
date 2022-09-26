@@ -647,8 +647,8 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 	}
 }
 
-func checkHAComponent(name string) bool {
-	for _, component := range KafkaHAComponents {
+func contains(array []string, name string) bool {
+	for _, component := range array {
 		if name == component {
 			return true
 		}
@@ -658,7 +658,7 @@ func checkHAComponent(name string) bool {
 
 func setKafkaDeployments(replicas int32) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && checkHAComponent(u.GetName()) {
+		if u.GetKind() == "Deployment" && contains(KafkaHAComponents, u.GetName()) {
 			log.Info("Setting Kafka HA component", "deployment", u.GetName(), "replicas", replicas)
 			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "replicas"); err != nil {
 				return err
