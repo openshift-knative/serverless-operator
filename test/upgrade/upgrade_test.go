@@ -25,7 +25,6 @@ import (
 	"go.uber.org/zap"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
-	"knative.dev/eventing-kafka/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -45,17 +44,7 @@ func TestServerlessUpgrade(t *testing.T) {
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(ctx),
-			PostDowngrade: postDowngradeTests(),
 			Continual: merge(
-				[]pkgupgrade.BackgroundOperation{
-					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
-				},
-				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
-				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
