@@ -73,6 +73,7 @@ export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
 export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
 export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"
 export TEST_KNATIVE_KAFKA="${TEST_KNATIVE_KAFKA:-false}"
+export TEST_KNATIVE_KAFKA_BROKER="${TEST_KNATIVE_KAFKA_BROKER:-false}"
 
 # Makefile triggers for modular install
 export INSTALL_SERVING="${INSTALL_SERVING:-true}"

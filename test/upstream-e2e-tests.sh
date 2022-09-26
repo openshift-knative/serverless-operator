@@ -37,8 +37,16 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   if [[ $TEST_KNATIVE_KAFKA == true ]]; then
     upstream_knative_eventing_kafka_e2e
   fi
-  upstream_knative_serving_e2e_and_conformance_tests
-  upstream_knative_eventing_e2e
+  if [[ $TEST_KNATIVE_KAFKA_BROKER == true ]]; then
+    upstream_knative_eventing_kafka_broker_e2e
+  fi
+  if [[ $TEST_KNATIVE_SERVING == true ]]; then
+    upstream_knative_serving_e2e_and_conformance_tests
+  fi
+  if [[ $TEST_KNATIVE_EVENTING == true ]]; then
+    upstream_knative_eventing_e2e
+  fi
+
 fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts

@@ -118,24 +118,33 @@ test-operator: test-unit test-e2e
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
 test-upstream-e2e-mesh-testonly:
-	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	FULL_MESH=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
-	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
+test-upstream-e2e-kafka-no-upgrade-testonly:
+	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-no-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
+test-upstream-e2e-kafka-no-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
+	INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
+	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
