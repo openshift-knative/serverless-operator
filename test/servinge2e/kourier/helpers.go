@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	image          = "quay.io/openshift-knative/helloworld-go"
+	image          = "quay.io/openshift-knative/helloworld-go:multiarch"
 	helloworldText = "Hello World!"
 )
 

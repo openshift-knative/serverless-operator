@@ -15,7 +15,7 @@ import (
 //go:embed *.yaml
 var yaml embed.FS
 
-const defaultImage = "quay.io/openshift-knative/helloworld-go"
+const defaultImage = "quay.io/openshift-knative/helloworld-go:multiarch"
 
 func GVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "serving.knative.dev", Version: "v1", Resource: "services"}
