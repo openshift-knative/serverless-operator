@@ -63,7 +63,7 @@ function install_strimzi_cluster {
         resources:
           requests:
             memory: 2Gi
-            cpu: "1"
+            cpu: "300m"
           limits:
             memory: 4Gi
             cpu: "4"
@@ -76,7 +76,7 @@ function install_strimzi_cluster {
         resources:
           requests:
             memory: 500Mi
-            cpu: "500m"
+            cpu: "300m"
           limits:
             memory: 2Gi
             cpu: "2"
