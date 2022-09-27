@@ -53,6 +53,7 @@ function install_strimzi_cluster {
           transaction.state.log.min.isr: 2
           inter.broker.protocol.version: "3.2"
           auto.create.topics.enable: "false"
+          min.insync.replicas: 2
         storage:
           type: jbod
           volumes:
