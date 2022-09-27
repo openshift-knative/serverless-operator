@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	image = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/helloworld:v1.3"
+	image = test.GetRegistryFromEnv() + "/openshift-knative/helloworld-go:multiarch"
 )
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {

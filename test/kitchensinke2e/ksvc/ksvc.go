@@ -10,12 +10,15 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/manifest"
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 //go:embed *.yaml
 var yaml embed.FS
 
-const defaultImage = "quay.io/openshift-knative-serving-test/helloworld:v1.3"
+var (
+        defaultImage = test.GetRegistryFromEnv() + "/openshift-knative/helloworld-go:multiarch"
+)
 
 func GVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "serving.knative.dev", Version: "v1", Resource: "services"}

@@ -46,7 +46,7 @@ var (
 	tlsSecret            = "my-tls-secret"
 	saslSecret           = "my-sasl-secret"
 	kafkaGVR             = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
-	image                = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/helloworld:v1.3"
+	image                = test.GetRegistryFromEnv() + "/openshift-knative/helloworld-go:multiarch"
 )
 
 func createCronJobObj(name, topic, server string) *batchv1beta1.CronJob {

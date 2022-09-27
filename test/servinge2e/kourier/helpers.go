@@ -11,7 +11,7 @@ const (
 	helloworldText = "Hello World!"
 )
 var (
-	image = test.GetRegistryFromEnv() + "/openshift-knative-client-test/helloworld:v1.3"
+	image = test.GetRegistryFromEnv() + "/openshift-knative/helloworld-go:multiarch"
 )
 
 func withDomainMappingReadyOrFail(ctx *test.Context, dm *servingv1alpha1.DomainMapping) *servingv1alpha1.DomainMapping {
