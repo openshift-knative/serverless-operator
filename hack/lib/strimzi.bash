@@ -60,12 +60,26 @@ function install_strimzi_cluster {
             type: persistent-claim
             size: 100Gi
             deleteClaim: false
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: "1"
+          limits:
+            memory: 4Gi
+            cpu: "4"
       zookeeper:
         replicas: 3
         storage:
           type: persistent-claim
           size: 100Gi
           deleteClaim: false
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: "500m"
+          limits:
+            memory: 2Gi
+            cpu: "2"
       entityOperator:
         topicOperator: {}
         userOperator: {}
