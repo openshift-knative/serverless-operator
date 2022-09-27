@@ -45,7 +45,7 @@ const (
 	istioInjectKey = "sidecar.istio.io/inject"
 )
 var (
-	helloworldgo   = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/hello-openshift:latest"
+	helloworldgo   = test.GetRegistryFromEnv() + "/openshift-knative/hello-openshift:multiarch"
 	httpProxyImage = test.GetRegistryFromEnv() + "/openshift-knative-serving-test/httpproxy:v1.3"
 )
 
