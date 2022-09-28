@@ -667,17 +667,6 @@ func setKafkaDeployments(replicas int32) mf.Transformer {
 			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "replicas"); err != nil {
 				return err
 			}
-		} else if u.GetKind() == "HorizontalPodAutoscaler" {
-			min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
-			if err != nil {
-				return err
-			}
-			if min > int64(replicas) {
-				return nil
-			}
-			if err := unstructured.SetNestedField(u.Object, int64(replicas), "spec", "minReplicas"); err != nil {
-				return err
-			}
 		}
 		return nil
 	}
