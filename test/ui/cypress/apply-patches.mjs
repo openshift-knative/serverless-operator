@@ -1,8 +1,17 @@
-const {getVersionDir} = require('cypress/lib/tasks/state')
-const chalk = require('chalk')
-const Diff = require('diff')
-const fs = require('fs/promises')
-const path = require('path')
+import chalk from 'chalk'
+import {applyPatches as diffApplyPatches} from 'diff'
+import fs from 'fs/promises'
+import path from 'path'
+import cachedir from 'cachedir'
+import {createRequire} from "module"
+
+function getVersionDir() {
+  const require = createRequire(import.meta.url)
+  const cypressPackageJson = require('cypress/package.json')
+  const cacheDir = cachedir('Cypress')
+  const version = cypressPackageJson.version
+  return path.join(cacheDir, version)
+}
 
 async function applyPatches() {
   const patchesDir = path.join('cypress', 'patches')
@@ -21,7 +30,7 @@ async function applyPatches() {
     const patch = await fs.readFile(fullpath, enc)
     const relativeFilename = path.join(patchesDir, filename)
     console.log(`>> Applying patch ${chalk.cyan(relativeFilename)}`)
-    await Diff.applyPatches(patch, {
+    await diffApplyPatches(patch, {
       loadFile: (index, callback) => {
         console.debug(`>>> Loading old file: ${chalk.red(index.oldFileName)}`)
         fs.readFile(path.join(installDir, index.oldFileName), enc)
