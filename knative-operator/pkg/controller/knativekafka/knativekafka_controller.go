@@ -530,9 +530,12 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 				disabledKafkaControllers.Remove(channelController)
 			}
 
-			// render the actual argument
-			// todo: if we have no disabled controllers left we should filter for the proper argument and remove just that!
-			deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledKafkaControllers.StringValues()}
+			// render the actual argument, if any
+			if len(disabledKafkaControllers) == 0 {
+				deployment.Spec.Template.Spec.Containers[0].Args = nil
+			} else {
+				deployment.Spec.Template.Spec.Containers[0].Args = []string{"--disable-controllers=" + disabledKafkaControllers.StringValues()}
+			}
 
 			return scheme.Scheme.Convert(deployment, u, nil)
 		}
