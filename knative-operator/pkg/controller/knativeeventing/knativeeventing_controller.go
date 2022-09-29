@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -74,7 +74,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeEventing
 	requiredNs := os.Getenv(requiredNsEnvName)
-	return c.Watch(&source.Kind{Type: &operatorv1alpha1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	return c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
@@ -99,7 +99,7 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 	reqLogger.Info("Reconciling KnativeEventing")
 
 	// Fetch the KnativeEventing instance
-	original := &operatorv1alpha1.KnativeEventing{}
+	original := &operatorv1beta1.KnativeEventing{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -129,8 +129,8 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context, instance *operatorv1alpha1.KnativeEventing) error {
-	stages := []func(*operatorv1alpha1.KnativeEventing) error{
+func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context, instance *operatorv1beta1.KnativeEventing) error {
+	stages := []func(*operatorv1beta1.KnativeEventing) error{
 		r.ensureFinalizers,
 		r.deleteSugar(ctx),
 		r.installDashboards,
@@ -144,7 +144,7 @@ func (r *ReconcileKnativeEventing) reconcileKnativeEventing(ctx context.Context,
 }
 
 // set a finalizer to clean up the dashboard when instance is deleted
-func (r *ReconcileKnativeEventing) ensureFinalizers(instance *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) ensureFinalizers(instance *operatorv1beta1.KnativeEventing) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -156,13 +156,13 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *operatorv1alpha1.K
 }
 
 // installDashboard installs dashboard for OpenShift webconsole
-func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1beta1.KnativeEventing) error {
 	log.Info("Installing Eventing Dashboards")
 	return dashboards.Apply("eventing", instance, r.client)
 }
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
-func (r *ReconcileKnativeEventing) delete(instance *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEventing) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("eventing_status")
 	finalizers := sets.NewString(instance.GetFinalizers()...)
 
@@ -176,7 +176,7 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1alpha1.KnativeEven
 		return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
-	refetched := &operatorv1alpha1.KnativeEventing{}
+	refetched := &operatorv1beta1.KnativeEventing{}
 	if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: instance.Namespace, Name: instance.Name}, refetched); err != nil {
 		return fmt.Errorf("failed to refetch KnativeEventing: %w", err)
 	}
@@ -192,8 +192,8 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1alpha1.KnativeEven
 	return nil
 }
 
-func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventing *operatorv1alpha1.KnativeEventing) error {
-	return func(eventing *operatorv1alpha1.KnativeEventing) error {
+func (r *ReconcileKnativeEventing) deleteSugar(ctx context.Context) func(eventing *operatorv1beta1.KnativeEventing) error {
+	return func(eventing *operatorv1beta1.KnativeEventing) error {
 		ns := "knative-eventing"
 		nsClient := client.NewNamespacedClient(r.client, ns)
 

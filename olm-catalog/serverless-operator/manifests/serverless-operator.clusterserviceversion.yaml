@@ -8,7 +8,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "operator.knative.dev/v1alpha1",
+          "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeServing",
           "metadata": {
             "name": "knative-serving"
@@ -17,7 +17,7 @@ metadata:
           }
         },
         {
-          "apiVersion": "operator.knative.dev/v1alpha1",
+          "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeEventing",
           "metadata": {
             "name": "knative-eventing"
@@ -201,7 +201,30 @@ spec:
             path: conditions
             x-descriptors:
               - "urn:alm:descriptor:io.kubernetes.conditions"
+        version: v1beta1
+      - description: Represents an installation of a particular version of Knative Serving
+        displayName: Knative Serving
+        kind: KnativeServing
+        name: knativeservings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Serving installed
+            displayName: Version
+            path: version
+          - description: Conditions of Knative Serving installed
+            displayName: Conditions
+            path: conditions
+            x-descriptors:
+              - "urn:alm:descriptor:io.kubernetes.conditions"
         version: v1alpha1
+      - description: Represents an installation of a particular version of Knative Eventing
+        displayName: Knative Eventing
+        kind: KnativeEventing
+        name: knativeeventings.operator.knative.dev
+        statusDescriptors:
+          - description: The version of Knative Eventing installed
+            displayName: Version
+            path: version
+        version: v1beta1
       - description: Represents an installation of a particular version of Knative Eventing
         displayName: Knative Eventing
         kind: KnativeEventing
@@ -288,6 +311,7 @@ spec:
                 - apiextensions.k8s.io
               resources:
                 - customresourcedefinitions
+                - customresourcedefinitions/status
               verbs:
                 - "*"
             - apiGroups:
@@ -389,28 +413,50 @@ spec:
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
         # itself.
-        - name: knative-operator
+        - name: knative-operator-webhook
           spec:
             replicas: 1
             selector:
               matchLabels:
                 name: knative-operator
+                serverless.openshift.io/is: webhook
             template:
               metadata:
                 annotations:
                   sidecar.istio.io/inject: "false"
                 labels:
                   name: knative-operator
+                  serverless.openshift.io/is: webhook
               spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
                     image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
+                    readinessProbe:
+                      periodSeconds: 1
+                      httpGet:
+                        scheme: HTTPS
+                        port: 8443
+                        httpHeaders:
+                          - name: k-kubelet-probe
+                            value: "webhook"
+                      livenessProbe:
+                        periodSeconds: 1
+                        httpGet:
+                          scheme: HTTPS
+                          port: 8443
+                          httpHeaders:
+                            - name: k-kubelet-probe
+                              value: "webhook"
+                        failureThreshold: 6
+                        initialDelaySeconds: 20
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
                         name: metrics
+                      - containerPort: 8443
+                        name: https-webhook
                     env:
                       - name: POD_NAME
                         valueFrom:
@@ -430,6 +476,10 @@ spec:
                         value: "knative-eventing"
                       - name: SERVICE_MONITOR_RBAC_MANIFEST_PATH
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
+                      - name: WEBHOOK_NAME
+                        value: "knative-operator-service"
+                      - name: USE_OLM_TLS
+                        value: "true"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v1.5.0:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -716,7 +766,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -735,7 +785,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -773,7 +823,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -792,7 +842,7 @@ spec:
         - apiGroups:
             - operator.knative.dev
           apiVersions:
-            - v1alpha1
+            - v1beta1
           operations:
             - CREATE
             - UPDATE
@@ -800,6 +850,28 @@ spec:
             - knativeservings
       sideEffects: None
       webhookPath: /mutate-knativeservings
+    - generateName: conversion.knativeservings.operator.knative.dev
+      type: ConversionWebhook
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 8443
+      targetPort: 8443
+      deploymentName: knative-operator-webhook
+      sideEffects: None
+      webhookPath: /resource-conversion
+      conversionCRDs:
+        - knativeservings.operator.knative.dev
+    - generateName: conversion.knativeeventings.operator.knative.dev
+      type: ConversionWebhook
+      admissionReviewVersions:
+        - v1beta1
+      containerPort: 8443
+      targetPort: 8443
+      deploymentName: knative-operator-webhook
+      sideEffects: None
+      webhookPath: /resource-conversion
+      conversionCRDs:
+        - knativeeventings.operator.knative.dev
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.

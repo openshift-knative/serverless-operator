@@ -8,7 +8,7 @@ import (
 
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -116,7 +116,7 @@ func (v *Validator) validateDependencies(ctx context.Context, ke *serverlessoper
 		return true, "", nil
 	}
 	// check to see if we can find KnativeEventing
-	list := &operatorv1alpha1.KnativeEventingList{}
+	list := &operatorv1beta1.KnativeEventingList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventing instance", err
 	}

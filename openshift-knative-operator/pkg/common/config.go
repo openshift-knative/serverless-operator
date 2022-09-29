@@ -1,11 +1,11 @@
 package common
 
 import (
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // Configure sets a value in the given ConfigMap under the given key.
-func Configure(s *operatorv1alpha1.CommonSpec, cm, key, value string) {
+func Configure(s *base.CommonSpec, cm, key, value string) {
 	if s.Config == nil {
 		s.Config = make(map[string]map[string]string, 1)
 	}
@@ -19,7 +19,7 @@ func Configure(s *operatorv1alpha1.CommonSpec, cm, key, value string) {
 
 // ConfigureIfUnset sets a value in the given ConfigMap under the given key if it's not
 // already set.
-func ConfigureIfUnset(s *operatorv1alpha1.CommonSpec, cm, key, value string) {
+func ConfigureIfUnset(s *base.CommonSpec, cm, key, value string) {
 	if s.Config == nil {
 		s.Config = make(map[string]map[string]string, 1)
 	}

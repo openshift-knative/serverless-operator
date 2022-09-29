@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -26,7 +26,7 @@ var _ admission.Handler = (*Configurator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ke := &operatorv1alpha1.KnativeEventing{}
+	ke := &operatorv1beta1.KnativeEventing{}
 
 	err := v.decoder.Decode(req, ke)
 	if err != nil {

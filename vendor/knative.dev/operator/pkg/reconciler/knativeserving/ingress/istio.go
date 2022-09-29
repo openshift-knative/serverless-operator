@@ -21,55 +21,77 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/client-go/pkg/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/logging"
 )
 
 var istioFilter = ingressFilter("istio")
 
-func istioTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
+func istioTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{gatewayTransform(instance, logger)}
 }
 
-func gatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Update the deployment with the new registry and tag
 		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
+			gateway := &istionetworkingv1alpha3.Gateway{}
+			if err := scheme.Scheme.Convert(u, gateway, nil); err != nil {
+				return err
+			}
+
 			if u.GetName() == "knative-ingress-gateway" {
-				return updateIstioGateway(ingressGateway(instance), u, log)
+				if err := updateIstioGateway(ingressGateway(instance), gateway, log); err != nil {
+					return err
+				}
 			}
 			// TODO: cluster-local-gateway was removed since v0.20 https://github.com/knative-sandbox/net-istio/commit/058432d749435ef1fc61aa2b1fd048d0c75460ee
 			// Reomove it once operator stops v0.20 support.
 			if u.GetName() == "cluster-local-gateway" || u.GetName() == "knative-local-gateway" {
-				return updateIstioGateway(localGateway(instance), u, log)
+				if err := updateIstioGateway(localGateway(instance), gateway, log); err != nil {
+					return err
+				}
+			}
+
+			if err := scheme.Scheme.Convert(gateway, u, nil); err != nil {
+				return err
 			}
 		}
 		return nil
 	}
 }
 
-func ingressGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func ingressGateway(instance *servingv1beta1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeIngressGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeIngressGateway
 	}
-	return &instance.Spec.DeprecatedKnativeIngressGateway
+	return nil
 }
 
-func localGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func localGateway(instance *servingv1beta1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeLocalGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeLocalGateway
 	}
-	return &instance.Spec.DeprecatedClusterLocalGateway
+	return nil
 }
 
-func updateIstioGateway(override *servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateIstioGateway(override *base.IstioGatewayOverride, gateway *istionetworkingv1alpha3.Gateway, log *zap.SugaredLogger) error {
 	if override != nil && len(override.Selector) > 0 {
-		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", override)
-		unstructured.SetNestedStringMap(u.Object, override.Selector, "spec", "selector")
-		log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
+		log.Debugw("Updating Gateway", "name", gateway.GetName(), "gatewayOverrides", override)
+		gateway.Spec.Selector = override.Selector
+		log.Debugw("Finished conversion", "name", gateway.GetName())
+	}
+
+	if override != nil && len(override.Servers) > 0 {
+		log.Debugw("Updating Gateway Servers", "name", gateway.GetName(), "gatewayOverrides", override)
+		gateway.Spec.Servers = override.Servers
+		log.Debugw("Finished Servers Overrides", "name", gateway.GetName())
 	}
 	return nil
 }

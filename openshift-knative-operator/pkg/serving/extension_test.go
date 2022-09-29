@@ -21,11 +21,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/version"
 	fakediscovery "k8s.io/client-go/discovery/fake"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/pkg/apis"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
+	"knative.dev/pkg/ptr"
 )
 
 var (
@@ -67,44 +69,44 @@ func TestReconcile(t *testing.T) {
 	cases := []struct {
 		name       string
 		k8sVersion string
-		in         *operatorv1alpha1.KnativeServing
+		in         *operatorv1beta1.KnativeServing
 		objs       []runtime.Object
-		expected   *operatorv1alpha1.KnativeServing
+		expected   *operatorv1beta1.KnativeServing
 	}{{
 		name:     "all nil",
-		in:       &operatorv1alpha1.KnativeServing{},
+		in:       &operatorv1beta1.KnativeServing{},
 		expected: ks(),
 	}, {
 		name: "different HA settings",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					HighAvailability: &operatorv1alpha1.HighAvailability{
-						Replicas: 3,
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					HighAvailability: &base.HighAvailability{
+						Replicas: ptr.Int32(3),
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.HighAvailability.Replicas = 3
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.HighAvailability.Replicas = ptr.Int32(3)
 		}),
 	}, {
 		name: "different certificate settings",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				ControllerCustomCerts: operatorv1alpha1.CustomCerts{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				ControllerCustomCerts: base.CustomCerts{
 					Type: "Secret",
 					Name: "foo",
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.ControllerCustomCerts.Type = "Secret"
 			ks.Spec.ControllerCustomCerts.Name = "foo"
 		}),
 	}, {
 		name: "existing logging route",
-		in:   &operatorv1alpha1.KnativeServing{},
+		in:   &operatorv1beta1.KnativeServing{},
 		objs: []runtime.Object{
 			defaultIngress,
 			&routev1.Route{
@@ -119,16 +121,16 @@ func TestReconcile(t *testing.T) {
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, "logging.revision-url-template",
 				fmt.Sprintf(loggingURLTemplate, "logging.example.com"))
 		}),
 	}, {
 		name: "override image settings",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					Registry: operatorv1alpha1.Registry{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Registry: base.Registry{
 						Override: map[string]string{
 							"foo":         "not",
 							"queue-proxy": "correct",
@@ -140,10 +142,10 @@ func TestReconcile(t *testing.T) {
 		expected: ks(),
 	}, {
 		name: "override ingress class",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					Config: operatorv1alpha1.ConfigMapData{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
 						"network": map[string]string{
 							"ingress.class": "foo",
 						},
@@ -151,23 +153,23 @@ func TestReconcile(t *testing.T) {
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, "network", "ingress.class", "foo")
 		}),
 	}, {
 		name: "default kourier service type",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-				Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: "ClusterIP",
 				},
@@ -175,19 +177,19 @@ func TestReconcile(t *testing.T) {
 		}),
 	}, {
 		name: "override kourier service type",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled:     true,
 						ServiceType: "LoadBalancer",
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-				Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: "LoadBalancer",
 				},
@@ -195,18 +197,18 @@ func TestReconcile(t *testing.T) {
 		}),
 	}, {
 		name: "override ingress config",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-				Istio: operatorv1alpha1.IstioIngressConfiguration{
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{
+				Istio: base.IstioIngressConfiguration{
 					Enabled: true,
 				},
 			}
@@ -215,24 +217,24 @@ func TestReconcile(t *testing.T) {
 		}),
 	}, {
 		name: "fix 'wrong' ingress config", // https://github.com/knative/operator/issues/568
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: false,
 					},
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: false,
 					},
-					Contour: operatorv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: false,
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-				Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: "ClusterIP",
 				},
@@ -240,19 +242,19 @@ func TestReconcile(t *testing.T) {
 		}),
 	}, {
 		name: "respect kourier settings",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Kourier: base.KourierIngressConfiguration{
 						// Enabled: true omitted explicitly.
 						ServiceType: corev1.ServiceTypeClusterIP,
 					},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
-			ks.Spec.Ingress = &operatorv1alpha1.IngressConfigs{
-				Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
+			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: corev1.ServiceTypeClusterIP,
 				},
@@ -260,10 +262,10 @@ func TestReconcile(t *testing.T) {
 		}),
 	}, {
 		name: "override default url scheme",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					Config: operatorv1alpha1.ConfigMapData{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
 						"network": map[string]string{
 							"defaultExternalScheme": "http",
 						},
@@ -271,15 +273,15 @@ func TestReconcile(t *testing.T) {
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, "network", "defaultExternalScheme", "http")
 		}),
 	}, {
 		name: "override autocreateClusterDomainClaims config",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
-					Config: operatorv1alpha1.ConfigMapData{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
 						"network": map[string]string{
 							"autocreateClusterDomainClaims": "false",
 						},
@@ -287,23 +289,23 @@ func TestReconcile(t *testing.T) {
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, "network", "autocreateClusterDomainClaims", "false")
 		}),
 	}, {
 		name: "respects different status",
-		in: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
 		}),
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Status.MarkDependenciesInstalled()
 		}),
 	}, {
 		name: "wrong namespace",
-		in: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Namespace = "foo"
 		}),
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Namespace = "foo"
 			ks.Status.MarkInstallFailed(`Knative Serving must be installed into the namespace "knative-serving"`)
 		}),
@@ -356,56 +358,56 @@ func newFakeExtension(ctx context.Context, t *testing.T) operator.Extension {
 func TestMonitoring(t *testing.T) {
 	cases := []struct {
 		name     string
-		in       *operatorv1alpha1.KnativeServing
-		expected *operatorv1alpha1.KnativeServing
+		in       *operatorv1beta1.KnativeServing
+		expected *operatorv1beta1.KnativeServing
 		// Returns the expected status for monitoring
 		setupMonitoringToggle func() (bool, error)
 	}{{
 		name:                  "enable monitoring when monitoring toggle is not defined, backend is not defined",
-		in:                    &operatorv1alpha1.KnativeServing{},
+		in:                    &operatorv1beta1.KnativeServing{},
 		expected:              ks(),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "enable monitoring when monitoring toggle = not defined, backend = defined and not `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "disable monitoring when monitoring toggle is not defined, backend is `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, nil },
 	}, {
 		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
-		in:                    &operatorv1alpha1.KnativeServing{},
+		in:                    &operatorv1beta1.KnativeServing{},
 		expected:              ks(),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
 	}, {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
@@ -413,14 +415,14 @@ func TestMonitoring(t *testing.T) {
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is on, backend is `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) {
@@ -428,34 +430,34 @@ func TestMonitoring(t *testing.T) {
 		},
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is not defined",
-		in:   &operatorv1alpha1.KnativeServing{},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		in:   &operatorv1beta1.KnativeServing{},
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "prometheus"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				CommonSpec: operatorv1alpha1.CommonSpec{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{monitoring.ObservabilityCMName: {monitoring.ObservabilityBackendKey: "none"}},
 				},
 			},
 		},
-		expected: ks(func(ks *operatorv1alpha1.KnativeServing) {
+		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 		}),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
@@ -495,17 +497,17 @@ func TestMonitoring(t *testing.T) {
 	}
 }
 
-func ks(mods ...func(*operatorv1alpha1.KnativeServing)) *operatorv1alpha1.KnativeServing {
-	base := &operatorv1alpha1.KnativeServing{
+func ks(mods ...func(*operatorv1beta1.KnativeServing)) *operatorv1beta1.KnativeServing {
+	base := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: servingNamespace.Name,
 		},
-		Spec: operatorv1alpha1.KnativeServingSpec{
-			CommonSpec: operatorv1alpha1.CommonSpec{
-				HighAvailability: &operatorv1alpha1.HighAvailability{
-					Replicas: 2,
+		Spec: operatorv1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				HighAvailability: &base.HighAvailability{
+					Replicas: ptr.Int32(2),
 				},
-				Config: operatorv1alpha1.ConfigMapData{
+				Config: base.ConfigMapData{
 					"deployment": map[string]string{
 						"queueSidecarImage": "baz",
 					},
@@ -519,7 +521,7 @@ func ks(mods ...func(*operatorv1alpha1.KnativeServing)) *operatorv1alpha1.Knativ
 						"defaultExternalScheme":         "https",
 					},
 				},
-				Registry: operatorv1alpha1.Registry{
+				Registry: base.Registry{
 					Default: "bar2",
 					Override: map[string]string{
 						"default":     "bar2",
@@ -527,7 +529,7 @@ func ks(mods ...func(*operatorv1alpha1.KnativeServing)) *operatorv1alpha1.Knativ
 						"queue-proxy": "baz",
 					},
 				},
-				Resources: []operatorv1alpha1.ResourceRequirementsOverride{{
+				DeprecatedResources: []base.ResourceRequirementsOverride{{
 					Container: "webhook",
 					ResourceRequirements: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
@@ -536,12 +538,12 @@ func ks(mods ...func(*operatorv1alpha1.KnativeServing)) *operatorv1alpha1.Knativ
 					},
 				}},
 			},
-			ControllerCustomCerts: operatorv1alpha1.CustomCerts{
+			ControllerCustomCerts: base.CustomCerts{
 				Type: "ConfigMap",
 				Name: "config-service-ca",
 			},
-			Ingress: &operatorv1alpha1.IngressConfigs{
-				Kourier: operatorv1alpha1.KourierIngressConfiguration{
+			Ingress: &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: "ClusterIP",
 				},

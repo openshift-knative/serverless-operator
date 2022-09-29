@@ -8,7 +8,7 @@ import (
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 const (
@@ -33,7 +33,7 @@ const (
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
 // the -ingress suffix to be backwards compatible.
-func overrideKourierNamespace(ks operatorv1alpha1.KComponent) mf.Transformer {
+func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
 	nsInjector := mf.InjectNamespace(kourierNamespace(ks.GetNamespace()))
 	return func(u *unstructured.Unstructured) error {
 		provider := u.GetLabels()[providerLabel]
@@ -61,7 +61,7 @@ func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
 }
 
-func addKourierEnvValues(ks operatorv1alpha1.KComponent) mf.Transformer {
+func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 	envVars := []corev1.EnvVar{
 		{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
 		{Name: "SERVING_NAMESPACE", Value: "knative-serving"},

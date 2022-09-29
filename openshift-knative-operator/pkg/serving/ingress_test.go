@@ -4,32 +4,33 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestDefaultIngressClass(t *testing.T) {
 	cases := []struct {
 		name     string
-		in       *operatorv1alpha1.KnativeServing
+		in       *operatorv1beta1.KnativeServing
 		expected string
 	}{{
 		name:     "unset",
-		in:       &operatorv1alpha1.KnativeServing{},
+		in:       &operatorv1beta1.KnativeServing{},
 		expected: kourierIngressClassName,
 	}, {
 		name: "all disabled",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{},
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{},
 			},
 		},
 		expected: kourierIngressClassName,
 	}, {
 		name: "istio enabled",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -38,13 +39,13 @@ func TestDefaultIngressClass(t *testing.T) {
 		expected: istioIngressClassName,
 	}, {
 		name: "kourier and istio enabled",
-		in: &operatorv1alpha1.KnativeServing{
-			Spec: operatorv1alpha1.KnativeServingSpec{
-				Ingress: &operatorv1alpha1.IngressConfigs{
-					Kourier: operatorv1alpha1.KourierIngressConfiguration{
+		in: &operatorv1beta1.KnativeServing{
+			Spec: operatorv1beta1.KnativeServingSpec{
+				Ingress: &operatorv1beta1.IngressConfigs{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: operatorv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},

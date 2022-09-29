@@ -23,11 +23,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // DeploymentTransform transforms deployments based on the configuration in `spec.deployment`.
-func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
+func DeploymentsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	overrides := obj.GetSpec().GetDeploymentOverride()
 	if overrides == nil {
 		return nil
@@ -47,6 +47,7 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 				replaceTolerations(&override, deployment)
 				replaceAffinities(&override, deployment)
 				replaceResources(&override, deployment)
+				replaceEnv(&override, deployment)
 				if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 					return err
 				}
@@ -59,7 +60,7 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 	}
 }
 
-func replaceAnnotations(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceAnnotations(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if deployment.GetAnnotations() == nil {
 		deployment.Annotations = map[string]string{}
 	}
@@ -72,7 +73,7 @@ func replaceAnnotations(override *v1alpha1.DeploymentOverride, deployment *appsv
 	}
 }
 
-func replaceLabels(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceLabels(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if deployment.GetLabels() == nil {
 		deployment.Labels = map[string]string{}
 	}
@@ -85,37 +86,48 @@ func replaceLabels(override *v1alpha1.DeploymentOverride, deployment *appsv1.Dep
 	}
 }
 
-func replaceReplicas(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
-	if override.Replicas > 0 {
-		deployment.Spec.Replicas = &override.Replicas
+func replaceReplicas(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
+	if override.Replicas != nil {
+		deployment.Spec.Replicas = override.Replicas
 	}
 }
 
-func replaceNodeSelector(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceNodeSelector(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if len(override.NodeSelector) > 0 {
 		deployment.Spec.Template.Spec.NodeSelector = override.NodeSelector
 	}
 }
 
-func replaceTolerations(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceTolerations(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if len(override.Tolerations) > 0 {
 		deployment.Spec.Template.Spec.Tolerations = override.Tolerations
 	}
 }
 
-func replaceAffinities(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceAffinities(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if override.Affinity != nil {
 		deployment.Spec.Template.Spec.Affinity = override.Affinity
 	}
 }
 
-func replaceResources(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceResources(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
 	if len(override.Resources) > 0 {
 		containers := deployment.Spec.Template.Spec.Containers
 		for i := range containers {
 			if override := find(override.Resources, containers[i].Name); override != nil {
 				merge(&override.Limits, &containers[i].Resources.Limits)
 				merge(&override.Requests, &containers[i].Resources.Requests)
+			}
+		}
+	}
+}
+
+func replaceEnv(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
+	if len(override.Env) > 0 {
+		containers := deployment.Spec.Template.Spec.Containers
+		for i := range containers {
+			if override := findEnvOverride(override.Env, containers[i].Name); override != nil {
+				mergeEnv(&override.EnvVars, &containers[i].Env)
 			}
 		}
 	}

@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
@@ -29,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func init() {
@@ -43,7 +44,7 @@ var (
 )
 
 // ImageTransform updates image with a new registry and tag
-func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Transformer {
+func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Image resources are handled quite differently, so branch them out early
 		if u.GetKind() == "Image" && u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
@@ -97,7 +98,11 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 				container.Image = image
 			} else if registry.Default != "" {
 				// No matches found. Use default setting and replace potential container name placeholder.
-				container.Image = strings.ReplaceAll(registry.Default, containerNameVariable, container.Name)
+				imageName := getImageName(container.Image)
+				if imageName == "" {
+					imageName = container.Name
+				}
+				container.Image = strings.ReplaceAll(registry.Default, containerNameVariable, imageName)
 			}
 
 			for j := range container.Env {
@@ -127,7 +132,7 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 	}
 }
 
-func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateCachingImage(registry *base.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var img = &caching.Image{}
 	if err := scheme.Scheme.Convert(u, img, nil); err != nil {
 		return fmt.Errorf("failed to convert Unstructured to Image: %w", err)
@@ -140,7 +145,11 @@ func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructure
 		img.Spec.Image = image
 	} else if registry.Default != "" {
 		// No matches found. Use default setting and replace potential container name placeholder.
-		img.Spec.Image = strings.ReplaceAll(registry.Default, containerNameVariable, img.Name)
+		imageName := getImageName(img.Spec.Image)
+		if imageName == "" {
+			imageName = img.Name
+		}
+		img.Spec.Image = strings.ReplaceAll(registry.Default, containerNameVariable, imageName)
 	}
 
 	// Add potential ImagePullSecrets
@@ -158,4 +167,21 @@ func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructure
 
 	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
 	return nil
+}
+
+func getImageName(fullImageURL string) string {
+	if !strings.Contains(fullImageURL, "/") {
+		return ""
+	}
+	subsImageLink := strings.Split(fullImageURL, "/")
+	nameWithTag := subsImageLink[len(subsImageLink)-1]
+	if !strings.Contains(nameWithTag, ":") {
+		return nameWithTag
+	}
+	imageName := strings.Split(nameWithTag, ":")[0]
+	if !strings.Contains(imageName, "@") {
+		return imageName
+	}
+	imageName = strings.Split(nameWithTag, "@")[0]
+	return imageName
 }

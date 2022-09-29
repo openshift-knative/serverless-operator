@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -31,7 +31,7 @@ var _ admission.Handler = (*Validator)(nil)
 
 // Handle implements the Handler interface.
 func (v *Validator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	ke := &operatorv1alpha1.KnativeEventing{}
+	ke := &operatorv1beta1.KnativeEventing{}
 
 	err := v.decoder.Decode(req, ke)
 	if err != nil {
@@ -46,9 +46,9 @@ func (v *Validator) Handle(ctx context.Context, req admission.Request) admission
 }
 
 // Validator checks for a minimum OpenShift version
-func (v *Validator) validate(ctx context.Context, ke *operatorv1alpha1.KnativeEventing) (allowed bool, reason string, err error) {
+func (v *Validator) validate(ctx context.Context, ke *operatorv1beta1.KnativeEventing) (allowed bool, reason string, err error) {
 	log := common.Log.WithName("validate")
-	stages := []func(context.Context, *operatorv1alpha1.KnativeEventing) (bool, string, error){
+	stages := []func(context.Context, *operatorv1beta1.KnativeEventing) (bool, string, error){
 		v.validateNamespace,
 		v.validateLoneliness,
 	}
@@ -69,7 +69,7 @@ func (v *Validator) validate(ctx context.Context, ke *operatorv1alpha1.KnativeEv
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.KnativeEventing) (bool, string, error) {
+func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1beta1.KnativeEventing) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_EVENTING_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeEventing may only be created in %s namespace", ns), nil
@@ -78,8 +78,8 @@ func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1alpha1.
 }
 
 // validate this is the only KE in this namespace
-func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1alpha1.KnativeEventing) (bool, string, error) {
-	list := &operatorv1alpha1.KnativeEventingList{}
+func (v *Validator) validateLoneliness(ctx context.Context, ke *operatorv1beta1.KnativeEventing) (bool, string, error) {
+	list := &operatorv1beta1.KnativeEventingList{}
 	if err := v.client.List(ctx, list, &client.ListOptions{Namespace: ke.Namespace}); err != nil {
 		return false, "Unable to list KnativeEventings", err
 	}

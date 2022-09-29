@@ -22,7 +22,8 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/logging"
 )
 
@@ -35,7 +36,7 @@ var (
 
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 	status := instance.GetStatus()
@@ -52,7 +53,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 	}
 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
-		if ks, ok := instance.(*v1alpha1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
+		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
 			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
 			errMessage := fmt.Errorf("please install istio or disable the istio ingress plugin: %w", err)
 			status.MarkInstallFailed(errMessage.Error())

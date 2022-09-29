@@ -10,10 +10,12 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/ptr"
 )
 
 const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
@@ -29,17 +31,17 @@ type extension struct {
 	kubeclient kubernetes.Interface
 }
 
-func (e *extension) Manifests(ke operatorv1alpha1.KComponent) ([]mf.Manifest, error) {
+func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	return monitoring.GetEventingMonitoringPlatformManifests(ke)
 }
 
-func (e *extension) Transformers(ke operatorv1alpha1.KComponent) []mf.Transformer {
+func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 	return append([]mf.Transformer{common.InjectCommonLabelIntoNamespace(), common.VersionedJobNameTransform()},
 		monitoring.GetEventingTransformers(ke)...)
 }
 
-func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KComponent) error {
-	ke := comp.(*operatorv1alpha1.KnativeEventing)
+func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
+	ke := comp.(*operatorv1beta1.KnativeEventing)
 
 	requiredNs := os.Getenv(requiredNsEnvName)
 	if requiredNs != "" && ke.Namespace != requiredNs {
@@ -63,14 +65,14 @@ func (e *extension) Reconcile(ctx context.Context, comp operatorv1alpha1.KCompon
 
 	// Default to 2 replicas.
 	if ke.Spec.HighAvailability == nil {
-		ke.Spec.HighAvailability = &operatorv1alpha1.HighAvailability{
-			Replicas: 2,
+		ke.Spec.HighAvailability = &base.HighAvailability{
+			Replicas: ptr.Int32(2),
 		}
 	}
 
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 
-func (e *extension) Finalize(context.Context, operatorv1alpha1.KComponent) error {
+func (e *extension) Finalize(context.Context, base.KComponent) error {
 	return nil
 }

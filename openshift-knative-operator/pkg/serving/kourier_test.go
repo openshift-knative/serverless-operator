@@ -10,7 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestOverrideKourierNamespace(t *testing.T) {
@@ -27,7 +28,7 @@ func TestOverrideKourierNamespace(t *testing.T) {
 		Name:       "bar",
 	}})
 
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
@@ -51,14 +52,14 @@ func TestOverrideKourierNamespace(t *testing.T) {
 }
 
 func TestKourierEnvValue(t *testing.T) {
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
 		},
-		Spec: operatorv1alpha1.KnativeServingSpec{
-			CommonSpec: operatorv1alpha1.CommonSpec{
-				Config: operatorv1alpha1.ConfigMapData{
+		Spec: operatorv1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				Config: base.ConfigMapData{
 					"network": map[string]string{
 						InternalEncryptionKey: "true",
 					},
@@ -125,14 +126,14 @@ func TestKourierEnvValue(t *testing.T) {
 }
 
 func TestKourierInternalEncryptionOverrideCertName(t *testing.T) {
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",
 		},
-		Spec: operatorv1alpha1.KnativeServingSpec{
-			CommonSpec: operatorv1alpha1.CommonSpec{
-				Config: operatorv1alpha1.ConfigMapData{
+		Spec: operatorv1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				Config: base.ConfigMapData{
 					"network": map[string]string{
 						InternalEncryptionKey:        "true",
 						IngressDefaultCertificateKey: "custom-cert",
@@ -214,7 +215,7 @@ func TestOverrideKourierNamespaceOther(t *testing.T) {
 	}})
 	want := other.DeepCopy()
 
-	ks := &operatorv1alpha1.KnativeServing{
+	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "knative-serving",
 			Name:      "test",

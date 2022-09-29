@@ -9,18 +9,18 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/testutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var (
-	ks1 = &operatorv1alpha1.KnativeServing{
+	ks1 = &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "ks1",
 		},
 	}
-	ks2 = &operatorv1alpha1.KnativeServing{
+	ks2 = &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "ks2",
 		},
