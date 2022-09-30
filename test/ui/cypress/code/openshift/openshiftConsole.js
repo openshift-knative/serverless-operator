@@ -11,7 +11,12 @@ class OpenshiftConsole {
     const namespace = environment.namespace()
 
     expect(password).to.match(/^.{3,}$/)
-    
+
+    cy.on('uncaught:exception', (err) => {
+      // returning false here prevents Cypress from failing the test
+      return !(err.hasOwnProperty('response') && err.response.status === 401)
+    })
+
     cy.visit('/')
     cy.url().should('include', 'oauth-openshift')
     cy.url().then((url) => {
@@ -31,6 +36,12 @@ class OpenshiftConsole {
       .type(password)
       .should('have.value', password)
     cy.get('button[type=submit]').click()
+    cy.url().should('not.include', 'oauth-openshift')
+
+    cy.on('uncaught:exception', () => {
+      // restore exception processing
+      return true
+    })
 
     cy.visit(`/add/ns/${namespace}?view=graph`)
     cy.get('#content').contains('Add')
@@ -48,14 +59,31 @@ class OpenshiftConsole {
   }
 
   closeSidebar() {
-    cy.get('.odc-topology .pf-c-drawer')
+    const selectors = this.sidebarSelectors()
+    cy.get(selectors.drawer)
       .then(($drawer) => {
-        if ($drawer.hasClass('pf-m-expanded')) {
+        if ($drawer.hasClass(selectors.expandedCls)) {
           cy.log('Closing sidebar')
-          cy.get('.odc-topology .pf-c-drawer button[data-test-id=sidebar-close-button]')
-            .click()
+          cy.get(selectors.closeBtn).click()
         }
       })
+  }
+
+  sidebarSelectors() {
+    if (environment.ocpVersion().satisfies('<4.11')) {
+      return {
+        drawer: '.odc-topology .pf-topology-container',
+        expandedCls: 'pf-topology-container__with-sidebar--open',
+        closeBtn: '.odc-topology .pf-topology-container .pf-topology-side-bar button.close',
+        deleteApplicationBtn: 'button[data-test-action="Delete Application"]'
+      }
+    }
+    return {
+      drawer: '.odc-topology .pf-c-drawer',
+      expandedCls: 'pf-m-expanded',
+      closeBtn: '.odc-topology .pf-c-drawer button[data-test-id=sidebar-close-button]',
+      deleteApplicationBtn: 'li[data-test-action="Delete application"] button'
+    }
   }
 }
 
