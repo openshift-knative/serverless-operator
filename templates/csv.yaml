@@ -43,6 +43,9 @@ metadata:
             "source": {
               "enabled": false
             },
+            "sink": {
+              "enabled": false
+            },
             "channel": {
               "enabled": false,
               "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
