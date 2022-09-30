@@ -1,6 +1,7 @@
 package common
 
 import (
+	"sort"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,7 +34,7 @@ func (m StringMap) StringValues() string {
 	for _, v := range m {
 		values = append(values, v)
 	}
-
+	sort.Strings(values)
 	return strings.Join(values, ",")
 }
 

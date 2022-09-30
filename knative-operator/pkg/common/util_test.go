@@ -123,17 +123,59 @@ func environFromMap(envMap map[string]string) []string {
 }
 
 func TestStringMap(t *testing.T) {
-	disabledKafkaControllers := common.StringMap{
-		"broker": "broker-controller,trigger-controller",
-		"sink":   "sink-controller",
+	cases := []struct {
+		name   string
+		remove string
+		remain string
+		size   int
+	}{
+		{
+			name:   "All controllers",
+			remove: "",
+			remain: "broker-controller,trigger-controller,channel-controller,sink-controller,source-controller",
+			size:   4,
+		},
+		{
+			name:   "Remove Broker",
+			remove: "BROKER",
+			remain: "channel-controller,sink-controller,source-controller",
+			size:   3,
+		},
+		{
+			name:   "Remove Sink",
+			remove: "SINK",
+			remain: "channel-controller,source-controller",
+			size:   2,
+		},
+		{
+			name:   "Remove Channel",
+			remove: "CHANNEL",
+			remain: "source-controller",
+			size:   1,
+		},
+		{
+			name:   "Remove Source",
+			remove: "SOURCE",
+			remain: "",
+			size:   0,
+		},
 	}
-	disabledKafkaControllers.Remove("broker")
-	assert.Equal(t, len(disabledKafkaControllers), 1)
-	assert.NotEmpty(t, disabledKafkaControllers)
 
-	disabledKafkaControllers.Remove("sink")
-	assert.Equal(t, len(disabledKafkaControllers), 0)
-	assert.Empty(t, disabledKafkaControllers)
+	disabledKafkaControllers := common.StringMap{
+		"BROKER":  "broker-controller,trigger-controller",
+		"SINK":    "sink-controller",
+		"SOURCE":  "source-controller",
+		"CHANNEL": "channel-controller",
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			disabledKafkaControllers.Remove(tc.remove)
+			assert.Equal(t, tc.remain, disabledKafkaControllers.StringValues())
+			assert.Equal(t, tc.size, len(disabledKafkaControllers))
+		})
+	}
 }
 
 func TestSetAnnotations(t *testing.T) {
