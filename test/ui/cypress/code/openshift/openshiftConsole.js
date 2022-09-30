@@ -1,19 +1,17 @@
-import Environment from "../environment";
+import Environment from '../environment'
 
 const environment = new Environment()
 
 class OpenshiftConsole {
   login() {
+    cy.log('Login to OCP')
     const loginProvider = environment.loginProvider()
     const username = environment.username()
     const password = environment.password()
     const namespace = environment.namespace()
 
     expect(password).to.match(/^.{3,}$/)
-
-    cy.on('uncaught:exception', () => {
-      return false
-    })
+    
     cy.visit('/')
     if (loginProvider !== '') {
       cy.url().should('include', '/oauth/authorize')
@@ -44,6 +42,17 @@ class OpenshiftConsole {
         cy.contains('Skip tour').click()
       }
     })
+  }
+
+  closeSidebar() {
+    cy.get('.odc-topology .pf-c-drawer')
+      .then(($drawer) => {
+        if ($drawer.hasClass('pf-m-expanded')) {
+          cy.log('Closing sidebar')
+          cy.get('.odc-topology .pf-c-drawer button[data-test-id=sidebar-close-button]')
+            .click()
+        }
+      })
   }
 }
 
