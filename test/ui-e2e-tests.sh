@@ -37,7 +37,7 @@ CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpat
 # use dev to run test development UI
 NPM_TARGET="${NPM_TARGET:-test}"
 if [ -n "${BUILD_ID:-}" ]; then
-  export CYPRESS_NO_COMMAND_LOG=1
+  export CYPRESS_NUM_TESTS_KEPT_IN_MEMORY=0
 fi
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 

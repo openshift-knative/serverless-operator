@@ -7,5 +7,6 @@
 // ***********************************************************
 
 import './commands'
+import './nolog-fetch'
 
 require('@cypress/skip-test/support')
