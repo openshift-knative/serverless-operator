@@ -27,10 +27,10 @@ require (
 	knative.dev/eventing v0.32.3-0.20220802081716-359f0e21b3c7
 	knative.dev/eventing-kafka v0.32.2
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
-	knative.dev/hack v0.0.0-20220601014117-bafe4b15ca50
-	knative.dev/networking v0.0.0-20220412163509-1145ec58c8be
-	knative.dev/operator v0.31.2
-	knative.dev/pkg v0.0.0-20220601013938-bac16f2394ce
+	knative.dev/hack v0.0.0-20220610014127-dc6c287516dc
+	knative.dev/networking v0.0.0-20220614203516-07c9d7614c61
+	knative.dev/operator v0.32.3
+	knative.dev/pkg v0.0.0-20220610014025-7d607d643ee2
 	knative.dev/serving v0.32.0
 	sigs.k8s.io/controller-runtime v0.9.7
 )
@@ -162,17 +162,17 @@ require (
 	k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89 // indirect
 	k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/caching v0.0.0-20220601013938-730d5b7c3c47 // indirect
-	knative.dev/reconciler-test v0.0.0-20220524205904-f750f80bfc7e
+	knative.dev/caching v0.0.0-20220610113725-9c092893371a // indirect
+	knative.dev/reconciler-test v0.0.0-20220610014025-b62b10257cbf
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
 replace (
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220712171311-f13c06f7b804
+	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220926135101-4a89adaca7d1
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141528-c59955f23883
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220926084153-3ed46cc04737
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220714144541-e80a125a2867
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220927171706-e0d47343c338
+	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220926120634-72a6f7ea6cfb
 )
 
 replace (
@@ -184,8 +184,10 @@ replace (
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 )
 
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20220524202603-19adf798efb8
 
-replace knative.dev/hack => knative.dev/hack v0.0.0-20220629135029-9e09abcd61f0
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220629134929-4b4f477a0869
 
 replace knative.dev/operator => knative.dev/operator v0.32.2
+
+replace knative.dev/networking => knative.dev/networking v0.0.0-20220524205304-22d1b933cf73

@@ -13,16 +13,15 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.4"
-EVENTING_VERSION="release-v1.4"
+KN_VERSION="release-1.5"
+EVENTING_VERSION="release-v1.5"
 EVENTING_KAFKA_VERSION="release-v1.4"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.4"
-SERVING_VERSION="release-v1.4"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.5"
+SERVING_VERSION="release-v1.5"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "knative.dev/networking@${KN_VERSION}"
   "knative.dev/operator@${KN_VERSION}"
 )
 
@@ -33,6 +32,7 @@ REPLACE_DEPS=(
   "knative.dev/serving=github.com/openshift/knative-serving@${SERVING_VERSION}"
   "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
   "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
+  "knative.dev/networking=knative.dev/networking@${KN_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
