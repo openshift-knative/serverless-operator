@@ -1,6 +1,8 @@
-import Environment from "../../environment";
+import Environment from '../../environment'
+import OpenshiftConsole from '../../openshift/openshiftConsole'
 
 const environment = new Environment()
+const openshiftConsole = new OpenshiftConsole()
 
 class ShowcaseKservice {
 
@@ -38,6 +40,7 @@ class ShowcaseKservice {
   }
 
   checkScale(scale) {
+    cy.log(`check scale of ${this.name} to ${scale}`)
     const selector = 'div.odc-revision-deployment-list__pod svg tspan'
     const timeout = Cypress.config().defaultCommandTimeout
     try {
@@ -54,26 +57,33 @@ class ShowcaseKservice {
   }
 
   deployImage({kind = 'regular', clusterLocal = false} = {}) {
-    cy.visit(`/add/ns/${this.namespace}`)
-    cy.contains('Knative Channel')
-    cy.contains('Event Source')
+    cy.log(`Deploy kservice ${kind}${clusterLocal ? ', cluster-local' : ''} from image`)
     cy.visit(`/deploy-image/ns/${this.namespace}`)
     cy.get('input[name=searchTerm]')
       .type(this.image[kind])
     cy.contains('Validated')
-    cy.get('input#form-radiobutton-resources-knative-field').check()
-    cy.get('input#form-checkbox-route-create-field').check()
     cy.get('input#form-input-application-name-field')
+      .scrollIntoView()
       .clear()
       .type(this.app)
     cy.get('input#form-input-name-field')
+      .scrollIntoView()
       .clear()
       .type(this.name)
+    cy.get('input#form-radiobutton-resources-knative-field')
+      .scrollIntoView()
+      .check()
+    cy.get('input#form-checkbox-route-create-field')
+      .scrollIntoView()
+      .check()
     if (clusterLocal) {
       cy.get('input#form-checkbox-route-create-field')
+        .scrollIntoView()
         .uncheck()
     }
-    cy.get('button[type=submit]').click()
+    cy.get('button[type=submit]')
+      .scrollIntoView()
+      .click()
     cy.url().should('include', `/topology/ns/${this.namespace}`)
     cy.visit(this.topologyUrl())
     cy.get('div.pf-topology-content').contains(this.name).click()
@@ -84,16 +94,18 @@ class ShowcaseKservice {
   isServiceDeployed() {
     return new Cypress.Promise((resolve, _) => {
       const cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace} -o name`
-      cy.exec(cmd, { failOnNonZeroExit: false }).then(result => {
+      cy.exec(cmd).then((result) => {
+        cy.log(result.stdout)
         let out = result.stdout.trim()
-        resolve(result.code === 0 && out.length > 0)
+        resolve(out.length > 0)
       })
     })
   }
 
   removeApp() {
-    this.isServiceDeployed().then(deployed => {
+    this.isServiceDeployed().then((deployed) => {
       if (deployed) {
+        cy.log("Service is deployed. Removing it.")
         this.doRemoveApp()
       } else {
         cy.log("Service isn't deployed, skipping removal.")
@@ -103,11 +115,20 @@ class ShowcaseKservice {
 
   doRemoveApp() {
     cy.visit(this.topologyUrl())
+    openshiftConsole.closeSidebar()
     cy.get('div.pf-topology-content')
       .contains(this.app).click()
-    cy.contains('Actions').click()
-    cy.contains('Delete Application')
-      .should('not.have.class', 'pf-m-disabled')
+    const selectors = openshiftConsole.sidebarSelectors()
+    const drawer = cy.get(selectors.drawer)
+    drawer
+      .contains('Actions')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .click()
+    drawer
+      .get(selectors.deleteApplicationBtn)
+      .should('be.visible')
+      .should('not.be.disabled')
       .click()
     cy.get('input#form-input-resourceName-field')
       .type(this.app)
@@ -116,10 +137,9 @@ class ShowcaseKservice {
   }
 
   showServiceDetails(scrollTo = 'Location:') {
+    cy.log('Show service details')
     cy.visit(this.topologyUrl())
-    cy.get('div.pf-topology-content')
-      .get('#serving\\.knative\\.dev\\~v1\\~Service_label')
-      .click() // closes the sidebar if open
+    openshiftConsole.closeSidebar()
     cy.get('div.pf-topology-content')
       .contains(this.name)
       .click() // opens the sidebar

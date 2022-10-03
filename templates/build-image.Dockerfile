@@ -17,7 +17,7 @@ RUN yum install -y https://rpm.nodesource.com/pub___NODEJS_VERSION__/el/7/x86_64
 RUN yum install -y \
   gcc-c++ \
   make \
-  nodejs-14.18.0-1nodesource \
+  nodejs \
   xorg-x11-server-Xvfb \
   gtk2-devel \
   gtk3-devel \

@@ -5,21 +5,18 @@
   "scripts": {
     "test": "cypress run",
     "dev": "cypress open",
-    "install": "cypress install && node cypress/apply-patches.js",
-    "preinstall": "npx npm-force-resolutions"
+    "install": "cypress install && node cypress/apply-patches.mjs"
   },
   "license": "Apache-2.0",
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
-    "chalk": "^4.1.2",
-    "cypress": "^9.3.1",
+    "chalk": "^5.0.1",
+    "cypress": "^10.9.0",
     "cypress-multi-reporters": "^1.5.0",
     "diff": "^5.0.0",
-    "mocha": "^9.2.0",
+    "mocha": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2",
-    "semver": "^7.3.5"
-  },
-  "resolutions": {
-    "ansi-regex": "5.0.1"
+    "semver": "^7.3.5",
+    "cachedir": "^2.3.0"
   }
 }
