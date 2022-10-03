@@ -224,7 +224,7 @@ spec:
   config:
     tracing:
       backend: zipkin
-      debug: "true"
+      debug: "false"
       enable: "true"
       sample-rate: "${SAMPLE_RATE}"
       zipkin-endpoint: "${tracing_endpoint}"
