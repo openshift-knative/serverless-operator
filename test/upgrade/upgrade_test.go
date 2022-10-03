@@ -45,9 +45,8 @@ func TestServerlessUpgrade(t *testing.T) {
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    preUpgradeTests(),
-			PostUpgrade:   postUpgradeTests(ctx),
-			PostDowngrade: postDowngradeTests(),
+			PreUpgrade:  preUpgradeTests(),
+			PostUpgrade: postUpgradeTests(ctx),
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
@@ -67,6 +66,30 @@ func TestServerlessUpgrade(t *testing.T) {
 					}
 				}),
 			},
+		},
+	}
+	suite.Execute(cfg)
+}
+
+func TestServerlessDowngrade(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+	cfg := newUpgradeConfig(t)
+	suite := pkgupgrade.Suite{
+		Tests: pkgupgrade.Tests{
+			PostDowngrade: postDowngradeTests(),
+			Continual: merge(
+				[]pkgupgrade.BackgroundOperation{
+					servingupgrade.ProbeTest(),
+					servingupgrade.AutoscaleSustainingWithTBCTest(),
+					servingupgrade.AutoscaleSustainingTest(),
+				},
+				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
+				kafkabrokerupgrade.BrokerContinualTests(),
+				kafkabrokerupgrade.SinkContinualTests(),
+			),
+		},
+		Installations: pkgupgrade.Installations{
 			DowngradeWith: downgrade(ctx),
 		},
 	}
@@ -151,9 +174,6 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 }
 
 func postDowngradeTests() []pkgupgrade.Operation {
-	if test.Flags.SkipDowngrade {
-		return nil
-	}
 	tests := servingupgrade.ServingPostDowngradeTests()
 	tests = append(tests,
 		servingupgrade.CRDStoredVersionPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
@@ -168,9 +188,6 @@ func postDowngradeTests() []pkgupgrade.Operation {
 }
 
 func downgrade(ctx *test.Context) []pkgupgrade.Operation {
-	if test.Flags.SkipDowngrade {
-		return nil
-	}
 	return []pkgupgrade.Operation{
 		pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
 			if err := installation.DowngradeServerless(ctx); err != nil {
