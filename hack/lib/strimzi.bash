@@ -245,6 +245,7 @@ spec:
       image: quay.io/openshift-knative/kafka-ui:0.1.0
       name: user-container
       securityContext:
+        runAsUser: 1000
         allowPrivilegeEscalation: false
         capabilities:
           drop:
