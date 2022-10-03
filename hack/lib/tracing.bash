@@ -4,7 +4,6 @@ function install_tracing {
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
     if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
       dedicate_node_to_zipkin
-      ZIPKIN_MEMORY_REQUESTS="10Gi"
     fi
     install_zipkin_tracing
   else
