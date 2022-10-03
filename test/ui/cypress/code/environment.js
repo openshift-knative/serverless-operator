@@ -1,4 +1,4 @@
-import SemverResolver from "./semverResolver";
+import SemverResolver from './semverResolver'
 
 class Environment {
   ocpVersion() {

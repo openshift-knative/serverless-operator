@@ -16,7 +16,7 @@ requirements:
   kube:
     minVersion: 1.19.0
   golang: '1.17'
-  nodejs: 14.x
+  nodejs: 16.x
   ocpVersion:
     min: '4.6'
     max: '4.11'
