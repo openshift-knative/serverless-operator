@@ -44,7 +44,7 @@ dependencies:
   # eventing-kafka-broker midstream branch name
   eventing_kafka_broker_artifacts_branch: release-v1.5
   cli: 1.4.1
-  operator: 1.4.2
+  operator: 1.5.2
   # Previous versions required for downgrade testing
   previous:
     serving: 1.4.0
