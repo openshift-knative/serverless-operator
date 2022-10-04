@@ -335,7 +335,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift", nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift:multiarch", nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
