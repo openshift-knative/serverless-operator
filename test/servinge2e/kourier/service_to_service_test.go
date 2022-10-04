@@ -7,7 +7,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	network "knative.dev/networking/pkg"
+	"knative.dev/networking/pkg/apis/networking"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	"knative.dev/serving/pkg/apis/serving"
 )
@@ -37,7 +37,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 	}, {
 		name: "cluster-local-via-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			autoscaling.TargetBurstCapacityKey: "-1",
@@ -45,7 +45,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 	}, {
 		name: "cluster-local-without-activator",
 		labels: map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		},
 		annotations: map[string]string{
 			autoscaling.TargetBurstCapacityKey: "0",
@@ -70,7 +70,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	serviceURL := service.Status.URL.URL()
 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
-	if service.GetLabels()[network.VisibilityLabelKey] == serving.VisibilityClusterLocal {
+	if service.GetLabels()[networking.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
 		httpProxy := test.WithServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
 		serviceURL = httpProxy.Status.URL.URL()

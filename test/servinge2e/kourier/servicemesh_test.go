@@ -25,7 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	network "knative.dev/networking/pkg"
+	"knative.dev/networking/pkg/apis/networking"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
@@ -147,7 +147,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// A cluster-local variant of the "sidecar-via-activator" scenario
 			name: "local-sidecar-via-activator",
 			labels: map[string]string{
-				network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 			},
 			annotations: map[string]string{
 				istioInjectKey: "true",
@@ -157,7 +157,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// A cluster-local variant of the "sidecar-without-activator" scenario
 			name: "local-sidecar-without-activator",
 			labels: map[string]string{
-				network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 			},
 			annotations: map[string]string{
 				istioInjectKey:                     "true",
@@ -341,7 +341,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 			Value: jwks,
 		})
 		jwksKsvc.ObjectMeta.Labels = map[string]string{
-			network.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
 		jwksKsvc = test.WithServiceReadyOrFail(ctx, jwksKsvc)
 
