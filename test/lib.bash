@@ -242,7 +242,6 @@ EOF
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
     "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS}" \
     "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS}" \
-    "--skipdowngrade=${SKIP_DOWNGRADE}" \
     --resolvabledomain \
     --https)
 
@@ -251,7 +250,15 @@ EOF
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=120m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgrade -timeout=60m "${common_opts[@]}"
+
+    # Restart Zipkin to prevent OutOfMemory errors.
+    oc -n "${TRACING_NAMESPACE}" delete pod -l="app=zipkin"
+    oc -n "${TRACING_NAMESPACE}" wait --for=condition=ready --timeout=3m pod -l="app=zipkin"
+
+    if [[ "${SKIP_DOWNGRADE}" == "false" ]]; then
+      go_test_e2e -run=TestServerlessDowngrade -timeout=60m "${common_opts[@]}"
+    fi
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
