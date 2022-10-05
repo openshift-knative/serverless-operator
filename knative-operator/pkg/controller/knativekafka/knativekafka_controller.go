@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	socommon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -251,6 +252,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperato
 		r.configure,
 		r.ensureFinalizers,
 		r.transform,
+		removeCreationTimestamp,
 		r.apply,
 		r.checkDeployments,
 		r.checkStatefulSets,
@@ -680,4 +682,15 @@ func executeStages(instance *serverlessoperatorv1alpha1.KnativeKafka, manifest *
 		}
 	}
 	return nil
+}
+
+func removeCreationTimestamp(manifest *mf.Manifest, _ *serverlessoperatorv1alpha1.KnativeKafka) error {
+	// Avoid multiple unnecessary resource updates and reconciler looping
+	// due to creationTimestamp set to `null` on some resources.
+	var err error
+	*manifest, err = manifest.Transform(func(u *unstructured.Unstructured) error {
+		u.SetCreationTimestamp(metav1.Time{})
+		return nil
+	})
+	return err
 }
