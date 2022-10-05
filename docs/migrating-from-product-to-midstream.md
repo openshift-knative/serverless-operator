@@ -15,7 +15,7 @@ oc delete subscriptions.operators.coreos.com -n openshift-serverless serverless-
 # KnativeEventing, and KnativeKafka resources won't work but Knative components will be up and running as previously.
 oc delete csv -n openshift-serverless serverless-operator.v1.24.0
 
-# 3. delete some jobs that the new operator installation cannot modify (immutable image)
+# 3. delete some jobs that the new operator installation cannot modify (immutable image) - don't worry they will be recreated
 oc delete job -n knative-eventing kafka-controller-post-install-1.24.0              --ignore-not-found
 oc delete job -n knative-eventing knative-kafka-storage-version-migrator-1.24.0     --ignore-not-found
 oc delete job -n knative-eventing storage-version-migration-eventing-eventing-1.3.2 --ignore-not-found
