@@ -15,6 +15,8 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,9 +78,13 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		}})
 	}
 
+	apiExtensionClient, _ := apiextension.NewForConfig(mgr.GetConfig())
+	apiExtensionClientV1 := apiExtensionClient.ApiextensionsV1()
+
 	return &ReconcileKnativeServing{
-		client: client,
-		scheme: mgr.GetScheme(),
+		apiExtensionV1Client: apiExtensionClientV1,
+		client:               client,
+		scheme:               mgr.GetScheme(),
 	}
 }
 
@@ -133,7 +139,9 @@ type ReconcileKnativeServing struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
-	scheme *runtime.Scheme
+	// Client to manage crds directly
+	apiExtensionV1Client apiextensionv1.ApiextensionsV1Interface
+	scheme               *runtime.Scheme
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -323,6 +331,13 @@ func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.K
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
 func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operatorv1beta1.KnativeServing) error {
+	// Skip installing console cli download if there are no related CRDs available eg. cluster is installed without console
+	if _, err := r.apiExtensionV1Client.CustomResourceDefinitions().Get(context.Background(), "consoleclidownloads.console.openshift.io", metav1.GetOptions{}); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+	}
 	return consoleclidownload.Apply(instance, r.client, r.scheme)
 }
 
