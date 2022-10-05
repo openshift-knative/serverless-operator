@@ -1,6 +1,8 @@
-Migration from OpenShift Serverless operator 1.24 installed using product catalog to the same version using the midstream catalog:
+Migration from OpenShift Serverless operator installed using product catalog to the same version using the midstream catalog:
 
-Note: This document is Knative Eventing and Kafka specific.
+Notes: 
+- This document is Knative Eventing and Kafka specific.
+- Instructions here are for 1.24 of the operator. While procedure is same for other versions, the version numbers and job names will be different.
 
 ```shell
 
