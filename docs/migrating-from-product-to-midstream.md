@@ -16,9 +16,10 @@ oc delete subscriptions.operators.coreos.com -n openshift-serverless serverless-
 oc delete csv -n openshift-serverless serverless-operator.v1.24.0
 
 # 3. delete some jobs that the new operator installation cannot modify (immutable image) - don't worry they will be recreated
-oc delete job -n knative-eventing kafka-controller-post-install-1.24.0              --ignore-not-found
-oc delete job -n knative-eventing knative-kafka-storage-version-migrator-1.24.0     --ignore-not-found
-oc delete job -n knative-eventing storage-version-migration-eventing-eventing-1.3.2 --ignore-not-found
+# Note: there might be additional jobs, depending on the version of the operator you are migrating from
+oc delete job -n knative-eventing --selector='app=kafka-controller-post-install'          --ignore-not-found
+oc delete job -n knative-eventing --selector='app=knative-kafka-storage-version-migrator' --ignore-not-found
+oc delete job -n knative-eventing --selector='app=storage-version-migration-eventing'     --ignore-not-found
 
 # 4. create catalogSource for OpenShift Serverless midstream 1.24
 cat <<EOF | oc apply -f -
