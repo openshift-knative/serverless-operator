@@ -341,6 +341,13 @@ spec:
               verbs:
                 - "*"
             - apiGroups:
+                - config.openshift.io
+              resources:
+                - clusteroperators
+                - clusteroperators/status
+              verbs:
+                - "*"
+            - apiGroups:
                 - route.openshift.io
               resources:
                 - routes

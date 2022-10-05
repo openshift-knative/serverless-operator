@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -26,14 +27,18 @@ var (
 	log               = common.Log.WithName("consoleclidownload")
 )
 
-// Apply installs kn ConsoleCLIDownload and its required resources
-func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+// Apply installs kn ConsoleCLIDownload and its required resources when applicable
+func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client) error {
+	// Install the cli download route even if there is no console available to allow fetching the related binaries
 	route, err := reconcileKnConsoleCLIDownloadRoute(apiclient, instance)
 	if err != nil {
 		return err
 	}
-
-	return reconcileKnConsoleCLIDownload(apiclient, instance, route)
+	// If console is installed install cdd resources
+	if consoleutil.IsConsoleInstalled() {
+		return reconcileKnConsoleCLIDownload(apiclient, instance, route)
+	}
+	return nil
 }
 
 func reconcileKnConsoleCLIDownloadRoute(apiclient client.Client, instance *operatorv1beta1.KnativeServing) (*routev1.Route, error) {
@@ -109,9 +114,12 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1
 
 // Delete deletes kn ConsoleCLIDownload CO and respective deployment resources
 func Delete(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
-	log.Info("Deleting kn ConsoleCLIDownload CO")
-	if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", instance)); err != nil && !apierrors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
+	// If console is not installed skip deleting cdd resources
+	if consoleutil.IsConsoleInstalled() {
+		log.Info("Deleting kn ConsoleCLIDownload CO")
+		if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", instance)); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
+		}
 	}
 
 	log.Info("Deleting kn ConsoleCLIDownload Route")

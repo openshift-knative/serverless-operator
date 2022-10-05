@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
+	configv1 "github.com/openshift/api/config/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -70,6 +73,39 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	c, err := controller.New("knativeeventing-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
+	}
+
+	if !consoleutil.IsConsoleInstalled() {
+		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+			if obj.GetName() == consoleutil.ConsoleClusterOperatorName {
+				log.Info("Eventing, processing crd request", "name", obj.GetName())
+				co := &configv1.ClusterOperator{}
+				if err = r.(*ReconcileKnativeEventing).client.Get(context.Background(), client.ObjectKey{Namespace: "", Name: consoleutil.ConsoleClusterOperatorName}, co); err != nil {
+					return nil
+				}
+				if !consoleutil.IsClusterOperatorAvailable(co.Status) {
+					return nil
+				}
+				consoleutil.SetConsoleToInstalledStatus()
+				_ = health.InstallHealthDashboard(r.(*ReconcileKnativeEventing).client)
+				list := &operatorv1beta1.KnativeEventingList{}
+				// At this point we know that console is available and try to find if there is an Eventing instance installed
+				// and trigger a reconciliation. If there is no instance do nothing as from now on reconciliation loop will do what is needed
+				// when a new instance is created. In case an instance is deleted we do nothing. We read from cache so the call is cheap.
+				if err = r.(*ReconcileKnativeEventing).client.List(context.Background(), list); err != nil {
+					return nil
+				}
+				if len(list.Items) > 0 {
+					return []reconcile.Request{{
+						NamespacedName: types.NamespacedName{Namespace: list.Items[0].Namespace, Name: list.Items[0].Name},
+					}}
+				}
+			}
+			return nil
+		})
+		if err = c.Watch(&source.Kind{Type: &configv1.ClusterOperator{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+			return err
+		}
 	}
 
 	// Watch for changes to primary resource KnativeEventing
@@ -157,8 +193,11 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *operatorv1beta1.Kn
 
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1beta1.KnativeEventing) error {
-	log.Info("Installing Eventing Dashboards")
-	return dashboards.Apply("eventing", instance, r.client)
+	if consoleutil.IsConsoleInstalled() {
+		log.Info("Installing Eventing Dashboards")
+		return dashboards.Apply("eventing", instance, r.client)
+	}
+	return nil
 }
 
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
@@ -171,9 +210,11 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 		return nil
 	}
 	log.Info("Running cleanup logic")
-	log.Info("Deleting eventing dashboards")
-	if err := dashboards.Delete("eventing", instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)
+	if consoleutil.IsConsoleInstalled() {
+		log.Info("Deleting eventing dashboards")
+		if err := dashboards.Delete("eventing", instance, r.client); err != nil {
+			return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)
+		}
 	}
 	// The above might take a while, so we refetch the resource again in case it has changed.
 	refetched := &operatorv1beta1.KnativeEventing{}

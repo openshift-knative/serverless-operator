@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,6 +20,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/rest"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
+	configv1 "github.com/openshift/api/config/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -166,8 +171,17 @@ func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := health.InstallHealthDashboard(cl); err != nil {
-		return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+	co := &configv1.ClusterOperator{}
+	if err = cl.Get(context.Background(), client.ObjectKey{Namespace: "", Name: consoleutil.ConsoleClusterOperatorName}, co); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to fetch clusteroperator console: %w", err)
+		}
+	}
+	if consoleutil.IsClusterOperatorAvailable(co.Status) {
+		consoleutil.SetConsoleToInstalledStatus()
+		if err := health.InstallHealthDashboard(cl); err != nil {
+			return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+		}
 	}
 	return nil
 }
