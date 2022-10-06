@@ -10,6 +10,7 @@ import (
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,13 +27,20 @@ var (
 	log               = common.Log.WithName("consoleclidownload")
 )
 
-// Apply installs kn ConsoleCLIDownload and its required resources
-func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+// Apply installs kn ConsoleCLIDownload and its required resources when applicable
+func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client, apiExtensionV1Client apiextensionv1.ApiextensionsV1Interface) error {
+	// Install the cli download route even if there is no console available to allow fetching the related binaries
 	route, err := reconcileKnConsoleCLIDownloadRoute(apiclient, instance)
 	if err != nil {
 		return err
 	}
-
+	// Skip installing console cli download resources if there are no related CRDs available eg. cluster is installed without console
+	if _, err = apiExtensionV1Client.CustomResourceDefinitions().Get(context.Background(), "consoleclidownloads.console.openshift.io", metav1.GetOptions{}); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+	}
 	return reconcileKnConsoleCLIDownload(apiclient, instance, route)
 }
 

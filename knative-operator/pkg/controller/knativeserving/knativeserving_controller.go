@@ -331,14 +331,7 @@ func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.K
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
 func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operatorv1beta1.KnativeServing) error {
-	// Skip installing console cli download if there are no related CRDs available eg. cluster is installed without console
-	if _, err := r.apiExtensionV1Client.CustomResourceDefinitions().Get(context.Background(), "consoleclidownloads.console.openshift.io", metav1.GetOptions{}); err != nil {
-		if errors.IsNotFound(err) {
-			return nil
-		}
-		return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
-	}
-	return consoleclidownload.Apply(instance, r.client, r.scheme)
+	return consoleclidownload.Apply(instance, r.client, r.apiExtensionV1Client)
 }
 
 // installDashboard installs dashboard for OpenShift webconsole
