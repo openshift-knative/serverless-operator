@@ -14,6 +14,7 @@ serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-servi
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
+kn_func_socat="quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
 
 function default_knative_serving_images() {
   local serving
@@ -135,6 +136,9 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
+image 'KN_CLIENT'                "${registry}/knative-v$(metadata.get dependencies.cli):knative-client"
+image 'KN_PLUGIN_FUNC_SOCAT'     "${kn_func_socat}"
+
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
