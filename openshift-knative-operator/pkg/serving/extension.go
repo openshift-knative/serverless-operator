@@ -113,7 +113,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	images := common.ImageMapFromEnvironment(os.Environ())
 	ks.Spec.Registry.Override = images
 	ks.Spec.Registry.Default = images["default"]
-	common.Configure(&ks.Spec.CommonSpec, "deployment", "queueSidecarImage", images["queue-proxy"])
+	common.Configure(&ks.Spec.CommonSpec, "deployment", "queue-sidecar-image", images["queue-proxy"])
 
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
