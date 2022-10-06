@@ -2,6 +2,7 @@ package knativeserving
 
 import (
 	"context"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"os"
 	"testing"
 
@@ -13,8 +14,6 @@ import (
 	consolev1 "github.com/openshift/api/console/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apisapiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	apiextensionfake "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -126,16 +125,8 @@ func TestExtraResourcesReconcile(t *testing.T) {
 			ns := &dashboardNamespace
 
 			cl := fake.NewClientBuilder().WithObjects(ks, ingress, ns, &servingNamespace).Build()
-
-			cldCrd := &apisapiextensionv1.CustomResourceDefinition{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "consoleclidownloads.console.openshift.io",
-				},
-			}
-
-			apifake := apiextensionfake.NewSimpleClientset().ApiextensionsV1()
-			_, _ = apifake.CustomResourceDefinitions().Create(context.Background(), cldCrd, metav1.CreateOptions{})
-			r := &ReconcileKnativeServing{client: cl, apiExtensionV1Client: apifake, scheme: scheme.Scheme}
+			consoleclidownload.ConsoleInstalled.Store(true)
+			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
 			if _, err := r.Reconcile(context.Background(), defaultRequest); err != nil {

@@ -118,9 +118,21 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	gvkToResource := map[schema.GroupVersionKind]client.Object{
-		consolev1.GroupVersion.WithKind("ConsoleCLIDownload"): &consolev1.ConsoleCLIDownload{},
-		routev1.GroupVersion.WithKind("Route"):                &routev1.Route{},
+		routev1.GroupVersion.WithKind("Route"): &routev1.Route{},
 	}
+
+	// If console is installed add the ccd resource watcher, otherwise remove it avoid manager exiting due to kind not found.
+	// If we install the console later, this pod needs to be restarted as dynamically adding a watcher won't help since Serving reconciliation may not happen.
+	// Since console cannot be uninstalled let's make this known for future reconciliations to skip fetching the crds.
+	if _, err = r.(*ReconcileKnativeServing).apiExtensionV1Client.CustomResourceDefinitions().Get(context.Background(), "consoleclidownloads.console.openshift.io", metav1.GetOptions{}); err == nil {
+		gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
+		consoleclidownload.ConsoleInstalled.Store(true)
+	} else {
+		if !errors.IsNotFound(err) {
+			return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+		}
+	}
+
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
@@ -331,7 +343,7 @@ func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.K
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
 func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operatorv1beta1.KnativeServing) error {
-	return consoleclidownload.Apply(instance, r.client, r.apiExtensionV1Client)
+	return consoleclidownload.Apply(instance, r.client)
 }
 
 // installDashboard installs dashboard for OpenShift webconsole
