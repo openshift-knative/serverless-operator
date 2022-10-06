@@ -3891,7 +3891,7 @@ data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
   # TODO: switch to 'queue-sidecar-image' after 0.27
-  queueSidecarImage: TO_BE_REPLACED
+  queue-sidecar-image: TO_BE_REPLACED
   _example: |-
     ################################
     #                              #

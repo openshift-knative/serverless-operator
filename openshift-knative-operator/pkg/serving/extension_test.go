@@ -509,7 +509,7 @@ func ks(mods ...func(*operatorv1beta1.KnativeServing)) *operatorv1beta1.KnativeS
 				},
 				Config: base.ConfigMapData{
 					"deployment": map[string]string{
-						"queueSidecarImage": "baz",
+						"queue-sidecar-image": "baz",
 					},
 					"domain": map[string]string{
 						"routing.example.com": "",
