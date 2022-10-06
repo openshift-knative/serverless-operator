@@ -2,12 +2,12 @@ package knativeserving
 
 import (
 	"context"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	configv1 "github.com/openshift/api/config/v1"
