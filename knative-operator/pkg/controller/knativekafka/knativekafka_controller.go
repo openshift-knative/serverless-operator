@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -55,6 +56,8 @@ var (
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
+
+	dependentConfigMaps = sets.NewString("config-tracing", "kafka-config-logging")
 )
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
@@ -143,7 +146,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(&source.Kind{Type: t}, globalResync(context.Background(), r))
+		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, dependentConfigMaps))
 		if err != nil {
 			return err
 		}
@@ -152,12 +155,18 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	return nil
 }
 
-func globalResync(ctx context.Context, r *ReconcileKnativeKafka) handler.EventHandler {
+func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, names sets.String) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
-		systemNamespace := os.Getenv(common.NamespaceEnvKey)
-		if object.GetNamespace() != systemNamespace {
+		ns := "knative-eventing"
+		if object.GetNamespace() != ns || !names.Has(object.GetName()) {
 			return nil
 		}
+
+		logger.Info("Global resync",
+			"object.namespace", object.GetNamespace(),
+			"object.name", object.GetName(),
+		)
+
 		kks := &serverlessoperatorv1alpha1.KnativeKafkaList{}
 		if err := r.client.List(ctx, kks); err != nil {
 			log.Error(err, "failed to list KnativeKafka objects")
@@ -319,7 +328,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
 		socommon.VersionedJobNameTransform(),
-		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
+		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, dependentConfigMaps),
 		rbacProxyTranform,
 	)
 	if err != nil {
