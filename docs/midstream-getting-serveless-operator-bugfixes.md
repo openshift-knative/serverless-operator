@@ -19,6 +19,8 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
 
 ## 3. Execute/Resolution
 
+### 3.1. Update Serverless operator images
+
 1. Get the Serverless Operator images used in the OpenShift cluster right now, for later comparison:
   ```shell
   > kubectl get pods -n openshift-serverless -o jsonpath='{range .items[*]}{"\n"}{.metadata.name}{": "}{range .status.containerStatuses[*]}{.imageID}{end}{end}' | sort 
@@ -34,7 +36,11 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
   pod "knative-operator-67c4958cc6-zg8b9" deleted
   ```
 
-3. If using Knative Serving, delete Knative Serving control plane replicasets. They will be recreated by the operator:
+### 3.2. Cleaning up Knative Serving control plane
+
+**Note: This step is only required if you are using Knative Serving.**
+
+1. Delete Knative Serving control plane replicasets. They will be recreated by the operator: 
   ```shell
   > kubectl delete replicasets.apps -n knative-serving -l 'app in (controller, webhook)'
   replicaset.apps "controller-57466669cf" deleted
@@ -42,19 +48,23 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
   replicaset.apps "webhook-6cb8b848bd" deleted
   ```
 
-4. If using Knative Serving, delete jobs as their images cannot be mutated:
+2. Delete jobs as their images cannot be mutated:
   ```shell
   > kubectl delete jobs -n knative-serving -l 'app in (storage-version-migration-serving)'
   job.batch "storage-version-migration-serving-serving-1.3.0" deleted
   ```
 
-5. If using Knative Serving, delete Knative Serving Ingress control plane replicasets. They will be recreated by the operator:
+3. Delete Knative Serving Ingress control plane replicasets. They will be recreated by the operator:
   ```shell
   > kubectl delete replicasets.apps -n knative-serving-ingress -l 'app in (net-kourier-controller)'
   replicaset.apps "net-kourier-controller-84d4b75589" deleted
   ```
 
-6. If using Knative Eventing and Knative Kafka components, delete Knative Eventing and Knative Kafka control plane replicasets. They will be recreated by the operator:
+### 3.3. Cleaning up Knative Eventing and Knative Kafka control plane
+
+**Note: This step is only required if you are using Knative Eventing and/or Knative Kafka components.**
+
+1. Delete Knative Eventing and Knative Kafka control plane replicasets. They will be recreated by the operator:
   ```shell
   > kubectl delete replicasets.apps -n knative-eventing -l 'app in (kafka-controller, eventing-controller, eventing-webhook, kafka-webhook-eventing)'
   replicaset.apps "eventing-controller-5999f874f8" deleted
@@ -63,15 +73,12 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
   replicaset.apps "kafka-webhook-eventing-8444b7ccb4" deleted
   ```
 
-7. If using Knative Eventing and Knative Kafka components, delete jobs as their images cannot be mutated:
+2. Delete jobs as their images cannot be mutated:
   ```shell
   > kubectl delete jobs -n knative-eventing -l 'app in (kafka-controller-post-install, knative-kafka-storage-version-migrator, storage-version-migration-eventing)'
   job.batch "kafka-controller-post-install-1.24.0" deleted
   job.batch "knative-kafka-storage-version-migrator-1.24.0" deleted
   ```
-
-8. Wait until the pods are recreated and the new image is used.
-  
 
 ## 4. Validate
 
