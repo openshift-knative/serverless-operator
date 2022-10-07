@@ -1,4 +1,4 @@
-# Getting bugfixes for Knative Eventing and Knative Kafka components when using midstream Serverless Operator
+# Getting bugfixes for midstream Serverless Operator
 
 ## 1. Introduction
 
@@ -9,13 +9,13 @@ When we need to fix a bug, we overwrite the existing image with a new one.
 
 For example, when we identify a bug in 1.24 version, we change the code in 1.24 branch and the CI/CD overwrites the `1.24.0` image.
 
-NOTE: instructions are for Knative Eventing and Knative Eventing Kafka components.
-
 ## 2. Prerequisites
 
 - Usage of the midstream Serverless Operator and not the fully released product
 - Access to OCP cluster with installed Serverless Operator
-- Permission to delete pods and replicasets in `openshift-serverless` and `knative-eventing` namespaces.
+- Permission to delete pods and replicasets in `openshift-serverless` namespace.
+- If using Knative Eventing and Knative Kafka components, permission to delete pods and replicasets in `knative-eventing` namespace.
+- If using Knative Serving, permission to delete pods and replicasets in `knative-serving`, `knative-serving-ingress` namespaces.
 
 ## 3. Execute/Resolution
 
@@ -34,17 +34,43 @@ NOTE: instructions are for Knative Eventing and Knative Eventing Kafka component
   pod "knative-operator-67c4958cc6-zg8b9" deleted
   ```
 
-3. Delete Knative control plane replicasets. They will be recreated by the operator:
+3. If using Knative Serving, delete Knative Serving control plane replicasets. They will be recreated by the operator:
+  ```shell
+  > kubectl delete replicasets.apps -n knative-serving -l 'app in (controller, webhook)'
+  replicaset.apps "controller-57466669cf" deleted
+  replicaset.apps "controller-7bb7748cd8" deleted
+  replicaset.apps "webhook-6cb8b848bd" deleted
   ```
+
+4. If using Knative Serving, delete jobs as their images cannot be mutated:
+  ```shell
+  > kubectl delete jobs -n knative-serving -l 'app in (storage-version-migration-serving)'
+  job.batch "storage-version-migration-serving-serving-1.3.0" deleted
+  ```
+
+5. If using Knative Serving, delete Knative Serving Ingress control plane replicasets. They will be recreated by the operator:
+  ```shell
+  > kubectl delete replicasets.apps -n knative-serving-ingress -l 'app in (net-kourier-controller)'
+  replicaset.apps "net-kourier-controller-84d4b75589" deleted
+  ```
+
+6. If using Knative Eventing and Knative Kafka components, delete Knative Eventing and Knative Kafka control plane replicasets. They will be recreated by the operator:
+  ```shell
   > kubectl delete replicasets.apps -n knative-eventing -l 'app in (kafka-controller, eventing-controller, eventing-webhook, kafka-webhook-eventing)'
+  replicaset.apps "eventing-controller-5999f874f8" deleted
+  replicaset.apps "eventing-webhook-86dd7d855b" deleted
+  replicaset.apps "kafka-controller-6bd78d9f4f" deleted
+  replicaset.apps "kafka-webhook-eventing-8444b7ccb4" deleted
   ```
 
-4. Delete jobs that are not needed anymore:
-  ```
+7. If using Knative Eventing and Knative Kafka components, delete jobs as their images cannot be mutated:
+  ```shell
   > kubectl delete jobs -n knative-eventing -l 'app in (kafka-controller-post-install, knative-kafka-storage-version-migrator, storage-version-migration-eventing)'
+  job.batch "kafka-controller-post-install-1.24.0" deleted
+  job.batch "knative-kafka-storage-version-migrator-1.24.0" deleted
   ```
 
-5. Wait until the pods are recreated and the new image is used.
+8. Wait until the pods are recreated and the new image is used.
   
 
 ## 4. Validate
@@ -58,6 +84,49 @@ NOTE: instructions are for Knative Eventing and Knative Eventing Kafka component
   knative-operator-67c4958cc6-vbgkk: registry.ci.openshift.org/knative/openshift-serverless-v1.24.0@sha256:different-hash
   ```
 
+2. If using Knative Serving, make sure `KnativeServing` CR is `Ready`:
+  ```shell
+  > kubectl get knativeserving -n knative-serving knative-serving -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  True
+  ```
+
+3. If using Knative Eventing and Knative Kafka components, make sure `KnativeEventing` and `KnativeKafka` CRs are `Ready`:
+  ```shell
+  > kubectl get knativeeventing -n knative-eventing knative-eventing -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  True
+  > kubectl get knativekafka    -n knative-eventing knative-kafka    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  True
+  ```
+
 ## 5. Troubleshooting
 
-N/A
+* `KnativeServing` / `KnativeEventing`/ `KnativeKafka` CRs don't get ready:
+  * Make sure you give the operators enough time to reconcile the CRs and recreate images. It can take up to 5 minutes.
+  * Watch conditions of the CRs and check for errors. If there are errors, check the logs of the operator pods.
+    ```shell
+    # KnativeServing
+    > kubectl get knativeserving -n knative-serving knative-serving -o jsonpath="{range .status.conditions[*]} LastTransitionTime:{.lastTransitionTime} Type:{.type} Status:{.status}  Reason:{.reason}{'\n'}{end}"
+    LastTransitionTime:2022-10-07T11:45:35Z Type:DependenciesInstalled Status:True  Reason:
+    LastTransitionTime:2022-10-07T11:46:10Z Type:DeploymentsAvailable Status:True  Reason:
+    LastTransitionTime:2022-10-07T11:45:35Z Type:InstallSucceeded Status:True  Reason:
+    LastTransitionTime:2022-10-07T11:46:10Z Type:Ready Status:True  Reason:
+    LastTransitionTime:2022-10-07T11:45:09Z Type:VersionMigrationEligible Status:True  Reason:
+    
+    # KnativeEventing
+    > kubectl get knativeeventing -n knative-eventing knative-eventing -o jsonpath="{range .status.conditions[*]} LastTransitionTime:{.lastTransitionTime} Type:{.type} Status:{.status}  Reason:{.reason}{'\n'}{end}"
+    LastTransitionTime:2022-10-07T07:16:58Z Type:DependenciesInstalled Status:True  Reason:
+    LastTransitionTime:2022-10-07T07:17:28Z Type:DeploymentsAvailable Status:True  Reason:
+    LastTransitionTime:2022-10-07T07:16:58Z Type:InstallSucceeded Status:True  Reason:
+    LastTransitionTime:2022-10-07T07:17:28Z Type:Ready Status:True  Reason:
+    LastTransitionTime:2022-10-07T07:16:29Z Type:VersionMigrationEligible Status:True  Reason:
+    
+    # KnativeKafka
+    > kubectl get knativekafka -n knative-eventing knative-kafka -o jsonpath="{range .status.conditions[*]} LastTransitionTime:{.lastTransitionTime} Type:{.type} Status:{.status}  Reason:{.reason}{'\n'}{end}"
+    LastTransitionTime:2022-10-07T11:49:46Z Type:DeploymentsAvailable Status:True  Reason:
+    LastTransitionTime:2022-10-07T07:16:31Z Type:InstallSucceeded Status:True  Reason:
+    LastTransitionTime:2022-10-07T11:49:46Z Type:Ready Status:True  Reason:
+    ```
+  * Check operator logs:
+  ```shell
+  > kubectl logs -n openshift-serverless -l 'name in (knative-operator, knative-openshift, knative-openshift-ingress)'
+  ```
