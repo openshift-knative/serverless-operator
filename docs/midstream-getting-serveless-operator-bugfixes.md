@@ -13,7 +13,7 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
 
 - Usage of the midstream Serverless Operator and not the fully released product
 - Access to OCP cluster with installed Serverless Operator
-- Permission to delete pods and replicasets in `openshift-serverless` namespace.
+- Permission to restart deployments and delete replicasets in `openshift-serverless` namespace.
 - If using Knative Eventing and Knative Kafka components, permission to delete pods and replicasets in `knative-eventing` namespace.
 - If using Knative Serving, permission to delete pods and replicasets in `knative-serving`, `knative-serving-ingress` namespaces.
 
@@ -28,12 +28,12 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
   knative-openshift-ingress-78766bdc5c-zfzfl: registry.ci.openshift.org/knative/openshift-serverless-v1.24.0@sha256:7a417307328f76462560c5d4f814566135e59fc1b20758be720d090047ec682e
   knative-operator-65487bf7fc-vbgkk: registry.ci.openshift.org/knative/openshift-serverless-v1.24.0@sha256:589735abf033c61247e594f3fba9e7d87ac1093d1ebc0abe73f825944fe5e465
   ```
-2. Delete Serverless Operator pods to force them to be recreated with the new image (we explicitly set `imagePullPolicy` to `Always`):
+2. Restart Serverless Operator deployments to force the pods to be recreated with the new image (we explicitly set `imagePullPolicy` to `Always`):
   ```shell
-  > kubectl delete pods -n openshift-serverless -l 'name in (knative-operator, knative-openshift, knative-openshift-ingress)'
-  pod "knative-openshift-555d4d98d7-8ns5b" deleted
-  pod "knative-openshift-ingress-7bc7c7b47b-gc5c9" deleted
-  pod "knative-operator-67c4958cc6-zg8b9" deleted
+  > kubectl rollout restart deployment -n openshift-serverless -l "olm.owner.namespace=openshift-serverless" -l "olm.owner.kind"="ClusterServiceVersion
+  deployment.apps/knative-openshift restarted
+  deployment.apps/knative-openshift-ingress restarted
+  deployment.apps/knative-operator restarted
   ```
 
 ### 3.2. Cleaning up Knative Serving control plane
