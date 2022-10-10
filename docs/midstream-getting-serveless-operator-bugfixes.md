@@ -30,7 +30,7 @@ For example, when we identify a bug in 1.24 version, we change the code in 1.24 
   ```
 2. Restart Serverless Operator deployments to force the pods to be recreated with the new image (we explicitly set `imagePullPolicy` to `Always`):
   ```shell
-  > kubectl rollout restart deployment -n openshift-serverless -l "olm.owner.namespace=openshift-serverless" -l "olm.owner.kind"="ClusterServiceVersion
+  > kubectl rollout restart deployment -n openshift-serverless -l "olm.owner.namespace=openshift-serverless" -l "olm.owner.kind"="ClusterServiceVersion"
   deployment.apps/knative-openshift restarted
   deployment.apps/knative-openshift-ingress restarted
   deployment.apps/knative-operator restarted
