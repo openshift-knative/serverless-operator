@@ -10,11 +10,14 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	"go.uber.org/atomic"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apisextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -56,7 +59,10 @@ const (
 	requiredNsEnvName = "REQUIRED_SERVING_NAMESPACE"
 )
 
-var log = common.Log.WithName("controller")
+var (
+	cliDownloadWatchSet = atomic.NewBool(false)
+	log                 = common.Log.WithName("controller")
+)
 
 // Add creates a new KnativeServing Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -80,7 +86,6 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 	apiExtensionClient, _ := apiextension.NewForConfig(mgr.GetConfig())
 	apiExtensionClientV1 := apiExtensionClient.ApiextensionsV1()
-
 	return &ReconcileKnativeServing{
 		apiExtensionV1Client: apiExtensionClientV1,
 		client:               client,
@@ -122,14 +127,31 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// If console is installed add the ccd resource watcher, otherwise remove it avoid manager exiting due to kind not found.
-	// If we install the console later, this pod needs to be restarted as dynamically adding a watcher won't help since Serving reconciliation may not happen.
-	// Since console cannot be uninstalled let's make this known for future reconciliations to skip fetching the crds.
-	if _, err = r.(*ReconcileKnativeServing).apiExtensionV1Client.CustomResourceDefinitions().Get(context.Background(), "consoleclidownloads.console.openshift.io", metav1.GetOptions{}); err == nil {
+	if common.ConsoleInstalled.Load() {
 		gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
-		consoleclidownload.ConsoleInstalled.Store(true)
 	} else {
-		if !errors.IsNotFound(err) {
-			return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+			if obj.GetName() == consoleclidownload.CLIDownloadCRDName {
+				log.Info("Serving, processing crd request", "name", obj.GetName())
+				common.ConsoleInstalled.Store(true)
+				_ = health.InstallHealthDashboard(r.(*ReconcileKnativeServing).client)
+				list := &operatorv1beta1.KnativeServingList{}
+				// At this point we know that console is available and try to find if there is a Serving instance installed
+				// and trigger a reconciliation. If there is no instance do nothing as from now on reconciliation loop will do what is needed
+				// when a new instance is created. In case an instance is deleted we do nothing. We read from cache so the call is cheap.
+				if err = r.(*ReconcileKnativeServing).client.List(context.Background(), list); err != nil {
+					return nil
+				}
+				if len(list.Items) > 0 {
+					return []reconcile.Request{{
+						NamespacedName: types.NamespacedName{Namespace: list.Items[0].Namespace, Name: list.Items[0].Name},
+					}}
+				}
+			}
+			return nil
+		})
+		if err = c.Watch(&source.Kind{Type: &apisextensionv1.CustomResourceDefinition{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+			return err
 		}
 	}
 
@@ -139,7 +161,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return err
 		}
 	}
-
+	r.(*ReconcileKnativeServing).c = &c
 	return nil
 }
 
@@ -154,6 +176,7 @@ type ReconcileKnativeServing struct {
 	// Client to manage crds directly
 	apiExtensionV1Client apiextensionv1.ApiextensionsV1Interface
 	scheme               *runtime.Scheme
+	c                    *controller.Controller
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -173,6 +196,14 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 
 	if original.GetDeletionTimestamp() != nil {
 		return reconcile.Result{}, r.delete(original)
+	}
+
+	// If previously not set let's add a watch for ConsoleCLIDownload
+	if common.ConsoleInstalled.Load() && !cliDownloadWatchSet.Load() {
+		if err = (*r.c).Watch(&source.Kind{Type: &consolev1.ConsoleCLIDownload{}}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
+			return reconcile.Result{}, err
+		}
+		cliDownloadWatchSet.Store(true)
 	}
 
 	instance := original.DeepCopy()
@@ -338,7 +369,10 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1beta1.K
 }
 
 func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.KnativeServing) error {
-	return quickstart.Apply(r.client)
+	if common.ConsoleInstalled.Load() {
+		return quickstart.Apply(r.client)
+	}
+	return nil
 }
 
 // installKnConsoleCLIDownload creates CR for kn CLI download link
@@ -348,8 +382,11 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operator
 
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *operatorv1beta1.KnativeServing) error {
-	log.Info("Installing Serving Dashboards")
-	return dashboards.Apply("serving", instance, r.client)
+	if common.ConsoleInstalled.Load() {
+		log.Info("Installing Serving Dashboards")
+		return dashboards.Apply("serving", instance, r.client)
+	}
+	return nil
 }
 
 // general clean-up, mostly resources in different namespaces from servingv1alpha1.KnativeServing.
@@ -368,14 +405,16 @@ func (r *ReconcileKnativeServing) delete(instance *operatorv1beta1.KnativeServin
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
 	}
 
-	log.Info("Deleting Serving dashboards")
-	if err := dashboards.Delete("serving", instance, r.client); err != nil {
-		return fmt.Errorf("failed to delete dashboard configmap: %w", err)
-	}
+	if common.ConsoleInstalled.Load() {
+		log.Info("Deleting Serving dashboards")
+		if err := dashboards.Delete("serving", instance, r.client); err != nil {
+			return fmt.Errorf("failed to delete dashboard configmap: %w", err)
+		}
 
-	log.Info("Deleting quickstart")
-	if err := quickstart.Delete(r.client); err != nil {
-		return fmt.Errorf("failed to delete quickstarts: %w", err)
+		log.Info("Deleting quickstart")
+		if err := quickstart.Delete(r.client); err != nil {
+			return fmt.Errorf("failed to delete quickstarts: %w", err)
+		}
 	}
 
 	// The above might take a while, so we refetch the resource again in case it has changed.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
@@ -18,7 +20,11 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -166,8 +172,21 @@ func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 		return fmt.Errorf("failed to setup monitoring resources: %w", err)
 	}
 
-	if err := health.InstallHealthDashboard(cl); err != nil {
-		return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+	apiExtensionClient, err := apiextension.NewForConfig(cfg)
+	if err != nil {
+		return err
 	}
+
+	if _, err = apiExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), consoleclidownload.CLIDownloadCRDName, metav1.GetOptions{}); err == nil {
+		common.ConsoleInstalled.Store(true)
+		if err := health.InstallHealthDashboard(cl); err != nil {
+			return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+		}
+	} else {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+		}
+	}
+
 	return nil
 }

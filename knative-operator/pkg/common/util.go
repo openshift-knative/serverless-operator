@@ -4,10 +4,13 @@ import (
 	"sort"
 	"strings"
 
+	"go.uber.org/atomic"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mf "github.com/manifestival/manifestival"
@@ -16,7 +19,10 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var Log = logf.Log.WithName("knative").WithName("openshift")
+var (
+	Log              = logf.Log.WithName("knative").WithName("openshift")
+	ConsoleInstalled = atomic.NewBool(false)
+)
 
 // StringMap is a map which key and value are strings
 type StringMap map[string]string
@@ -132,4 +138,16 @@ func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind
 	}
 
 	return gvkToResource
+}
+
+type SkipPredicate struct {
+	predicate.Funcs
+}
+
+func (SkipPredicate) Delete(e event.DeleteEvent) bool {
+	return false
+}
+
+func (SkipPredicate) Update(e event.UpdateEvent) bool {
+	return false
 }

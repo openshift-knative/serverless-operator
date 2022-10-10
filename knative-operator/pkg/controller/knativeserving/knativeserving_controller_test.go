@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	configv1 "github.com/openshift/api/config/v1"
@@ -125,7 +125,6 @@ func TestExtraResourcesReconcile(t *testing.T) {
 			ns := &dashboardNamespace
 
 			cl := fake.NewClientBuilder().WithObjects(ks, ingress, ns, &servingNamespace).Build()
-			consoleclidownload.ConsoleInstalled.Store(true)
 			r := &ReconcileKnativeServing{client: cl, scheme: scheme.Scheme}
 
 			// Reconcile to initialize
@@ -136,11 +135,36 @@ func TestExtraResourcesReconcile(t *testing.T) {
 			// Check kn ConsoleCLIDownload CR
 			err := cl.Get(context.TODO(), types.NamespacedName{Name: "kn", Namespace: ""}, ccd)
 			if err != nil {
-				t.Fatalf("get: (%v)", err)
+				if !errors.IsNotFound(err) {
+					t.Fatalf("get: (%v)", err)
+				}
 			}
 
 			// Check if Serving dashboard configmap is available
 			dashboardCM := &corev1.ConfigMap{}
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					t.Fatalf("get: (%v)", err)
+				}
+			}
+
+			common.ConsoleInstalled.Store(true)
+			cliDownloadWatchSet.Store(true)
+
+			// Reconcile again
+			if _, err = r.Reconcile(context.Background(), defaultRequest); err != nil {
+				t.Fatalf("reconcile: (%v)", err)
+			}
+
+			// Check kn ConsoleCLIDownload CR
+			err = cl.Get(context.TODO(), types.NamespacedName{Name: "kn", Namespace: ""}, ccd)
+			if err != nil {
+				t.Fatalf("get: (%v)", err)
+			}
+
+			// Check if Serving dashboard configmap is available
+			dashboardCM = &corev1.ConfigMap{}
 			err = cl.Get(context.TODO(), types.NamespacedName{Name: "grafana-dashboard-definition-knative-serving-resources", Namespace: ns.Name}, dashboardCM)
 			if err != nil {
 				t.Fatalf("get: (%v)", err)
