@@ -43,6 +43,8 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   cd "$KNATIVE_EVENTING_KAFKA_BROKER_HOME"
 
+  export FIRST_EVENT_DELAY_ENABLED=false # Disable very slow test since it's already running in ekb CI
+
   # shellcheck disable=SC1091,SC1090
   source "${KNATIVE_EVENTING_KAFKA_BROKER_HOME}/openshift/e2e-common.sh"
 
