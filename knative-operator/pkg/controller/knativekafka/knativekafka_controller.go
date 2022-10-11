@@ -6,6 +6,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/go-logr/logr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	socommon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -34,10 +38,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
+
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
-	kafkaconfig "knative.dev/eventing-kafka/pkg/common/config"
 )
 
 const (
@@ -52,6 +57,8 @@ var (
 	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
+
+	dependentConfigMaps = sets.NewString("config-tracing", "kafka-config-logging")
 )
 
 type EventingKafkaConfig struct {
@@ -138,7 +145,45 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		}
 	}
 
+	// Add eventing core resources to watch
+	gvkToEventingResource := map[schema.GroupVersionKind]client.Object{
+		corev1.SchemeGroupVersion.WithKind("ConfigMap"): &corev1.ConfigMap{},
+	}
+
+	for _, t := range gvkToEventingResource {
+		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, dependentConfigMaps))
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, names sets.String) handler.EventHandler {
+	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
+		ns := "knative-eventing"
+		if object.GetNamespace() != ns || !names.Has(object.GetName()) {
+			return nil
+		}
+
+		logger.Info("Global resync",
+			"object.namespace", object.GetNamespace(),
+			"object.name", object.GetName(),
+		)
+
+		kks := &serverlessoperatorv1alpha1.KnativeKafkaList{}
+		if err := r.client.List(ctx, kks); err != nil {
+			log.Error(err, "failed to list KnativeKafka objects")
+		}
+		requests := make([]reconcile.Request, 0, len(kks.Items))
+		for _, kk := range kks.Items {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{Namespace: kk.GetNamespace(), Name: kk.GetName()},
+			})
+		}
+		return requests
+	})
 }
 
 // blank assignment to verify that ReconcileKnativeKafka implements reconcile.Reconciler
@@ -221,6 +266,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperato
 		r.configure,
 		r.ensureFinalizers,
 		r.transform,
+		removeCreationTimestamp,
 		r.apply,
 		r.checkDeployments,
 	}
@@ -629,4 +675,15 @@ func executeStages(instance *serverlessoperatorv1alpha1.KnativeKafka, manifest *
 		}
 	}
 	return nil
+}
+
+func removeCreationTimestamp(manifest *mf.Manifest, _ *serverlessoperatorv1alpha1.KnativeKafka) error {
+	// Avoid multiple unnecessary resource updates and reconciler looping
+	// due to creationTimestamp set to `null` on some resources.
+	var err error
+	*manifest, err = manifest.Transform(func(u *unstructured.Unstructured) error {
+		u.SetCreationTimestamp(metav1.Time{})
+		return nil
+	})
+	return err
 }
