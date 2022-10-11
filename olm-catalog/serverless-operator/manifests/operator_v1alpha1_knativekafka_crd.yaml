@@ -124,6 +124,20 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              logging:
+                description: Set logging configuration of the data plane
+                properties:
+                  level:
+                    description: Defines the log level. Allowed values are 'TRACE', 'DEBUG', 'INFO', 'WARN' and 'ERROR'. The default value is 'INFO'.
+                    enum:
+                      - TRACE
+                      - DEBUG
+                      - INFO
+                      - WARN
+                      - ERROR
+                    type: string
+                    default: INFO
+                type: object
           status:
             type: object
             description: 'KnativeKafkaStatus defines the observed state of KnativeKafka (from the controller).'

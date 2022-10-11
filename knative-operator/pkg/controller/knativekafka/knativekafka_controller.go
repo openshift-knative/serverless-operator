@@ -613,6 +613,14 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 			return scheme.Scheme.Convert(deployment, u, nil)
 		}
 
+		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-config-logging" {
+			log.Info("Found ConfigMap kafka-config-logging, updating it with values from spec")
+			xmlTemplate := "    <configuration>\n      <appender name=\"jsonConsoleAppender\" class=\"ch.qos.logback.core.ConsoleAppender\">\n        <encoder class=\"net.logstash.logback.encoder.LogstashEncoder\"/>\n      </appender>\n      <root level=\"" + spec.Logging.Level + "\">\n        <appender-ref ref=\"jsonConsoleAppender\"/>\n      </root>\n    </configuration>"
+			if err := unstructured.SetNestedField(u.Object, xmlTemplate, "data", "config.xml"); err != nil {
+				return err
+			}
+		}
+
 		// configure the broker itself
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-broker-config" {
 			log.Info("Found ConfigMap kafka-broker-config, updating it with values from spec")
