@@ -13,6 +13,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -192,8 +193,9 @@ func createServiceMonitorService(component string, ns string) corev1.Service {
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{{
-				Name: "https",
-				Port: 8444,
+				Name:       "https",
+				Port:       8444,
+				TargetPort: intstr.FromInt(8444),
 			}},
 			Selector: getSelectorLabels(component),
 		}}
