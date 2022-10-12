@@ -295,7 +295,7 @@ func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serve
 	// using INFO logging is reasonable default
 	if instance.Spec.Logging == nil {
 		instance.Spec.Logging = &serverlessoperatorv1alpha1.Logging{
-			Level: serverlessoperatorv1alpha1.DEFAULT_LOG_LEVEL,
+			Level: serverlessoperatorv1alpha1.DefaultLogLevel,
 		}
 	}
 

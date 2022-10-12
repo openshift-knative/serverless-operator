@@ -9,7 +9,7 @@ import (
 // KnativeKafkaSpec defines the desired state of KnativeKafka
 // +k8s:openapi-gen=true
 
-const DEFAULT_LOG_LEVEL = "INFO"
+const DefaultLogLevel = "INFO"
 
 type KnativeKafkaSpec struct {
 	// Allows configuration for KafkaBroker installation
