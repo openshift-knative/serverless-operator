@@ -1532,6 +1532,8 @@ github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141528-c59955f2388
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141528-c59955f23883/go.mod h1:RZ/b/xO0sEPL0it4Xm0kSbrhATdsND1WVQq5AcHi7ro=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220927171706-e0d47343c338 h1:zILQCPWllTYo3SkZjLj0SqlYoswguULYlhGzWryT5BM=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220927171706-e0d47343c338/go.mod h1:Sx4F2CPUMI8rgmf4cHSZlgtlcAwMyGE+G8Elc4tjfXQ=
+github.com/openshift-knative/serving v0.10.1-0.20220926120634-72a6f7ea6cfb h1:HBlpqySWMQSw5Mw7KFxFeAwSE24QUARBWndJjlH5unE=
+github.com/openshift-knative/serving v0.10.1-0.20220926120634-72a6f7ea6cfb/go.mod h1:onBQXrF0iI1i81Gb0E2SAsVXCqu+OX78M0hHdn1TPmA=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=
@@ -1544,8 +1546,6 @@ github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47 h1:+TEY29DK0Xh
 github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47/go.mod h1:u7NRAjtYVAKokiI9LouzTv4mhds8P4S1TwdVAfbjKSk=
 github.com/openshift/knative-eventing v0.99.1-0.20220926135101-4a89adaca7d1 h1:4OWKCsc9q19ElzT6y2xXgHucsR4RSuQYTm9H0l9Otjk=
 github.com/openshift/knative-eventing v0.99.1-0.20220926135101-4a89adaca7d1/go.mod h1:2qMnhFObDu9Xh8CIL+sfyQ1zwhG/Ws9VD6whNq18KDk=
-github.com/openshift/knative-serving v0.10.1-0.20220926120634-72a6f7ea6cfb h1:2O4rlRqYf4lrUM5H9gHRA0TzhfJy3pi/fb81qukEEj0=
-github.com/openshift/knative-serving v0.10.1-0.20220926120634-72a6f7ea6cfb/go.mod h1:onBQXrF0iI1i81Gb0E2SAsVXCqu+OX78M0hHdn1TPmA=
 github.com/opentracing-contrib/go-grpc v0.0.0-20191001143057-db30781987df/go.mod h1:DYR5Eij8rJl8h7gblRrOZ8g0kW1umSpKqYIBTgeDtLo=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing-contrib/go-stdlib v1.0.0/go.mod h1:qtI1ogk+2JhVPIXVc6q+NHziSmy2W5GbdQZFUHADCBU=
