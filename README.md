@@ -119,21 +119,21 @@ make release-files
      2) Knative Serving images that the current Serverless operator depends
         on are published in CI registry. This requirement is automatically met
         when the respective branch in
-        [Knative Serving](https://github.com/openshift/knative-serving) is created and its
+        [Knative Serving](https://github.com/openshift-knative/serving) is created and its
         pre-submit CI checks run at least once.
      3) The path `${GOPATH}/src/knative.dev/serving` containing
-        [Knative Serving](https://github.com/openshift/knative-serving) sources from the
+        [Knative Serving](https://github.com/openshift-knative/serving) sources from the
         desired branch. This should be checked out before running tests.
 - `make test-upstream-e2e-no-upgrade`: Installs the latest version of Serverless and
  runs Knative Serving and Knative Eventing E2E tests (without upgrades). Requirements:
      1) Running OCP cluster.
      2) Knative Serving and Knative Eventing images that the current Serverless operator depends
         on are published in CI registry. This requirement is automatically met
-        when the respective branches in [Knative Serving](https://github.com/openshift/knative-serving) and
+        when the respective branches in [Knative Serving](https://github.com/openshift-knative/serving) and
         [Knative Eventing](https://github.com/openshift/knative-eventing) are created, and their
         pre-submit CI checks run at least once.
      3) The path `${GOPATH}/src/knative.dev/serving` containing
-        [Knative Serving](https://github.com/openshift/knative-serving) sources from the desired branch. 
+        [Knative Serving](https://github.com/openshift-knative/serving) sources from the desired branch. 
         The path `${GOPATH}/src/knative.dev/eventing` containing
         [Knative Eventing](https://github.com/openshift/knative-eventing) sources from the desired branch. 
         This should be checked out before running tests.
@@ -141,7 +141,7 @@ make release-files
 #### Individual tests from knative-serving and knative-eventing
 
 There are targets for running individual tests in both
-[Knative Serving Makefile](https://github.com/openshift/knative-serving/blob/main/Makefile) and
+[Knative Serving Makefile](https://github.com/openshift-knative/serving/blob/main/Makefile) and
 [Knative Eventing Makefile](https://github.com/openshift/knative-eventing/blob/main/Makefile).
 
 Example targets that can be run from the respective repositories (these targets all requires a running OCP 

@@ -172,7 +172,7 @@ replace (
 	knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20220926135101-4a89adaca7d1
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20220504141528-c59955f23883
 	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20220927171706-e0d47343c338
-	knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20220926120634-72a6f7ea6cfb
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20220926120634-72a6f7ea6cfb
 )
 
 replace (
