@@ -8,6 +8,9 @@ import (
 
 // KnativeKafkaSpec defines the desired state of KnativeKafka
 // +k8s:openapi-gen=true
+
+const DEFAULT_LOG_LEVEL = "INFO"
+
 type KnativeKafkaSpec struct {
 	// Allows configuration for KafkaBroker installation
 	// +optional
@@ -33,7 +36,7 @@ type KnativeKafkaSpec struct {
 
 	// Set logging configuration of the data plane.
 	// +optional
-	Logging Logging `json:"logging,omitempty"`
+	Logging *Logging `json:"logging,omitempty"`
 }
 
 // KnativeKafkaStatus defines the observed state of KnativeKafka

@@ -292,6 +292,13 @@ func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serve
 		}
 	}
 
+	// using INFO logging is reasonable default
+	if instance.Spec.Logging == nil {
+		instance.Spec.Logging = &serverlessoperatorv1alpha1.Logging{
+			Level: serverlessoperatorv1alpha1.DEFAULT_LOG_LEVEL,
+		}
+	}
+
 	return nil
 }
 
@@ -615,8 +622,8 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-config-logging" {
 			log.Info("Found ConfigMap kafka-config-logging, updating it with values from spec")
-			xmlTemplate := "    <configuration>\n      <appender name=\"jsonConsoleAppender\" class=\"ch.qos.logback.core.ConsoleAppender\">\n        <encoder class=\"net.logstash.logback.encoder.LogstashEncoder\"/>\n      </appender>\n      <root level=\"" + spec.Logging.Level + "\">\n        <appender-ref ref=\"jsonConsoleAppender\"/>\n      </root>\n    </configuration>"
-			if err := unstructured.SetNestedField(u.Object, xmlTemplate, "data", "config.xml"); err != nil {
+
+			if err := unstructured.SetNestedField(u.Object, renderLoggingConfigXML(spec.Logging.Level), "data", "config.xml"); err != nil {
 				return err
 			}
 		}
@@ -677,6 +684,19 @@ func contains(array []string, name string) bool {
 		}
 	}
 	return false
+}
+
+func renderLoggingConfigXML(loglevel string) string {
+
+	xmlTemplate := `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="` + loglevel + `">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`
+	return xmlTemplate
 }
 
 func setKafkaDeployments(replicas int32) mf.Transformer {
