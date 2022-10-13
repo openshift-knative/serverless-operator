@@ -8,6 +8,9 @@ import (
 
 // KnativeKafkaSpec defines the desired state of KnativeKafka
 // +k8s:openapi-gen=true
+
+const DefaultLogLevel = "INFO"
+
 type KnativeKafkaSpec struct {
 	// Allows configuration for KafkaBroker installation
 	// +optional
@@ -30,6 +33,10 @@ type KnativeKafkaSpec struct {
 	// HighAvailability allows specification of HA control plane.
 	// +optional
 	HighAvailability *base.HighAvailability `json:"high-availability,omitempty"`
+
+	// Set logging configuration of the data plane.
+	// +optional
+	Logging *Logging `json:"logging,omitempty"`
 }
 
 // KnativeKafkaStatus defines the observed state of KnativeKafka
@@ -122,6 +129,13 @@ type Channel struct {
 	// auth configuration.
 	// +optional
 	AuthSecretName string `json:"authSecretName"`
+}
+
+type Logging struct {
+	// Defines the log level. Allowed values are 'TRACE', 'DEBUG', 'INFO', 'WARN' and 'ERROR'.
+	// The default value is 'INFO'.
+	// +optional
+	Level string `json:"level,omitempty"`
 }
 
 func init() {

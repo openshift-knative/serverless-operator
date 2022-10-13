@@ -276,6 +276,39 @@ func TestBrokerCfg(t *testing.T) {
 			},
 		},
 	}, {
+		name: "Update kafka-config-logging with ERROR logging",
+		obj: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-config-logging",
+				},
+			},
+		},
+		knativeKafka: v1alpha1.KnativeKafkaSpec{
+			Logging: &v1alpha1.Logging{Level: "ERROR"},
+		},
+		expect: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "kafka-config-logging",
+				},
+				"data": map[string]interface{}{
+					"config.xml": `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="ERROR">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+				},
+			},
+		},
+	}, {
 		name: "Do not update other configmaps",
 		obj: &unstructured.Unstructured{
 			Object: map[string]interface{}{
@@ -656,6 +689,44 @@ func TestCheckHAComponent(t *testing.T) {
 			result := contains(KafkaHAComponents, tc.deploymentName)
 			if result == tc.shouldFail {
 				t.Errorf("Got: %v, want: %v\n", result, tc.shouldFail)
+			}
+		})
+	}
+}
+
+func TestXmlConfig(t *testing.T) {
+	cases := []struct {
+		name        string
+		logLevel    string
+		returnedXML string
+	}{{
+		name:     "Set level to INFO",
+		logLevel: "INFO",
+		returnedXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+	}, {
+		name:     "Set level to ERROR",
+		logLevel: "ERROR",
+		returnedXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="ERROR">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+	}}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := renderLoggingConfigXML(tc.logLevel)
+			if result != tc.returnedXML {
+				t.Errorf("Got: %v, want: %v\n", result, tc.returnedXML)
 			}
 		})
 	}
