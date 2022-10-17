@@ -1,11 +1,24 @@
 package common
 
 import (
+	"context"
+	"fmt"
+	"sort"
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/configmap"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 )
 
 // InjectEnvironmentIntoDeployment injects the specified environment variables into the
@@ -62,5 +75,68 @@ func transformDeployment(name string, f func(*appsv1.Deployment) error) mf.Trans
 		}
 
 		return scheme.Scheme.Convert(deployment, u, nil)
+	}
+}
+
+func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, configMaps sets.String) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		namespace := u.GetNamespace()
+		var podSpec *corev1.PodTemplateSpec
+		var obj runtime.Object
+		if u.GetKind() == "Deployment" {
+			d := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(u, d, nil); err != nil {
+				return err
+			}
+			podSpec = &d.Spec.Template
+			obj = d
+		}
+		if u.GetKind() == "StatefulSet" {
+			ss := &appsv1.StatefulSet{}
+			if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+				return err
+			}
+			podSpec = &ss.Spec.Template
+			obj = ss
+		}
+
+		if podSpec == nil {
+			return nil
+		}
+
+		// we need to have a stable algorithm since Go maps aren't sorted or traversed always in the same order
+		// we use a sorted array of key+value elements
+		var kvs []string
+
+		for _, v := range podSpec.Spec.Volumes {
+			if v.ConfigMap != nil && configMaps.Has(v.ConfigMap.Name) {
+				cm := &corev1.ConfigMap{}
+				err := c.Get(ctx, types.NamespacedName{Namespace: namespace, Name: v.ConfigMap.Name}, cm)
+				if apierrors.IsNotFound(err) {
+					continue
+				}
+				if err != nil {
+					return fmt.Errorf("failed to get ConfigMap %s/%s: %w", namespace, v.ConfigMap.Name, err)
+				}
+
+				for k, v := range cm.Data {
+					kvs = append(kvs, k+v)
+				}
+				for k, v := range cm.BinaryData {
+					kvs = append(kvs, k+string(v))
+				}
+
+			}
+		}
+
+		sort.Strings(kvs)
+		checksum := configmap.Checksum(strings.Join(kvs, ""))
+
+		if podSpec.Annotations == nil {
+			podSpec.Annotations = make(map[string]string, 1)
+		}
+		podSpec.Annotations[common.VolumeChecksumAnnotation] = checksum
+
+		return scheme.Scheme.Convert(obj, u, nil)
 	}
 }

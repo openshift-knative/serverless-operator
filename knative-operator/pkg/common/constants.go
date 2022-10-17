@@ -10,6 +10,8 @@ const (
 	KafkaOwnerName                   = KafkaDownstreamDomain + "/ownerName"
 	KafkaOwnerNamespace              = KafkaDownstreamDomain + "/ownerNamespace"
 
+	VolumeChecksumAnnotation = OperatorDownstreamDomain + "/configmap-volume-checksum"
+
 	// The namespace of the pod will be available through this key.
 	NamespaceEnvKey = "NAMESPACE"
 )
