@@ -2,7 +2,8 @@
 
 # == Overrides & test related
 
-# shellcheck disable=SC1091,SC1090
+# shellcheck disable=SC1091,SC1090,SC2153
+# See https://github.com/koalaman/shellcheck/issues/518
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
 
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
