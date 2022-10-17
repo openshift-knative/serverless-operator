@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	pkgTest "knative.dev/pkg/test"
 )
 
 func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
@@ -19,7 +20,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	//Create deployment
-	err := test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, image)
+	err := test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, pkgTest.ImagePath(image))
 	if err != nil {
 		t.Fatal("Deployment not created", err)
 	}
@@ -41,7 +42,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, kubeServiceURL, helloworldText)
 
 	// Deploy Knative service in the same namespace
-	ksvc, err := test.WithServiceReady(caCtx, helloworldService, test.Namespace2, image)
+	ksvc, err := test.WithServiceReady(caCtx, helloworldService, test.Namespace2, pkgTest.ImagePath(image))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -70,7 +71,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	}
 
 	// Deploy Knative service in the namespace first
-	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, test.Namespace2, image)
+	ksvc, err = test.WithServiceReady(caCtx, helloworldService2, test.Namespace2, pkgTest.ImagePath(image))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
@@ -79,7 +80,7 @@ func TestKnativeVersusKubeServicesInOneNamespace(t *testing.T) {
 	WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	//Create deployment
-	err = test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, image)
+	err = test.CreateDeployment(caCtx, kubeHelloworldService, test.Namespace2, pkgTest.ImagePath(image))
 	if err != nil {
 		t.Fatal("Deployment not created", err)
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/networking/pkg/apis/networking"
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/serving/pkg/apis/autoscaling"
 	"knative.dev/serving/pkg/apis/serving"
 )
@@ -63,7 +64,7 @@ func TestServiceToServiceCalls(t *testing.T) {
 
 func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc testCase) {
 	// Create a ksvc with the specified annotations and labels
-	service := test.Service(tc.name, namespace, image, tc.annotations)
+	service := test.Service(tc.name, namespace, pkgTest.ImagePath(image), tc.annotations)
 	service.ObjectMeta.Labels = tc.labels
 
 	service = test.WithServiceReadyOrFail(ctx, service)

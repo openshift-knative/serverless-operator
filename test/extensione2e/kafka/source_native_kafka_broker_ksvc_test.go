@@ -11,6 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	pkgTest "knative.dev/pkg/test"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
@@ -129,7 +130,7 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, test.Namespace, image)
+	ksvc, err := test.WithServiceReady(client, kafkaTriggerKsvcName, test.Namespace, pkgTest.ImagePath(image))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}

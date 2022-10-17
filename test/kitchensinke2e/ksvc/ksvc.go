@@ -5,8 +5,10 @@ import (
 	"embed"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/manifest"
@@ -14,8 +16,6 @@ import (
 
 //go:embed *.yaml
 var yaml embed.FS
-
-const defaultImage = "quay.io/openshift-knative/helloworld-go:multiarch"
 
 func GVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "serving.knative.dev", Version: "v1", Resource: "services"}
@@ -26,7 +26,7 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 	cfg := map[string]interface{}{
 		"name":    name,
 		"version": GVR().Version,
-		"image":   defaultImage,
+		"image":   pkgTest.ImagePath(test.HelloworldGoImg),
 	}
 	for _, fn := range opts {
 		fn(cfg)

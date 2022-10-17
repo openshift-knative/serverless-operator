@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 )
@@ -38,7 +39,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	// Create Kservice with disable Annotation.
-	ksvc := test.Service(serviceName, test.Namespace, image, nil)
+	ksvc := test.Service(serviceName, test.Namespace, pkgTest.ImagePath(image), nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{resources.DisableRouteAnnotation: "true"}
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 

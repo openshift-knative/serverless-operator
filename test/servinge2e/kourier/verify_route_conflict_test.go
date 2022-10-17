@@ -10,6 +10,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	pkgTest "knative.dev/pkg/test"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
@@ -45,14 +46,14 @@ func TestRouteConflictBehavior(t *testing.T) {
 
 		t.Logf("older: %v, newer: %v", older, newer)
 
-		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, image)
+		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, pkgTest.ImagePath(image))
 		if err != nil {
 			t.Fatal("Knative Service not ready", err)
 		}
 
 		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
-		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, image)
+		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, pkgTest.ImagePath(image))
 		if err != nil {
 			t.Fatal("Failed to create conflicting Knative Service", err)
 		}

@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
 )
 
@@ -53,7 +54,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	if activatorInPath {
 		annotations = nil
 	}
-	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, image, annotations))
+	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(image), annotations))
 
 	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), helloworldText)
 
