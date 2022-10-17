@@ -271,7 +271,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	for name, tc := range tests {
 		name := name
 		// Setup a knative service
-		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, pkgTest.ImagePath(image))
+		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 		if err != nil {
 			t.Fatalf("Knative Service(%s) not ready: %v", ksvc.GetName(), err)
 		}

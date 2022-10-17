@@ -485,7 +485,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		}
 
 		// Create a test ksvc, should be accessible only via proper JWT token
-		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(image), map[string]string{
+		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), map[string]string{
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
@@ -635,7 +635,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(image), nil)
+	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
 	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)

@@ -39,7 +39,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	// Create Kservice with disable Annotation.
-	ksvc := test.Service(serviceName, test.Namespace, pkgTest.ImagePath(image), nil)
+	ksvc := test.Service(serviceName, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{resources.DisableRouteAnnotation: "true"}
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 

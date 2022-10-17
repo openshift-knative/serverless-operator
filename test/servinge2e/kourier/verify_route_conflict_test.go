@@ -46,14 +46,14 @@ func TestRouteConflictBehavior(t *testing.T) {
 
 		t.Logf("older: %v, newer: %v", older, newer)
 
-		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, pkgTest.ImagePath(image))
+		olderSvc, err := test.WithServiceReady(caCtx, older.Name, older.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 		if err != nil {
 			t.Fatal("Knative Service not ready", err)
 		}
 
 		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), helloworldText)
 
-		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, pkgTest.ImagePath(image))
+		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 		if err != nil {
 			t.Fatal("Failed to create conflicting Knative Service", err)
 		}

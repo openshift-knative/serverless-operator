@@ -54,7 +54,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	if activatorInPath {
 		annotations = nil
 	}
-	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(image), annotations))
+	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(test.HelloworldGoImg), annotations))
 
 	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), helloworldText)
 

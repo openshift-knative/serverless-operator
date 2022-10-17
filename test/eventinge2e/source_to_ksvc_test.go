@@ -31,7 +31,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, pkgTest.ImagePath(image))
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
