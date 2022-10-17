@@ -104,7 +104,7 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
 func httpProxyService(name, namespace, host string) *servingv1.Service {
-	proxy := test.Service(name, namespace, pkgTest.ImagePath(test.HttpProxyImg), nil)
+	proxy := test.Service(name, namespace, pkgTest.ImagePath(test.HTTPProxyImg), nil)
 	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 		Name:  "TARGET_HOST",
 		Value: host,

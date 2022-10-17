@@ -5,5 +5,5 @@ const (
 	HelloworldGoImg   = "helloworld-go"
 	HelloOpenshiftImg = "hello-openshift"
 	// registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy
-	HttpProxyImg = "knative-serving-test-httpproxy"
+	HTTPProxyImg = "knative-serving-test-httpproxy"
 )
