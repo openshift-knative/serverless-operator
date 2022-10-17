@@ -79,6 +79,7 @@ function serverless_operator_e2e_tests {
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
 }
 
@@ -96,6 +97,7 @@ function serverless_operator_kafka_e2e_tests {
   go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
 }
 
@@ -114,10 +116,12 @@ function downstream_serving_e2e_tests {
     export GODEBUG="x509ignoreCN=0"
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
       --kubeconfigs "${kubeconfigs_str}" \
+      --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
   else
     go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
       --kubeconfigs "${kubeconfigs_str}" \
+      --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
   fi
 }
@@ -135,6 +139,7 @@ function downstream_eventing_e2e_tests {
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
     --kubeconfigs "${kubeconfigs_str}" \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
 }
 
@@ -151,6 +156,7 @@ function downstream_knative_kafka_e2e_tests {
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
     --kubeconfigs "${kubeconfigs_str}" \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
 }
 
@@ -167,6 +173,7 @@ function downstream_monitoring_e2e_tests {
 
   go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
     --kubeconfigs "${kubeconfigs_str}" \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
 }
 
@@ -177,7 +184,9 @@ function downstream_kitchensink_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=120m -parallel=8 ./test/kitchensinke2e "$@"
+  go_test_e2e -failfast -timeout=120m -parallel=8 ./test/kitchensinke2e \
+  --imagetemplate "${IMAGE_TEMPLATE}" \
+  "$@"
 }
 
 # == Upgrade testing
