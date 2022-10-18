@@ -89,9 +89,9 @@ export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
-{{- with .Name }}
-{{- if eq . "knative-serving-test-httpproxy"}}registry.ci.openshift.org/openshift/knative-v0.17.3:{{.}}
-{{- else                                    }}quay.io/openshift-knative/{{.}}:multiarch{{end -}}
+quay.io/{{- with .Name }}
+{{- if eq . "httpproxy" }}openshift-knative-serving-test/{{.}}:v1.3
+{{- else                }}openshift-knative/{{.}}:multiarch{{end -}}
 {{end -}}
 EOF
 )
