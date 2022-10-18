@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -75,12 +77,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	if !common.ConsoleInstalled.Load() {
+	if consoleutil.RequiredConsoleCRDMissing() {
 		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
-			if obj.GetName() == consoleclidownload.CLIDownloadCRDName {
+			if obj.GetName() == consoleclidownload.CLIDownloadCRDName || obj.GetName() == quickstart.QuickStartsCRDName {
+				consoleclidownload.SetConsoleCRDInstalled(obj.GetName())
 				log.Info("Eventing, processing crd request", "name", obj.GetName())
 				_ = health.InstallHealthDashboard(r.(*ReconcileKnativeEventing).client)
-				common.ConsoleInstalled.Store(true)
 				list := &operatorv1beta1.KnativeEventingList{}
 				// At this point we know that console is available and try to find if there is an Eventing instance installed
 				// and trigger a reconciliation. If there is no instance do nothing as from now on reconciliation loop will do what is needed
@@ -186,7 +188,7 @@ func (r *ReconcileKnativeEventing) ensureFinalizers(instance *operatorv1beta1.Kn
 
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1beta1.KnativeEventing) error {
-	if common.ConsoleInstalled.Load() {
+	if consoleutil.AnyRequiredConsoleCRDAvailable() {
 		log.Info("Installing Eventing Dashboards")
 		return dashboards.Apply("eventing", instance, r.client)
 	}
@@ -203,7 +205,7 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 		return nil
 	}
 	log.Info("Running cleanup logic")
-	if common.ConsoleInstalled.Load() {
+	if consoleutil.AnyRequiredConsoleCRDAvailable() {
 		log.Info("Deleting eventing dashboards")
 		if err := dashboards.Delete("eventing", instance, r.client); err != nil {
 			return fmt.Errorf("failed to delete resource dashboard configmaps: %w", err)

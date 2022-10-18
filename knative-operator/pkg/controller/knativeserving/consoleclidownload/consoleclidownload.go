@@ -7,9 +7,11 @@ import (
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	"go.uber.org/atomic"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,8 +27,9 @@ const (
 )
 
 var (
-	operatorNamespace = os.Getenv(common.NamespaceEnvKey)
-	log               = common.Log.WithName("consoleclidownload")
+	ConsoleCLIDownloadsCRDInstalled = atomic.NewBool(false)
+	operatorNamespace               = os.Getenv(common.NamespaceEnvKey)
+	log                             = common.Log.WithName("consoleclidownload")
 )
 
 // Apply installs kn ConsoleCLIDownload and its required resources when applicable
@@ -37,7 +40,7 @@ func Apply(instance *operatorv1beta1.KnativeServing, apiclient client.Client) er
 		return err
 	}
 	// If console is installed install cdd resources
-	if common.ConsoleInstalled.Load() {
+	if ConsoleCLIDownloadsCRDInstalled.Load() {
 		return reconcileKnConsoleCLIDownload(apiclient, instance, route)
 	}
 	return nil
@@ -117,7 +120,7 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1
 // Delete deletes kn ConsoleCLIDownload CO and respective deployment resources
 func Delete(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
 	// If console is not installed skip deleting cdd resources
-	if common.ConsoleInstalled.Load() {
+	if ConsoleCLIDownloadsCRDInstalled.Load() {
 		log.Info("Deleting kn ConsoleCLIDownload CO")
 		if err := apiclient.Delete(context.TODO(), populateKnConsoleCLIDownload("", instance)); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete kn ConsoleCLIDownload CO: %w", err)
@@ -202,4 +205,13 @@ func https(host string) string {
 		return host
 	}
 	return protocol + host
+}
+
+func SetConsoleCRDInstalled(crd string) {
+	switch crd {
+	case CLIDownloadCRDName:
+		ConsoleCLIDownloadsCRDInstalled.Store(true)
+	case quickstart.QuickStartsCRDName:
+		quickstart.ConsoleQuickStartsCRDInstalled.Store(true)
+	}
 }

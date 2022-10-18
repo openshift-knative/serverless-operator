@@ -4,7 +4,6 @@ import (
 	"sort"
 	"strings"
 
-	"go.uber.org/atomic"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,10 +18,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var (
-	Log              = logf.Log.WithName("knative").WithName("openshift")
-	ConsoleInstalled = atomic.NewBool(false)
-)
+var Log = logf.Log.WithName("knative").WithName("openshift")
 
 // StringMap is a map which key and value are strings
 type StringMap map[string]string

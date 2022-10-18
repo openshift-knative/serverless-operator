@@ -7,14 +7,21 @@ import (
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"go.uber.org/atomic"
 	apierrs "k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// EnvKey is the environment variable that decides which manifest to load
-const EnvKey = "QUICKSTART_MANIFEST_PATH"
+const (
+	// EnvKey is the environment variable that decides which manifest to load
+	EnvKey             = "QUICKSTART_MANIFEST_PATH"
+	QuickStartsCRDName = "consolequickstarts.console.openshift.io"
+)
 
-var log = common.Log.WithName("quickstart")
+var (
+	ConsoleQuickStartsCRDInstalled = atomic.NewBool(false)
+	log                            = common.Log.WithName("quickstart")
+)
 
 // Apply applies Quickstart resources.
 func Apply(api client.Client) error {

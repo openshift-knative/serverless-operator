@@ -7,6 +7,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
@@ -127,13 +128,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// If console is installed add the ccd resource watcher, otherwise remove it avoid manager exiting due to kind not found.
-	if common.ConsoleInstalled.Load() {
+	if consoleclidownload.ConsoleCLIDownloadsCRDInstalled.Load() {
 		gvkToResource[consolev1.GroupVersion.WithKind("ConsoleCLIDownload")] = &consolev1.ConsoleCLIDownload{}
-	} else {
+	}
+
+	if consoleutil.RequiredConsoleCRDMissing() {
 		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
-			if obj.GetName() == consoleclidownload.CLIDownloadCRDName {
+			if obj.GetName() == consoleclidownload.CLIDownloadCRDName || obj.GetName() == quickstart.QuickStartsCRDName {
 				log.Info("Serving, processing crd request", "name", obj.GetName())
-				common.ConsoleInstalled.Store(true)
+				consoleclidownload.SetConsoleCRDInstalled(obj.GetName())
 				_ = health.InstallHealthDashboard(r.(*ReconcileKnativeServing).client)
 				list := &operatorv1beta1.KnativeServingList{}
 				// At this point we know that console is available and try to find if there is a Serving instance installed
@@ -154,7 +157,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			return err
 		}
 	}
-
 	for _, t := range gvkToResource {
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
@@ -199,7 +201,7 @@ func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconci
 	}
 
 	// If previously not set let's add a watch for ConsoleCLIDownload
-	if common.ConsoleInstalled.Load() && !cliDownloadWatchSet.Load() {
+	if consoleclidownload.ConsoleCLIDownloadsCRDInstalled.Load() && !cliDownloadWatchSet.Load() {
 		if err = (*r.c).Watch(&source.Kind{Type: &consolev1.ConsoleCLIDownload{}}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
 			return reconcile.Result{}, err
 		}
@@ -369,7 +371,7 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1beta1.K
 }
 
 func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.KnativeServing) error {
-	if common.ConsoleInstalled.Load() {
+	if quickstart.ConsoleQuickStartsCRDInstalled.Load() {
 		return quickstart.Apply(r.client)
 	}
 	return nil
@@ -382,7 +384,7 @@ func (r *ReconcileKnativeServing) installKnConsoleCLIDownload(instance *operator
 
 // installDashboard installs dashboard for OpenShift webconsole
 func (r *ReconcileKnativeServing) installDashboard(instance *operatorv1beta1.KnativeServing) error {
-	if common.ConsoleInstalled.Load() {
+	if consoleutil.AnyRequiredConsoleCRDAvailable() {
 		log.Info("Installing Serving Dashboards")
 		return dashboards.Apply("serving", instance, r.client)
 	}
@@ -405,12 +407,14 @@ func (r *ReconcileKnativeServing) delete(instance *operatorv1beta1.KnativeServin
 		return fmt.Errorf("failed to delete kn ConsoleCLIDownload: %w", err)
 	}
 
-	if common.ConsoleInstalled.Load() {
+	if consoleutil.AnyRequiredConsoleCRDAvailable() {
 		log.Info("Deleting Serving dashboards")
 		if err := dashboards.Delete("serving", instance, r.client); err != nil {
 			return fmt.Errorf("failed to delete dashboard configmap: %w", err)
 		}
+	}
 
+	if quickstart.ConsoleQuickStartsCRDInstalled.Load() {
 		log.Info("Deleting quickstart")
 		if err := quickstart.Delete(r.client); err != nil {
 			return fmt.Errorf("failed to delete quickstarts: %w", err)

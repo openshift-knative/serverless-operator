@@ -12,6 +12,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
@@ -177,10 +178,25 @@ func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 		return err
 	}
 
+	var installedDashboard bool
 	if _, err = apiExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), consoleclidownload.CLIDownloadCRDName, metav1.GetOptions{}); err == nil {
-		common.ConsoleInstalled.Store(true)
+		consoleclidownload.SetConsoleCRDInstalled(consoleclidownload.CLIDownloadCRDName)
 		if err := health.InstallHealthDashboard(cl); err != nil {
 			return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+		}
+		installedDashboard = true
+	} else {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to fetch ConsoleCLIDownload CRDs: %w", err)
+		}
+	}
+
+	if _, err = apiExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), quickstart.QuickStartsCRDName, metav1.GetOptions{}); err == nil {
+		consoleclidownload.SetConsoleCRDInstalled(quickstart.QuickStartsCRDName)
+		if !installedDashboard {
+			if err := health.InstallHealthDashboard(cl); err != nil {
+				return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+			}
 		}
 	} else {
 		if !apierrors.IsNotFound(err) {

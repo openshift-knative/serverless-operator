@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
 	configv1 "github.com/openshift/api/config/v1"
@@ -149,7 +149,7 @@ func TestExtraResourcesReconcile(t *testing.T) {
 				}
 			}
 
-			common.ConsoleInstalled.Store(true)
+			consoleclidownload.ConsoleCLIDownloadsCRDInstalled.Store(true)
 			cliDownloadWatchSet.Store(true)
 
 			// Reconcile again
