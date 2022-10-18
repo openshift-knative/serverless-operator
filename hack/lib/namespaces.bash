@@ -31,6 +31,23 @@ EOF
   logger.success "Namespaces have been created: ${namespaces[*]}"
 }
 
+# Link global pull secrets for accessing private registries, see https://issues.redhat.com/browse/SRVKS-833
+# Allows pulling images from a secured registry, e.g. internal mirror registry for disconnected env.
+function link_global_pullsecret_to_namespaces {
+  logger.info 'Link global pull secret to namespaces'
+  if [[ $# -eq 0 ]]; then
+    echo "Pass an array with namespaces as arg[1]" && exit 1
+  fi
+  local namespaces
+  namespaces=("$@")
+  for ns in "${namespaces[@]}"; do
+    if ! oc -n "${ns}" get secret pull-secret &>/dev/null; then
+      oc -n openshift-config get secret pull-secret -o yaml | sed "s/namespace: .*/namespace: ${ns}/" | oc apply -f -
+    fi
+    oc -n "$ns" secrets link default pull-secret --for=pull
+  done
+}
+
 function delete_namespaces {
   logger.info "Deleting namespaces"
   if [[ $# -eq 0 ]]; then
