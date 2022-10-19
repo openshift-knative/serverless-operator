@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -45,7 +44,7 @@ func LinkGlobalPullSecretToNamespace(ctx *Context, ns string) error {
 	// Link global pull secrets for accessing private registries, see https://issues.redhat.com/browse/SRVKS-833
 	_, err := utils.CopySecret(ctx.Clients.Kube.CoreV1(),
 		"openshift-config", "pull-secret", ns, "default")
-	if err != nil && !apierrs.IsNotFound(err) {
+	if err != nil && !errors.IsNotFound(err) {
 		return fmt.Errorf("error copying secret into ns %s: %w", ns, err)
 	}
 	return nil
