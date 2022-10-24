@@ -357,7 +357,7 @@ spec:
           runAsNonRoot: true
           capabilities:
             drop:
-            - all
+            - ALL
 
 ---
 
@@ -483,7 +483,7 @@ spec:
           runAsNonRoot: true
           capabilities:
             drop:
-            - all
+            - ALL
 
 ---
 
@@ -593,7 +593,7 @@ spec:
           runAsNonRoot: true
           capabilities:
             drop:
-            - all
+            - ALL
 
         ports:
         - name: metrics
