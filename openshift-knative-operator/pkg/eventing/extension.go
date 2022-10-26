@@ -36,8 +36,9 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 }
 
 func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
-	return append([]mf.Transformer{common.InjectCommonLabelIntoNamespace(), common.VersionedJobNameTransform()},
-		monitoring.GetEventingTransformers(ke)...)
+	tf := []mf.Transformer{common.InjectCommonLabelIntoNamespace(), common.VersionedJobNameTransform()}
+	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
+	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
