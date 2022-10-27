@@ -19,7 +19,7 @@ function default_knative_serving_images() {
   local serving
   serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
   export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-"${serving}-queue"}
-  export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"quay.io/nak3/activator:drop-trusted-ca"}
+  export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"docker.io/nak3/activator:drop-trusted-ca"}
   export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler"}
   export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-"${serving}-autoscaler-hpa"}
   export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"${serving}-controller"}
