@@ -32,7 +32,7 @@ dependencies:
   net_kourier_artifacts_branch: release-1.5
   net_istio: 1.5.0
   net_istio_artifacts_branch: release-1.5
-  maistra: 2.1.0
+  maistra: 2.2-daily-2022-10-04
 
   eventing: 1.5
   # eventing core midstream branch name
