@@ -57,7 +57,7 @@ function default_knative_eventing_kafka_broker_images() {
 
 function default_knative_ingress_images() {
   local knative_kourier knative_istio
-  knative_kourier="${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
+  knative_kourier="quay.io/nak3/net-kourier:drop-trusted-ca"
   export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${knative_kourier}"}
   export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
