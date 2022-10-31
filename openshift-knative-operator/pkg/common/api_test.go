@@ -70,7 +70,7 @@ func TestVersionCheck(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := CheckMinimumVersion(test.actualVersion, minVersion)
+			err := CheckMinimumKubeVersion(test.actualVersion, minVersion)
 			if err == nil && test.wantError {
 				t.Errorf("Expected an error for minimum: %q, actual: %v", minVersion, test.actualVersion)
 			}

@@ -127,7 +127,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 
 	// Changing service type from LoadBalancer to ClusterIP has a bug https://github.com/kubernetes/kubernetes/pull/95196
 	// Do not apply the default if the version is less than v1.20.0.
-	if err := common.CheckMinimumVersion(e.kubeclient.Discovery(), "1.20.0"); err != nil {
+	if err := common.CheckMinimumKubeVersion(e.kubeclient.Discovery(), "1.20.0"); err != nil {
 		log.Warnf("Could not apply default service type for Kourier Gateway: %v", err)
 	} else {
 		// Apply Kourier gateway service type.
