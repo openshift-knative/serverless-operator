@@ -467,6 +467,7 @@ metadata:
 spec:
   ports:
     - name: http2
+      appProtocol: h2c
       port: 80
       protocol: TCP
       targetPort: 8080
