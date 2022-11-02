@@ -32,6 +32,9 @@ func TestRouteConflictBehavior(t *testing.T) {
 		}, metav1.CreateOptions{}); err != nil && !apierrs.IsAlreadyExists(err) {
 			t.Fatalf("Failed to create namespace %s: %v", ns, err)
 		}
+		if err := test.LinkGlobalPullSecretToNamespace(caCtx, ns); err != nil {
+			t.Fatalf("Unable to link global pull secret to namespace %s: %v", ns, err)
+		}
 		defer caCtx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), ns, metav1.DeleteOptions{})
 	}
 
