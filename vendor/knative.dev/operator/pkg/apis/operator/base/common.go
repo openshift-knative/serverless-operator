@@ -200,7 +200,7 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 
 // GetWorkloadOverrides implements KComponentSpec.
 func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
-	return c.DeploymentOverride
+	return append(c.DeploymentOverride, c.Workloads...)
 }
 
 // GetServiceOverride implements KComponentSpec.
