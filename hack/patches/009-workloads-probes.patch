@@ -1,5 +1,5 @@
 diff --git a/vendor/knative.dev/operator/pkg/apis/operator/base/common.go b/vendor/knative.dev/operator/pkg/apis/operator/base/common.go
-index f75bfd430..3d91d697f 100644
+index f75bfd430..dc6ff5396 100644
 --- a/vendor/knative.dev/operator/pkg/apis/operator/base/common.go
 +++ b/vendor/knative.dev/operator/pkg/apis/operator/base/common.go
 @@ -67,8 +67,8 @@ type KComponentSpec interface {
@@ -29,17 +29,19 @@ index f75bfd430..3d91d697f 100644
 
  	// ServiceOverride overrides Service configurations such as labels and annotations.
  	// +optional
-@@ -193,8 +198,8 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
+@@ -193,9 +198,9 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
  	return c.HighAvailability
  }
 
 -// GetDeploymentOverride implements KComponentSpec.
 -func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
+-	return c.DeploymentOverride
 +// GetWorkloadOverrides implements KComponentSpec.
 +func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
- 	return c.DeploymentOverride
++	return append(c.DeploymentOverride, c.Workloads...)
  }
 
+ // GetServiceOverride implements KComponentSpec.
 @@ -229,8 +234,8 @@ type Registry struct {
  	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
  }
@@ -513,10 +515,10 @@ index c6764a4da..9dbc884f3 100644
  			}
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go b/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go
 new file mode 100644
-index 000000000..5dc90d749
+index 000000000..39f7dff86
 --- /dev/null
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,45 @@
 +/*
 +Copyright 2022 The Knative Authors
 +
@@ -562,7 +564,6 @@ index 000000000..5dc90d749
 +	}
 +	return nil
 +}
-+
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/resources.go b/vendor/knative.dev/operator/pkg/reconciler/common/resources.go
 index a042de85f..8a04e31e9 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/resources.go
