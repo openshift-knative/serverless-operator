@@ -37,6 +37,10 @@ type KnativeKafkaSpec struct {
 	// Set logging configuration of the data plane.
 	// +optional
 	Logging *Logging `json:"logging,omitempty"`
+
+	// Workloads overrides workloads configurations such as resources and replicas.
+	// +optional
+	Workloads []base.WorkloadOverride `json:"workloads,omitempty"`
 }
 
 // KnativeKafkaStatus defines the observed state of KnativeKafka
