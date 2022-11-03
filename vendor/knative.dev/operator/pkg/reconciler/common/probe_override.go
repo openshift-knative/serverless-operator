@@ -43,4 +43,3 @@ func findProbeOverride(probes []base.ProbesRequirementsOverride, name string) *b
 	}
 	return nil
 }
-

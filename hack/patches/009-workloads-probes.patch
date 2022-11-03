@@ -515,10 +515,10 @@ index c6764a4da..9dbc884f3 100644
  			}
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go b/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go
 new file mode 100644
-index 000000000..5dc90d749
+index 000000000..39f7dff86
 --- /dev/null
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/probe_override.go
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,45 @@
 +/*
 +Copyright 2022 The Knative Authors
 +
@@ -564,7 +564,6 @@ index 000000000..5dc90d749
 +	}
 +	return nil
 +}
-+
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/resources.go b/vendor/knative.dev/operator/pkg/reconciler/common/resources.go
 index a042de85f..8a04e31e9 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/resources.go
