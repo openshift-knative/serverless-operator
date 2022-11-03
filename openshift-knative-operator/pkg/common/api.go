@@ -195,18 +195,18 @@ func FakeDeprecatedAPIsTranformers(version string) []mf.Transformer {
 	// The policy/v1beta1 API version of PodDisruptionBudget will no longer be served in v1.25.
 	// The autoscaling/v2beta2 API version of HorizontalPodAutoscaler will no longer be served in v1.26
 	// TODO: When we move away from releases that bring v1beta1 we can remove this part
-	if err := CheckMinimumKubeVersion(&dummyVersioner{version: version}, "1.24.0"); err == nil {
+	if err := CheckMinimumKubeVersion(&fakeVersioner{version: version}, "1.24.0"); err == nil {
 		transformers = append(transformers, UpgradePodDisruptionBudget(), UpgradeHorizontalPodAutoscaler(), SetSecurityContextForAdmissionController())
 	}
 	return transformers
 }
 
-type dummyVersioner struct {
+type fakeVersioner struct {
 	version string
 	err     error
 }
 
-func (t *dummyVersioner) ServerVersion() (*version.Info, error) {
+func (t *fakeVersioner) ServerVersion() (*version.Info, error) {
 	return &version.Info{GitVersion: t.version}, t.err
 }
 
