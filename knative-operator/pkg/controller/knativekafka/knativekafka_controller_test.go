@@ -99,6 +99,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		},
 	}}
 
+	t.Setenv("TEST_DEPRECATED_APIS_K8S_VERSION", "v1.24.0")
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cl := fake.NewClientBuilder().WithObjects(test.instance, &operatorv1beta1.KnativeEventing{}).Build()
