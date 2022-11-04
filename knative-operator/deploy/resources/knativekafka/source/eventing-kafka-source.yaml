@@ -328,7 +328,6 @@ spec:
           args:
             - "-XX:+CrashOnOutOfMemoryError"
             - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-Dcom.redhat.fips=false"
             - "-jar"
             - "/app/app.jar"
           resources:
