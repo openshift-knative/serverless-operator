@@ -343,7 +343,9 @@ spec:
                 - clusteroperators
                 - clusteroperators/status
               verbs:
-                - "*"
+                - "get"
+                - "watch"
+                - "list"
             - apiGroups:
                 - route.openshift.io
               resources:
