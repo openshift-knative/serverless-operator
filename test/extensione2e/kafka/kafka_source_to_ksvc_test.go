@@ -161,12 +161,19 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
 		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
 		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
-		deleteJobs(t, client, test.Namespace, cronJobName)
+		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
+			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
+			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
+			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+			deleteJobs(t, client, test.Namespace, cronJobName)
+		} else {
+			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
+			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
+			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+			deleteJobsV1Beta1(t, client, test.Namespace, cronJobName)
+		}
 		deletePods(t, client, test.Namespace, cronJobName)
 		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
 		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
@@ -291,7 +298,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		}
 
 		// send event to kafka topic
-		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), "1.24.0"); err == nil {
+		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
 			cj := createCronJobObjV1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
@@ -336,6 +343,20 @@ func deleteJobs(t *testing.T, ctx *test.Context, namespace, name string) {
 	for _, job := range jobList.Items {
 		if strings.Contains(job.Name, name) {
 			ctx.Clients.Kube.BatchV1().Jobs(namespace).
+				Delete(context.Background(), job.Name, metav1.DeleteOptions{})
+		}
+	}
+}
+
+func deleteJobsV1Beta1(t *testing.T, ctx *test.Context, namespace, name string) {
+	t.Helper()
+	jobList, err := ctx.Clients.Kube.BatchV1beta1().CronJobs(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Error("Unable to list jobs in namespace:", namespace)
+	}
+	for _, job := range jobList.Items {
+		if strings.Contains(job.Name, name) {
+			ctx.Clients.Kube.BatchV1beta1().CronJobs(namespace).
 				Delete(context.Background(), job.Name, metav1.DeleteOptions{})
 		}
 	}
