@@ -39,10 +39,17 @@ dependencies:
   eventing_artifacts_branch: release-v1.4
 
   eventing_kafka: 1.1.0
-  # eventing-kafka-broker promotion version without the `knative-v` prefix
+  # eventing-kafka-broker promotion version.
+  # use a semver like 1.4 without the `knative-v` prefix if you would like to make a SO release with floating EKB image versions.
+  # use a commit hash like f24550ef10c9deea57c2306db05d813406ee73b8 (at least 10 chars) if you would like to make a SO
+  #   release with fixed EKB image versions.
   eventing_kafka_broker: 1.4
   # eventing-kafka-broker midstream branch name
   eventing_kafka_broker_artifacts_branch: release-v1.4
+  # test images version for eventing-kafka-broker.
+  # as we don't publish these images by commit tag, we need to still reference them using the image version.
+  # this is fine, since the floating tags are overwritten with new images.
+  eventing_kafka_broker_test_images: 1.4
   cli: 1.4.1
   # Func s2i related images should be temporary solution until Tekton Catalog is updated
   func:

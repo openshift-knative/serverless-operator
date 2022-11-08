@@ -185,12 +185,12 @@ function downstream_kitchensink_e2e_tests {
 function run_rolling_upgrade_tests {
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_image_version eventing_kafka_broker_image_version image_template channels common_opts
+  local base serving_image_version eventing_image_version eventing_kafka_image_version eventing_kafka_broker_test_images_version image_template channels common_opts
 
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version=$(versions.major_minor "${KNATIVE_EVENTING_VERSION}")
   eventing_kafka_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_VERSION}")
-  eventing_kafka_broker_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}")
+  eventing_kafka_broker_test_images_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_TEST_IMAGES_VERSION}")
 
   # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
   base="quay.io/openshift-knative/"
@@ -198,7 +198,7 @@ function run_rolling_upgrade_tests {
     cat <<-EOF
 $base{{- with .Name }}
 {{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
-{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:knative-v$eventing_kafka_broker_image_version
+{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:knative-v$eventing_kafka_broker_test_images_version
 {{- else if eq . "event-flaker"        }}{{.}}:v$eventing_image_version
 {{- else if eq . "event-library"       }}{{.}}:v$eventing_image_version
 {{- else if eq . "event-sender"        }}{{.}}:v$eventing_image_version
@@ -228,6 +228,7 @@ EOF
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
+  # TODO: should be fine as it is only used for checking the version
   common_opts=(./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
     "--channels=${channels}" \

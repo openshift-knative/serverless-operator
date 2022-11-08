@@ -23,6 +23,7 @@ export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(meta
 export KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing_kafka)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-v$(metadata.get dependencies.eventing_kafka_broker)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing_kafka_broker)}"
+export KNATIVE_EVENTING_KAFKA_BROKER_TEST_IMAGES_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_TEST_IMAGES_VERSION:-v$(metadata.get dependencies.eventing_kafka_broker_test_images)}"
 
 CURRENT_VERSION="$(metadata.get project.version)"
 CURRENT_VERSION_MAJOR_MINOR="$(cut -d '.' -f 1 <<< "${CURRENT_VERSION}")"."$(cut -d '.' -f 2 <<< "${CURRENT_VERSION}")"
