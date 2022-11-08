@@ -247,7 +247,7 @@ EOF
     "--csv=${CURRENT_CSV}" \
     "--csvprevious=${PREVIOUS_CSV}" \
     "--servingversion=${KNATIVE_SERVING_VERSION}" \
-    "--eventingversion=${KNATIVE_EVENTING_VERSION}" \
+    "--eventingversion=${KNATIVE_EVENTING_VERSION/vknative-v/}" \
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
     "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS}" \

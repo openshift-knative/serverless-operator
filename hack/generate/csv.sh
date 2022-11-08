@@ -31,18 +31,20 @@ function default_knative_serving_images() {
 
 function default_knative_eventing_images() {
   local eventing
-  eventing="${registry}/knative-v$(metadata.get dependencies.eventing):knative-eventing"
-  export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller"}
-  export KNATIVE_EVENTING_SUGAR_CONTROLLER=${KNATIVE_EVENTING_SUGAR_CONTROLLER:-"${eventing}-sugar-controller"}
-  export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook"}
-  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-storage-version-migration"}
-  export KNATIVE_EVENTING_MTBROKER_INGRESS=${KNATIVE_EVENTING_MTBROKER_INGRESS:-"${eventing}-mtbroker-ingress"}
-  export KNATIVE_EVENTING_MTBROKER_FILTER=${KNATIVE_EVENTING_MTBROKER_FILTER:-"${eventing}-mtbroker-filter"}
-  export KNATIVE_EVENTING_MTCHANNEL_BROKER=${KNATIVE_EVENTING_MTCHANNEL_BROKER:-"${eventing}-mtchannel-broker"}
-  export KNATIVE_EVENTING_MTPING=${KNATIVE_EVENTING_MTPING:-"${eventing}-mtping"}
-  export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-"${eventing}-channel-controller"}
-  export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-"${eventing}-channel-dispatcher"}
-  export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-"${eventing}-apiserver-receive-adapter"}
+  eventing="${registry}/knative-eventing"
+  local tag
+  tag=$(metadata.get dependencies.eventing)
+  export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
+  export KNATIVE_EVENTING_SUGAR_CONTROLLER=${KNATIVE_EVENTING_SUGAR_CONTROLLER:-"${eventing}-sugar-controller:${tag}"}
+  export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
+  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-storage-version-migration:${tag}"}
+  export KNATIVE_EVENTING_MTBROKER_INGRESS=${KNATIVE_EVENTING_MTBROKER_INGRESS:-"${eventing}-mtbroker-ingress:${tag}"}
+  export KNATIVE_EVENTING_MTBROKER_FILTER=${KNATIVE_EVENTING_MTBROKER_FILTER:-"${eventing}-mtbroker-filter:${tag}"}
+  export KNATIVE_EVENTING_MTCHANNEL_BROKER=${KNATIVE_EVENTING_MTCHANNEL_BROKER:-"${eventing}-mtchannel-broker:${tag}"}
+  export KNATIVE_EVENTING_MTPING=${KNATIVE_EVENTING_MTPING:-"${eventing}-mtping:${tag}"}
+  export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-"${eventing}-channel-controller:${tag}"}
+  export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-"${eventing}-channel-dispatcher:${tag}"}
+  export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-"${eventing}-apiserver-receive-adapter:${tag}"}
 }
 
 function default_knative_eventing_kafka_broker_images() {
