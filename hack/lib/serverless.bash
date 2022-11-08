@@ -433,10 +433,12 @@ function dump_subscriptions {
 function gather_knative_state {
   logger.info 'Gather knative state'
   local gather_dir="${ARTIFACT_DIR:-/tmp}/gather-knative"
+  local gatherImageKnative="${MUST_GATHER_IMAGE_KNATIVE:-quay.io/openshift-knative/must-gather}"
+  local gatherImageMesh="${MUST_GATHER_IMAGE_MESH:-registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7}"
   mkdir -p "$gather_dir"
-  IMAGE_OPTION=("--image=quay.io/openshift-knative/must-gather")
+  IMAGE_OPTION=("--image=${gatherImageKnative}")
   if [[ $FULL_MESH == true ]]; then
-    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7")
+    IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=${gatherImageMesh}")
   fi
 
   oc --insecure-skip-tls-verify adm must-gather \

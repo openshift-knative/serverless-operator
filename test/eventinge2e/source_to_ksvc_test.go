@@ -7,6 +7,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	pkgTest "knative.dev/pkg/test"
 
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -14,7 +15,6 @@ import (
 
 const (
 	pingSourceName    = "smoke-test-ping"
-	image             = "quay.io/openshift-knative/helloworld-go:multiarch"
 	helloWorldService = "helloworld-go"
 	helloWorldText    = "Hello World!"
 	ksvcAPIVersion    = "serving.knative.dev/v1"
@@ -31,7 +31,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 	defer cleanup()
 
 	// Setup a knative service
-	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}

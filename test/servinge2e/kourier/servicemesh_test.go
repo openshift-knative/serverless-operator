@@ -43,7 +43,6 @@ type testCase struct {
 
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
 	istioInjectKey               = "sidecar.istio.io/inject"
 )
 
@@ -105,7 +104,7 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 
 // A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
 func httpProxyService(name, namespace, host string) *servingv1.Service {
-	proxy := test.Service(name, namespace, httpProxyImage, nil)
+	proxy := test.Service(name, namespace, pkgTest.ImagePath(test.HTTPProxyImg), nil)
 	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 		Name:  "TARGET_HOST",
 		Value: host,
@@ -335,7 +334,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, "quay.io/openshift-knative/hello-openshift:multiarch", nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, pkgTest.ImagePath(test.HelloOpenshiftImg), nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
@@ -486,7 +485,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		}
 
 		// Create a test ksvc, should be accessible only via proper JWT token
-		testKsvc := test.Service("jwt-test", test.Namespace, image, map[string]string{
+		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), map[string]string{
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
@@ -636,7 +635,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", test.Namespace, image, nil)
+	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
 	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/types"
+	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -29,7 +30,6 @@ const (
 	kafkaSourceName     = "smoke-ks"
 	kafkaTopicName      = "smoke-topic"
 	kafkaConsumerGroup  = "smoke-cg"
-	image               = "quay.io/openshift-knative/helloworld-go:multiarch"
 	helloWorldService   = "helloworld-go"
 	ksvcAPIVersion      = "serving.knative.dev/v1"
 	ksvcKind            = "Service"
@@ -278,7 +278,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	for name, tc := range tests {
 		name := name
 		// Setup a knative service
-		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, image)
+		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 		if err != nil {
 			t.Fatalf("Knative Service(%s) not ready: %v", ksvc.GetName(), err)
 		}

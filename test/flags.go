@@ -6,6 +6,9 @@ import (
 	"os/user"
 	"path"
 	"testing"
+
+	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
+	_ "knative.dev/pkg/test"
 )
 
 const (

@@ -7,6 +7,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	pkgTest "knative.dev/pkg/test"
 
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
@@ -99,7 +100,7 @@ func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
-	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", test.Namespace, image)
+	ksvc, err := test.WithServiceReady(client, helloWorldService+"-kafka-channel-broker", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 	if err != nil {
 		t.Fatal("Knative Service not ready", err)
 	}
