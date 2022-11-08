@@ -127,10 +127,10 @@ spec:
     - A producer can generate events before a consumer is listening, and a consumer can express an interest in an event or class of events that are not yet being produced.
     - Services can be connected to create new applications without modifying producer or consumer, and with the ability to select a specific subset of events from a particular producer.
 
-    ## Serverless functions
+    ## Knative Functions
     Knative Functions allow developers to write functions that let them focus on business logic.
     These functions are deployed as Knative Services and take advantage of Knative Serving and Eventing.
-    Serverless functions bring greater efficiency, more scalability and faster development that facilitate rapid go-to-market.
+    Knative Functions bring greater efficiency, more scalability and faster development that facilitate rapid go-to-market.
 
     Other features include:
     - Build strategies including Source-to-Image (S2I) and Buildpacks
@@ -149,7 +149,7 @@ spec:
     - Support for managing Knative Eventing entities: Sources, Brokers, Triggers, Channels and Subscriptions
     - A kubectl-like plugin architecture to extend the built-in functionality
     - Easy integration of Knative into Tekton pipelines by using `kn` in a Tekton task
-    - Support for creating, building and deploying serverless functions for multiple runtimes (Node, Quarkus, Golang)
+    - Support for creating, building and deploying Knative Functions for multiple runtimes (Node, Quarkus, Golang)
 
     # Further Information
     For documentation on OpenShift Serverless, see:
