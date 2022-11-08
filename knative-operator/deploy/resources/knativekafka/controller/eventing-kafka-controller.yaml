@@ -21,7 +21,7 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
@@ -48,7 +48,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   group: eventing.knative.dev
   names:
@@ -102,15 +102,15 @@ spec:
                 contentMode:
                   description: |
                     CloudEvent content mode of Kafka messages sent to the topic.
-                    Possible values: [structured, binary] (default: structured)
+                    Possible values: [binary, structured] (default: binary)
                     - https://github.com/cloudevents/spec/blob/v1.0/spec.md#message
-                      - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#33-structured-content-mode
                       - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#32-binary-content-mode
+                      - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#33-structured-content-mode
                   type: string
                   enum:
-                    - structured
                     - binary
-                  default: structured
+                    - structured
+                  default: binary
                 auth:
                   description: 'Auth configurations'
                   type: object
@@ -229,7 +229,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
+    kafka.eventing.knative.dev/release: "v20221016-e3e35c5f0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -318,7 +318,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -350,7 +350,7 @@ metadata:
   name: config-kafka-source-defaults
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
   annotations:
     knative.dev/example-checksum: "b6ed351d"
 data:
@@ -411,7 +411,7 @@ metadata:
   name: kafka-channel-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 ---
@@ -434,7 +434,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v20220419-a62d7ca56"
+    kafka.eventing.knative.dev/release: "v20221016-e3e35c5f0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -689,6 +689,129 @@ spec:
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    kafka.eventing.knative.dev/release: v1.6
+    knative.dev/crd-install: "true"
+  name: consumergroups.internal.kafka.eventing.knative.dev
+spec:
+  group: internal.kafka.eventing.knative.dev
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+        scale:
+          # specReplicasPath defines the JSONPath inside a custom resource that corresponds to Scale.Spec.Replicas.
+          specReplicasPath: .spec.replicas
+          # statusReplicasPath defines the JSONPath inside a custom resource that corresponds to Scale.Status.Replicas.
+          statusReplicasPath: .status.replicas
+          # labelSelectorPath defines the JSONPath inside a custom resource that corresponds to Scale.Status.Selector
+          labelSelectorPath: .status.selector
+      schema:
+        openAPIV3Schema:
+          type: object
+          # this is a work around so we don't need to flesh out the
+          # schema for each version at this time
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+        - name: Subscriber
+          type: string
+          jsonPath: .status.subscriberUri
+        - name: Replicas
+          type: string
+          jsonPath: .spec.replicas
+        - name: Ready Replicas
+          type: string
+          jsonPath: .status.replicas
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+  names:
+    kind: ConsumerGroup
+    plural: consumergroups
+    singular: consumergroup
+  scope: Namespaced
+---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    kafka.eventing.knative.dev/release: v1.6
+    knative.dev/crd-install: "true"
+  name: consumers.internal.kafka.eventing.knative.dev
+spec:
+  group: internal.kafka.eventing.knative.dev
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: { }
+      schema:
+        openAPIV3Schema:
+          type: object
+          # this is a work around so we don't need to flesh out the
+          # schema for each version at this time
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+        - name: Subscriber
+          type: string
+          jsonPath: .status.subscriberUri
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+  names:
+    kind: Consumer
+    plural: consumers
+    singular: consumer
+  scope: Namespaced
+---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
 #     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -703,7 +826,7 @@ metadata:
   name: config-kafka-descheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 data:
     predicates: |+
                     []
@@ -725,7 +848,7 @@ metadata:
   name: config-kafka-features
   namespace: knative-eventing
   annotations:
-    knative.dev/example-checksum: "e914c9f1"
+    knative.dev/example-checksum: "76de22c2"
 data:
   _example: |-
     ################################
@@ -746,13 +869,23 @@ data:
     # 1. Enabled: The rate limiter is applied.
     # 2. Disabled: The rate limiter is not applied.
     dispatcher.rate-limiter: "disabled"
+    # Controls whether the dispatcher should record additional metrics.
+    # 1. Enabled: The metrics are recorded.
+    # 2. Disabled: The metrics are not recorded.
+    dispatcher.ordered-executor-metrics: "disabled"
+    # Controls whether the controller should autoscale consumer resources with KEDA
+    # 1. Enabled: KEDA autoscaling of consumers will be setup.
+    # 2. Disabled: KEDA autoscaling of consumers will not be setup.
+    controller.autoscale: "disabled"
   dispatcher.rate-limiter: "disabled"
+  dispatcher.ordered-executor-metrics: "disabled"
+  controller.autoscaler: "disabled"
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
   name: config-kafka-leader-election
   namespace: knative-eventing
   annotations:
@@ -818,7 +951,7 @@ metadata:
   name: config-kafka-scheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 data:
     predicates: |+
                   [
@@ -860,7 +993,7 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 data:
   config.xml: |
     <configuration>
@@ -891,7 +1024,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -934,7 +1067,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -974,8 +1107,14 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
+  - apiGroups:
+      - "*"
+    resources:
+      - configmaps
+    verbs:
+      - delete
   - apiGroups:
       - "*"
     resources:
@@ -987,6 +1126,7 @@ rules:
       - watch
       - update
       - create
+      - delete
   - apiGroups:
       - "*"
     resources:
@@ -1031,10 +1171,55 @@ rules:
     resources:
       - secrets
     verbs:
-      - list
       - get
-      - update
+      - list
       - watch
+      - update
+      - create
+      - delete
+
+  # for namespaced brokers, we need to be able to manage additional resources within the user namespaces
+  - apiGroups:
+    - "rbac.authorization.k8s.io"
+    resources:
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - clusterrolebindings
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+    - "*"
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
 
   # Scheduler permissions
   - apiGroups:
@@ -1154,6 +1339,22 @@ rules:
       - kafkasources/finalizers
     verbs:
       - update
+
+  - apiGroups:
+    - keda.sh
+    resources:
+    - scaledobjects
+    - scaledobjects/finalizers
+    - scaledobjects/status
+    - triggerauthentications
+    - triggerauthentications/status
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
 ---
 ---
 
@@ -1177,7 +1378,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 ---
 ---
 
@@ -1200,7 +1401,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1216,7 +1417,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1249,7 +1450,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -1259,7 +1460,7 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       securityContext:
         runAsNonRoot: true
@@ -1303,8 +1504,6 @@ spec:
               value: kafka-channel-channels-subscriptions
             - name: SINK_CONTRACT_CONFIG_MAP_NAME
               value: kafka-sink-sinks
-            - name: SOURCE_CONTRACT_CONFIG_MAP_NAME
-              value: kafka-source-sources
 
             - name: BROKER_DATA_PLANE_CONFIG_CONFIG_MAP_NAME
               value: config-kafka-broker-data-plane
@@ -1322,6 +1521,8 @@ spec:
             - name: SINK_CONTRACT_CONFIG_MAP_FORMAT
               value: json
             - name: SOURCE_CONTRACT_CONFIG_MAP_FORMAT
+              value: json
+            - name: CONSUMER_CONTRACT_CONFIG_MAP_FORMAT
               value: json
 
             - name: BROKER_INGRESS_NAME
@@ -1401,6 +1602,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+
           ports:
             - containerPort: 9090
               name: metrics
@@ -1412,8 +1614,10 @@ spec:
           terminationMessagePath: /dev/temination-log
           securityContext:
             allowPrivilegeEscalation: false
-            privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
       restartPolicy: Always
 ---
 ---
@@ -1437,7 +1641,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -1549,7 +1753,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 ---
 ---
 
@@ -1572,7 +1776,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -1602,7 +1806,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 webhooks:
   - admissionReviewVersions: [ "v1", "v1beta1" ]
     clientConfig:
@@ -1633,7 +1837,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: pods.defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 webhooks:
   # Dispatcher pods webhook config.
   - admissionReviewVersions: [ "v1", "v1beta1" ]
@@ -1674,7 +1878,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 # The data is populated at install time.
 ---
 # Copyright 2020 The Knative Authors
@@ -1696,7 +1900,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -1729,7 +1933,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -1738,7 +1942,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -1791,6 +1995,10 @@ spec:
 
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
 
           ports:
             - name: https-webhook
@@ -1824,7 +2032,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   ports:
     - name: https-webhook

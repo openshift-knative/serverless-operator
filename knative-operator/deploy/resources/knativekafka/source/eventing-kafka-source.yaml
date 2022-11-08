@@ -1,6 +1,4 @@
 ---
----
-
 # Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +12,56 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
+  annotations:
+    knative.dev/example-checksum: "8157ecb1"
 data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # All configurations in this ConfigMap are globally applied to each
+    # resource and there is no way to change them on a per-resource basis,
+    # unless otherwise specified.
+
+    # Consumer configuration are documented in https://kafka.apache.org/documentation/#consumerconfigs.
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.deserializer` and `value.deserializer`.
+    config-kafka-source-consumer.properties: |
+      key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer=io.cloudevents.kafka.CloudEventDeserializer
+      fetch.min.bytes=1
+
+    # Available Vertx WebClientOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/ext/web/client/WebClientOptions.html.
+    #
+    # Each egress resource (KafkaSource, Trigger, Subscription) creates an HTTP client in each pod where the resource is
+    # scheduled, meaning that a client isn't shared across multiple resources to provide better isolation.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-source-webclient.properties: |
+      idleTimeout=10000
   config-kafka-source-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
     value.serializer=io.cloudevents.kafka.CloudEventSerializer
@@ -142,7 +181,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   - apiGroups:
       - "*"
@@ -175,7 +214,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 ---
 ---
 
@@ -198,7 +237,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -225,14 +264,16 @@ roleRef:
 # limitations under the License.
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: kafka-source-dispatcher
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
+  serviceName: kafka-source-dispatcher
+  podManagementPolicy: "Parallel"
   selector:
     matchLabels:
       app: kafka-source-dispatcher
@@ -241,7 +282,8 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        kafka.eventing.knative.dev/release: v1.5
+        app.kubernetes.io/component: kafka-dispatcher
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -271,8 +313,8 @@ spec:
             - mountPath: /etc/config
               name: config-kafka-source-data-plane
               readOnly: true
-            - mountPath: /etc/sources
-              name: kafka-source-sources
+            - mountPath: /etc/contract-resources
+              name: contract-resources
               readOnly: true
             - mountPath: /tmp
               name: cache
@@ -300,7 +342,7 @@ spec:
             - name: WEBCLIENT_CONFIG_FILE_PATH
               value: /etc/config/config-kafka-source-webclient.properties
             - name: DATA_PLANE_CONFIG_FILE_PATH
-              value: /etc/sources/data
+              value: /etc/contract-resources/data
             - name: EGRESSES_INITIAL_CAPACITY
               value: "20"
             - name: INSTANCE_ID
@@ -323,17 +365,18 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
-          command:
-            - "java"
-          args:
-            - "-XX:+CrashOnOutOfMemoryError"
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
+
           resources:
             requests:
-              cpu: 200m
-              memory: 300Mi
+              cpu: 1000m
+              # 600Mi for virtual replicas + 100Mi overhead
+              memory: 700Mi
+            limits:
+              cpu: 2000m
+              memory: 1000Mi
+
           livenessProbe:
             failureThreshold: 3
             tcpSocket:
@@ -356,15 +399,14 @@ spec:
           terminationMessagePath: /dev/temination-log
           securityContext:
             allowPrivilegeEscalation: false
-            privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
       volumes:
         - name: config-kafka-source-data-plane
           configMap:
             name: config-kafka-source-data-plane
-        - name: kafka-source-sources
-          configMap:
-            name: kafka-source-sources
         - name: cache
           emptyDir: { }
         - name: kafka-config-logging

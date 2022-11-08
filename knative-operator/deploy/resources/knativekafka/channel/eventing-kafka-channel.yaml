@@ -1,6 +1,4 @@
 ---
----
-
 # Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +12,76 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
+  annotations:
+    knative.dev/example-checksum: "6ce544b6"
 data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # All configurations in this ConfigMap are globally applied to each
+    # resource and there is no way to change them on a per-resource basis,
+    # unless otherwise specified.
+
+    # Producer configuration are documented in https://kafka.apache.org/documentation/#producerconfigs
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.serializer` and `value.serializer`.
+    config-kafka-channel-producer.properties: |
+      key.serializer=org.apache.kafka.common.serialization.StringSerializer
+      value.serializer=io.cloudevents.kafka.CloudEventSerializer
+      acks=all
+
+    # Consumer configuration are documented in https://kafka.apache.org/documentation/#consumerconfigs.
+    # Some configurations might be forced by the actual code to make sure we respect the Knative Eventing
+    # delivery constraints, for example, `key.deserializer` and `value.deserializer`.
+    config-kafka-channel-consumer.properties: |
+      key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer=io.cloudevents.kafka.CloudEventDeserializer
+      fetch.min.bytes=1
+
+    # Available Vertx HTTPServerOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/core/http/HttpServerOptions.html.
+    #
+    # Each receiver pod creates a single HTTP server.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-channel-httpserver.properties: |
+      idleTimeout=0
+
+    # Available Vertx WebClientOptions are documented in
+    # https://vertx.io/docs/apidocs/io/vertx/ext/web/client/WebClientOptions.html.
+    #
+    # Each egress resource (KafkaSource, Trigger, Subscription) creates an HTTP client in each pod where the resource is
+    # scheduled, meaning that a client isn't shared across multiple resources to provide better isolation.
+    #
+    # The mapping is the following:
+    #  for each method starting with `set` there is a property that can be set with the name that follows the `set`
+    #  prefix starting with a lowercase letter.
+    # For example, there is a method called `setIdleTimeout` and the associated property is `idleTimeout`.
+    config-kafka-channel-webclient.properties: |
+      idleTimeout=10000
   config-kafka-channel-producer.properties: |
     key.serializer=org.apache.kafka.common.serialization.StringSerializer
     value.serializer=io.cloudevents.kafka.CloudEventSerializer
@@ -141,7 +200,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   - apiGroups:
       - "*"
@@ -174,7 +233,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 ---
 ---
 
@@ -197,7 +256,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -230,7 +289,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -240,7 +299,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -322,13 +381,8 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
-          command:
-            - "java"
-          args:
-            - "-XX:+CrashOnOutOfMemoryError"
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError"
           resources:
             requests:
               cpu: 200m
@@ -355,8 +409,10 @@ spec:
           terminationMessagePath: /dev/temination-log
           securityContext:
             allowPrivilegeEscalation: false
-            privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
       volumes:
         - name: config-kafka-channel-data-plane
           configMap:
@@ -400,7 +456,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -410,7 +466,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -493,13 +549,8 @@ spec:
             # This should be set according to initial delay seconds
             - name: WAIT_STARTUP_SECONDS
               value: "8"
-          command:
-            - "java"
-          args:
-            - "-XX:+CrashOnOutOfMemoryError"
-            - "-Dlogback.configurationFile=/etc/logging/config.xml"
-            - "-jar"
-            - "/app/app.jar"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError"
           resources:
             requests:
               cpu: 200m
@@ -528,8 +579,10 @@ spec:
           terminationMessagePath: /dev/temination-log
           securityContext:
             allowPrivilegeEscalation: false
-            privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
       volumes:
         - name: kafka-channel-channels-subscriptions
           configMap:
@@ -555,7 +608,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     app: kafka-channel-receiver

@@ -53,7 +53,6 @@ function default_knative_eventing_kafka_broker_images() {
   local tag
   tag=$(metadata.get dependencies.eventing_kafka_broker)
   eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
-
   export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher:${tag}"}
   export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver:${tag}"}
   export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-"${eventing_kafka_broker}-kafka-controller:${tag}"}
