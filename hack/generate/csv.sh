@@ -49,12 +49,12 @@ function default_knative_eventing_images() {
 function default_knative_eventing_kafka_broker_images() {
   local eventing_kafka_broker
   ekb=$(metadata.get dependencies.eventing_kafka_broker)
-  # If EKB dependency information has a length if 3, then we assume it is something like 1.24 and go with
+  # If EKB dependency information has a length smaller than 10, then we assume it is something like 1.2 or 1.2.3 and go with
   # using a single integration stream (https://docs.ci.openshift.org/docs/architecture/ci-operator/#publishing-to-an-integration-stream).
   #
   # Integration streams created by OpenShift CI put the component name as the tag.
-  # example: registry/knative-v1.4:kafka-broker-dispatcher
-  # example: registry/knative-v1.4:kafka-broker-receiver
+  # example: registry/knative-v1.2.3:kafka-broker-dispatcher
+  # example: registry/knative-v1.2.3:kafka-broker-receiver
   #
   # However, if EKB dependency information is longer than 3, we assume it is a commit hash like deadbeef. In that case
   # we go with using one integration stream per component which are tagged by commits.
@@ -64,7 +64,7 @@ function default_knative_eventing_kafka_broker_images() {
   # example: registry/kafka-broker-dispatcher:deadbeef
   # example: registry/kafka-broker-receiver:deadbeef
   #
-  if [ ${#ekb} -lt 4 ]; then
+  if [ ${#ekb} -lt 6 ]; then
     eventing_kafka_broker="${registry}/knative-v$(metadata.get dependencies.eventing_kafka_broker):knative-eventing-kafka-broker"
     export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher"}
     export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver"}
@@ -73,11 +73,11 @@ function default_knative_eventing_kafka_broker_images() {
     export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-"${eventing_kafka_broker}-post-install"}
   else
     eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
-    export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}/dispatcher:${ekb}"}
-    export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}/receiver:${ekb}"}
-    export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-"${eventing_kafka_broker}/kafka-controller:${ekb}"}
-    export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-"${eventing_kafka_broker}/webhook-kafka:${ekb}"}
-    export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-"${eventing_kafka_broker}/post-install:${ekb}"}
+    export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher:${ekb}"}
+    export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver:${ekb}"}
+    export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-"${eventing_kafka_broker}-kafka-controller:${ekb}"}
+    export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-"${eventing_kafka_broker}-webhook-kafka:${ekb}"}
+    export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-"${eventing_kafka_broker}-post-install:${ekb}"}
   fi
 }
 
