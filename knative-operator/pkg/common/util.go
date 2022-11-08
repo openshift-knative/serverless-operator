@@ -7,7 +7,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mf "github.com/manifestival/manifestival"
@@ -132,4 +134,12 @@ func BuildGVKToResourceMap(manifests ...mf.Manifest) map[schema.GroupVersionKind
 	}
 
 	return gvkToResource
+}
+
+type SkipPredicate struct {
+	predicate.Funcs
+}
+
+func (SkipPredicate) Delete(e event.DeleteEvent) bool {
+	return false
 }
