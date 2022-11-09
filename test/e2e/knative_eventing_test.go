@@ -43,7 +43,7 @@ func TestKnativeEventing(t *testing.T) {
 		}
 		// Check the status of deployments in the knative eventing namespace
 		for _, deployment := range knativeEventingControlPlaneDeploymentNames {
-			if _, err := test.WithDeploymentReady(caCtx, deployment, eventingNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deployment, eventingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}

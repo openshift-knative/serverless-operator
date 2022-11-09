@@ -74,7 +74,7 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
 		for i := range kafkaChannelDeployments {
 			deploymentName := kafkaChannelDeployments[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
@@ -83,7 +83,7 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for KafkaSource", func(t *testing.T) {
 		for i := range kafkaSourceDeployments {
 			deploymentName := kafkaSourceDeployments[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}
@@ -92,7 +92,7 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify correct deployment shape for Kafka control plane", func(t *testing.T) {
 		for i := range kafkaControlPlaneDeployments {
 			deploymentName := kafkaControlPlaneDeployments[i]
-			if _, err := test.WithDeploymentReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
 			}
 		}

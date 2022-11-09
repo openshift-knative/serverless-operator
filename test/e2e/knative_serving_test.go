@@ -34,7 +34,7 @@ func TestKnativeServing(t *testing.T) {
 			}
 
 			// Check the status of deployments in the knative serving namespace
-			if _, err := test.WithDeploymentReady(caCtx, deployment, servingNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deployment, servingNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
@@ -56,7 +56,7 @@ func TestKnativeServing(t *testing.T) {
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
-			if _, err := test.WithDeploymentReady(caCtx, deployment, ingressNamespace); err != nil {
+			if err := test.WithWorkloadReady(caCtx, deployment, ingressNamespace); err != nil {
 				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
 			}
 		}
