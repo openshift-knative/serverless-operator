@@ -50,7 +50,7 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   logger.info 'Starting eventing-kafka-broker tests'
 
-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}:knative-eventing-kafka-broker-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-test-{{.Name}}:${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
   export SYSTEM_NAMESPACE="${EVENTING_NAMESPACE}"
 
   run_e2e_tests
