@@ -1,6 +1,6 @@
-FROM quay.io/openshift/origin-operator-registry:4.11 AS opm
+FROM quay.io/openshift/origin-operator-registry:4.12 AS opm
 
-FROM quay.io/openshift/origin-base:4.11 as builder
+FROM quay.io/openshift/origin-base:4.12 as builder
 
 COPY --from=opm /bin/opm /bin/opm
 
