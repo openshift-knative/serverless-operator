@@ -179,9 +179,7 @@ replace (
 
 replace (
 	// Adjustments to align transitive deps
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.5.0
 	github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
-	github.com/cloudevents/sdk-go/v2 => github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0

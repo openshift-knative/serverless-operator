@@ -5,8 +5,8 @@ cloud.google.com/go/internal
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
-# cloud.google.com/go/compute v1.9.0 => cloud.google.com/go/compute v1.5.0
-## explicit; go 1.15
+# cloud.google.com/go/compute v1.9.0
+## explicit; go 1.17
 cloud.google.com/go/compute/metadata
 # cloud.google.com/go/iam v0.3.0
 ## explicit; go 1.15
@@ -73,8 +73,8 @@ github.com/cloudevents/sdk-go/sql/v2/gen
 github.com/cloudevents/sdk-go/sql/v2/parser
 github.com/cloudevents/sdk-go/sql/v2/runtime
 github.com/cloudevents/sdk-go/sql/v2/utils
-# github.com/cloudevents/sdk-go/v2 v2.12.0 => github.com/cloudevents/sdk-go/v2 v2.8.0
-## explicit; go 1.14
+# github.com/cloudevents/sdk-go/v2 v2.12.0
+## explicit; go 1.17
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
 github.com/cloudevents/sdk-go/v2/binding/format
@@ -1664,9 +1664,7 @@ sigs.k8s.io/yaml
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221109114908-65d7a94559c7
 # knative.dev/serving => github.com/openshift/knative-serving v0.10.1-0.20221104041031-904fbb42eeaf
-# cloud.google.com/go/compute => cloud.google.com/go/compute v1.5.0
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
-# github.com/cloudevents/sdk-go/v2 => github.com/cloudevents/sdk-go/v2 v2.8.0
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 # github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
