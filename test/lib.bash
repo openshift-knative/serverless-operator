@@ -250,7 +250,7 @@ EOF
     "--eventingversion=${KNATIVE_EVENTING_VERSION/vknative-v/}" \
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
-    "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS}" \
+    "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS/vknative-v/}" \
     "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS}" \
     --resolvabledomain \
     --https)
