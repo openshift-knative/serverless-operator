@@ -85,11 +85,11 @@ type KafkaSinkSpec struct {
 	// - structured
 	// - binary
 	//
-	// - default: structured.
+	// - default: binary.
 	//
 	// - https://github.com/cloudevents/spec/blob/v1.0/spec.md#message
-	//	 - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#33-structured-content-mode
 	//	 - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#32-binary-content-mode'
+	//	 - https://github.com/cloudevents/spec/blob/v1.0/kafka-protocol-binding.md#33-structured-content-mode
 	//
 	// +optional
 	ContentMode *string `json:"contentMode,omitempty"`
@@ -101,6 +101,11 @@ type KafkaSinkSpec struct {
 type Auth struct {
 	// Auth Secret
 	Secret *Secret `json:"secret,omitempty"`
+}
+
+func (a *Auth) HasAuth() bool {
+	return a != nil && a.Secret != nil &&
+		a.Secret.Ref != nil && a.Secret.Ref.Name != ""
 }
 
 type Secret struct {
