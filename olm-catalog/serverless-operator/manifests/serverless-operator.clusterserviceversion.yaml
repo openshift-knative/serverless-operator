@@ -699,7 +699,7 @@ spec:
                       - name: "CURRENT_VERSION"
                         value: "1.27.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
-                        value: "knative-v1.6"
+                        value: "1.6"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true

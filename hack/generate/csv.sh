@@ -207,7 +207,8 @@ done
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
-add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "$(metadata.get dependencies.eventing_kafka_broker)"
+ekb_version=$(metadata.get dependencies.eventing_kafka_broker)
+add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Add Serverless version to be used for naming storage jobs for Serving, Eventing
 add_upstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
