@@ -190,6 +190,7 @@ function run_rolling_upgrade_tests {
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version=$(versions.major_minor "${KNATIVE_EVENTING_VERSION}")
   eventing_kafka_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_VERSION}")
+  # TODO: probably need something
   eventing_kafka_broker_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}")
 
   # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
@@ -228,6 +229,7 @@ EOF
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
+  # TODO: should be fine as it is only used for checking the version
   common_opts=(./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
     "--channels=${channels}" \
