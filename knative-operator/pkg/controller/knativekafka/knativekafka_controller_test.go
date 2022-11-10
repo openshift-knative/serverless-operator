@@ -14,7 +14,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -164,7 +163,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			// check if things that shouldnt exist is deleted
 			for _, d := range test.doesNotExist {
 				_, _, err := getPodTemplateSpec(cl, d)
-				if err == nil || !errors.IsNotFound(err) {
+				if err == nil || !apierrors.IsNotFound(err) {
 					t.Fatalf("exists: (%v)", err)
 				}
 			}
