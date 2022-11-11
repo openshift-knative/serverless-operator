@@ -39,10 +39,18 @@ jobs:
         with:
           path: ./src/github.com/${{ github.repository }}
 
-      - name:
+      - name: Set CURRENT_VERSION_IMAGES on push
         if: github.event_name == 'push' && github.ref_name != 'main'
         run: |
           branch="${{ github.ref_name }}.0" # example output: "release-1.26.0"
+          # Replace "release-" with "v", so that the final variable is like "v1.27.0"
+          ::set-env name=CURRENT_VERSION_IMAGES::${branch/release-/v}
+        shell: bash
+
+      - name: Set CURRENT_VERSION_IMAGES on PRs
+        if: github.event_name == 'pull_request' && github.base_ref != 'main'
+        run: |
+          branch="${{ github.base_ref }}.0" # example output: "release-1.26.0"
           # Replace "release-" with "v", so that the final variable is like "v1.27.0"
           ::set-env name=CURRENT_VERSION_IMAGES::${branch/release-/v}
         shell: bash
