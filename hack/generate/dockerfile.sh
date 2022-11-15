@@ -21,6 +21,7 @@ values[EVENTING_KAFKA_BROKER_VERSION]="$(metadata.get dependencies.eventing_kafk
 values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
 values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocpVersion.label')"
+values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 
 # Start fresh
