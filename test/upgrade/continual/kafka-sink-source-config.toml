@@ -5,5 +5,9 @@ tracingConfig = '{{- .TracingConfig -}}'
 address = '{{- .Endpoint -}}'
 interval = {{ .Config.Interval.Nanoseconds }}
 
+[receiver]
+  [receiver.teardown]
+    duration = 10000000000 # 10 seconds
+
 [forwarder]
 target = '{{- .ForwarderTarget -}}'
