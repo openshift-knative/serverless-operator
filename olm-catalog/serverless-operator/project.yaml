@@ -18,9 +18,9 @@ requirements:
   golang: '1.17'
   nodejs: 16.x
   ocpVersion:
-    min: '4.6'
+    min: '4.8'
     max: '4.11'
-    label: 'v4.6'
+    label: 'v4.8'
 
 dependencies:
   serving: 1.5.0
@@ -43,7 +43,7 @@ dependencies:
   eventing_kafka_broker: 1.5
   # eventing-kafka-broker midstream branch name
   eventing_kafka_broker_artifacts_branch: release-v1.5
-  cli: 1.4.1
+  cli: 1.5.0
   operator: 1.5.2
   # Previous versions required for downgrade testing
   previous:

@@ -444,7 +444,7 @@ spec:
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:openshift-knative-operator
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -545,7 +545,7 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.5:client-plugin-event-sender"
                       - name: "CURRENT_VERSION"
                         value: "1.26.0"
                     securityContext:
@@ -571,7 +571,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v1.4.1:kn-cli-artifacts
+                    image: registry.ci.openshift.org/openshift/knative-v1.5.0:kn-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -586,7 +586,7 @@ spec:
                 containers:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:knative-operator
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -694,7 +694,7 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.5:client-plugin-event-sender"
                       - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
                         value: "registry.ci.openshift.org/openshift/knative-v1.5:knative-eventing-kafka-broker-receiver"
                       - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
@@ -745,7 +745,7 @@ spec:
                 containers:
                   - name: knative-openshift-ingress
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:knative-openshift-ingress
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -893,13 +893,13 @@ spec:
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:openshift-knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:knative-operator
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.26.0:knative-openshift-ingress
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-v1.5.0:knative-serving-queue"
     - name: "IMAGE_activator"
@@ -953,7 +953,7 @@ spec:
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+      image: "registry.ci.openshift.org/knative/release-1.5:client-plugin-event-sender"
     - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
       image: "registry.ci.openshift.org/openshift/knative-v1.5:knative-eventing-kafka-broker-receiver"
     - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
