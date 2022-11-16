@@ -698,11 +698,13 @@ func TestCheckHAComponent(t *testing.T) {
 func TestXmlConfig(t *testing.T) {
 	cases := []struct {
 		name        string
-		logLevel    string
+		logLevel    *v1alpha1.Logging
 		returnedXML string
 	}{{
-		name:     "Set level to INFO",
-		logLevel: "INFO",
+		name: "Set level to INFO",
+		logLevel: &v1alpha1.Logging{
+			Level: "INFO",
+		},
 		returnedXML: `    <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
@@ -712,8 +714,20 @@ func TestXmlConfig(t *testing.T) {
       </root>
     </configuration>`,
 	}, {
-		name:     "Set level to ERROR",
-		logLevel: "ERROR",
+		name: "Set level to INFO by default",
+		returnedXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+	}, {
+		name: "Set level to ERROR",
+		logLevel: &v1alpha1.Logging{
+			Level: "ERROR",
+		},
 		returnedXML: `    <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
