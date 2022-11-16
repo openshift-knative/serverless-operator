@@ -13,11 +13,11 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.5"
-EVENTING_VERSION="release-v1.5"
+KN_VERSION="release-1.6"
+EVENTING_VERSION="release-v1.6"
 EVENTING_KAFKA_VERSION="release-v1.4"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.5"
-SERVING_VERSION="release-v1.5"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.6"
+SERVING_VERSION="release-v1.6"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
@@ -60,7 +60,7 @@ if (( GO_GET )); then
 fi
 
 # Prune modules.
-go mod tidy
+go mod tidy -compat=1.17
 go mod vendor
 
 # Remove unnecessary files.

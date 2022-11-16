@@ -33,21 +33,12 @@ func VolumeMask(ctx context.Context, in *corev1.Volume) *corev1.Volume {
 	if in == nil {
 		return nil
 	}
-	cfg := config.FromContextOrDefaults(ctx)
 
 	out := new(corev1.Volume)
 
 	// Allowed fields
 	out.Name = in.Name
 	out.VolumeSource = in.VolumeSource
-
-	if cfg.Features.PodSpecVolumesEmptyDir != config.Disabled {
-		out.EmptyDir = in.EmptyDir
-	}
-
-	if cfg.Features.PodSpecPersistentVolumeClaim != config.Disabled {
-		out.PersistentVolumeClaim = in.PersistentVolumeClaim
-	}
 
 	return out
 }
@@ -638,9 +629,6 @@ func SecurityContextMask(ctx context.Context, in *corev1.SecurityContext) *corev
 	// RunAsNonRoot when unset behaves the same way as false
 	// We do want the ability for folks to set this value to true
 	out.RunAsNonRoot = in.RunAsNonRoot
-	// AllowPrivilegeEscalation when unset can behave the same way as true
-	// We do want the ability for folks to set this value to false
-	out.AllowPrivilegeEscalation = in.AllowPrivilegeEscalation
 
 	// SeccompProfile defaults to "unconstrained", but the safe values are
 	// "RuntimeDefault" or "Localhost" (with localhost path set)
@@ -650,6 +638,7 @@ func SecurityContextMask(ctx context.Context, in *corev1.SecurityContext) *corev
 	// This list is unnecessary, but added here for clarity
 	out.Privileged = nil
 	out.SELinuxOptions = nil
+	out.AllowPrivilegeEscalation = nil
 	out.ProcMount = nil
 
 	return out

@@ -32,6 +32,8 @@ const (
 	DefaultTopicReplicationFactorConfigMapKey = "default.topic.replication.factor"
 	BootstrapServersConfigMapKey              = "bootstrap.servers"
 
+	GroupIDConfigMapKey = "group.id"
+
 	TopicAnnotation = "default.topic"
 )
 
