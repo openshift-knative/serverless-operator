@@ -11,7 +11,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func TestInjectEnvironmentIntoDeployment(t *testing.T) {
+// TestInjectEnvironment tests InjectEnvironmentIntoDeployment and InjectCommonEnvironment.
+func TestInjectEnvironment(t *testing.T) {
 	spec := func(containers ...corev1.Container) appsv1.DeploymentSpec {
 		return appsv1.DeploymentSpec{
 			Template: corev1.PodTemplateSpec{
@@ -35,7 +36,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment: "foo",
 		container:  "container1",
 		envs:       []corev1.EnvVar{envVar("foo", "bar")},
-		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -51,7 +52,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 			}),
 		},
 	}, {
@@ -59,7 +60,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment: "test",
 		container:  "container1",
 		envs:       []corev1.EnvVar{envVar("foo", "bar")},
-		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -78,10 +79,10 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("foo", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("foo", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 			}, corev1.Container{
 				Name: "container2",
-				Env:  []corev1.EnvVar{envVar("2", "2"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+				Env:  []corev1.EnvVar{envVar("2", "2"), envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 			}),
 		},
 	}, {
@@ -89,7 +90,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment: "test",
 		container:  "container2",
 		envs:       []corev1.EnvVar{envVar("2", "bar")},
-		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -108,10 +109,10 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 			}, corev1.Container{
 				Name: "container2",
-				Env:  []corev1.EnvVar{envVar("2", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
+				Env:  []corev1.EnvVar{envVar("2", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.0.0")},
 			}),
 		},
 	}}
@@ -127,7 +128,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 				t.Fatal("Unexpected error from transformer", err)
 			}
 
-			if err := InjectEnvironmentIntoDeployment("*", "*", test.commonEnvs...)(u); err != nil {
+			if err := InjectCommonEnvironment(test.commonEnvs...)(u); err != nil {
 				t.Fatal("Unexpected error from transformer", err)
 			}
 

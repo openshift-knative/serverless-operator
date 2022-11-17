@@ -8,7 +8,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -40,9 +39,7 @@ func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 	tf := []mf.Transformer{
 		common.InjectCommonLabelIntoNamespace(),
 		common.VersionedJobNameTransform(),
-		common.InjectEnvironmentIntoDeployment("*", "*",
-			corev1.EnvVar{Name: "KUBERNETES_MIN_VERSION", Value: common.KubernetesMinVersion},
-		),
+		common.InjectCommonEnvironment(),
 	}
 	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)

@@ -21,13 +21,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 )
 
-const (
-	// KubernetesMinVersion defines the value for KUBERNETES_MIN_VERSION.
-	// Since CSV has the similar validation, we avoid the validation check
-	// by setting it to v1.0.0.
-	KubernetesMinVersion = "v1.0.0"
-)
-
 // InjectEnvironmentIntoDeployment injects the specified environment variables into the
 // specified deployment/container.
 // Note: We're not deleting empty environment variables and instead set them to empty
@@ -37,7 +30,7 @@ func InjectEnvironmentIntoDeployment(deploymentName, containerName string, envs 
 		containers := deploy.Spec.Template.Spec.Containers
 		for i := range containers {
 			c := &containers[i]
-			if c.Name != containerName && containerName != "*" {
+			if c.Name != containerName {
 				continue
 			}
 
@@ -66,10 +59,9 @@ func upsert(orgEnv []corev1.EnvVar, val corev1.EnvVar) []corev1.EnvVar {
 
 // transformDeployment returns a transformer that transforms a deployment with the given
 // name.
-// The given deployment name "*" means all deployment is applied.
 func transformDeployment(name string, f func(*appsv1.Deployment) error) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() != "Deployment" || (u.GetName() != name && name != "*") {
+		if u.GetKind() != "Deployment" || u.GetName() != name {
 			return nil
 		}
 
