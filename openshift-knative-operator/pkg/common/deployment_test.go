@@ -28,12 +28,14 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment string
 		container  string
 		envs       []corev1.EnvVar
+		commonEnvs []corev1.EnvVar
 		want       *appsv1.Deployment
 	}{{
 		name:       "ignore",
 		deployment: "foo",
 		container:  "container1",
 		envs:       []corev1.EnvVar{envVar("foo", "bar")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -49,7 +51,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 			}),
 		},
 	}, {
@@ -57,6 +59,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment: "test",
 		container:  "container1",
 		envs:       []corev1.EnvVar{envVar("foo", "bar")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -75,10 +78,10 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("foo", "bar")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("foo", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 			}, corev1.Container{
 				Name: "container2",
-				Env:  []corev1.EnvVar{envVar("2", "2")},
+				Env:  []corev1.EnvVar{envVar("2", "2"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 			}),
 		},
 	}, {
@@ -86,6 +89,7 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 		deployment: "test",
 		container:  "container2",
 		envs:       []corev1.EnvVar{envVar("2", "bar")},
+		commonEnvs: []corev1.EnvVar{envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 		in: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test",
@@ -104,10 +108,10 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			},
 			Spec: spec(corev1.Container{
 				Name: "container1",
-				Env:  []corev1.EnvVar{envVar("1", "1")},
+				Env:  []corev1.EnvVar{envVar("1", "1"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 			}, corev1.Container{
 				Name: "container2",
-				Env:  []corev1.EnvVar{envVar("2", "bar")},
+				Env:  []corev1.EnvVar{envVar("2", "bar"), envVar("KUBERNETES_MIN_VERSION", "v1.2.3")},
 			}),
 		},
 	}}
@@ -120,6 +124,10 @@ func TestInjectEnvironmentIntoDeployment(t *testing.T) {
 			}
 
 			if err := InjectEnvironmentIntoDeployment(test.deployment, test.container, test.envs...)(u); err != nil {
+				t.Fatal("Unexpected error from transformer", err)
+			}
+
+			if err := InjectEnvironmentIntoDeployment("*", "*", test.commonEnvs...)(u); err != nil {
 				t.Fatal("Unexpected error from transformer", err)
 			}
 
