@@ -35,9 +35,10 @@ jobs:
           sudo mv /usr/bin/yq /usr/local/bin/yq
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: ./src/github.com/${{ github.repository }}
+          fetch-depth: 0
 
       - name: Merge upstream
         if: github.event_name == 'pull_request'
