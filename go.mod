@@ -31,7 +31,7 @@ require (
 	knative.dev/networking v0.0.0-20220705142707-f087178076e4
 	knative.dev/operator v0.33.1
 	knative.dev/pkg v0.0.0-20221109160814-e190f87d65ab
-	knative.dev/serving v0.32.0
+	knative.dev/serving v0.33.0
 	sigs.k8s.io/controller-runtime v0.12.3
 )
 
@@ -197,7 +197,5 @@ replace (
 replace knative.dev/pkg => knative.dev/pkg v0.0.0-20221109160716-136f2e3999cc
 
 replace knative.dev/hack => knative.dev/hack v0.0.0-20220701014203-65c463ac8c98
-
-replace knative.dev/operator => knative.dev/operator v0.32.2
 
 replace knative.dev/networking => knative.dev/networking v0.0.0-20220705142707-f087178076e4

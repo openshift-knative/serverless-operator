@@ -20,7 +20,6 @@ import (
 
 	eventingversioned "knative.dev/eventing/pkg/client/clientset/versioned"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
-	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 
@@ -40,7 +39,6 @@ type Context struct {
 type Clients struct {
 	Kube               *kubernetes.Clientset
 	Operator           operatorv1beta1.OperatorV1beta1Interface
-	OperatorAlpha      operatorv1alpha1.OperatorV1alpha1Interface
 	Serving            *servingversioned.Clientset
 	Eventing           *eventingversioned.Clientset
 	OLM                olmversioned.Interface
@@ -129,7 +127,6 @@ func NewClients(kubeconfig string) (*Clients, error) {
 	clients.Kube = kubernetes.NewForConfigOrDie(cfg)
 	clients.Dynamic = dynamic.NewForConfigOrDie(cfg)
 	clients.Operator = operatorversioned.NewForConfigOrDie(cfg).OperatorV1beta1()
-	clients.OperatorAlpha = operatorversioned.NewForConfigOrDie(cfg).OperatorV1alpha1()
 	clients.Serving = servingversioned.NewForConfigOrDie(cfg)
 	clients.Eventing = eventingversioned.NewForConfigOrDie(cfg)
 	clients.Route = routev1.NewForConfigOrDie(cfg)

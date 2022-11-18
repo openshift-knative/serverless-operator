@@ -5,7 +5,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/operator/pkg/apis/operator"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeserving"
@@ -36,10 +35,7 @@ func main() {
 }
 
 func newConversionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-	var (
-		v1beta1  = operatorv1beta1.SchemeGroupVersion.Version
-		v1alpha1 = operatorv1alpha1.SchemeGroupVersion.Version
-	)
+	var v1beta1 = operatorv1beta1.SchemeGroupVersion.Version
 
 	return conversion.NewConversionController(ctx,
 		// The path on which to serve the webhook
@@ -49,18 +45,16 @@ func newConversionController(ctx context.Context, cmw configmap.Watcher) *contro
 		map[schema.GroupKind]conversion.GroupKindConversion{
 			operatorv1beta1.Kind("KnativeServing"): {
 				DefinitionName: operator.KnativeServingResource.String(),
-				HubVersion:     v1alpha1,
+				HubVersion:     v1beta1,
 				Zygotes: map[string]conversion.ConvertibleObject{
-					v1alpha1: &operatorv1alpha1.KnativeServing{},
-					v1beta1:  &operatorv1beta1.KnativeServing{},
+					v1beta1: &operatorv1beta1.KnativeServing{},
 				},
 			},
 			operatorv1beta1.Kind("KnativeEventing"): {
 				DefinitionName: operator.KnativeEventingResource.String(),
-				HubVersion:     v1alpha1,
+				HubVersion:     v1beta1,
 				Zygotes: map[string]conversion.ConvertibleObject{
-					v1alpha1: &operatorv1alpha1.KnativeEventing{},
-					v1beta1:  &operatorv1beta1.KnativeEventing{},
+					v1beta1: &operatorv1beta1.KnativeEventing{},
 				},
 			},
 		},

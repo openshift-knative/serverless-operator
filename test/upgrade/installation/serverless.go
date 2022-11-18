@@ -2,10 +2,10 @@ package installation
 
 import (
 	"fmt"
+	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 )
 
@@ -88,19 +88,19 @@ func DowngradeServerless(ctx *test.Context) error {
 	}
 
 	knativeServing := "knative-serving"
-	if _, err := v1alpha1.WaitForKnativeServingState(ctx,
+	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
-		v1alpha1.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
+		v1beta1.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("serving downgrade failed: %w", err)
 	}
 
 	knativeEventing := "knative-eventing"
-	if _, err := v1alpha1.WaitForKnativeEventingState(ctx,
+	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
-		v1alpha1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
+		v1beta1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("eventing downgrade failed: %w", err)
 	}
