@@ -23,15 +23,15 @@ requirements:
     label: 'v4.8'
 
 dependencies:
-  serving: 1.5.0
+  serving: 1.6.0
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.5
+  serving_artifacts_branch: release-v1.6
 
   # versions for networking components
-  kourier: 1.5.0
-  net_kourier_artifacts_branch: release-1.5
-  net_istio: 1.5.0
-  net_istio_artifacts_branch: release-1.5
+  kourier: 1.6.0
+  net_kourier_artifacts_branch: release-1.6
+  net_istio: 1.6.0
+  net_istio_artifacts_branch: release-1.6
   maistra: 2.1.0
 
   eventing: 1.5
@@ -47,7 +47,7 @@ dependencies:
   operator: 1.5.2
   # Previous versions required for downgrade testing
   previous:
-    serving: 1.5.0
+    serving: 1.6.0
     eventing: 1.5
     eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.5
