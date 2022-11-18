@@ -2,10 +2,10 @@ package installation
 
 import (
 	"fmt"
-	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"strings"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 )
 

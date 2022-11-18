@@ -680,7 +680,7 @@ spec:
         - apiGroups:
             - operator.serverless.openshift.io
           apiVersions:
-            - v1beta1
+            - v1alpha1
           operations:
             - CREATE
             - UPDATE
