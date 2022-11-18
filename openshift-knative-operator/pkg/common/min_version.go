@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	// KubernetesMinVersion defines the value for KUBERNETES_MIN_VERSION.
+	// fakeKubernetesMinVersion defines the value for KUBERNETES_MIN_VERSION.
 	// Since CSV has the similar validation, we avoid the validation check
 	// by setting it to v1.0.0.
-	KubernetesMinVersion = "v1.0.0"
+	fakeKubernetesMinVersion = "v1.0.0"
 )
 
 // InjectCommonEnvironment injects the specified environment variables into the
@@ -56,7 +56,7 @@ func InjectCommonEnvironment(envs ...corev1.EnvVar) mf.Transformer {
 		for i := range podSpec.Containers {
 			podSpec.Containers[i].Env = append(podSpec.Containers[i].Env, corev1.EnvVar{
 				Name:  "KUBERNETES_MIN_VERSION",
-				Value: KubernetesMinVersion,
+				Value: fakeKubernetesMinVersion,
 			})
 		}
 		return convert(podSpec)
