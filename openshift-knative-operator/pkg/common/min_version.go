@@ -49,7 +49,7 @@ func InjectCommonEnvironment(envs ...corev1.EnvVar) mf.Transformer {
 		}
 
 		if podSpec == nil {
-			// Do not need to inject the env valiable.
+			// Do not need to inject the env variable.
 			return nil
 		}
 
