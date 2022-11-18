@@ -34,6 +34,7 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 		ResourceRequirementsTransform(obj, logger),
 		OverridesTransform(obj.GetSpec().GetWorkloadOverrides(), logger),
 		ServicesTransform(obj, logger),
+		PodDisruptionBudgetsTransform(obj, logger),
 	}
 }
 
