@@ -232,7 +232,7 @@ EOF
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
-  export EVENTING_UPGRADE_TESTS_SERVING_USE=true
+  export EVENTING_UPGRADE_TESTS_SERVING_USE=false
   export EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola
   export GATEWAY_OVERRIDE="kourier"
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
