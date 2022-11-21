@@ -1573,7 +1573,7 @@ knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.33.0 => github.com/openshift-knative/serving v0.10.1-0.20221115150227-9628e226a085
+# knative.dev/serving v0.33.0 => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
 ## explicit; go 1.17
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
