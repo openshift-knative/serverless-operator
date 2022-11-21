@@ -51,6 +51,57 @@ func TestOverrideKourierNamespace(t *testing.T) {
 	}
 }
 
+func TestKourierServiceAppProtocol(t *testing.T) {
+	ks := &operatorv1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "test",
+		},
+	}
+
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "kourier",
+			Labels: map[string]string{providerLabel: "kourier"},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Name: "http2",
+			}},
+		},
+	}
+
+	appProtocolName := "h2c"
+	expected := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "kourier",
+			Labels: map[string]string{providerLabel: "kourier"},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Name:        "http2",
+				AppProtocol: &appProtocolName,
+			}},
+		},
+	}
+
+	got := &unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(svc, got, nil); err != nil {
+		t.Fatal("Failed to convert service to unstructured", err)
+	}
+
+	want := &unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(expected, want, nil); err != nil {
+		t.Fatal("Failed to convert service to unstructured", err)
+	}
+
+	addKourierAppProtocol(ks)(got)
+
+	if !cmp.Equal(got, want) {
+		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
+	}
+}
+
 func TestKourierEnvValue(t *testing.T) {
 	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
