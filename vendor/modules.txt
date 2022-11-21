@@ -1266,7 +1266,7 @@ k8s.io/utils/trace
 ## explicit; go 1.15
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.35.1-0.20221110170317-23a7b568e00f => github.com/openshift/knative-eventing v0.99.1-0.20221115093546-ae416f88b662
+# knative.dev/eventing v0.35.1-0.20221110170317-23a7b568e00f => github.com/openshift-knative/eventing v0.99.1-0.20221116150658-ac25a60ba401
 ## explicit; go 1.17
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1578,7 +1578,7 @@ knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.32.0 => github.com/openshift-knative/serving v0.10.1-0.20221115150227-9628e226a085
+# knative.dev/serving v0.32.0 => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
 ## explicit; go 1.17
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1661,10 +1661,10 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift/knative-eventing v0.99.1-0.20221115093546-ae416f88b662
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20221116150658-ac25a60ba401
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221111104213-b4f7de6c2f79
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221115150227-9628e226a085
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
