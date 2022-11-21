@@ -27,7 +27,7 @@ FLOATING_DEPS=(
 
 REPLACE_DEPS=(
   "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
-  "knative.dev/eventing=github.com/openshift/knative-eventing@${EVENTING_VERSION}"
+  "knative.dev/eventing=github.com/openshift-knative/eventing@${EVENTING_VERSION}"
   "knative.dev/eventing-kafka=github.com/openshift-knative/eventing-kafka@${EVENTING_KAFKA_VERSION}"
   "knative.dev/serving=github.com/openshift-knative/serving@${SERVING_VERSION}"
   "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
