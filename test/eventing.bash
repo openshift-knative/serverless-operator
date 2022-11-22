@@ -6,7 +6,7 @@ set -e
 function upstream_knative_eventing_e2e {
   logger.info 'Running eventing tests'
 
-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-${KNATIVE_EVENTING_VERSION}:knative-eventing-test-{{.Name}}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-test-{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   cd "${KNATIVE_EVENTING_HOME}"
 
