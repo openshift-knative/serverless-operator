@@ -34,14 +34,14 @@ dependencies:
   net_istio_artifacts_branch: release-1.4
   maistra: 2.1.0
 
-  eventing: 1.4
+  eventing: knative-v1.4
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.4
 
   eventing_kafka: 1.1.0
-  # eventing-kafka-broker promotion version without the `knative-v` prefix
-  eventing_kafka_broker: 1.4
-  # eventing-kafka-broker midstream branch name
+  # eventing-kafka-broker promotion tag
+  eventing_kafka_broker: knative-v1.4
+  # eventing-kafka-broker midstream branch or commit
   eventing_kafka_broker_artifacts_branch: release-v1.4
   cli: 1.4.1
   # Func s2i related images should be temporary solution until Tekton Catalog is updated
