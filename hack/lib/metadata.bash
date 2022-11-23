@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Make sure yq is on PATH.
-yq > /dev/null || exit 127
+# Ensure -mod=vendor is removed
+GOFLAGS="${GOFLAGS:-}"
+export GOFLAGS="${GOFLAGS#-mod=vendor}"
 
 #######################################
 # Gets a value from a metadata file
@@ -16,5 +17,5 @@ function metadata.get {
   local metadata_file
   metadata_file="$(dirname "${BASH_SOURCE[0]}")/../../olm-catalog/serverless-operator/project.yaml"
 
-  yq read "${metadata_file}" "${1}"
+  go run github.com/mikefarah/yq/v3@latest read "${metadata_file}" "${1}"
 }

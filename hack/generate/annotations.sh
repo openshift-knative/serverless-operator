@@ -18,6 +18,7 @@ cp "$template" "$target"
 
 for name in "${!values[@]}"; do
   echo "Value: ${name} -> ${values[$name]}"
-  yq write --inplace --tag '!!str' "$target" \
+  go run github.com/mikefarah/yq/v3@latest \
+    write --inplace --tag '!!str' "$target" \
     "annotations[$name]" "${values[$name]}"
 done

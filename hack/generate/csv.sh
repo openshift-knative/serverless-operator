@@ -152,7 +152,7 @@ declare -A vars
 vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
 
 function add_related_image {
-  cat << EOF | yq write --inplace --script - "$1"
+  cat << EOF | go run github.com/mikefarah/yq/v3@latest write --inplace --script - "$1"
 - command: update
   path: spec.relatedImages[+]
   value:
@@ -162,7 +162,7 @@ EOF
 }
 
 function add_downstream_operator_deployment_env {
-  cat << EOF | yq write --inplace --script - "$1"
+  cat << EOF | go run github.com/mikefarah/yq/v3@latest write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
   value:
@@ -176,7 +176,7 @@ EOF
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
 function add_upstream_operator_deployment_env {
-  cat << EOF | yq write --inplace --script - "$1"
+  cat << EOF | go run github.com/mikefarah/yq/v3@latest write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
   value:
@@ -210,11 +210,11 @@ add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_
 add_upstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+go run github.com/mikefarah/yq/v3@latest write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"
-  yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
+  go run github.com/mikefarah/yq/v3@latest write --inplace "$target" "$name" "${yaml_keys[$name]}"
 done
 
 for name in "${!vars[@]}"; do

@@ -26,14 +26,6 @@ jobs:
         with:
           go-version: 1.17.x
 
-      - name: Install prerequisites
-        env:
-          YQ_VERSION: 3.4.0
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          sudo mv /usr/bin/yq /usr/local/bin/yq
-
       - name: Checkout
         uses: actions/checkout@v2
         with:

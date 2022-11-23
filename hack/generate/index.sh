@@ -9,7 +9,7 @@ target="${2:?Provide a target annotations file as arg[2]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 function add_entries {
-  cat << EOF | yq write --inplace --script - "$1"
+  cat << EOF | go run github.com/mikefarah/yq/v3@latest write --inplace --script - "$1"
 - command: update
   path: entries
   value:

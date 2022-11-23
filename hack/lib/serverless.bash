@@ -153,14 +153,14 @@ function deploy_knativeserving_cr {
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
     # Disable internal encryption.
-    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+    go run github.com/mikefarah/yq/v3@latest delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
   # When upgrading from 1.24 or older, disable internal TLS. It works since 1.25.
   if [[ "$INSTALL_PREVIOUS_VERSION" == "true" ]]; then
     if versions.le "$(versions.major_minor "$PREVIOUS_VERSION")" "1.24"; then
       logger.warn "Disabling internal encryption. Unsupported version."
-      yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+      go run github.com/mikefarah/yq/v3@latest delete --inplace "$serving_cr" spec.config.network.internal-encryption
     fi
   fi
 
@@ -205,7 +205,7 @@ spec:
     name: autoscaler
 EOF
 
-  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+  go run github.com/mikefarah/yq/v3@latest merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
 }
