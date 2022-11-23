@@ -73,6 +73,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 		addKourierEnvValues(ks),
 		enableSecretInformerFiltering(ks),
 		common.VersionedJobNameTransform(),
+		common.InjectCommonEnvironment(),
 	}
 	tf = append(tf, monitoring.GetServingTransformers(ks)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)

@@ -469,6 +469,8 @@ spec:
                         value: "knative-operator-service"
                       - name: USE_OLM_TLS
                         value: "true"
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -618,6 +620,8 @@ spec:
                         value: "true"
                       - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
                         value: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-serving-queue"
                       - name: "IMAGE_activator"
@@ -742,6 +746,8 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.namespace
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true

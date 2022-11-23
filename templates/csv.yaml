@@ -477,6 +477,8 @@ spec:
                         value: "knative-operator-service"
                       - name: USE_OLM_TLS
                         value: "true"
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -575,6 +577,8 @@ spec:
                         value: "true"
                       - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -622,6 +626,8 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.namespace
+                      - name: KUBERNETES_MIN_VERSION
+                        value: "v1.0.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true

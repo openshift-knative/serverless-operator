@@ -36,7 +36,11 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 }
 
 func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
-	tf := []mf.Transformer{common.InjectCommonLabelIntoNamespace(), common.VersionedJobNameTransform()}
+	tf := []mf.Transformer{
+		common.InjectCommonLabelIntoNamespace(),
+		common.VersionedJobNameTransform(),
+		common.InjectCommonEnvironment(),
+	}
 	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
