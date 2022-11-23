@@ -11,6 +11,8 @@ RUN GO111MODULE=on knative.dev/test-infra/tools/kntest/cmd/kntest
 
 # Allow runtime users to add entries to /etc/passwd
 RUN chmod g+rw /etc/passwd
+ENV GOMODCACHE /tmp/go/mod-cache
+ENV GOCACHE /tmp/go/cache
 
 RUN yum install -y https://rpm.nodesource.com/pub_16.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm
 RUN yum install -y \
