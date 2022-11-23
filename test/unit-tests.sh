@@ -15,7 +15,7 @@ declare -A testsuites=(
   [serving-metadata-webhook]=serving/metadata-webhook
 )
 
-IMAGE_TEMPLATE=''
+export IMAGE_TEMPLATE=''
 
 for ts in "${!testsuites[@]}"; do
   logger.info "Testing $ts"
