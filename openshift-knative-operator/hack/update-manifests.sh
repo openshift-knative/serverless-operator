@@ -65,7 +65,7 @@ function download_eventing {
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version:1}"
+  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 

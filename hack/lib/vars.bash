@@ -16,13 +16,13 @@ export STRIMZI_VERSION=0.30.0
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
 export KNATIVE_SERVING_VERSION_PREVIOUS="${KNATIVE_SERVING_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.serving)}"
-export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-v$(metadata.get dependencies.eventing)}"
+export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-$(metadata.get dependencies.eventing)}"
 export KNATIVE_EVENTING_VERSION_PREVIOUS="${KNATIVE_EVENTING_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing)}"
 # TODO(matzew): SRVKE-1076 remove this when kafka e2e tests have been migrated
 export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
 export KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing_kafka)}"
-export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-v$(metadata.get dependencies.eventing_kafka_broker)}"
-export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing_kafka_broker)}"
+export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-$(metadata.get dependencies.eventing_kafka_broker)}"
+export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.eventing_kafka_broker)}"
 
 CURRENT_VERSION="$(metadata.get project.version)"
 CURRENT_VERSION_MAJOR_MINOR="$(cut -d '.' -f 1 <<< "${CURRENT_VERSION}")"."$(cut -d '.' -f 2 <<< "${CURRENT_VERSION}")"
