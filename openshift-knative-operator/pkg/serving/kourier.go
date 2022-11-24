@@ -8,6 +8,7 @@ import (
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
@@ -80,4 +81,29 @@ func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 		}
 	}
 	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller", envVars...)
+}
+
+// addKourierAppProtocol adds appProtocol name to the Kourier service.
+// OpenShift Ingress needs to have it to handle gRPC/H2C.
+func addKourierAppProtocol(ks base.KComponent) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "Service" && u.GetName() != "kourier" {
+			return nil
+		}
+
+		service := &corev1.Service{}
+		if err := scheme.Scheme.Convert(u, service, nil); err != nil {
+			return err
+		}
+		appProtocolName := "h2c"
+		for i := range service.Spec.Ports {
+			port := &service.Spec.Ports[i]
+			if port.Name != "http2" {
+				continue
+			}
+			port.AppProtocol = &appProtocolName
+		}
+
+		return scheme.Scheme.Convert(service, u, nil)
+	}
 }

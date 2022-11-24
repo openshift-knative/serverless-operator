@@ -71,6 +71,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 		),
 		overrideKourierNamespace(ks),
 		addKourierEnvValues(ks),
+		addKourierAppProtocol(ks),
 		enableSecretInformerFiltering(ks),
 		common.VersionedJobNameTransform(),
 		common.InjectCommonEnvironment(),
