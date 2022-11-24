@@ -83,3 +83,12 @@ export ENABLE_TRACING="${ENABLE_TRACING:-false}"
 # Define sample-rate for tracing.
 export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
+DEFAULT_IMAGE_TEMPLATE=$(
+  cat <<-EOF
+quay.io/{{- with .Name }}
+{{- if eq . "httpproxy" }}openshift-knative-serving-test/{{.}}:v1.3
+{{- else                }}openshift-knative/{{.}}:multiarch{{end -}}
+{{end -}}
+EOF
+)
+export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
