@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function scale_up_workers {
-  local current_total az_total replicas idx
+  local current_total az_total replicas idx ignored_zone
   if [[ "${SCALE_UP}" -lt "0" ]]; then
     logger.info 'Skipping scaling up, because SCALE_UP is negative.'
     return 0
@@ -16,7 +16,13 @@ function scale_up_workers {
 
   logger.debug 'Get the machineset with most replicas'
   current_total="$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')"
-  az_total="$(oc get machineset -n openshift-machine-api --no-headers|wc -l)"
+
+  # WORKAROUND: OpenShift in CI cannot scale machine set in us-east-1e zone and throws:
+  # Your requested instance type (m5.xlarge) is not supported in your requested Availability Zone
+  # (us-east-1e). Please retry your request by not specifying an Availability Zone
+  # or choosing us-east-1a, us-east-1b, us-east-1c, us-east-1d, us-east-1f."
+  ignored_zone="us-east-1e"
+  az_total="$(oc get machineset -n openshift-machine-api -oname | grep -cv "$ignored_zone")"
 
   logger.debug "ready machine count: ${current_total}, number of available zones: ${az_total}"
 
@@ -26,7 +32,7 @@ function scale_up_workers {
   fi
 
   idx=0
-  for mset in $(oc get machineset -n openshift-machine-api -o name); do
+  for mset in $(oc get machineset -n openshift-machine-api -o name | grep -v "$ignored_zone"); do
     replicas=$(( SCALE_UP / az_total ))
     if [ ${idx} -lt $(( SCALE_UP % az_total )) ];then
       (( replicas++ )) || true
