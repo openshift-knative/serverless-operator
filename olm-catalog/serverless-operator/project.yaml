@@ -40,9 +40,9 @@ dependencies:
 
   eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion tag
-  eventing_kafka_broker: knative-v1.4
+  eventing_kafka_broker: f24550ef10c9deea57c2306db05d813406ee73b8 # tag corresponds to a build of release v1.4
   # eventing-kafka-broker midstream branch or commit
-  eventing_kafka_broker_artifacts_branch: release-v1.4
+  eventing_kafka_broker_artifacts_branch: f24550ef10c9deea57c2306db05d813406ee73b8 # tag corresponds to a build of release v1.4
   cli: 1.4.1
   # Func s2i related images should be temporary solution until Tekton Catalog is updated
   func:
