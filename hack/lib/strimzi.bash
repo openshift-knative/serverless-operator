@@ -55,6 +55,11 @@ function install_strimzi_cluster {
             tls: false
             authentication:
               type: scram-sha-512
+          # TLS no auth
+          - name: tlsnoauth
+            port: 9096
+            type: internal
+            tls: true
         authorization:
           superUsers:
             - ANONYMOUS
