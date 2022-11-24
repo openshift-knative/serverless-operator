@@ -10,22 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func ServiceMeshControlPlaneV1(name, namespace string) *unstructured.Unstructured {
-	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "maistra.io/v1",
-			"kind":       "ServiceMeshControlPlane",
-			"metadata": map[string]interface{}{
-				"name":      name,
-				"namespace": namespace,
-			},
-			"spec": map[string]interface{}{
-				"version": "v1.1",
-			},
-		},
-	}
-}
-
 func ServiceMeshControlPlaneV2(name, namespace string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -58,30 +42,12 @@ func ServiceMeshMemberRollV1(name, namespace string, members ...string) *unstruc
 	}
 }
 
-func serviceMeshControlPlaneV1Schema() schema.GroupVersionResource {
-	return schema.GroupVersionResource{
-		Group:    "maistra.io",
-		Version:  "v1",
-		Resource: "servicemeshcontrolplanes",
-	}
-}
-
 func serviceMeshControlPlaneV2Schema() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group:    "maistra.io",
 		Version:  "v2",
 		Resource: "servicemeshcontrolplanes",
 	}
-}
-
-func CreateServiceMeshControlPlaneV1(ctx *Context, smcp *unstructured.Unstructured) *unstructured.Unstructured {
-	// When cleaning-up SMCP, wait until it doesn't exist, as it takes a while, which would break subsequent tests
-	ctx.AddToCleanup(func() error {
-		ctx.T.Logf("Waiting for ServiceMeshControlPlane %q to not exist", smcp.GetName())
-		_, err := WaitForUnstructuredState(ctx, serviceMeshControlPlaneV1Schema(), smcp.GetName(), smcp.GetNamespace(), DoesUnstructuredNotExist)
-		return err
-	})
-	return CreateUnstructured(ctx, serviceMeshControlPlaneV1Schema(), smcp)
 }
 
 func CreateServiceMeshControlPlaneV2(ctx *Context, smcp *unstructured.Unstructured) *unstructured.Unstructured {
