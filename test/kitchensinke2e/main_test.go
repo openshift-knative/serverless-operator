@@ -3,6 +3,7 @@ package kitchensinke2e
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -12,6 +13,9 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 
 	"knative.dev/pkg/injection"
+	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
+	pkgTest "knative.dev/pkg/test"
+
 	"knative.dev/reconciler-test/pkg/environment"
 )
 
@@ -43,7 +47,11 @@ func TestMain(m *testing.M) {
 	// testing framework for namespace management, and could be leveraged by
 	// features to pull Kubernetes clients or the test environment out of the
 	// context passed in the features.
-	ctx, startInformers := injection.EnableInjectionOrDie(nil, nil) //nolint
+	cfg, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
+	if err != nil {
+		log.Fatal("Error building client config: ", err)
+	}
+	ctx, startInformers := injection.EnableInjectionOrDie(nil, cfg) //nolint
 	startInformers()
 
 	// global is used to make instances of Environments, NewGlobalEnvironment
