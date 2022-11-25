@@ -52,7 +52,7 @@ jobs:
           fi
           git remote add upstream https://github.com/${{ github.repository }}.git
           git fetch upstream ${{ github.base_ref }}
-          git pull --no-rebase --no-commit upstream ${{ github.base_ref }}
+          git pull upstream ${{ github.base_ref }}
         shell: bash
 
       - name: Regenerate all generated files
