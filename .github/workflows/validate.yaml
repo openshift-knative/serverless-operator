@@ -51,7 +51,7 @@ jobs:
             git config user.email "johndoe@localhost"
           fi
           git remote add upstream https://github.com/${{ github.repository }}.git
-          git pull upstream ${{ github.base_ref }}
+          git pull --no-rebase upstream ${{ github.base_ref }}
         shell: bash
 
       - name: Regenerate all generated files
