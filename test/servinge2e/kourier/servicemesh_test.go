@@ -43,8 +43,9 @@ type testCase struct {
 
 const (
 	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	httpProxyImage               = "registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-test-httpproxy"
-	istioInjectKey               = "sidecar.istio.io/inject"
+	// TODO: version in this image ref should probably be updated by automation
+	httpProxyImage = "registry.ci.openshift.org/openshift/knative-v1.4.0:knative-serving-test-httpproxy"
+	istioInjectKey = "sidecar.istio.io/inject"
 )
 
 // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
