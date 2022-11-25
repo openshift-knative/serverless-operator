@@ -166,7 +166,13 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 				caCtx.T.Log("Error querying prometheus metrics:", err)
 				return false, nil
 			}
-			return value.Type() == prommodel.ValVector, nil
+
+			if value.Type() != prommodel.ValVector {
+				return false, nil
+			}
+
+			vector := value.(prommodel.Vector)
+			return vector.Len() > 0, nil
 		}); err != nil {
 			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %w", metric, err)
 		}
