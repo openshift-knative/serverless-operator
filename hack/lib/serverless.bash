@@ -215,6 +215,88 @@ EOF
   rm -f "${istio_patch}"
 }
 
+# If ServiceMesh is enabled:
+# - Set ingress.istio.enbled to "true"
+# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
+#   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
+function enable_istio_eventing {
+  local custom_resource istio_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  istio_patch="$(mktemp -t istio-XXXXX.yaml)"
+  cat - << EOF > "${istio_patch}"
+spec:
+  workloads:
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: pingsource-mt-adapter
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: mt-broker-ingress
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: mt-broker-filter
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: imc-dispatcher
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+
+  rm -f "${istio_patch}"
+}
+
+# If ServiceMesh is enabled:
+# - Set ingress.istio.enbled to "true"
+# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
+#   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
+function enable_istio_eventing_kafka {
+  local custom_resource istio_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  istio_patch="$(mktemp -t istio-XXXXX.yaml)"
+  cat - << EOF > "${istio_patch}"
+spec:
+  workloads:
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-broker-receiver
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-broker-dispatcher
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-channel-receiver
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-channel-dispatcher
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-sink-receiver
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-source-dispatcher
+  - annotations:
+      sidecar.istio.io/inject: "true"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: kafka-controller
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+
+  rm -f "${istio_patch}"
+}
+
 function deploy_knativeeventing_cr {
   logger.info 'Deploy Knative Eventing'
   local rootdir eventing_cr
@@ -233,6 +315,9 @@ function deploy_knativeeventing_cr {
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$eventing_cr"
   fi
+  if [[ $FULL_MESH == "true" ]]; then
+    enable_istio_eventing "$eventing_cr"
+  fi
 
   oc apply -n "${EVENTING_NAMESPACE}" -f "$eventing_cr"
 }
@@ -243,8 +328,11 @@ function deploy_knativekafka_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativekafkas.operator.serverless.openshift.io) -eq 0 ]]"
 
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  knativekafka_cr="$(mktemp -t knativekafka-XXXXX.yaml)"
+
   # Install Knative Kafka
-  cat <<EOF | oc apply -f -
+  cat <<EOF > "$knativekafka_cr"
 apiVersion: operator.serverless.openshift.io/v1alpha1
 kind: KnativeKafka
 metadata:
@@ -263,6 +351,12 @@ spec:
     enabled: true
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
+
+  if [[ $FULL_MESH == "true" ]]; then
+    enable_istio_eventing_kafka "$knativekafka_cr"
+  fi
+
+  oc apply -f "$knativekafka_cr"
 }
 
 function wait_for_knative_serving_ready {

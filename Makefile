@@ -29,6 +29,9 @@ install-eventing:
 install-kafka:
 	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
+install-kafka-with-mesh:
+	INSTALL_SERVING="false" INSTALL_KAFKA="true" FULL_MESH="true" ./hack/install.sh
+
 install-strimzi:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 

@@ -26,6 +26,7 @@ metadata:
 spec:
   members:
   - knative-serving
+  - knative-eventing
   - serving-tests
   - serving-tests-alt
   - serverless-tests
