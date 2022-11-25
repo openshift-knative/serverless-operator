@@ -44,10 +44,8 @@ var (
 	}
 
 	KafkaQueries = []string{
-		"kafkachannel_controller_go_mallocs",
-		"kafka_controller_go_mallocs",
-		"kafkachannel_webhook_go_mallocs",
-		"kafkachannel_dispatcher_go_mallocs",
+		"kafka_broker_controller_go_mallocs",
+		"kafka_webhook_eventing_go_mallocs",
 	}
 
 	KafkaBrokerDataPlaneQueries = []string{
