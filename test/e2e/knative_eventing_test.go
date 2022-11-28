@@ -61,4 +61,5 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	VerifyDashboards(t, caCtx, EventingDashboards)
+	VerifyNamespaceAnnotations(t, caCtx, eventingNamespace)
 }
