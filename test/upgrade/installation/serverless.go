@@ -11,6 +11,7 @@ import (
 	apiextension "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 )
 
 func UpgradeServerless(ctx *test.Context) error {
@@ -149,45 +150,43 @@ func DowngradeServerless(ctx *test.Context) error {
 }
 
 func moveCRDsToAlpha(ctx *test.Context, name string) error {
-	crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	for i, v := range crd.Spec.Versions {
-		if v.Name == "v1beta1" {
-			crd.Spec.Versions[i].Served = false
-			crd.Spec.Versions[i].Storage = false
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return err
 		}
+		for i, v := range crd.Spec.Versions {
+			if v.Name == "v1beta1" {
+				crd.Spec.Versions[i].Served = false
+				crd.Spec.Versions[i].Storage = false
+			}
 
-		if v.Name == "v1alpha1" {
-			crd.Spec.Versions[i].Served = true
-			crd.Spec.Versions[i].Storage = true
+			if v.Name == "v1alpha1" {
+				crd.Spec.Versions[i].Served = true
+				crd.Spec.Versions[i].Storage = true
+			}
 		}
-	}
-	crd.Spec.Conversion = &apiextension.CustomResourceConversion{Strategy: apiextension.ConversionStrategyType("None")}
-	_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
-	if err != nil {
+		crd.Spec.Conversion = &apiextension.CustomResourceConversion{Strategy: apiextension.ConversionStrategyType("None")}
+		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
 		return err
-	}
-	return nil
+	})
 }
 
 func setStorageToAlpha(ctx *test.Context, name string) error {
-	crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	oldStoredVersions := crd.Status.StoredVersions
-	newStoredVersions := make([]string, 0, len(oldStoredVersions))
-	for _, stored := range oldStoredVersions {
-		if stored != "v1beta1" {
-			newStoredVersions = append(newStoredVersions, stored)
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return err
 		}
-	}
-	crd.Status.StoredVersions = newStoredVersions
-	_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().UpdateStatus(context.Background(), crd, metav1.UpdateOptions{})
-	if err != nil {
+		oldStoredVersions := crd.Status.StoredVersions
+		newStoredVersions := make([]string, 0, len(oldStoredVersions))
+		for _, stored := range oldStoredVersions {
+			if stored != "v1beta1" {
+				newStoredVersions = append(newStoredVersions, stored)
+			}
+		}
+		crd.Status.StoredVersions = newStoredVersions
+		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().UpdateStatus(context.Background(), crd, metav1.UpdateOptions{})
 		return err
-	}
-	return nil
+	})
 }
