@@ -54,8 +54,9 @@ func TestOverrideKourierNamespace(t *testing.T) {
 func TestKourierServiceAppProtocol(t *testing.T) {
 	ks := &operatorv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "knative-serving",
-			Name:      "test",
+			Namespace:   "knative-serving",
+			Name:        "test",
+			Annotations: map[string]string{"serverless.openshift.io/default-enable-http2": "true"},
 		},
 	}
 

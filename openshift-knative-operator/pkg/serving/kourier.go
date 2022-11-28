@@ -86,6 +86,15 @@ func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 // addKourierAppProtocol adds appProtocol name to the Kourier service.
 // OpenShift Ingress needs to have it to handle gRPC/H2C.
 func addKourierAppProtocol(ks base.KComponent) mf.Transformer {
+	// TODO: revisit after OCP 4.13 (HAProxy 2.4) is available.
+	// As current h2c protocol name breaks websocket on OCP Route, change the port name only when the annotation is added.
+	//
+	// see - https://docs.openshift.com/container-platform/4.11/networking/ingress-operator.html#nw-http2-haproxy_configuring-ingress
+	// > Consequently, if you have an application that is intended to accept WebSocket connections,
+	// > it must not allow negotiating the HTTP/2 protocol or else clients will fail to upgrade to the WebSocket protocol.
+	if _, ok := ks.GetAnnotations()["serverless.openshift.io/default-enable-http2"]; !ok {
+		return nil
+	}
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() != "Service" && u.GetName() != "kourier" {
 			return nil
