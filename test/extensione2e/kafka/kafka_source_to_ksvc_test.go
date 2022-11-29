@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -155,12 +158,16 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
+
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-plain")
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-sasl")
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-tls")
+
+		// Delete topics
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
+
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
@@ -313,6 +320,25 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		}
 		servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 	}
+}
+
+func deleteKafkaSource(client *test.Context, namespace string, name string) error {
+	ctx := context.Background()
+	pp := metav1.DeletePropagationForeground
+	err := client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Delete(ctx, name, metav1.DeleteOptions{
+		PropagationPolicy: &pp,
+	})
+	if err != nil {
+		return err
+	}
+
+	return wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
 }
 
 func removePullSecretFromSA(t *testing.T, ctx *test.Context, namespace, serviceAccount, secretName string) {
