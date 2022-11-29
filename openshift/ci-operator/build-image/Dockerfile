@@ -7,8 +7,8 @@ ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
 
 RUN yum install -y kubectl httpd-tools
 
-RUN GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
-RUN GOFLAGS='' go install knative.dev/test-infra/tools/kntest/cmd/kntest@latest
+RUN GO111MODULE=on go get github.com/mikefarah/yq/v3 \
+  knative.dev/test-infra/tools/kntest/cmd/kntest
 
 # Allow runtime users to add entries to /etc/passwd
 RUN chmod g+rw /etc/passwd
