@@ -4,14 +4,12 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 var notAllowed = mf.Any(
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-tracing")),
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-observability")),
 	mf.All(mf.ByKind("ConfigMap"), mf.ByName("config-logging")),
-	byNamespace("knative-sources"),
 )
 
 func TestUnallowedResourcesInManifest(t *testing.T) {
@@ -45,9 +43,6 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 	}, {
 		path:  "./testdata/config-tracing.yaml",
 		fails: true,
-	}, {
-		path:  "./testdata/knative-sources-namespace.yaml",
-		fails: true,
 	}}
 
 	for _, test := range tests {
@@ -62,11 +57,5 @@ func TestUnallowedResourcesInManifest(t *testing.T) {
 		if len(manifest.Resources()) == 0 && test.fails {
 			t.Fatalf("Manifest at path %q should have unallowed resources, but it does not. Perhaps the check for unallowed resources is not working?", test.path)
 		}
-	}
-}
-
-func byNamespace(namespace string) mf.Predicate {
-	return func(u *unstructured.Unstructured) bool {
-		return u.GetNamespace() == namespace
 	}
 }
