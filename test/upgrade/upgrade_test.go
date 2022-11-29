@@ -167,7 +167,6 @@ func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
 		kafkaupgrade.SourcePostUpgradeTest(),
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
-		upgrade.VerifySugarControllerDeletion(ctx),
 	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
