@@ -6,6 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 set -Eeuo pipefail
 
 debugging.setup
+dump_state.setup
 
 teardown_serverless
 teardown_tracing
