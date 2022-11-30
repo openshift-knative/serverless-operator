@@ -5,7 +5,8 @@ metadata:
 spec:
   config:
     network:
-      internal-encryption: "true"
+      # TODO: Re-enable after fixing https://issues.redhat.com/browse/SRVKS-983
+      internal-encryption: "false"
     autoscaler:
       container-concurrency-target-default: "100"
       container-concurrency-target-percentage: "1.0"
