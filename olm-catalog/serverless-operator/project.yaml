@@ -50,7 +50,7 @@ dependencies:
   operator: 1.6.1
   # Previous versions required for downgrade testing
   previous:
-    serving: 1.6.0
+    serving: 1.5.0
     eventing: 1.5
     eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.5
