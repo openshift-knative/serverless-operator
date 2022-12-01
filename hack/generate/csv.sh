@@ -35,7 +35,6 @@ function default_knative_eventing_images() {
   local tag
   tag=$(metadata.get dependencies.eventing)
   export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
-  export KNATIVE_EVENTING_SUGAR_CONTROLLER=${KNATIVE_EVENTING_SUGAR_CONTROLLER:-"${eventing}-sugar-controller:${tag}"}
   export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
   export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-storage-version-migration:${tag}"}
   export KNATIVE_EVENTING_MTBROKER_INGRESS=${KNATIVE_EVENTING_MTBROKER_INGRESS:-"${eventing}-mtbroker-ingress:${tag}"}
