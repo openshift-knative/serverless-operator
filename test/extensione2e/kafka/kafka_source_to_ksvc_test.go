@@ -304,6 +304,22 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			t.Fatalf("Unable to create kafkaSource(%s): %v", kafkaSource.GetName(), err)
 		}
 
+		var last *kafkasourcev1beta1.KafkaSource
+		err = wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+			ks, err := client.Clients.Kafka.
+				SourcesV1beta1().
+				KafkaSources(test.Namespace).
+				Get(context.Background(), kafkaSource.GetName(), metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+			last = ks
+			return ks.Status.IsReady(), nil
+		})
+		if err != nil {
+			t.Fatalf("failed while waiting for KafkaSource to become ready: %v\n%#v", err, last)
+		}
+
 		// send event to kafka topic
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
 			cj := createCronJobObjV1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
