@@ -282,6 +282,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
+        app-version: v2
         app.kubernetes.io/component: kafka-dispatcher
         kafka.eventing.knative.dev/release: v1.6
     spec:
