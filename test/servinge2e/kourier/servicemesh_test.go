@@ -64,13 +64,6 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 
 	versions := []serviceMeshVersion{
 		{
-			name: "v1",
-			smcpCreationFunc: func(ctx *test.Context) {
-				smcp := test.ServiceMeshControlPlaneV1(smcpName, serviceMeshTestNamespaceName)
-				test.CreateServiceMeshControlPlaneV1(ctx, smcp)
-			},
-		},
-		{
 			name: "v2",
 			smcpCreationFunc: func(ctx *test.Context) {
 				smcp := test.ServiceMeshControlPlaneV2(smcpName, serviceMeshTestNamespaceName)
