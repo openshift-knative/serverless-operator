@@ -10,6 +10,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing-kafka/test/e2e/helpers"
+	"knative.dev/eventing/test/lib"
 	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -37,7 +39,7 @@ const (
 	ksvcAPIVersion      = "serving.knative.dev/v1"
 	ksvcKind            = "Service"
 	kafkaTopicKind      = "KafkaTopic"
-	kafkaAPIVersion     = "kafka.strimzi.io/v1beta1"
+	kafkaAPIVersion     = "kafka.strimzi.io/v1beta2"
 	clusterName         = "my-cluster" // there should be a way to get this from test setup
 	strimziClusterLabel = "strimzi.io/cluster"
 	cronJobName         = "smoke-cronjob"
@@ -290,15 +292,21 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			t.Fatalf("Knative Service(%s) not ready: %v", helloWorldService+"-"+name, err)
 		}
 
-		// Create kafkatopic
-		kafkaTopicObj := createKafkaTopicObj(kafkaTopicName + "-" + name)
-		_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Create(context.Background(), &kafkaTopicObj, metav1.CreateOptions{})
-		if err != nil {
-			t.Fatalf("Unable to create KafkaTopic(%s): %v", kafkaTopicObj.GetName(), err)
+		topicName := kafkaTopicName + "-" + name
+		c := &lib.Client{
+			Kube:          client.Clients.Kube,
+			Eventing:      client.Clients.Eventing,
+			Dynamic:       client.Clients.Dynamic,
+			Config:        nil,
+			EventListener: nil,
+			Namespace:     test.Namespace,
+			T:             t,
+			Tracker:       lib.NewTracker(t, client.Clients.Dynamic),
+			TracingCfg:    "",
 		}
+		helpers.MustCreateTopic(c, clusterName, test.Namespace, topicName, 1)
 
-		// create kafka source
-		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, kafkaTopicName+"-"+name, tc)
+		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, topicName, tc)
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create kafkaSource(%s): %v", kafkaSource.GetName(), err)
