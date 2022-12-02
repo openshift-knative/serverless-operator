@@ -46,7 +46,7 @@ func TestServerlessUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
-			PostUpgrade: postUpgradeTests(ctx),
+			PostUpgrade: postUpgradeTests(ctx, true),
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
@@ -105,7 +105,7 @@ func TestClusterUpgrade(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
-			PostUpgrade: postUpgradeTests(ctx),
+			PostUpgrade: postUpgradeTests(ctx, false),
 			// Do not include continual tests as they're failing across cluster upgrades.
 		},
 		Installations: pkgupgrade.Installations{
@@ -151,15 +151,15 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	return append(tests, servingupgrade.ServingPreUpgradeTests()...)
 }
 
-func postUpgradeTests(ctx *test.Context) []pkgupgrade.Operation {
+func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 		Namespace:    "knative-serving",
-		FailOnNoJobs: true,
+		FailOnNoJobs: failOnNoJobs,
 	}))
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 		Namespace:    "knative-eventing",
-		FailOnNoJobs: true,
+		FailOnNoJobs: failOnNoJobs,
 	}))
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
 	tests = append(tests,
