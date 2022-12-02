@@ -8,6 +8,8 @@ target="${2:?Provide a target CSV file as arg[2]}"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
+export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"nightly"}
+
 registry_host='registry.ci.openshift.org'
 registry="${registry_host}/openshift"
 serving="${registry}/knative-v$(metadata.get dependencies.serving):knative-serving"
@@ -220,3 +222,12 @@ for name in "${!vars[@]}"; do
   echo "Value: ${name} -> ${vars[$name]}"
   sed --in-place "s/__${name}__/${vars[${name}]}/" "$target"
 done
+
+echo "CURRENT_VERSION_IMAGES ${CURRENT_VERSION_IMAGES}"
+
+# Replace operator images reference based on CURRENT_VERSION_IMAGES env variable
+temp_csv="${target}.tmp"
+# Variable is expected to not be expended, so disable shellcheck check.
+# shellcheck disable=SC2016
+envsubst '$CURRENT_VERSION_IMAGES' <"${target}" >"${temp_csv}"
+mv "${temp_csv}" "${target}"

@@ -54,6 +54,22 @@ jobs:
           git pull --no-rebase upstream ${{ github.base_ref }}
         shell: bash
 
+      - name: Set CURRENT_VERSION_IMAGES on push
+        if: github.event_name == 'push' && github.ref_name != 'main'
+        run: |
+          branch="${{ github.ref_name }}.0" # example output: "release-1.26.0"
+          # Replace "release-" with "v", so that the final variable is like "v1.27.0"
+          ::set-env name=CURRENT_VERSION_IMAGES::${branch/release-/v}
+        shell: bash
+
+      - name: Set CURRENT_VERSION_IMAGES on PRs
+        if: github.event_name == 'pull_request' && github.base_ref != 'main'
+        run: |
+          branch="${{ github.base_ref }}.0" # example output: "release-1.26.0"
+          # Replace "release-" with "v", so that the final variable is like "v1.27.0"
+          ::set-env name=CURRENT_VERSION_IMAGES::${branch/release-/v}
+        shell: bash
+
       - name: Regenerate all generated files
         working-directory: ./src/github.com/${{ github.repository }}
         run: make generated-files
@@ -65,12 +81,12 @@ jobs:
       #   when it's manually triggered or a scheduled run, create a PR
       #   when there are changes detected.
       - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push'
         uses: peter-evans/create-pull-request@v4
         with:
           path: ./src/github.com/${{ github.repository }}
-          branch: auto/update-generated-files-${{ github.ref }}
-          title: "[${{ github.ref }}] Run make generated-files"
+          branch: auto/update-generated-files-${{ github.ref_name }}
+          title: "[${{ github.ref_name }}] Run make generated-files"
           commit-message: "Run make generated-files"
           delete-branch: true
           body: |
