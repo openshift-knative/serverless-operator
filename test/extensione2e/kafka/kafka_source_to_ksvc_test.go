@@ -166,9 +166,9 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-tls")
 
 		// Delete topics
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
 
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
@@ -304,7 +304,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			Tracker:       lib.NewTracker(t, client.Clients.Dynamic),
 			TracingCfg:    "",
 		}
-		helpers.MustCreateTopic(c, clusterName, test.Namespace, topicName, 1)
+		helpers.MustCreateTopic(c, clusterName, "kafka", topicName, 1)
 
 		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, topicName, tc)
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
