@@ -330,13 +330,13 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 		// send event to kafka topic
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
-			cj := createCronJobObjV1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		} else {
-			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
@@ -352,17 +352,24 @@ func deleteKafkaSource(client *test.Context, namespace string, name string) erro
 	err := client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Delete(ctx, name, metav1.DeleteOptions{
 		PropagationPolicy: &pp,
 	})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
 
-	return wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+	err = wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil
 		}
 		return false, err
 	})
+	if err != nil {
+		client.T.Errorf("Failed to delete KafkaSource %s/%s: %v", namespace, name, err)
+	}
+	return err
 }
 
 func removePullSecretFromSA(t *testing.T, ctx *test.Context, namespace, serviceAccount, secretName string) {
