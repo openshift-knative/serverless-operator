@@ -57,6 +57,7 @@ class ShowcaseKservice {
   }
 
   deployImage({kind = 'regular', clusterLocal = false} = {}) {
+    const ver = environment.ocpVersion()
     cy.log(`Deploy kservice ${kind}${clusterLocal ? ', cluster-local' : ''} from image`)
     cy.visit(`/deploy-image/ns/${this.namespace}`)
     cy.get('input[name=searchTerm]')
@@ -70,9 +71,11 @@ class ShowcaseKservice {
       .scrollIntoView()
       .clear()
       .type(this.name)
-    cy.get('input#form-radiobutton-resources-knative-field')
-      .scrollIntoView()
-      .check()
+    if (ver.satisfies('<4.12')) {
+      cy.get('input#form-radiobutton-resources-knative-field')
+        .scrollIntoView()
+        .check()
+    }
     cy.get('input#form-checkbox-route-create-field')
       .scrollIntoView()
       .check()
