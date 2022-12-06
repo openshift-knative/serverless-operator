@@ -31,17 +31,14 @@ import (
 )
 
 const (
-	kafkaSourceName     = "smoke-ks"
-	kafkaTopicName      = "smoke-topic"
-	kafkaConsumerGroup  = "smoke-cg"
-	helloWorldService   = "helloworld-go"
-	ksvcAPIVersion      = "serving.knative.dev/v1"
-	ksvcKind            = "Service"
-	kafkaTopicKind      = "KafkaTopic"
-	kafkaAPIVersion     = "kafka.strimzi.io/v1beta2"
-	clusterName         = "my-cluster" // there should be a way to get this from test setup
-	strimziClusterLabel = "strimzi.io/cluster"
-	cronJobName         = "smoke-cronjob"
+	kafkaSourceName    = "smoke-ks"
+	kafkaTopicName     = "smoke-topic"
+	kafkaConsumerGroup = "smoke-cg"
+	helloWorldService  = "helloworld-go"
+	ksvcAPIVersion     = "serving.knative.dev/v1"
+	ksvcKind           = "Service"
+	clusterName        = "my-cluster" // there should be a way to get this from test setup
+	cronJobName        = "smoke-cronjob"
 )
 
 var (
