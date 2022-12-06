@@ -131,6 +131,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	// Enable by default the required Pod Security Standards settings for OCP 4.11+
 	if err := common.CheckMinimumKubeVersion(e.kubeclient.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, "features", "secure-pod-defaults", "enabled")
+		common.ConfigureIfUnset(&ks.Spec.CommonSpec, "features", "kubernetes.containerspec-addcapabilities", "enabled")
 	}
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
