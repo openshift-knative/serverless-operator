@@ -297,8 +297,7 @@ func CheckRADeployment(ctx context.Context, c *testlib.Client, name string, inSt
 
 func WaitForTopicReady(ctx context.Context, client *testlib.Client, namespace, name string, gvr schema.GroupVersionResource) error {
 	like := &duckv1.KResource{}
-	var last *unstructured.Unstructured
-	err := wait.PollImmediate(interval, timeout, func() (bool, error) {
+	return wait.PollImmediate(interval, timeout, func() (bool, error) {
 		us, err := client.Dynamic.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			if apierrs.IsNotFound(err) {
@@ -308,7 +307,6 @@ func WaitForTopicReady(ctx context.Context, client *testlib.Client, namespace, n
 			}
 			return false, err
 		}
-		last = us
 		obj := like.DeepCopy()
 		if err = runtime.DefaultUnstructuredConverter.FromUnstructured(us.Object, obj); err != nil {
 			log.Fatalf("Error DefaultUnstructured.Dynamiconverter. %v", err)
@@ -328,9 +326,4 @@ func WaitForTopicReady(ctx context.Context, client *testlib.Client, namespace, n
 
 		return false, nil
 	})
-	
-	if err != nil {
-		return fmt.Errorf("failed while waiting for topic ready: %w\n%#v", last)
-	}
-	return nil
 }
