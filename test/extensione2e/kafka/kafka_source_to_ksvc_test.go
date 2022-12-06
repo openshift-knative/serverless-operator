@@ -120,7 +120,7 @@ func createKafkaSourceObj(sourceName, sinkName, topicName string, auth kafkabind
 		Spec: kafkasourcev1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: auth,
 			Topics:        []string{topicName},
-			ConsumerGroup: kafkaConsumerGroup,
+			ConsumerGroup: kafkaConsumerGroup + "-" + sourceName,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
