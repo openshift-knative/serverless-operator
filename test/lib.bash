@@ -263,8 +263,8 @@ EOF
     fi
     # Run the two test suites one by one to prevent the situation when nested
     # tests time out and cause all other tests to have "Unknown" status.
-    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=30m "${common_opts[@]}"
     go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=30m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
