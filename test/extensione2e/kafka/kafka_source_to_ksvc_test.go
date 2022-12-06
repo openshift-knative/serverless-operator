@@ -18,7 +18,6 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/eventing/pkg/utils"
 
@@ -132,28 +131,6 @@ func createKafkaSourceObj(sourceName, sinkName, topicName string, auth kafkabind
 			},
 		},
 	}
-}
-func createKafkaTopicObj(topicName string) unstructured.Unstructured {
-	// We use unstructured to avoid having a hard dep on any specific kafka implementation
-	return unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": kafkaAPIVersion,
-			"kind":       kafkaTopicKind,
-			"metadata": map[string]interface{}{
-				"name":      topicName,
-				"namespace": test.Namespace,
-				"labels": map[string]interface{}{
-					strimziClusterLabel: clusterName,
-				},
-			},
-			//Taken from https://github.com/strimzi/strimzi-kafka-operator/blob/0.19.0/examples/topic/kafka-topic.yaml
-			"spec": map[string]interface{}{
-				"partitions": 1,
-				"replicas":   1,
-			},
-		},
-	}
-
 }
 
 func TestKafkaSourceToKnativeService(t *testing.T) {
