@@ -23,7 +23,6 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 )
@@ -82,7 +81,6 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1beta1.KnativeServing)
-	log := logging.FromContext(ctx)
 
 	// Make sure Knative Serving is always installed in the defined namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
@@ -127,14 +125,8 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	defaultToKourier(ks)
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))
 
-	// Changing service type from LoadBalancer to ClusterIP has a bug https://github.com/kubernetes/kubernetes/pull/95196
-	// Do not apply the default if the version is less than v1.20.0.
-	if err := common.CheckMinimumKubeVersion(e.kubeclient.Discovery(), "1.20.0"); err != nil {
-		log.Warnf("Could not apply default service type for Kourier Gateway: %v", err)
-	} else {
-		// Apply Kourier gateway service type.
-		defaultKourierServiceType(ks)
-	}
+	// Apply Kourier gateway service type.
+	defaultKourierServiceType(ks)
 
 	// Override the default domainTemplate to use $name-$ns rather than $name.$ns.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "domainTemplate", defaultDomainTemplate)
