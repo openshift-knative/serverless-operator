@@ -195,12 +195,12 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	// Get Secret Name -> AuthSecretName
 	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, test.Namespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", tlsSecret, test.Namespace, err)
 	}
 
 	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, test.Namespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", saslSecret, test.Namespace, err)
 	}
 
 	tests := map[string]kafkabindingv1beta1.KafkaAuthSpec{
@@ -292,6 +292,8 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			t.Fatalf("Knative Service(%s) not ready: %v", helloWorldService+"-"+name, err)
 		}
 
+		t.Logf("Knative service %s/%s is ready: %#v", ksvc.GetNamespace(), ksvc.GetName(), ksvc.Status)
+
 		topicName := kafkaTopicName + "-" + name
 		c := &lib.Client{
 			Kube:          client.Clients.Kube,
@@ -359,7 +361,7 @@ func deleteKafkaSource(client *test.Context, namespace string, name string) erro
 		return err
 	}
 
-	err = wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+	err = wait.Poll(time.Second, 2*test.Timeout, func() (done bool, err error) {
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil

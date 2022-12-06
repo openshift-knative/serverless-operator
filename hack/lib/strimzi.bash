@@ -138,6 +138,11 @@ spec:
           name: "*"
         operation: Read
         host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Delete
+        host: "*"
       # Example ACL rules for producing to a topic.
       - resource:
           type: topic
@@ -192,6 +197,11 @@ spec:
           type: group
           name: "*"
         operation: Read
+        host: "*"
+      - resource:
+          type: group
+          name: "*"
+        operation: Delete
         host: "*"
       # Example ACL rules for producing to topic knative-messaging-kafka
       - resource:
