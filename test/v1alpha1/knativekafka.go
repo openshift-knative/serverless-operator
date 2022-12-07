@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
-	"github.com/openshift-knative/serverless-operator/test"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
@@ -95,7 +96,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 		lastState *kafkav1alpha1.KnativeKafka
 		err       error
 	)
-	waitErr := wait.PollImmediate(test.Interval, 2*test.Timeout, func() (bool, error) {
+	waitErr := wait.PollImmediate(test.Interval, 3*test.Timeout, func() (bool, error) {
 		lastState = &kafkav1alpha1.KnativeKafka{}
 		var u *unstructured.Unstructured
 		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})

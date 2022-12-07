@@ -14,7 +14,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -128,33 +128,32 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 			// check if things that should exist is created
 			for _, d := range test.exists {
-				deployment := &appsv1.Deployment{}
-				err := cl.Get(context.TODO(), d, deployment)
+				_, podTemplateSpec, err := getPodTemplateSpec(cl, d)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 				// Check if rbac proxy is injected
-				if len(deployment.Spec.Template.Spec.Containers) != 2 {
+				if len(podTemplateSpec.Spec.Containers) != 2 {
 					t.Fatal("rbac proxy not injected")
 				}
 
 				// Check if the service monitor for the Kafka deployment is created
 				sm := &monitoringv1.ServiceMonitor{}
-				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm", deployment.Name), Namespace: "knative-eventing"}, sm)
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm", d.Name), Namespace: "knative-eventing"}, sm)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 
 				// Check if the service monitor service for the Kafka deployment is created
 				sms := &corev1.Service{}
-				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm-service", deployment.Name), Namespace: "knative-eventing"}, sms)
+				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-sm-service", d.Name), Namespace: "knative-eventing"}, sms)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 
 				// Check if the clusterrolebinding for the Kafka deployment is created
 				crb := &rbacv1.ClusterRoleBinding{}
-				name := monitoring.IndexByName[deployment.Name]
+				name := monitoring.IndexByName[d.Name]
 				err = cl.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("rbac-proxy-reviews-prom-rb-%s", name.ServiceAccountName)}, crb)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
@@ -163,21 +162,19 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 			// check if things that shouldnt exist is deleted
 			for _, d := range test.doesNotExist {
-				deployment := &appsv1.Deployment{}
-				err = cl.Get(context.TODO(), d, deployment)
-				if err == nil || !errors.IsNotFound(err) {
+				_, _, err := getPodTemplateSpec(cl, d)
+				if err == nil || !apierrors.IsNotFound(err) {
 					t.Fatalf("exists: (%v)", err)
 				}
 			}
 
 			// delete deployments to see if they're recreated
 			for _, d := range test.exists {
-				deployment := &appsv1.Deployment{}
-				err = cl.Get(context.TODO(), d, deployment)
+				obj, _, err := getPodTemplateSpec(cl, d)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
-				err = cl.Delete(context.TODO(), deployment)
+				err = cl.Delete(context.TODO(), obj)
 				if err != nil {
 					t.Fatalf("delete: (%v)", err)
 				}
@@ -190,14 +187,30 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 
 			// check if things that should exist is created
 			for _, d := range test.exists {
-				deployment := &appsv1.Deployment{}
-				err = cl.Get(context.TODO(), d, deployment)
+				_, _, err := getPodTemplateSpec(cl, d)
 				if err != nil {
 					t.Fatalf("get: (%v)", err)
 				}
 			}
 		})
 	}
+}
+
+func getPodTemplateSpec(cl client.WithWatch, d types.NamespacedName) (client.Object, *corev1.PodTemplateSpec, error) {
+	deployment := &appsv1.Deployment{}
+	err := cl.Get(context.TODO(), d, deployment)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return nil, nil, err
+	}
+	if apierrors.IsNotFound(err) {
+		ss := &appsv1.StatefulSet{}
+		err = cl.Get(context.TODO(), d, ss)
+		if err != nil {
+			return nil, nil, err
+		}
+		return ss, &ss.Spec.Template, nil
+	}
+	return deployment, &deployment.Spec.Template, nil
 }
 
 func TestBrokerCfg(t *testing.T) {

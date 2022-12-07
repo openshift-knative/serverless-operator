@@ -20,7 +20,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   - apiGroups:
       - apps
@@ -29,6 +29,14 @@ rules:
     verbs:
       - delete
       - deletecollection
+
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - get
+      - list
 
   # sources.knative.dev resources and finalizers we care about.
   - apiGroups:
@@ -91,6 +99,7 @@ rules:
       - kafka-webhook
       - kafka-ch-controller
       - kafka-ch-dispatcher
+      - kafka-source-dispatcher
     verbs:
       - delete
 
@@ -227,7 +236,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -248,7 +257,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -290,6 +299,19 @@ rules:
       - "patch"
       - "watch"
   - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - "kafkasinks"
+      - "kafkasinks/finalizers"
+      - "kafkasinks/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
       - ""
     resources:
       - "namespaces"
@@ -317,7 +339,7 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 
 ---
 
@@ -326,7 +348,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -357,7 +379,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -388,7 +410,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -396,7 +418,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -412,6 +434,13 @@ spec:
                   fieldPath: metadata.namespace
             - name: CHANNEL_GENERAL_CONFIG_MAP_NAME
               value: kafka-channel-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+              - ALL
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -434,7 +463,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    kafka.eventing.knative.dev/release: v1.5
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -442,7 +471,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        kafka.eventing.knative.dev/release: v1.5
+        kafka.eventing.knative.dev/release: v1.6
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -457,3 +486,11 @@ spec:
           args:
             - "kafkasources.sources.knative.dev"
             - "kafkachannels.messaging.knative.dev"
+            - "kafkasinks.eventing.knative.dev"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+              - ALL

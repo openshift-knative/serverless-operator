@@ -450,6 +450,16 @@ func isStatefulSetAvailable(ss *appsv1.StatefulSet) bool {
 	if ss.Spec.Replicas == nil {
 		return ss.Status.ReadyReplicas == 1
 	}
+	// On upgrades and during normal operation the number of replicas might vary, however, we
+	// shouldn't transition to "not ready" just because there are some non-ready replicas because that
+	// could  trigger a warning for anyone using KnativeKafka that it's not a signal of a
+	// non-functional installation.
+	//
+	// Note: we do this only in the case where the number of expected replicas is >= 1, so that we
+	// make sure that at least one replica is ready and functional.
+	if *ss.Spec.Replicas >= 1 {
+		return ss.Status.ReadyReplicas >= 1
+	}
 	return *ss.Spec.Replicas == ss.Status.ReadyReplicas
 }
 

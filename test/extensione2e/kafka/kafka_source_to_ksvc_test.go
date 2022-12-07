@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing-kafka/test/e2e/helpers"
+	"knative.dev/eventing/test/lib"
 	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/eventing/pkg/utils"
 
@@ -27,17 +31,14 @@ import (
 )
 
 const (
-	kafkaSourceName     = "smoke-ks"
-	kafkaTopicName      = "smoke-topic"
-	kafkaConsumerGroup  = "smoke-cg"
-	helloWorldService   = "helloworld-go"
-	ksvcAPIVersion      = "serving.knative.dev/v1"
-	ksvcKind            = "Service"
-	kafkaTopicKind      = "KafkaTopic"
-	kafkaAPIVersion     = "kafka.strimzi.io/v1beta1"
-	clusterName         = "my-cluster" // there should be a way to get this from test setup
-	strimziClusterLabel = "strimzi.io/cluster"
-	cronJobName         = "smoke-cronjob"
+	kafkaSourceName    = "smoke-ks"
+	kafkaTopicName     = "smoke-topic"
+	kafkaConsumerGroup = "smoke-cg"
+	helloWorldService  = "helloworld-go"
+	ksvcAPIVersion     = "serving.knative.dev/v1"
+	ksvcKind           = "Service"
+	clusterName        = "my-cluster" // there should be a way to get this from test setup
+	cronJobName        = "smoke-cronjob"
 )
 
 var (
@@ -115,7 +116,7 @@ func createKafkaSourceObj(sourceName, sinkName, topicName string, auth kafkabind
 		Spec: kafkasourcev1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: auth,
 			Topics:        []string{topicName},
-			ConsumerGroup: kafkaConsumerGroup,
+			ConsumerGroup: kafkaConsumerGroup + "-" + sourceName,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
@@ -128,39 +129,21 @@ func createKafkaSourceObj(sourceName, sinkName, topicName string, auth kafkabind
 		},
 	}
 }
-func createKafkaTopicObj(topicName string) unstructured.Unstructured {
-	// We use unstructured to avoid having a hard dep on any specific kafka implementation
-	return unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": kafkaAPIVersion,
-			"kind":       kafkaTopicKind,
-			"metadata": map[string]interface{}{
-				"name":      topicName,
-				"namespace": test.Namespace,
-				"labels": map[string]interface{}{
-					strimziClusterLabel: clusterName,
-				},
-			},
-			//Taken from https://github.com/strimzi/strimzi-kafka-operator/blob/0.19.0/examples/topic/kafka-topic.yaml
-			"spec": map[string]interface{}{
-				"partitions": 1,
-				"replicas":   1,
-			},
-		},
-	}
-
-}
 
 func TestKafkaSourceToKnativeService(t *testing.T) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Delete(context.Background(), kafkaSourceName+"-sasl", metav1.DeleteOptions{})
+
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-plain")
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-sasl")
+		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-tls")
+
+		// Delete topics
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
+		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
+
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
@@ -186,12 +169,12 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 	// Get Secret Name -> AuthSecretName
 	_, err := utils.CopySecret(client.Clients.Kube.CoreV1(), "default", tlsSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", tlsSecret, test.Namespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", tlsSecret, test.Namespace, err)
 	}
 
 	_, err = utils.CopySecret(client.Clients.Kube.CoreV1(), "default", saslSecret, test.Namespace, serviceAccount)
 	if err != nil {
-		t.Fatalf("Could not copy Secret: %s to test namespace: %s", saslSecret, test.Namespace)
+		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", saslSecret, test.Namespace, err)
 	}
 
 	tests := map[string]kafkabindingv1beta1.KafkaAuthSpec{
@@ -283,29 +266,53 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			t.Fatalf("Knative Service(%s) not ready: %v", helloWorldService+"-"+name, err)
 		}
 
-		// Create kafkatopic
-		kafkaTopicObj := createKafkaTopicObj(kafkaTopicName + "-" + name)
-		_, err = client.Clients.Dynamic.Resource(kafkaGVR).Namespace(test.Namespace).Create(context.Background(), &kafkaTopicObj, metav1.CreateOptions{})
-		if err != nil {
-			t.Fatalf("Unable to create KafkaTopic(%s): %v", kafkaTopicObj.GetName(), err)
-		}
+		t.Logf("Knative service %s/%s is ready: %#v", ksvc.GetNamespace(), ksvc.GetName(), ksvc.Status)
 
-		// create kafka source
-		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, kafkaTopicName+"-"+name, tc)
+		topicName := kafkaTopicName + "-" + name
+		c := &lib.Client{
+			Kube:          client.Clients.Kube,
+			Eventing:      client.Clients.Eventing,
+			Dynamic:       client.Clients.Dynamic,
+			Config:        nil,
+			EventListener: nil,
+			Namespace:     test.Namespace,
+			T:             t,
+			Tracker:       lib.NewTracker(t, client.Clients.Dynamic),
+			TracingCfg:    "",
+		}
+		helpers.MustCreateTopic(c, clusterName, "kafka", topicName, 1)
+
+		kafkaSource := createKafkaSourceObj(kafkaSourceName+"-"+name, helloWorldService+"-"+name, topicName, tc)
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(test.Namespace).Create(context.Background(), &kafkaSource, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatalf("Unable to create kafkaSource(%s): %v", kafkaSource.GetName(), err)
 		}
 
+		var last *kafkasourcev1beta1.KafkaSource
+		err = wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+			ks, err := client.Clients.Kafka.
+				SourcesV1beta1().
+				KafkaSources(test.Namespace).
+				Get(context.Background(), kafkaSource.GetName(), metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+			last = ks
+			return ks.Status.IsReady(), nil
+		})
+		if err != nil {
+			t.Fatalf("failed while waiting for KafkaSource to become ready: %v\n%#v", err, last)
+		}
+
 		// send event to kafka topic
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
-			cj := createCronJobObjV1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		} else {
-			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, kafkaTopicName+"-"+name, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
 			_, err = client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
@@ -313,6 +320,32 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		}
 		servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
 	}
+}
+
+func deleteKafkaSource(client *test.Context, namespace string, name string) error {
+	ctx := context.Background()
+	pp := metav1.DeletePropagationForeground
+	err := client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Delete(ctx, name, metav1.DeleteOptions{
+		PropagationPolicy: &pp,
+	})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	err = wait.Poll(time.Second, 2*test.Timeout, func() (done bool, err error) {
+		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
+	if err != nil {
+		client.T.Errorf("Failed to delete KafkaSource %s/%s: %v", namespace, name, err)
+	}
+	return err
 }
 
 func removePullSecretFromSA(t *testing.T, ctx *test.Context, namespace, serviceAccount, secretName string) {

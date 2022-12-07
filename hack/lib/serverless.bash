@@ -287,7 +287,7 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=900s
+  oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=15m
 
   logger.success 'Knative Kafka has been installed successfully.'
 }

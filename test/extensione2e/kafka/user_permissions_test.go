@@ -3,7 +3,6 @@ package knativekafkae2e
 import (
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -13,6 +12,8 @@ import (
 	kafkasourcesv1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/ptr"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 func init() {
@@ -36,7 +37,7 @@ func TestKafkaUserPermissions(t *testing.T) {
 	kafkaSource := &kafkasourcesv1beta1.KafkaSource{
 		Spec: kafkasourcesv1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: kafkabindingv1beta1.KafkaAuthSpec{
-				BootstrapServers: []string{"myserver:9092"},
+				BootstrapServers: []string{plainBootstrapServer},
 			},
 			Topics:        []string{"my-topic"},
 			ConsumerGroup: "my-cg",
@@ -64,7 +65,7 @@ func TestKafkaUserPermissions(t *testing.T) {
 			Topic:             "my-topic",
 			NumPartitions:     ptr.Int32(10),
 			ReplicationFactor: func(rf int16) *int16 { return &rf }(1),
-			BootstrapServers:  []string{"myserver:9092"},
+			BootstrapServers:  []string{plainBootstrapServer},
 			ContentMode:       ptr.String(kafkasinksv1alpha1.ModeStructured),
 		},
 	}

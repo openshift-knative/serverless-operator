@@ -200,7 +200,7 @@ function run_rolling_upgrade_tests {
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version="${KNATIVE_EVENTING_VERSION}"
   eventing_kafka_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_VERSION}")
-  eventing_kafka_broker_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}")
+  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
   # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
   base="quay.io/openshift-knative/"
@@ -208,7 +208,7 @@ function run_rolling_upgrade_tests {
     cat <<-EOF
 $base{{- with .Name }}
 {{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
-{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:knative-v$eventing_kafka_broker_image_version
+{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
 {{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
 {{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
 {{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
@@ -249,10 +249,10 @@ EOF
     "--csvprevious=${PREVIOUS_CSV}" \
     "--servingversion=${KNATIVE_SERVING_VERSION}" \
     "--eventingversion=${KNATIVE_EVENTING_VERSION/knative-v/}" \
-    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}" \
+    "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}" \
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
     "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS/knative-v/}" \
-    "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS}" \
+    "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS/knative-v/}" \
     --resolvabledomain \
     --https)
 
@@ -261,7 +261,7 @@ EOF
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=60m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgrade -timeout=100m "${common_opts[@]}"
 
     # Restart Zipkin to prevent OutOfMemory errors.
     oc -n "${TRACING_NAMESPACE}" delete pod -l="app=zipkin"
