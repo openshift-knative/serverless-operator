@@ -261,7 +261,7 @@ EOF
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=60m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgrade -timeout=100m "${common_opts[@]}"
 
     # Restart Zipkin to prevent OutOfMemory errors.
     oc -n "${TRACING_NAMESPACE}" delete pod -l="app=zipkin"
