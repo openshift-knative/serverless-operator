@@ -274,6 +274,9 @@ EOF
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
+    # Make sure the cluster upgrade is run with latest version of Serverless as
+    # the Serverless upgrade tests leave the product at the previous version (after downgrade).
+    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
     go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
