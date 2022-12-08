@@ -52,22 +52,11 @@ func LinkGlobalPullSecretToNamespace(ctx *Context, ns string) error {
 }
 
 func DeleteNamespace(ctx *Context, name string) error {
-	if err := ctx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-	if err := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {
-		if _, err := ctx.Clients.Kube.CoreV1().Namespaces().Get(context.Background(),
-			name, metav1.GetOptions{}); err != nil {
-			if errors.IsNotFound(err) {
-				return true, nil
-			}
-			return false, err
-		}
-		return false, nil
-	}); err != nil {
-		return fmt.Errorf("timed out deleting namespace %s: %w", name, err)
-	}
-	return nil
+	foregroundDeletion := metav1.DeletePropagationForeground
+	return ctx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), name,
+		metav1.DeleteOptions{
+			PropagationPolicy: &foregroundDeletion,
+		})
 }
 
 func CreateNamespace(ctx *Context, name string) (*corev1.Namespace, error) {
