@@ -48,7 +48,6 @@ const (
 	jobWaitInterval     = time.Second
 	jobWaitTimeout      = 10 * time.Minute
 	stepEventMsgPattern = "event #([0-9]+).*"
-	exportTraceLimit    = 100
 )
 
 // Verify will verify prober state after finished has been sent.
@@ -114,7 +113,7 @@ func (p *prober) Finish() {
 }
 
 func (p *prober) exportStepEventTrace(i int, msg string) {
-	if i > exportTraceLimit {
+	if i > p.config.TraceExportLimit {
 		return
 	}
 	stepNo := p.getStepNoFromMsg(msg)

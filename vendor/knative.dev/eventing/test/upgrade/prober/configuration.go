@@ -53,6 +53,8 @@ const (
 	prefix = "eventing_upgrade_tests"
 
 	forwarderTargetFmt = "http://" + receiver.Name + ".%s.svc.cluster.local"
+
+	defaultTraceExportLimit = 100
 )
 
 var (
@@ -66,11 +68,12 @@ type DuplicateAction string
 // Config represents a configuration for prober.
 type Config struct {
 	Wathola
-	Interval     time.Duration
-	Serving      ServingConfig
-	FailOnErrors bool
-	OnDuplicate  DuplicateAction
-	Ctx          context.Context
+	Interval         time.Duration
+	Serving          ServingConfig
+	FailOnErrors     bool
+	OnDuplicate      DuplicateAction
+	Ctx              context.Context
+	TraceExportLimit int
 }
 
 // Wathola represents options related strictly to wathola testing tool.
@@ -119,6 +122,7 @@ func NewConfig() (*Config, error) {
 			Use:         false,
 			ScaleToZero: true,
 		},
+		TraceExportLimit: defaultTraceExportLimit,
 		Wathola: Wathola{
 			ImageResolver: pkgTest.ImagePath,
 			ConfigToml: ConfigToml{
