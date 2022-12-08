@@ -79,6 +79,10 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	if _, err := test.CreateOperatorGroup(ctx, "serverless", test.OperatorsNamespace); err != nil {
+		return err
+	}
+
 	if _, err := test.CreateSubscription(ctx, subscription, test.Flags.CSVPrevious); err != nil {
 		return err
 	}

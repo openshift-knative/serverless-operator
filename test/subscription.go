@@ -8,6 +8,7 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	operatorsv1 "github.com/operator-framework/api/pkg/operators/v1"
 	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -85,4 +86,13 @@ func CreateSubscription(ctx *Context, name, startingCSV string) (*operatorsv1alp
 		return nil, err
 	}
 	return subs, nil
+}
+
+func CreateOperatorGroup(ctx *Context, name, namespace string) (*operatorsv1.OperatorGroup, error) {
+	return ctx.Clients.OLM.OperatorsV1().OperatorGroups(namespace).Create(context.Background(),
+		&operatorsv1.OperatorGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+			},
+		}, metav1.CreateOptions{})
 }
