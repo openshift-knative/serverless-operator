@@ -70,6 +70,15 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	// Ensure complete clean up to prevent https://issues.redhat.com/browse/SRVCOM-2203
+	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
+	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
 	if _, err := test.CreateSubscription(ctx, subscription, test.Flags.CSVPrevious); err != nil {
 		return err
 	}
