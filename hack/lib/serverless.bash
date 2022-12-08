@@ -154,6 +154,7 @@ function deploy_knativeserving_cr {
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].serving_cr") != "" ]]; then
     cp "${rootdir}/$(metadata.get "upgrade_sequence[0].serving_cr")" "$serving_cr"
+    enable_internal_encryption "$serving_cr"
   else
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
   fi
@@ -182,6 +183,23 @@ function deploy_knativeserving_cr {
     # metadata-webhook adds istio annotations for e2e test by webhook.
     oc apply -f "${rootdir}/serving/metadata-webhook/config"
   fi
+}
+
+function enable_internal_encryption {
+  local custom_resource net_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  net_patch="$(mktemp -t net-XXXXX.yaml)"
+  cat - << EOF > "${net_patch}"
+spec:
+  config:
+    network:
+      internal-encryption: "true"
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$net_patch"
+
+  rm -f "${net_patch}"
 }
 
 # If ServiceMesh is enabled:
