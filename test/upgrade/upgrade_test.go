@@ -39,14 +39,36 @@ import (
 // FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
 //        this directory are required, so that kafkaupgrade tests will see them.
 
-func TestServerlessUpgrade(t *testing.T) {
+func TestServerlessUpgradePrePost(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	cfg := newUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:  preUpgradeTests(),
-			PostUpgrade: postUpgradeTests(ctx, true),
+			PreUpgrade:    preUpgradeTests(),
+			PostUpgrade:   postUpgradeTests(ctx, true),
+			PostDowngrade: postDowngradeTests(),
+		},
+		Installations: pkgupgrade.Installations{
+			UpgradeWith: []pkgupgrade.Operation{
+				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
+					if err := installation.UpgradeServerless(ctx); err != nil {
+						c.T.Error("Serverless upgrade failed:", err)
+					}
+				}),
+			},
+			DowngradeWith: downgrade(ctx),
+		},
+	}
+	suite.Execute(cfg)
+}
+
+func TestServerlessUpgradeContinual(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+	cfg := newUpgradeConfig(t)
+	suite := pkgupgrade.Suite{
+		Tests: pkgupgrade.Tests{
 			Continual: merge(
 				[]pkgupgrade.BackgroundOperation{
 					servingupgrade.ProbeTest(),
@@ -66,30 +88,6 @@ func TestServerlessUpgrade(t *testing.T) {
 					}
 				}),
 			},
-		},
-	}
-	suite.Execute(cfg)
-}
-
-func TestServerlessDowngrade(t *testing.T) {
-	ctx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := newUpgradeConfig(t)
-	suite := pkgupgrade.Suite{
-		Tests: pkgupgrade.Tests{
-			PostDowngrade: postDowngradeTests(),
-			Continual: merge(
-				[]pkgupgrade.BackgroundOperation{
-					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
-				},
-				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
-				kafkabrokerupgrade.BrokerContinualTests(),
-				kafkabrokerupgrade.SinkContinualTests(),
-			),
-		},
-		Installations: pkgupgrade.Installations{
 			DowngradeWith: downgrade(ctx),
 		},
 	}

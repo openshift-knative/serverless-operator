@@ -6,8 +6,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
-	corev1 "k8s.io/api/core/v1"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	pkgTest "knative.dev/pkg/test"
@@ -26,12 +24,8 @@ func TestRouteConflictBehavior(t *testing.T) {
 	svcB := types.NamespacedName{Namespace: "test", Name: "a-conflict"}
 
 	for _, ns := range []string{svcA.Namespace, svcB.Namespace} {
-		if _, err := caCtx.Clients.Kube.CoreV1().Namespaces().Create(context.Background(), &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: ns,
-			},
-		}, metav1.CreateOptions{}); err != nil && !apierrs.IsAlreadyExists(err) {
-			t.Fatalf("Failed to create namespace %s: %v", ns, err)
+		if _, err := test.CreateNamespace(caCtx, ns); err != nil {
+			t.Fatal(err)
 		}
 		if err := test.LinkGlobalPullSecretToNamespace(caCtx, ns); err != nil {
 			t.Fatalf("Unable to link global pull secret to namespace %s: %v", ns, err)

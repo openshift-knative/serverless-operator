@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -48,4 +49,35 @@ func LinkGlobalPullSecretToNamespace(ctx *Context, ns string) error {
 		return fmt.Errorf("error copying secret into ns %s: %w", ns, err)
 	}
 	return nil
+}
+
+func DeleteNamespace(ctx *Context, name string) error {
+	if err := ctx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+	if err := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {
+		if _, err := ctx.Clients.Kube.CoreV1().Namespaces().Get(context.Background(),
+			name, metav1.GetOptions{}); err != nil {
+			if errors.IsNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		}
+		return false, nil
+	}); err != nil {
+		return fmt.Errorf("timed out deleting namespace %s: %w", name, err)
+	}
+	return nil
+}
+
+func CreateNamespace(ctx *Context, name string) (*corev1.Namespace, error) {
+	ns, err := ctx.Clients.Kube.CoreV1().Namespaces().Create(context.Background(), &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}, metav1.CreateOptions{})
+	if err != nil && !errors.IsAlreadyExists(err) {
+		return nil, fmt.Errorf("failed to create namespace %s: %w", name, err)
+	}
+	return ns, nil
 }

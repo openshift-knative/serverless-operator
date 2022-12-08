@@ -262,15 +262,10 @@ EOF
     if ! oc get namespace serving-tests &>/dev/null; then
       oc create namespace serving-tests
     fi
-    go_test_e2e -run=TestServerlessUpgrade -timeout=100m "${common_opts[@]}"
-
-    # Restart Zipkin to prevent OutOfMemory errors.
-    oc -n "${TRACING_NAMESPACE}" delete pod -l="app=zipkin"
-    oc -n "${TRACING_NAMESPACE}" wait --for=condition=ready --timeout=3m pod -l="app=zipkin"
-
-    if [[ "${SKIP_DOWNGRADE}" == "false" ]]; then
-      go_test_e2e -run=TestServerlessDowngrade -timeout=60m "${common_opts[@]}"
-    fi
+    # Run the two test suites one by one to prevent the situation when nested
+    # tests time out and cause all other tests to have "Unknown" status.
+    go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
@@ -280,6 +275,9 @@ EOF
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
+    # Make sure the cluster upgrade is run with latest version of Serverless as
+    # the Serverless upgrade tests leave the product at the previous version (after downgrade).
+    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
     go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
