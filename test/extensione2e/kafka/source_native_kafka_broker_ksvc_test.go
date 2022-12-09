@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

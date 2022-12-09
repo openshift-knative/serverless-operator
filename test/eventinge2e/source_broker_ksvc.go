@@ -2,12 +2,13 @@ package eventinge2e
 
 import (
 	"context"
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"testing"
 )
 
 func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail func(*test.Context) *eventingv1.Broker) {

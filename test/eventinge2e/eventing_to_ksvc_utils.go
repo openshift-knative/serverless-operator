@@ -3,6 +3,8 @@ package eventinge2e
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +13,6 @@ import (
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	"testing"
 )
 
 const (

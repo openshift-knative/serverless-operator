@@ -3,10 +3,11 @@ package knativekafkae2e
 import (
 	"context"
 	"fmt"
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"

@@ -2,12 +2,13 @@ package eventinge2e
 
 import (
 	"context"
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"testing"
 )
 
 func KnativeSourceChannelKnativeService(t *testing.T, createChannelOrFail func(*test.Context) duckv1.KReference) {

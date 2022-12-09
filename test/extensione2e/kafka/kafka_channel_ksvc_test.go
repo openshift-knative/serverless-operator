@@ -2,8 +2,9 @@ package knativekafkae2e
 
 import (
 	"context"
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 	"testing"
+
+	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
