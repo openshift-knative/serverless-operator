@@ -10,7 +10,7 @@ import (
 	"knative.dev/eventing/test/lib/recordevents"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
-	serving "knative.dev/serving/pkg/apis/serving/v1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"testing"
 )
 
@@ -30,7 +30,7 @@ const (
 )
 
 // DeployKsvcWithEventInfoStoreOrFail deploys a wathola-forwarder ksvc forwarding events to a recordevents receiver
-func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespace string, name string) (*recordevents.EventInfoStore, *serving.Service) {
+func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespace string, name string) (*recordevents.EventInfoStore, *servingv1.Service) {
 	libclient, err := lib.NewClient(namespace, t)
 	if err != nil {
 		t.Fatal("error creating testlib client", err)
@@ -66,7 +66,7 @@ func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespa
 	})
 
 	// Setup a knative service for the wathola-forwarder
-	ksvc, err := test.WithServiceReady(ctx, name, namespace, pkgTest.ImagePath(test.WatholaForwarderImg), func(service *serving.Service) {
+	ksvc, err := test.WithServiceReady(ctx, name, namespace, pkgTest.ImagePath(test.WatholaForwarderImg), func(service *servingv1.Service) {
 		service.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{Name: "config", VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{

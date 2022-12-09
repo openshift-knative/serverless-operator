@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	pingSourceName    = "smoke-test-pingsource"
 	helloWorldText    = "Hello World!"
 	kafkaChannelName  = "smoke-kc"
 	channelAPIVersion = "messaging.knative.dev/v1beta1"

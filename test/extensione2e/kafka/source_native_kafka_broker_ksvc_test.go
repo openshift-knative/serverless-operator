@@ -20,7 +20,6 @@ import (
 
 const (
 	nativeKafkaBrokerName = "smoke-test-native-kafka-broker"
-	kafkaTriggerName      = "smoke-test-kafka-trigger"
 )
 
 var (

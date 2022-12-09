@@ -17,8 +17,6 @@ import (
 const (
 	kafkaChannelBrokerName            = "smoke-test-kafka-kafka-channel-broker"
 	kafkaChannelTemplateConfigMapName = "smoke-test-br-cm"
-	brokerAPIVersion                  = "eventing.knative.dev/v1"
-	brokerKind                        = "Broker"
 )
 
 var (
