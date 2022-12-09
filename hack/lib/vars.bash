@@ -91,6 +91,8 @@ DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
 quay.io/{{- with .Name }}
 {{- if eq . "httpproxy" }}openshift-knative-serving-test/{{.}}:v1.3
+{{- else if eq . "recordevents" }}openshift-knative/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else if eq . "wathola-forwarder" }}openshift-knative/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else                }}openshift-knative/{{.}}:multiarch{{end -}}
 {{end -}}
 EOF

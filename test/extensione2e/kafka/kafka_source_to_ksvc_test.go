@@ -3,23 +3,22 @@ package knativekafkae2e
 import (
 	"context"
 	"fmt"
+	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 	"strings"
 	"testing"
 	"time"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"knative.dev/eventing-kafka/test/e2e/helpers"
-	"knative.dev/eventing/test/lib"
-	pkgTest "knative.dev/pkg/test"
-
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing-kafka/test/e2e/helpers"
 	"knative.dev/eventing/pkg/utils"
+	"knative.dev/eventing/test/lib"
 
 	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 	kafkasourcev1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
@@ -27,7 +26,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -260,11 +258,9 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 	for name, tc := range tests {
 		name := name
+
 		// Setup a knative service
-		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
-		if err != nil {
-			t.Fatalf("Knative Service(%s) not ready: %v", helloWorldService+"-"+name, err)
-		}
+		eventStore, ksvc := eventinge2e.DeployKsvcWithEventInfoStoreOrFail(client, t, test.Namespace, helloWorldService+"-"+name)
 
 		t.Logf("Knative service %s/%s is ready: %#v", ksvc.GetNamespace(), ksvc.GetName(), ksvc.Status)
 
@@ -318,7 +314,8 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		}
-		servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+
+		eventinge2e.AssertPingSourceDataReceivedAtLeastOnce(eventStore)
 	}
 }
 
