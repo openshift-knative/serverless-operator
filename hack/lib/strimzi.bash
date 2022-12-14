@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function install_strimzi_operator {
-  header "Installing Strimzi Kafka operator"
+  logger.info "Installing Strimzi Kafka operator"
   if ! oc get ns kafka &>/dev/null; then
     oc create namespace kafka
   fi
@@ -15,7 +15,7 @@ function install_strimzi_operator {
 }
 
 function install_strimzi_cluster {
-  header "Applying Strimzi Cluster file"
+  logger.info "Applying Strimzi Cluster file"
   cat <<-EOF | oc apply -f -
     apiVersion: kafka.strimzi.io/v1beta2
     kind: Kafka
@@ -102,12 +102,12 @@ function install_strimzi_cluster {
         userOperator: {}
 EOF
 
-  header "Waiting for Strimzi cluster to become ready"
+  logger.info "Waiting for Strimzi cluster to become ready"
   oc wait kafka --all --timeout=-1s --for=condition=Ready -n kafka
 }
 
 function install_strimzi_users {
-  header "Applying Strimzi TLS Admin user"
+  logger.info "Applying Strimzi TLS Admin user"
   cat <<-EOF | oc apply -f -
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaUser
@@ -167,7 +167,7 @@ spec:
         host: "*"
 EOF
 
-  header "Applying Strimzi SASL Admin User"
+  logger.info "Applying Strimzi SASL Admin User"
   cat <<-EOF | oc apply -f -
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaUser
@@ -227,10 +227,10 @@ spec:
         host: "*"
 EOF
 
-  header "Waiting for Strimzi admin users to become ready"
+  logger.info "Waiting for Strimzi admin users to become ready"
   oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
 
-  header "Deleting existing Kafka user secrets"
+  logger.info "Deleting existing Kafka user secrets"
 
   oc delete secret -n default my-tls-secret --ignore-not-found
   oc delete secret -n default my-sasl-secret --ignore-not-found
@@ -239,7 +239,7 @@ EOF
   oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-sasl-secret-legacy --ignore-not-found
   oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-tls-secret-legacy --ignore-not-found
 
-  header "Creating a Secret, containing TLS from Strimzi"
+  logger.info "Creating a Secret, containing TLS from Strimzi"
   STRIMZI_CRT=$(oc -n kafka get secret my-cluster-cluster-ca-cert --template='{{index .data "ca.crt"}}' | base64 --decode )
   TLSUSER_CRT=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.crt"}}' | base64 --decode )
   TLSUSER_KEY=$(oc -n kafka get secret my-tls-user --template='{{index .data "user.key"}}' | base64 --decode )
@@ -249,7 +249,7 @@ EOF
       --from-literal=user.crt="$TLSUSER_CRT" \
       --from-literal=user.key="$TLSUSER_KEY"
 
-  header "Creating a Secret, containing SASL from Strimzi"
+  logger.info "Creating a Secret, containing SASL from Strimzi"
   SASL_PASSWD=$(oc -n kafka get secret my-sasl-user --template='{{index .data "password"}}' | base64 --decode )
   oc create secret --namespace default generic my-sasl-secret \
       --from-literal=ca.crt="$STRIMZI_CRT" \
@@ -336,7 +336,7 @@ EOF
 }
 
 function install_strimzi {
-  header "Strimzi install"
+  logger.info "Strimzi install"
   install_strimzi_operator
   install_strimzi_cluster
   install_strimzi_users
@@ -351,28 +351,28 @@ function delete_kafka_ui {
 }
 
 function delete_strimzi_users {
-  header "Deleting Kafka user secrets"
+  logger.info "Deleting Kafka user secrets"
   oc delete secret -n default my-tls-secret
   oc delete secret -n default my-sasl-secret
 
-  header "Deleting Strimzi users"
+  logger.info "Deleting Strimzi users"
   oc -n kafka delete kafkauser.kafka.strimzi.io my-sasl-user
   oc -n kafka delete kafkauser.kafka.strimzi.io my-tls-user
 
-  header "Waiting for Strimzi users to get deleted"
+  logger.info "Waiting for Strimzi users to get deleted"
   timeout 600 "[[ \$(oc get kafkausers -n kafka -o jsonpath='{.items}') != '[]' ]]" || return 2
 }
 
 function delete_strimzi_cluster {
-  header "Deleting Strimzi cluster"
+  logger.info "Deleting Strimzi cluster"
   oc delete kafka -n kafka my-cluster
 
-  header "Waiting for Strimzi cluster to get deleted"
+  logger.info "Waiting for Strimzi cluster to get deleted"
   timeout 600 "[[ \$(oc get kafkas -n kafka -o jsonpath='{.items}') != '[]' ]]" || return 2
 }
 
 function delete_strimzi_operator {
-  header "Deleting Strimzi Kafka operator"
+  logger.info "Deleting Strimzi Kafka operator"
 
   curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${STRIMZI_VERSION}/strimzi-cluster-operator-${STRIMZI_VERSION}.yaml" \
   | sed 's/namespace: .*/namespace: kafka/' \
@@ -384,7 +384,7 @@ function delete_strimzi_operator {
 }
 
 function uninstall_strimzi {
-  header "Strimzi uninstall"
+  logger.info "Strimzi uninstall"
   delete_kafka_ui
   delete_strimzi_users
   delete_strimzi_cluster
