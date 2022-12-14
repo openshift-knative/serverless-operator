@@ -31,15 +31,7 @@ function install_serverless_previous {
 
   deploy_serverless_operator "$PREVIOUS_CSV"
 
-  if [[ $INSTALL_SERVING == "true" ]]; then
-    deploy_knativeserving_cr
-  fi
-  if [[ $INSTALL_EVENTING == "true" ]]; then
-    deploy_knativeeventing_cr
-  fi
-  if [[ $INSTALL_KAFKA == "true" ]]; then
-    deploy_knativekafka_cr
-  fi
+  install_knative_resources
 
   logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
 }
@@ -48,6 +40,14 @@ function install_serverless_latest {
   logger.info "Installing latest version of Serverless..."
   deploy_serverless_operator_latest
 
+  install_knative_resources
+
+  logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
+}
+
+function install_knative_resources {
+  # Deploy the resources first and let them install in parallel, then
+  # wait for them all to be ready.
   if [[ $INSTALL_SERVING == "true" ]]; then
     deploy_knativeserving_cr
   fi
@@ -58,7 +58,15 @@ function install_serverless_latest {
     deploy_knativekafka_cr
   fi
 
-  logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
+  if [[ $INSTALL_SERVING == "true" ]]; then
+    wait_for_knative_serving_ready
+  fi
+  if [[ $INSTALL_EVENTING == "true" ]]; then
+    wait_for_knative_eventing_ready
+  fi
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    wait_for_knative_kafka_ready
+  fi
 }
 
 function remove_installplan {
@@ -174,10 +182,6 @@ function deploy_knativeserving_cr {
     # metadata-webhook adds istio annotations for e2e test by webhook.
     oc apply -f "${rootdir}/serving/metadata-webhook/config"
   fi
-
-  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
-
-  logger.success 'Knative Serving has been installed successfully.'
 }
 
 # If ServiceMesh is enabled:
@@ -254,10 +258,6 @@ EOF
   fi
 
   oc apply -f "$eventing_cr"
-
-  oc wait --for=condition=Ready knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" --timeout=900s
-
-  logger.success 'Knative Eventing has been installed successfully.'
 }
 
 function deploy_knativekafka_cr {
@@ -286,9 +286,20 @@ spec:
     enabled: true
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
+}
 
+function wait_for_knative_serving_ready {
+  oc wait --for=condition=Ready knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" --timeout=900s
+  logger.success 'Knative Serving has been installed successfully.'
+}
+
+function wait_for_knative_eventing_ready {
+  oc wait --for=condition=Ready knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" --timeout=900s
+  logger.success 'Knative Eventing has been installed successfully.'
+}
+
+function wait_for_knative_kafka_ready {
   oc wait --for=condition=Ready knativekafkas.operator.serverless.openshift.io knative-kafka -n "$EVENTING_NAMESPACE" --timeout=15m
-
   logger.success 'Knative Kafka has been installed successfully.'
 }
 
