@@ -226,21 +226,35 @@ spec:
     strategy: deployment
     spec:
       clusterPermissions:
-        - serviceAccountName: knative-operator
+        - serviceAccountName: knative-openshift
           rules:
-            # These are needed to create the various different resources.
-            # Upstream manifests
+            - apiGroups:
+                - sources.knative.dev
+              resources:
+                - kafkasources
+                - kafkasinks
+              verbs:
+                - get
+                - list
+                - watch
             - apiGroups:
                 - ""
               resources:
                 - configmaps
                 - events
                 - namespaces
-                - secrets
                 - serviceaccounts
                 - services
+                - secrets
+                - endpoints
+                - pods
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - apps
               resources:
@@ -249,74 +263,141 @@ spec:
                 - statefulsets
                 - statefulsets/finalizers # For monitoring resources to set their ownerRef correctly
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - autoscaling
               resources:
                 - horizontalpodautoscalers
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
             - apiGroups:
                 - batch
               resources:
                 - jobs
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - watch
+                - update
             - apiGroups:
                 - policy
               resources:
                 - poddisruptionbudgets
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+            - apiGroups:
+                - rbac.authorization.k8s.io
+              resources:
+                - clusterroles
+                - roles
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                # Escalate is necessary in order to create a role using cluster role aggregation,
+                # and to allow the Operator to bootstrap itself into the necessary set of permissions
+                # Bind is needed to bind roles and clusterRoles, with permissions
+                # that the operator itself does not hold
+                - escalate
+                - bind
             - apiGroups:
                 - rbac.authorization.k8s.io
               resources:
                 - clusterrolebindings
-                - clusterroles
                 - rolebindings
-                - roles
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - admissionregistration.k8s.io
               resources:
                 - mutatingwebhookconfigurations
                 - validatingwebhookconfigurations
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - networking.k8s.io
               resources:
                 - networkpolicies
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - apiextensions.k8s.io
               resources:
                 - customresourcedefinitions
                 - customresourcedefinitions/status
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - caching.internal.knative.dev
               resources:
                 - images
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
             # Downstream additions
             - apiGroups:
                 - monitoring.coreos.com
               resources:
                 - servicemonitors
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - console.openshift.io
               resources:
                 - consolequickstarts
                 - consoleclidownloads
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
             - apiGroups:
                 - config.openshift.io
               resources:
@@ -332,7 +413,261 @@ spec:
                 - routes
                 - routes/custom-host
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            # Leases are needed for leaderelection to work
+            - apiGroups:
+                - coordination.k8s.io
+              resources:
+                - leases
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            # These are resources we own
+            - apiGroups:
+                - operator.knative.dev
+              resources:
+                - knativeservings
+                - knativeservings/status
+                - knativeservings/finalizers
+                - knativeeventings
+                - knativeeventings/status
+                - knativeeventings/finalizers
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                - patch
+            - apiGroups:
+                - operator.serverless.openshift.io
+              resources:
+                - knativekafkas
+                - knativekafkas/status
+                - knativekafkas/finalizers
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                - patch
+            # These resources we only read
+            - apiGroups:
+                - config.openshift.io
+              resources:
+                - ingresses
+              verbs:
+                - get
+                - list
+                - watch
+        - serviceAccountName: knative-operator
+          rules:
+            # These are needed to create the various different resources.
+            # Upstream manifests
+            - apiGroups:
+                - ""
+              resources:
+                - configmaps
+                - namespaces
+                - secrets
+                - serviceaccounts
+                - services
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - ""
+              resources:
+                - events
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                - patch
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - deployments/finalizers # For monitoring resources to set their ownerRef correctly
+                - statefulsets
+                - statefulsets/finalizers # For monitoring resources to set their ownerRef correctly
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - autoscaling
+              resources:
+                - horizontalpodautoscalers
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+            - apiGroups:
+                - batch
+              resources:
+                - jobs
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - watch
+                - update
+            - apiGroups:
+                - policy
+              resources:
+                - poddisruptionbudgets
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+            - apiGroups:
+                - rbac.authorization.k8s.io
+              resources:
+                - clusterroles
+                - roles
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                # Escalate is necessary in order to create a role using cluster role aggregation,
+                # and to allow the Operator to bootstrap itself into the necessary set of permissions
+                # Bind is needed to bind roles and clusterRoles, with permissions
+                # that the operator itself does not hold
+                - escalate
+                - bind
+            - apiGroups:
+                - rbac.authorization.k8s.io
+              resources:
+                - clusterrolebindings
+                - rolebindings
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - admissionregistration.k8s.io
+              resources:
+                - mutatingwebhookconfigurations
+                - validatingwebhookconfigurations
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - networking.k8s.io
+              resources:
+                - networkpolicies
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - apiextensions.k8s.io
+              resources:
+                - customresourcedefinitions
+                - customresourcedefinitions/status
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - caching.internal.knative.dev
+              resources:
+                - images
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+            # Downstream additions
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - console.openshift.io
+              resources:
+                - consolequickstarts
+                - consoleclidownloads
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+            - apiGroups:
+                - config.openshift.io
+              resources:
+                - clusteroperators
+                - clusteroperators/status
+              verbs:
+                - get
+                - watch
+                - list
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+                - routes/custom-host
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
 
             # Leases are needed for leaderelection to work
             - apiGroups:
@@ -340,7 +675,12 @@ spec:
               resources:
                 - leases
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
 
             # These are resources we own
             - apiGroups:
@@ -353,7 +693,13 @@ spec:
                 - knativeeventings/status
                 - knativeeventings/finalizers
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                - patch
             - apiGroups:
                 - operator.serverless.openshift.io
               resources:
@@ -361,7 +707,13 @@ spec:
                 - knativekafkas/status
                 - knativekafkas/finalizers
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
+                - patch
 
             # These resources we only read
             - apiGroups:
@@ -380,7 +732,10 @@ spec:
               resources:
                 - events
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
             - apiGroups:
                 - ""
               resources:
@@ -405,7 +760,12 @@ spec:
                 - routes
                 - routes/custom-host
               verbs:
-                - "*"
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
 
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
@@ -499,7 +859,7 @@ spec:
                 labels:
                   name: knative-openshift
               spec:
-                serviceAccountName: knative-operator
+                serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
                     image: TO_BE_REPLACED
