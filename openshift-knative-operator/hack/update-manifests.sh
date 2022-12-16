@@ -21,6 +21,7 @@ kourier_files=(kourier config-network)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_MANIFESTS_DIR=${KNATIVE_SERVING_MANIFESTS_DIR:-""}
+export KNATIVE_INGRESS_MANIFESTS_DIR=${KNATIVE_INGRESS_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_TEST_MANIFESTS_DIR=${KNATIVE_SERVING_TEST_MANIFESTS_DIR:-""}
 
 function download_serving {
@@ -111,9 +112,12 @@ function download_ingress {
 
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$index-$file"
-
-    wget --no-check-certificate "$url" -O "$ingress_target_file"
+    if [[ ${KNATIVE_INGRESS_MANIFESTS_DIR} = "" ]]; then
+      url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$index-$file"
+      wget --no-check-certificate "$url" -O "$ingress_target_file"
+    else
+      cp "${KNATIVE_INGRESS_MANIFESTS_DIR}/${file}" "$ingress_target_file"
+    fi
 
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$ingress_target_file"
