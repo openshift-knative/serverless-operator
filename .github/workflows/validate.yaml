@@ -59,7 +59,7 @@ jobs:
         run: |
           branch="${{ github.ref_name }}.0" # example output: "release-1.26.0"
           # Replace "release-" with "v", so that the final variable is like "v1.27.0"
-          echo "{CURRENT_VERSION_IMAGES}=${branch/release-/v}" >> $GITHUB_ENV
+          echo "CURRENT_VERSION_IMAGES=${branch/release-/v}" >> $GITHUB_ENV
         shell: bash
 
       - name: Set CURRENT_VERSION_IMAGES on PRs
@@ -67,7 +67,7 @@ jobs:
         run: |
           branch="${{ github.base_ref }}.0" # example output: "release-1.26.0"
           # Replace "release-" with "v", so that the final variable is like "v1.27.0"
-          echo "{CURRENT_VERSION_IMAGES}=${branch/release-/v}" >> $GITHUB_ENV
+          echo "CURRENT_VERSION_IMAGES=${branch/release-/v}" >> $GITHUB_ENV
         shell: bash
 
       - name: Regenerate all generated files
