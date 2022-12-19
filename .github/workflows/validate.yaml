@@ -15,8 +15,8 @@ on:
   workflow_dispatch: # Manual workflow trigger
 
 jobs:
-  generated-files-commited:
-    name: Generated files are commited
+  generated-files-committed:
+    name: Generated files are committed
     runs-on: ubuntu-latest
     env:
       GOPATH: ${{ github.workspace }}
@@ -135,7 +135,7 @@ jobs:
           echo '::endgroup::'
 
           echo '::group:: Installing misspell ... https://github.com/client9/misspell'
-          go get github.com/client9/misspell/cmd/misspell
+          go install github.com/client9/misspell/cmd/misspell@latest
           echo '::endgroup::'
 
           echo '::group:: Installing woke ... https://github.com/get-woke/woke'
