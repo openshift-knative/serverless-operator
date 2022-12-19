@@ -232,6 +232,8 @@ EOF
 
   logger.info "Deleting existing Kafka user secrets"
 
+  oc create namespace "${EVENTING_NAMESPACE}" --dry-run=client -o yaml | oc apply -f
+
   oc delete secret -n default my-tls-secret --ignore-not-found
   oc delete secret -n default my-sasl-secret --ignore-not-found
   oc delete secret -n "${EVENTING_NAMESPACE}" strimzi-tls-secret --ignore-not-found
