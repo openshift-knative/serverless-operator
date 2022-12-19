@@ -524,7 +524,15 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.6:client-plugin-event-sender"
+                      - name: "IMAGE_KN_CLIENT"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-client"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
+                        value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
+                        value: "registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023"
                       - name: "CURRENT_VERSION"
                         value: "1.28.0"
                     securityContext:
@@ -550,7 +558,7 @@ spec:
                 serviceAccountName: knative-operator
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v1.4.1:kn-cli-artifacts
+                    image: registry.ci.openshift.org/openshift/knative-v1.6.0:kn-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -675,7 +683,15 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.6:client-plugin-event-sender"
+                      - name: "IMAGE_KN_CLIENT"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-client"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
+                        value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
+                        value: "registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd"
+                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023"
                       - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.6"
                       - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
@@ -936,7 +952,15 @@ spec:
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.7:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
+      image: "registry.ci.openshift.org/knative/release-1.6:client-plugin-event-sender"
+    - name: "IMAGE_KN_CLIENT"
+      image: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-client"
+    - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
+      image: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
+    - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
+      image: "registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd"
+    - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
+      image: "registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023"
     - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.6"
     - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
