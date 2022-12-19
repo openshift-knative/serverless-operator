@@ -26,31 +26,31 @@ requirements:
     label: 'v4.8'
 
 dependencies:
-  serving: 1.6.0
+  serving: 1.7.0
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.6
+  serving_artifacts_branch: release-v1.7
 
   # versions for networking components
-  kourier: 1.6.0
-  net_kourier_artifacts_branch: release-1.6
-  net_istio: 1.6.0
-  net_istio_artifacts_branch: release-1.6
+  kourier: 1.7.0
+  net_kourier_artifacts_branch: release-1.7
+  net_istio: 1.7.0
+  net_istio_artifacts_branch: release-1.7
   maistra: 2.1.0
 
-  eventing: knative-v1.6
+  eventing: knative-v1.7
   # eventing core midstream branch name
-  eventing_artifacts_branch: release-v1.6
+  eventing_artifacts_branch: release-v1.7
 
   eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion tag
-  eventing_kafka_broker: knative-v1.6
+  eventing_kafka_broker: knative-v1.7
   # eventing-kafka-broker midstream branch or commit
-  eventing_kafka_broker_artifacts_branch: release-v1.6
+  eventing_kafka_broker_artifacts_branch: release-v1.7
   cli: 1.4.1
-  operator: 1.6.1
+  operator: 1.7.2
   # Previous versions required for downgrade testing
   previous:
-    serving: 1.5.0
-    eventing: 1.5
+    serving: 1.6.0
+    eventing: 1.6
     eventing_kafka: 1.1.0
-    eventing_kafka_broker: 1.5
+    eventing_kafka_broker: 1.6

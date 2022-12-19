@@ -28,10 +28,10 @@ require (
 	knative.dev/eventing-kafka v0.35.1
 	knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000
 	knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
-	knative.dev/networking v0.0.0-20220705142707-f087178076e4
-	knative.dev/operator v0.33.1
+	knative.dev/networking v0.0.0-20220818010248-e51df7cdf571
+	knative.dev/operator v0.34.2
 	knative.dev/pkg v0.0.0-20221109160814-e190f87d65ab
-	knative.dev/serving v0.33.0
+	knative.dev/serving v0.34.1
 	sigs.k8s.io/controller-runtime v0.12.3
 )
 
@@ -164,17 +164,17 @@ require (
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
-	knative.dev/caching v0.0.0-20220705144806-9c3c19ff990f // indirect
+	knative.dev/caching v0.0.0-20220818010648-9df7bb739739 // indirect
 	knative.dev/reconciler-test v0.0.0-20221028112809-f3175ad3554d
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
 
 replace (
 	// Knative forks.
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20221208103831-67c3ebda00db
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20221208164014-22a3f3255b79
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221111104213-b4f7de6c2f79
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221215123319-6085b4cd142e
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221208103600-3db29e991b65
 )
 
 replace (
@@ -194,8 +194,8 @@ replace (
 	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2
 )
 
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20221109160716-136f2e3999cc
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20221123011941-9d7bd235ceed
 
-replace knative.dev/hack => knative.dev/hack v0.0.0-20220701014203-65c463ac8c98
+replace knative.dev/hack => knative.dev/hack v0.0.0-20220823140917-8d1e4ccf9dc3
 
-replace knative.dev/networking => knative.dev/networking v0.0.0-20220705142707-f087178076e4
+replace knative.dev/networking => knative.dev/networking v0.0.0-20221208211516-5f25a81cd43e
