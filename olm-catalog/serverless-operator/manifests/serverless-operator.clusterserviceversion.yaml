@@ -61,12 +61,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.26.0 <1.27.0'
+    olm.skipRange: '>=1.27.0 <1.28.0'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.27.0
+  name: serverless-operator.v1.28.0
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -526,7 +526,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.4:client-plugin-event-sender"
                       - name: "CURRENT_VERSION"
-                        value: "1.27.0"
+                        value: "1.28.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -697,7 +697,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.6"
                       - name: "CURRENT_VERSION"
-                        value: "1.27.0"
+                        value: "1.28.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.6"
                     securityContext:
@@ -957,5 +957,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.6"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.6"
-  replaces: serverless-operator.v1.26.0
-  version: 1.27.0
+  replaces: serverless-operator.v1.27.0
+  version: 1.28.0
