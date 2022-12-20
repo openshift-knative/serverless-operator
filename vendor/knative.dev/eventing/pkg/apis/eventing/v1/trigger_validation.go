@@ -168,6 +168,22 @@ func ValidateAttributesNames(attrs map[string]string) (errs *apis.FieldError) {
 	return errs
 }
 
+func ValidateSingleAttributeMap(expr map[string]string) (errs *apis.FieldError) {
+	if len(expr) == 0 {
+		return nil
+	}
+
+	if len(expr) != 1 {
+		return apis.ErrGeneric("Multiple items found, can have only one key-value", apis.CurrentField)
+	}
+	for attr := range expr {
+		if !validAttributeName.MatchString(attr) {
+			errs = errs.Also(apis.ErrInvalidKeyName(attr, apis.CurrentField, "Attribute name must start with a letter and can only contain lowercase alphanumeric").ViaKey(attr))
+		}
+	}
+	return errs
+}
+
 func ValidateSubscriptionAPIFiltersList(ctx context.Context, filters []SubscriptionsAPIFilter) (errs *apis.FieldError) {
 	if filters == nil || !feature.FromContext(ctx).IsEnabled(feature.NewTriggerFilters) {
 		return nil
@@ -205,11 +221,11 @@ func ValidateSubscriptionAPIFilter(ctx context.Context, filter *SubscriptionsAPI
 	errs = errs.Also(
 		ValidateOneOf(filter),
 	).Also(
-		ValidateAttributesNames(filter.Exact).ViaField("exact"),
+		ValidateSingleAttributeMap(filter.Exact).ViaField("exact"),
 	).Also(
-		ValidateAttributesNames(filter.Prefix).ViaField("prefix"),
+		ValidateSingleAttributeMap(filter.Prefix).ViaField("prefix"),
 	).Also(
-		ValidateAttributesNames(filter.Suffix).ViaField("suffix"),
+		ValidateSingleAttributeMap(filter.Suffix).ViaField("suffix"),
 	).Also(
 		ValidateSubscriptionAPIFiltersList(ctx, filter.All).ViaField("all"),
 	).Also(

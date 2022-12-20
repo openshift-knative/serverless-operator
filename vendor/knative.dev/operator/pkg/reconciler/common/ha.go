@@ -35,7 +35,7 @@ func haUnSupported(obj base.KComponent) sets.String {
 func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
-		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
+		for _, override := range obj.GetSpec().GetDeploymentOverride() {
 			if override.Replicas != nil && override.Name == u.GetName() {
 				return nil
 			}
@@ -43,7 +43,7 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 
 		// stash the HA object
 		ha := obj.GetSpec().GetHighAvailability()
-		if ha == nil || ha.Replicas == nil {
+		if ha == nil {
 			return nil
 		}
 

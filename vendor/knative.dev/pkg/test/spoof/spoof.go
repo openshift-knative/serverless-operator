@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -187,7 +188,7 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
 		}
 		defer rawResp.Body.Close()
 
-		body, err := io.ReadAll(rawResp.Body)
+		body, err := ioutil.ReadAll(rawResp.Body)
 		if err != nil {
 			return true, err
 		}

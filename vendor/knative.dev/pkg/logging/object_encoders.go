@@ -29,12 +29,9 @@ import (
 
 // StringSet returns a marshaler for the set of strings.
 // To use this in sugared logger do:
-//
 //	logger.Infow("Revision State", zap.Object("healthy", logging.StringSet(healthySet)),
 //		zap.Object("unhealthy", logging.StringSet(unhealthySet)))
-//
 // To use with non-sugared logger do:
-//
 //	logger.Info("Revision State", zap.Object("healthy", logging.StringSet(healthySet)),
 //		zap.Object("unhealthy", logging.StringSet(unhealthySet)))
 func StringSet(s sets.String) zapcore.ObjectMarshalerFunc {

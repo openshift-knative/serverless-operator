@@ -34,11 +34,9 @@ import (
 //
 // Typical integration:
 // ```go
-//
-//	ctx, startInformers := injection.EnableInjectionOrDie(signals.NewContext(), nil)
-//	... start watches with informers, if required ...
-//	startInformers()
-//
+//   ctx, startInformers := injection.EnableInjectionOrDie(signals.NewContext(), nil)
+//   ... start watches with informers, if required ...
+//   startInformers()
 // ```
 func EnableInjectionOrDie(ctx context.Context, cfg *rest.Config) (context.Context, func()) {
 	if ctx == nil {

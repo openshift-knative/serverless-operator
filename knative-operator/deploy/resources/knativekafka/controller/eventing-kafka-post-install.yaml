@@ -20,7 +20,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   - apiGroups:
       - apps
@@ -70,7 +70,7 @@ rules:
       - delete
 
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - services
     resourceNames:
@@ -83,7 +83,7 @@ rules:
 
   # to be able to list channel services and patch them
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - services
     verbs:
@@ -143,7 +143,7 @@ rules:
       - delete
 
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - serviceaccounts
     resourceNames:
@@ -155,7 +155,7 @@ rules:
       - delete
 
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - secrets
     resourceNames:
@@ -165,7 +165,7 @@ rules:
       - delete
 
   - apiGroups:
-      - "autoscaling"
+      - "*"
     resources:
       - horizontalpodautoscalers
     resourceNames:
@@ -174,7 +174,7 @@ rules:
       - delete
 
   - apiGroups:
-      - "policy"
+      - "*"
     resources:
       - poddisruptionbudgets
     resourceNames:
@@ -183,7 +183,7 @@ rules:
       - delete
 
   - apiGroups:
-    - "coordination.k8s.io"
+    - "*"
     resources:
       - leases
     resourceNames:
@@ -194,7 +194,7 @@ rules:
   # to be able to read the old configmap and migrate
   # and then delete them
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - configmaps
     resourceNames:
@@ -206,7 +206,7 @@ rules:
 
   # to be able update config in the new configmap
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - configmaps
     resourceNames:
@@ -236,7 +236,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -257,7 +257,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -339,7 +339,7 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 
 ---
 
@@ -348,7 +348,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -379,7 +379,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -410,7 +410,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -418,7 +418,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        kafka.eventing.knative.dev/release: v1.7
+        kafka.eventing.knative.dev/release: v1.6
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -463,7 +463,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -471,7 +471,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        kafka.eventing.knative.dev/release: v1.7
+        kafka.eventing.knative.dev/release: v1.6
       annotations:
         sidecar.istio.io/inject: "false"
     spec:

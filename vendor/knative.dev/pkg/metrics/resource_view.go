@@ -29,7 +29,7 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
-	"k8s.io/utils/clock"
+	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 type storedViews struct {
@@ -53,7 +53,7 @@ type meters struct {
 	meters         map[string]*meterExporter
 	factory        ResourceExporterFactory
 	lock           sync.Mutex
-	clock          clock.WithTicker
+	clock          clock.Clock
 	ticker         clock.Ticker
 	tickerStopChan chan struct{}
 }
@@ -65,7 +65,7 @@ var (
 	resourceViews = storedViews{}
 	allMeters     = meters{
 		meters: map[string]*meterExporter{"": &defaultMeter},
-		clock:  clock.RealClock{},
+		clock:  clock.Clock(clock.RealClock{}),
 	}
 
 	cleanupOnce                = new(sync.Once)

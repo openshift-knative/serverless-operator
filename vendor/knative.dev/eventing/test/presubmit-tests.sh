@@ -26,6 +26,7 @@
 
 # shellcheck disable=SC1090
 
+export DISABLE_MD_LINTING=1
 export GO111MODULE=on
 
 export KO_FLAGS="--platform=linux/amd64"

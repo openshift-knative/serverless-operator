@@ -85,21 +85,14 @@ func IsInUpdate(ctx context.Context) bool {
 	return ctx.Value(inUpdateKey{}) != nil
 }
 
-// GetUpdatedSubresource returns the subresource being updated or "" if there
-// is no subresource that's being updated. Examples are "status" for Status
-// updates, or "scale" for scaling Deployment.
-func GetUpdatedSubresource(ctx context.Context) string {
-	value := ctx.Value(inUpdateKey{})
-	if value == nil {
-		return ""
-	}
-	up := value.(*updatePayload)
-	return up.subresource
-}
-
 // IsInStatusUpdate checks whether the context is an Update.
 func IsInStatusUpdate(ctx context.Context) bool {
-	return GetUpdatedSubresource(ctx) == "status"
+	value := ctx.Value(inUpdateKey{})
+	if value == nil {
+		return false
+	}
+	up := value.(*updatePayload)
+	return up.subresource == "status"
 }
 
 // GetBaseline returns the baseline of the update, or nil when we

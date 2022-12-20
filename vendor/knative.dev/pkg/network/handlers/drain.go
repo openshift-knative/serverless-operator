@@ -70,14 +70,11 @@ type Drainer struct {
 	// after Drain is called before it may return.
 	QuietPeriod time.Duration
 
+	// once is used to initialize timer
+	once sync.Once
+
 	// timer is used to orchestrate the drain.
 	timer timer
-
-	// used to synchronize callers of Drain
-	drainCh chan struct{}
-
-	// used to synchronize Drain and Reset
-	resetCh chan struct{}
 
 	// HealthCheckUAPrefixes are the additional user agent prefixes that trigger the
 	// drainer's health check
@@ -109,7 +106,7 @@ func (d *Drainer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d.resetTimer()
+	d.reset()
 	d.Inner.ServeHTTP(w, r)
 }
 
@@ -118,36 +115,19 @@ func (d *Drainer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (d *Drainer) Drain() {
 	// Note: until the first caller exits, the others
 	// will wait blocked as well.
-	ch := func() chan struct{} {
-		d.Lock()
-		defer d.Unlock()
-		if d.drainCh != nil {
-			return d.drainCh
-		}
-
-		if d.QuietPeriod <= 0 {
-			d.QuietPeriod = network.DefaultDrainTimeout
-		}
-
-		timer := newTimer(d.QuietPeriod)
-		drainCh := make(chan struct{})
-		resetCh := make(chan struct{})
-
-		go func() {
-			select {
-			case <-resetCh:
-			case <-timer.tickChan():
+	d.once.Do(func() {
+		t := func() timer {
+			d.Lock()
+			defer d.Unlock()
+			if d.QuietPeriod <= 0 {
+				d.QuietPeriod = network.DefaultDrainTimeout
 			}
-			close(drainCh)
+			d.timer = newTimer(d.QuietPeriod)
+			return d.timer
 		}()
 
-		d.drainCh = drainCh
-		d.resetCh = resetCh
-		d.timer = timer
-		return drainCh
-	}()
-
-	<-ch
+		<-t.tickChan()
+	})
 }
 
 // isHealthcheckRequest validates if the request has a user agent that is for healthcheck
@@ -165,27 +145,8 @@ func (d *Drainer) isHealthCheckRequest(r *http.Request) bool {
 	return false
 }
 
-// Reset interrupts Drain and clears the drainers internal state
-// Thus further calls to Drain will block and wait for the entire QuietPeriod
-func (d *Drainer) Reset() {
-	d.Lock()
-	defer d.Unlock()
-
-	if d.timer != nil {
-		d.timer.Stop()
-		d.timer = nil
-	}
-
-	if d.resetCh != nil {
-		close(d.resetCh)
-		d.resetCh = nil
-	}
-	if d.drainCh != nil {
-		d.drainCh = nil
-	}
-}
-
-func (d *Drainer) resetTimer() {
+// reset resets the drain timer to the full amount of time.
+func (d *Drainer) reset() {
 	if func() bool {
 		d.RLock()
 		defer d.RUnlock()
@@ -196,7 +157,7 @@ func (d *Drainer) resetTimer() {
 
 	d.Lock()
 	defer d.Unlock()
-	if d.timer != nil && d.timer.Stop() {
+	if d.timer.Stop() {
 		d.timer.Reset(d.QuietPeriod)
 	}
 }

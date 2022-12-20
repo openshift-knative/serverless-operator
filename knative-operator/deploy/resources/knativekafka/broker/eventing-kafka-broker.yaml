@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
   annotations:
     knative.dev/example-checksum: "57a32008"
 data:
@@ -201,10 +201,10 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 rules:
   - apiGroups:
-      - ""
+      - "*"
     resources:
       - secrets
     verbs:
@@ -234,7 +234,7 @@ metadata:
   name: knative-kafka-broker-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 ---
 ---
 
@@ -257,7 +257,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-broker-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-broker-data-plane
@@ -290,7 +290,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-dispatcher
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -300,7 +300,7 @@ spec:
       name: kafka-broker-dispatcher
       labels:
         app: kafka-broker-dispatcher
-        kafka.eventing.knative.dev/release: v1.7
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -457,7 +457,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     matchLabels:
@@ -467,7 +467,7 @@ spec:
       name: kafka-broker-receiver
       labels:
         app: kafka-broker-receiver
-        kafka.eventing.knative.dev/release: v1.7
+        kafka.eventing.knative.dev/release: v1.6
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -609,7 +609,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.6
 spec:
   selector:
     app: kafka-broker-receiver

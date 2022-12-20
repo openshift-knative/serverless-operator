@@ -17,7 +17,6 @@ limitations under the License.
 package tracing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -82,12 +81,7 @@ func (oct *OpenCensusTracer) ApplyConfig(cfg *config.Config) error {
 	return nil
 }
 
-// Deprecated: Use Shutdown.
 func (oct *OpenCensusTracer) Finish() error {
-	return oct.Shutdown(context.Background())
-}
-
-func (oct *OpenCensusTracer) Shutdown(ctx context.Context) error {
 	err := oct.acquireGlobal()
 	defer octMutex.Unlock()
 	if err != nil {
@@ -95,13 +89,8 @@ func (oct *OpenCensusTracer) Shutdown(ctx context.Context) error {
 	}
 
 	for _, configOpt := range oct.configOptions {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			if err = configOpt(nil); err != nil {
-				return err
-			}
+		if err = configOpt(nil); err != nil {
+			return err
 		}
 	}
 	globalOct = nil
@@ -147,45 +136,41 @@ func WithExporter(name string, logger *zap.SugaredLogger) ConfigOption {
 // The host arg is used for a value of tag ip="{IP}" so you can use an actual IP. Otherwise,
 // the host name must be able to be resolved.
 // e.g)
-//
-//	"name" is a service name like activator-service.
-//	"host" is a endpoint IP like activator-service's endpoint IP.
+//   "name" is a service name like activator-service.
+//   "host" is a endpoint IP like activator-service's endpoint IP.
 func WithExporterFull(name, host string, logger *zap.SugaredLogger) ConfigOption {
 	return func(cfg *config.Config) error {
 		var (
 			exporter trace.Exporter
 			closer   io.Closer
 		)
-		if cfg != nil {
-			switch cfg.Backend {
-			case config.Zipkin:
-				// If host isn't specified, then zipkin.NewEndpoint will return an error saying that it
-				// can't find the host named ''. So, if not specified, default it to this machine's
-				// hostname.
-				if host == "" {
-					n, err := os.Hostname()
-					if err != nil {
-						return fmt.Errorf("unable to get hostname: %w", err)
-					}
-					host = n
-				}
-				if name == "" {
-					name = host
-				}
-				zipEP, err := zipkin.NewEndpoint(name, host)
+		switch cfg.Backend {
+		case config.Zipkin:
+			// If host isn't specified, then zipkin.NewEndpoint will return an error saying that it
+			// can't find the host named ''. So, if not specified, default it to this machine's
+			// hostname.
+			if host == "" {
+				n, err := os.Hostname()
 				if err != nil {
-					logger.Errorw("error building zipkin endpoint", zap.Error(err))
-					return err
+					return fmt.Errorf("unable to get hostname: %w", err)
 				}
-				reporter := httpreporter.NewReporter(cfg.ZipkinEndpoint)
-				exporter = oczipkin.NewExporter(reporter, zipEP)
-				closer = reporter
-
-			default:
-				// Disables tracing.
+				host = n
 			}
-		}
+			if name == "" {
+				name = host
+			}
+			zipEP, err := zipkin.NewEndpoint(name, host)
+			if err != nil {
+				logger.Errorw("error building zipkin endpoint", zap.Error(err))
+				return err
+			}
+			reporter := httpreporter.NewReporter(cfg.ZipkinEndpoint)
+			exporter = oczipkin.NewExporter(reporter, zipEP)
+			closer = reporter
 
+		default:
+			// Disables tracing.
+		}
 		if exporter != nil {
 			trace.RegisterExporter(exporter)
 		}

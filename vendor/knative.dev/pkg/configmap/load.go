@@ -17,6 +17,7 @@ limitations under the License.
 package configmap
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,7 +47,7 @@ func Load(p string) (map[string]string, error) {
 		if info.IsDir() {
 			return nil
 		}
-		b, err := os.ReadFile(p)
+		b, err := ioutil.ReadFile(p)
 		if err != nil {
 			return err
 		}

@@ -40,7 +40,7 @@ fi
 readonly IS_PROW
 [[ ! -v REPO_ROOT_DIR ]] && REPO_ROOT_DIR="$(git rev-parse --show-toplevel)"
 readonly REPO_ROOT_DIR
-readonly REPO_NAME="${REPO_NAME:-$(basename "${REPO_ROOT_DIR}")}"
+readonly REPO_NAME="$(basename ${REPO_ROOT_DIR})"
 
 # Useful flags about the current OS
 IS_LINUX=0
@@ -56,15 +56,10 @@ readonly IS_LINUX
 readonly IS_OSX
 readonly IS_WINDOWS
 
-export TMPDIR="${TMPDIR:-$(mktemp -u -t -d knative.XXXXXXXX)}"
-mkdir -p "$TMPDIR"
 # Set ARTIFACTS to an empty temp dir if unset
 if [[ -z "${ARTIFACTS:-}" ]]; then
-  ARTIFACTS="$(mktemp -u -t -d)"
-  export ARTIFACTS
+  export ARTIFACTS="$(mktemp -d)"
 fi
-mkdir -p "$ARTIFACTS"
-
 
 # On a Prow job, redirect stderr to stdout so it's synchronously added to log
 (( IS_PROW )) && exec 2>&1
@@ -434,7 +429,7 @@ function mktemp_with_extension() {
 function create_junit_xml() {
   local xml
   xml="$(mktemp_with_extension "${ARTIFACTS}"/junit_XXXXXXXX xml)"
-  echo "XML report for $1::$2 written to ${xml}"
+  echo "JUnit file ${xml} is created for reporting the test result"
   run_kntest junit --suite="$1" --name="$2" --err-msg="$3" --dest="${xml}" || return 1
 }
 
@@ -442,38 +437,37 @@ function create_junit_xml() {
 # Parameters: $1... - parameters to go test
 function report_go_test() {
   local go_test_args=( "$@" )
-  local logfile xml ansilog htmllog
+  # Install gotestsum if necessary.
+  run_go_tool gotest.tools/gotestsum gotestsum --help > /dev/null 2>&1
+  # Capture the test output to the report file.
+  local report
+  report="$(mktemp)"
+  local xml
   xml="$(mktemp_with_extension "${ARTIFACTS}"/junit_XXXXXXXX xml)"
-  # Keep the suffix, so files are related.
-  logfile="${xml/junit_/go_test_}"
-  logfile="${logfile/.xml/.jsonl}"
   echo "Running go test with args: ${go_test_args[*]}"
-  go_run gotest.tools/gotestsum@v1.8.0 \
-    --format "${GO_TEST_VERBOSITY:-testname}" \
-    --junitfile "${xml}" \
-    --junitfile-testsuite-name relative \
-    --junitfile-testcase-classname relative \
-    --jsonfile "${logfile}" \
+  capture_output "${report}" gotestsum --format "${GO_TEST_VERBOSITY:-testname}" \
+    --junitfile "${xml}" --junitfile-testsuite-name relative --junitfile-testcase-classname relative \
     -- "${go_test_args[@]}"
-  local gotest_retcode=$?
-  echo "Finished run, return code is ${gotest_retcode}"
+  local failed=$?
+  echo "Finished run, return code is ${failed}"
 
   echo "XML report written to ${xml}"
-  echo "Test log (JSONL) written to ${logfile}"
-
-  ansilog="${logfile/.jsonl/-ansi.log}"
-  go_run github.com/haveyoudebuggedit/gotestfmt/v2/cmd/gotestfmt@v2.3.1 \
-    -input "${logfile}" \
-    -showteststatus \
-    -nofail > "$ansilog"
-  echo "Test log (ANSI) written to ${ansilog}"
-
-  htmllog="${logfile/.jsonl/.html}"
-  go_run github.com/buildkite/terminal-to-html/v3/cmd/terminal-to-html@v3.6.1 \
-    --preview < "$ansilog" > "$htmllog"
-  echo "Test log (HTML) written to ${htmllog}"
-
-  return ${gotest_retcode}
+  if [[ -n "$(grep '<testsuites></testsuites>' "${xml}")" ]]; then
+    # XML report is empty, something's wrong; use the output as failure reason
+    create_junit_xml _go_tests "GoTests" "$(cat "${report}")"
+  fi
+  # Capture and report any race condition errors
+  local race_errors
+  race_errors="$(sed -n '/^WARNING: DATA RACE$/,/^==================$/p' "${report}")"
+  create_junit_xml _go_tests "DataRaceAnalysis" "${race_errors}"
+  if (( ! IS_PROW )); then
+    # Keep the suffix, so files are related.
+    local logfile=${xml/junit_/go_test_}
+    logfile=${logfile/.xml/.log}
+    cp "${report}" "${logfile}"
+    echo "Test log written to ${logfile}"
+  fi
+  return ${failed}
 }
 
 # Install Knative Serving in the current cluster.
@@ -549,41 +543,24 @@ function start_latest_eventing_sugar_controller() {
   start_knative_eventing_extension "${KNATIVE_EVENTING_SUGAR_CONTROLLER_RELEASE}" "knative-eventing"
 }
 
-# Run a go utility without installing it.
-# Parameters: $1 - tool package for go run.
-#             $2..$n - parameters passed to the tool.
-function go_run() {
-  local package
-  package="$1"
-  if [[ "$package" != *@* ]]; then
-    abort 'Package for "go_run" needs to have @version'
-  fi
-  shift 1
-  GORUN_PATH="${GORUN_PATH:-$(go env GOPATH)}"
-  # Some CI environments may have non-writable GOPATH
-  if ! [ -w "${GORUN_PATH}" ]; then
-    GORUN_PATH="$(mktemp -t -d -u gopath.XXXXXXXX)"
-  fi
-  export GORUN_PATH
-  GOPATH="${GORUN_PATH}" \
-  GOFLAGS='' \
-  GO111MODULE='' \
-    go run "$package" "$@"
-}
-
 # Run a go tool, installing it first if necessary.
 # Parameters: $1 - tool package/dir for go install.
 #             $2 - tool to run.
 #             $3..$n - parameters passed to the tool.
-# Deprecated: use go_run instead
 function run_go_tool() {
   local package=$1
+  local tool=$2
+  local install_failed=0
   # If no `@version` is provided, default to adding `@latest`
   if [[ "$package" != *@* ]]; then
     package=$package@latest
   fi
+  if [[ -z "$(which ${tool})" ]]; then
+    GOFLAGS="" go install "$package" || install_failed=1
+  fi
+  (( install_failed )) && return ${install_failed}
   shift 2
-  go_run "$package" "$@"
+  ${tool} "$@"
 }
 
 # Add function call to trap
@@ -646,7 +623,7 @@ function go_update_deps() {
     else
       group "Upgrading to release ${RELEASE}"
     fi
-    FLOATING_DEPS+=( $(go_run knative.dev/test-infra/buoy@latest float ${REPO_ROOT_DIR}/go.mod "${buoyArgs[@]}") )
+    FLOATING_DEPS+=( $(run_go_tool knative.dev/test-infra/buoy buoy float ${REPO_ROOT_DIR}/go.mod "${buoyArgs[@]}") )
     if [[ ${#FLOATING_DEPS[@]} > 0 ]]; then
       echo "Floating deps to ${FLOATING_DEPS[@]}"
       go get -d ${FLOATING_DEPS[@]}
@@ -707,10 +684,13 @@ function go_mod_gopath_hack() {
   echo "${TMP_DIR}"
 }
 
-# Run kntest tool
+# Run kntest tool, error out and ask users to install it if it's not currently installed.
 # Parameters: $1..$n - parameters passed to the tool.
 function run_kntest() {
-  go_run knative.dev/test-infra/tools/kntest/cmd/kntest@latest "$@"
+  if [[ ! -x "$(command -v kntest)" ]]; then
+    echo "--- FAIL: kntest not installed, please clone knative test-infra repo and run \`go install ./tools/kntest/cmd/kntest\` to install it"; return 1;
+  fi
+  kntest "$@"
 }
 
 # Run go-licenses to update licenses.
@@ -721,16 +701,14 @@ function update_licenses() {
   local dst=$1
   local dir=$2
   shift
-  go_run github.com/google/go-licenses@v1.2.0 \
-    save "${dir}" --save_path="${dst}" --force || \
+  run_go_tool github.com/google/go-licenses go-licenses save "${dir}" --save_path="${dst}" --force || \
     { echo "--- FAIL: go-licenses failed to update licenses"; return 1; }
 }
 
 # Run go-licenses to check for forbidden licenses.
 function check_licenses() {
   # Check that we don't have any forbidden licenses.
-  go_run github.com/google/go-licenses@v1.2.0 \
-    check "${REPO_ROOT_DIR}/..." || \
+  run_go_tool github.com/google/go-licenses go-licenses check "${REPO_ROOT_DIR}/..." || \
     { echo "--- FAIL: go-licenses failed the license check"; return 1; }
 }
 

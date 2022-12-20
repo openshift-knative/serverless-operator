@@ -46,7 +46,7 @@ import (
 const (
 	podLogsDir         = "pod-logs"
 	testPullSecretName = "kn-eventing-test-pull-secret"
-	MaxNamespaceSkip   = 200
+	MaxNamespaceSkip   = 100
 	MaxRetries         = 5
 	RetrySleepDuration = 2 * time.Second
 )
