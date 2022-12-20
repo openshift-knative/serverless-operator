@@ -110,6 +110,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		return err
 	}
 	stages := common.Stages{
+		common.FilterNamespace("knative-eventing"),
 		common.AppendTarget,
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
