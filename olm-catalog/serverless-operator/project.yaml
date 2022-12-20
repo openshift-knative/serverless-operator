@@ -37,9 +37,9 @@ dependencies:
   net_istio_artifacts_branch: release-1.7
   maistra: 2.1.0
 
-  eventing: knative-v1.6
+  eventing: knative-v1.7
   # eventing core midstream branch name
-  eventing_artifacts_branch: release-v1.6
+  eventing_artifacts_branch: release-v1.7
 
   eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion tag
@@ -51,6 +51,6 @@ dependencies:
   # Previous versions required for downgrade testing
   previous:
     serving: 1.6.0
-    eventing: 1.5
+    eventing: 1.6
     eventing_kafka: 1.1.0
-    eventing_kafka_broker: 1.5
+    eventing_kafka_broker: 1.6
