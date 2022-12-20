@@ -91,15 +91,6 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance base.K
 	return nil
 }
 
-func FilterNamespace(ns string) Stage {
-	return func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
-		*manifest = manifest.Filter(mf.Not(
-			mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing")),
-		))
-		return nil
-	}
-}
-
 // ManifestFetcher returns a manifest appropriate for the instance
 type ManifestFetcher func(ctx context.Context, instance base.KComponent) (*mf.Manifest, error)
 
