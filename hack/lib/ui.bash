@@ -65,6 +65,7 @@ function debugging.setup {
   export BASH_XTRACEFD=19
 
   error_handlers.register stacktrace
+  await-at-fail.setup
 
   # Register finish of debugging at exit
   trap debugging.finish EXIT
@@ -75,6 +76,29 @@ function debugging.finish {
   # Close the output:
   set +x
   exec 19>&-
+}
+
+function await-at-fail.setup {
+  if (( INTERACTIVE )); then
+    logger.info 'Skipping await-at-fail because running as interactive user'
+    return 0
+  fi
+  local labeled pr_api
+  pr_api="https://api.github.com/repos/openshift-knative/serverless-operator/pulls/${PULL_NUMBER:-}"
+  labeled="$(curl -s -L "$pr_api" \
+    | jq -r '.labels[] | select( .name == "ci/await-at-fail" ) .name' \
+    | wc -l)"
+  if (( labeled )); then
+    logger.info 'Adding await at fail because of "ci/await-at-fail" label added'
+    error_handlers.register await-at-fail
+  else
+    logger.info 'Add "ci/await-at-fail" label to PR, if you like to await after failure to allow debugging'
+  fi
+}
+
+function await-at-fail {
+  logger.info 'Awaiting at max 1h for user to debug'
+  timeout 3600 "[[ \$(oc get configmap done -n debug -o name | wc -l) -eq 0 ]]"
 }
 
 function logger.debug {
