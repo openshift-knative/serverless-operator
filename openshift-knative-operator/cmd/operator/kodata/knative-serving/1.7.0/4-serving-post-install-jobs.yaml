@@ -1,6 +1,6 @@
 
 ---
-# /tmp/tmp.knyTcdlJTe/serving-storage-version-migration.yaml
+# /tmp/knative.6ER80oCd/tmp.wDRZJLXpQs/serving-storage-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ metadata:
     app: storage-version-migration-serving
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.6.0"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -36,7 +36,7 @@ spec:
         app: storage-version-migration-serving
         app.kubernetes.io/name: knative-serving
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.6.0"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure

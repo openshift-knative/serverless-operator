@@ -17,7 +17,7 @@ KN_VERSION="release-1.6"
 EVENTING_VERSION="release-v1.6"
 EVENTING_KAFKA_VERSION="release-v1.4"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.6"
-SERVING_VERSION="release-v1.6"
+SERVING_VERSION="release-v1.7"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
@@ -54,13 +54,14 @@ if (( GO_GET )); then
     go mod edit -replace "${dep}"
     # Let the dependency update the magic SHA otherwise the
     # following "go mod edit" will fail.
+    go mod tidy -compat=1.18
     go mod vendor
   done
   go get -d "${FLOATING_DEPS[@]}"
 fi
 
 # Prune modules.
-go mod tidy -compat=1.17
+go mod tidy -compat=1.18
 go mod vendor
 
 # Remove unnecessary files.

@@ -1262,11 +1262,11 @@ k8s.io/utils/lru
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20220705144806-9c3c19ff990f
-## explicit; go 1.15
+# knative.dev/caching v0.0.0-20220818010648-9df7bb739739
+## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.35.2 => github.com/openshift-knative/eventing v0.99.1-0.20221208103831-67c3ebda00db
+# knative.dev/eventing v0.35.2 => github.com/openshift-knative/eventing v0.99.1-0.20221215170220-da8c25a653e7
 ## explicit; go 1.17
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1401,7 +1401,7 @@ knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
 knative.dev/eventing-kafka/test/upgrade
 knative.dev/eventing-kafka/test/upgrade/continual
 knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221111104213-b4f7de6c2f79
+# knative.dev/eventing-kafka-broker v0.0.0-00010101000000-000000000000 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221209153413-15545e94696b
 ## explicit; go 1.18
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1
@@ -1422,7 +1422,7 @@ knative.dev/eventing-kafka-broker/test/upgrade/installation
 ## explicit; go 1.14
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20220705142707-f087178076e4 => knative.dev/networking v0.0.0-20220705142707-f087178076e4
+# knative.dev/networking v0.0.0-20220818010248-e51df7cdf571 => knative.dev/networking v0.0.0-20221208211615-0ff271e2034f
 ## explicit; go 1.17
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1524,7 +1524,6 @@ knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/metrics/testing
 knative.dev/pkg/network
 knative.dev/pkg/network/handlers
-knative.dev/pkg/pool
 knative.dev/pkg/profiling
 knative.dev/pkg/ptr
 knative.dev/pkg/reconciler
@@ -1573,8 +1572,8 @@ knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.33.0 => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
-## explicit; go 1.17
+# knative.dev/serving v0.34.1 => github.com/openshift-knative/serving v0.10.1-0.20221208103600-3db29e991b65
+## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
 knative.dev/serving/pkg/apis/config
@@ -1656,10 +1655,10 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20221208103831-67c3ebda00db
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20221215170220-da8c25a653e7
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221111104213-b4f7de6c2f79
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221209153413-15545e94696b
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20221208103600-3db29e991b65
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
@@ -1675,4 +1674,4 @@ sigs.k8s.io/yaml
 # sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20221109160716-136f2e3999cc
 # knative.dev/hack => knative.dev/hack v0.0.0-20220701014203-65c463ac8c98
-# knative.dev/networking => knative.dev/networking v0.0.0-20220705142707-f087178076e4
+# knative.dev/networking => knative.dev/networking v0.0.0-20221208211615-0ff271e2034f
