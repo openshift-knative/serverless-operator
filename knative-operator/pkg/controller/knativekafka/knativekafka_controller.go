@@ -321,10 +321,10 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(manifest *mf.Manifest, instance
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	// If in deletion we don't apply any monitoring transformer to kafka components and transformer will be nil and skipped.
-	var rbacProxyTranform mf.Transformer
+	var rbacProxyTranform []mf.Transformer
 	if instance.GetDeletionTimestamp() == nil {
 		var err error
-		if rbacProxyTranform, err = monitoring.GetRBACProxyInjectTransformer(r.client); err != nil {
+		if rbacProxyTranform, err = monitoring.GetRBACProxyInjectTransformer(instance, r.client); err != nil {
 			return err
 		}
 	}
@@ -343,8 +343,9 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
-		injectNamespacedBrokerMonitoring(r.client),
-		rbacProxyTranform), socommon.DeprecatedAPIsTranformersFromConfig()...)
+		injectNamespacedBrokerMonitoring(r.client)), socommon.DeprecatedAPIsTranformersFromConfig()...)
+	tfs = append(tfs, rbacProxyTranform...)
+
 	m, err := manifest.Transform(tfs...)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
