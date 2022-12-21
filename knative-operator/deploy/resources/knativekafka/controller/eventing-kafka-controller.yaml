@@ -21,7 +21,7 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
@@ -48,7 +48,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 spec:
   group: eventing.knative.dev
   names:
@@ -318,7 +318,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -350,7 +350,7 @@ metadata:
   name: config-kafka-source-defaults
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
   annotations:
     knative.dev/example-checksum: "b6ed351d"
 data:
@@ -411,7 +411,7 @@ metadata:
   name: kafka-channel-config
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 ---
@@ -702,7 +702,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
     knative.dev/crd-install: "true"
   name: consumergroups.internal.kafka.eventing.knative.dev
 spec:
@@ -770,7 +770,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
     knative.dev/crd-install: "true"
   name: consumers.internal.kafka.eventing.knative.dev
 spec:
@@ -826,7 +826,7 @@ metadata:
   name: config-kafka-descheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 data:
     predicates: |+
                     []
@@ -885,7 +885,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
   name: config-kafka-leader-election
   namespace: knative-eventing
   annotations:
@@ -951,7 +951,7 @@ metadata:
   name: config-kafka-scheduler
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 data:
     predicates: |+
                   [
@@ -993,7 +993,7 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 data:
   config.xml: |
     <configuration>
@@ -1050,7 +1050,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -1093,7 +1093,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -1133,16 +1133,16 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 rules:
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - configmaps
     verbs:
       - delete
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - configmaps
       - services
@@ -1154,7 +1154,7 @@ rules:
       - create
       - delete
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - pods
     verbs:
@@ -1163,7 +1163,7 @@ rules:
       - get
       - watch
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - pods/finalizers
     verbs:
@@ -1173,7 +1173,7 @@ rules:
       - update
       - delete
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - events
     verbs:
@@ -1193,7 +1193,7 @@ rules:
       - watch
 
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - secrets
     verbs:
@@ -1225,7 +1225,7 @@ rules:
       - list
       - watch
   - apiGroups:
-    - "*"
+    - ""
     resources:
       - serviceaccounts
     verbs:
@@ -1249,7 +1249,7 @@ rules:
 
   # Scheduler permissions
   - apiGroups:
-      - "*"
+      - ""
     resources:
       - nodes
     verbs:
@@ -1404,7 +1404,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 ---
 ---
 
@@ -1427,7 +1427,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1443,7 +1443,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -1476,7 +1476,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 spec:
   selector:
     matchLabels:
@@ -1486,7 +1486,7 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        kafka.eventing.knative.dev/release: v1.6
+        kafka.eventing.knative.dev/release: v1.7
     spec:
       securityContext:
         runAsNonRoot: true
@@ -1667,7 +1667,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -1779,7 +1779,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 ---
 ---
 
@@ -1802,7 +1802,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -1832,7 +1832,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 webhooks:
   - admissionReviewVersions: [ "v1", "v1beta1" ]
     clientConfig:
@@ -1863,7 +1863,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: pods.defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 webhooks:
   # Dispatcher pods webhook config.
   - admissionReviewVersions: [ "v1", "v1beta1" ]
@@ -1904,7 +1904,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 # The data is populated at install time.
 ---
 # Copyright 2020 The Knative Authors
@@ -1926,7 +1926,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -1959,7 +1959,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 spec:
   selector:
     matchLabels:
@@ -1968,7 +1968,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        kafka.eventing.knative.dev/release: v1.6
+        kafka.eventing.knative.dev/release: v1.7
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -2058,7 +2058,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    kafka.eventing.knative.dev/release: v1.6
+    kafka.eventing.knative.dev/release: v1.7
 spec:
   ports:
     - name: https-webhook
