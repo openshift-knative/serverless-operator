@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -11,6 +12,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"sigs.k8s.io/yaml"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -142,4 +145,19 @@ type SkipPredicate struct {
 
 func (SkipPredicate) Delete(e event.DeleteEvent) bool {
 	return false
+}
+
+// TODO: unit test
+func MarshalUnstructured(resources []unstructured.Unstructured) (string, error) {
+	res := make([]map[string]interface{}, 0, len(resources))
+	for _, r := range resources {
+		res = append(res, r.Object)
+	}
+
+	bytes, err := yaml.Marshal(res)
+	if err != nil {
+		return "", fmt.Errorf("failed to marhsal resources: %w", err)
+	}
+
+	return string(bytes), nil
 }
