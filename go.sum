@@ -1446,10 +1446,10 @@ github.com/openshift-knative/eventing v0.99.1-0.20221215170220-da8c25a653e7 h1:S
 github.com/openshift-knative/eventing v0.99.1-0.20221215170220-da8c25a653e7/go.mod h1:rxI/ijzHbAYenRZpGapYlJHwGEfdUcWjJh4N1bP9+zQ=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca h1:yXBHJxnGSpuE2EmpmEhEOwQFw5cJmgbW/o0zIfZMKb4=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca/go.mod h1:RZ/b/xO0sEPL0it4Xm0kSbrhATdsND1WVQq5AcHi7ro=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221209153413-15545e94696b h1:reRxokh/bdLznR+atE+J50rsx78ZogqpHtaIOEGLMXU=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221209153413-15545e94696b/go.mod h1:rys0PzhSowUTpW4dw6eTZOmBLdDLZF8cUdXokwzCEFY=
-github.com/openshift-knative/serving v0.10.1-0.20221208103600-3db29e991b65 h1:gK523nHb32nkxpCOb+mX2N4BU9o4tpZGRj6Fkezk5F4=
-github.com/openshift-knative/serving v0.10.1-0.20221208103600-3db29e991b65/go.mod h1:IyfedOBq3KzcD5dZONjbix2BfS0jOwDq5td8UE9CjCk=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221222095110-de26fc249c4f h1:Yi+zSzuXLjTQ4+PrP+uOfVKnbjZtq5Tz/d3yknMr8Vs=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20221222095110-de26fc249c4f/go.mod h1:rys0PzhSowUTpW4dw6eTZOmBLdDLZF8cUdXokwzCEFY=
+github.com/openshift-knative/serving v0.10.1-0.20221222141647-1ffb9825d2c0 h1:7Rx9niu1OHwlFPxDAjqd9njxLTPEPgt04gXQUk9cN0g=
+github.com/openshift-knative/serving v0.10.1-0.20221222141647-1ffb9825d2c0/go.mod h1:iT5JrONKyOhhcKy2Xn8Ihqoq1Wlc0MfrUXUgVhfusWg=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20200331152225-585af27e34fd/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
 github.com/openshift/api v0.0.0-20210105115604-44119421ec6b/go.mod h1:aqU5Cq+kqKKPbDMqxo9FojgDeSpNJI7iuskjXjtojDg=
