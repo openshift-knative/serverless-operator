@@ -4,6 +4,10 @@ import (
 	"context"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 
@@ -17,6 +21,7 @@ const (
 	eventingName          = "knative-eventing"
 	eventingNamespace     = "knative-eventing"
 	knativeKafkaNamespace = "knative-eventing"
+	defaultNamespace      = "default"
 )
 
 var kafkaChannelDeployments = []string{
@@ -54,9 +59,51 @@ func TestKnativeKafka(t *testing.T) {
 		},
 	}
 
+	brokerCm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "testbrokerconfig",
+			Namespace: defaultNamespace,
+		},
+		Data: map[string]string{
+			"bootstrap.servers":                "my-cluster-kafka-bootstrap.kafka:9092",
+			"default.topic.partitions":         "10",
+			"default.topic.replication.factor": "3",
+		},
+	}
+
+	broker := &eventingv1.Broker{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "testbroker",
+			Namespace: defaultNamespace,
+			Annotations: map[string]string{
+				"eventing.knative.dev/broker.class": "KafkaNamespaced",
+			},
+		},
+		Spec: eventingv1.BrokerSpec{
+			Config: &duckv1.KReference{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+				Namespace:  defaultNamespace,
+				Name:       "testbrokerconfig",
+			},
+		},
+	}
+
 	t.Run("deploy channel cr and wait for it to be ready", func(t *testing.T) {
 		if _, err := caCtx.Clients.Kafka.MessagingV1beta1().KafkaChannels(knativeKafkaNamespace).Create(context.Background(), ch, metav1.CreateOptions{}); err != nil {
 			t.Fatal("Failed to create channel to trigger the dispatcher deployment", err)
+		}
+	})
+
+	t.Run("create config for a namespaced broker and wait for it to be ready", func(t *testing.T) {
+		if _, err := caCtx.Clients.Kube.CoreV1().ConfigMaps(defaultNamespace).Create(context.Background(), brokerCm, metav1.CreateOptions{}); err != nil {
+			t.Fatal("Failed to create config for the namespaced broker to trigger the dispatcher deployment", err)
+		}
+	})
+
+	t.Run("deploy a namespaced broker cr and wait for it to be ready", func(t *testing.T) {
+		if _, err := caCtx.Clients.Eventing.EventingV1().Brokers(defaultNamespace).Create(context.Background(), broker, metav1.CreateOptions{}); err != nil {
+			t.Fatal("Failed to create namespaced broker to trigger the dispatcher deployment", err)
 		}
 	})
 
@@ -113,6 +160,12 @@ func TestKnativeKafka(t *testing.T) {
 	t.Run("verify Kafka controller metrics work correctly", func(t *testing.T) {
 		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaControllerQueries); err != nil {
 			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
+		}
+	})
+
+	t.Run("verify namespaced Kafka Broker data plane metrics work correctly", func(t *testing.T) {
+		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.NamespacedKafkaBrokerDataPlaneQueries); err != nil {
+			t.Fatal("Failed to verify that namespaced Kafka Broker data plane metrics work correctly", err)
 		}
 	})
 
