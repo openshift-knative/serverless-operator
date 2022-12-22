@@ -1,0 +1,55 @@
+# ClusterRole to be able to create resources for namespaced broker
+# Kafka controller creates some additional resources, such as ServiceMonitors, in the broker namespace
+# when a namespaced broker is created.
+# The controller will need the permissions listed in this role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eventing-kafka-namespaced-broker-additional-resources
+rules:
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - clusterrolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - create
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eventing-kafka-namespaced-broker-additional-resources
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eventing-kafka-namespaced-broker-additional-resources
+subjects:
+  - kind: ServiceAccount
+    name: kafka-controller
+    namespace: knative-eventing
