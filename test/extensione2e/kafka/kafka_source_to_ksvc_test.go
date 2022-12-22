@@ -289,7 +289,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		}
 
 		var last *kafkasourcev1beta1.KafkaSource
-		err = wait.Poll(time.Second, time.Minute, func() (done bool, err error) {
+		err = wait.Poll(time.Second, 5*time.Minute, func() (done bool, err error) {
 			ks, err := client.Clients.Kafka.
 				SourcesV1beta1().
 				KafkaSources(test.Namespace).
