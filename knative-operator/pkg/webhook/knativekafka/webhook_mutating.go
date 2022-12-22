@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -33,11 +34,10 @@ func (v *Configurator) Handle(ctx context.Context, req admission.Request) admiss
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	// TODO: do the KnativeKafka spec changing here
-	//err = monitoring.ReconcileMonitoringForNamespacedBroker(ke)
-	//if err != nil {
-	//	return admission.Errored(http.StatusInternalServerError, err)
-	//}
+	err = monitoring.ReconcileMonitoringForNamespacedBroker(ke)
+	if err != nil {
+		return admission.Errored(http.StatusInternalServerError, err)
+	}
 
 	marshaled, err := json.Marshal(ke)
 	if err != nil {
