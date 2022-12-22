@@ -337,6 +337,7 @@ EOF
 
 function install_strimzi {
   logger.info "Strimzi install"
+  oc create namespace "${EVENTING_NAMESPACE}" --dry-run=client -o yaml | oc apply -f -
   install_strimzi_operator
   install_strimzi_cluster
   install_strimzi_users
