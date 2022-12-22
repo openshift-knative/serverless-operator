@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -42,6 +44,8 @@ import (
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+
+	openshiftmonitoring "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 const (
@@ -339,6 +343,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
+		injectNamespacedBrokerMonitoring(r.client),
 		rbacProxyTranform), socommon.DeprecatedAPIsTranformersFromConfig()...)
 	m, err := manifest.Transform(tfs...)
 	if err != nil {
@@ -747,4 +752,34 @@ func removeCreationTimestamp(manifest *mf.Manifest, _ *serverlessoperatorv1alpha
 		return nil
 	})
 	return err
+}
+
+func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != "config-namespaced-broker-resources" {
+			return nil
+		}
+
+		eventingList := &operatorv1beta1.KnativeEventingList{}
+		err := apiClient.List(context.Background(), eventingList)
+		if err != nil {
+			return fmt.Errorf("failed to list KnativeEventing to check if monitoring is enabled: %w", err)
+		}
+		if len(eventingList.Items) == 0 {
+			return fmt.Errorf("failed to find KnativeEventing instance to check if monitoring is enabled")
+		}
+
+		if !openshiftmonitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
+			return nil
+		}
+		additionalResources, err := monitoring.AdditionalResourcesForNamespacedBroker()
+		if err != nil {
+			return fmt.Errorf("failed to add monitoring resources for namespaced broker: %w", err)
+		}
+
+		if err := unstructured.SetNestedField(u.Object, additionalResources, "data", "resources"); err != nil {
+			return err
+		}
+		return nil
+	}
 }
