@@ -163,7 +163,7 @@ require (
 	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7 // indirect
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
-	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
+	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	knative.dev/caching v0.0.0-20220818010648-9df7bb739739 // indirect
 	knative.dev/reconciler-test v0.0.0-20221028112809-f3175ad3554d
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
