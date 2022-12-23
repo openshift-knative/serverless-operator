@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,12 +16,38 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
+const namespacedBrokerResourcesConfigmapName = "namespaced-broker-resources"
+
+// ReconcileMonitoringForNamespacedBroker "enriches" the KnativeKafka spec with the config that's necessary for
+// collecting namespaced broker metrics.
+// It sets `Spec.Config["namespaced-broker-resources"] key on KnativeKafka instance, so that the KnativeOperator
+// creates the `config-namespaced-broker-resources` configmap with the given content. That content is later
+// consumed by the upstream Knative Kafka controller. It applies all the resources listed in that configmap in
+// broker's namespace, whenever a new namespaced broker is created.
 func ReconcileMonitoringForNamespacedBroker(kk *serverlessoperatorv1alpha1.KnativeKafka) error {
+
+	// For each namespaced broker dataplane, we do these:
+	// - Create a Kubernetes `Service` that makes the dataplane pods accessible by Prometheus.
+	//   That service basically integrates with the RBAC proxy sidecar in the dataplane pods
+	//
+	// - Create a `ServiceMonitor` that makes Prometheus scrape our dataplane pods.
+	//   It also sets up certificates for the RBAC proxy mentioned above.
+	//
+	// - Create a `ClusterRoleBinding` of the `rbac-proxy-reviews-prom` `ClusterRole` for the
+	//  `knative-kafka-broker-data-plane` `ServiceAccount` in the broker namespace. Otherwise, RBAC proxy cannot
+	//   authorize itself.
+	//
+	// - Set `"openshift.io/cluster-monitoring": "true",` label on the broker namespace, so that Prometheus monitors
+	//    the namespace and creates certs/secrets and also scrapes the pods
+	//
+	// While it can be outdated, here's a Gist that creates these resources manually:
+	// https://gist.github.com/aliok/1a89600db9fcec0416302148fadba5ad
+
 	additionalResources, err := createUnstructuredList(
-		receiverServiceMonitor(),
-		dispatcherServiceMonitor(),
-		receiverService(),
-		dispatcherService(),
+		serviceMonitor("receiver"),
+		serviceMonitor("dispatcher"),
+		service("receiver"),
+		service("dispatcher"),
 		clusterRoleBinding(),
 		namespace(),
 	)
@@ -37,12 +64,11 @@ func ReconcileMonitoringForNamespacedBroker(kk *serverlessoperatorv1alpha1.Knati
 		kk.Spec.Config = make(map[string]map[string]string, 1)
 	}
 
-	// TODO: create constants
-	if len(kk.Spec.Config["namespaced-broker-resources"]) == 0 {
-		kk.Spec.Config["namespaced-broker-resources"] = make(map[string]string, 1)
+	if len(kk.Spec.Config[namespacedBrokerResourcesConfigmapName]) == 0 {
+		kk.Spec.Config[namespacedBrokerResourcesConfigmapName] = make(map[string]string, 1)
 	}
 
-	kk.Spec.Config["namespaced-broker-resources"]["resources"] = resStr
+	kk.Spec.Config[namespacedBrokerResourcesConfigmapName]["resources"] = resStr
 	return nil
 }
 
@@ -73,7 +99,6 @@ func namespace() *corev1.Namespace {
 	}
 }
 
-// TODO: create constants
 func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
@@ -96,7 +121,7 @@ func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
 	}
 }
 
-func receiverServiceMonitor() *monitoringv1.ServiceMonitor {
+func serviceMonitor(component string) *monitoringv1.ServiceMonitor {
 	return &monitoringv1.ServiceMonitor{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "monitoring.coreos.com/v1",
@@ -104,9 +129,9 @@ func receiverServiceMonitor() *monitoringv1.ServiceMonitor {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "{{.Namespace}}",
-			Name:      "kafka-broker-receiver-sm",
+			Name:      fmt.Sprintf("kafka-broker-%s-sm", component),
 			Labels: map[string]string{
-				"app": "kafka-broker-receiver",
+				"app": fmt.Sprintf("kafka-broker-%s", component),
 			},
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
@@ -122,7 +147,7 @@ func receiverServiceMonitor() *monitoringv1.ServiceMonitor {
 						SafeTLSConfig: monitoringv1.SafeTLSConfig{
 							CA:         monitoringv1.SecretOrConfigMap{},
 							Cert:       monitoringv1.SecretOrConfigMap{},
-							ServerName: "kafka-broker-receiver-sm-service.{{.Namespace}}.svc",
+							ServerName: fmt.Sprintf("kafka-broker-%s-sm-service.{{.Namespace}}.svc", component),
 						},
 						CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
 					},
@@ -132,55 +157,13 @@ func receiverServiceMonitor() *monitoringv1.ServiceMonitor {
 				MatchNames: []string{"{{.Namespace}}"},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: map[string]string{"name": "kafka-broker-receiver-sm-service"},
+				MatchLabels: map[string]string{"name": fmt.Sprintf("kafka-broker-%s-sm-service", component)},
 			},
 		},
 	}
 }
 
-func dispatcherServiceMonitor() *monitoringv1.ServiceMonitor {
-	return &monitoringv1.ServiceMonitor{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "monitoring.coreos.com/v1",
-			Kind:       "ServiceMonitor",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "{{.Namespace}}",
-			Name:      "kafka-broker-dispatcher-sm",
-			Labels: map[string]string{
-				"app": "kafka-broker-dispatcher",
-			},
-		},
-		Spec: monitoringv1.ServiceMonitorSpec{
-			Endpoints: []monitoringv1.Endpoint{
-				{
-					BearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
-					BearerTokenSecret: corev1.SecretKeySelector{
-						Key: "",
-					},
-					Port:   "https",
-					Scheme: "https",
-					TLSConfig: &monitoringv1.TLSConfig{
-						SafeTLSConfig: monitoringv1.SafeTLSConfig{
-							CA:         monitoringv1.SecretOrConfigMap{},
-							Cert:       monitoringv1.SecretOrConfigMap{},
-							ServerName: "kafka-broker-dispatcher-sm-service.{{.Namespace}}.svc",
-						},
-						CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
-					},
-				},
-			},
-			NamespaceSelector: monitoringv1.NamespaceSelector{
-				MatchNames: []string{"{{.Namespace}}"},
-			},
-			Selector: metav1.LabelSelector{
-				MatchLabels: map[string]string{"name": "kafka-broker-dispatcher-sm-service"},
-			},
-		},
-	}
-}
-
-func receiverService() *corev1.Service {
+func service(component string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -188,12 +171,12 @@ func receiverService() *corev1.Service {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "{{.Namespace}}",
-			Name:      "kafka-broker-receiver-sm-service",
+			Name:      fmt.Sprintf("kafka-broker-%s-sm-service", component),
 			Labels: map[string]string{
-				"name": "kafka-broker-receiver-sm-service",
+				"name": fmt.Sprintf("kafka-broker-%s-sm-service", component),
 			},
 			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": "kafka-broker-receiver-sm-service-tls",
+				"service.beta.openshift.io/serving-cert-secret-name": fmt.Sprintf("kafka-broker-%s-sm-service-tls", component),
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -203,36 +186,7 @@ func receiverService() *corev1.Service {
 				TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 8444},
 			}},
 			Selector: map[string]string{
-				"app": "kafka-broker-receiver",
-			},
-		},
-	}
-}
-
-func dispatcherService() *corev1.Service {
-	return &corev1.Service{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Service",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "{{.Namespace}}",
-			Name:      "kafka-broker-dispatcher-sm-service",
-			Labels: map[string]string{
-				"name": "kafka-broker-dispatcher-sm-service",
-			},
-			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": "kafka-broker-dispatcher-sm-service-tls",
-			},
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{{
-				Name:       "https",
-				Port:       8444,
-				TargetPort: intstr.IntOrString{Type: intstr.Int, IntVal: 8444},
-			}},
-			Selector: map[string]string{
-				"app": "kafka-broker-dispatcher",
+				"app": fmt.Sprintf("kafka-broker-%s", component),
 			},
 		},
 	}
