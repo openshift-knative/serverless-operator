@@ -2,13 +2,14 @@ package monitoring
 
 import (
 	"fmt"
+	"time"
+
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"sigs.k8s.io/yaml"
-	"time"
 )
 
 func ExampleReconcileMonitoringForNamespacedBroker() {
