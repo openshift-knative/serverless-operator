@@ -147,7 +147,6 @@ func (SkipPredicate) Delete(e event.DeleteEvent) bool {
 	return false
 }
 
-// TODO: unit test
 func MarshalUnstructured(resources []unstructured.Unstructured) (string, error) {
 	res := make([]map[string]interface{}, 0, len(resources))
 	for _, r := range resources {
