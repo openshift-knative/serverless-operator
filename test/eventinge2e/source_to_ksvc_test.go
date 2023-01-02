@@ -27,7 +27,7 @@ func TestKnativeSourceToKnativeService(t *testing.T) {
 			Namespace: test.Namespace,
 		},
 		Spec: sourcesv1.PingSourceSpec{
-			Data: pingSourceData,
+			Data: PingSourceData,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
 					Ref: &duckv1.KReference{
