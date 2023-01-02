@@ -17,7 +17,7 @@ import (
 
 const (
 	pingSourceName = "smoke-test-ping"
-	pingSourceData = "{\"message\":\"Hello, world!\"}"
+	PingSourceData = "{\"message\":\"Hello, world!\"}"
 
 	triggerName       = "smoke-test-trigger"
 	cmName            = "smoke-test-br-cm"
@@ -95,8 +95,8 @@ func AssertPingSourceDataReceivedAtLeastOnce(eventStore *recordevents.EventInfoS
 		if info.Event == nil {
 			return fmt.Errorf("event body nil")
 		}
-		if string(info.Event.Data()) != pingSourceData {
-			return fmt.Errorf("event body %q does not match %q", info.Event.Data(), pingSourceData)
+		if string(info.Event.Data()) != PingSourceData {
+			return fmt.Errorf("event body %q does not match %q", info.Event.Data(), PingSourceData)
 		}
 		return nil
 	})

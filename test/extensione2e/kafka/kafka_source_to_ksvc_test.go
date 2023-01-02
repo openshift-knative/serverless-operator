@@ -66,7 +66,7 @@ func createCronJobObjV1Beta1(name, topic, server string) *batchv1beta1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo "%s" | bin/kafka-console-producer.sh --broker-list %s --topic %s`, helloWorldText, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
@@ -94,7 +94,7 @@ func createCronJobObjV1(name, topic, server string) *batchv1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo "%s" | bin/kafka-console-producer.sh --broker-list %s --topic %s`, helloWorldText, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
