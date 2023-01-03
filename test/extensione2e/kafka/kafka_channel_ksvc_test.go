@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	helloWorldText    = "Hello World!"
 	kafkaChannelName  = "smoke-kc"
 	channelAPIVersion = "messaging.knative.dev/v1beta1"
 	kafkaChannelKind  = "KafkaChannel"
