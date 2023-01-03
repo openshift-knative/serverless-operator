@@ -176,6 +176,8 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", saslSecret, test.Namespace, err)
 	}
 
+	// The cronjob itself will use the default plain bootstrap server in all cases to send the events
+	cronJobBootstrapServer := plainBootstrapServer
 	tests := map[string]kafkabindingv1beta1.KafkaAuthSpec{
 		"plain": {
 			BootstrapServers: []string{plainBootstrapServer},
@@ -303,13 +305,13 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 		// send event to kafka topic
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
-			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, cronJobBootstrapServer)
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		} else {
-			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, cronJobBootstrapServer)
 			_, err = client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
