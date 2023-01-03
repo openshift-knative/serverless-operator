@@ -54,7 +54,12 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 			ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
 			defer cancel()
 
-			err := wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
+			err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = wait.PollImmediateUntil(2*time.Second, waitForBrokerDeletion(ctx, client, t), ctx.Done())
 			if err != nil {
 				t.Fatal(err)
 			}
