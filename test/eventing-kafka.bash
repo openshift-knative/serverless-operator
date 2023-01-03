@@ -22,12 +22,17 @@ function upstream_knative_eventing_kafka_e2e {
   export CONFIG_TRACING_CONFIG
   CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
 
+  set -x # Enable debugging
+  echo $(pwd)
+
   # shellcheck disable=SC1091
   source "${KNATIVE_EVENTING_KAFKA_HOME}/openshift/e2e-common.sh"
 
   # run_e2e_tests defined in eventing-kafka
   logger.info 'Starting eventing-kafka tests'
   run_e2e_tests
+
+  set +x # Disable debugging
 }
 
 function upstream_knative_eventing_kafka_broker_e2e {
