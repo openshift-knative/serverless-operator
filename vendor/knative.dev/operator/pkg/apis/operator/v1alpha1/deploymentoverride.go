@@ -21,10 +21,10 @@ import (
 )
 
 // ConvertToDeploymentOverride merges the ResourceRequirementsOverride into the DeploymentOverride
-func ConvertToDeploymentOverride(source base.KComponent) []base.DeploymentOverride {
-	mergedDeploymentOverride := source.GetSpec().GetDeploymentOverride()
+func ConvertToDeploymentOverride(source base.KComponent) []base.WorkloadOverride {
+	mergedDeploymentOverride := source.GetSpec().GetWorkloadOverrides()
 	// Make a copy of source.GetSpec().GetDeploymentOverride()
-	deploymentOverrideCopy := make([]base.DeploymentOverride, 0, len(mergedDeploymentOverride))
+	deploymentOverrideCopy := make([]base.WorkloadOverride, 0, len(mergedDeploymentOverride))
 	for _, override := range mergedDeploymentOverride {
 		copy := *override.DeepCopy()
 		deploymentOverrideCopy = append(deploymentOverrideCopy, copy)
@@ -37,8 +37,8 @@ func ConvertToDeploymentOverride(source base.KComponent) []base.DeploymentOverri
 	return deploymentOverrideCopy
 }
 
-func addResourceIntoDeployment(deploymentOverrides []base.DeploymentOverride,
-	resource base.ResourceRequirementsOverride) []base.DeploymentOverride {
+func addResourceIntoDeployment(deploymentOverrides []base.WorkloadOverride,
+	resource base.ResourceRequirementsOverride) []base.WorkloadOverride {
 	// If it does not exist, add the resource requirement as a new
 	// item; if it does, modify the existing resource requirement.
 	deployFound := false
@@ -62,7 +62,7 @@ func addResourceIntoDeployment(deploymentOverrides []base.DeploymentOverride,
 		}
 	}
 	if !deployFound {
-		newDeployOverride := base.DeploymentOverride{}
+		newDeployOverride := base.WorkloadOverride{}
 		// Take the container name as the deployment name.
 		newDeployOverride.Name = resource.Container
 		newDeployOverride.Resources = append(newDeployOverride.Resources, resource)
