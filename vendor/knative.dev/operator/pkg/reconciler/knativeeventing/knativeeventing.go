@@ -84,11 +84,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
 		return nil
 	}
-
-	if err = common.Uninstall(manifest); err != nil {
-		logger.Error("Failed to finalize platform resources", err)
-	}
-	return nil
+	return common.Uninstall(manifest)
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to
