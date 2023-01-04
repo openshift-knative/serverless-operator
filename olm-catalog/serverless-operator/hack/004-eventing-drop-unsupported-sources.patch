@@ -1,11 +1,58 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index 298276ddd..f496f5ef5 100644
+index 2608878f5..f987b98d7 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-@@ -904,46 +904,6 @@ spec:
-                         - type: string
-                       description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
-                       x-kubernetes-int-or-string: true
+@@ -865,46 +865,6 @@ spec:
+                             type: object
+                         type: object
+                       type: array
+-              source:
+-                description: The source configuration for Knative Eventing
+-                properties:
+-                  ceph:
+-                    description: Ceph settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  github:
+-                    description: GitHub settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  gitlab:
+-                    description: GitLab settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  kafka:
+-                    description: Apache Kafka settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  rabbitmq:
+-                    description: RabbitMQ settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                  redis:
+-                    description: Redis settings
+-                    properties:
+-                      enabled:
+-                        type: boolean
+-                    type: object
+-                type: object
+               resources:
+                 description: A mapping of deployment name to resource requirements. This field
+                   is deprecated. Use `spec.deployments.resources`
+@@ -1878,46 +1838,6 @@ spec:
+                         type: string
+                       description: Selector overrides selector for the service
+                       type: object
 -              source:
 -                description: The source configuration for Knative Eventing
 -                properties:
