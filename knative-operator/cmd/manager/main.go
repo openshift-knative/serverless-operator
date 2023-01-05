@@ -122,7 +122,6 @@ func main() {
 	hookServer.Register("/mutate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewConfigurator(decoder)})
 	hookServer.Register("/validate-knativeeventings", &webhook.Admission{Handler: knativeeventing.NewValidator(mgr.GetClient(), decoder)})
 	// Kafka Webhooks
-	hookServer.Register("/mutate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewConfigurator(decoder)})
 	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewValidator(mgr.GetClient(), decoder)})
 
 	if err := setupServerlesOperatorMonitoring(cfg); err != nil {

@@ -42,6 +42,8 @@ import (
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+
+	openshiftmonitoring "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 const (
@@ -339,6 +341,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
+		injectNamespacedBrokerMonitoring(instance),
 		rbacProxyTranform), socommon.DeprecatedAPIsTranformersFromConfig()...)
 	m, err := manifest.Transform(tfs...)
 	if err != nil {
@@ -747,4 +750,24 @@ func removeCreationTimestamp(manifest *mf.Manifest, _ *serverlessoperatorv1alpha
 		return nil
 	})
 	return err
+}
+
+func injectNamespacedBrokerMonitoring(kk *serverlessoperatorv1alpha1.KnativeKafka) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != "config-namespaced-broker-resources" {
+			return nil
+		}
+		if !openshiftmonitoring.ShouldEnableMonitoring(kk.Spec.Config) {
+			return nil
+		}
+		additionalResources, err := monitoring.AdditionalResourcesForNamespacedBroker()
+		if err != nil {
+			return fmt.Errorf("failed to add monitoring resources for namespaced broker: %w", err)
+		}
+
+		if err := unstructured.SetNestedField(u.Object, additionalResources, "data", "resources"); err != nil {
+			return err
+		}
+		return nil
+	}
 }

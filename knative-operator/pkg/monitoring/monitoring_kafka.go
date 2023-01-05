@@ -11,21 +11,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	commonutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-const namespacedBrokerResourcesConfigmapName = "namespaced-broker-resources"
-
-// ReconcileMonitoringForNamespacedBroker "enriches" the KnativeKafka spec with the config that's necessary for
-// collecting namespaced broker metrics.
-// It sets `Spec.Config["namespaced-broker-resources"] key on KnativeKafka instance, so that the KnativeOperator
-// creates the `config-namespaced-broker-resources` configmap with the given content. That content is later
-// consumed by the upstream Knative Kafka controller. It applies all the resources listed in that configmap in
-// broker's namespace, whenever a new namespaced broker is created.
-func ReconcileMonitoringForNamespacedBroker(kk *serverlessoperatorv1alpha1.KnativeKafka) error {
+// AdditionalResourcesForNamespacedBroker creates the manifest of additional resources for the namespaced broker.
+// That content is later consumed by the upstream Knative Kafka controller. It applies all the resources
+// listed in that configmap in broker's namespace, whenever a new namespaced broker is created.
+func AdditionalResourcesForNamespacedBroker() (string, error) {
 
 	// For each namespaced broker dataplane, we do these:
 	// - Create a Kubernetes `Service` that makes the dataplane pods accessible by Prometheus.
@@ -53,24 +47,10 @@ func ReconcileMonitoringForNamespacedBroker(kk *serverlessoperatorv1alpha1.Knati
 		namespace(),
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	resStr, err := commonutil.MarshalUnstructured(additionalResources)
-	if err != nil {
-		return err
-	}
-
-	if len(kk.Spec.Config) == 0 {
-		kk.Spec.Config = make(map[string]map[string]string, 1)
-	}
-
-	if len(kk.Spec.Config[namespacedBrokerResourcesConfigmapName]) == 0 {
-		kk.Spec.Config[namespacedBrokerResourcesConfigmapName] = make(map[string]string, 1)
-	}
-
-	kk.Spec.Config[namespacedBrokerResourcesConfigmapName]["resources"] = resStr
-	return nil
+	return commonutil.MarshalUnstructured(additionalResources)
 }
 
 func createUnstructuredList(objs ...runtime.Object) ([]unstructured.Unstructured, error) {
