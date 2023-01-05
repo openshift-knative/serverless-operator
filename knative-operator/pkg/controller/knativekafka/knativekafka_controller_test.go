@@ -560,7 +560,7 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: true,
 			},
 		},
-		expectedDisabledControllers: []string{"broker-controller", "trigger-controller", "source-controller"},
+		expectedDisabledControllers: []string{"broker-controller", "trigger-controller", "namespaced-broker-controller", "namespaced-trigger-controller", "source-controller"},
 	}, {
 		name: "broker and sink",
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -582,7 +582,7 @@ func TestDisabledControllers(t *testing.T) {
 				Enabled: false,
 			},
 		},
-		expectedDisabledControllers: []string{"broker-controller", "trigger-controller", "sink-controller", "source-controller"},
+		expectedDisabledControllers: []string{"broker-controller", "trigger-controller", "namespaced-broker-controller", "namespaced-trigger-controller", "sink-controller", "source-controller"},
 	}}
 
 	for _, test := range tests {
