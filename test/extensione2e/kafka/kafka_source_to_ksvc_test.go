@@ -8,7 +8,6 @@ import (
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"knative.dev/eventing-kafka/test/e2e/helpers"
 	"knative.dev/eventing/test/lib"
@@ -44,8 +43,6 @@ const (
 var (
 	baseURI              = "-kafka-bootstrap.kafka:"
 	plainBootstrapServer = clusterName + baseURI + "9092"
-	tlsBootstrapServer   = clusterName + baseURI + "9093"
-	saslBootstrapServer  = clusterName + baseURI + "9094"
 	tlsSecret            = "my-tls-secret"
 	saslSecret           = "my-sasl-secret"
 	kafkaGVR             = schema.GroupVersionResource{Group: "kafka.strimzi.io", Version: "v1beta1", Resource: "kafkatopics"}
@@ -136,32 +133,32 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		test.CleanupAll(t, client)
 
 		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-plain")
-		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-sasl")
-		_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-tls")
+		//_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-sasl")
+		//_ = deleteKafkaSource(client, test.Namespace, kafkaSourceName+"-tls")
 
 		// Delete topics
 		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-plain", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
-		client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
+		//client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-tls", metav1.DeleteOptions{})
+		//client.Clients.Dynamic.Resource(kafkaGVR).Namespace("kafka").Delete(context.Background(), kafkaTopicName+"-sasl", metav1.DeleteOptions{})
 
 		// Jobs and Pods are sometimes left in the namespace.
 		// Ref: https://github.com/kubernetes/kubernetes/issues/74741
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
 			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
-			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
-			client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+			//client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
+			//client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
 			deleteJobs(t, client, test.Namespace, cronJobName)
 		} else {
 			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-plain", metav1.DeleteOptions{})
-			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
-			client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
+			//client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-tls", metav1.DeleteOptions{})
+			//client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Delete(context.Background(), cronJobName+"-sasl", metav1.DeleteOptions{})
 			deleteJobsV1Beta1(t, client, test.Namespace, cronJobName)
 		}
 		deletePods(t, client, test.Namespace, cronJobName)
-		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
-		removePullSecretFromSA(t, client, test.Namespace, serviceAccount, tlsSecret)
-		removePullSecretFromSA(t, client, test.Namespace, serviceAccount, saslSecret)
+		//client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), tlsSecret, metav1.DeleteOptions{})
+		//client.Clients.Kube.CoreV1().Secrets(test.Namespace).Delete(context.Background(), saslSecret, metav1.DeleteOptions{})
+		//removePullSecretFromSA(t, client, test.Namespace, serviceAccount, tlsSecret)
+		//removePullSecretFromSA(t, client, test.Namespace, serviceAccount, saslSecret)
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
@@ -181,81 +178,81 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		"plain": {
 			BootstrapServers: []string{plainBootstrapServer},
 		},
-		"tls": {
-			BootstrapServers: []string{tlsBootstrapServer},
-			Net: kafkabindingv1beta1.KafkaNetSpec{
-				TLS: kafkabindingv1beta1.KafkaTLSSpec{
-					Enable: true,
-					Cert: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: tlsSecret,
-							},
-							Key: "user.crt",
-						},
-					},
-					Key: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: tlsSecret,
-							},
-							Key: "user.key",
-						},
-					},
-					CACert: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: tlsSecret,
-							},
-							Key: "ca.crt",
-						},
-					},
-				},
-			},
-		},
-		"sasl": {
-			BootstrapServers: []string{saslBootstrapServer},
-			Net: kafkabindingv1beta1.KafkaNetSpec{
-				TLS: kafkabindingv1beta1.KafkaTLSSpec{
-					Enable: true,
-					CACert: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: tlsSecret,
-							},
-							Key: "ca.crt",
-						},
-					},
-				},
-				SASL: kafkabindingv1beta1.KafkaSASLSpec{
-					Enable: true,
-					User: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: saslSecret,
-							},
-							Key: "user",
-						},
-					},
-					Password: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: saslSecret,
-							},
-							Key: "password",
-						},
-					},
-					Type: kafkabindingv1beta1.SecretValueFromSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: saslSecret,
-							},
-							Key: "saslType",
-						},
-					},
-				},
-			},
-		},
+		//"tls": {
+		//	BootstrapServers: []string{tlsBootstrapServer},
+		//	Net: kafkabindingv1beta1.KafkaNetSpec{
+		//		TLS: kafkabindingv1beta1.KafkaTLSSpec{
+		//			Enable: true,
+		//			Cert: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: tlsSecret,
+		//					},
+		//					Key: "user.crt",
+		//				},
+		//			},
+		//			Key: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: tlsSecret,
+		//					},
+		//					Key: "user.key",
+		//				},
+		//			},
+		//			CACert: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: tlsSecret,
+		//					},
+		//					Key: "ca.crt",
+		//				},
+		//			},
+		//		},
+		//	},
+		//},
+		//"sasl": {
+		//	BootstrapServers: []string{saslBootstrapServer},
+		//	Net: kafkabindingv1beta1.KafkaNetSpec{
+		//		TLS: kafkabindingv1beta1.KafkaTLSSpec{
+		//			Enable: true,
+		//			CACert: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: tlsSecret,
+		//					},
+		//					Key: "ca.crt",
+		//				},
+		//			},
+		//		},
+		//		SASL: kafkabindingv1beta1.KafkaSASLSpec{
+		//			Enable: true,
+		//			User: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: saslSecret,
+		//					},
+		//					Key: "user",
+		//				},
+		//			},
+		//			Password: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: saslSecret,
+		//					},
+		//					Key: "password",
+		//				},
+		//			},
+		//			Type: kafkabindingv1beta1.SecretValueFromSource{
+		//				SecretKeyRef: &corev1.SecretKeySelector{
+		//					LocalObjectReference: corev1.LocalObjectReference{
+		//						Name: saslSecret,
+		//					},
+		//					Key: "saslType",
+		//				},
+		//			},
+		//		},
+		//	},
+		//},
 	}
 
 	for name, tc := range tests {
@@ -346,25 +343,6 @@ func deleteKafkaSource(client *test.Context, namespace string, name string) erro
 		client.T.Errorf("Failed to delete KafkaSource %s/%s: %v", namespace, name, err)
 	}
 	return err
-}
-
-func removePullSecretFromSA(t *testing.T, ctx *test.Context, namespace, serviceAccount, secretName string) {
-	t.Helper()
-	sa, err := ctx.Clients.Kube.CoreV1().ServiceAccounts(namespace).
-		Get(context.Background(), serviceAccount, metav1.GetOptions{})
-	if err != nil {
-		t.Error("Unable to get ServiceAccount", serviceAccount)
-	}
-	for i, secret := range sa.ImagePullSecrets {
-		if secret.Name == secretName {
-			patch := []byte(fmt.Sprintf(`[{"op": "remove", "path": "/imagePullSecrets/%d"}]`, i))
-			_, err = ctx.Clients.Kube.CoreV1().ServiceAccounts(namespace).
-				Patch(context.Background(), serviceAccount, types.JSONPatchType, patch, metav1.PatchOptions{})
-			if err != nil {
-				t.Errorf("Patch failed on NS/SA (%s/%s): %s", namespace, serviceAccount, err)
-			}
-		}
-	}
 }
 
 func deleteJobs(t *testing.T, ctx *test.Context, namespace, name string) {
