@@ -2040,6 +2040,8 @@ k8s.io/apiextensions-apiserver v0.20.1/go.mod h1:ntnrZV+6a3dB504qwC5PN/Yg9PBiDNt
 k8s.io/apiextensions-apiserver v0.20.6/go.mod h1:qO8YMqeMmZH+lV21LUNzV41vfpoE9QVAJRA+MNqj0mo=
 k8s.io/apiextensions-apiserver v0.21.4/go.mod h1:OoC8LhI9LnV+wKjZkXIBbLUwtnOGJiTRE33qctH5CIk=
 k8s.io/apiextensions-apiserver v0.23.9/go.mod h1:uu79PjF1T6YbfFqL5kVTmEdxb40Z0eHM7MfHDHz9dho=
+k8s.io/apiextensions-apiserver v0.23.4/go.mod h1:TWYAKymJx7nLMxWCgWm2RYGXHrGlVZnxIlGnvtfYu+g=
+k8s.io/apiextensions-apiserver v0.23.8/go.mod h1:pcYtXkSRncXGgCCQSbTqppO3XMaLWdqlDisD4dUKQ/U=
 k8s.io/apiextensions-apiserver v0.25.2 h1:8uOQX17RE7XL02ngtnh3TgifY7EhekpK+/piwzQNnBo=
 k8s.io/apiextensions-apiserver v0.25.2/go.mod h1:iRwwRDlWPfaHhuBfQ0WMa5skdQfrE18QXJaJvIDLvE8=
 k8s.io/apimachinery v0.23.5 h1:Va7dwhp8wgkUPWsEXk6XglXWU4IKYLKNlv8VkX7SDM0=
@@ -2051,6 +2053,9 @@ k8s.io/apiserver v0.20.1/go.mod h1:ro5QHeQkgMS7ZGpvf4tSMx6bBOgPfE+f52KwvXfScaU=
 k8s.io/apiserver v0.20.6/go.mod h1:QIJXNt6i6JB+0YQRNcS0hdRHJlMhflFmsBDeSgT1r8Q=
 k8s.io/apiserver v0.21.4/go.mod h1:SErUuFBBPZUcD2nsUU8hItxoYheqyYr2o/pCINEPW8g=
 k8s.io/apiserver v0.23.9/go.mod h1:vIXpgCnHep34bP/y+wGhYdn1NgxAvWtntxfEjst0e74=
+k8s.io/apiserver v0.22.5/go.mod h1:s2WbtgZAkTKt679sYtSudEQrTGWUSQAPe6MupLnlmaQ=
+k8s.io/apiserver v0.23.4/go.mod h1:A6l/ZcNtxGfPSqbFDoxxOjEjSKBaQmE+UTveOmMkpNc=
+k8s.io/apiserver v0.23.8/go.mod h1:/WVQG619hfUCgp3pazpqVspyC83NJemH5B0qxlZjNpw=
 k8s.io/apiserver v0.25.2 h1:YePimobk187IMIdnmsMxsfIbC5p4eX3WSOrS9x6FEYw=
 k8s.io/apiserver v0.25.2/go.mod h1:30r7xyQTREWCkG2uSjgjhQcKVvAAlqoD+YyrqR6Cn+I=
 k8s.io/cli-runtime v0.18.0/go.mod h1:1eXfmBsIJosjn9LjEBUd2WVPoPAY9XGTqTFcPMIBsUQ=
@@ -2064,6 +2069,7 @@ k8s.io/code-generator v0.20.0/go.mod h1:UsqdF+VX4PU2g46NC2JRs4gc+IfrctnwHb76RNbW
 k8s.io/code-generator v0.20.1/go.mod h1:UsqdF+VX4PU2g46NC2JRs4gc+IfrctnwHb76RNbWHJg=
 k8s.io/code-generator v0.20.6/go.mod h1:i6FmG+QxaLxvJsezvZp0q/gAEzzOz3U53KFibghWToU=
 k8s.io/code-generator v0.21.4/go.mod h1:K3y0Bv9Cz2cOW2vXUrNZlFbflhuPvuadW6JdnN6gGKo=
+k8s.io/code-generator v0.23.4/go.mod h1:S0Q1JVA+kSzTI1oUvbKAxZY/DYbA/ZUb4Uknog12ETk=
 k8s.io/code-generator v0.23.5/go.mod h1:S0Q1JVA+kSzTI1oUvbKAxZY/DYbA/ZUb4Uknog12ETk=
 k8s.io/code-generator v0.23.9/go.mod h1:S0Q1JVA+kSzTI1oUvbKAxZY/DYbA/ZUb4Uknog12ETk=
 k8s.io/code-generator v0.25.2 h1:qEHux0+E1c+j1MhsWn9+4Z6av8zrZBixOTPW064rSiY=
@@ -2076,6 +2082,9 @@ k8s.io/component-base v0.20.1/go.mod h1:guxkoJnNoh8LNrbtiQOlyp2Y2XFCZQmrcg2n/DeY
 k8s.io/component-base v0.20.6/go.mod h1:6f1MPBAeI+mvuts3sIdtpjljHWBQ2cIy38oBIWMYnrM=
 k8s.io/component-base v0.21.4/go.mod h1:ZKG0eHVX+tUDcaoIGpU3Vtk4TIjMddN9uhEWDmW6Nyg=
 k8s.io/component-base v0.23.9/go.mod h1:WUNtIRIMd9WBS2r5LCSNZoh6f/Uh+8O+aGuZUG5t428=
+k8s.io/component-base v0.22.5/go.mod h1:VK3I+TjuF9eaa+Ln67dKxhGar5ynVbwnGrUiNF4MqCI=
+k8s.io/component-base v0.23.4/go.mod h1:8o3Gg8i2vnUXGPOwciiYlkSaZT+p+7gA9Scoz8y4W4E=
+k8s.io/component-base v0.23.8/go.mod h1:rCj6EeaYLsNneVoFuSPL/AlEWmomc39j9M9i4NpR8r0=
 k8s.io/component-base v0.25.2 h1:Nve/ZyHLUBHz1rqwkjXm/Re6IniNa5k7KgzxZpTfSQY=
 k8s.io/component-base v0.25.2/go.mod h1:90W21YMr+Yjg7MX+DohmZLzjsBtaxQDDwaX4YxDkl60=
 k8s.io/component-helpers v0.20.0/go.mod h1:nx6NOtfSfGOxnSZsDJxpGbnsVuUA1UXpwDvZIrtigNk=
@@ -2127,6 +2136,7 @@ sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.7/go.mod h1:PHgbrJT
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.14/go.mod h1:LEScyzhFmoF5pso/YSeBstl57mOzx9xlU9n85RGrDQg=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15/go.mod h1:LEScyzhFmoF5pso/YSeBstl57mOzx9xlU9n85RGrDQg=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.22/go.mod h1:LEScyzhFmoF5pso/YSeBstl57mOzx9xlU9n85RGrDQg=
+sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.27/go.mod h1:tq2nT0Kx7W+/f2JVE+zxYtUhdjuELJkVpNz+x/QN5R4=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.30/go.mod h1:fEO7lRTdivWO2qYVCVG7dEADOMo/MLDCVr8So2g88Uw=
 sigs.k8s.io/controller-runtime v0.9.7 h1:DlHMlAyLpgEITVvNsuZqMbf8/sJl9HirmCZIeR5H9mQ=
 sigs.k8s.io/controller-runtime v0.9.7/go.mod h1:nExcHcQ2zvLMeoO9K7rOesGCmgu32srN5SENvpAEbGA=

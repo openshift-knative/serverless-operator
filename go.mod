@@ -199,3 +199,5 @@ replace knative.dev/pkg => knative.dev/pkg v0.0.0-20221123011941-9d7bd235ceed
 replace knative.dev/hack => knative.dev/hack v0.0.0-20220823140917-8d1e4ccf9dc3
 
 replace knative.dev/networking => knative.dev/networking v0.0.0-20221208211516-5f25a81cd43e
+
+replace knative.dev/operator => knative.dev/operator v0.32.2

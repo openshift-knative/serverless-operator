@@ -25,11 +25,13 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
+	OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface
 	OperatorV1beta1() operatorv1beta1.OperatorV1beta1Interface
 }
 
@@ -37,7 +39,13 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	operatorV1beta1 *operatorv1beta1.OperatorV1beta1Client
+	operatorV1alpha1 *operatorv1alpha1.OperatorV1alpha1Client
+	operatorV1beta1  *operatorv1beta1.OperatorV1beta1Client
+}
+
+// OperatorV1alpha1 retrieves the OperatorV1alpha1Client
+func (c *Clientset) OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface {
+	return c.operatorV1alpha1
 }
 
 // OperatorV1beta1 retrieves the OperatorV1beta1Client
@@ -60,10 +68,6 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 // where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
-
-	if configShallowCopy.UserAgent == "" {
-		configShallowCopy.UserAgent = rest.DefaultKubernetesUserAgent()
-	}
 
 	// share the transport between all clients
 	httpClient, err := rest.HTTPClientFor(&configShallowCopy)
@@ -89,6 +93,10 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
+	cs.operatorV1alpha1, err = operatorv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	if err != nil {
+		return nil, err
+	}
 	cs.operatorV1beta1, err = operatorv1beta1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
@@ -114,6 +122,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
+	cs.operatorV1alpha1 = operatorv1alpha1.New(c)
 	cs.operatorV1beta1 = operatorv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
