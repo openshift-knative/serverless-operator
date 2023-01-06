@@ -38,6 +38,8 @@ kind: Service
 metadata:
   name: knative-local-gateway
   namespace: istio-system
+  labels:
+    experimental.istio.io/disable-gateway-port-translation: "true"
 spec:
   type: ClusterIP
   selector:
