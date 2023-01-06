@@ -35,3 +35,6 @@ git apply "$root/olm-catalog/serverless-operator/hack/004-eventing-drop-unsuppor
 
 # Add support workloads and for readiness, liveness probe overrides in workloads.
 git apply "$root/olm-catalog/serverless-operator/hack/005-workloads-probes.patch"
+
+# Add attribute for deprecating the version v1alpha1
+git apply "$root/olm-catalog/serverless-operator/hack/006-deprecate-v1alpha1.patch"
