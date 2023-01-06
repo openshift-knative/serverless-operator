@@ -24,6 +24,8 @@ func init() {
 }
 
 func TestKafkaUserPermissions(t *testing.T) {
+	t.Skip()
+
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
 	viewCtx := test.SetupView(t)

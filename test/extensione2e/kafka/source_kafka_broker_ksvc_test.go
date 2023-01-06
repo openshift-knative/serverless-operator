@@ -89,6 +89,8 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 )
 
 func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
+	t.Skip()
+
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)

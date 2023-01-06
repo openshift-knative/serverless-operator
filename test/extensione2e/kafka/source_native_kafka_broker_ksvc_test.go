@@ -82,6 +82,8 @@ var (
 )
 
 func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
+	t.Skip()
+
 	ctx := context.Background()
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {

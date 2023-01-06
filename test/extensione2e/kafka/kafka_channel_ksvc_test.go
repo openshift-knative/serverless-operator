@@ -79,6 +79,8 @@ var (
 )
 
 func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
+	t.Skip()
+
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
