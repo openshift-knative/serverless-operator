@@ -595,7 +595,7 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		if u.GetKind() == "Deployment" && u.GetName() == "kafka-controller" {
 
 			var disabledKafkaControllers = common.StringMap{
-				brokerController:  "broker-controller,trigger-controller",
+				brokerController:  "broker-controller,trigger-controller,namespaced-broker-controller,namespaced-trigger-controller",
 				sinkController:    "sink-controller",
 				sourceController:  "source-controller",
 				channelController: "channel-controller",
