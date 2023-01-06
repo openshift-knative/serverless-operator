@@ -71,7 +71,7 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 				ConfigMaps(cmNamepace).
 				Get(ctx, cmName, metav1.GetOptions{})
 			if err != nil {
-				t.Fatalf("failed to get ConfigMap")
+				t.Fatalf("Failed to get ConfigMap")
 			}
 			for _, f := range cm.GetFinalizers() {
 				if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, test.Namespace) {

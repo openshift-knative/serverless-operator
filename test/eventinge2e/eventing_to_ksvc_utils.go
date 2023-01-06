@@ -34,7 +34,7 @@ const (
 func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespace string, name string) (*recordevents.EventInfoStore, *servingv1.Service) {
 	libclient, err := lib.NewClient(namespace, t)
 	if err != nil {
-		t.Fatal("error creating testlib client", err)
+		t.Fatal("Error creating testlib client", err)
 	}
 
 	lib.CreateRBACPodsGetEventsAll(libclient, namespace)

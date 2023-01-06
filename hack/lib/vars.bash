@@ -89,11 +89,11 @@ export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
-quay.io/{{- with .Name }}
-{{- if eq . "httpproxy" }}openshift-knative-serving-test/{{.}}:v1.3
-{{- else if eq . "recordevents" }}openshift-knative/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else if eq . "wathola-forwarder" }}openshift-knative/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else                }}openshift-knative/{{.}}:multiarch{{end -}}
+quay.io/openshift-knative/{{- with .Name }}
+{{- if eq . "httpproxy" }}serving/{{.}}:v$(echo "${KNATIVE_SERVING_VERSION#v}" | awk -F \. '{printf "%d.%d", $1, $2}')
+{{- else if eq . "recordevents" }}eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else if eq . "wathola-forwarder" }}eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else }}{{.}}:multiarch{{end -}}
 {{end -}}
 EOF
 )
