@@ -77,6 +77,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkabrokerupgrade.BrokerContinualTests(),
+				kafkabrokerupgrade.NamespacedBrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
@@ -137,6 +138,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
+		kafkabrokerupgrade.NamespacedBrokerPreUpgradeTest(),
 		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
@@ -164,6 +166,7 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 		kafkaupgrade.ChannelPostUpgradeTest(),
 		kafkaupgrade.SourcePostUpgradeTest(),
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
+		kafkabrokerupgrade.NamespacedBrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
 	)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
@@ -179,6 +182,7 @@ func postDowngradeTests() []pkgupgrade.Operation {
 		kafkaupgrade.ChannelPostDowngradeTest(),
 		kafkaupgrade.SourcePostDowngradeTest(),
 		kafkabrokerupgrade.BrokerPostDowngradeTest(),
+		kafkabrokerupgrade.NamespacedBrokerPostDowngradeTest(),
 		kafkabrokerupgrade.SinkPostDowngradeTest(),
 	)
 	return tests
