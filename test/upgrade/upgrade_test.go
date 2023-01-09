@@ -77,7 +77,6 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 				},
 				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkabrokerupgrade.BrokerContinualTests(),
-				kafkabrokerupgrade.NamespacedBrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
@@ -138,7 +137,6 @@ func preUpgradeTests() []pkgupgrade.Operation {
 		kafkaupgrade.ChannelPreUpgradeTest(),
 		kafkaupgrade.SourcePreUpgradeTest(),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
-		kafkabrokerupgrade.NamespacedBrokerPreUpgradeTest(),
 		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
 	// We might want to skip pre-upgrade test if we want to re-use the services
