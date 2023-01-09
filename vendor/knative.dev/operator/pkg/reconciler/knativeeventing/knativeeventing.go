@@ -106,7 +106,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		return err
 	}
 	stages := common.Stages{
-		common.FilterNamespace("knative-eventing"),
 		common.AppendTarget,
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
@@ -137,7 +136,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, source.AppendAllSources, r.transform}
+	stages := common.Stages{common.AppendInstalled, source.AppendInstalledSources, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

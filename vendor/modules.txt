@@ -1455,7 +1455,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.33.1 => knative.dev/operator v0.32.2
+# knative.dev/operator v0.34.2 => knative.dev/operator v0.32.2
 ## explicit; go 1.16
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1486,8 +1486,8 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20221109160814-e190f87d65ab => knative.dev/pkg v0.0.0-20221109160716-136f2e3999cc
-## explicit; go 1.17
+# knative.dev/pkg v0.0.0-20221123011941-9d7bd235ceed => knative.dev/pkg v0.0.0-20221123011941-9d7bd235ceed
+## explicit; go 1.18
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck

@@ -140,15 +140,16 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
+	extra = append(extra, ksc.IngressServiceTransform(instance))
 	extra = append(extra, ingress.Transformers(ctx, instance)...)
-	extra = append(extra, ingress.IngressServiceTransform(instance))
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses, r.transform}
+	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
+		r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }
