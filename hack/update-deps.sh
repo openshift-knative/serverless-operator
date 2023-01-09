@@ -13,10 +13,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.6"
-EVENTING_VERSION="release-v1.6"
+KN_VERSION="release-1.7"
+EVENTING_VERSION="release-v1.7"
 EVENTING_KAFKA_VERSION="release-v1.4"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.6"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.7"
 SERVING_VERSION="release-v1.7"
 
 # The list of dependencies that we track at HEAD and periodically

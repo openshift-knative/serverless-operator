@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
@@ -134,7 +135,8 @@ func main() {
 		// signal handling so the process can just tear it down with it.
 		log.Info("Serving CLI artifacts on :8080")
 		http.Handle("/", http.FileServer(http.Dir("/cli-artifacts")))
-		if err := http.ListenAndServe(":8080", nil); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		server := http.Server{Addr: ":8080", ReadHeaderTimeout: time.Minute}
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error(err, "Failed to launch CLI artifact server")
 		}
 	}()

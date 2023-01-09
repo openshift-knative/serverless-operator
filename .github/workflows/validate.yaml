@@ -55,7 +55,7 @@ jobs:
         shell: bash
 
       - name: Set CURRENT_VERSION_IMAGES on push
-        if: github.event_name == 'push' && github.ref_name != 'main'
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main'
         run: |
           branch="${{ github.ref_name }}.0" # example output: "release-1.26.0"
           # Replace "release-" with "v", so that the final variable is like "v1.27.0"
@@ -166,7 +166,7 @@ jobs:
       - name: Go Lint - knative-operator
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.50.1
           args: --timeout=10m0s --verbose
           working-directory: ./src/github.com/${{ github.repository }}
 
