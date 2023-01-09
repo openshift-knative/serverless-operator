@@ -15,6 +15,7 @@ package knativeserving
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
@@ -35,6 +36,7 @@ import (
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -74,11 +76,19 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeServing")),
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})
+    go func(){
+			err = wait.PollImmediate(3*time.Second, 5*time.Minute, func() (bool, error) {
+				err = common.MigrateCustomResource(ctx, dynamicclient.Get(ctx), apixclient.NewForConfigOrDie(injection.GetConfig(ctx)))
+				if err != nil {
+					return false, nil
+				}
+				return true, nil
+			})
+			if err != nil {
+				logger.Fatalw("Unable to migrate existing custom resources", zap.Error(err))
+			}
+		}()
 
-		err = common.MigrateCustomResource(ctx, dynamicclient.Get(ctx), apixclient.NewForConfigOrDie(injection.GetConfig(ctx)))
-		if err != nil {
-			logger.Fatalw("Unable to migrate existing custom resources", zap.Error(err))
-		}
 		return impl
 	}
 }
