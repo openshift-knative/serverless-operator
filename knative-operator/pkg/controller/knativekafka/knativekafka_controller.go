@@ -766,7 +766,9 @@ func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
 			return fmt.Errorf("failed to list KnativeEventing to check if monitoring is enabled: %w", err)
 		}
 		if len(eventingList.Items) == 0 {
-			return fmt.Errorf("failed to find KnativeEventing instance to check if monitoring is enabled")
+			// if there's no KnativeEventing, we assume monitoring is disabled
+			log.Info("Unable to find KnativeEventing to check if monitoring is enabled")
+			return nil
 		}
 
 		if !openshiftmonitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
