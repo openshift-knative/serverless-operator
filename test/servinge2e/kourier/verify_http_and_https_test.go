@@ -6,6 +6,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
+	"knative.dev/networking/pkg/apis/networking"
 	pkgTest "knative.dev/pkg/test"
 )
 
@@ -16,7 +17,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	defer test.CleanupAll(t, caCtx)
 
 	ksvc := test.Service("redirect-service", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
-	ksvc.ObjectMeta.Annotations = map[string]string{"networking.knative.dev/httpOption": "redirected"}
+	ksvc.ObjectMeta.Annotations = map[string]string{networking.HTTPProtocolAnnotationKey: "redirected"}
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 
 	// Implicitly checks that HTTPS works.
