@@ -179,6 +179,12 @@ func TestKnativeKafka(t *testing.T) {
 		}
 	})
 
+	t.Run("remove broker cr", func(t *testing.T) {
+		if err := caCtx.Clients.Eventing.EventingV1().Brokers(broker.Namespace).Delete(context.Background(), broker.Name, metav1.DeleteOptions{}); err != nil {
+			t.Fatal("Failed to remove KafkaBroker", err)
+		}
+	})
+
 	t.Run("Verify job succeeded", func(t *testing.T) {
 		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    knativeKafkaNamespace,
