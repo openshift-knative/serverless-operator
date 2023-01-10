@@ -337,15 +337,15 @@ function teardown_serverless {
     logger.info 'Removing KnativeServing CR'
     oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}"
   fi
+  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeKafka CR'
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
+  fi
   if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
     logger.info 'Removing KnativeEventing CR'
     oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
     # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
     oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
-  fi
-  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeKafka CR'
-    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
   fi
   logger.info 'Ensure no knative serving pods running'
   timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"

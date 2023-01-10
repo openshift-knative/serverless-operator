@@ -33,6 +33,7 @@ require (
 	knative.dev/pkg v0.0.0-20221109160814-e190f87d65ab
 	knative.dev/serving v0.33.0
 	sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -46,7 +47,6 @@ require (
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e // indirect
 	istio.io/client-go v1.13.3 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 require (

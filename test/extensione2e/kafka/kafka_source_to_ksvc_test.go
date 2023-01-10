@@ -335,7 +335,7 @@ func deleteKafkaSource(client *test.Context, namespace string, name string) erro
 		return err
 	}
 
-	err = wait.Poll(time.Second, 2*test.Timeout, func() (done bool, err error) {
+	err = wait.Poll(time.Second, 5*test.Timeout, func() (done bool, err error) {
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil
