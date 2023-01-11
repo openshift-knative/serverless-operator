@@ -1,5 +1,5 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index e5704143c..298276ddd 100644
+index 8b79a033..04846601 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 @@ -46,17 +46,8 @@ spec:
@@ -21,7 +21,80 @@ index e5704143c..298276ddd 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -953,43 +944,6 @@ spec:
+@@ -793,43 +784,6 @@ spec:
+                         type: boolean
+                     type: object
+                 type: object
+-              manifests:
+-                description: A list of eventing manifests, which will be installed
+-                  by the operator
+-                items:
+-                  properties:
+-                    URL:
+-                      description: The link of the manifest URL
+-                      type: string
+-                  type: object
+-                type: array
+-              registry:
+-                description: A means to override the corresponding deployment images
+-                  in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+-                properties:
+-                  default:
+-                    description: The default image reference template to use for all
+-                      knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+-                    type: string
+-                  imagePullSecrets:
+-                    description: A list of secrets to be used when pulling the knative
+-                      images. The secret must be created in the same namespace as
+-                      the knative-eventing deployments, and not the namespace of this
+-                      resource.
+-                    items:
+-                      properties:
+-                        name:
+-                          description: The name of the secret.
+-                          type: string
+-                      type: object
+-                    type: array
+-                  override:
+-                    additionalProperties:
+-                      type: string
+-                    description: A map of a container name or image name to the full
+-                      image location of the individual knative image.
+-                    type: object
+-                type: object
+               resources:
+                 description: A mapping of deployment name to resource requirements. This field
+                   is deprecated. Use `spec.deployments.resources`
+@@ -925,9 +879,6 @@ spec:
+               observedGeneration:
+                 description: The generation last processed by the controller
+                 type: integer
+-              version:
+-                description: The version of the installed release
+-                type: string
+             type: object
+         type: object
+     additionalPrinterColumns:
+@@ -963,17 +914,8 @@ spec:
+             type: object
+           spec:
+             description: Spec defines the desired state of KnativeEventing
++            x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
+             properties:
+-              additionalManifests:
+-                description: A list of the additional eventing manifests, which will
+-                  be installed by the operator
+-                items:
+-                  properties:
+-                    URL:
+-                      description: The link of the additional manifest URL
+-                      type: string
+-                  type: object
+-                type: array
+               config:
+                 additionalProperties:
+                   additionalProperties:
+@@ -1729,43 +1671,6 @@ spec:
                          type: boolean
                      type: object
                  type: object
@@ -65,7 +138,7 @@ index e5704143c..298276ddd 100644
                sinkBindingSelectionMode:
                  description: Specifies the selection mode for the sinkbinding webhook.
                    If the value is `inclusion`, only namespaces/objects labelled as
-@@ -997,9 +951,6 @@ spec:
+@@ -1773,9 +1678,6 @@ spec:
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
                    and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
                  type: string
@@ -75,3 +148,16 @@ index e5704143c..298276ddd 100644
              type: object
            status:
              properties:
+@@ -1843,11 +1745,4 @@ spec:
+     singular: knativeeventing
+   scope: Namespaced
+   conversion:
+-    strategy: Webhook
+-    webhook:
+-      conversionReviewVersions: ["v1alpha1", "v1beta1"]
+-      clientConfig:
+-        service:
+-          name: operator-webhook
+-          namespace: default
+-          path: /resource-conversion
++    strategy: None
