@@ -240,3 +240,72 @@ func TestSetAnnotations(t *testing.T) {
 		})
 	}
 }
+
+func TestMarshalUnstructured(t *testing.T) {
+	tests := []struct {
+		name      string
+		resources []unstructured.Unstructured
+		want      string
+		wantErr   bool
+	}{{
+		name:      "nil slice",
+		resources: nil,
+		want:      "[]\n",
+		wantErr:   false,
+	}, {
+		name:      "empty slice",
+		resources: []unstructured.Unstructured{},
+		want:      "[]\n",
+		wantErr:   false,
+	}, {
+		name: "single valid resource",
+		resources: []unstructured.Unstructured{{
+			Object: map[string]interface{}{
+				"foo": "bar",
+			},
+		}},
+		want:    "- foo: bar\n",
+		wantErr: false,
+	}, {
+		name: "single empty resource",
+		resources: []unstructured.Unstructured{{
+			Object: map[string]interface{}{},
+		}},
+		want:    "- {}\n",
+		wantErr: false,
+	}, {
+		name: "single invalid resource",
+		resources: []unstructured.Unstructured{{
+			Object: map[string]interface{}{
+				"foo": make(chan int),
+			},
+		}},
+		wantErr: true,
+	}, {
+		name: "multiple valid resources",
+		resources: []unstructured.Unstructured{
+			{
+				Object: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+			{
+				Object: map[string]interface{}{
+					"baz": "fox",
+				},
+			},
+		},
+		want:    "- foo: bar\n- baz: fox\n",
+		wantErr: false,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := common.MarshalUnstructured(tt.resources)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MarshalUnstructured() error = %v, WantErr %v", err, tt.wantErr)
+			} else if !cmp.Equal(got, tt.want) {
+				t.Errorf("MarshalUnstructured output not expected. diff:\n%s", cmp.Diff(got, tt.want))
+			}
+		})
+	}
+}

@@ -59,3 +59,7 @@ download_kafka source "${kafka_source_files[@]}"
 # artifacts are downloaded from midstream openshift/release/artifacts directory.
 # Before adding patches to this file consider sending a patch to midstream and then by just running
 # `make generated-files` the patch will appear in the final bundled artifacts.
+
+# Copy some additional manifest files that are only relevant for Serverless Operator.
+extra_dir="$root/knative-operator/deploy/resources/knativekafka_extra"
+cp -r "${extra_dir}/broker/." "${component_dir}/broker"
