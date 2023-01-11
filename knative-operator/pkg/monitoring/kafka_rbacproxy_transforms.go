@@ -97,7 +97,7 @@ func AddRBACProxyToManifest(instance *serverlessoperatorv1alpha1.KnativeKafka, c
 	return &proxyManifest, nil
 }
 
-func GetRBACProxyInjectTransformer(instance *serverlessoperatorv1alpha1.KnativeKafka, apiClient client.Client) ([]mf.Transformer, error) {
+func GetRBACProxyInjectTransformers(instance *serverlessoperatorv1alpha1.KnativeKafka, apiClient client.Client) ([]mf.Transformer, error) {
 	eventingList := &operatorv1beta1.KnativeEventingList{}
 	err := apiClient.List(context.Background(), eventingList)
 	if err != nil {
