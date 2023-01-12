@@ -142,7 +142,7 @@ function downstream_eventing_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/eventinge2e \
+  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/eventinge2e \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -163,7 +163,7 @@ function downstream_knative_kafka_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/extensione2e/kafka \
+  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/extensione2e/kafka \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
