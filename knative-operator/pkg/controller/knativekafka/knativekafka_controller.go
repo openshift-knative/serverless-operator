@@ -156,6 +156,12 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		}
 	}
 
+	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
