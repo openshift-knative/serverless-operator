@@ -28,7 +28,7 @@ func AdditionalResourcesForNamespacedBroker() (string, error) {
 	// - Create a `ServiceMonitor` that makes Prometheus scrape our dataplane pods.
 	//   It also sets up certificates for the RBAC proxy mentioned above.
 	//
-	// - Create a `ClusterRoleBinding` of the `rbac-proxy-reviews-prom` `ClusterRole` for the
+	// - Create a `RoleBinding` of the `rbac-proxy-reviews-prom` `ClusterRole` for the
 	//  `knative-kafka-broker-data-plane` `ServiceAccount` in the broker namespace. Otherwise, RBAC proxy cannot
 	//   authorize itself.
 	//
@@ -43,7 +43,7 @@ func AdditionalResourcesForNamespacedBroker() (string, error) {
 		serviceMonitor("dispatcher"),
 		service("receiver"),
 		service("dispatcher"),
-		clusterRoleBinding(),
+		roleBinding(),
 		namespace(),
 	)
 	if err != nil {
@@ -80,14 +80,15 @@ func namespace() *corev1.Namespace {
 	}
 }
 
-func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
-	return &rbacv1.ClusterRoleBinding{
+func roleBinding() *rbacv1.RoleBinding {
+	return &rbacv1.RoleBinding{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "rbac.authorization.k8s.io/v1",
-			Kind:       "ClusterRoleBinding",
+			Kind:       "RoleBinding",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane-{{.Namespace}}",
+			Name:      "rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane",
+			Namespace: "{{.Namespace}}",
 		},
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
