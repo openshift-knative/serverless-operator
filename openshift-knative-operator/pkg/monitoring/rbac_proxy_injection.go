@@ -12,14 +12,39 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operator "knative.dev/operator/pkg/reconciler/common"
 )
 
 const (
-	rbacContainerName    = "kube-rbac-proxy"
+	RBACContainerName    = "kube-rbac-proxy"
 	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
 )
 
-func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
+var defaultKubeRBACProxyReqeusts = corev1.ResourceList{
+	"memory": resource.MustParse("20Mi"),
+	"cpu":    resource.MustParse("10m"),
+}
+
+func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) mf.Transformer {
+	resources := corev1.ResourceRequirements{
+		Requests: defaultKubeRBACProxyReqeusts,
+		Limits:   corev1.ResourceList{},
+	}
+	if cfg != nil && cfg["deployment"] != nil {
+		if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
+			resources.Requests["cpu"] = resource.MustParse(cpuRequest)
+		}
+		if memRequest, ok := cfg["deployment"]["kube-rbac-proxy-memory-request"]; ok {
+			resources.Requests["memory"] = resource.MustParse(memRequest)
+		}
+		if cpuLimit, ok := cfg["deployment"]["kube-rbac-proxy-cpu-limit"]; ok {
+			resources.Limits["cpu"] = resource.MustParse(cpuLimit)
+		}
+		if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
+			resources.Limits["memory"] = resource.MustParse(memLimit)
+		}
+	}
 	return func(u *unstructured.Unstructured) error {
 		var podSpec *corev1.PodSpec
 		var convert func(spec *corev1.PodSpec) error
@@ -47,7 +72,6 @@ func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
 				return scheme.Scheme.Convert(dep, u, nil)
 			}
 		}
-
 		if podSpec != nil {
 
 			// Make sure we export metrics only locally.
@@ -62,17 +86,13 @@ func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
 			volumeName := fmt.Sprintf("secret-%s-sm-service-tls", u.GetName())
 			mountPath := "/etc/tls/private"
 			rbacProxyContainer := corev1.Container{
-				Name:  rbacContainerName,
+				Name:  RBACContainerName,
 				Image: os.Getenv(rbacProxyImageEnvVar),
 				VolumeMounts: []corev1.VolumeMount{{
 					Name:      volumeName,
 					MountPath: mountPath,
 				}},
-				Resources: corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						"memory": resource.MustParse("20Mi"),
-						"cpu":    resource.MustParse("10m"),
-					}},
+				Resources: resources,
 				Args: []string{
 					"--secure-listen-address=0.0.0.0:8444",
 					fmt.Sprintf("--upstream=http://127.0.0.1:%s/", getDefaultMetricsPort(u.GetName())),
@@ -95,4 +115,18 @@ func InjectRbacProxyContainer(deployments sets.String) mf.Transformer {
 		}
 		return nil
 	}
+}
+
+// ExtensionDeploymentOverrides allows to override deployment attributes when extension transforms are applied.
+// Normally the knative operator applies deployment overrides before extension transforms are applied.
+// For example, we inject the kube-rbac-proxy container at the extension side and this allows to configure the container
+// for each deployment it appears in using regular deployment overrides.
+func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments sets.String) mf.Transformer {
+	var ovs []base.WorkloadOverride
+	for _, override := range overrides {
+		if deployments.Has(override.Name) {
+			ovs = append(ovs, override)
+		}
+	}
+	return operator.OverridesTransform(ovs, nil)
 }
