@@ -150,14 +150,18 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, dependentConfigMaps))
+		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+			return object.GetNamespace() == "knative-eventing" && dependentConfigMaps.Has(object.GetName())
+		}))
 		if err != nil {
 			return err
 		}
 	}
 
 	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+		return true
+	}))
 	if err != nil {
 		return err
 	}
@@ -165,10 +169,9 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	return nil
 }
 
-func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, names sets.String) handler.EventHandler {
+func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, filter func(client.Object) bool) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
-		ns := "knative-eventing"
-		if object.GetNamespace() != ns || !names.Has(object.GetName()) {
+		if !filter(object) {
 			return nil
 		}
 
