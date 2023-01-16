@@ -103,10 +103,11 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	//   status:
 	//     loadBalancer: {}
 	// - apiVersion: rbac.authorization.k8s.io/v1
-	//   kind: ClusterRoleBinding
+	//   kind: RoleBinding
 	//   metadata:
 	//     creationTimestamp: null
-	//     name: rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane-{{.Namespace}}
+	//     name: rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane
+	//     namespace: '{{.Namespace}}'
 	//   roleRef:
 	//     apiGroup: rbac.authorization.k8s.io
 	//     kind: ClusterRole
