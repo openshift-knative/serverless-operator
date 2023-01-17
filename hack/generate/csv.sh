@@ -64,7 +64,7 @@ function default_knative_ingress_images() {
   local knative_kourier knative_istio
   knative_kourier="${registry}/knative-v$(metadata.get dependencies.kourier):kourier"
   export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${knative_kourier}"}
-  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
+  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
   knative_istio="${registry}/knative-v$(metadata.get dependencies.net_istio)"
   export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${knative_istio}:net-istio-controller"}

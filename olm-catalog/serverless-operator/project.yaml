@@ -35,7 +35,7 @@ dependencies:
   net_kourier_artifacts_branch: release-1.7
   net_istio: 1.7.0
   net_istio_artifacts_branch: release-1.7
-  maistra: 2.1.0
+  maistra: 2.3-daily-2023-01-16
 
   eventing: knative-v1.7
   # eventing core midstream branch name
