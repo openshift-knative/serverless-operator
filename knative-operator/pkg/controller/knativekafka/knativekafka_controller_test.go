@@ -15,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +34,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 var (
@@ -53,7 +55,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 		doesNotExist []types.NamespacedName
 	}{{
 		name:     "Create CR with channel and source enabled",
-		instance: makeCr(withChannelEnabled, withSourceEnabled),
+		instance: makeCr(withChannelEnabled, withSourceEnabled, withKubeRbacProxyDeploymentOverride),
 		exists: []types.NamespacedName{
 			{Name: "kafka-channel-dispatcher", Namespace: "knative-eventing"},
 			{Name: "kafka-channel-receiver", Namespace: "knative-eventing"},
@@ -135,6 +137,27 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				// Check if rbac proxy is injected
 				if len(podTemplateSpec.Spec.Containers) != 2 {
 					t.Fatal("rbac proxy not injected")
+				}
+
+				if len(test.instance.Spec.Workloads) > 0 {
+					if d.Name == monitoring.KafkaChannelDispatcher.Name {
+						for _, container := range podTemplateSpec.Spec.Containers {
+							if container.Name == okomon.RBACContainerName {
+								resources := corev1.ResourceRequirements{
+									Limits: corev1.ResourceList{
+										corev1.ResourceMemory: resource.MustParse("100Mi"),
+										corev1.ResourceCPU:    resource.MustParse("100m"),
+									},
+									Requests: corev1.ResourceList{
+										"memory": resource.MustParse("20Mi"),
+										"cpu":    resource.MustParse("10m"),
+									}}
+								if !cmp.Equal(container.Resources, resources) {
+									t.Errorf("Got = %v, want: %v, diff:\n%s", container.Resources, resources, cmp.Diff(container.Resources, resources))
+								}
+							}
+						}
+					}
 				}
 
 				// Check if the service monitor for the Kafka deployment is created
@@ -674,6 +697,21 @@ func withChannelEnabled(kk *v1alpha1.KnativeKafka) {
 func withDeleted(kk *v1alpha1.KnativeKafka) {
 	t := metav1.NewTime(time.Now())
 	kk.ObjectMeta.DeletionTimestamp = &t
+}
+
+func withKubeRbacProxyDeploymentOverride(kk *v1alpha1.KnativeKafka) {
+	kk.Spec.Workloads = []base.WorkloadOverride{{
+		Name: monitoring.KafkaChannelDispatcher.Name,
+		Resources: []base.ResourceRequirementsOverride{{
+			Container: okomon.RBACContainerName,
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("100Mi"),
+					corev1.ResourceCPU:    resource.MustParse("100m"),
+				},
+			},
+		}},
+	}}
 }
 
 func TestCheckHAComponent(t *testing.T) {

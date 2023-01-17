@@ -1,12 +1,17 @@
 package installation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 )
 
 func UpgradeServerless(ctx *test.Context) error {
@@ -57,6 +62,7 @@ func UpgradeServerless(ctx *test.Context) error {
 
 func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
+	crds := []string{"knativeservings.operator.knative.dev", "knativeeventings.operator.knative.dev"}
 
 	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
 		return err
@@ -73,6 +79,17 @@ func DowngradeServerless(ctx *test.Context) error {
 	// Ensure complete clean up to prevent https://issues.redhat.com/browse/SRVCOM-2203
 	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
 		return err
+	}
+
+	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
+	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
+	// but we do it anyway for supported versions up to 4.10.
+	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.23.0"); err != nil {
+		for _, name := range crds {
+			if err := setWebookStrategyToNone(ctx, name); err != nil {
+				return err
+			}
+		}
 	}
 
 	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
@@ -127,4 +144,16 @@ func DowngradeServerless(ctx *test.Context) error {
 	}
 
 	return nil
+}
+
+func setWebookStrategyToNone(ctx *test.Context, name string) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		crd.Spec.Conversion = &apiextensionsv1.CustomResourceConversion{Strategy: apiextensionsv1.ConversionStrategyType("None")}
+		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
+		return err
+	})
 }

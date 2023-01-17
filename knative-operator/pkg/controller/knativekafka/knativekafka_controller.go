@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -42,6 +44,8 @@ import (
 	serverlessoperatorv1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+
+	openshiftmonitoring "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 const (
@@ -146,19 +150,28 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, dependentConfigMaps))
+		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+			return object.GetNamespace() == "knative-eventing" && dependentConfigMaps.Has(object.GetName())
+		}))
 		if err != nil {
 			return err
 		}
 	}
 
+	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
+	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+		return true
+	}))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, names sets.String) handler.EventHandler {
+func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, filter func(client.Object) bool) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
-		ns := "knative-eventing"
-		if object.GetNamespace() != ns || !names.Has(object.GetName()) {
+		if !filter(object) {
 			return nil
 		}
 
@@ -317,10 +330,10 @@ func (r *ReconcileKnativeKafka) ensureFinalizers(manifest *mf.Manifest, instance
 func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Transforming manifest")
 	// If in deletion we don't apply any monitoring transformer to kafka components and transformer will be nil and skipped.
-	var rbacProxyTranform mf.Transformer
+	var rbacProxyTranforms []mf.Transformer
 	if instance.GetDeletionTimestamp() == nil {
 		var err error
-		if rbacProxyTranform, err = monitoring.GetRBACProxyInjectTransformer(r.client); err != nil {
+		if rbacProxyTranforms, err = monitoring.GetRBACProxyInjectTransformers(instance, r.client); err != nil {
 			return err
 		}
 	}
@@ -339,7 +352,9 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
-		rbacProxyTranform), socommon.DeprecatedAPIsTranformersFromConfig()...)
+		injectNamespacedBrokerMonitoring(r.client)), socommon.DeprecatedAPIsTranformersFromConfig()...)
+	tfs = append(tfs, rbacProxyTranforms...)
+
 	m, err := manifest.Transform(tfs...)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
@@ -747,4 +762,36 @@ func removeCreationTimestamp(manifest *mf.Manifest, _ *serverlessoperatorv1alpha
 		return nil
 	})
 	return err
+}
+
+func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != "config-namespaced-broker-resources" {
+			return nil
+		}
+
+		eventingList := &operatorv1beta1.KnativeEventingList{}
+		err := apiClient.List(context.Background(), eventingList)
+		if err != nil {
+			return fmt.Errorf("failed to list KnativeEventing to check if monitoring is enabled: %w", err)
+		}
+		if len(eventingList.Items) == 0 {
+			// if there's no KnativeEventing, we assume monitoring is disabled
+			log.Info("Unable to find KnativeEventing to check if monitoring is enabled")
+			return nil
+		}
+
+		if !openshiftmonitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
+			return nil
+		}
+		additionalResources, err := monitoring.AdditionalResourcesForNamespacedBroker()
+		if err != nil {
+			return fmt.Errorf("failed to add monitoring resources for namespaced broker: %w", err)
+		}
+
+		if err := unstructured.SetNestedField(u.Object, additionalResources, "data", "resources"); err != nil {
+			return err
+		}
+		return nil
+	}
 }

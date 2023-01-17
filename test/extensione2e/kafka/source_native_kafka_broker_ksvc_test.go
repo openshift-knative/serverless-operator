@@ -8,11 +8,15 @@ import (
 	"testing"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
+	kafkatestpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
@@ -23,26 +27,57 @@ const (
 	nativeKafkaBrokerName = "smoke-test-native-kafka-broker"
 )
 
-var (
-	nativeKafkaBroker = &eventingv1.Broker{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        nativeKafkaBrokerName,
-			Namespace:   test.Namespace,
-			Annotations: map[string]string{"eventing.knative.dev/broker.class": "Kafka"},
-		},
-		Spec: eventingv1.BrokerSpec{
-			Config: &duckv1.KReference{
-				APIVersion: "v1",
-				Kind:       "ConfigMap",
-				Name:       "kafka-broker-config",
-				Namespace:  "knative-eventing",
-			},
-		},
-	}
-)
+func TestSourceToNativeKafkaBrokerToKnativeService(t *testing.T) {
+	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.BrokerClass))
+}
 
-func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
-	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, func(client *test.Context) *eventingv1.Broker {
+func TestSourceToNamespacedKafkaBrokerToKnativeService(t *testing.T) {
+	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.NamespacedBrokerClass))
+}
+
+func createBrokerFunc(t *testing.T, brokerClass string) func(client *test.Context) *eventingv1.Broker {
+	return func(client *test.Context) *eventingv1.Broker {
+		kafkaBrokerConfigName := "kafka-broker-config"
+		kafkaBrokerConfigNamespace := "knative-eventing"
+		var brokerConfigMap *corev1.ConfigMap
+		if brokerClass == kafka.NamespacedBrokerClass {
+			kafkaBrokerConfigNamespace = test.Namespace
+			brokerConfigMap = &corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      kafkaBrokerConfigName,
+					Namespace: kafkaBrokerConfigNamespace,
+				},
+				Data: map[string]string{
+					kafka.BootstrapServersConfigMapKey:              kafkatestpkg.BootstrapServersPlaintext,
+					kafka.DefaultTopicNumPartitionConfigMapKey:      fmt.Sprintf("%d", kafkatestpkg.NumPartitions),
+					kafka.DefaultTopicReplicationFactorConfigMapKey: fmt.Sprintf("%d", kafkatestpkg.ReplicationFactor),
+				},
+			}
+		}
+		nativeKafkaBroker := &eventingv1.Broker{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        nativeKafkaBrokerName,
+				Namespace:   test.Namespace,
+				Annotations: map[string]string{"eventing.knative.dev/broker.class": brokerClass},
+			},
+			Spec: eventingv1.BrokerSpec{
+				Config: &duckv1.KReference{
+					APIVersion: "v1",
+					Kind:       "ConfigMap",
+					Name:       kafkaBrokerConfigName,
+					Namespace:  kafkaBrokerConfigNamespace,
+				},
+			},
+		}
+
+		// Create Kafka Broker ConfigMap for Namespaced broker only
+		if brokerClass == kafka.NamespacedBrokerClass {
+			_, err := client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Create(context.Background(), brokerConfigMap, metav1.CreateOptions{})
+			if err != nil {
+				t.Fatal("Unable to create KafkaBroker ConfigMap: ", err)
+			}
+		}
+
 		// Create the (native) Kafka Broker
 		broker, err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Create(context.Background(), nativeKafkaBroker, metav1.CreateOptions{})
 		if err != nil {
@@ -54,7 +89,10 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 			ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
 			defer cancel()
 
-			err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{})
+			pp := metav1.DeletePropagationForeground
+			err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{
+				PropagationPolicy: &pp,
+			})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -64,19 +102,23 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			cmName := nativeKafkaBroker.Spec.Config.Name
-			cmNamepace := nativeKafkaBroker.Spec.Config.Namespace
-			cm, err := client.Clients.Kube.
-				CoreV1().
-				ConfigMaps(cmNamepace).
-				Get(ctx, cmName, metav1.GetOptions{})
-			if err != nil {
-				t.Fatalf("Failed to get ConfigMap")
-			}
-			for _, f := range cm.GetFinalizers() {
-				if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, test.Namespace) {
-					cmBytes, _ := json.MarshalIndent(cm, "", " ")
-					t.Fatalf("ConfigMap still contains the finalizer %s\n%s\n", f, string(cmBytes))
+			if brokerClass == kafka.NamespacedBrokerClass {
+				if err := client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Delete(ctx, kafkaBrokerConfigName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+					t.Errorf("Failed to delete ConfigMap %s/%s: %v", test.Namespace, kafkaBrokerConfigName, err)
+				}
+			} else {
+				cm, err := client.Clients.Kube.
+					CoreV1().
+					ConfigMaps(nativeKafkaBroker.Spec.Config.Namespace).
+					Get(ctx, nativeKafkaBroker.Spec.Config.Name, metav1.GetOptions{})
+				if err != nil {
+					t.Fatalf("Failed to get ConfigMap")
+				}
+				for _, f := range cm.GetFinalizers() {
+					if strings.Contains(f, nativeKafkaBrokerName) && strings.Contains(f, test.Namespace) {
+						cmBytes, _ := json.MarshalIndent(cm, "", " ")
+						t.Fatalf("ConfigMap still contains the finalizer %s\n%s\n", f, string(cmBytes))
+					}
 				}
 			}
 
@@ -84,7 +126,7 @@ func TestSourceToNativeKafkaBasedBrokerToKnativeService(t *testing.T) {
 		})
 
 		return broker
-	})
+	}
 }
 
 func waitForBrokerDeletion(ctx context.Context, client *test.Context, t *testing.T) wait.ConditionFunc {

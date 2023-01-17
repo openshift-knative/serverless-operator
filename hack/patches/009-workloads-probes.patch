@@ -322,6 +322,44 @@ index 257c3757f..605777742 100644
 +	in.DeepCopyInto(out)
 +	return out
 +}
+diff --git a/vendor/knative.dev/operator/pkg/apis/operator/v1alpha1/deploymentoverride.go b/vendor/knative.dev/operator/pkg/apis/operator/v1alpha1/deploymentoverride.go
+index 18f5d27b7..f732fa1c2 100644
+--- a/vendor/knative.dev/operator/pkg/apis/operator/v1alpha1/deploymentoverride.go
++++ b/vendor/knative.dev/operator/pkg/apis/operator/v1alpha1/deploymentoverride.go
+@@ -21,10 +21,10 @@ import (
+ )
+
+ // ConvertToDeploymentOverride merges the ResourceRequirementsOverride into the DeploymentOverride
+-func ConvertToDeploymentOverride(source base.KComponent) []base.DeploymentOverride {
+-	mergedDeploymentOverride := source.GetSpec().GetDeploymentOverride()
++func ConvertToDeploymentOverride(source base.KComponent) []base.WorkloadOverride {
++	mergedDeploymentOverride := source.GetSpec().GetWorkloadOverrides()
+ 	// Make a copy of source.GetSpec().GetDeploymentOverride()
+-	deploymentOverrideCopy := make([]base.DeploymentOverride, 0, len(mergedDeploymentOverride))
++	deploymentOverrideCopy := make([]base.WorkloadOverride, 0, len(mergedDeploymentOverride))
+ 	for _, override := range mergedDeploymentOverride {
+ 		copy := *override.DeepCopy()
+ 		deploymentOverrideCopy = append(deploymentOverrideCopy, copy)
+@@ -37,8 +37,8 @@ func ConvertToDeploymentOverride(source base.KComponent) []base.DeploymentOverri
+ 	return deploymentOverrideCopy
+ }
+
+-func addResourceIntoDeployment(deploymentOverrides []base.DeploymentOverride,
+-	resource base.ResourceRequirementsOverride) []base.DeploymentOverride {
++func addResourceIntoDeployment(deploymentOverrides []base.WorkloadOverride,
++	resource base.ResourceRequirementsOverride) []base.WorkloadOverride {
+ 	// If it does not exist, add the resource requirement as a new
+ 	// item; if it does, modify the existing resource requirement.
+ 	deployFound := false
+@@ -62,7 +62,7 @@ func addResourceIntoDeployment(deploymentOverrides []base.DeploymentOverride,
+ 		}
+ 	}
+ 	if !deployFound {
+-		newDeployOverride := base.DeploymentOverride{}
++		newDeployOverride := base.WorkloadOverride{}
+ 		// Take the container name as the deployment name.
+ 		newDeployOverride.Name = resource.Container
+ 		newDeployOverride.Resources = append(newDeployOverride.Resources, resource)
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/deployments_override.go b/vendor/knative.dev/operator/pkg/reconciler/common/deployments_override.go
 deleted file mode 100644
 index ece8a8f4f..000000000
@@ -540,7 +578,7 @@ index a042de85f..8a04e31e9 100644
  					return nil
  				}
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go b/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
-index 58a15cd56..0a498cff1 100644
+index 3c23f8151..5ef756fb0 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
 @@ -32,7 +32,7 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
@@ -550,8 +588,8 @@ index 58a15cd56..0a498cff1 100644
 -		DeploymentsTransform(obj, logger),
 +		OverridesTransform(obj.GetSpec().GetWorkloadOverrides(), logger),
  		ServicesTransform(obj, logger),
- 		PodDisruptionBudgetsTransform(obj, logger),
  	}
+ }
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go b/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go
 new file mode 100644
 index 000000000..2b6077aa6
@@ -756,3 +794,4 @@ index 000000000..2b6077aa6
 +		}
 +	}
 +}
+

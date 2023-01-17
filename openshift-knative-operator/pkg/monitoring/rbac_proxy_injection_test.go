@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
@@ -59,9 +60,18 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to construct manifest: %s", err)
 	}
-
-	if manifest, err = manifest.Transform(InjectRbacProxyContainer(sets.NewString(in.Name))); err != nil {
+	cfg := base.ConfigMapData{}
+	cfg["deployment"] = map[string]string{
+		"kube-rbac-proxy-cpu-limit":    "100m",
+		"kube-rbac-proxy-memory-limit": "100Mi",
+	}
+	if manifest, err = manifest.Transform(InjectRbacProxyContainer(sets.NewString(in.Name), cfg)); err != nil {
 		t.Fatalf("Unable to transform test manifest: %s", err)
+	}
+
+	limits := corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse("100Mi"),
+		corev1.ResourceCPU:    resource.MustParse("100m"),
 	}
 
 	got := &appsv1.Deployment{}
@@ -106,17 +116,16 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 							MountPath: "/foo/bar",
 						}},
 					}, {
-						Name:  rbacContainerName,
+						Name:  RBACContainerName,
 						Image: os.Getenv(rbacProxyImageEnvVar),
 						VolumeMounts: []corev1.VolumeMount{{
 							Name:      "secret-activator-sm-service-tls",
 							MountPath: "/etc/tls/private",
 						}},
 						Resources: corev1.ResourceRequirements{
-							Requests: corev1.ResourceList{
-								"memory": resource.MustParse("20Mi"),
-								"cpu":    resource.MustParse("10m"),
-							}},
+							Limits:   limits,
+							Requests: defaultKubeRBACProxyReqeusts,
+						},
 						Args: []string{
 							"--secure-listen-address=0.0.0.0:8444",
 							"--upstream=http://127.0.0.1:9090/",
@@ -130,7 +139,30 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 			},
 		},
 	}
-
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Error("Unexpected Deployment diff (-want +got): ", diff)
+	}
+	limits = corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse("200Mi"),
+		corev1.ResourceCPU:    resource.MustParse("200m"),
+	}
+	overrides := []base.WorkloadOverride{{
+		Name: "activator",
+		Resources: []base.ResourceRequirementsOverride{{
+			Container: RBACContainerName,
+			ResourceRequirements: corev1.ResourceRequirements{
+				Limits: limits,
+			},
+		}},
+	}}
+	if manifest, err = manifest.Transform(ExtensionDeploymentOverrides(overrides, servingDeployments)); err != nil {
+		t.Fatalf("Unable to transform test manifest: %s", err)
+	}
+	got = &appsv1.Deployment{}
+	if err := scheme.Scheme.Convert(&manifest.Resources()[0], got, nil); err != nil {
+		t.Fatalf("Unable to convert Unstructured to Deployment: %s", err)
+	}
+	want.Spec.Template.Spec.Containers[1].Resources.Limits = limits
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Error("Unexpected Deployment diff (-want +got): ", diff)
 	}
