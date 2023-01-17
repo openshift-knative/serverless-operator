@@ -7,19 +7,19 @@ import (
 	"testing"
 	"time"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"knative.dev/eventing-kafka/test/e2e/helpers"
-	"knative.dev/eventing/test/lib"
-	pkgTest "knative.dev/pkg/test"
+	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing-kafka/test/e2e/helpers"
 	"knative.dev/eventing/pkg/utils"
+	"knative.dev/eventing/test/lib"
 
 	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 	kafkasourcev1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
@@ -27,7 +27,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 )
 
 const (
@@ -67,7 +66,7 @@ func createCronJobObjV1Beta1(name, topic, server string) *batchv1beta1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo "%s" | bin/kafka-console-producer.sh --broker-list %s --topic %s`, helloWorldText, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
@@ -95,7 +94,7 @@ func createCronJobObjV1(name, topic, server string) *batchv1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo "%s" | bin/kafka-console-producer.sh --broker-list %s --topic %s`, helloWorldText, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
@@ -177,6 +176,8 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		t.Fatalf("Could not copy Secret: %s to test namespace: %s: %v", saslSecret, test.Namespace, err)
 	}
 
+	// The cronjob itself will use the default plain bootstrap server in all cases to send the events
+	cronJobBootstrapServer := plainBootstrapServer
 	tests := map[string]kafkabindingv1beta1.KafkaAuthSpec{
 		"plain": {
 			BootstrapServers: []string{plainBootstrapServer},
@@ -260,11 +261,9 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 	for name, tc := range tests {
 		name := name
+
 		// Setup a knative service
-		ksvc, err := test.WithServiceReady(client, helloWorldService+"-"+name, test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
-		if err != nil {
-			t.Fatalf("Knative Service(%s) not ready: %v", helloWorldService+"-"+name, err)
-		}
+		eventStore, ksvc := eventinge2e.DeployKsvcWithEventInfoStoreOrFail(client, t, test.Namespace, helloWorldService+"-"+name)
 
 		t.Logf("Knative service %s/%s is ready: %#v", ksvc.GetNamespace(), ksvc.GetName(), ksvc.Status)
 
@@ -306,19 +305,20 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 
 		// send event to kafka topic
 		if err := common.CheckMinimumKubeVersion(client.Clients.Kube.Discovery(), common.MinimumK8sAPIDeprecationVersion); err == nil {
-			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1(cronJobName+"-"+name, topicName, cronJobBootstrapServer)
 			_, err = client.Clients.Kube.BatchV1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		} else {
-			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, kafkaSource.Spec.BootstrapServers[0])
+			cj := createCronJobObjV1Beta1(cronJobName+"-"+name, topicName, cronJobBootstrapServer)
 			_, err = client.Clients.Kube.BatchV1beta1().CronJobs(test.Namespace).Create(context.Background(), cj, metav1.CreateOptions{})
 			if err != nil {
 				t.Fatalf("Unable to create batch cronjob(%s): %v", cj.GetName(), err)
 			}
 		}
-		servinge2e.WaitForRouteServingText(t, client, ksvc.Status.URL.URL(), helloWorldText)
+
+		eventinge2e.AssertPingSourceDataReceivedAtLeastOnce(eventStore)
 	}
 }
 
@@ -335,7 +335,7 @@ func deleteKafkaSource(client *test.Context, namespace string, name string) erro
 		return err
 	}
 
-	err = wait.Poll(time.Second, 2*test.Timeout, func() (done bool, err error) {
+	err = wait.Poll(time.Second, 5*test.Timeout, func() (done bool, err error) {
 		_, err = client.Clients.Kafka.SourcesV1beta1().KafkaSources(namespace).Get(ctx, name, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return true, nil

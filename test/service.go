@@ -15,6 +15,8 @@ import (
 	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 )
 
+type ServiceCfgFunc func(*servingv1.Service)
+
 func Service(name, namespace, image string, annotations map[string]string) *servingv1.Service {
 	s := &servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -66,11 +68,12 @@ func WithServiceReadyOrFail(ctx *Context, service *servingv1.Service) *servingv1
 	return service
 }
 
-func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
-	service, err := CreateService(ctx, name, namespace, image)
+func WithServiceReady(ctx *Context, name, namespace, image string, cfgFuncs ...ServiceCfgFunc) (*servingv1.Service, error) {
+	service, err := CreateService(ctx, name, namespace, image, cfgFuncs...)
 	if err != nil {
 		return nil, err
 	}
+
 	service, err = WaitForServiceState(ctx, service.Name, service.Namespace, IsServiceReady)
 	if err != nil {
 		return nil, err
@@ -78,8 +81,13 @@ func WithServiceReady(ctx *Context, name, namespace, image string) (*servingv1.S
 	return service, nil
 }
 
-func CreateService(ctx *Context, name, namespace, image string) (*servingv1.Service, error) {
-	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), Service(name, namespace, image, nil), metav1.CreateOptions{})
+func CreateService(ctx *Context, name, namespace, image string, cfgFuncs ...ServiceCfgFunc) (*servingv1.Service, error) {
+	service := Service(name, namespace, image, nil)
+	for _, f := range cfgFuncs {
+		f(service)
+	}
+
+	service, err := ctx.Clients.Serving.ServingV1().Services(namespace).Create(context.Background(), service, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
