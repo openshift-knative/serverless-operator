@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: curl
+  annotations:
+    sidecar.istio.io/inject: "true"
+  generateName: curl-
+spec:
+  shareProcessNamespace: true
+  containers:
+    - command:
+        - "/bin/sh"
+      args:
+        - "-c"
+        - "sleep 30; curl -X POST -v -H 'content-type: application/json' -H 'ce-specversion: 1.0' -H 'ce-source: my/curl/command' -H 'ce-type: my.demo.event' -H 'ce-id: 0815' -d '{\"name\":\"Bob\"}' https://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/br && pkill -f /usr/local/bin/pilot-agent"
+#        - "10;"
+#        - "curl"
+#        - -X
+#        - POST
+#        - -v
+#        - -H
+#        - 'content-type: application/json'
+#        - -H
+#        - 'ce-specversion: 1.0'
+#        - -H
+#        - 'ce-source: my/curl/command'
+#        - -H
+#        - 'ce-type: my.demo.event'
+#        - -H
+#        - 'ce-id: 0815'
+#        - -d
+#        - '{"name":"Bob"}'
+#        - https://kafka-broker-ingress.knative-eventing.svc.cluster.local/default/br
+      image: docker.io/curlimages/curl
+      name: curl
+      resources: { }
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
