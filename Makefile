@@ -132,7 +132,8 @@ test-upstream-e2e-mesh:
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
-	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true ./test/e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-kafka-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
