@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
+	corev1 "k8s.io/api/core/v1"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -89,10 +88,7 @@ func createBrokerFunc(t *testing.T, brokerClass string) func(client *test.Contex
 			ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
 			defer cancel()
 
-			pp := metav1.DeletePropagationForeground
-			err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{
-				PropagationPolicy: &pp,
-			})
+			err := client.Clients.Eventing.EventingV1().Brokers(test.Namespace).Delete(context.Background(), nativeKafkaBrokerName, metav1.DeleteOptions{})
 			if err != nil {
 				t.Fatal(err)
 			}
