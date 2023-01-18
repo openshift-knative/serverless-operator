@@ -3,9 +3,10 @@ package eventinge2e
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing/test/lib"
@@ -13,6 +14,8 @@ import (
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 const (
@@ -100,4 +103,17 @@ func AssertPingSourceDataReceivedAtLeastOnce(eventStore *recordevents.EventInfoS
 		}
 		return nil
 	})
+}
+
+func skipInFullMeshMode(t *testing.T) {
+	fmStr := os.Getenv("FULL_MESH")
+	if fmStr != "" {
+		fm, err := strconv.ParseBool(fmStr)
+		if err != nil {
+			t.Fatal("FULL_MESH", fmStr, err)
+		}
+		if fm {
+			t.Skip("Channel-based tests cannot run in service mesh mode for now")
+		}
+	}
 }
