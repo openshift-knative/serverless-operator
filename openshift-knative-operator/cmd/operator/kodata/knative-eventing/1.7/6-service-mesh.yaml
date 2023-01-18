@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: eventing-webhook
+  namespace: knative-eventing
+  labels:
+    app.kubernetes.io/component: eventing-webhook
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: eventing-webhook
+  ingress:
+    - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: imc-controller
+  namespace: knative-eventing
+  labels:
+    app.kubernetes.io/component: imc-controller
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: imc-controller
+  ingress:
+    - {}
