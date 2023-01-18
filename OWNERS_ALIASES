@@ -9,6 +9,7 @@ aliases:
   - nak3
   - openshift-cherrypick-robot
   - pierDipi
+  - ReToCode
   - rhuss
   - skonto
   serverless-reviewers:
@@ -21,5 +22,6 @@ aliases:
   - mgencur
   - nak3
   - pierDipi
+  - ReToCode
   - rhuss
   - skonto
