@@ -32,12 +32,5 @@ function upstream_knative_eventing_e2e {
 }
 
 function upstream_knative_eventing_service_mesh_e2e {
-  # TODO we need to create them in the serverless-tests namespace
-  # go_test_e2e -timeout=1h -parallel=20 ./test/rekt/... -run ^TestApiServerSource || return $?
-  # TODO we need to create them in the serverless-tests namespace
-  # go_test_e2e -timeout=1h -parallel=20 ./test/rekt/... -run ^TestContainerSource || return $?
-  go_test_e2e -timeout=1h -parallel=20 ./test/rekt/... -run ^TestPingSource || return $?
-  # TODO we need to create them in the serverless-tests namespace
-  # go_test_e2e -timeout=1h -parallel=20 ./test/rekt/... -run ^TestContainerSource || return $?
-  # go_test_e2e -timeout=1h -parallel=20 ./test/rekt/... -run ^TestSinkBinding || return $?
+  go_test_e2e -failfast -timeout=30m -parallel=12 ./test/eventinge2eservicemesh/...
 }
