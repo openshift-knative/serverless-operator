@@ -30,7 +30,10 @@ install-kafka:
 	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-kafka-with-mesh:
-	INSTALL_SERVING="false" INSTALL_KAFKA="true" FULL_MESH="true" ./hack/install.sh
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 
 install-strimzi:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
