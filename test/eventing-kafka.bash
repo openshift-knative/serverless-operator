@@ -62,14 +62,9 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   export SYSTEM_NAMESPACE="${EVENTING_NAMESPACE}"
 
-  if [[ $FULL_MESH == true ]]; then
-    # TODO: KafkaChannel doesn't work in the service mesh case, so we run only Kafka Broker conformance tests in this case (for now)
-    run_kafka_broker_conformance_tests
-  else
-    run_e2e_tests
-    run_conformance_tests
-    run_e2e_new_tests
-  fi
+  run_e2e_tests
+  run_conformance_tests
+  run_e2e_new_tests
 
   # Rollback setting Kafka as default Broker class
   oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"

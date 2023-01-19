@@ -76,9 +76,3 @@ find vendor -type f -name '*.sh' -exec chmod +x {} +
 
 # Apply patches
 git apply "${ROOT_DIR}"/hack/patches/*
-
-# Override reconciler-test image since we don't point to a reconciler-test fork it will have upstream code
-image_prefix="registry.ci.openshift.org/openshift/knative-eventing-kafka-broker"
-image_name="eventshub"
-image_tag=$(metadata.get dependencies.eventing)
-sed -i -e "s+\(.* image: \)\({{ \.image }}\)\(.*\)+\1${image_prefix}-test-${image_name}:${image_tag}+g" vendor/knative.dev/reconciler-test/pkg/eventshub/103-pod.yaml
