@@ -11,9 +11,8 @@ class ShowcaseKservice {
     this.name = ops.name || 'showcase'
     this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
     this.image = ops.image || {
-      // TODO(ksuszyns): SRVCOM-1235 donate those apps to openshift-knative
-      regular: 'quay.io/cardil/knative-serving-showcase:2-send-event',
-      updated: 'quay.io/cardil/knative-serving-showcase-js'
+      regular: 'quay.io/openshift-knative/showcase',
+      updated: 'quay.io/openshift-knative/showcase:js'
     }
   }
 
@@ -35,7 +34,8 @@ class ShowcaseKservice {
     cy.request(req).then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body).to.have.property('version')
-      expect(JSON.stringify(response.body)).to.include('knative-serving-showcase')
+      expect(response.body.group).to.include('openshift')
+      expect(response.body.artifact).to.eq('knative-showcase')
     })
   }
 
@@ -105,6 +105,19 @@ class ShowcaseKservice {
     })
   }
 
+  // FIXME: Delete after https://issues.redhat.com/browse/OCPBUGS-6685 is fixed.
+  deleteAppGroupViaKubectl() {
+    cy.log(`Delete app group ${this.app} using CLI`)
+    return new Cypress.Promise((resolve, _) => {
+      const cmd = `kubectl delete all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace} -o name`
+      cy.exec(cmd).then((result) => {
+        cy.log(result.stdout)
+        let out = result.stdout.trim()
+        resolve(out.length > 0)
+      })
+    })
+  }
+
   removeApp() {
     this.isServiceDeployed().then((deployed) => {
       if (deployed) {
@@ -136,7 +149,13 @@ class ShowcaseKservice {
     cy.get('input#form-input-resourceName-field')
       .type(this.app)
     cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
-    cy.contains('No resources found')
+    // FIXME: https://issues.redhat.com/browse/OCPBUGS-6685
+    //        Removal of the app sometimes leaves a image stream, making the UI
+    //        stale.
+    this.deleteAppGroupViaKubectl().then((deleted) => {
+      cy.get('div.pf-topology-content')
+        .contains('No resources found')
+    })
   }
 
   showServiceDetails(scrollTo = 'Location:') {
