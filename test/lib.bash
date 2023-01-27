@@ -189,6 +189,13 @@ function downstream_monitoring_e2e_tests {
 function downstream_kitchensink_e2e_tests {
   logger.info "Running Knative kitchensink tests"
 
+  # Create a secret for reconciler-test. The framework will copy this secret
+  # to newly created namespaces and link to default service account in the namespace.
+  if ! oc -n default get secret kn-test-image-pull-secret; then
+    oc -n openshift-config get secret pull-secret -o yaml | \
+      sed -e 's/name: .*/name: kn-test-image-pull-secret/' -e 's/namespace: .*/namespace: default/' | oc apply -f -
+  fi
+
   # Used by the tests to get common ConfigMaps like config-logging
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
