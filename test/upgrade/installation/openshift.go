@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -17,8 +18,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+const clusterVersionName = "version"
+
 func UpgradeOpenShift(ctx *test.Context) error {
-	const clusterVersionName = "version"
 	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -91,6 +93,14 @@ func IsClusterVersionWithImageReady(image string) ClusterVersionInStateFunc {
 		}
 		return false
 	}
+}
+
+func IsEUS(ctx *test.Context) (bool, error) {
+	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	return strings.Contains(clusterVersion.Spec.Channel, "eus"), nil
 }
 
 func UpgradeEUS(ctx *test.Context) error {

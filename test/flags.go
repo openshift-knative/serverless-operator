@@ -37,7 +37,6 @@ type FlagsStruct struct {
 	OpenShiftImage          string // Target OpenShift image for upgrades
 	UpgradeOpenShift        bool   // Whether to upgrade the OpenShift cluster
 	SkipServingPreUpgrade   bool   // Whether to skip Serving pre-upgrade tests
-	EUSUpgrade              bool   // Whether to upgrade from one EUS release to another EUS release
 }
 
 func initializeFlags() *FlagsStruct {
@@ -77,8 +76,6 @@ func initializeFlags() *FlagsStruct {
 		"Target OpenShift image for cluster upgrades, empty by default.")
 	flag.BoolVar(&f.UpgradeOpenShift, "upgradeopenshift", false,
 		"Whether to upgrade OpenShift cluster during upgrade tests.")
-	flag.BoolVar(&f.EUSUpgrade, "eusupgrade", false,
-		"Whether to upgrade from one EUS release to another EUS release.")
 	flag.BoolVar(&f.SkipServingPreUpgrade, "skipservingpreupgrade", false,
 		"Whether to skip Serving pre-upgrade tests during upgrade tests.")
 
