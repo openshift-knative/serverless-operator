@@ -23,6 +23,7 @@ import (
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
+
 	// Extensions
 	kafkaversioned "knative.dev/eventing-kafka/pkg/client/clientset/versioned"
 )
