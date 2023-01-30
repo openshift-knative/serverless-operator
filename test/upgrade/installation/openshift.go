@@ -103,6 +103,8 @@ func IsEUS(ctx *test.Context) (bool, error) {
 	return strings.Contains(clusterVersion.Spec.Channel, "eus"), nil
 }
 
+// UpgradeEUS follows guidelines from https://docs.openshift.com/container-platform/4.8/updating/preparing-eus-eus-upgrade.html
+// to upgrade OpenShift between two EUS versions.
 func UpgradeEUS(ctx *test.Context) error {
 	if updated, err := allMachineConfigPoolsUpdated(ctx); err != nil || !updated {
 		return fmt.Errorf("unable to proceed with upgrades: %w", err)
