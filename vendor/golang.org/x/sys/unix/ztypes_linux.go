@@ -3208,11 +3208,7 @@ const (
 	DEVLINK_ATTR_RATE_NODE_NAME                        = 0xa8
 	DEVLINK_ATTR_RATE_PARENT_NODE_NAME                 = 0xa9
 	DEVLINK_ATTR_REGION_MAX_SNAPSHOTS                  = 0xaa
-<<<<<<< HEAD
 	DEVLINK_ATTR_MAX                                   = 0xae
-=======
-	DEVLINK_ATTR_MAX                                   = 0xaa
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	DEVLINK_DPIPE_FIELD_MAPPING_TYPE_NONE              = 0x0
 	DEVLINK_DPIPE_FIELD_MAPPING_TYPE_IFINDEX           = 0x1
 	DEVLINK_DPIPE_MATCH_TYPE_FIELD_EXACT               = 0x0
@@ -4341,11 +4337,7 @@ const (
 	NL80211_ATTR_MAC_HINT                                   = 0xc8
 	NL80211_ATTR_MAC_MASK                                   = 0xd7
 	NL80211_ATTR_MAX_AP_ASSOC_STA                           = 0xca
-<<<<<<< HEAD
 	NL80211_ATTR_MAX                                        = 0x137
-=======
-	NL80211_ATTR_MAX                                        = 0x133
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	NL80211_ATTR_MAX_CRIT_PROT_DURATION                     = 0xb4
 	NL80211_ATTR_MAX_CSA_COUNTERS                           = 0xce
 	NL80211_ATTR_MAX_MATCH_SETS                             = 0x85
@@ -4571,11 +4563,7 @@ const (
 	NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY                     = 0x3
 	NL80211_BAND_IFTYPE_ATTR_HE_CAP_PPE                     = 0x5
 	NL80211_BAND_IFTYPE_ATTR_IFTYPES                        = 0x1
-<<<<<<< HEAD
 	NL80211_BAND_IFTYPE_ATTR_MAX                            = 0xb
-=======
-	NL80211_BAND_IFTYPE_ATTR_MAX                            = 0x7
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	NL80211_BAND_S1GHZ                                      = 0x4
 	NL80211_BITRATE_ATTR_2GHZ_SHORTPREAMBLE                 = 0x2
 	NL80211_BITRATE_ATTR_MAX                                = 0x2
@@ -4690,11 +4678,7 @@ const (
 	NL80211_CMD_LEAVE_IBSS                                  = 0x2c
 	NL80211_CMD_LEAVE_MESH                                  = 0x45
 	NL80211_CMD_LEAVE_OCB                                   = 0x6d
-<<<<<<< HEAD
 	NL80211_CMD_MAX                                         = 0x93
-=======
-	NL80211_CMD_MAX                                         = 0x92
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	NL80211_CMD_MICHAEL_MIC_FAILURE                         = 0x29
 	NL80211_CMD_NAN_MATCH                                   = 0x78
 	NL80211_CMD_NEW_BEACON                                  = 0xf
@@ -4917,11 +4901,7 @@ const (
 	NL80211_FREQUENCY_ATTR_GO_CONCURRENT                    = 0xf
 	NL80211_FREQUENCY_ATTR_INDOOR_ONLY                      = 0xe
 	NL80211_FREQUENCY_ATTR_IR_CONCURRENT                    = 0xf
-<<<<<<< HEAD
 	NL80211_FREQUENCY_ATTR_MAX                              = 0x1b
-=======
-	NL80211_FREQUENCY_ATTR_MAX                              = 0x19
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	NL80211_FREQUENCY_ATTR_MAX_TX_POWER                     = 0x6
 	NL80211_FREQUENCY_ATTR_NO_10MHZ                         = 0x11
 	NL80211_FREQUENCY_ATTR_NO_160MHZ                        = 0xc
@@ -5288,11 +5268,7 @@ const (
 	NL80211_RATE_INFO_HE_RU_ALLOC_52                        = 0x1
 	NL80211_RATE_INFO_HE_RU_ALLOC_996                       = 0x5
 	NL80211_RATE_INFO_HE_RU_ALLOC                           = 0x11
-<<<<<<< HEAD
 	NL80211_RATE_INFO_MAX                                   = 0x16
-=======
-	NL80211_RATE_INFO_MAX                                   = 0x11
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	NL80211_RATE_INFO_MCS                                   = 0x2
 	NL80211_RATE_INFO_SHORT_GI                              = 0x4
 	NL80211_RATE_INFO_VHT_MCS                               = 0x6
@@ -5589,7 +5565,6 @@ const (
 	NL80211_WPA_VERSION_2                                   = 0x2
 	NL80211_WPA_VERSION_3                                   = 0x4
 )
-<<<<<<< HEAD
 
 const (
 	FRA_UNSPEC             = 0x0
@@ -5632,5 +5607,3 @@ const (
 	AUDIT_NLGRP_NONE    = 0x0
 	AUDIT_NLGRP_READLOG = 0x1
 )
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)

@@ -18,11 +18,7 @@ include Makefile.common
 	./ttar -C $(dir $*) -x -f $*.ttar
 	touch $@
 
-<<<<<<< HEAD
 fixtures: testdata/fixtures/.unpacked
-=======
-fixtures: fixtures/.unpacked
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 update_fixtures:
 	rm -vf testdata/fixtures/.unpacked

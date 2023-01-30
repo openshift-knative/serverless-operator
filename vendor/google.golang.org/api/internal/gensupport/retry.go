@@ -5,14 +5,10 @@
 package gensupport
 
 import (
-<<<<<<< HEAD
 	"errors"
 	"io"
 	"net"
 	"strings"
-=======
-	"io"
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	"time"
 
 	"github.com/googleapis/gax-go/v2"
@@ -27,13 +23,8 @@ type Backoff interface {
 
 // These are declared as global variables so that tests can overwrite them.
 var (
-<<<<<<< HEAD
 	// Default per-chunk deadline for resumable uploads.
 	defaultRetryDeadline = 32 * time.Second
-=======
-	// Per-chunk deadline for resumable uploads.
-	retryDeadline = 32 * time.Second
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	// Default backoff timer.
 	backoff = func() Backoff {
 		return &gax.Backoff{Initial: 100 * time.Millisecond}
@@ -48,13 +39,10 @@ const (
 	// should be retried.
 	// https://cloud.google.com/storage/docs/json_api/v1/status-codes#standardcodes
 	statusTooManyRequests = 429
-<<<<<<< HEAD
 
 	// statusRequestTimeout is returned by the storage API if the
 	// upload connection was broken. The request should be retried.
 	statusRequestTimeout = 408
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 )
 
 // shouldRetry indicates whether an error is retryable for the purposes of this
@@ -65,11 +53,7 @@ func shouldRetry(status int, err error) bool {
 	if 500 <= status && status <= 599 {
 		return true
 	}
-<<<<<<< HEAD
 	if status == statusTooManyRequests || status == statusRequestTimeout {
-=======
-	if status == statusTooManyRequests {
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 		return true
 	}
 	if err == io.ErrUnexpectedEOF {
@@ -84,7 +68,6 @@ func shouldRetry(status int, err error) bool {
 			return true
 		}
 	}
-<<<<<<< HEAD
 	var opErr *net.OpError
 	if errors.As(err, &opErr) {
 		if strings.Contains(opErr.Error(), "use of closed network connection") {
@@ -93,8 +76,6 @@ func shouldRetry(status int, err error) bool {
 		}
 	}
 
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	// If Go 1.13 error unwrapping is available, use this to examine wrapped
 	// errors.
 	if err, ok := err.(interface{ Unwrap() error }); ok {

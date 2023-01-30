@@ -157,7 +157,6 @@ func (ResourceDescriptor_Style) EnumDescriptor() ([]byte, []int) {
 //
 // Example:
 //
-<<<<<<< HEAD
 //	message Topic {
 //	  // Indicates this message defines a resource schema.
 //	  // Declares the resource type in the format of {service}/{kind}.
@@ -173,30 +172,12 @@ func (ResourceDescriptor_Style) EnumDescriptor() ([]byte, []int) {
 //	resources:
 //	- type: "pubsub.googleapis.com/Topic"
 //	  pattern: "projects/{project}/topics/{topic}"
-=======
-//     message Topic {
-//       // Indicates this message defines a resource schema.
-//       // Declares the resource type in the format of {service}/{kind}.
-//       // For Kubernetes resources, the format is {api group}/{kind}.
-//       option (google.api.resource) = {
-//         type: "pubsub.googleapis.com/Topic"
-//         pattern: "projects/{project}/topics/{topic}"
-//       };
-//     }
-//
-// The ResourceDescriptor Yaml config will look like:
-//
-//     resources:
-//     - type: "pubsub.googleapis.com/Topic"
-//       pattern: "projects/{project}/topics/{topic}"
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 //
 // Sometimes, resources have multiple patterns, typically because they can
 // live under multiple parents.
 //
 // Example:
 //
-<<<<<<< HEAD
 //	message LogEntry {
 //	  option (google.api.resource) = {
 //	    type: "logging.googleapis.com/LogEntry"
@@ -215,26 +196,6 @@ func (ResourceDescriptor_Style) EnumDescriptor() ([]byte, []int) {
 //	  pattern: "folders/{folder}/logs/{log}"
 //	  pattern: "organizations/{organization}/logs/{log}"
 //	  pattern: "billingAccounts/{billing_account}/logs/{log}"
-=======
-//     message LogEntry {
-//       option (google.api.resource) = {
-//         type: "logging.googleapis.com/LogEntry"
-//         pattern: "projects/{project}/logs/{log}"
-//         pattern: "folders/{folder}/logs/{log}"
-//         pattern: "organizations/{organization}/logs/{log}"
-//         pattern: "billingAccounts/{billing_account}/logs/{log}"
-//       };
-//     }
-//
-// The ResourceDescriptor Yaml config will look like:
-//
-//     resources:
-//     - type: 'logging.googleapis.com/LogEntry'
-//       pattern: "projects/{project}/logs/{log}"
-//       pattern: "folders/{folder}/logs/{log}"
-//       pattern: "organizations/{organization}/logs/{log}"
-//       pattern: "billingAccounts/{billing_account}/logs/{log}"
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 type ResourceDescriptor struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -214,17 +214,8 @@ func RegisterChannel(c Channel, pid *Identifier, ref string) *Identifier {
 		pid:         parent,
 		trace:       &channelTrace{createdTime: time.Now(), events: make([]*TraceEvent, 0, getMaxTraceEntry())},
 	}
-<<<<<<< HEAD
 	db.get().addChannel(id, cn, isTopChannel, parent)
 	return newIdentifer(RefChannel, id, pid)
-=======
-	if pid == 0 {
-		db.get().addChannel(id, cn, true, pid)
-	} else {
-		db.get().addChannel(id, cn, false, pid)
-	}
-	return id
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // RegisterSubChannel registers the given subChannel c in the channelz database
@@ -251,13 +242,8 @@ func RegisterSubChannel(c Channel, pid *Identifier, ref string) (*Identifier, er
 		pid:     pid.Int(),
 		trace:   &channelTrace{createdTime: time.Now(), events: make([]*TraceEvent, 0, getMaxTraceEntry())},
 	}
-<<<<<<< HEAD
 	db.get().addSubChannel(id, sc, pid.Int())
 	return newIdentifer(RefSubChannel, id, pid), nil
-=======
-	db.get().addSubChannel(id, sc, pid)
-	return id
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // RegisterServer registers the given server s in channelz database. It returns
@@ -292,7 +278,6 @@ func RegisterListenSocket(s Socket, pid *Identifier, ref string) (*Identifier, e
 		return nil, errors.New("a ListenSocket's parent id cannot be 0")
 	}
 	id := idGen.genID()
-<<<<<<< HEAD
 	if !IsOn() {
 		return newIdentifer(RefListenSocket, id, pid), nil
 	}
@@ -300,11 +285,6 @@ func RegisterListenSocket(s Socket, pid *Identifier, ref string) (*Identifier, e
 	ls := &listenSocket{refName: ref, s: s, id: id, pid: pid.Int()}
 	db.get().addListenSocket(id, ls, pid.Int())
 	return newIdentifer(RefListenSocket, id, pid), nil
-=======
-	ls := &listenSocket{refName: ref, s: s, id: id, pid: pid}
-	db.get().addListenSocket(id, ls, pid)
-	return id
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // RegisterNormalSocket registers the given normal socket s in channelz database
@@ -318,7 +298,6 @@ func RegisterNormalSocket(s Socket, pid *Identifier, ref string) (*Identifier, e
 		return nil, errors.New("a NormalSocket's parent id cannot be 0")
 	}
 	id := idGen.genID()
-<<<<<<< HEAD
 	if !IsOn() {
 		return newIdentifer(RefNormalSocket, id, pid), nil
 	}
@@ -326,11 +305,6 @@ func RegisterNormalSocket(s Socket, pid *Identifier, ref string) (*Identifier, e
 	ns := &normalSocket{refName: ref, s: s, id: id, pid: pid.Int()}
 	db.get().addNormalSocket(id, ns, pid.Int())
 	return newIdentifer(RefNormalSocket, id, pid), nil
-=======
-	ns := &normalSocket{refName: ref, s: s, id: id, pid: pid}
-	db.get().addNormalSocket(id, ns, pid)
-	return id
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // RemoveEntry removes an entry with unique channelz tracking id to be id from

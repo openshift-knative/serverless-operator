@@ -11,14 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<<< HEAD:vendor/github.com/prometheus/procfs/cmdline.go
 package procfs
-========
-//go:build !go1.15
-// +build !go1.15
-
-package collectors
->>>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades):vendor/github.com/prometheus/client_golang/prometheus/collectors/dbstats_collector_pre_go115.go
 
 import (
 	"strings"

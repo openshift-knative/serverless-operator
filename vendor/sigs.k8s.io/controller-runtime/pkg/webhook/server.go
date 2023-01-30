@@ -34,7 +34,6 @@ import (
 	kscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/internal/httpserver"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
 )
@@ -143,7 +142,7 @@ func (s *Server) Register(path string, hook http.Handler) {
 	s.WebhookMux.Handle(path, metrics.InstrumentedHook(path, hook))
 
 	regLog := log.WithValues("path", path)
-	regLog.Info("Registering webhook")
+	regLog.Info("registering webhook")
 
 	// we've already been "started", inject dependencies here.
 	// Otherwise, InjectFunc will do this for us later.
@@ -211,7 +210,7 @@ func (s *Server) Start(ctx context.Context) error {
 	s.defaultingOnce.Do(s.setDefaults)
 
 	baseHookLog := log.WithName("webhooks")
-	baseHookLog.Info("Starting webhook server")
+	baseHookLog.Info("starting webhook server")
 
 	certPath := filepath.Join(s.CertDir, s.CertName)
 	keyPath := filepath.Join(s.CertDir, s.KeyName)
@@ -260,9 +259,11 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	log.Info("Serving webhook server", "host", s.Host, "port", s.Port)
+	log.Info("serving webhook server", "host", s.Host, "port", s.Port)
 
-	srv := httpserver.New(s.WebhookMux)
+	srv := &http.Server{
+		Handler: s.WebhookMux,
+	}
 
 	idleConnsClosed := make(chan struct{})
 	go func() {

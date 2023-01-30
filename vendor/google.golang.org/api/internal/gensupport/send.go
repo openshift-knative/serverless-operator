@@ -13,10 +13,7 @@ import (
 	"strings"
 	"time"
 
-<<<<<<< HEAD
 	"github.com/google/uuid"
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	"github.com/googleapis/gax-go/v2"
 )
 

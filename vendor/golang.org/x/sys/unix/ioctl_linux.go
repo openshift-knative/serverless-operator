@@ -215,7 +215,6 @@ func IoctlKCMAttach(fd int, info KCMAttach) error {
 func IoctlKCMUnattach(fd int, info KCMUnattach) error {
 	return ioctlPtr(fd, SIOCKCMUNATTACH, unsafe.Pointer(&info))
 }
-<<<<<<< HEAD
 
 // IoctlLoopGetStatus64 gets the status of the loop device associated with the
 // file descriptor fd using the LOOP_GET_STATUS64 operation.
@@ -232,5 +231,3 @@ func IoctlLoopGetStatus64(fd int) (*LoopInfo64, error) {
 func IoctlLoopSetStatus64(fd int, value *LoopInfo64) error {
 	return ioctlPtr(fd, LOOP_SET_STATUS64, unsafe.Pointer(value))
 }
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)

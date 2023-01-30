@@ -19,8 +19,4 @@
 package grpc
 
 // Version is the current grpc version.
-<<<<<<< HEAD
 const Version = "1.49.0"
-=======
-const Version = "1.43.0"
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)

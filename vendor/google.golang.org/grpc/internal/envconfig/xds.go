@@ -26,7 +26,6 @@ import (
 const (
 	// XDSBootstrapFileNameEnv is the env variable to set bootstrap file name.
 	// Do not use this and read from env directly. Its value is read and kept in
-<<<<<<< HEAD
 	// variable XDSBootstrapFileName.
 	//
 	// When both bootstrap FileName and FileContent are set, FileName is used.
@@ -34,15 +33,6 @@ const (
 	// XDSBootstrapFileContentEnv is the env variable to set bootstrap file
 	// content. Do not use this and read from env directly. Its value is read
 	// and kept in variable XDSBootstrapFileContent.
-=======
-	// variable BootstrapFileName.
-	//
-	// When both bootstrap FileName and FileContent are set, FileName is used.
-	XDSBootstrapFileNameEnv = "GRPC_XDS_BOOTSTRAP"
-	// XDSBootstrapFileContentEnv is the env variable to set bootstrapp file
-	// content. Do not use this and read from env directly. Its value is read
-	// and kept in variable BootstrapFileName.
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	//
 	// When both bootstrap FileName and FileContent are set, FileName is used.
 	XDSBootstrapFileContentEnv = "GRPC_XDS_BOOTSTRAP_CONFIG"
@@ -52,10 +42,7 @@ const (
 	aggregateAndDNSSupportEnv    = "GRPC_XDS_EXPERIMENTAL_ENABLE_AGGREGATE_AND_LOGICAL_DNS_CLUSTER"
 	rbacSupportEnv               = "GRPC_XDS_EXPERIMENTAL_RBAC"
 	federationEnv                = "GRPC_EXPERIMENTAL_XDS_FEDERATION"
-<<<<<<< HEAD
 	rlsInXDSEnv                  = "GRPC_EXPERIMENTAL_XDS_RLS_LB"
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 	c2pResolverTestOnlyTrafficDirectorURIEnv = "GRPC_TEST_ONLY_GOOGLE_C2P_RESOLVER_TRAFFIC_DIRECTOR_URI"
 )
@@ -89,17 +76,12 @@ var (
 	// environment variable
 	// "GRPC_XDS_EXPERIMENTAL_ENABLE_AGGREGATE_AND_LOGICAL_DNS_CLUSTER" to
 	// "true".
-<<<<<<< HEAD
 	XDSAggregateAndDNS = !strings.EqualFold(os.Getenv(aggregateAndDNSSupportEnv), "false")
-=======
-	XDSAggregateAndDNS = strings.EqualFold(os.Getenv(aggregateAndDNSSupportEnv), "true")
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 
 	// XDSRBAC indicates whether xDS configured RBAC HTTP Filter is enabled,
 	// which can be disabled by setting the environment variable
 	// "GRPC_XDS_EXPERIMENTAL_RBAC" to "false".
 	XDSRBAC = !strings.EqualFold(os.Getenv(rbacSupportEnv), "false")
-<<<<<<< HEAD
 	// XDSOutlierDetection indicates whether outlier detection support is
 	// enabled, which can be enabled by setting the environment variable
 	// "GRPC_EXPERIMENTAL_ENABLE_OUTLIER_DETECTION" to "true".
@@ -113,12 +95,6 @@ var (
 	// "true".
 	XDSRLS = strings.EqualFold(os.Getenv(rlsInXDSEnv), "true")
 
-=======
-
-	// XDSFederation indicates whether federation support is enabled.
-	XDSFederation = strings.EqualFold(os.Getenv(federationEnv), "true")
-
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	// C2PResolverTestOnlyTrafficDirectorURI is the TD URI for testing.
 	C2PResolverTestOnlyTrafficDirectorURI = os.Getenv(c2pResolverTestOnlyTrafficDirectorURIEnv)
 )

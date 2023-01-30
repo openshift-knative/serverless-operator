@@ -13,7 +13,6 @@
 
 package promhttp
 
-<<<<<<< HEAD
 import (
 	"context"
 
@@ -39,21 +38,11 @@ type optionApplyFunc func(*options)
 
 func (o optionApplyFunc) apply(opt *options) { o(opt) }
 
-=======
-// Option are used to configure a middleware or round tripper..
-type Option func(*option)
-
-type option struct {
-	extraMethods []string
-}
-
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 // WithExtraMethods adds additional HTTP methods to the list of allowed methods.
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods for the default list.
 //
 // See the example for ExampleInstrumentHandlerWithExtraMethods for example usage.
 func WithExtraMethods(methods ...string) Option {
-<<<<<<< HEAD
 	return optionApplyFunc(func(o *options) {
 		o.extraMethods = methods
 	})
@@ -66,9 +55,4 @@ func WithExemplarFromContext(getExemplarFn func(requestCtx context.Context) prom
 	return optionApplyFunc(func(o *options) {
 		o.getExemplarFn = getExemplarFn
 	})
-=======
-	return func(o *option) {
-		o.extraMethods = methods
-	}
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }

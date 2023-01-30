@@ -603,8 +603,7 @@ func (g openAPITypeWriter) generateDescription(CommentLines []string) {
 		}
 	}
 
-	postDoc := strings.TrimLeft(buffer.String(), "\n")
-	postDoc = strings.TrimRight(postDoc, "\n")
+	postDoc := strings.TrimRight(buffer.String(), "\n")
 	postDoc = strings.Replace(postDoc, "\\\"", "\"", -1) // replace user's \" to "
 	postDoc = strings.Replace(postDoc, "\"", "\\\"", -1) // Escape "
 	postDoc = strings.Replace(postDoc, "\n", "\\n", -1)

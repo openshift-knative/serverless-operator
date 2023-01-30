@@ -53,15 +53,7 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-<<<<<<< HEAD
 	return swag.ConcatJSON(b1, b2, b3), nil
-=======
-	b4, err := json.Marshal(h.VendorExtensible)
-	if err != nil {
-		return nil, err
-	}
-	return swag.ConcatJSON(b1, b2, b3, b4), nil
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // UnmarshalJSON unmarshals this header from JSON

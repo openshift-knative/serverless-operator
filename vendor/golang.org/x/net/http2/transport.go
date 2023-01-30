@@ -758,12 +758,8 @@ func (cc *ClientConn) healthCheck() {
 	if err != nil {
 		cc.vlogf("http2: Transport health check failure: %v", err)
 		cc.closeForLostPing()
-<<<<<<< HEAD
 	} else {
 		cc.vlogf("http2: Transport health check success")
-=======
-		return
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 }
 
@@ -943,17 +939,10 @@ func (cc *ClientConn) onIdleTimeout() {
 	cc.closeIfIdle()
 }
 
-<<<<<<< HEAD
 func (cc *ClientConn) closeConn() {
 	t := time.AfterFunc(250*time.Millisecond, cc.forceCloseConn)
 	defer t.Stop()
 	cc.tconn.Close()
-=======
-func (cc *ClientConn) closeConn() error {
-	t := time.AfterFunc(250*time.Millisecond, cc.forceCloseConn)
-	defer t.Stop()
-	return cc.tconn.Close()
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // A tls.Conn.Close can hang for a long time if the peer is unresponsive.
@@ -1019,12 +1008,8 @@ func (cc *ClientConn) Shutdown(ctx context.Context) error {
 	shutdownEnterWaitStateHook()
 	select {
 	case <-done:
-<<<<<<< HEAD
 		cc.closeConn()
 		return nil
-=======
-		return cc.closeConn()
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	case <-ctx.Done():
 		cc.mu.Lock()
 		// Free the goroutine above
@@ -1074,14 +1059,10 @@ func (cc *ClientConn) closeForError(err error) {
 	}
 	cc.cond.Broadcast()
 	cc.mu.Unlock()
-<<<<<<< HEAD
 	for _, reqBody := range reqBodiesToClose {
 		reqBody.Close()
 	}
 	cc.closeConn()
-=======
-	return cc.closeConn()
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 }
 
 // Close closes the client connection immediately.

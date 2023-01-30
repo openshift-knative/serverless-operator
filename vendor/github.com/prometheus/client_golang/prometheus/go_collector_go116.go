@@ -40,7 +40,6 @@ type goCollector struct {
 //
 // Deprecated: Use collectors.NewGoCollector instead.
 func NewGoCollector() Collector {
-<<<<<<< HEAD
 	msMetrics := goRuntimeMemStats()
 	msMetrics = append(msMetrics, struct {
 		desc    *Desc
@@ -56,19 +55,13 @@ func NewGoCollector() Collector {
 		eval:    func(ms *runtime.MemStats) float64 { return ms.GCCPUFraction },
 		valType: GaugeValue,
 	})
-=======
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	return &goCollector{
 		base:      newBaseGoCollector(),
 		msLast:    &runtime.MemStats{},
 		msRead:    runtime.ReadMemStats,
 		msMaxWait: time.Second,
 		msMaxAge:  5 * time.Minute,
-<<<<<<< HEAD
 		msMetrics: msMetrics,
-=======
-		msMetrics: goRuntimeMemStats(),
->>>>>>> 081960ee5 (Tests for EUS-to-EUS OpenShift upgrades)
 	}
 }
 
