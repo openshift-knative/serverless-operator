@@ -95,7 +95,7 @@ func IsClusterVersionWithImageReady(image string) ClusterVersionInStateFunc {
 	}
 }
 
-func IsEUS(ctx *test.Context) (bool, error) {
+func IsChannelEUS(ctx *test.Context) (bool, error) {
 	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
 	if err != nil {
 		return false, err

@@ -110,7 +110,7 @@ func TestClusterUpgrade(t *testing.T) {
 			UpgradeWith: []pkgupgrade.Operation{
 				pkgupgrade.NewOperation("OpenShift Upgrade", func(c pkgupgrade.Context) {
 					upgradeFunc := installation.UpgradeOpenShift
-					eus, err := installation.IsEUS()
+					eus, err := installation.IsChannelEUS()
 					if err != nil {
 						c.T.Error("Unable to detect EUS upgrade:", err)
 					}
