@@ -1442,12 +1442,12 @@ github.com/opencontainers/selinux v1.6.0/go.mod h1:VVGKuOLlE7v4PJyT6h7mNWvq1rzqi
 github.com/opencontainers/selinux v1.8.0/go.mod h1:RScLhm78qiWa2gbVCcGkC7tCGdgk3ogry1nUQF8Evvo=
 github.com/opencontainers/selinux v1.8.2/go.mod h1:MUIHuUEvKB1wtJjQdOyYRgOnLD2xAPP8dBsCoU0KuF8=
 github.com/opencontainers/selinux v1.10.0/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuho1lHsJxIJ3gGbJI=
-github.com/openshift-knative/eventing v0.99.1-0.20221208103831-67c3ebda00db h1:uNru4e60MZPwb5rQ0jIm2lgET24uMhDpn5lJWbh3aTg=
-github.com/openshift-knative/eventing v0.99.1-0.20221208103831-67c3ebda00db/go.mod h1:rxI/ijzHbAYenRZpGapYlJHwGEfdUcWjJh4N1bP9+zQ=
+github.com/openshift-knative/eventing v0.99.1-0.20230130094656-e11701ad855c h1:kcwHj8F0GO2QZbqv9qJKRoOIO550frCVIw07tCCWgJ8=
+github.com/openshift-knative/eventing v0.99.1-0.20230130094656-e11701ad855c/go.mod h1:rxI/ijzHbAYenRZpGapYlJHwGEfdUcWjJh4N1bP9+zQ=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca h1:yXBHJxnGSpuE2EmpmEhEOwQFw5cJmgbW/o0zIfZMKb4=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221109100552-26eea5293bca/go.mod h1:RZ/b/xO0sEPL0it4Xm0kSbrhATdsND1WVQq5AcHi7ro=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230107084457-319b600560cd h1:HR6u4bFngzrZt6dTHqVo5gelfI+oCJTG7Tv/pKQPJPg=
-github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230107084457-319b600560cd/go.mod h1:Kod8wexuKfcKm6le7W7ZgSUnvL4AvQuls8c/TWksOXE=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230127115120-3f520bb27b43 h1:YIcIX/lRlNn3HjjzlJ0vOrxGaorq4RJcMBq4pL/wid4=
+github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230127115120-3f520bb27b43/go.mod h1:Kod8wexuKfcKm6le7W7ZgSUnvL4AvQuls8c/TWksOXE=
 github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49 h1:g+6FsQ/Yhvg4XL2LZzi8xQ2mHZY5E3xiCc3BP0IrxJg=
 github.com/openshift-knative/serving v0.10.1-0.20221116115404-cef28ae09f49/go.mod h1:6tBCyhVH14YTDfHQMMeF1gP0oLp3tkjHU2cBeZ6oZP4=
 github.com/openshift/api v0.0.0-20200326152221-912866ddb162/go.mod h1:RKMJ5CBnljLfnej+BJ/xnOWc3kZDvJUaIAEq2oKSPtE=
