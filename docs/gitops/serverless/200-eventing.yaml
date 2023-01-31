@@ -4,6 +4,9 @@ metadata:
   name: knative-eventing
   labels:
     argocd.argoproj.io/managed-by: openshift-gitops
+    knative.openshift.io/part-of: openshift-serverless
+    app.kubernetes.io/name: knative-eventing
+    app.kubernetes.io/instance: openshift-serverless
   annotations:
     argocd.argoproj.io/sync-wave: "4"
 

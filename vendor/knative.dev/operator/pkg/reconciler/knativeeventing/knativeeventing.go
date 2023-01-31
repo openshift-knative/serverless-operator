@@ -26,7 +26,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing"
@@ -107,7 +106,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		return err
 	}
 	stages := common.Stages{
-		common.FilterNamespace("knative-eventing"),
 		common.AppendTarget,
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
