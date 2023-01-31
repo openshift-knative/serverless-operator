@@ -18,3 +18,15 @@ index b9a7c36de..e39f12f73 100644
  // ManifestFetcher returns a manifest appropriate for the instance
  type ManifestFetcher func(ctx context.Context, instance base.KComponent) (*mf.Manifest, error)
  
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+index 25f284267..be80c4138 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+@@ -113,6 +113,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
+ 		common.AppendAdditionalManifests,
+ 		r.appendExtensionManifests,
+ 		r.transform,
++		common.FilterNamespace("knative-eventing"),
+ 		common.Install,
+ 		common.CheckDeployments,
+ 		common.DeleteObsoleteResources(ctx, ke, r.installed),
