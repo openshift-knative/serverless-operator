@@ -8,8 +8,9 @@ require (
 	github.com/jaegertracing/jaeger v1.33.0
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.1
-	github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
-	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
+	github.com/openshift/api v0.0.0-20220110171111-997c316db5e1
+	github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
+	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
 	github.com/operator-framework/api v0.8.1
 	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210607005641-f05ea078ab46
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.49.0
@@ -126,6 +127,7 @@ require (
 	github.com/rickb777/date v1.14.1 // indirect
 	github.com/rickb777/plural v1.2.2 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tsenart/vegeta/v12 v12.8.4 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect

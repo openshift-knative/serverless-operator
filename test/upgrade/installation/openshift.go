@@ -4,17 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	machineconfigv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/blang/semver/v4"
 	configv1 "github.com/openshift/api/config/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+const clusterVersionName = "version"
+
 func UpgradeOpenShift(ctx *test.Context) error {
-	const clusterVersionName = "version"
 	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -31,7 +37,15 @@ func UpgradeOpenShift(ctx *test.Context) error {
 		desiredRelease := clusterVersion.Status.Desired
 		// Choose the highest version as the list can be unordered.
 		for _, update := range clusterVersion.Status.AvailableUpdates {
-			if update.Version > desiredRelease.Version {
+			updateVersion, err := semver.ParseTolerant(update.Version)
+			if err != nil {
+				return err
+			}
+			desiredVersion, err := semver.ParseTolerant(desiredRelease.Version)
+			if err != nil {
+				return err
+			}
+			if updateVersion.GT(desiredVersion) {
 				desiredRelease = update
 			}
 		}
@@ -87,4 +101,80 @@ func IsClusterVersionWithImageReady(image string) ClusterVersionInStateFunc {
 		}
 		return false
 	}
+}
+
+func IsChannelEUS(ctx *test.Context) (bool, error) {
+	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	return strings.Contains(clusterVersion.Spec.Channel, "eus"), nil
+}
+
+// UpgradeEUS follows guidelines from https://docs.openshift.com/container-platform/4.8/updating/preparing-eus-eus-upgrade.html
+// to upgrade OpenShift between two EUS versions.
+func UpgradeEUS(ctx *test.Context) error {
+	if updated, err := allMachineConfigPoolsUpdated(ctx); err != nil || !updated {
+		return fmt.Errorf("unable to proceed with upgrades: %w", err)
+	}
+
+	pauseMachineConfigPool(ctx, true)
+
+	// Calling UpgradeOpenShift twice to upgrade from one EUS release to another EUS release.
+	if err := UpgradeOpenShift(ctx); err != nil {
+		return fmt.Errorf("failed to upgrade to odd OpenShift release: %w", err)
+	}
+
+	if err := UpgradeOpenShift(ctx); err != nil {
+		return fmt.Errorf("failed to upgrade to even OpenShift release: %w", err)
+	}
+
+	pauseMachineConfigPool(ctx, false)
+
+	if err := wait.PollImmediate(30*time.Second, 3*time.Hour, func() (bool, error) {
+		return allMachineConfigPoolsUpdated(ctx)
+	}); err != nil {
+		return fmt.Errorf("machineconfig pools not updated: %w", err)
+	}
+
+	return nil
+}
+
+func allMachineConfigPoolsUpdated(ctx *test.Context) (bool, error) {
+	poolList, err := ctx.Clients.MachineConfigPool.MachineconfigurationV1().
+		MachineConfigPools().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return false, fmt.Errorf("unable to list machineconfig pools: %w", err)
+	}
+	for _, mcp := range poolList.Items {
+		if !isMachineConfigPoolUpdated(mcp) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func isMachineConfigPoolUpdated(mcp machineconfigv1.MachineConfigPool) bool {
+	updated := false
+	for _, cond := range mcp.Status.Conditions {
+		if cond.Type == machineconfigv1.MachineConfigPoolUpdated &&
+			cond.Status == corev1.ConditionTrue {
+			updated = true
+		}
+	}
+	return updated
+}
+
+func pauseMachineConfigPool(ctx *test.Context, pause bool) error {
+	if _, err := ctx.Clients.Dynamic.
+		Resource(machineconfigv1.GroupVersion.WithResource("machineconfigpool")).
+		Patch(context.Background(),
+			"worker",
+			types.MergePatchType,
+			[]byte(fmt.Sprintf(`{"spec":{"paused": %t}}`, pause)),
+			metav1.PatchOptions{},
+		); err != nil {
+		return err
+	}
+	return nil
 }

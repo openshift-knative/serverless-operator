@@ -1240,6 +1240,133 @@ func (w *wrapConfigV1ImageImpl) Watch(ctx context.Context, opts metav1.ListOptio
 	return nil, errors.New("NYI: Watch")
 }
 
+func (w *wrapConfigV1) ImageContentPolicies() typedconfigv1.ImageContentPolicyInterface {
+	return &wrapConfigV1ImageContentPolicyImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "config.openshift.io",
+			Version:  "v1",
+			Resource: "imagecontentpolicies",
+		}),
+	}
+}
+
+type wrapConfigV1ImageContentPolicyImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+}
+
+var _ typedconfigv1.ImageContentPolicyInterface = (*wrapConfigV1ImageContentPolicyImpl)(nil)
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Create(ctx context.Context, in *v1.ImageContentPolicy, opts metav1.CreateOptions) (*v1.ImageContentPolicy, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageContentPolicy",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicy{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
+	return w.dyn.Delete(ctx, name, opts)
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
+	return w.dyn.DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.ImageContentPolicy, error) {
+	uo, err := w.dyn.Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicy{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) List(ctx context.Context, opts metav1.ListOptions) (*v1.ImageContentPolicyList, error) {
+	uo, err := w.dyn.List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicyList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ImageContentPolicy, err error) {
+	uo, err := w.dyn.Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicy{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Update(ctx context.Context, in *v1.ImageContentPolicy, opts metav1.UpdateOptions) (*v1.ImageContentPolicy, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageContentPolicy",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicy{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) UpdateStatus(ctx context.Context, in *v1.ImageContentPolicy, opts metav1.UpdateOptions) (*v1.ImageContentPolicy, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageContentPolicy",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageContentPolicy{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageContentPolicyImpl) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
 func (w *wrapConfigV1) Infrastructures() typedconfigv1.InfrastructureInterface {
 	return &wrapConfigV1InfrastructureImpl{
 		dyn: w.dyn.Resource(schema.GroupVersionResource{

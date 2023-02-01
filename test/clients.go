@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	machineconfig "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned"
 	eventingversioned "knative.dev/eventing/pkg/client/clientset/versioned"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
@@ -50,6 +51,7 @@ type Clients struct {
 	MonitoringClient   monclientv1.MonitoringV1Interface
 	Kafka              *kafkaversioned.Clientset
 	APIExtensionClient *apiextension.Clientset
+	MachineConfigPool  *machineconfig.Clientset
 }
 
 // CleanupFunc defines a function that is called when the respective resource
@@ -143,6 +145,10 @@ func NewClients(kubeconfig string) (*Clients, error) {
 		return nil, err
 	}
 
+	clients.MachineConfigPool = machineconfig.NewForConfigOrDie(cfg)
+	if err != nil {
+		return nil, err
+	}
 	clients.ConsoleCLIDownload = consolev1.NewForConfigOrDie(cfg).ConsoleCLIDownloads()
 
 	clients.MonitoringClient = monclientv1.NewForConfigOrDie(cfg)

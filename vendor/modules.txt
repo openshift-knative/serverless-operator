@@ -335,20 +335,26 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
-# github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
-## explicit; go 1.15
+# github.com/openshift/api v0.0.0-20220110171111-997c316db5e1
+## explicit; go 1.16
 github.com/openshift/api/config/v1
 github.com/openshift/api/console/v1
 github.com/openshift/api/console/v1alpha1
 github.com/openshift/api/route/v1
-# github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
-## explicit; go 1.13
+# github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
+## explicit; go 1.16
 github.com/openshift/client-go/config/clientset/versioned/scheme
 github.com/openshift/client-go/config/clientset/versioned/typed/config/v1
 github.com/openshift/client-go/console/clientset/versioned/scheme
 github.com/openshift/client-go/console/clientset/versioned/typed/console/v1
 github.com/openshift/client-go/route/clientset/versioned/scheme
 github.com/openshift/client-go/route/clientset/versioned/typed/route/v1
+# github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
+## explicit; go 1.17
+github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1
+github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned
+github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/scheme
+github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit; go 1.14
 github.com/opentracing/opentracing-go
@@ -442,6 +448,8 @@ github.com/rickb777/plural
 # github.com/robfig/cron/v3 v3.0.1
 ## explicit; go 1.12
 github.com/robfig/cron/v3
+# github.com/rogpeppe/go-internal v1.8.1
+## explicit; go 1.16
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
