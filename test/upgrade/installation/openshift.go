@@ -120,6 +120,7 @@ func UpgradeEUS(ctx *test.Context) error {
 
 	pauseMachineConfigPool(ctx, true)
 
+	// Calling UpgradeOpenShift twice to upgrade from one EUS release to another EUS release.
 	if err := UpgradeOpenShift(ctx); err != nil {
 		return fmt.Errorf("failed to upgrade to odd OpenShift release: %w", err)
 	}
