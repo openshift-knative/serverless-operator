@@ -12,8 +12,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/blang/semver/v4"
 	configv1 "github.com/openshift/api/config/v1"
-	"golang.org/x/mod/semver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -37,7 +37,15 @@ func UpgradeOpenShift(ctx *test.Context) error {
 		desiredRelease := clusterVersion.Status.Desired
 		// Choose the highest version as the list can be unordered.
 		for _, update := range clusterVersion.Status.AvailableUpdates {
-			if semver.Compare("v"+update.Version, "v"+desiredRelease.Version) == 1 {
+			updateVersion, err := semver.ParseTolerant(update.Version)
+			if err != nil {
+				return err
+			}
+			desiredVersion, err := semver.ParseTolerant(desiredRelease.Version)
+			if err != nil {
+				return err
+			}
+			if updateVersion.GT(desiredVersion) {
 				desiredRelease = update
 			}
 		}
