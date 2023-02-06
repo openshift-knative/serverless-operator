@@ -84,18 +84,5 @@ func configIfUnsetAndCheckIfShouldInject(comp *operatorv1beta1.KnativeServing, d
 				corev1.EnvVar{Name: EnableSecretInformerFilteringByCertUIDEnv, Value: v})
 		}
 	}
-
-	// If nothing is set enable by default via overriding the env variable for the deployment
-	comp.Spec.DeploymentOverride = append(comp.Spec.DeploymentOverride, base.WorkloadOverride{
-		Name: deployment,
-		Env: []base.EnvRequirementsOverride{
-			{
-				Container: container,
-				EnvVars: []corev1.EnvVar{{
-					Name:  EnableSecretInformerFilteringByCertUIDEnv,
-					Value: "true",
-				}},
-			}},
-	})
-	return true, nil
+	return false, nil
 }

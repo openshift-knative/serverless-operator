@@ -16,7 +16,7 @@ func TestSecretInformerFitleringOverride(t *testing.T) {
 		expected               *operatorv1beta1.KnativeServing
 		shouldAddLabelToSecret bool
 	}{{
-		name: "default overrides, enabled secret filtering, with kourier enabled",
+		name: "by default no overrides, disabled secret filtering, with kourier enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
@@ -26,21 +26,10 @@ func TestSecretInformerFitleringOverride(t *testing.T) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
 			}}
-			ks.Spec.DeploymentOverride = append(ks.Spec.DeploymentOverride, base.WorkloadOverride{
-				Name: "net-kourier-controller",
-				Env: []base.EnvRequirementsOverride{
-					{
-						Container: "controller",
-						EnvVars: []corev1.EnvVar{{
-							Name:  EnableSecretInformerFilteringByCertUIDEnv,
-							Value: "true",
-						}},
-					}},
-			})
 		}),
-		shouldAddLabelToSecret: true,
+		shouldAddLabelToSecret: false,
 	}, {
-		name: "default overrides, enabled secret filtering, with istio enabled",
+		name: "by default no overrides, disabled secret filtering, with istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
@@ -50,21 +39,10 @@ func TestSecretInformerFitleringOverride(t *testing.T) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
 			}}
-			ks.Spec.DeploymentOverride = append(ks.Spec.DeploymentOverride, base.WorkloadOverride{
-				Name: "net-istio-controller",
-				Env: []base.EnvRequirementsOverride{
-					{
-						Container: "controller",
-						EnvVars: []corev1.EnvVar{{
-							Name:  EnableSecretInformerFilteringByCertUIDEnv,
-							Value: "true",
-						}},
-					}},
-			})
 		}),
-		shouldAddLabelToSecret: true,
+		shouldAddLabelToSecret: false,
 	}, {
-		name: "no default overrides, deprecated annotation set to true, enabled secret filtering, istio enabled",
+		name: "by default no overrides, deprecated annotation set to true, enabled secret filtering, istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
@@ -80,34 +58,23 @@ func TestSecretInformerFitleringOverride(t *testing.T) {
 		}),
 		shouldAddLabelToSecret: true,
 	}, {
-		name: "no default overrides, istio deprecated annotation set to false but has no effect, enabled secret filtering, kourier enabled",
+		name: "by default no overrides, istio deprecated annotation set to true but has no effect, disabled secret filtering, kourier enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
 			}}
 			ks.Annotations = map[string]string{}
-			ks.Annotations = map[string]string{secretInformerFilteringAnnotation: "false"}
+			ks.Annotations = map[string]string{secretInformerFilteringAnnotation: "true"}
 		}),
 		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
 			}}
-			ks.Annotations = map[string]string{secretInformerFilteringAnnotation: "false"}
-			ks.Spec.DeploymentOverride = append(ks.Spec.DeploymentOverride, base.WorkloadOverride{
-				Name: "net-kourier-controller",
-				Env: []base.EnvRequirementsOverride{
-					{
-						Container: "controller",
-						EnvVars: []corev1.EnvVar{{
-							Name:  EnableSecretInformerFilteringByCertUIDEnv,
-							Value: "true",
-						}},
-					}},
-			})
+			ks.Annotations = map[string]string{secretInformerFilteringAnnotation: "true"}
 		}),
 		shouldAddLabelToSecret: false,
 	}, {
-		name: "no default overrides, deprecated annotation set to false, disabled secret filtering, istio enabled",
+		name: "by default no overrides, istio deprecated annotation set to false, disabled secret filtering, istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
@@ -122,7 +89,7 @@ func TestSecretInformerFitleringOverride(t *testing.T) {
 		}),
 		shouldAddLabelToSecret: false,
 	}, {
-		name: "no default overrides, deprecated annotation value with bad string, disabled secret filtering, istio enabled",
+		name: "by default no overrides, istio deprecated annotation value with bad string, disabled secret filtering, istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
