@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	mf "github.com/manifestival/manifestival"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/networking/pkg/apis/networking"
@@ -12,21 +13,28 @@ import (
 )
 
 const (
-	// TODO: remove when available in knative.dev/networking/config
+	// TODO: Remove when available in knative.dev/networking/config
 	ServingInternalCertName = "knative-serving-certs"
 	// TODO: Maybe decide to fetch from net-kourier deps instead
 	EnableSecretInformerFilteringByCertUIDEnv = "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID"
+	// TODO: Annotation is deprecated, remove in future releases
+	secretInformerFilteringAnnotation = "serverless.openshift.io/enable-secret-informer-filtering"
 )
 
-func enableSecretInformerFiltering(ks base.KComponent) mf.Transformer {
+func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transformer {
 	shouldInject := false
-	for _, dep := range []string{"net-istio-controller", "net-kourier-controller"} {
-		if configIfUnsetAndCheckIfShouldInject(ks, dep, "controller") {
-			shouldInject = true
-		}
+	var tf mf.Transformer
+	comp := ks.(*operatorv1beta1.KnativeServing)
+
+	// This works because the Knative operator runs extension reconcile before the manifest transformation
+	if comp.Spec.Ingress.Istio.Enabled {
+		shouldInject, tf = configIfUnsetAndCheckIfShouldInject(comp, "net-istio-controller", "controller")
+	}
+	if comp.Spec.Ingress.Kourier.Enabled {
+		shouldInject, _ = configIfUnsetAndCheckIfShouldInject(comp, "net-kourier-controller", "controller")
 	}
 	if shouldInject {
-		return injectLabelIntoInternalEncryptionSecret()
+		return []mf.Transformer{injectLabelIntoInternalEncryptionSecret(), tf}
 	}
 	return nil
 }
@@ -47,9 +55,8 @@ func injectLabelIntoInternalEncryptionSecret() mf.Transformer {
 }
 
 // Adds default (true) to env vars for secret informer filtering in net-* deployments and returns if we should inject
-// metadata to other resources eg. label to secrets
-func configIfUnsetAndCheckIfShouldInject(ks base.KComponent, deployment string, container string) bool {
-	comp := ks.(*operatorv1beta1.KnativeServing)
+// metadata to other resources eg. label to secrets, keeps the deprecated Istio annotation
+func configIfUnsetAndCheckIfShouldInject(comp *operatorv1beta1.KnativeServing, deployment string, container string) (bool, mf.Transformer) {
 	for _, o := range comp.Spec.GetWorkloadOverrides() {
 		if o.Name == deployment {
 			for _, env := range o.Env {
@@ -57,25 +64,25 @@ func configIfUnsetAndCheckIfShouldInject(ks base.KComponent, deployment string, 
 					for _, envVar := range env.EnvVars {
 						if envVar.Name == EnableSecretInformerFilteringByCertUIDEnv {
 							if b, err := strconv.ParseBool(envVar.Value); err == nil {
-								return b
+								return b, nil
 							}
-							return false
+							return false, nil
 						}
 					}
 				}
 			}
 		}
 	}
-	comp.Spec.DeploymentOverride = append(comp.Spec.DeploymentOverride, base.WorkloadOverride{
-		Name: deployment,
-		Env: []base.EnvRequirementsOverride{
-			{
-				Container: container,
-				EnvVars: []corev1.EnvVar{{
-					Name:  EnableSecretInformerFilteringByCertUIDEnv,
-					Value: "true",
-				}},
-			}},
-	})
-	return true
+
+	// The annotation is deprecated
+	// TODO: Remove this block in future releases
+	if deployment == "net-istio-controller" {
+		if v, ok := comp.GetAnnotations()[secretInformerFilteringAnnotation]; ok {
+			b, _ := strconv.ParseBool(v)
+			// Keep the same behavior as in 1.27
+			return b, common.InjectEnvironmentIntoDeployment("net-istio-controller", "controller",
+				corev1.EnvVar{Name: EnableSecretInformerFilteringByCertUIDEnv, Value: v})
+		}
+	}
+	return false, nil
 }
