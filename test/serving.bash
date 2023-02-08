@@ -108,7 +108,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
   # Run autoscale tests separately as they require more CPU resources
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=10m -parallel=1 \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
     ./test/e2e \
     -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
     ${OPENSHIFT_TEST_OPTIONS} \
