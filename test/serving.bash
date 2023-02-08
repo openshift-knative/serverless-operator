@@ -96,7 +96,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  mv ./e2e/autoscale_test.go ./e2e/autoscale_test.backup
+  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
@@ -106,7 +106,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
-  mv ./e2e/autoscale_test.backup ./e2e/autoscale_test.go
+  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
   # Run autoscale tests separately as they require more CPU resources
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=10m -parallel=1 \
     ./test/e2e \
