@@ -1,0 +1,67 @@
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: pingsource-kafka-broker
+spec:
+  schedule: "* * * * *"
+  data: Hello World, Kafka Broker!
+  sink:
+    ref:
+      kind: Broker
+      name: br
+      apiVersion: eventing.knative.dev/v1
+---
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: pingsource-kafka-namespaced-broker
+spec:
+  schedule: "* * * * *"
+  data: Hello World, Kafka Namespaced Broker!
+  sink:
+    ref:
+      kind: Broker
+      name: br-namespaced
+      apiVersion: eventing.knative.dev/v1
+---
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: smoke-test-pingsource
+spec:
+  schedule: "* * * * *"
+  data: Hello World, direct sink!
+  sink:
+    ref:
+      kind: Service
+      name: event-display
+      apiVersion: v1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-display
+spec:
+  selector:
+    app: event-display
+  ports:
+    - protocol: TCP
+      appProtocol: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: event-display
+  annotations:
+    sidecar.istio.io/inject: 'true'
+  labels:
+    app: event-display
+spec:
+  containers:
+    - name: event-display
+      image: quay.io/pierdipi/event_display-a5130e9507c3d4c9b58499a4ac90be69
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 8080
