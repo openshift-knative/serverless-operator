@@ -70,7 +70,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestKitchensinkUpgrade(t *testing.T) {
+func TestKitchensink(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	cfg := upgrade.NewUpgradeConfig(t)
@@ -78,7 +78,7 @@ func TestKitchensinkUpgrade(t *testing.T) {
 	// Add here any features sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(),
-		//features.BrokerFeatureSetWithTriggerDLS(),
+		features.BrokerFeatureSetWithTriggerDLS(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
