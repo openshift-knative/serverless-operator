@@ -1,0 +1,20 @@
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  name: kafka-source
+spec:
+  consumerGroup: knative-group
+  bootstrapServers:
+    - my-cluster-kafka-bootstrap.kafka:9092 # note the kafka namespace
+  topics:
+    - knative-demo-topic
+  ceOverrides:
+    extensions:
+      type: mycustomtype
+      route: mycustomroute
+  sink:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: event-display
+---
