@@ -48,7 +48,9 @@ func NewFeatureWithEnvironment(t *testing.T, global environment.GlobalEnvironmen
 }
 
 func (f FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation(f.Feature.Name+"PreUpgrade", func(c pkgupgrade.Context) {
+	// TODO: Add more logging on what is currently executing (which step etc.)
+	//f.Name+"/"+s.T.String()+"/"+s.TestName()
+	return pkgupgrade.NewOperation(f.Feature.Name, func(c pkgupgrade.Context) {
 		setups := filterStepTimings(f.Feature.Steps, feature.Setup)
 		for _, s := range setups {
 			s.Fn(f.Context, c.T)
@@ -57,11 +59,19 @@ func (f FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
 		for _, r := range requirements {
 			r.Fn(f.Context, c.T)
 		}
+		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
+		for _, a := range asserts {
+			a.Fn(f.Context, c.T)
+		}
 	})
 }
 
 func (f FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation(f.Feature.Name+"PostUpgrade", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation(f.Feature.Name, func(c pkgupgrade.Context) {
+		requirements := filterStepTimings(f.Feature.Steps, feature.Requirement)
+		for _, r := range requirements {
+			r.Fn(f.Context, c.T)
+		}
 		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
 			a.Fn(f.Context, c.T)
@@ -70,7 +80,11 @@ func (f FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 }
 
 func (f FeatureWithEnvironment) PostDowngrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation(f.Feature.Name+"PostUpgrade", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation(f.Feature.Name, func(c pkgupgrade.Context) {
+		requirements := filterStepTimings(f.Feature.Steps, feature.Requirement)
+		for _, r := range requirements {
+			r.Fn(f.Context, c.T)
+		}
 		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
 			a.Fn(f.Context, c.T)

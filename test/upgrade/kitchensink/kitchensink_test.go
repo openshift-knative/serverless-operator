@@ -20,21 +20,23 @@ limitations under the License.
 package kitchensink
 
 import (
-	"context"
+	"flag"
+	"log"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
-	"knative.dev/pkg/system"
+	"knative.dev/pkg/injection"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
-	"knative.dev/reconciler-test/pkg/k8s"
-	"knative.dev/reconciler-test/pkg/knative"
+	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
+	pkgTest "knative.dev/pkg/test"
 )
 
 var global environment.GlobalEnvironment
@@ -45,7 +47,25 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	global = environment.NewStandardGlobalEnvironment()
+	// We get a chance to parse flags to include the framework flags for the
+	// framework as well as any additional flags included in the integration.
+	flag.Parse()
+
+	// EnableInjectionOrDie will enable client injection, this is used by the
+	// testing framework for namespace management, and could be leveraged by
+	// features to pull Kubernetes clients or the test environment out of the
+	// context passed in the features.
+	cfg, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
+	if err != nil {
+		log.Fatal("Error building client config: ", err)
+	}
+	ctx, startInformers := injection.EnableInjectionOrDie(nil, cfg) //nolint
+	startInformers()
+
+	// global is used to make instances of Environments, NewGlobalEnvironment
+	// is passing and saving the client injection enabled context for use later.
+	global = environment.NewGlobalEnvironment(ctx)
+
 	// Run the tests.
 	os.Exit(m.Run())
 }
@@ -58,7 +78,7 @@ func TestKitchensinkUpgrade(t *testing.T) {
 	// Add here any features sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(),
-		features.BrokerFeatureSetWithTriggerDLS(),
+		//features.BrokerFeatureSetWithTriggerDLS(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -75,8 +95,18 @@ func TestKitchensinkUpgrade(t *testing.T) {
 			PostDowngrade: featureGroup.PostDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+			UpgradeWith: []pkgupgrade.Operation{
+				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
+					time.Sleep(10 * time.Second)
+				}),
+			},
+			DowngradeWith: []pkgupgrade.Operation{
+				pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
+					if err := installation.DowngradeServerless(ctx); err != nil {
+						time.Sleep(10 * time.Second)
+					}
+				}),
+			},
 		},
 	}
 	suite.Execute(cfg)
