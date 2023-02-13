@@ -55,24 +55,24 @@ func TestKitchensinkUpgrade(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	cfg := upgrade.NewUpgradeConfig(t)
 
-	// Add here any feature tests to be tested during upgrades.
+	// Add here any features sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(),
 		features.BrokerFeatureSetWithTriggerDLS(),
 	}
 
-	var featureTestGroup FeatureTestGroup
+	var featureGroup FeatureWithEnvironmentGroup
 	for _, fs := range featureSets {
 		for _, f := range fs.Features {
-			featureTestGroup = append(featureTestGroup, NewFeatureUpgradeTest(t, global, f))
+			featureGroup = append(featureGroup, NewFeatureWithEnvironment(t, global, f))
 		}
 	}
 
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    featureTestGroup.PreUpgradeTests(),
-			PostUpgrade:   featureTestGroup.PostUpgradeTests(),
-			PostDowngrade: featureTestGroup.PostDowngradeTests(),
+			PreUpgrade:    featureGroup.PreUpgradeTests(),
+			PostUpgrade:   featureGroup.PostUpgradeTests(),
+			PostDowngrade: featureGroup.PostDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),

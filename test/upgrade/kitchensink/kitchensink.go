@@ -11,15 +11,16 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
+	"knative.dev/reconciler-test/pkg/state"
 )
 
-type FeatureUpgradeTest struct {
+type FeatureWithEnvironment struct {
 	Context     context.Context
 	Environment environment.Environment
 	Feature     *feature.Feature
 }
 
-func NewFeatureUpgradeTest(t *testing.T, global environment.GlobalEnvironment, f *feature.Feature) FeatureUpgradeTest {
+func NewFeatureWithEnvironment(t *testing.T, global environment.GlobalEnvironment, f *feature.Feature) FeatureWithEnvironment {
 	ctx, env := global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
@@ -28,51 +29,62 @@ func NewFeatureUpgradeTest(t *testing.T, global environment.GlobalEnvironment, f
 		environment.WithPollTimings(4*time.Second, 600*time.Second),
 		environment.Managed(t),
 	)
-	return FeatureUpgradeTest{
+
+	// Copied from reconciler-test/MagicEnvironment.
+	// The Store that is inside of the Feature will be assigned to the context.
+	// If no Store is set on Feature, Test will create a new store.KVStore
+	// and set it on the feature and then apply it to the Context.
+	if f.State == nil {
+		f.State = &state.KVStore{}
+	}
+	ctx = state.ContextWith(ctx, f.State)
+	ctx = feature.ContextWith(ctx, f)
+
+	return FeatureWithEnvironment{
 		Context:     ctx,
 		Environment: env,
 		Feature:     f,
 	}
 }
 
-func (f FeatureUpgradeTest) PreUpgrade() pkgupgrade.Operation {
+func (f FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation(f.Feature.Name+"PreUpgrade", func(c pkgupgrade.Context) {
 		setups := filterStepTimings(f.Feature.Steps, feature.Setup)
 		for _, s := range setups {
-			//s.Fn()
+			s.Fn(f.Context, c.T)
 		}
 		requirements := filterStepTimings(f.Feature.Steps, feature.Requirement)
 		for _, r := range requirements {
-			//r.Fn()
+			r.Fn(f.Context, c.T)
 		}
 	})
 }
 
-func (f FeatureUpgradeTest) PostUpgrade() pkgupgrade.Operation {
+func (f FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation(f.Feature.Name+"PostUpgrade", func(c pkgupgrade.Context) {
 		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			//s.Fn()
+			a.Fn(f.Context, c.T)
 		}
 	})
 }
 
-func (f FeatureUpgradeTest) PostDowngrade() pkgupgrade.Operation {
+func (f FeatureWithEnvironment) PostDowngrade() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation(f.Feature.Name+"PostUpgrade", func(c pkgupgrade.Context) {
 		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			//s.Fn()
+			a.Fn(f.Context, c.T)
 		}
 		teardowns := filterStepTimings(f.Feature.Steps, feature.Teardown)
 		for _, td := range teardowns {
-			//td.Fn()
+			td.Fn(f.Context, c.T)
 		}
 	})
 }
 
-type FeatureTestGroup []FeatureUpgradeTest
+type FeatureWithEnvironmentGroup []FeatureWithEnvironment
 
-func (fg FeatureTestGroup) PreUpgradeTests() []pkgupgrade.Operation {
+func (fg FeatureWithEnvironmentGroup) PreUpgradeTests() []pkgupgrade.Operation {
 	var ops []pkgupgrade.Operation
 	for _, ft := range fg {
 		ops = append(ops, ft.PreUpgrade())
@@ -80,7 +92,7 @@ func (fg FeatureTestGroup) PreUpgradeTests() []pkgupgrade.Operation {
 	return ops
 }
 
-func (fg FeatureTestGroup) PostUpgradeTests() []pkgupgrade.Operation {
+func (fg FeatureWithEnvironmentGroup) PostUpgradeTests() []pkgupgrade.Operation {
 	var ops []pkgupgrade.Operation
 	for _, ft := range fg {
 		ops = append(ops, ft.PostUpgrade())
@@ -88,24 +100,13 @@ func (fg FeatureTestGroup) PostUpgradeTests() []pkgupgrade.Operation {
 	return ops
 }
 
-func (fg FeatureTestGroup) PostDowngradeTests() []pkgupgrade.Operation {
+func (fg FeatureWithEnvironmentGroup) PostDowngradeTests() []pkgupgrade.Operation {
 	var ops []pkgupgrade.Operation
 	for _, ft := range fg {
 		ops = append(ops, ft.PostDowngrade())
 	}
 	return ops
 }
-
-//func categorizeSteps(steps []feature.Step) map[feature.Timing][]feature.Step {
-//	res := make(map[feature.Timing][]feature.Step, 4)
-//
-//	res[feature.Setup] = filterStepTimings(steps, feature.Setup)
-//	res[feature.Requirement] = filterStepTimings(steps, feature.Requirement)
-//	res[feature.Assert] = filterStepTimings(steps, feature.Assert)
-//	res[feature.Teardown] = filterStepTimings(steps, feature.Teardown)
-//
-//	return res
-//}
 
 func filterStepTimings(steps []feature.Step, timing feature.Timing) []feature.Step {
 	var res []feature.Step
