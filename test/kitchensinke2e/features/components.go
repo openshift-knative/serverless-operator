@@ -1,4 +1,4 @@
-package kitchensinke2e
+package features
 
 import (
 	"context"
