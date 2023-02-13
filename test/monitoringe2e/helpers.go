@@ -35,12 +35,11 @@ var (
 	eventingMetricQueries = []string{
 		"controller_go_mallocs{namespace=\"knative-eventing\"}",
 		"eventing_webhook_go_mallocs",
-		"inmemorychannel_controller_go_mallocs",
+		"inmemorychannel_webhook_go_mallocs",
 		"inmemorychannel_dispatcher_go_mallocs",
 		"mt_broker_controller_go_mallocs",
 		"mt_broker_filter_go_mallocs",
 		"mt_broker_ingress_go_mallocs",
-		"sugar_controller_go_mallocs",
 	}
 
 	KafkaQueries = []string{

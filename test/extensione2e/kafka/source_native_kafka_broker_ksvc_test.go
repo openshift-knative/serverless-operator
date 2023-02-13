@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"strings"
 	"testing"
 	"time"
@@ -28,11 +29,23 @@ const (
 )
 
 func TestSourceToNativeKafkaBrokerToKnativeService(t *testing.T) {
-	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.BrokerClass))
+	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.BrokerClass), func(ctx *test.Context) {
+		t.Run("verify Kafka Broker data plane metrics work correctly", func(t *testing.T) {
+			if err := monitoringe2e.VerifyMetrics(ctx, monitoringe2e.KafkaBrokerDataPlaneQueries); err != nil {
+				t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
+			}
+		})
+	})
 }
 
 func TestSourceToNamespacedKafkaBrokerToKnativeService(t *testing.T) {
-	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.NamespacedBrokerClass))
+	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.NamespacedBrokerClass), func(ctx *test.Context) {
+		t.Run("verify namespaced Kafka Broker data plane metrics work correctly", func(t *testing.T) {
+			if err := monitoringe2e.VerifyMetrics(ctx, monitoringe2e.NamespacedKafkaBrokerDataPlaneQueries); err != nil {
+				t.Fatal("Failed to verify that namespaced Kafka Broker data plane metrics work correctly", err)
+			}
+		})
+	})
 }
 
 func createBrokerFunc(t *testing.T, brokerClass string) func(client *test.Context) *eventingv1.Broker {

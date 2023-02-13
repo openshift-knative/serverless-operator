@@ -151,21 +151,9 @@ func TestKnativeKafka(t *testing.T) {
 		}
 	})
 
-	t.Run("verify Kafka Broker data plane metrics work correctly", func(t *testing.T) {
-		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaBrokerDataPlaneQueries); err != nil {
-			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
-		}
-	})
-
 	t.Run("verify Kafka controller metrics work correctly", func(t *testing.T) {
 		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaControllerQueries); err != nil {
 			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
-		}
-	})
-
-	t.Run("verify namespaced Kafka Broker data plane metrics work correctly", func(t *testing.T) {
-		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.NamespacedKafkaBrokerDataPlaneQueries); err != nil {
-			t.Fatal("Failed to verify that namespaced Kafka Broker data plane metrics work correctly", err)
 		}
 	})
 

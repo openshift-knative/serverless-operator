@@ -11,7 +11,7 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
-func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail func(*test.Context) *eventingv1.Broker) {
+func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail func(*test.Context) *eventingv1.Broker, verifyMetrics func(*test.Context)) {
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
@@ -71,4 +71,9 @@ func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail f
 	}
 
 	AssertPingSourceDataReceivedAtLeastOnce(eventStore)
+
+	// Metrics need to be verified before we cleanup, as the dataplane may remove metrics for deleted resources
+	if verifyMetrics != nil {
+		verifyMetrics(client)
+	}
 }
