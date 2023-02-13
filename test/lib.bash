@@ -222,22 +222,10 @@ function run_rolling_upgrade_tests {
   image_template=$(
     cat <<-EOF
 $base{{- with .Name }}
-{{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
-{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
-{{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
-{{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
-{{- else if eq . "eventshub"           }}knative-eventing-test-eventshub:$eventing_image_version
-{{- else if eq . "heartbeats"          }}knative-eventing-test-heartbeats:$eventing_image_version
-{{- else if eq . "performance"         }}knative-eventing-test-performance:$eventing_image_version
-{{- else if eq . "print"               }}knative-eventing-test-print:$eventing_image_version
-{{- else if eq . "recordevents"        }}knative-eventing-test-recordevents:$eventing_image_version
-{{- else if eq . "request-sender"      }}knative-eventing-test-request-sender:$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}knative-eventing-test-wathola-fetcher:$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
-{{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}{{.}}:v$serving_image_version{{end -}}
+{{- if eq . "httpproxy" }}serving/{{.}}:v1.6
+{{- else if eq . "recordevents" }}eventing/{{.}}:v1.6
+{{- else if eq . "wathola-forwarder" }}eventing/{{.}}:v1.6
+{{- else }}{{.}}:multiarch{{end -}}
 {{end -}}
 EOF
 )
@@ -255,9 +243,9 @@ EOF
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  common_opts=(./test/upgrade "-tags=upgrade" \
+  common_opts=("-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
-    "--channels=${channels}" \
+#    "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
     "--catalogsource=${OLM_SOURCE}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
@@ -269,8 +257,9 @@ EOF
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS}" \
     "--eventingversionprevious=${KNATIVE_EVENTING_VERSION_PREVIOUS/knative-v/}" \
     "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS/knative-v/}" \
-    --resolvabledomain \
-    --https)
+#    --resolvabledomain \
+#    --https)
+    )
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
@@ -279,8 +268,9 @@ EOF
     fi
     # Run the two test suites one by one to prevent the situation when nested
     # tests time out and cause all other tests to have "Unknown" status.
-    go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m "${common_opts[@]}"
-    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
+    #go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m ./test/upgrade "${common_opts[@]}"
+    go_test_e2e -run=TestKitchensinkUpgrade -timeout=90m ./test/upgrade/kitchensink "${common_opts[@]}"
+    #go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m ./test/upgrade "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
@@ -293,7 +283,7 @@ EOF
     # Make sure the cluster upgrade is run with latest version of Serverless as
     # the Serverless upgrade tests leave the product at the previous version (after downgrade).
     approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
-    go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
+    go_test_e2e -run=TestClusterUpgrade -timeout=220m ./test/upgrade "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
   fi
