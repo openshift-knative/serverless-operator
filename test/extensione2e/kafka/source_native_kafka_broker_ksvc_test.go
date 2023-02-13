@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 
 	corev1 "k8s.io/api/core/v1"
 
