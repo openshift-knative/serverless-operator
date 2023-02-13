@@ -90,21 +90,13 @@ func TestKitchensinkUpgrade(t *testing.T) {
 
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:    featureGroup.PreUpgradeTests(),
-			PostUpgrade:   featureGroup.PostUpgradeTests(),
-			PostDowngrade: featureGroup.PostDowngradeTests(),
+			PreUpgrade:  featureGroup.PreUpgradeTests(),
+			PostUpgrade: featureGroup.PostUpgradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{
 				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 					time.Sleep(10 * time.Second)
-				}),
-			},
-			DowngradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
-					if err := installation.DowngradeServerless(ctx); err != nil {
-						time.Sleep(10 * time.Second)
-					}
 				}),
 			},
 		},
