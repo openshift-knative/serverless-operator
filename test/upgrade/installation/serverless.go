@@ -15,8 +15,8 @@ import (
 )
 
 func UpgradeServerless(ctx *test.Context) error {
-	sources := strings.Split(test.Flags.CatalogSource, ",")
-	csvs := strings.Split(test.Flags.CSV, ",")
+	sources := strings.Split(strings.Trim(test.Flags.CatalogSource, ","), ",")
+	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
 	// Check for each CSV that we know where to get it from.
 	if len(sources) != len(csvs) {
 		return fmt.Errorf("the number of operator sources and CSVs for upgrades must match")

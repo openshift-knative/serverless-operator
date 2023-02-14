@@ -57,7 +57,7 @@ dependencies:
 upgrade_sequence:
   starting_version: 1.26.0
   sequence:
-    - version: 1.27.0
+    - csv: serverless-operator.1.27.0
       source: redhat-operators
-    - version: 1.28.0
+    - csv: serverless-operator.1.28.0
       source: serverless-operator

@@ -307,7 +307,7 @@ EOF
 function kitchensink_upgrade_tests {
   logger.info "Running kitchensink upgrade tests"
 
-  local base image_template common_opts
+  local base image_template common_opts csvs sources
 
   base="quay.io/openshift-knative/"
   image_template=$(
@@ -325,12 +325,14 @@ EOF
   export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
+  csvs=$(metadata.get "upgrade_sequence.sequence[*].csv" | tr '\n' ',')
+  sources=$(metadata.get "upgrade_sequence.sequence[*].source" | tr '\n' ',')
   common_opts=("-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
     "--imagetemplate=${image_template}" \
-    "--catalogsource=${OLM_SOURCE}" \
+    "--catalogsource=${sources}" \
+    "--csv=${csvs}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
-    "--csv=${CURRENT_CSV}" \
     )
 
   go_test_e2e -run=TestKitchensink -timeout=90m ./test/upgrade/kitchensink "${common_opts[@]}"
