@@ -24,12 +24,6 @@ var sinksAll = []component{
 }
 
 var sinksShort = []component{
-	kafkaChannel,
-	genericChannelWithKafkaChannelTemplate,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	kafkaChannelSequence,
-	kafkaChannelParallel,
 	ksvc,
 }
 

@@ -16,9 +16,10 @@ var channels = []component{
 }
 
 var (
-	subscribers  = sinksAll
-	replies      = sinksAll
-	repliesShort = sinksShort
+	subscribers      = sinksAll
+	subscribersShort = sinksShort
+	replies          = sinksAll
+	repliesShort     = sinksShort
 )
 
 func ChannelReadiness(channel component, subscriber, reply, dls component) *feature.Feature {
@@ -67,9 +68,11 @@ func ChannelReadiness(channel component, subscriber, reply, dls component) *feat
 func ChannelFeatureSet(short bool) feature.FeatureSet {
 	dls := deadLetterSinks
 	rep := replies
+	subscr := subscribers
 	if short {
 		dls = deadLetterSinksShort
 		rep = repliesShort
+		subscr = subscribersShort
 	}
 
 	type testCombination struct {
@@ -83,7 +86,7 @@ func ChannelFeatureSet(short bool) feature.FeatureSet {
 
 	// Test all combinations of Channel X Subscriber, with no replies or DLS
 	for _, channel := range channels {
-		for _, subscriber := range subscribers {
+		for _, subscriber := range subscr {
 			testCombinations = append(testCombinations, testCombination{channel: channel, subscriber: subscriber})
 		}
 	}

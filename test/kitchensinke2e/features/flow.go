@@ -181,13 +181,15 @@ func SequenceNoReplyFeatureSet(short bool) feature.FeatureSet {
 func ParallelNoReplyFeatureSet(short bool) feature.FeatureSet {
 	fltrs := filters
 	rpls := replies
+	subscr := subscribers
 	if short {
 		fltrs = filtersShort
 		rpls = repliesShort
+		subscr = subscribersShort
 	}
 	var features []*feature.Feature
 	for _, flowTestConfiguration := range flowTestConfigurations {
-		features = append(features, ParallelReadiness(flowTestConfiguration.shortLabel+"-par", flowTestConfiguration, subscribers, rpls, fltrs, nil))
+		features = append(features, ParallelReadiness(flowTestConfiguration.shortLabel+"-par", flowTestConfiguration, subscr, rpls, fltrs, nil))
 	}
 	return feature.FeatureSet{
 		Name:     "ParallelNoReply",
@@ -196,13 +198,17 @@ func ParallelNoReplyFeatureSet(short bool) feature.FeatureSet {
 }
 
 // SequenceGlobalReplyFeatureSet returns sequences with a global reply (with a single random Step)
-func SequenceGlobalReplyFeatureSet() feature.FeatureSet {
+func SequenceGlobalReplyFeatureSet(short bool) feature.FeatureSet {
+	rpls := replies
+	if short {
+		rpls = repliesShort
+	}
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
 	var features []*feature.Feature
 	steps := sinksAll
 	for _, flowTestConfiguration := range flowTestConfigurations {
-		for _, reply := range replies {
+		for _, reply := range rpls {
 			label := fmt.Sprintf("%s-seq-%s-rep", flowTestConfiguration.shortLabel, shortLabel(reply))
 			// We've already tested all possible step kinds above,
 			// so just use a single step (with a random step) in the sequence for the "with-reply" test
@@ -216,12 +222,16 @@ func SequenceGlobalReplyFeatureSet() feature.FeatureSet {
 }
 
 // ParallelGlobalReplyFeatureSet returns parallels with a global reply (with a single Branch of a random subscriber)
-func ParallelGlobalReplyFeatureSet() feature.FeatureSet {
+func ParallelGlobalReplyFeatureSet(short bool) feature.FeatureSet {
+	rpls := replies
+	if short {
+		rpls = repliesShort
+	}
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
 	var features []*feature.Feature
 	for _, flowTestConfiguration := range flowTestConfigurations {
-		for _, reply := range replies {
+		for _, reply := range rpls {
 			label := fmt.Sprintf("%s-par-%s-rep", flowTestConfiguration.shortLabel, shortLabel(reply))
 			// We've already tested all possible branches kinds above,
 			// so just use a single branch (with a random subscriber) in the sequence for the "with-reply" test

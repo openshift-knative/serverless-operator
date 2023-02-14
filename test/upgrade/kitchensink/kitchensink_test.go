@@ -80,9 +80,9 @@ func TestKitchensink(t *testing.T) {
 		features.BrokerFeatureSetWithTriggerDLS(true),
 		features.ChannelFeatureSet(true),
 		features.SequenceNoReplyFeatureSet(true),
-		features.SequenceGlobalReplyFeatureSet(),
+		features.SequenceGlobalReplyFeatureSet(true),
 		features.ParallelNoReplyFeatureSet(true),
-		features.ParallelGlobalReplyFeatureSet(),
+		features.ParallelGlobalReplyFeatureSet(true),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
