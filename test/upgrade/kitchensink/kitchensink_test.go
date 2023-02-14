@@ -76,12 +76,12 @@ func TestKitchensink(t *testing.T) {
 
 	// Add here any feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLS(),
-		features.BrokerFeatureSetWithTriggerDLS(),
-		features.ChannelFeatureSet(),
-		features.SequenceNoReplyFeatureSet(),
+		features.BrokerFeatureSetWithBrokerDLS(true),
+		features.BrokerFeatureSetWithTriggerDLS(true),
+		features.ChannelFeatureSet(true),
+		features.SequenceNoReplyFeatureSet(true),
 		features.SequenceGlobalReplyFeatureSet(),
-		features.ParallelNoReplyFeatureSet(),
+		features.ParallelNoReplyFeatureSet(true),
 		features.ParallelGlobalReplyFeatureSet(),
 	}
 

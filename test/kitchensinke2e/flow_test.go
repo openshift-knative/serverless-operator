@@ -9,8 +9,8 @@ import (
 
 func TestFlowReadiness(t *testing.T) {
 	featureSets := []feature.FeatureSet{
-		features.SequenceNoReplyFeatureSet(),
-		features.ParallelNoReplyFeatureSet(),
+		features.SequenceNoReplyFeatureSet(false),
+		features.ParallelNoReplyFeatureSet(false),
 		features.SequenceGlobalReplyFeatureSet(),
 		features.ParallelGlobalReplyFeatureSet(),
 	}

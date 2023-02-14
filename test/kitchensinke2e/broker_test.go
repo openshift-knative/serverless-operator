@@ -9,8 +9,8 @@ import (
 
 func TestBrokerReadiness(t *testing.T) {
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLS(),
-		features.BrokerFeatureSetWithTriggerDLS(),
+		features.BrokerFeatureSetWithBrokerDLS(false),
+		features.BrokerFeatureSetWithTriggerDLS(false),
 	}
 	for _, fs := range featureSets {
 		for _, f := range fs.Features {

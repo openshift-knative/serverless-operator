@@ -8,42 +8,42 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 )
 
+var sinksAll = []component{
+	kafkaChannel,
+	inMemoryChannel,
+	genericChannelWithKafkaChannelTemplate,
+	genericChannelWithInMemoryChannelTemplate,
+	inMemoryChannelMtBroker,
+	kafkaChannelMtBroker,
+	kafkaBroker,
+	inMemoryChannelSequence,
+	kafkaChannelSequence,
+	inMemoryChannelParallel,
+	kafkaChannelParallel,
+	ksvc,
+}
+
+var sinksShort = []component{
+	kafkaChannel,
+	genericChannelWithKafkaChannelTemplate,
+	kafkaChannelMtBroker,
+	kafkaBroker,
+	kafkaChannelSequence,
+	kafkaChannelParallel,
+	ksvc,
+}
+
 var brokers = []component{
 	inMemoryChannelMtBroker,
 	kafkaChannelMtBroker,
 	kafkaBroker,
 }
 
-//TODO: Reduce it for upgrade testing.
-var deadLetterSinks = []component{
-	kafkaChannel,
-	inMemoryChannel,
-	genericChannelWithKafkaChannelTemplate,
-	genericChannelWithInMemoryChannelTemplate,
-	inMemoryChannelMtBroker,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	inMemoryChannelSequence,
-	kafkaChannelSequence,
-	inMemoryChannelParallel,
-	kafkaChannelParallel,
-	ksvc,
-}
-
-var triggers = []component{
-	kafkaChannel,
-	inMemoryChannel,
-	genericChannelWithKafkaChannelTemplate,
-	genericChannelWithInMemoryChannelTemplate,
-	inMemoryChannelMtBroker,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	inMemoryChannelSequence,
-	kafkaChannelSequence,
-	inMemoryChannelParallel,
-	kafkaChannelParallel,
-	ksvc,
-}
+var (
+	deadLetterSinks      = sinksAll
+	deadLetterSinksShort = sinksShort
+	triggers             = sinksAll
+)
 
 func BrokerReadiness(broker component, brokerDls component, triggers []component, triggerDls component) *feature.Feature {
 	testLabel := shortLabel(broker)
@@ -98,12 +98,16 @@ func BrokerReadiness(broker component, brokerDls component, triggers []component
 	return f
 }
 
-// Test all combinations of Broker X DeadLetterSinks, each broker with all possible Triggers
-// with the DeadLetterSink set on the Broker
-func BrokerFeatureSetWithBrokerDLS() feature.FeatureSet {
+// BrokerFeatureSetWithBrokerDLS returns all combinations of Broker X DeadLetterSinks,
+// each broker with all possible Triggers with the DeadLetterSink set on the Broker.
+func BrokerFeatureSetWithBrokerDLS(short bool) feature.FeatureSet {
+	dls := deadLetterSinks
+	if short {
+		dls = deadLetterSinksShort
+	}
 	var features []*feature.Feature
 	for _, broker := range brokers {
-		for _, deadLetterSink := range deadLetterSinks {
+		for _, deadLetterSink := range dls {
 			features = append(features, BrokerReadiness(broker, deadLetterSink, triggers, nil))
 		}
 	}
@@ -113,12 +117,16 @@ func BrokerFeatureSetWithBrokerDLS() feature.FeatureSet {
 	}
 }
 
-// Test all combinations of Broker X DeadLetterSinks, each broker with all possible Triggers
-// with the DeadLetterSink set on the Trigger
-func BrokerFeatureSetWithTriggerDLS() feature.FeatureSet {
+// BrokerFeatureSetWithTriggerDLS returns all combinations of Broker X DeadLetterSinks,
+// each broker with all possible Triggers with the DeadLetterSink set on the Trigger.
+func BrokerFeatureSetWithTriggerDLS(short bool) feature.FeatureSet {
+	dls := deadLetterSinks
+	if short {
+		dls = deadLetterSinksShort
+	}
 	var features []*feature.Feature
 	for _, broker := range brokers {
-		for _, deadLetterSink := range deadLetterSinks {
+		for _, deadLetterSink := range dls {
 			features = append(features, BrokerReadiness(broker, nil, triggers, deadLetterSink))
 		}
 	}

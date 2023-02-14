@@ -7,7 +7,7 @@ import (
 )
 
 func TestChannelReadiness(t *testing.T) {
-	featureSet := features.ChannelFeatureSet()
+	featureSet := features.ChannelFeatureSet(false)
 	for _, f := range featureSet.Features {
 		t.Run(featureSet.Name, func(t *testing.T) {
 			t.Parallel()

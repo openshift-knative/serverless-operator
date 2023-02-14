@@ -13,20 +13,10 @@ import (
 	"knative.dev/reconciler-test/pkg/manifest"
 )
 
-var components = []component{
-	kafkaChannel,
-	inMemoryChannel,
-	genericChannelWithKafkaChannelTemplate,
-	genericChannelWithInMemoryChannelTemplate,
-	inMemoryChannelMtBroker,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	inMemoryChannelSequence,
-	kafkaChannelSequence,
-	inMemoryChannelParallel,
-	kafkaChannelParallel,
-	ksvc,
-}
+var (
+	filters      = sinksAll
+	filtersShort = sinksShort
+)
 
 type channelTemplate func() manifest.CfgFn
 
@@ -168,9 +158,12 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 }
 
 // SequenceNoReplyFeatureSet returns sequences with all possible Kinds as steps, with no reply
-func SequenceNoReplyFeatureSet() feature.FeatureSet {
+func SequenceNoReplyFeatureSet(short bool) feature.FeatureSet {
 	var features []*feature.Feature
-	steps := components
+	steps := sinksAll
+	if short {
+		steps = sinksShort
+	}
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		features = append(features, SequenceReadiness(flowTestConfiguration.shortLabel+"-seq", flowTestConfiguration, steps, nil))
 	}
@@ -185,11 +178,16 @@ func SequenceNoReplyFeatureSet() feature.FeatureSet {
 // * all possible kinds of replies (with a random subscriber each)
 // * all possible kind of filters (with a random subscriber each)
 // with no global reply
-func ParallelNoReplyFeatureSet() feature.FeatureSet {
+func ParallelNoReplyFeatureSet(short bool) feature.FeatureSet {
+	fltrs := filters
+	rpls := replies
+	if short {
+		fltrs = filtersShort
+		rpls = repliesShort
+	}
 	var features []*feature.Feature
-	filters := components
 	for _, flowTestConfiguration := range flowTestConfigurations {
-		features = append(features, ParallelReadiness(flowTestConfiguration.shortLabel+"-par", flowTestConfiguration, subscribers, replies, filters, nil))
+		features = append(features, ParallelReadiness(flowTestConfiguration.shortLabel+"-par", flowTestConfiguration, subscribers, rpls, fltrs, nil))
 	}
 	return feature.FeatureSet{
 		Name:     "ParallelNoReply",
@@ -202,7 +200,7 @@ func SequenceGlobalReplyFeatureSet() feature.FeatureSet {
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
 	var features []*feature.Feature
-	steps := components
+	steps := sinksAll
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range replies {
 			label := fmt.Sprintf("%s-seq-%s-rep", flowTestConfiguration.shortLabel, shortLabel(reply))

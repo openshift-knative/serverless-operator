@@ -15,35 +15,11 @@ var channels = []component{
 	genericChannelWithInMemoryChannelTemplate,
 }
 
-var subscribers = []component{
-	kafkaChannel,
-	inMemoryChannel,
-	genericChannelWithKafkaChannelTemplate,
-	genericChannelWithInMemoryChannelTemplate,
-	inMemoryChannelMtBroker,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	inMemoryChannelSequence,
-	kafkaChannelSequence,
-	inMemoryChannelParallel,
-	kafkaChannelParallel,
-	ksvc,
-}
-
-var replies = []component{
-	kafkaChannel,
-	inMemoryChannel,
-	genericChannelWithKafkaChannelTemplate,
-	genericChannelWithInMemoryChannelTemplate,
-	inMemoryChannelMtBroker,
-	kafkaChannelMtBroker,
-	kafkaBroker,
-	inMemoryChannelSequence,
-	kafkaChannelSequence,
-	inMemoryChannelParallel,
-	kafkaChannelParallel,
-	ksvc,
-}
+var (
+	subscribers  = sinksAll
+	replies      = sinksAll
+	repliesShort = sinksShort
+)
 
 func ChannelReadiness(channel component, subscriber, reply, dls component) *feature.Feature {
 	// Make a unique label to use for uniqueness of the subtest and its resources
@@ -88,7 +64,13 @@ func ChannelReadiness(channel component, subscriber, reply, dls component) *feat
 	return f
 }
 
-func ChannelFeatureSet() feature.FeatureSet {
+func ChannelFeatureSet(short bool) feature.FeatureSet {
+	dls := deadLetterSinks
+	rep := replies
+	if short {
+		dls = deadLetterSinksShort
+		rep = repliesShort
+	}
 
 	type testCombination struct {
 		channel        component
@@ -108,14 +90,14 @@ func ChannelFeatureSet() feature.FeatureSet {
 
 	// Test all combinations of Channel X Reply, with any subscriber (we'll use the same subscriber Kind as the reply)
 	for _, channel := range channels {
-		for _, reply := range replies {
+		for _, reply := range rep {
 			testCombinations = append(testCombinations, testCombination{channel, reply, reply, nil})
 		}
 	}
 
 	// Test all combinations of Channel X DLS, with any subscriber (we'll use the same subscriber Kind as the DLS)
 	for _, channel := range channels {
-		for _, deadLetterSink := range deadLetterSinks {
+		for _, deadLetterSink := range dls {
 			testCombinations = append(testCombinations, testCombination{channel, deadLetterSink, nil, deadLetterSink})
 		}
 	}
