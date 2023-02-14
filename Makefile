@@ -158,6 +158,9 @@ test-upstream-upgrade:
 # Alias.
 test-upgrade: test-upstream-upgrade
 
+test-kitchensink-upgrade:
+	./test/kitchensink-upgrade-tests.sh
+
 # Run Console UI e2e tests.
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
