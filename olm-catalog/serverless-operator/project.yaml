@@ -54,7 +54,10 @@ dependencies:
     eventing: 1.6
     eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.6
-upgrade_ancient:
+upgrade_sequence:
   starting_version: 1.26.0
   sequence:
-    - 1.27.0
+    - version: 1.27.0
+      source: redhat-operators
+    - version: 1.28.0
+      source: serverless-operator
