@@ -29,7 +29,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/pkg/injection"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -75,10 +74,15 @@ func TestKitchensink(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	cfg := upgrade.NewUpgradeConfig(t)
 
-	// Add here any features sets to be tested during upgrades.
+	// Add here any feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(),
 		features.BrokerFeatureSetWithTriggerDLS(),
+		features.ChannelFeatureSet(),
+		features.SequenceNoReplyFeatureSet(),
+		features.SequenceGlobalReplyFeatureSet(),
+		features.ParallelNoReplyFeatureSet(),
+		features.ParallelGlobalReplyFeatureSet(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
