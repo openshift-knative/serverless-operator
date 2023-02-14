@@ -159,6 +159,9 @@ test-upstream-upgrade:
 test-upgrade: test-upstream-upgrade
 
 test-kitchensink-upgrade:
+	STARTING_CSV="serverless-operator.v1.26.0" OLM_SOURCE=redhat-operators INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
+
+test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
 
 # Run Console UI e2e tests.

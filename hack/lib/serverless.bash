@@ -2,7 +2,6 @@
 
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
-  local prev=${1:-false}
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1 && \
     oc get knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
@@ -15,34 +14,28 @@ function ensure_serverless_installed {
   # Otherwise, we cannot change log level by configmap.
   enable_debug_log
 
-  if [[ $prev == "true" ]]; then
-    install_serverless_previous
+  local csv
+  if [[ -n "$STARTING_CSV" ]]; then
+    csv="$STARTING_CSV"
+  elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
+    csv="$PREVIOUS_CSV"
   else
-    install_serverless_latest
+    csv="$CURRENT_CSV"
   fi
-}
-
-function install_serverless_previous {
-  logger.info "Installing previous version of Serverless..."
 
   # Remove installplan from previous installations, leaving this would make the operator
   # upgrade to the latest version immediately
-  remove_installplan "$CURRENT_CSV"
+  if [[ "$csv" != "$CURRENT_CSV" ]]; then
+    remove_installplan "$CURRENT_CSV"
+  fi
 
-  deploy_serverless_operator "$PREVIOUS_CSV"
+  logger.info "Installing Serverless version $csv"
 
-  install_knative_resources
-
-  logger.success "Previous version of Serverless is installed: $PREVIOUS_CSV"
-}
-
-function install_serverless_latest {
-  logger.info "Installing latest version of Serverless..."
-  deploy_serverless_operator_latest
+  deploy_serverless_operator "$csv"
 
   install_knative_resources
 
-  logger.success "Latest version of Serverless is installed: $CURRENT_CSV"
+  logger.success "Serverless is installed: $csv"
 }
 
 function install_knative_resources {

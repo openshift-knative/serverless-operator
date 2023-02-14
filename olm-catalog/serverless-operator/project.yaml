@@ -54,3 +54,5 @@ dependencies:
     eventing: 1.6
     eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.6
+upgrades:
+  kitchensink_starting_version: 1.26.0

@@ -27,8 +27,10 @@ export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_
 CURRENT_VERSION="$(metadata.get project.version)"
 CURRENT_VERSION_MAJOR_MINOR="$(cut -d '.' -f 1 <<< "${CURRENT_VERSION}")"."$(cut -d '.' -f 2 <<< "${CURRENT_VERSION}")"
 PREVIOUS_VERSION="$(metadata.get olm.replaces)"
+KITCHENSINK_STARTING_VERSION="$(metadata.get upgrades.kitchensink_starting_version)"
 CURRENT_CSV="$(metadata.get project.name).v$CURRENT_VERSION"
 PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
+KITCHENSINK_STARTING_CSV="$(metadata.get project.name).v$KITCHENSINK_STARTING_VERSION"
 export CURRENT_VERSION CURRENT_VERSION_MAJOR_MINOR PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
@@ -63,7 +65,7 @@ export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
 export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 
 export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
-
+export STARTING_CSV="${STARTING_CSV:-}"
 
 # Using first channel on the list, instead of default one
 OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get 'olm.channels.list[*]' | head -n 1)}"
