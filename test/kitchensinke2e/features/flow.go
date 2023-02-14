@@ -217,7 +217,6 @@ func SequenceGlobalReplyFeatureSet() feature.FeatureSet {
 
 // ParallelGlobalReplyFeatureSet returns parallels with a global reply (with a single Branch of a random subscriber)
 func ParallelGlobalReplyFeatureSet() feature.FeatureSet {
-	// TODO: Call this only once?
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
 	var features []*feature.Feature
