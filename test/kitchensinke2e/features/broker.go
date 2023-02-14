@@ -14,6 +14,7 @@ var brokers = []component{
 	kafkaBroker,
 }
 
+//TODO: Reduce it for upgrade testing.
 var deadLetterSinks = []component{
 	kafkaChannel,
 	inMemoryChannel,
