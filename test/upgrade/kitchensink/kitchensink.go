@@ -14,9 +14,9 @@ import (
 )
 
 type FeatureWithEnvironment struct {
-	Context     *context.Context
+	Context     context.Context
 	Global      environment.GlobalEnvironment
-	Environment *environment.Environment
+	Environment environment.Environment
 	Feature     *feature.Feature
 }
 
@@ -40,8 +40,12 @@ func (fe *FeatureWithEnvironment) CreateEnvironment() {
 	ctx = state.ContextWith(ctx, fe.Feature.State)
 	ctx = feature.ContextWith(ctx, fe.Feature)
 
-	fe.Context = &ctx
-	fe.Environment = &env
+	fe.Context = ctx
+	fe.Environment = env
+}
+
+func (fe *FeatureWithEnvironment) DeleteNamespace() {
+	fe.Environment.Namespace()
 }
 
 func (fe *FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
@@ -50,15 +54,15 @@ func (fe *FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
 		fe.CreateEnvironment()
 		setups := filterStepTimings(fe.Feature.Steps, feature.Setup)
 		for _, s := range setups {
-			s.Fn(*fe.Context, c.T)
+			s.Fn(fe.Context, c.T)
 		}
 		requirements := filterStepTimings(fe.Feature.Steps, feature.Requirement)
 		for _, r := range requirements {
-			r.Fn(*fe.Context, c.T)
+			r.Fn(fe.Context, c.T)
 		}
 		asserts := filterStepTimings(fe.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			a.Fn(*fe.Context, c.T)
+			a.Fn(fe.Context, c.T)
 		}
 	})
 }
@@ -68,16 +72,17 @@ func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 		c.T.Parallel()
 		requirements := filterStepTimings(fe.Feature.Steps, feature.Requirement)
 		for _, r := range requirements {
-			r.Fn(*fe.Context, c.T)
+			r.Fn(fe.Context, c.T)
 		}
 		asserts := filterStepTimings(fe.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			a.Fn(*fe.Context, c.T)
+			a.Fn(fe.Context, c.T)
 		}
 		teardowns := filterStepTimings(fe.Feature.Steps, feature.Teardown)
 		for _, td := range teardowns {
-			td.Fn(*fe.Context, c.T)
+			td.Fn(fe.Context, c.T)
 		}
+		fe.DeleteNamespace()
 	})
 }
 
