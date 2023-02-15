@@ -39,7 +39,6 @@ func (fe *FeatureWithEnvironment) CreateEnvironment() {
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
 		environment.WithPollTimings(4*time.Second, 600*time.Second),
-		//environment.Managed(t),
 	)
 
 	// Copied from reconciler-test/MagicEnvironment.
@@ -168,7 +167,7 @@ func PatchKnativeResources(ctx *test.Context) error {
 			if version == "" {
 				return fmt.Errorf("unable to determine storage version for %s", gr)
 			}
-			if err := migrate(ctx, gr.WithVersion(version)); err != nil {
+			if err := patchEmpty(ctx, gr.WithVersion(version)); err != nil {
 				return err
 			}
 		}
@@ -177,7 +176,7 @@ func PatchKnativeResources(ctx *test.Context) error {
 	return nil
 }
 
-func migrate(ctx *test.Context, gvr schema.GroupVersionResource) error {
+func patchEmpty(ctx *test.Context, gvr schema.GroupVersionResource) error {
 	client := ctx.Clients.Dynamic.Resource(gvr)
 
 	listFunc := func(ctx context.Context, opts metav1.ListOptions) (runtime.Object, error) {

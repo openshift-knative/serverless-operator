@@ -113,6 +113,7 @@ func TestKitchensink(t *testing.T) {
 
 func ModifyResourcesTest(ctx *test.Context) upgrade.Operation {
 	return pkgupgrade.NewOperation("ModifyResourcesTest", func(c pkgupgrade.Context) {
+		// Intentionally don't use t.Parallel() to make the test run before parallel tests.
 		if err := PatchKnativeResources(ctx); err != nil {
 			c.T.Error(err)
 		}
