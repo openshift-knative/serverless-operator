@@ -94,8 +94,10 @@ func TestKitchensink(t *testing.T) {
 
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:  featureGroup.PreUpgradeTests(),
-			PostUpgrade: featureGroup.PostUpgradeTests(),
+			PreUpgrade: featureGroup.PreUpgradeTests(),
+			PostUpgrade: append(featureGroup.PostUpgradeTests(),
+				ModifyResourcesTest(ctx),
+			),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{
@@ -107,4 +109,12 @@ func TestKitchensink(t *testing.T) {
 		},
 	}
 	suite.Execute(cfg)
+}
+
+func ModifyResourcesTest(ctx *test.Context) upgrade.Operation {
+	return pkgupgrade.NewOperation("ModifyResourcesTest", func(c pkgupgrade.Context) {
+		if err := PatchKnativeResources(ctx); err != nil {
+			c.T.Error(err)
+		}
+	})
 }

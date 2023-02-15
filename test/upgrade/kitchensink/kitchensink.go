@@ -3,12 +3,18 @@ package kitchensink
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	apix "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/pager"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/system"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -137,4 +143,73 @@ func filterStepTimings(steps []feature.Step, timing feature.Timing) []feature.St
 		}
 	}
 	return res
+}
+
+func PatchKnativeResources(ctx *test.Context) error {
+	crdClient := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions()
+
+	crdList, err := crdClient.List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("unable to fetch crd list: %w", err)
+	}
+
+	for _, crd := range crdList.Items {
+		// Process all knative resources.
+		if strings.Contains(crd.Name, "knative.dev") {
+			gr := schema.ParseGroupResource(crd.Name)
+			if gr.Empty() {
+				return fmt.Errorf("unable to parse group version: %s", crd.Name)
+			}
+			crd, err := crdClient.Get(context.Background(), gr.String(), metav1.GetOptions{})
+			if err != nil {
+				return fmt.Errorf("unable to fetch crd %s - %w", gr, err)
+			}
+			version := storageVersion(crd)
+			if version == "" {
+				return fmt.Errorf("unable to determine storage version for %s", gr)
+			}
+			if err := migrate(ctx, gr.WithVersion(version)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func migrate(ctx *test.Context, gvr schema.GroupVersionResource) error {
+	client := ctx.Clients.Dynamic.Resource(gvr)
+
+	listFunc := func(ctx context.Context, opts metav1.ListOptions) (runtime.Object, error) {
+		return client.Namespace(metav1.NamespaceAll).List(ctx, opts)
+	}
+
+	onEach := func(obj runtime.Object) error {
+		item := obj.(metav1.Object)
+
+		_, err := client.Namespace(item.GetNamespace()).
+			Patch(context.Background(), item.GetName(), types.MergePatchType, []byte("{}"), metav1.PatchOptions{})
+
+		if err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("unable to patch resource %s/%s (gvr: %s) - %w",
+				item.GetNamespace(), item.GetName(),
+				gvr, err)
+		}
+
+		return nil
+	}
+
+	pager := pager.New(listFunc)
+	return pager.EachListItem(context.Background(), metav1.ListOptions{}, onEach)
+}
+
+func storageVersion(crd *apix.CustomResourceDefinition) string {
+	var version string
+	for _, v := range crd.Spec.Versions {
+		if v.Storage {
+			version = v.Name
+			break
+		}
+	}
+	return version
 }
