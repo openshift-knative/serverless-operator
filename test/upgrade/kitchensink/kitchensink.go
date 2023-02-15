@@ -2,8 +2,14 @@ package kitchensink
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/system"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -44,8 +50,25 @@ func (fe *FeatureWithEnvironment) CreateEnvironment() {
 	fe.Environment = env
 }
 
-func (fe *FeatureWithEnvironment) DeleteNamespace() {
-	fe.Environment.Namespace()
+func (fe *FeatureWithEnvironment) DeleteNamespace() error {
+	kube := kubeclient.Get(fe.Context)
+	if err := kube.CoreV1().Namespaces().Delete(context.Background(), fe.Environment.Namespace(), metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+	waitErr := wait.PollImmediate(test.Interval, 2*test.Timeout, func() (bool, error) {
+		if _, err := kube.CoreV1().Namespaces().Get(context.Background(),
+			fe.Environment.Namespace(), metav1.GetOptions{}); err != nil {
+			if apierrors.IsNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		}
+		return false, nil
+	})
+	if waitErr != nil {
+		return fmt.Errorf("namespace %s not deleted in time: %w", fe.Environment.Namespace(), waitErr)
+	}
+	return nil
 }
 
 func (fe *FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
@@ -82,7 +105,9 @@ func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 		for _, td := range teardowns {
 			td.Fn(fe.Context, c.T)
 		}
-		fe.DeleteNamespace()
+		if err := fe.DeleteNamespace(); err != nil {
+			c.T.Error(err)
+		}
 	})
 }
 
