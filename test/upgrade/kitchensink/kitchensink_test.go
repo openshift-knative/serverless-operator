@@ -24,6 +24,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
@@ -87,7 +88,7 @@ func TestKitchensink(t *testing.T) {
 	var featureGroup FeatureWithEnvironmentGroup
 	for _, fs := range featureSets {
 		for _, f := range fs.Features {
-			featureGroup = append(featureGroup, NewFeatureWithEnvironment(t, global, f))
+			featureGroup = append(featureGroup, &FeatureWithEnvironment{Feature: f, Global: global})
 		}
 	}
 
@@ -97,7 +98,12 @@ func TestKitchensink(t *testing.T) {
 			PostUpgrade: featureGroup.PostUpgradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+			UpgradeWith: []pkgupgrade.Operation{
+				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
+					time.Sleep(10 * time.Second)
+				}),
+			},
+			//upgrade.ServerlessUpgradeOperations(ctx),
 		},
 	}
 	suite.Execute(cfg)

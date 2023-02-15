@@ -2,7 +2,6 @@ package kitchensink
 
 import (
 	"context"
-	"testing"
 	"time"
 
 	"knative.dev/pkg/system"
@@ -15,73 +14,74 @@ import (
 )
 
 type FeatureWithEnvironment struct {
-	Context     context.Context
-	Environment environment.Environment
+	Context     *context.Context
+	Global      environment.GlobalEnvironment
+	Environment *environment.Environment
 	Feature     *feature.Feature
 }
 
-func NewFeatureWithEnvironment(t *testing.T, global environment.GlobalEnvironment, f *feature.Feature) FeatureWithEnvironment {
-	ctx, env := global.Environment(
+func (fe *FeatureWithEnvironment) CreateEnvironment() {
+	ctx, env := fe.Global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
 		environment.WithPollTimings(4*time.Second, 600*time.Second),
-		environment.Managed(t),
+		//environment.Managed(t),
 	)
 
 	// Copied from reconciler-test/MagicEnvironment.
 	// The Store that is inside of the Feature will be assigned to the context.
 	// If no Store is set on Feature, Test will create a new store.KVStore
 	// and set it on the feature and then apply it to the Context.
-	if f.State == nil {
-		f.State = &state.KVStore{}
+	if fe.Feature.State == nil {
+		fe.Feature.State = &state.KVStore{}
 	}
-	ctx = state.ContextWith(ctx, f.State)
-	ctx = feature.ContextWith(ctx, f)
+	ctx = state.ContextWith(ctx, fe.Feature.State)
+	ctx = feature.ContextWith(ctx, fe.Feature)
 
-	return FeatureWithEnvironment{
-		Context:     ctx,
-		Environment: env,
-		Feature:     f,
-	}
+	fe.Context = &ctx
+	fe.Environment = &env
 }
 
-func (f FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation(f.Feature.Name, func(c pkgupgrade.Context) {
-		setups := filterStepTimings(f.Feature.Steps, feature.Setup)
+func (fe *FeatureWithEnvironment) PreUpgrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation(fe.Feature.Name, func(c pkgupgrade.Context) {
+		c.T.Parallel()
+		fe.CreateEnvironment()
+		setups := filterStepTimings(fe.Feature.Steps, feature.Setup)
 		for _, s := range setups {
-			s.Fn(f.Context, c.T)
+			s.Fn(*fe.Context, c.T)
 		}
-		requirements := filterStepTimings(f.Feature.Steps, feature.Requirement)
+		requirements := filterStepTimings(fe.Feature.Steps, feature.Requirement)
 		for _, r := range requirements {
-			r.Fn(f.Context, c.T)
+			r.Fn(*fe.Context, c.T)
 		}
-		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
+		asserts := filterStepTimings(fe.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			a.Fn(f.Context, c.T)
+			a.Fn(*fe.Context, c.T)
 		}
 	})
 }
 
-func (f FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation(f.Feature.Name, func(c pkgupgrade.Context) {
-		requirements := filterStepTimings(f.Feature.Steps, feature.Requirement)
+func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation(fe.Feature.Name, func(c pkgupgrade.Context) {
+		c.T.Parallel()
+		requirements := filterStepTimings(fe.Feature.Steps, feature.Requirement)
 		for _, r := range requirements {
-			r.Fn(f.Context, c.T)
+			r.Fn(*fe.Context, c.T)
 		}
-		asserts := filterStepTimings(f.Feature.Steps, feature.Assert)
+		asserts := filterStepTimings(fe.Feature.Steps, feature.Assert)
 		for _, a := range asserts {
-			a.Fn(f.Context, c.T)
+			a.Fn(*fe.Context, c.T)
 		}
-		teardowns := filterStepTimings(f.Feature.Steps, feature.Teardown)
+		teardowns := filterStepTimings(fe.Feature.Steps, feature.Teardown)
 		for _, td := range teardowns {
-			td.Fn(f.Context, c.T)
+			td.Fn(*fe.Context, c.T)
 		}
 	})
 }
 
-type FeatureWithEnvironmentGroup []FeatureWithEnvironment
+type FeatureWithEnvironmentGroup []*FeatureWithEnvironment
 
 func (fg FeatureWithEnvironmentGroup) PreUpgradeTests() []pkgupgrade.Operation {
 	var ops []pkgupgrade.Operation
