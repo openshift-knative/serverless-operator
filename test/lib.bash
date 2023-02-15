@@ -307,37 +307,16 @@ EOF
 function kitchensink_upgrade_tests {
   logger.info "Running kitchensink upgrade tests"
 
-  local base image_template common_opts csvs sources
-
-  base="quay.io/openshift-knative/"
-  image_template=$(
-    cat <<-EOF
-$base{{- with .Name }}
-{{- if eq . "httpproxy" }}serving/{{.}}:v1.6
-{{- else if eq . "recordevents" }}eventing/{{.}}:v1.6
-{{- else if eq . "wathola-forwarder" }}eventing/{{.}}:v1.6
-{{- else }}{{.}}:multiarch{{end -}}
-{{end -}}
-EOF
-)
-
-  export GATEWAY_OVERRIDE="kourier"
-  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  csvs=$(metadata.get "upgrade_sequence.sequence[*].csv" | tr '\n' ',')
-  sources=$(metadata.get "upgrade_sequence.sequence[*].source" | tr '\n' ',')
-  common_opts=("-tags=upgrade" \
-    "--kubeconfigs=${KUBECONFIG}" \
-    "--imagetemplate=${image_template}" \
-    "--catalogsource=${sources}" \
-    "--csv=${csvs}" \
-    "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
-    )
+  go_test_e2e -run=TestKitchensink -timeout=90m ./test/upgrade/kitchensink -tags=upgrade \
+     --kubeconfigs="${KUBECONFIG}" \
+     --imagetemplate="${IMAGE_TEMPLATE}" \
+     --catalogsource="${SOURCES}" \
+     --csv="${CSVS}" \
+     --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 
-  go_test_e2e -run=TestKitchensink -timeout=90m ./test/upgrade/kitchensink "${common_opts[@]}"
-
-  logger.success 'Upgrade kitchensink tests passed'
+  logger.success 'Kitchensink upgrade tests passed'
 }
 
 function teardown {

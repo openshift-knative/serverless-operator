@@ -15,8 +15,8 @@ function ensure_serverless_installed {
   enable_debug_log
 
   local csv
-  if [[ -n "$STARTING_CSV" ]]; then
-    csv="$STARTING_CSV"
+  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+    csv="$OLDEST_COMPATIBLE_CSV"
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else

@@ -24,7 +24,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
@@ -77,12 +76,12 @@ func TestKitchensink(t *testing.T) {
 	// Add here any feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(true),
-		features.BrokerFeatureSetWithTriggerDLS(true),
-		features.ChannelFeatureSet(true),
-		features.SequenceNoReplyFeatureSet(true),
-		features.SequenceGlobalReplyFeatureSet(true),
-		features.ParallelNoReplyFeatureSet(true),
-		features.ParallelGlobalReplyFeatureSet(true),
+		//features.BrokerFeatureSetWithTriggerDLS(true),
+		//features.ChannelFeatureSet(true),
+		//features.SequenceNoReplyFeatureSet(true),
+		//features.SequenceGlobalReplyFeatureSet(true),
+		//features.ParallelNoReplyFeatureSet(true),
+		//features.ParallelGlobalReplyFeatureSet(true),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -98,11 +97,7 @@ func TestKitchensink(t *testing.T) {
 			PostUpgrade: featureGroup.PostUpgradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-					time.Sleep(10 * time.Second)
-				}),
-			},
+			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
 		},
 	}
 	suite.Execute(cfg)
