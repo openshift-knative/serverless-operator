@@ -20,10 +20,10 @@ import (
 )
 
 type FeatureWithEnvironment struct {
-	Context     context.Context
-	Global      environment.GlobalEnvironment
-	Environment environment.Environment
 	Feature     *feature.Feature
+	Global      environment.GlobalEnvironment
+	Context     context.Context
+	Environment environment.Environment
 }
 
 func (fe *FeatureWithEnvironment) CreateEnvironment() {
