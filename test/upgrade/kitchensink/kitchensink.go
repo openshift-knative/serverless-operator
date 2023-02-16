@@ -119,7 +119,7 @@ func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 type FeatureWithEnvironmentGroup []*FeatureWithEnvironment
 
 func (fg FeatureWithEnvironmentGroup) PreUpgradeTests() []pkgupgrade.Operation {
-	var ops []pkgupgrade.Operation
+	ops := make([]pkgupgrade.Operation, 0, len(fg))
 	for _, ft := range fg {
 		ops = append(ops, ft.PreUpgrade())
 	}
@@ -127,7 +127,7 @@ func (fg FeatureWithEnvironmentGroup) PreUpgradeTests() []pkgupgrade.Operation {
 }
 
 func (fg FeatureWithEnvironmentGroup) PostUpgradeTests() []pkgupgrade.Operation {
-	var ops []pkgupgrade.Operation
+	ops := make([]pkgupgrade.Operation, 0, len(fg))
 	for _, ft := range fg {
 		ops = append(ops, ft.PostUpgrade())
 	}
@@ -145,9 +145,9 @@ func filterStepTimings(steps []feature.Step, timing feature.Timing) []feature.St
 }
 
 func (fg *FeatureWithEnvironmentGroup) Split(parts int) []FeatureWithEnvironmentGroup {
-	size := len(*fg) / parts
-	var groups []FeatureWithEnvironmentGroup
+	groups := make([]FeatureWithEnvironmentGroup, 0, parts)
 
+	size := len(*fg) / parts
 	var j int
 	for i := 0; i < len(*fg); i += size {
 		j += size

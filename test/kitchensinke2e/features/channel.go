@@ -105,7 +105,7 @@ func ChannelFeatureSet(short bool) feature.FeatureSet {
 		}
 	}
 
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(testCombinations))
 	for _, testCombination := range testCombinations {
 		features = append(features, ChannelReadiness(
 			testCombination.channel,

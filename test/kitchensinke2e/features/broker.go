@@ -99,7 +99,7 @@ func BrokerFeatureSetWithBrokerDLS(short bool) feature.FeatureSet {
 	if short {
 		dls = deadLetterSinksShort
 	}
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
 	for _, broker := range brokers {
 		for _, deadLetterSink := range dls {
 			features = append(features, BrokerReadiness(broker, deadLetterSink, triggers, nil))
@@ -118,7 +118,7 @@ func BrokerFeatureSetWithTriggerDLS(short bool) feature.FeatureSet {
 	if short {
 		dls = deadLetterSinksShort
 	}
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
 	for _, broker := range brokers {
 		for _, deadLetterSink := range dls {
 			features = append(features, BrokerReadiness(broker, nil, triggers, deadLetterSink))

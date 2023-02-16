@@ -31,6 +31,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/pkg/injection"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
