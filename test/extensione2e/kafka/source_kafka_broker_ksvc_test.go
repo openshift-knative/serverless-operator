@@ -70,5 +70,5 @@ func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
 		})
 
 		return broker
-	})
+	}, nil)
 }

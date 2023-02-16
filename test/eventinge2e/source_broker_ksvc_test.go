@@ -60,5 +60,5 @@ kind: %q`, channelAPIVersion, channelKind),
 		})
 
 		return broker
-	})
+	}, nil)
 }

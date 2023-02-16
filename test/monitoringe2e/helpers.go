@@ -35,19 +35,16 @@ var (
 	eventingMetricQueries = []string{
 		"controller_go_mallocs{namespace=\"knative-eventing\"}",
 		"eventing_webhook_go_mallocs",
-		"inmemorychannel_controller_go_mallocs",
+		"inmemorychannel_webhook_go_mallocs",
 		"inmemorychannel_dispatcher_go_mallocs",
 		"mt_broker_controller_go_mallocs",
 		"mt_broker_filter_go_mallocs",
 		"mt_broker_ingress_go_mallocs",
-		"sugar_controller_go_mallocs",
 	}
 
 	KafkaQueries = []string{
-		"kafkachannel_controller_go_mallocs",
-		"kafka_controller_go_mallocs",
-		"kafkachannel_webhook_go_mallocs",
-		"kafkachannel_dispatcher_go_mallocs",
+		"kafka_broker_controller_go_mallocs",
+		"kafka_webhook_eventing_go_mallocs",
 	}
 
 	KafkaBrokerDataPlaneQueries = []string{
@@ -57,11 +54,13 @@ var (
 		"sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
 	}
 
-	NamespacedKafkaBrokerDataPlaneQueries = []string{
-		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", namespace=\"default\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"default\",}[5m])) by (name, namespace_name)",
-		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"default\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"default\"}[5m])) by (name, namespace_name)",
-		"sum(event_count_1_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"default\"}) by (name, namespace_name)",
-		"sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"default\"}) by (name, namespace_name)",
+	NamespacedKafkaBrokerDataPlaneQueries = func(namespace string) []string {
+		return []string{
+			fmt.Sprintf("sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", namespace=\"%s\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\",}[5m])) by (name, namespace_name)", namespace, namespace),
+			fmt.Sprintf("sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name)", namespace, namespace),
+			fmt.Sprintf("sum(event_count_1_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
+			fmt.Sprintf("sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
+		}
 	}
 
 	KafkaControllerQueries = []string{
@@ -166,7 +165,13 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 				caCtx.T.Log("Error querying prometheus metrics:", err)
 				return false, nil
 			}
-			return value.Type() == prommodel.ValVector, nil
+
+			if value.Type() != prommodel.ValVector {
+				return false, nil
+			}
+
+			vector := value.(prommodel.Vector)
+			return vector.Len() > 0, nil
 		}); err != nil {
 			return fmt.Errorf("failed to access the Prometheus API endpoint for %s and get the metric value expected: %w", metric, err)
 		}

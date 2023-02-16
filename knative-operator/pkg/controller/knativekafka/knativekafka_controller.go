@@ -61,7 +61,7 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 
-	dependentConfigMaps = sets.NewString("config-tracing", "kafka-config-logging")
+	dependentConfigMaps = sets.NewString("config-observability", "config-tracing", "kafka-config-logging")
 )
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
