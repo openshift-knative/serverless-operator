@@ -153,8 +153,7 @@ func PatchKnativeResources(ctx *test.Context) error {
 	}
 
 	for _, crd := range crdList.Items {
-		// Process all knative resources.
-		if strings.Contains(crd.Name, "knative.dev") {
+		if strings.Contains(crd.Name, "knative.dev") && !strings.Contains(crd.Name, "internal") {
 			gr := schema.ParseGroupResource(crd.Name)
 			if gr.Empty() {
 				return fmt.Errorf("unable to parse group version: %s", crd.Name)
