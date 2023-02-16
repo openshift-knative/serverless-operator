@@ -37,6 +37,7 @@ import (
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
+
 	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
 	pkgTest "knative.dev/pkg/test"
 )
