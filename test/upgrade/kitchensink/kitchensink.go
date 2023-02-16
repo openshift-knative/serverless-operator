@@ -144,6 +144,24 @@ func filterStepTimings(steps []feature.Step, timing feature.Timing) []feature.St
 	return res
 }
 
+func (fg *FeatureWithEnvironmentGroup) Split(parts int) []FeatureWithEnvironmentGroup {
+	size := len(*fg) / parts
+	var groups []FeatureWithEnvironmentGroup
+
+	var j int
+	for i := 0; i < len(*fg); i += size {
+		j += size
+		if j+size > len(*fg) {
+			// Squeeze the remainder into the last group.
+			groups = append(groups, (*fg)[i:len(*fg)])
+			break
+		}
+		groups = append(groups, (*fg)[i:j])
+	}
+
+	return groups
+}
+
 func PatchKnativeResources(ctx *test.Context) error {
 	crdClient := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions()
 

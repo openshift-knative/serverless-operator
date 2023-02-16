@@ -22,7 +22,9 @@ package kitchensink
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,17 +74,16 @@ func TestMain(m *testing.M) {
 func TestKitchensink(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := upgrade.NewUpgradeConfig(t)
 
-	// Add here any feature sets to be tested during upgrades.
+	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLS(true),
-		//features.BrokerFeatureSetWithTriggerDLS(true),
-		//features.ChannelFeatureSet(true),
-		//features.SequenceNoReplyFeatureSet(true),
-		//features.SequenceGlobalReplyFeatureSet(true),
-		//features.ParallelNoReplyFeatureSet(true),
-		//features.ParallelGlobalReplyFeatureSet(true),
+		features.BrokerFeatureSetWithTriggerDLS(true),
+		features.ChannelFeatureSet(true),
+		features.SequenceNoReplyFeatureSet(true),
+		features.SequenceGlobalReplyFeatureSet(true),
+		features.ParallelNoReplyFeatureSet(true),
+		features.ParallelGlobalReplyFeatureSet(true),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -92,28 +93,73 @@ func TestKitchensink(t *testing.T) {
 		}
 	}
 
-	suite := pkgupgrade.Suite{
-		Tests: pkgupgrade.Tests{
-			PreUpgrade: featureGroup.PreUpgradeTests(),
-			PostUpgrade: append(featureGroup.PostUpgradeTests(),
-				ModifyResourcesTest(ctx),
-			),
-		},
-		Installations: pkgupgrade.Installations{
-			UpgradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-					time.Sleep(10 * time.Second)
-				}),
-			},
-			//upgrade.ServerlessUpgradeOperations(ctx),
-		},
+	// Shuffle the features so that different features are installed at individual
+	// stages (Serverless versions) every time we run the tests. This is to cover more
+	// combinations of Features and Serverless versions while keeping the payload small
+	// enough for the cluster.
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
+
+	sources := strings.Split(strings.Trim(test.Flags.CatalogSource, ","), ",")
+	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
+	if len(sources) != len(csvs) {
+		t.Fatal("The number of operator sources and CSVs for upgrades must match")
 	}
-	suite.Execute(cfg)
+
+	// Split features across upgrades.
+	groups := featureGroup.Split(len(csvs))
+
+	for i, csv := range csvs {
+		_, toVersion, _ := strings.Cut(csv, ".")
+
+		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
+			cfg := upgrade.NewUpgradeConfig(t)
+			source := sources[i]
+			// Run these tests after each upgrade.
+			post := []pkgupgrade.Operation{
+				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+					Namespace: "knative-serving",
+				}),
+				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+					Namespace: "knative-eventing",
+				}),
+			}
+			// In the last step. Run also post-upgrade tests for all features.
+			if i == len(csvs)-1 {
+				post = append(post, ModifyResourcesTest(ctx))
+				post = append(post, featureGroup.PostUpgradeTests()...)
+			}
+
+			suite := pkgupgrade.Suite{
+				Tests: pkgupgrade.Tests{
+					// Run pre-upgrade tests only for given sub-group
+					PreUpgrade:  groups[i].PreUpgradeTests(),
+					PostUpgrade: post,
+				},
+				Installations: pkgupgrade.Installations{
+					//UpgradeWith: []pkgupgrade.Operation{
+					//	pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
+					//		time.Sleep(5 * time.Second)
+					//	}),
+					//},
+					UpgradeWith: []pkgupgrade.Operation{
+						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
+							if err := installation.UpgradeServerlessTo(ctx, csv, source); err != nil {
+								c.T.Error("Serverless upgrade failed:", err)
+							}
+						}),
+					},
+				},
+			}
+			suite.Execute(cfg)
+		})
+	}
 }
 
-func ModifyResourcesTest(ctx *test.Context) upgrade.Operation {
+func ModifyResourcesTest(ctx *test.Context) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("ModifyResourcesTest", func(c pkgupgrade.Context) {
 		// Intentionally don't use t.Parallel() to make the test run before parallel tests.
+		// The parallel tests delete namespaces so patching the resources must be done earlier.
 		if err := PatchKnativeResources(ctx); err != nil {
 			c.T.Error(err)
 		}
