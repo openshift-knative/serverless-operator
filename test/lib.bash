@@ -312,8 +312,8 @@ function kitchensink_upgrade_tests {
   go_test_e2e -run=TestKitchensink -timeout=10m -parallel=8 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
-     --catalogsource="${SOURCES}" \
-     --csv="${CSVS}" \
+     --catalogsource="$(metadata.get "upgrades.sequence[*].source" | tail -n +2 | tr '\n' ',')" \
+     --csv="$(metadata.get "upgrades.sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 
   logger.success 'Kitchensink upgrade tests passed'

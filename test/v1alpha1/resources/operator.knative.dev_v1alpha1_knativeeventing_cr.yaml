@@ -1,0 +1,24 @@
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+spec:
+  config:
+    logging:
+      loglevel.controller: "debug"
+      loglevel.webhook: "debug"
+      loglevel.kafkachannel-dispatcher: "debug"
+      loglevel.kafkachannel-controller: "debug"
+      loglevel.inmemorychannel-dispatcher: "debug"
+      loglevel.mt-broker-controller: "debug"
+    sugar:
+      namespace-selector: |
+        matchExpressions:
+        - key: "e2e.eventing.knative.dev/injection"
+          operator: "In"
+          values: ["enabled"]
+      trigger-selector: |
+        matchExpressions:
+        - key: "e2e.eventing.knative.dev/injection"
+          operator: "In"
+          values: ["enabled"]

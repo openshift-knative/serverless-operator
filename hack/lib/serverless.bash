@@ -16,8 +16,8 @@ function ensure_serverless_installed {
 
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
-    csv="$OLDEST_COMPATIBLE_CSV"
-    OLM_SOURCE="$OLDEST_COMPATIBLE_SOURCE"
+    csv="$(metadata.get "upgrades.sequence[0].csv")"
+    OLM_SOURCE="$(metadata.get "upgrades.sequence[0].source")"
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else
@@ -150,7 +150,12 @@ function deploy_knativeserving_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
-  cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
+  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+    cp "${rootdir}/$(metadata.get "upgrades.sequence[0].serving_cr")" "$serving_cr"
+  else
+    cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
+  fi
+
 
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
@@ -216,42 +221,18 @@ function deploy_knativeeventing_cr {
   timeout 900 "[[ \$(oc get crd | grep -c knativeeventings.operator.knative.dev) -eq 0 ]]"
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  eventing_cr="$(mktemp -t serving-XXXXX.yaml)"
-
-  # Install Knative Eventing
-  cat <<EOF > "$eventing_cr"
-apiVersion: operator.knative.dev/v1beta1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: ${EVENTING_NAMESPACE}
-spec:
-  config:
-    logging:
-      loglevel.controller: "debug"
-      loglevel.webhook: "debug"
-      loglevel.kafkachannel-dispatcher: "debug"
-      loglevel.kafkachannel-controller: "debug"
-      loglevel.inmemorychannel-dispatcher: "debug"
-      loglevel.mt-broker-controller: "debug"
-    sugar:
-      namespace-selector: |
-        matchExpressions:
-        - key: "e2e.eventing.knative.dev/injection"
-          operator: "In"
-          values: ["enabled"]
-      trigger-selector: |
-        matchExpressions:
-        - key: "e2e.eventing.knative.dev/injection"
-          operator: "In"
-          values: ["enabled"]
-EOF
+  eventing_cr="$(mktemp -t eventing-XXXXX.yaml)"
+  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+    cp "${rootdir}/$(metadata.get "upgrades.sequence[0].eventing_cr")" "$eventing_cr"
+  else
+    cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml" "$eventing_cr"
+  fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$eventing_cr"
   fi
 
-  oc apply -f "$eventing_cr"
+  oc apply -n "${EVENTING_NAMESPACE}" -f "$eventing_cr"
 }
 
 function deploy_knativekafka_cr {
