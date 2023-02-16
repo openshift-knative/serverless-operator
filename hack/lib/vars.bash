@@ -29,10 +29,11 @@ CURRENT_VERSION_MAJOR_MINOR="$(cut -d '.' -f 1 <<< "${CURRENT_VERSION}")"."$(cut
 PREVIOUS_VERSION="$(metadata.get olm.replaces)"
 CURRENT_CSV="$(metadata.get project.name).v$CURRENT_VERSION"
 PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
-OLDEST_COMPATIBLE_CSV="$(metadata.get upgrades.starting_csv)"
-CSVS=$(metadata.get "upgrades.sequence[*].csv" | tr '\n' ',')
-SOURCES=$(metadata.get "upgrades.sequence[*].source" | tr '\n' ',')
-export CURRENT_VERSION CURRENT_VERSION_MAJOR_MINOR PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV OLDEST_COMPATIBLE_CSV CSVS SOURCES
+OLDEST_COMPATIBLE_CSV="$(metadata.get "upgrades.sequence[0].csv")"
+OLDEST_COMPATIBLE_SOURCE="$(metadata.get "upgrades.sequence[0].source")"
+CSVS=$(metadata.get "upgrades.sequence[*].csv" | tail -n +2 | tr '\n' ',')
+SOURCES=$(metadata.get "upgrades.sequence[*].source" | tail -n +2 | tr '\n' ',')
+export CURRENT_VERSION CURRENT_VERSION_MAJOR_MINOR PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV OLDEST_COMPATIBLE_CSV CSVS OLDEST_COMPATIBLE_SOURCE SOURCES
 
 # Directories below are filled with source code by ci-operator
 export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"

@@ -17,6 +17,7 @@ function ensure_serverless_installed {
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
     csv="$OLDEST_COMPATIBLE_CSV"
+    OLM_SOURCE="$OLDEST_COMPATIBLE_SOURCE"
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else
