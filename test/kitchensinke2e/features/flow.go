@@ -159,7 +159,7 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 
 // SequenceNoReplyFeatureSet returns sequences with all possible Kinds as steps, with no reply
 func SequenceNoReplyFeatureSet(short bool) feature.FeatureSet {
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(flowTestConfigurations))
 	steps := sinksAll
 	if short {
 		steps = sinksShort
@@ -187,7 +187,7 @@ func ParallelNoReplyFeatureSet(short bool) feature.FeatureSet {
 		rpls = repliesShort
 		subscr = subscribersShort
 	}
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(flowTestConfigurations))
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		features = append(features, ParallelReadiness(flowTestConfiguration.shortLabel+"-par", flowTestConfiguration, subscr, rpls, fltrs, nil))
 	}
@@ -205,7 +205,7 @@ func SequenceGlobalReplyFeatureSet(short bool) feature.FeatureSet {
 	}
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
 	steps := sinksAll
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range rpls {
@@ -229,7 +229,7 @@ func ParallelGlobalReplyFeatureSet(short bool) feature.FeatureSet {
 	}
 	// We're using random to choose a random subscriber for a given reply Kind
 	rand.Seed(time.Now().Unix())
-	var features []*feature.Feature
+	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range rpls {
 			label := fmt.Sprintf("%s-par-%s-rep", flowTestConfiguration.shortLabel, shortLabel(reply))
