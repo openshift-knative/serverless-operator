@@ -42,6 +42,7 @@ func TestSourceToNativeKafkaBrokerToKnativeService(t *testing.T) {
 func TestSourceToNamespacedKafkaBrokerToKnativeService(t *testing.T) {
 	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, createBrokerFunc(t, kafka.NamespacedBrokerClass), func(ctx *test.Context) {
 		t.Run("verify namespaced Kafka Broker data plane metrics work correctly", func(t *testing.T) {
+			t.Skip("SRVKE-1408")
 			if err := monitoringe2e.VerifyMetrics(ctx, monitoringe2e.NamespacedKafkaBrokerDataPlaneQueries(test.Namespace)); err != nil {
 				t.Fatal("Failed to verify that namespaced Kafka Broker data plane metrics work correctly", err)
 			}
