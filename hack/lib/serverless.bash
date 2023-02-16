@@ -54,6 +54,9 @@ function install_knative_resources {
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr
   fi
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    deploy_knativekafka_cr
+  fi
 
   if [[ $INSTALL_SERVING == "true" ]]; then
     wait_for_knative_serving_ready
@@ -61,13 +64,6 @@ function install_knative_resources {
   if [[ $INSTALL_EVENTING == "true" ]]; then
     wait_for_knative_eventing_ready
   fi
-
-  # TODO: temporary workaround for a suspected SRVKE-1071
-  # we install knativekafka after eventing is ready to be sure the kafka-webhook starts with an initialized config-observability
-  if [[ $INSTALL_KAFKA == "true" ]]; then
-    deploy_knativekafka_cr
-  fi
-
   if [[ $INSTALL_KAFKA == "true" ]]; then
     wait_for_knative_kafka_ready
   fi
