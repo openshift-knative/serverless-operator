@@ -144,19 +144,19 @@ func filterStepTimings(steps []feature.Step, timing feature.Timing) []feature.St
 	return res
 }
 
-func (fg *FeatureWithEnvironmentGroup) Split(parts int) []FeatureWithEnvironmentGroup {
+func (fg FeatureWithEnvironmentGroup) Split(parts int) []FeatureWithEnvironmentGroup {
 	groups := make([]FeatureWithEnvironmentGroup, 0, parts)
 
-	size := len(*fg) / parts
+	size := len(fg) / parts
 	var j int
-	for i := 0; i < len(*fg); i += size {
+	for i := 0; i < len(fg); i += size {
 		j += size
-		if j+size > len(*fg) {
+		if j+size > len(fg) {
 			// Squeeze the remainder into the last group.
-			groups = append(groups, (*fg)[i:len(*fg)])
+			groups = append(groups, fg[i:])
 			break
 		}
-		groups = append(groups, (*fg)[i:j])
+		groups = append(groups, fg[i:j])
 	}
 
 	return groups
