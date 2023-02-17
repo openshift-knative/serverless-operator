@@ -227,7 +227,13 @@ function downstream_kitchensink_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -timeout=120m -parallel=8 ./test/kitchensinke2e \
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=120m -parallel=8")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e ${RUN_FLAGS[@]} ./test/kitchensinke2e \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
 }
