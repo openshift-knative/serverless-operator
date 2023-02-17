@@ -73,6 +73,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// TestKitchensink tests as many Knative resources as possible during upgrades.
+// It does a series of upgrades according to CSVs passed via test flags. For each
+// upgrade it takes a random subset of features from the whole group, installs them
+// and verifies their readiness. The size of each subset is N / num_of_upgrades where
+// N is the overall size of the feature set. The last subset includes any remaining
+// features that didn't fit into previous groups.
+// Additional checks are performed after last upgrade. They include deleting the
+// test namespaces.
 func TestKitchensink(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
@@ -95,10 +103,9 @@ func TestKitchensink(t *testing.T) {
 		}
 	}
 
-	// Shuffle the features so that different features are installed at individual
-	// stages (Serverless versions) every time we run the tests. This is to cover more
-	// combinations of Features and Serverless versions while keeping the payload small
-	// enough for the cluster.
+	// Shuffle the features so that different features are installed at each stage
+	// every time we run the tests. This is to cover more combinations of Features
+	// and Serverless versions while keeping the payload small enough for the cluster.
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
@@ -116,7 +123,6 @@ func TestKitchensink(t *testing.T) {
 
 		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
 			cfg := upgrade.NewUpgradeConfig(t)
-			source := sources[i]
 			// Run these tests after each upgrade.
 			post := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
@@ -131,6 +137,8 @@ func TestKitchensink(t *testing.T) {
 				post = append(post, ModifyResourcesTest(ctx))
 				post = append(post, featureGroup.PostUpgradeTests()...)
 			}
+
+			source := sources[i]
 
 			suite := pkgupgrade.Suite{
 				Tests: pkgupgrade.Tests{
