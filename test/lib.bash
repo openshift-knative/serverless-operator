@@ -77,7 +77,12 @@ function serverless_operator_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2e \
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e -tags=e2e ${RUN_FLAGS[@]} ./test/e2e \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
@@ -95,7 +100,12 @@ function serverless_operator_kafka_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -tags=e2e -timeout=30m -parallel=1 ./test/e2ekafka \
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e -tags=e2e ${RUN_FLAGS[@]} ./test/e2ekafka \
     --channel "$OLM_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
@@ -113,14 +123,20 @@ function downstream_serving_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
   if [[ $FULL_MESH == "true" ]]; then
     export GODEBUG="x509ignoreCN=0"
-    go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/ \
+    go_test_e2e ${RUN_FLAGS[@]} ./test/servinge2e/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
   else
-    go_test_e2e -failfast -timeout=60m -parallel=1 ./test/servinge2e/... \
+    go_test_e2e ${RUN_FLAGS[@]} ./test/servinge2e/... \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
@@ -142,7 +158,13 @@ function downstream_eventing_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/eventinge2e \
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e ${RUN_FLAGS[@]} ./test/eventinge2e \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -163,7 +185,13 @@ function downstream_knative_kafka_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=60m -parallel=1 ./test/extensione2e/kafka \
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e ${RUN_FLAGS[@]} ./test/extensione2e/kafka \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -180,7 +208,13 @@ function downstream_monitoring_e2e_tests {
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
-  go_test_e2e -failfast -timeout=30m -parallel=1 ./test/monitoringe2e \
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=30m -parallel=1")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e ${RUN_FLAGS[@]} ./test/monitoringe2e \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -193,7 +227,13 @@ function downstream_kitchensink_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  go_test_e2e -failfast -timeout=120m -parallel=8 ./test/kitchensinke2e \
+  # check for test flags
+  RUN_FLAGS=("-failfast -timeout=120m -parallel=8")
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    RUN_FLAGS="${OPERATOR_TEST_FLAGS}"
+  fi
+
+  go_test_e2e ${RUN_FLAGS[@]} ./test/kitchensinke2e \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
 }
