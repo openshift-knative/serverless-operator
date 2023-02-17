@@ -79,8 +79,8 @@ func TestMain(m *testing.M) {
 // and verifies their readiness. The size of each subset is N / num_of_upgrades where
 // N is the overall size of the feature set. The last subset includes any remaining
 // features that didn't fit into previous groups.
-// Additional checks are performed after last upgrade. They include deleting the
-// test namespaces.
+// Readiness of all features is checked after last upgrade. Additional checks at this
+// point include modifying all resources and deleting the test namespaces.
 func TestKitchensink(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
@@ -147,11 +147,6 @@ func TestKitchensink(t *testing.T) {
 					PostUpgrade: post,
 				},
 				Installations: pkgupgrade.Installations{
-					//UpgradeWith: []pkgupgrade.Operation{
-					//	pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-					//		time.Sleep(5 * time.Second)
-					//	}),
-					//},
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
 							if err := installation.UpgradeServerlessTo(ctx, csv, source); err != nil {
