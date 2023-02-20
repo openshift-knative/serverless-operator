@@ -158,6 +158,15 @@ test-upstream-upgrade:
 # Alias.
 test-upgrade: test-upstream-upgrade
 
+test-kitchensink-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	./hack/dev.sh
+	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
+	./test/kitchensink-upgrade-tests.sh
+
+test-kitchensink-upgrade-testonly:
+	./test/kitchensink-upgrade-tests.sh
+
 # Run Console UI e2e tests.
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh

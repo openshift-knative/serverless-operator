@@ -22,11 +22,11 @@ var Flags = initializeFlags()
 // FlagsStruct is struct that defines testing options
 type FlagsStruct struct {
 	Kubeconfigs             string // Path to .kube/config
-	CatalogSource           string // CatalogSource in the openshift-marketplace namespace for the Serverless operator Subscription
+	CatalogSource           string // CatalogSource for the Serverless operator Subscription. Might be a list of catalog sources separated by comma.
 	Channel                 string // Serverless operator Subscription channel
 	Subscription            string // Serverless operator Subscription name
 	UpgradeChannel          string // Target OLM channel for upgrades
-	CSV                     string // Target CSV for upgrades
+	CSV                     string // Target CSV for upgrades. Might be a list of CSVs separated by comma.
 	CSVPrevious             string // Previous CSV for downgrades
 	ServingVersion          string // Target Serving version for upgrades
 	EventingVersion         string // Target Eventing version for upgrades

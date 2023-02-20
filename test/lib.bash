@@ -304,6 +304,21 @@ EOF
   logger.success 'Upgrade tests passed'
 }
 
+function kitchensink_upgrade_tests {
+  logger.info "Running kitchensink upgrade tests"
+
+  export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
+
+  go_test_e2e -run=TestKitchensink -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
+     --kubeconfigs="${KUBECONFIG}" \
+     --imagetemplate="${IMAGE_TEMPLATE}" \
+     --catalogsource="$(metadata.get "upgrades.sequence[*].source" | tail -n +2 | tr '\n' ',')" \
+     --csv="$(metadata.get "upgrades.sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
+     --upgradechannel="${OLM_UPGRADE_CHANNEL}"
+
+  logger.success 'Kitchensink upgrade tests passed'
+}
+
 function teardown {
   if [ -n "$OPENSHIFT_CI" ]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'

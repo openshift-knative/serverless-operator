@@ -20,4 +20,4 @@ scale_up_workers
 create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
 ensure_catalogsource_installed
-ensure_serverless_installed "${INSTALL_PREVIOUS_VERSION}"
+ensure_serverless_installed

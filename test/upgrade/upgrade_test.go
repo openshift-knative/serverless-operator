@@ -22,7 +22,6 @@ package upgrade_test
 import (
 	"testing"
 
-	"go.uber.org/zap"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
 	"knative.dev/eventing-kafka/test/upgrade/continual"
@@ -42,7 +41,7 @@ import (
 func TestServerlessUpgradePrePost(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := newUpgradeConfig(t)
+	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
@@ -50,14 +49,8 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 			PostDowngrade: postDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-					if err := installation.UpgradeServerless(ctx); err != nil {
-						c.T.Error("Serverless upgrade failed:", err)
-					}
-				}),
-			},
-			DowngradeWith: downgrade(ctx),
+			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
 	suite.Execute(cfg)
@@ -66,7 +59,7 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 func TestServerlessUpgradeContinual(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := newUpgradeConfig(t)
+	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
@@ -81,14 +74,8 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 			),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: []pkgupgrade.Operation{
-				pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-					if err := installation.UpgradeServerless(ctx); err != nil {
-						c.T.Error("Serverless upgrade failed:", err)
-					}
-				}),
-			},
-			DowngradeWith: downgrade(ctx),
+			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
 	suite.Execute(cfg)
@@ -99,7 +86,7 @@ func TestClusterUpgrade(t *testing.T) {
 	if !test.Flags.UpgradeOpenShift {
 		t.Skip("Cluster upgrade tests disabled unless enabled by a flag.")
 	}
-	cfg := newUpgradeConfig(t)
+	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
@@ -193,16 +180,6 @@ func postDowngradeTests() []pkgupgrade.Operation {
 	return tests
 }
 
-func downgrade(ctx *test.Context) []pkgupgrade.Operation {
-	return []pkgupgrade.Operation{
-		pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
-			if err := installation.DowngradeServerless(ctx); err != nil {
-				c.T.Error("Serverless downgrade failed:", err)
-			}
-		}),
-	}
-}
-
 func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("WaitForServicesReady", func(c pkgupgrade.Context) {
 		if err := test.WaitForReadyServices(ctx, "serving-tests"); err != nil {
@@ -210,14 +187,6 @@ func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 		}
 		// TODO: Check if we need to sleep 30 more seconds like in the previous bash scripts.
 	})
-}
-
-func newUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
-	log, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return pkgupgrade.Configuration{T: t, Log: log}
 }
 
 func TestMain(m *testing.M) {

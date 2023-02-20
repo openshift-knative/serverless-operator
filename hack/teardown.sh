@@ -9,6 +9,6 @@ debugging.setup
 dump_state.setup
 
 teardown_serverless
-teardown_tracing
 delete_catalog_source
+teardown_tracing
 delete_namespaces "${SYSTEM_NAMESPACES[@]}"
