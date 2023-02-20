@@ -98,3 +98,4 @@ quay.io/openshift-knative/{{- with .Name }}
 EOF
 )
 export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
+export INDEX_IMAGE="${INDEX_IMAGE:-}"

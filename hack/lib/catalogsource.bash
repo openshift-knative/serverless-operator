@@ -71,6 +71,11 @@ function install_catalogsource {
     mv "${rootdir}/_output/bkp.Dockerfile" "${index_build_dir}/Dockerfile"
   fi
 
+  if [ -n "${INDEX_IMAGE:-}" ]; then
+     echo "Index image : $INDEX_IMAGE"
+     index_image="$INDEX_IMAGE"
+  fi
+
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
 apiVersion: operators.coreos.com/v1alpha1
