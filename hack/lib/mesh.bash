@@ -30,6 +30,33 @@ function deploy_servicemesh_operators {
 function undeploy_servicemesh_operators {
   logger.info "Deleting service mesh subscriptions"
   oc delete subscriptions.operators.coreos.com -n openshift-operators servicemeshoperator kiali-ossm jaeger-product --ignore-not-found
+  logger.info 'Deleting ClusterServiceVersion'
+  for csv in $(set +o pipefail && oc get csv -n openshift-operators --no-headers 2>/dev/null \
+      | grep 'servicemeshoperator\|jaeger\|kiali' | cut -f1 -d' '); do
+    oc delete csv -n openshift-operators "${csv}"
+  done
+
+  logger.info 'Ensure no operators present'
+  timeout 600 "[[ \$(oc get deployments -n openshift-operators -oname | grep -c 'servicemeshoperator\|jaeger\|kiali') != 0 ]]"
+
+  logger.info "Deleting service mesh istio nodes"
+  oc delete --ignore-not-found=true daemonset.apps/istio-node -n openshift-operators
+  oc delete --ignore-not-found=true service/maistra-admission-controller -n openshift-operators
+
+  logger.info "Deleting service mesh webhooks and rbac resources"
+  oc delete --ignore-not-found=true validatingwebhookconfiguration openshift-operators.servicemesh-resources.maistra.io
+  oc delete --ignore-not-found=true mutatingwebhookconfigurations openshift-operators.servicemesh-resources.maistra.io
+  oc delete --ignore-not-found=true clusterrole istio-admin istio-cni istio-edit istio-view
+  oc delete --ignore-not-found=true clusterrolebinding istio-cn
+
+  logger.info 'Ensure not CRDs left'
+  if [[ ! $(oc get crd -oname | grep -c 'maistra.io') -eq 0 ]]; then
+    oc get crd -oname | grep 'maistra.io' | xargs oc delete --timeout=60s
+  fi
+  if [[ ! $(oc get crd -oname | grep -c 'istio') -eq 0 ]]; then
+    oc get crd -oname | grep 'istio' | xargs oc delete --timeout=60s
+  fi
+  logger.success "Service mesh has been uninstalled"
 }
 
 function deploy_servicemeshcontrolplane {
