@@ -48,15 +48,17 @@ function install_knative_resources {
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr
   fi
-  if [[ $INSTALL_KAFKA == "true" ]]; then
-    deploy_knativekafka_cr
-  fi
 
   if [[ $INSTALL_SERVING == "true" ]]; then
     wait_for_knative_serving_ready
   fi
   if [[ $INSTALL_EVENTING == "true" ]]; then
     wait_for_knative_eventing_ready
+  fi
+
+  # https://issues.redhat.com/browse/SRVKE-1415 KnativeEventing a prerequisite to KnativeKafka
+  if [[ $INSTALL_KAFKA == "true" ]]; then
+    deploy_knativekafka_cr
   fi
   if [[ $INSTALL_KAFKA == "true" ]]; then
     wait_for_knative_kafka_ready
