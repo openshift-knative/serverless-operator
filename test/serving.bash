@@ -88,7 +88,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
   fi
 
-  local parallel=3
+  local parallel=16
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
@@ -96,11 +96,21 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
+  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
+
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
     ./test/e2e/initcontainers \
     ./test/e2e/pvc \
+    ${OPENSHIFT_TEST_OPTIONS} \
+    --imagetemplate "$image_template"
+
+  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
+  # Run autoscale tests separately as they require more CPU resources
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
+    ./test/e2e \
+    -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
 
