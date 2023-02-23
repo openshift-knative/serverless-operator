@@ -4929,7 +4929,7 @@ metadata:
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "4d5feafc"
+    knative.dev/example-checksum: "07e3a0bb"
 data:
   _example: |-
     ################################
@@ -4946,6 +4946,13 @@ data:
     # These sample configuration options may be copied out of
     # this example block and unindented to be in the data block
     # to actually change the configuration.
+
+    # Default SecurityContext settings to secure-by-default values
+    # if unset.
+    #
+    # This value will default to "enabled" in a future release,
+    # probably Knative 1.10
+    secure-pod-defaults: "disabled"
 
     # Indicates whether multi container support is enabled
     #
@@ -5016,6 +5023,7 @@ data:
     # - RunAsNonRoot
     # - SupplementalGroups
     # - RunAsUser
+    # - SeccompProfile
     #
     # This feature flag should be used with caution as the PodSecurityContext
     # properties may have a side-effect on non-user sidecar containers that come
