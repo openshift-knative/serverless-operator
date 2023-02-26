@@ -98,6 +98,21 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
+  sed -i '/corev1 "k8s.io\/api\/core\/v1"/a servingv1 "knative.dev\/serving\/pkg\/apis\/serving\/v1"' ./test/conformance/runtime/user_test.go
+
+  sed -i 's/fetchRuntimeInfo(t, clients)/fetchRuntimeInfo(t, clients, WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/conformance/runtime/user_test.go
+
+cat << DOC >> ./test/conformance/runtime/user_test.go
+// WithRevisionAnnotation adds the given annotation to the revision.
+func WithRevisionAnnotation(k, v string) ServiceOption {
+	return func(service *v1.Service) {
+		service.Spec.Template.Annotations = kmeta.UnionMaps(service.Spec.Template.Annotations, map[string]string{
+			k: v,
+		})
+	}
+}
+DOC
+
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
