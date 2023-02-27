@@ -6,6 +6,7 @@ import (
 
 	"github.com/opentracing/opentracing-go/log"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -21,7 +22,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/eventing"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/serving"
-	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/scheme"
 )
 
 func main() {

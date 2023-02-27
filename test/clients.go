@@ -1,6 +1,8 @@
 package test
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -13,6 +15,8 @@ import (
 	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 	monclientv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -180,6 +184,25 @@ func (ctx *Context) Cleanup(t *testing.T) {
 // we want to delete the last thing first
 func (ctx *Context) AddToCleanup(f CleanupFunc) {
 	ctx.CleanupList = append([]CleanupFunc{f}, ctx.CleanupList...)
+}
+
+func (c *Context) DeleteOperatorPods(ctx context.Context) error {
+	namespace := "openshift-serverless"
+	pods, err := c.Clients.Kube.
+		CoreV1().
+		Pods(namespace).
+		List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list pods in %s", namespace)
+	}
+
+	for _, p := range pods.Items {
+		if err := c.Clients.Kube.CoreV1().Pods(namespace).Delete(ctx, p.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // CleanupOnInterrupt will execute the function cleanup if an interrupt signal is caught
