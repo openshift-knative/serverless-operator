@@ -181,7 +181,7 @@ test-kitchensink-e2e-testonly:
 
 test-kitchensink-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_KAFKA="true" ./hack/install.sh
+	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/kitchensink-e2e-tests.sh
 
 # Run all E2E tests.
