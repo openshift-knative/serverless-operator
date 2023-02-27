@@ -111,7 +111,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
-		common.FilterNamespace("knative-eventing"),
 		common.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
