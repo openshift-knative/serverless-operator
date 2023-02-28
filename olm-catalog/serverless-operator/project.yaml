@@ -123,7 +123,7 @@ select_testsuite:
     testsuites:
       - name: ui_tests
         upstream: false
-  - name: "Empty"
+  - name: "No tests"
     # No test suites will be run for the changes below.
     run_if_changed:
       - "^.github/"
@@ -133,8 +133,8 @@ select_testsuite:
       - "\\.(md|adoc)$"
       - "^(README|LICENSE)$"
       - "^(OWNERS|OWNERS_ALIASES)$"
-    testsuites:
-      # Empty list - do not execute anything
+    testsuites: null
+
 #  - name: "test/ui" # UI tests run in separate Prow job.
 #  - name: "test/upgrade" # Upgrade tests are run in separate Prow job.
 
