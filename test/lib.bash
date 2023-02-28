@@ -67,6 +67,8 @@ function print_test_result {
 }
 
 function serverless_operator_e2e_tests {
+  should_run "serverless_operator_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -90,6 +92,8 @@ function serverless_operator_e2e_tests {
 }
 
 function serverless_operator_kafka_e2e_tests {
+  should_run "serverless_operator_kafka_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -113,6 +117,8 @@ function serverless_operator_kafka_e2e_tests {
 }
 
 function downstream_serving_e2e_tests {
+  should_run "downstream_serving_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -143,6 +149,8 @@ function downstream_serving_e2e_tests {
 }
 
 function downstream_eventing_e2e_tests {
+  should_run "downstream_eventing_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -169,6 +177,8 @@ function downstream_eventing_e2e_tests {
 }
 
 function downstream_knative_kafka_e2e_tests {
+  should_run "downstream_knative_kafka_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 
@@ -195,6 +205,8 @@ function downstream_knative_kafka_e2e_tests {
 }
 
 function downstream_monitoring_e2e_tests {
+  should_run "downstream_monitoring_e2e_tests" || return
+
   declare -a kubeconfigs
   local kubeconfigs_str
 

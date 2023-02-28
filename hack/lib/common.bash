@@ -71,3 +71,14 @@ function yaml.break_image_references {
   # TODO: Replace queueSidecarImage with queue-sidecar-image when upstream v1.8 is used. See: https://github.com/knative/serving/pull/13347.
   sed -i "s,queueSidecarImage: .*,queue-sidecar-image: TO_BE_REPLACED," "$1"
 }
+
+function should_run {
+  local ts
+  ts=${1:?Specify test suite to check}
+
+  # TODO: Return true always when not in CI
+  # TODO: Implement this based on git diff and project.yaml
+  echo "Test suite $ts should run"
+
+  return 0
+}

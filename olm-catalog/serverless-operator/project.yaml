@@ -126,7 +126,7 @@ testsuite_select:
       - "^hack/generate/"
       - "^hack/patches/"
     testsuites:
-      - name: empty
+      # Empty list - do not execute anything
 
   # All test suites would be run if there's a change in paths that is not listed above.
   # E.g. for changes in hack, olm-catalog, openshift, vendor, test etc.

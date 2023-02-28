@@ -4,6 +4,8 @@
 set -e
 
 function upstream_knative_eventing_e2e {
+  should_run "upstream_knative_eventing_e2e" || return
+
   logger.info 'Running eventing tests'
 
   export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-test-{{.Name}}:${KNATIVE_EVENTING_VERSION}"
