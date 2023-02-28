@@ -69,12 +69,16 @@ upgrade_sequence:
     source: redhat-operators
   - csv: serverless-operator.v1.28.0
     source: serverless-operator
+# Select test suites to be run. This list is used together with Git diff.
+# run_if_changed defines path expressions (regexp) and associated test suites to be run
+# if those paths are changed.
+# "NoTests" defines path expressions that don't require any tests to be run on change.
 select_testsuite:
-  - name: "Always"
+#  - name: "Always"
     # Runs always because run_if_changed is omitted.
-    testsuites:
-      - name: serverless_operator_e2e_tests
-        upstream: false
+#    testsuites:
+#      - name: serverless_operator_e2e_tests
+#        upstream: false
   - name: "Eventing Kafka"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativekafka/"
@@ -123,7 +127,7 @@ select_testsuite:
     testsuites:
       - name: ui_tests
         upstream: false
-  - name: "No tests"
+  - name: "NoTests"
     # No test suites will be run for the changes below.
     run_if_changed:
       - "^.github/"
@@ -141,5 +145,10 @@ select_testsuite:
 # All test suites would be run if there's a change in paths that is not listed above.
 # E.g. for changes in hack, olm-catalog, openshift, vendor, test etc.
 
-# TODO: Divide the upgrade test suite? Then we could run some parts based on changes
+# TODO: Divide the upgrade test suite. Then we could run some parts of it based on changes.
 
+# Each path in the Git diff is checked against all "run_if_changed"
+# regular expressions. For each element in the list, if the path matches any of the expressions
+# in the "run_if_changed" list then all testsuites from that element are added to the list of test
+# suites to be run. If the path doesn't match any expression in any element then it's an unknown
+# change with a potentially high impact and should be treated
