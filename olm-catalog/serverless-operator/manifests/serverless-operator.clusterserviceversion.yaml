@@ -79,12 +79,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.26.0 <1.27.0'
+    olm.skipRange: '>=1.26.0 <1.27.1'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.27.0
+  name: serverless-operator.v1.27.1
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -462,7 +462,7 @@ spec:
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:openshift-knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:openshift-knative-operator
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -575,7 +575,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
                         value: "registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023"
                       - name: "CURRENT_VERSION"
-                        value: "1.27.0"
+                        value: "1.27.1"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -614,7 +614,7 @@ spec:
                 containers:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:knative-operator
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -754,7 +754,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.6"
                       - name: "CURRENT_VERSION"
-                        value: "1.27.0"
+                        value: "1.27.1"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.6"
                     securityContext:
@@ -783,7 +783,7 @@ spec:
                 containers:
                   - name: knative-openshift-ingress
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:knative-openshift-ingress
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:knative-openshift-ingress
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -933,13 +933,13 @@ spec:
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:openshift-knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:openshift-knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:knative-operator
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.0:knative-openshift-ingress
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.27.1:knative-openshift-ingress
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-v1.6.0:knative-serving-queue"
     - name: "IMAGE_activator"
@@ -1022,5 +1022,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.6"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.6"
-  replaces: serverless-operator.v1.26.0
-  version: 1.27.0
+  replaces: serverless-operator.v1.27.0
+  version: 1.27.1
