@@ -4,7 +4,7 @@
 set -e
 
 function upstream_knative_eventing_kafka_e2e {
-  should_run "upstream_knative_eventing_kafka_e2e" || return
+  should_run "${FUNCNAME[0]}" || return
 
   logger.info 'Running eventing-kafka tests'
 
@@ -33,7 +33,7 @@ function upstream_knative_eventing_kafka_e2e {
 }
 
 function upstream_knative_eventing_kafka_broker_e2e {
-  should_run "upstream_knative_eventing_kafka_broker_e2e" || return
+  should_run "${FUNCNAME[0]}" || return
 
   logger.info 'Setting Kafka as default broker class'
 
