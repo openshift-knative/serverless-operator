@@ -16,6 +16,7 @@ func TestFlowReadiness(t *testing.T) {
 	}
 	for _, fs := range featureSets {
 		for _, f := range fs.Features {
+			f := f
 			t.Run(fs.Name, func(t *testing.T) {
 				t.Parallel()
 				ctx, env := defaultContext(t)
