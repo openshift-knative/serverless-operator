@@ -69,54 +69,67 @@ upgrade_sequence:
     source: redhat-operators
   - csv: serverless-operator.v1.28.0
     source: serverless-operator
-testsuites:
-  - name: serverless_operator_e2e_tests
-    run_if_changed:
-      - knative-operator/pkg/controller/knativeeventing
-      - knative-operator/pkg/controller/knativeserving
-      - knative-operator/pkg/webhook/knativeeventing
-      - knative-operator/pkg/webhook/knativeserving
-      - openshift-knative-operator/cmd/operator/kodata/knative-eventing
-      - openshift-knative-operator/cmd/operator/kodata/knative-serving
-      - openshift-knative-operator/pkg/eventing
-      - openshift-knative-operator/pkg/serving
-      - serving/ingress
-  - name: serverless_operator_kafka_e2e_tests
+testsuite_select:
+  - name: "Always"
+    # Runs always because run_if_changed is omitted.
+    testsuites:
+      - name: serverless_operator_e2e_tests
+        upstream: false
+  - name: "Eventing Kafka"
     run_if_changed:
       - knative-operator/pkg/controller/knativekafka
       - knative-operator/pkg/webhook/knativekafka
-  - name: downstream_eventing_e2e_tests
+    testsuites:
+      - name: serverless_operator_kafka_e2e_tests
+        upstream: false
+      - name: downstream_knative_kafka_e2e_tests
+        upstream: false
+      - name: upstream_knative_eventing_kafka_e2e #TODO: Run this at all? Should this be removed?
+        upstream: true
+      - name: upstream_knative_eventing_kafka_broker_e2e
+        upstream: true
+  - name: "Eventing"
     run_if_changed:
       - knative-operator/pkg/controller/knativeeventing
       - knative-operator/pkg/webhook/knativeeventing
       - openshift-knative-operator/cmd/operator/kodata/knative-eventing
       - openshift-knative-operator/pkg/eventing
-  - name: downstream_knative_kafka_e2e_tests
-    run_if_changed:
-      - knative-operator/pkg/controller/knativekafka
-      - knative-operator/pkg/webhook/knativekafka
-  - name: downstream_monitoring_e2e_tests
+    testsuites:
+      - name: downstream_eventing_e2e_tests
+        upstream: false
+      - name: upstream_knative_eventing_e2e
+        upstream: true
+  - name: "Monitoring"
     run_if_changed:
       - knative-operator/pkg/monitoring
       - openshift-knative-operator/cmd/operator/kodata/monitoring
       - openshift-knative-operator/pkg/monitoring
-  - name: downstream_serving_e2e_tests
+    testsuites:
+      - name: downstream_monitoring_e2e_tests
+        upstream: false
+  - name: "Serving"
     run_if_changed:
       - knative-operator/pkg/controller/knativeserving
       - knative-operator/pkg/webhook/knativeserving
       - openshift-knative-operator/cmd/operator/kodata/knative-serving
       - openshift-knative-operator/pkg/serving
       - serving/ingress
+    testsuites:
+      - name: downstream_serving_e2e_tests
+        upstream: false
   #- name: "test/ui" # UI tests run in separate Prow job.
   #- name: "test/upgrade" # Upgrade tests are run in separate Prow job.
-  - name: "empty" # No test suite will be run for the changes below.
+  - name: "Empty"
+    # No test suites will be run for the changes below.
     run_if_changed:
       - docs
       - hack/generate
       - hack/patches
-  # All test suites would be run if there's a change in path that is not listed above.
+    testsuites:
+      - name: empty
+
+  # All test suites would be run if there's a change in paths that is not listed above.
   # E.g. for changes in hack, olm-catalog, openshift, vendor, test etc.
 
-  # TODO: How to choose upstream test suites
   # TODO: Divide the upgrade test suite? Then we could run some parts based on changes
 
