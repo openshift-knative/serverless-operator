@@ -72,9 +72,14 @@ func ensureMetadataOnNamespace(caCtx *test.Context, ctx context.Context, namespa
 }
 
 func verifyMetadataOnNamespace(caCtx *test.Context, ctx context.Context, namespace string, expected map[string]string, getKVMetadata getKVMetadata) error {
-	// Operator doesn't reconcile the namespace, so the problem will be triggered on restart or upgrade
+	// Operator doesn't reconcile the namespace, so the problem will be triggered on restart or
+	// on upgrades, so simulate a SO restart.
 	if err := caCtx.DeleteOperatorPods(ctx); err != nil {
 		return err
+	}
+
+	if err := caCtx.WaitForOperatorPodsReady(ctx); err != nil {
+		return fmt.Errorf("failed while waiting for operator pods to become ready: %w", err)
 	}
 
 	time.Sleep(10 * time.Second) // "Eventually" is still present
