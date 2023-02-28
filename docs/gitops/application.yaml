@@ -33,8 +33,8 @@ spec:
     server: 'https://kubernetes.default.svc'
   source:
     path: docs/gitops/serverless
-    repoURL: 'https://github.com/pierDipi/serverless-operator'
-    targetRevision: filter-eventing-ns-test
+    repoURL: 'https://github.com/openshift-knative/serverless-operator'
+    targetRevision: main
     directory:
       recurse: true
   project: openshift-serverless

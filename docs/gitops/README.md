@@ -43,4 +43,6 @@ oc get pods -n knative-eventing
   ```shell
   oc delete pods -n openshift-serverless --all
   ```
-- Verify that Argo CD UI still reports `Sync OK`
+- Verify that:
+  - Argo CD UI still reports `Sync OK`
+  - Argo CD application still reports `Synced` with `oc get application -n openshift-gitops openshift-serverless`
