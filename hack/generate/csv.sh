@@ -143,6 +143,11 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
+image 'KN_CLIENT'              "${registry}/knative-v$(metadata.get dependencies.cli):knative-client"
+
+image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
+image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
+image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get dependencies.func.tekton_buildah)"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
