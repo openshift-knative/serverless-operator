@@ -1,0 +1,15 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+index 46171431d..36693e703 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+@@ -110,6 +110,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
+ 		source.AppendTargetSources,
+ 		common.AppendAdditionalManifests,
+ 		r.appendExtensionManifests,
++		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
++			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing"))))
++			return nil
++		},
+ 		r.transform,
+ 		common.Install,
+ 		common.CheckDeployments,
