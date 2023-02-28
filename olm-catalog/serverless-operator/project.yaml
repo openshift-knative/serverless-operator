@@ -77,8 +77,8 @@ testsuite_select:
         upstream: false
   - name: "Eventing Kafka"
     run_if_changed:
-      - knative-operator/pkg/controller/knativekafka
-      - knative-operator/pkg/webhook/knativekafka
+      - "^knative-operator/pkg/controller/knativekafka/"
+      - "^knative-operator/pkg/webhook/knativekafka/"
     testsuites:
       - name: serverless_operator_kafka_e2e_tests
         upstream: false
@@ -90,10 +90,10 @@ testsuite_select:
         upstream: true
   - name: "Eventing"
     run_if_changed:
-      - knative-operator/pkg/controller/knativeeventing
-      - knative-operator/pkg/webhook/knativeeventing
-      - openshift-knative-operator/cmd/operator/kodata/knative-eventing
-      - openshift-knative-operator/pkg/eventing
+      - "^knative-operator/pkg/controller/knativeeventing/"
+      - "^knative-operator/pkg/webhook/knativeeventing/"
+      - "^openshift-knative-operator/cmd/operator/kodata/knative-eventing/"
+      - "^openshift-knative-operator/pkg/eventing/"
     testsuites:
       - name: downstream_eventing_e2e_tests
         upstream: false
@@ -101,19 +101,19 @@ testsuite_select:
         upstream: true
   - name: "Monitoring"
     run_if_changed:
-      - knative-operator/pkg/monitoring
-      - openshift-knative-operator/cmd/operator/kodata/monitoring
-      - openshift-knative-operator/pkg/monitoring
+      - "^knative-operator/pkg/monitoring/"
+      - "^openshift-knative-operator/cmd/operator/kodata/monitoring/"
+      - "^openshift-knative-operator/pkg/monitoring/"
     testsuites:
       - name: downstream_monitoring_e2e_tests
         upstream: false
   - name: "Serving"
     run_if_changed:
-      - knative-operator/pkg/controller/knativeserving
-      - knative-operator/pkg/webhook/knativeserving
-      - openshift-knative-operator/cmd/operator/kodata/knative-serving
-      - openshift-knative-operator/pkg/serving
-      - serving/ingress
+      - "^knative-operator/pkg/controller/knativeserving/"
+      - "^knative-operator/pkg/webhook/knativeserving/"
+      - "^openshift-knative-operator/cmd/operator/kodata/knative-serving/"
+      - "^openshift-knative-operator/pkg/serving/"
+      - "^serving/ingress/"
     testsuites:
       - name: downstream_serving_e2e_tests
         upstream: false
@@ -122,9 +122,9 @@ testsuite_select:
   - name: "Empty"
     # No test suites will be run for the changes below.
     run_if_changed:
-      - docs
-      - hack/generate
-      - hack/patches
+      - "^docs/"
+      - "^hack/generate/"
+      - "^hack/patches/"
     testsuites:
       - name: empty
 
