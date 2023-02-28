@@ -6,19 +6,19 @@ metadata:
     argocd.argoproj.io/managed-by: openshift-gitops
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-#---
-#apiVersion: operators.coreos.com/v1alpha1
-#kind: CatalogSource
-#metadata:
-#  name: serverless-operator
-#  namespace: openshift-marketplace
-#  annotations:
-#    argocd.argoproj.io/sync-wave: "2"
-#spec:
-#  displayName: Serverless Operator
-#  image: registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-index
-#  publisher: Red Hat
-#  sourceType: grpc
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: serverless-operator
+  namespace: openshift-marketplace
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  displayName: Serverless Operator
+  image: registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-index
+  publisher: Red Hat
+  sourceType: grpc
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup

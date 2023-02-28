@@ -13,9 +13,7 @@ spec:
     - group: '*'
       kind: '*'
   namespaceResourceWhitelist:
-    - group: 'operators.coreos.com'
-      kind: '*'
-    - group: 'operator.knative.dev'
+    - group: '*'
       kind: '*'
   destinations:
     - namespace: '*'
@@ -36,7 +34,7 @@ spec:
   source:
     path: docs/gitops/serverless
     repoURL: 'https://github.com/pierDipi/serverless-operator'
-    targetRevision: filter-eventing-ns
+    targetRevision: filter-eventing-ns-test
     directory:
       recurse: true
   project: openshift-serverless
