@@ -1138,6 +1138,14 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
       - configmaps
     verbs:
       - delete
@@ -1879,7 +1887,7 @@ webhooks:
     matchPolicy: Equivalent
     namespaceSelector:
       matchLabels:
-        app.kubernetes.io/name: knative-eventing
+        kubernetes.io/metadata.name: knative-eventing
     objectSelector:
       matchLabels:
         app.kubernetes.io/component: kafka-dispatcher
