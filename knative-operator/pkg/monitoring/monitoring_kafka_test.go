@@ -115,6 +115,20 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	//   - kind: ServiceAccount
 	//     name: knative-kafka-broker-data-plane
 	//     namespace: '{{.Namespace}}'
+	// - apiVersion: rbac.authorization.k8s.io/v1
+	//   kind: RoleBinding
+	//   metadata:
+	//     creationTimestamp: null
+	//     name: eventing-kafka-knative-prometheus-k8s
+	//     namespace: '{{.Namespace}}'
+	//   roleRef:
+	//     apiGroup: rbac.authorization.k8s.io
+	//     kind: ClusterRole
+	//     name: eventing-kafka-knative-prometheus-k8s
+	//   subjects:
+	//   - kind: ServiceAccount
+	//     name: prometheus-k8s
+	//     namespace: openshift-monitoring
 	// - apiVersion: v1
 	//   kind: Namespace
 	//   metadata:
