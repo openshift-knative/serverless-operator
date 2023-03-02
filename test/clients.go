@@ -1,6 +1,9 @@
 package test
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,7 +15,11 @@ import (
 	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client"
 	olmversioned "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 	monclientv1 "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -27,6 +34,8 @@ import (
 	// Extensions
 	kafkaversioned "knative.dev/eventing-kafka/pkg/client/clientset/versioned"
 )
+
+const operatorNamesapce = "openshift-serverless"
 
 // Context holds objects related to test execution
 type Context struct {
@@ -180,6 +189,59 @@ func (ctx *Context) Cleanup(t *testing.T) {
 // we want to delete the last thing first
 func (ctx *Context) AddToCleanup(f CleanupFunc) {
 	ctx.CleanupList = append([]CleanupFunc{f}, ctx.CleanupList...)
+}
+
+func (c *Context) DeleteOperatorPods(ctx context.Context) error {
+	pods, err := c.Clients.Kube.
+		CoreV1().
+		Pods(operatorNamesapce).
+		List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list pods in %s", operatorNamesapce)
+	}
+
+	for _, p := range pods.Items {
+		if err := c.Clients.Kube.CoreV1().Pods(operatorNamesapce).Delete(ctx, p.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Context) WaitForOperatorPodsReady(ctx context.Context) error {
+	return wait.PollImmediate(Interval, Timeout, func() (done bool, err error) {
+		pods, err := c.Clients.Kube.
+			CoreV1().
+			Pods(operatorNamesapce).
+			List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return false, fmt.Errorf("failed to list pods in %s", operatorNamesapce)
+		}
+
+		// Verify pod readiness
+		for _, p := range pods.Items {
+			if !isReady(&p) {
+				bytes, _ := json.MarshalIndent(p.Status, "", "  ")
+				c.T.Logf("Pod %s/%s is not ready, status:\n%s\n", p.GetNamespace(), p.GetName(), string(bytes))
+				return false, nil
+			}
+		}
+
+		c.T.Logf("Number of ready pods %d", len(pods.Items))
+
+		// At least 3 pods are ready (3 is the number of pods SO is currently using)
+		return len(pods.Items) >= 3, nil
+	})
+}
+
+func isReady(p *corev1.Pod) bool {
+	for _, cond := range p.Status.Conditions {
+		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 // CleanupOnInterrupt will execute the function cleanup if an interrupt signal is caught

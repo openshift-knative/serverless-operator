@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"os"
 
+	"github.com/opentracing/opentracing-go/log"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -16,6 +19,7 @@ import (
 	"knative.dev/pkg/webhook"
 	"knative.dev/pkg/webhook/resourcesemantics/conversion"
 
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/eventing"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/serving"
 )
@@ -27,6 +31,11 @@ func main() {
 		Port:        webhook.PortFromEnv(8443),
 		SecretName:  "knative-operator-webhook-service-cert",
 	})
+
+	if err := apis.AddToScheme(scheme.Scheme); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
 	sharedmain.WebhookMainWithContext(ctx, "knative-operator",
 		newConversionController,

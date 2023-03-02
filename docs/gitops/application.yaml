@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-serverless
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: openshift-serverless
+  namespace: openshift-gitops
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - namespace: '*'
+      server: '*'
+  sourceRepos:
+    - '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openshift-serverless
+  namespace: openshift-gitops
+spec:
+  destination:
+    name: ''
+    namespace: openshift-serverless
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: docs/gitops/serverless
+    repoURL: 'https://github.com/openshift-knative/serverless-operator'
+    targetRevision: main
+    directory:
+      recurse: true
+  project: openshift-serverless
+  syncPolicy:
+    automated: null
