@@ -98,15 +98,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
-  sed -i '/corev1 "k8s.io\/api\/core\/v1"/a servingv1 "knative.dev\/serving\/pkg\/apis\/serving\/v1"' ./test/conformance/runtime/user_test.go
+  sed -i 's/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"))/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"), WithRevisionAnnotation("serving.knative.openshift.io\/skipSeccompProfile", "true"))/g' ./test/conformance/runtime/user_test.go
 
-  sed -i 's/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"))/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"), WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/conformance/runtime/user_test.go
+  sed -i 's/fetchRuntimeInfo(t, clients)/fetchRuntimeInfo(t, clients, WithRevisionAnnotation("serving.knative.openshift.io\/skipSeccompProfile", "true"))/g' ./test/conformance/runtime/user_test.go
 
-  sed -i 's/fetchRuntimeInfo(t, clients)/fetchRuntimeInfo(t, clients, WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/conformance/runtime/user_test.go
-
-  sed -i '/corev1 "k8s.io\/api\/core\/v1"/a servingv1 "knative.dev\/serving\/pkg\/apis\/serving\/v1"' ./test/e2e/pvc/pvc_test.go
-
-  sed -i 's/(t, clients, \&names, withVolume, withPodSecurityContext)/(t, clients, \&names, withVolume, withPodSecurityContext, WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/e2e/pvc/pvc_test.go
+  sed -i 's/(t, clients, \&names, withVolume, withPodSecurityContext)/(t, clients, \&names, withVolume, withPodSecurityContext, WithRevisionAnnotation("serving.knative.openshift.io\/skipSeccompProfile", "true"))/g' ./test/e2e/pvc/pvc_test.go
 
 
 cat << DOC >> ./pkg/testing/v1/service.go
