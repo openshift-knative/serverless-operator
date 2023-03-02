@@ -873,7 +873,7 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "docker.io/skonto/queue-39be6f1d08a095bd076a71d288d295b6@sha256:c8c4c0976268bb36abb7cbb2d4c83a0944df6607c8a0883ce72fdd4c8d878ed6"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.7.0:knative-serving-queue"
                       - name: "IMAGE_activator"
                         value: "docker.io/skonto/activator-ecd51ca5034883acbe737fde417a3d86@sha256:ccf0737fc8bc2da0f29b280fc1d0dd526c68d045c604d5851b2b761961a80b87"
                       - name: "IMAGE_autoscaler"
@@ -1024,7 +1024,7 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "docker.io/skonto/queue-39be6f1d08a095bd076a71d288d295b6@sha256:c8c4c0976268bb36abb7cbb2d4c83a0944df6607c8a0883ce72fdd4c8d878ed6"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.7.0:knative-serving-queue"
                       - name: "IMAGE_activator"
                         value: "docker.io/skonto/activator-ecd51ca5034883acbe737fde417a3d86@sha256:ccf0737fc8bc2da0f29b280fc1d0dd526c68d045c604d5851b2b761961a80b87"
                       - name: "IMAGE_autoscaler"
@@ -1285,7 +1285,7 @@ spec:
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
     - name: "IMAGE_queue-proxy"
-      image: "docker.io/skonto/queue-39be6f1d08a095bd076a71d288d295b6@sha256:c8c4c0976268bb36abb7cbb2d4c83a0944df6607c8a0883ce72fdd4c8d878ed6"
+      image: "registry.ci.openshift.org/openshift/knative-v1.7.0:knative-serving-queue"
     - name: "IMAGE_activator"
       image: "docker.io/skonto/activator-ecd51ca5034883acbe737fde417a3d86@sha256:ccf0737fc8bc2da0f29b280fc1d0dd526c68d045c604d5851b2b761961a80b87"
     - name: "IMAGE_autoscaler"
