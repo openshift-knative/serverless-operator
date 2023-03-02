@@ -173,12 +173,12 @@ func CleanupAll(t *testing.T, contexts ...*Context) {
 }
 
 // Cleanup iterates through the list of registered CleanupFunc functions and calls them
-func (ctx *Context) Cleanup(t *testing.T) {
+func (c *Context) Cleanup(t *testing.T) {
 	if t.Failed() {
 		// Do not clean up resources when test failed for debug.
 		return
 	}
-	for _, f := range ctx.CleanupList {
+	for _, f := range c.CleanupList {
 		if err := f(); err != nil {
 			t.Logf("Failed to clean up: %v", err)
 		}
@@ -187,8 +187,8 @@ func (ctx *Context) Cleanup(t *testing.T) {
 
 // AddToCleanup adds the cleanup function as the first function to the cleanup list,
 // we want to delete the last thing first
-func (ctx *Context) AddToCleanup(f CleanupFunc) {
-	ctx.CleanupList = append([]CleanupFunc{f}, ctx.CleanupList...)
+func (c *Context) AddToCleanup(f CleanupFunc) {
+	c.CleanupList = append([]CleanupFunc{f}, c.CleanupList...)
 }
 
 func (c *Context) DeleteOperatorPods(ctx context.Context) error {
