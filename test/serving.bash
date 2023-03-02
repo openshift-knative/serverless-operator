@@ -100,9 +100,16 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   sed -i '/corev1 "k8s.io\/api\/core\/v1"/a servingv1 "knative.dev\/serving\/pkg\/apis\/serving\/v1"' ./test/conformance/runtime/user_test.go
 
+  sed -i 's/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"))/fetchRuntimeInfo(t, clients, WithSecurityContext(securityContext), WithWorkingDir("\/"), WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/conformance/runtime/user_test.go
+
   sed -i 's/fetchRuntimeInfo(t, clients)/fetchRuntimeInfo(t, clients, WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/conformance/runtime/user_test.go
 
-cat << DOC >> ./test/conformance/runtime/user_test.go
+  sed -i '/corev1 "k8s.io\/api\/core\/v1"/a servingv1 "knative.dev\/serving\/pkg\/apis\/serving\/v1"' ./test/e2e/pvc/pvc_test.go
+
+  sed -i 's/(t, clients, \&names, withVolume, withPodSecurityContext)/(t, clients, \&names, withVolume, withPodSecurityContext, WithRevisionAnnotation(servingv1.SkipSeccompProfileAnnotation, "true"))/g' ./test/e2e/pvc/pvc_test.go
+
+
+cat << DOC >> ./pkg/testing/v1/service.go
 // WithRevisionAnnotation adds the given annotation to the revision.
 func WithRevisionAnnotation(k, v string) ServiceOption {
 	return func(service *v1.Service) {
@@ -171,4 +178,15 @@ DOC
   # Restore the original maxReplicas for any tests running after this test suite
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch \
     '{"spec": {"maxReplicas": '"${max_replicas}"', "minReplicas": '"${min_replicas}"'}}'
+
+   # Allow to use any seccompProfile for non default cases,
+   # for more check https://docs.openshift.com/container-platform/4.12/authentication/managing-security-context-constraints.html
+   oc adm policy add-scc-to-user privileged -z default -n serving-tests
+
+   # RUN secure pod defaults test in a separate install.
+   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=15m -parallel=2 \
+     ./test/e2e/securedefaults  \
+     ${OPENSHIFT_TEST_OPTIONS} \
+     --imagetemplate "$image_template"
+
 }
