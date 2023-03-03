@@ -30,7 +30,11 @@ func AdditionalResourcesForNamespacedBroker() (string, error) {
 	//
 	// - Create a `ClusterRoleBinding` of the `rbac-proxy-reviews-prom` `ClusterRole` for the
 	//  `knative-kafka-broker-data-plane` `ServiceAccount` in the broker namespace. Otherwise, RBAC proxy cannot
-	//   authorize itself.
+	//   authorize itself. We cannot create a RoleBinding for this ClusterRole because the resources of that ClusterRole
+	//   are cluster scoped.
+	//
+	// - Create a `RoleBinding` of the `prometheus-k8s` `ClusterRole` in user namespace so that Prometheus can scrape
+	//   the broker pods in user namespace.
 	//
 	// - Set `"openshift.io/cluster-monitoring": "true",` label on the broker namespace, so that Prometheus monitors
 	//    the namespace and creates certs/secrets and also scrapes the pods
@@ -43,7 +47,8 @@ func AdditionalResourcesForNamespacedBroker() (string, error) {
 		serviceMonitor("dispatcher"),
 		service("receiver"),
 		service("dispatcher"),
-		clusterRoleBinding(),
+		rbacProxyReviewsClusterRoleBinding(),
+		prometheusRoleBinding(),
 		namespace(),
 	)
 	if err != nil {
@@ -80,7 +85,7 @@ func namespace() *corev1.Namespace {
 	}
 }
 
-func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
+func rbacProxyReviewsClusterRoleBinding() *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "rbac.authorization.k8s.io/v1",
@@ -98,6 +103,29 @@ func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
 			Kind:      "ServiceAccount",
 			Name:      "knative-kafka-broker-data-plane",
 			Namespace: "{{.Namespace}}",
+		}},
+	}
+}
+
+func prometheusRoleBinding() *rbacv1.RoleBinding {
+	return &rbacv1.RoleBinding{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "rbac.authorization.k8s.io/v1",
+			Kind:       "RoleBinding",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "{{.Namespace}}",
+			Name:      "eventing-kafka-knative-prometheus-k8s",
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     "eventing-kafka-knative-prometheus-k8s",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      "prometheus-k8s",
+			Namespace: "openshift-monitoring",
 		}},
 	}
 }

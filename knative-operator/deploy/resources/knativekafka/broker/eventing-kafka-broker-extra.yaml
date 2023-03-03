@@ -22,6 +22,7 @@ rules:
       - "rbac.authorization.k8s.io"
     resources:
       - clusterrolebindings
+      - rolebindings
     verbs:
       - get
       - list
@@ -38,6 +39,14 @@ rules:
       - list
       - watch
       - update
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
 
 ---
 
@@ -53,3 +62,23 @@ subjects:
   - kind: ServiceAccount
     name: kafka-controller
     namespace: knative-eventing
+
+---
+# ClusterRole that will be bound to service account `openshift-monitoring/prometheus-k8s` for user namespace.
+# With that, Prometheus will be able to scrape metrics from the Kafka broker pods in user namespace.
+# ClusterRole is created when KnativeKafka is installed; RoleBinding will be created per-namespace on the fly.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eventing-kafka-knative-prometheus-k8s
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
