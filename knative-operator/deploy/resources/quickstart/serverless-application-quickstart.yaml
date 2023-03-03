@@ -124,7 +124,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/serverless/develop/serverless-pingsource.html#serverless-pingsource-odc_serverless-pingsource)
+          more](https://docs.openshift.com/container-platform/4.12/serverless/eventing/event-sources/serverless-pingsource.html#serverless-pingsource-odc_serverless-pingsource)
           about this topic.
         instructions: >-
           #### To verify that the event connected to your Knative service:
@@ -176,7 +176,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/serverless/develop/serverless-traffic-management.html#odc-splitting-traffic-between-revisions-using-developer-perspective_serverless-traffic-management)
+          more](https://docs.openshift.com/container-platform/4.12/serverless/knative-serving/traffic-splitting/traffic-splitting-revisions.html#odc-splitting-traffic-between-revisions-using-developer-perspective_traffic-splitting-revisions)
           about this topic.
         instructions: >-
           #### To verify that you forced a new revision and set traffic
