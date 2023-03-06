@@ -26,10 +26,6 @@ create_namespaces "${TEST_NAMESPACES[@]}"
 link_global_pullsecret_to_namespaces "${TEST_NAMESPACES[@]}"
 create_htpasswd_users && add_roles
 
-# TODO: Remove when testselect is available in github.com/openshift-knative/hack
-# Then we can just call go run github.com/openshift-knative/hack/cmd/testselect
-clone_and_build_testselect
-
 serverless_operator_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
   serverless_operator_kafka_e2e_tests
