@@ -15,7 +15,7 @@ install-operator:
 install-all:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
-	INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
 install-tracing:
 	./hack/tracing.sh
