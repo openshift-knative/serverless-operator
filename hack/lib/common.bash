@@ -73,11 +73,11 @@ function yaml.break_image_references {
 }
 
 function should_run {
-  local ts rootdir clonerefs tests
+  local ts
   ts=${1:?Specify test suite to check}
 
   if [ -n "$OPENSHIFT_CI" ]; then
-    grep -q -e "All" -e "$ts" "${ARTIFACTS_DIR}/tests.txt" || return 1
+    grep -q -e "All" -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1
     echo "Test $ts should run"
   else
     return 0

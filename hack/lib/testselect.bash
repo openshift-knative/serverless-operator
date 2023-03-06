@@ -13,13 +13,13 @@ if [[ -n "${ARTIFACT_DIR:-}" ]]; then
   clone_and_build_testselect
 
   # CLONEREFS_OPTIONS var is set in CI
-  echo "${CLONEREFS_OPTIONS}" > "${ARTIFACTS_DIR}/clonerefs.json"
+  echo "${CLONEREFS_OPTIONS}" > "${ARTIFACT_DIR}/clonerefs.json"
 
-  cat "${ARTIFACTS_DIR}/clonerefs.json"
+  cat "${ARTIFACT_DIR}/clonerefs.json"
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
-  testselect --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="$clonerefs" --output="${ARTIFACTS_DIR}/tests.txt"
+  testselect --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
 
-  cat "${ARTIFACTS_DIR}/tests.txt"
+  cat "${ARTIFACT_DIR}/tests.txt"
 fi
