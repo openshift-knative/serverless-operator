@@ -26,16 +26,22 @@ class ShowcaseKservice {
 
   makeRequest(baseUrl) {
     const req = {
-      method: 'OPTIONS',
+      method: 'GET',
       url: baseUrl,
       retryOnStatusCodeFailure: true,
-      failOnStatusCode: true
+      failOnStatusCode: true,
+      headers: {'user-agent': `Cypress/${Cypress.version}`}
     }
     cy.request(req).then((response) => {
       expect(response.status).to.eq(200)
-      expect(response.body).to.have.property('version')
-      expect(response.body.group).to.include('openshift')
-      expect(response.body.artifact).to.eq('knative-showcase')
+      expect(response.headers)
+        .to.have.property('content-type')
+        .that.matches(/^application\/json(?:;.+)?$/)
+      expect(response.headers).to.have.property('x-version')
+      expect(response.headers).to.have.property('x-config')
+      expect(response.headers).to.have.property('server')
+      expect(response.body).to.have.property('artifact', 'knative-showcase')
+      expect(response.body).to.have.property('greeting', 'Welcome')
     })
   }
 
