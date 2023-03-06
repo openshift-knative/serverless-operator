@@ -3,17 +3,18 @@
 # if those paths are changed.
 # "NoTests" defines path expressions that don't require any tests to be run on change.
 
-# All test suites would be run if there's a change in paths that is not listed above.
+# All test suites would be run if there's a change in paths that is not listed in this file.
 # E.g. for changes in hack, olm-catalog, openshift, vendor, test etc.
 
 # Each path in the Git diff is checked against all "run_if_changed"
-# regular expressions. For each element in the list, if the path matches any of the expressions
-# in the "run_if_changed" list then all testsuites from that element are added to the list of test
-# suites to be run. If the path doesn't match any expression in any element then it's an unknown
-# change with a potentially high impact and should be treated
+# regular expressions. If the path matches any of the expressions
+# in the "run_if_changed" list then all tests from that testsuite are added to the list of tests
+# to be run. If the path doesn't match any expression in any testsuite then it's an unknown
+# change with a potentially high impact and all tests should run.
 testsuites:
   - name: "Always"
-    # Runs always because run_if_changed is omitted.
+    # Runs along other selected tests because run_if_changed is omitted.
+    # Doesn't run when paths match only expressions under "NoTests" testsuite below.
     tests:
       - name: serverless_operator_e2e_tests
   - name: "Eventing Kafka"
@@ -56,7 +57,7 @@ testsuites:
     tests:
       - name: ui_tests
   - name: "NoTests"
-    # No test suites will be run for the changes below.
+    # No test suites will run for the changes below because "tests" is empty.
     run_if_changed:
       - "^.github/"
       - "^docs/"
