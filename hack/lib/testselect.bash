@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
 function clone_and_build_testselect {
-  git clone --branch select_testsuites https://github.com/mgencur/hack
-  pushd hack || return
+  local hack
+  hack=$(mktemp -d)
+  git clone --branch select_testsuites https://github.com/mgencur/hack "$hack"
+  pushd "$hack" || return
   go install ./cmd/testselect
   popd || return
 }
