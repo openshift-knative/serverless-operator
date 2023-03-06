@@ -73,12 +73,32 @@ function yaml.break_image_references {
 }
 
 function should_run {
-  local ts
+  local ts rootdir clonerefs tests
   ts=${1:?Specify test suite to check}
 
-  # TODO: Return true always when not in CI
-  # TODO: Implement this based on git diff and project.yaml
-  echo "Test suite $ts should run"
+  if [ -n "$OPENSHIFT_CI" ]; then
+    clonerefs="$(mktemp -t clonerefs-XXXXX.yaml)"
+    # CLONEREFS_OPTIONS var is set in CI
+    echo "${CLONEREFS_OPTIONS}" > "$clonerefs"
 
-  return 0
+    cat "$clonerefs"
+
+    tests="$(mktemp -t tests-XXXXX.yaml)"
+
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    testselect --testsuites "${rootdir}/test/testsuites.yaml" --clonerefs "$clonerefs" --output="$tests"
+
+    cat "$tests"
+
+    grep -q -e "All" -e "$ts" "$tests" || return 1
+    echo "Test $ts should run"
+  else
+    return 0
+  fi
+}
+
+function clone_and_build_testselect {
+  git clone --branch select_testsuites https://github.com/mgencur/hack && pushd hack
+  go install ./cmd/testselect
+  popd
 }
