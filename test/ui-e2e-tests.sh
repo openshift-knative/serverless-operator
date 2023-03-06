@@ -49,7 +49,7 @@ archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
 function ui_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run_strict "${FUNCNAME[0]}" || return
 
   logger.info "Running UI tests"
 
