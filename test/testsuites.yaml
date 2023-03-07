@@ -12,20 +12,28 @@
 # to be run. If the path doesn't match any expression in any testsuite then it's an unknown
 # change with a potentially high impact and all tests should run.
 testsuites:
-  - name: "Always"
-    # Runs along other selected tests because run_if_changed is omitted.
-    # Doesn't run when paths match only expressions under "NoTests" testsuite below.
+  - name: "Serverless Operator E2E"
+    run_if_changed:
+      - ^knative-operator/pkg/controller/knativeeventing/
+      - ^knative-operator/pkg/controller/knativeserving/
+      - ^knative-operator/pkg/webhook/knativeeventing/
+      - ^knative-operator/pkg/webhook/knativeserving/
+      - ^openshift-knative-operator/cmd/operator/kodata/knative-eventing/
+      - ^openshift-knative-operator/cmd/operator/kodata/knative-serving/
+      - ^openshift-knative-operator/pkg/eventing/
+      - ^openshift-knative-operator/pkg/serving/
+      - ^serving/ingress/
     tests:
-      - name: serverless_operator_e2e_tests
+      - serverless_operator_e2e_tests
   - name: "Eventing Kafka"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativekafka/"
       - "^knative-operator/pkg/webhook/knativekafka/"
     tests:
-      - name: serverless_operator_kafka_e2e_tests
-      - name: downstream_knative_kafka_e2e_tests
-      - name: upstream_knative_eventing_kafka_e2e #TODO: Run this at all? Should this be removed?
-      - name: upstream_knative_eventing_kafka_broker_e2e
+      - serverless_operator_kafka_e2e_tests
+      - downstream_knative_kafka_e2e_tests
+      - upstream_knative_eventing_kafka_e2e #TODO: Run this at all? Should this be removed?
+      - upstream_knative_eventing_kafka_broker_e2e
   - name: "Eventing"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativeeventing/"
@@ -33,15 +41,15 @@ testsuites:
       - "^openshift-knative-operator/cmd/operator/kodata/knative-eventing/"
       - "^openshift-knative-operator/pkg/eventing/"
     tests:
-      - name: downstream_eventing_e2e_tests
-      - name: upstream_knative_eventing_e2e
+      - downstream_eventing_e2e_tests
+      - upstream_knative_eventing_e2e
   - name: "Monitoring"
     run_if_changed:
       - "^knative-operator/pkg/monitoring/"
       - "^openshift-knative-operator/cmd/operator/kodata/monitoring/"
       - "^openshift-knative-operator/pkg/monitoring/"
     tests:
-      - name: downstream_monitoring_e2e_tests
+      - downstream_monitoring_e2e_tests
   - name: "Serving"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativeserving/"
@@ -50,12 +58,12 @@ testsuites:
       - "^openshift-knative-operator/pkg/serving/"
       - "^serving/ingress/"
     tests:
-      - name: downstream_serving_e2e_tests
+      - downstream_serving_e2e_tests
   - name: "UI"
     run_if_changed:
       - "^ui/"
     tests:
-      - name: ui_tests
+      - ui_tests
   - name: "NoTests"
     # No test suites will run for the changes below because "tests" is empty.
     run_if_changed:
