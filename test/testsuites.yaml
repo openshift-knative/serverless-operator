@@ -1,15 +1,15 @@
 # Select test suites to be run. This list is used together with Git diff.
 # run_if_changed defines path expressions (regexp) and associated test suites to be run
 # if those paths are changed.
-# "NoTests" defines path expressions that don't require any tests to be run on change.
 
+# A testsuite without "tests" element defines path expressions that don't require
+# any tests to be run on change.
 # All test suites would be run if there's a change in paths that is not listed in this file.
-# E.g. for changes in hack, olm-catalog, openshift, vendor, test etc.
 
-# Each path in the Git diff is checked against all "run_if_changed"
-# regular expressions. If the path matches any of the expressions
-# in the "run_if_changed" list then all tests from that testsuite are added to the list of tests
-# to be run. If the path doesn't match any expression in any testsuite then it's an unknown
+# Each path in the Git diff is checked against all "run_if_changed" regular expressions.
+# If the path matches any of the expressions then all tests from that testsuite are added
+# to the list of tests to be run.
+# If the path doesn't match any expression in any testsuite then it's an unknown
 # change with a potentially high impact and all tests should run.
 testsuites:
   - name: "Serverless Operator E2E"
@@ -32,7 +32,7 @@ testsuites:
     tests:
       - serverless_operator_kafka_e2e_tests
       - downstream_knative_kafka_e2e_tests
-      - upstream_knative_eventing_kafka_e2e #TODO: Run this at all? Should this be removed?
+      - upstream_knative_eventing_kafka_e2e # TODO: Run this at all? Should this test suite be removed completely?
       - upstream_knative_eventing_kafka_broker_e2e
   - name: "Eventing"
     run_if_changed:
