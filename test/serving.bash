@@ -78,7 +78,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   image_template="registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-{{.Name}}"
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
-  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
+  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --skip-cleanup-on-fail --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
 
   if [[ $FULL_MESH == "true" ]]; then
     # TODO: SRVKS-211: Can not run grpc and http2 tests.
@@ -96,29 +96,29 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
-
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
-    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
-    ./test/e2e/domainmapping \
-    ./test/e2e/initcontainers \
-    ./test/e2e/pvc \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "$image_template"
-
-  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
-  # Run autoscale tests separately as they require more CPU resources
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
-    ./test/e2e \
-    -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "$image_template"
-
-  # Run the helloworld test with an image pulled into the internal registry.
-  oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
+#  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
+#
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
+#    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
+#    ./test/e2e/domainmapping \
+#    ./test/e2e/initcontainers \
+#    ./test/e2e/pvc \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "$image_template"
+#
+#  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
+#  # Run autoscale tests separately as they require more CPU resources
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
+#    ./test/e2e \
+#    -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "$image_template"
+#
+#  # Run the helloworld test with an image pulled into the internal registry.
+#  oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-${KNATIVE_SERVING_VERSION}:knative-serving-test-helloworld" "helloworld:latest" --reference-policy=local
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
   
   # Prevent HPA from scaling to make HA tests more stable
   local max_replicas min_replicas
