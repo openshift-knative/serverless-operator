@@ -2,11 +2,11 @@
 project:
   name: serverless-operator
   # For minor and major version bumps, bump all `dependencies.previous` to whatever `dependencies` has set.
-  version: 1.27.0
+  version: 1.27.1
 
 olm:
-  replaces: 1.26.0
-  skipRange: '>=1.26.0 <1.27.0'
+  replaces: 1.27.0
+  skipRange: '>=1.26.0 <1.27.1'
   channels:
     default: 'stable'
     list:
