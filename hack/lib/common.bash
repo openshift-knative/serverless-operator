@@ -83,16 +83,3 @@ function should_run {
     return 0
   fi
 }
-
-# Version of should_run that requires the test to be explicitly listed in the tests file.
-# Prevents running the test when "All" is returned by testselect.
-function should_run_strict {
-  local ts
-  ts=${1:?Specify test suite to check}
-
-  if [ -n "$OPENSHIFT_CI" ]; then
-    grep -q -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1
-  else
-    return 0
-  fi
-}

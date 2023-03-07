@@ -48,16 +48,7 @@ check_node
 archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
-function ui_tests {
-  should_run_strict "${FUNCNAME[0]}" || return
-
-  logger.info "Running UI tests"
-
-  pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
-  npm install
-  npm run install
-  npm run "${NPM_TARGET}"
-}
-
-ui_tests
-
+pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
+npm install
+npm run install
+npm run "${NPM_TARGET}"
