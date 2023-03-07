@@ -4,7 +4,6 @@
 
 # A testsuite without "tests" element defines path expressions that don't require
 # any tests to be run on change.
-# All test suites would be run if there's a change in paths that is not listed in this file.
 
 # Each path in the Git diff is checked against all "run_if_changed" regular expressions.
 # If the path matches any of the expressions then all tests from that testsuite are added
