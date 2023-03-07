@@ -74,7 +74,7 @@ function yaml.break_image_references {
 
 function should_run {
   local ts
-  ts=${1:?Specify test suite to check}
+  ts=${1:?Specify test to check}
 
   if [ -n "$OPENSHIFT_CI" ]; then
     grep -q -e "All" -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1

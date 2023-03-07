@@ -23,5 +23,6 @@ if [[ -n "${ARTIFACT_DIR:-}" ]]; then
 
   testselect --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
 
+  logger.info 'Tests to be run:'
   cat "${ARTIFACT_DIR}/tests.txt"
 fi
