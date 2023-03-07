@@ -56,7 +56,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          name: "openshift-monitoring"
+          kubernetes.io/metadata.name: "openshift-monitoring"
   podSelector: {}
   policyTypes:
   - Ingress
