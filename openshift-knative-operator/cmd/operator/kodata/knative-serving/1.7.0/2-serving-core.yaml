@@ -1020,6 +1020,18 @@ spec:
                                     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                                     type: integer
                                     format: int64
+                                  seccompProfile:
+                                    description: The seccomp options to use by this container. If seccomp options are provided at both the pod & container level, the container options override the pod options. Note that this field cannot be set when spec.os.name is windows.
+                                    type: object
+                                    required:
+                                      - type
+                                    properties:
+                                      localhostProfile:
+                                        description: localhostProfile indicates a profile defined in a file on the node should be used. The profile must be preconfigured on the node to work. Must be a descending path, relative to the kubelet's configured seccomp profile location. Must only be set if type is "Localhost".
+                                        type: string
+                                      type:
+                                        description: "type indicates which kind of seccomp profile will be applied. Valid options are: \n Localhost - a profile defined in a file on the node should be used. RuntimeDefault - the container runtime default profile should be used. Unconfined - no profile should be applied."
+                                        type: string
                               terminationMessagePath:
                                 description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                                 type: string
@@ -2700,6 +2712,18 @@ spec:
                             description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                             type: integer
                             format: int64
+                          seccompProfile:
+                            description: The seccomp options to use by this container. If seccomp options are provided at both the pod & container level, the container options override the pod options. Note that this field cannot be set when spec.os.name is windows.
+                            type: object
+                            required:
+                              - type
+                            properties:
+                              localhostProfile:
+                                description: localhostProfile indicates a profile defined in a file on the node should be used. The profile must be preconfigured on the node to work. Must be a descending path, relative to the kubelet's configured seccomp profile location. Must only be set if type is "Localhost".
+                                type: string
+                              type:
+                                description: "type indicates which kind of seccomp profile will be applied. Valid options are: \n Localhost - a profile defined in a file on the node should be used. RuntimeDefault - the container runtime default profile should be used. Unconfined - no profile should be applied."
+                                type: string
                       terminationMessagePath:
                         description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                         type: string
@@ -3898,6 +3922,18 @@ spec:
                                     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                                     type: integer
                                     format: int64
+                                  seccompProfile:
+                                    description: The seccomp options to use by this container. If seccomp options are provided at both the pod & container level, the container options override the pod options. Note that this field cannot be set when spec.os.name is windows.
+                                    type: object
+                                    required:
+                                      - type
+                                    properties:
+                                      localhostProfile:
+                                        description: localhostProfile indicates a profile defined in a file on the node should be used. The profile must be preconfigured on the node to work. Must be a descending path, relative to the kubelet's configured seccomp profile location. Must only be set if type is "Localhost".
+                                        type: string
+                                      type:
+                                        description: "type indicates which kind of seccomp profile will be applied. Valid options are: \n Localhost - a profile defined in a file on the node should be used. RuntimeDefault - the container runtime default profile should be used. Unconfined - no profile should be applied."
+                                        type: string
                               terminationMessagePath:
                                 description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                                 type: string
@@ -4929,7 +4965,7 @@ metadata:
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "4d5feafc"
+    knative.dev/example-checksum: "07e3a0bb"
 data:
   _example: |-
     ################################
@@ -4946,6 +4982,13 @@ data:
     # These sample configuration options may be copied out of
     # this example block and unindented to be in the data block
     # to actually change the configuration.
+
+    # Default SecurityContext settings to secure-by-default values
+    # if unset.
+    #
+    # This value will default to "enabled" in a future release,
+    # probably Knative 1.10
+    secure-pod-defaults: "disabled"
 
     # Indicates whether multi container support is enabled
     #
@@ -5016,6 +5059,7 @@ data:
     # - RunAsNonRoot
     # - SupplementalGroups
     # - RunAsUser
+    # - SeccompProfile
     #
     # This feature flag should be used with caution as the PodSecurityContext
     # properties may have a side-effect on non-user sidecar containers that come
