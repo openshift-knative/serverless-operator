@@ -1,6 +1,4 @@
-
 ---
-# /tmp/knative.6ER80oCd/tmp.wDRZJLXpQs/serving-storage-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,25 +39,26 @@ spec:
       serviceAccountName: controller
       restartPolicy: OnFailure
       containers:
-        - name: migrate
-          # This is the Go import path for the binary that is containerized
-          # and substituted here.
-          image: TO_BE_REPLACED
-          args:
-            - "services.serving.knative.dev"
-            - "configurations.serving.knative.dev"
-            - "revisions.serving.knative.dev"
-            - "routes.serving.knative.dev"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 1000m
-              memory: 1000Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-
----
+      - name: migrate
+        # This is the Go import path for the binary that is containerized
+        # and substituted here.
+        image: ko://knative.dev/pkg/apiextensions/storageversion/cmd/migrate
+        args:
+          - "services.serving.knative.dev"
+          - "configurations.serving.knative.dev"
+          - "revisions.serving.knative.dev"
+          - "routes.serving.knative.dev"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
