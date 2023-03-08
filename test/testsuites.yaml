@@ -60,7 +60,7 @@ testsuites:
       - downstream_serving_e2e_tests
   - name: "UI"
     run_if_changed:
-      - "^test/ui/"
+      - "^ui/"
     tests:
       - ui_tests
   - name: "NoTests"
