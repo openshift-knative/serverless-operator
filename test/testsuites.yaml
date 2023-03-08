@@ -58,11 +58,6 @@ testsuites:
       - "^serving/ingress/"
     tests:
       - downstream_serving_e2e_tests
-  - name: "UI"
-    run_if_changed:
-      - "^ui/"
-    tests:
-      - ui_tests
   - name: "NoTests"
     # No test suites will run for the changes below because "tests" is empty.
     run_if_changed:
