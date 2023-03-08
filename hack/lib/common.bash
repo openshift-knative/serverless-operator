@@ -78,7 +78,6 @@ function should_run {
 
   if [ -n "$OPENSHIFT_CI" ]; then
     grep -q -e "All" -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1
-    echo "Test $ts should run"
   else
     return 0
   fi
