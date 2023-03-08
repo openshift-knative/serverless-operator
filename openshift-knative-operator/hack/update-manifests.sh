@@ -45,7 +45,7 @@ function download_serving {
     target_file="$target_dir/$index-$file"
 
     if [[ ${KNATIVE_SERVING_MANIFESTS_DIR} = "" ]]; then
-      url="https://raw.githubusercontent.com/openshift-knative/serving/${branch}/openshift/release/artifacts/$index-$file"
+      url="https://raw.githubusercontent.com/openshift-knative/serving/${branch}/openshift/release/artifacts/$file"
       wget --no-check-certificate "$url" -O "$target_file"
     else
       cp "${KNATIVE_SERVING_MANIFESTS_DIR}/${file}" "$target_file"
