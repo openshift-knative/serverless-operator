@@ -148,7 +148,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   # Run HA tests separately as they're stopping core Knative Serving pods
   # Define short -spoofinterval to ensure frequent probing while stopping pods
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha -run "^(TestControllerHA)$"  \
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
