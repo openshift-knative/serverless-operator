@@ -167,6 +167,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   oc adm policy add-scc-to-user privileged -z default -n serving-tests
 
   # Verify that non secure settings are allowed, although not-recommended.
+  # It requires scc privileged or a custom scc that allows any seccompProfile to be set.
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=3m ./test/e2e/securedefaults -run "^(TestUnsafePermitted)$" \
      ${OPENSHIFT_TEST_OPTIONS} \
      --imagetemplate "$image_template"
