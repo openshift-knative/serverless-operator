@@ -160,7 +160,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
 
   # Feature is tested on 4.11+ as this is the version we start enabling it by default.
-  if versions.ge "$(versions.major_minor "$ocp_version")" "1.24"; then
+  if versions.ge "$(versions.major_minor "$ocp_version")" "4.11"; then
     # Verify that the right sc is set by default at the revision side.
     go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
       ${OPENSHIFT_TEST_OPTIONS} \
