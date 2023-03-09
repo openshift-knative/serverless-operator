@@ -44,6 +44,15 @@ function versions.le {
   [ "${v1}" = "${cmp}" ]
 }
 
+function versions.ge {
+  local v1 v2 cmp
+  v1="${1:?Pass a version to check as arg[1]}"
+  v2="${2:?Pass a version to check against as arg[2]}"
+  cmp="$(echo -e "${v1}\n${v2}" | sort -V | tail -n 1)"
+
+  [ "${v1}" = "${cmp}" ]
+}
+
 function versions.lt {
   local v1 v2
   v1="${1:?Pass a version to check as arg[1]}"
