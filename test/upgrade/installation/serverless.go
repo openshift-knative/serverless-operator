@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
+	"time"
+	
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
@@ -12,6 +13,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
+	"knative.dev/pkg/ptr"
 )
 
 func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
@@ -111,6 +113,28 @@ func DowngradeServerless(ctx *test.Context) error {
 	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
 		return err
 	}
+
+	// Delete olm pods to avoid cache issues (https://access.redhat.com/solutions/6991414)
+	for _, labelValue := range []string{"olm-operator", "catalog-operator"} {
+		pods, err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").List(context.Background(), metav1.ListOptions{
+			LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": labelValue},
+			}),
+		})
+		if err != nil {
+			return err
+		}
+		for _, p := range pods.Items {
+			// Delete immediately
+			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{
+				GracePeriodSeconds: ptr.Int64(0),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+
+	time.Sleep(time.Minute)
 
 	if _, err := test.CreateOperatorGroup(ctx, "serverless", test.OperatorsNamespace); err != nil {
 		return err
