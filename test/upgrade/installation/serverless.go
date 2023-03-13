@@ -13,7 +13,6 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"knative.dev/pkg/ptr"
 )
 
 func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
@@ -81,7 +80,7 @@ func UpgradeServerless(ctx *test.Context) error {
 func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
 	crds := []string{"knativeservings.operator.knative.dev", "knativeeventings.operator.knative.dev"}
-	
+
 	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
 		return err
 	}
@@ -110,21 +109,18 @@ func DowngradeServerless(ctx *test.Context) error {
 			return err
 		}
 		for _, p := range pods.Items {
-			// Delete immediately
-			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{
-				GracePeriodSeconds: ptr.Int64(0),
-			}); err != nil {
+			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{}); err != nil {
 				return err
 			}
 		}
 	}
 
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 
 	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
 	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
 	// but we do it anyway for supported versions up to 4.10.
-	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.23.0"); err != nil {
+	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.24.0"); err != nil {
 		for _, name := range crds {
 			if err := setWebookStrategyToNone(ctx, name); err != nil {
 				return err
