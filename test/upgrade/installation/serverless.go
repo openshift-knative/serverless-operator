@@ -81,6 +81,23 @@ func UpgradeServerless(ctx *test.Context) error {
 func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
 	crds := []string{"knativeservings.operator.knative.dev", "knativeeventings.operator.knative.dev"}
+	
+	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
+	if err := test.DeleteClusterServiceVersion(ctx, test.Flags.CSV, test.OperatorsNamespace); err != nil {
+		return err
+	}
+
+	if err := test.WaitForServerlessOperatorsDeleted(ctx); err != nil {
+		return err
+	}
+
+	// Ensure complete clean up to prevent https://issues.redhat.com/browse/SRVCOM-2203
+	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
+		return err
+	}
 
 	// Delete olm pods to avoid cache issues (https://access.redhat.com/solutions/6991414)
 	for _, labelValue := range []string{"olm-operator", "catalog-operator"} {
@@ -103,23 +120,6 @@ func DowngradeServerless(ctx *test.Context) error {
 	}
 
 	time.Sleep(2 * time.Minute)
-
-	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if err := test.DeleteClusterServiceVersion(ctx, test.Flags.CSV, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if err := test.WaitForServerlessOperatorsDeleted(ctx); err != nil {
-		return err
-	}
-
-	// Ensure complete clean up to prevent https://issues.redhat.com/browse/SRVCOM-2203
-	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
-		return err
-	}
 
 	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
 	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
