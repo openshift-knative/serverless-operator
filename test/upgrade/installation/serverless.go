@@ -82,6 +82,28 @@ func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
 	crds := []string{"knativeservings.operator.knative.dev", "knativeeventings.operator.knative.dev"}
 
+	// Delete olm pods to avoid cache issues (https://access.redhat.com/solutions/6991414)
+	for _, labelValue := range []string{"olm-operator", "catalog-operator"} {
+		pods, err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").List(context.Background(), metav1.ListOptions{
+			LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": labelValue},
+			}),
+		})
+		if err != nil {
+			return err
+		}
+		for _, p := range pods.Items {
+			// Delete immediately
+			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{
+				GracePeriodSeconds: ptr.Int64(0),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+
+	time.Sleep(2 * time.Minute)
+
 	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
 		return err
 	}
@@ -113,28 +135,6 @@ func DowngradeServerless(ctx *test.Context) error {
 	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
 		return err
 	}
-
-	// Delete olm pods to avoid cache issues (https://access.redhat.com/solutions/6991414)
-	for _, labelValue := range []string{"olm-operator", "catalog-operator"} {
-		pods, err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").List(context.Background(), metav1.ListOptions{
-			LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
-				MatchLabels: map[string]string{"app": labelValue},
-			}),
-		})
-		if err != nil {
-			return err
-		}
-		for _, p := range pods.Items {
-			// Delete immediately
-			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{
-				GracePeriodSeconds: ptr.Int64(0),
-			}); err != nil {
-				return err
-			}
-		}
-	}
-
-	time.Sleep(time.Minute)
 
 	if _, err := test.CreateOperatorGroup(ctx, "serverless", test.OperatorsNamespace); err != nil {
 		return err
