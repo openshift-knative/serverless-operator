@@ -22,9 +22,6 @@ import (
 	"encoding/json"
 	"io/fs"
 	"strings"
-	"runtime"
-	"os"
-	"path"
 
 	"k8s.io/client-go/util/retry"
 	"knative.dev/pkg/injection/clients/dynamicclient"
@@ -83,17 +80,6 @@ func InstallYamlFS(ctx context.Context, fsys fs.FS, base map[string]interface{})
 	}
 
 	return manifest, nil
-}
-
-// Deprecated: use InstallYamlFS instead.
-func InstallLocalYaml(ctx context.Context, base map[string]interface{}) (Manifest, error) {
-	log := loggingFrom(ctx, "InstallLocalYaml")
-	pwd, _ := os.Getwd()
-	log.Debug("PWD: ", pwd)
-	_, filename, _, _ := runtime.Caller(1)
-	log.Debug("FILENAME: ", filename)
-
-	return InstallYamlFS(ctx, os.DirFS(path.Dir(filename)), base)
 }
 
 func ImagesFromFS(ctx context.Context, fsys fs.FS) []string {
