@@ -157,18 +157,23 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch \
     '{"spec": {"maxReplicas": '"${max_replicas}"', "minReplicas": '"${min_replicas}"'}}'
 
-  # Verify that the right sc is set by default and seccompProfile is injected on OCP >= 4.11.
-  go_test_e2e -timeout=3m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
-    ${OPENSHIFT_TEST_OPTIONS} \
-     --imagetemplate "$image_template"
+  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
 
-  # Allow to use any seccompProfile for non default cases,
-  # for more check https://docs.openshift.com/container-platform/4.12/authentication/managing-security-context-constraints.html
-  oc adm policy add-scc-to-user privileged -z default -n serving-tests
+  # Feature is tested on 4.11+ as this is the version we start enabling it by default.
+  if versions.ge "$(versions.major_minor "$ocp_version")" "4.11"; then
+    # Verify that the right sc is set by default at the revision side.
+    go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
+      ${OPENSHIFT_TEST_OPTIONS} \
+      --imagetemplate "$image_template"
 
-  # Verify that non secure settings are allowed, although not-recommended.
-  # It requires scc privileged or a custom scc that allows any seccompProfile to be set.
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=3m ./test/e2e/securedefaults -run "^(TestUnsafePermitted)$" \
-     ${OPENSHIFT_TEST_OPTIONS} \
-     --imagetemplate "$image_template"
+    # Allow to use any seccompProfile for non default cases,
+    # for more check https://docs.openshift.com/container-platform/4.12/authentication/managing-security-context-constraints.html
+    oc adm policy add-scc-to-user privileged -z default -n serving-tests
+
+    # Verify that non secure settings are allowed, although not-recommended.
+    # It requires scc privileged or a custom scc that allows any seccompProfile to be set.
+    SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=10m ./test/e2e/securedefaults -run "^(TestUnsafePermitted)$" \
+      ${OPENSHIFT_TEST_OPTIONS} \
+      --imagetemplate "$image_template"
+  fi
 }
