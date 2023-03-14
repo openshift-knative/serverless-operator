@@ -132,7 +132,7 @@ test-upstream-e2e-mesh:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 	FULL_MESH=true ./test/e2e-tests.sh
-	FULL_MESH=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
