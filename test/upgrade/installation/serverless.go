@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
@@ -97,25 +96,6 @@ func DowngradeServerless(ctx *test.Context) error {
 	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
 		return err
 	}
-
-	// Delete olm pods to avoid cache issues (https://access.redhat.com/solutions/6991414)
-	for _, labelValue := range []string{"olm-operator", "catalog-operator"} {
-		pods, err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").List(context.Background(), metav1.ListOptions{
-			LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
-				MatchLabels: map[string]string{"app": labelValue},
-			}),
-		})
-		if err != nil {
-			return err
-		}
-		for _, p := range pods.Items {
-			if err := ctx.Clients.Kube.CoreV1().Pods("openshift-operator-lifecycle-manager").Delete(context.Background(), p.Name, metav1.DeleteOptions{}); err != nil {
-				return err
-			}
-		}
-	}
-
-	time.Sleep(1 * time.Minute)
 
 	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
 	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
