@@ -100,7 +100,7 @@ func DowngradeServerless(ctx *test.Context) error {
 	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
 	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
 	// but we do it anyway for supported versions up to 4.10.
-	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.23.0"); err != nil {
+	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.24.0"); err != nil {
 		for _, name := range crds {
 			if err := setWebookStrategyToNone(ctx, name); err != nil {
 				return err
