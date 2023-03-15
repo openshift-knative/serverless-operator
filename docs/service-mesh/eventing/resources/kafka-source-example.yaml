@@ -3,9 +3,8 @@ kind: KafkaSource
 metadata:
   name: kafka-source
 spec:
-  consumerGroup: knative-group
   bootstrapServers:
-    - my-cluster-kafka-bootstrap.kafka:9092 # note the kafka namespace
+    - my-cluster-kafka-bootstrap.kafka:9092
   topics:
     - knative-demo-topic
   ceOverrides:

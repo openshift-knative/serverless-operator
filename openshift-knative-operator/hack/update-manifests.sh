@@ -86,6 +86,10 @@ function download_eventing {
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$target_file"
   done
+
+  # Copy some additional manifest files that are only relevant for Serverless Operator.
+  extra_dir="$root/openshift-knative-operator/deploy/resources/eventing_extra"
+  cp -r "${extra_dir}/." "${target_dir}"
 }
 
 function download_ingress {
