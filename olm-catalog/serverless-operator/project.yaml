@@ -5,7 +5,7 @@ project:
   version: 1.28.0
 
 olm:
-  replaces: 1.27.0
+  replaces: 1.27.1
   skipRange: '>=1.27.0 <1.28.0'
   channels:
     default: 'stable'
