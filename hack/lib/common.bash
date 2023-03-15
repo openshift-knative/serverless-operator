@@ -80,3 +80,14 @@ function yaml.break_image_references {
   # TODO: Replace queueSidecarImage with queue-sidecar-image when upstream v1.8 is used. See: https://github.com/knative/serving/pull/13347.
   sed -i "s,queueSidecarImage: .*,queue-sidecar-image: TO_BE_REPLACED," "$1"
 }
+
+function should_run {
+  local ts
+  ts=${1:?Specify test to check}
+
+  if [ -n "$OPENSHIFT_CI" ]; then
+    grep -q -e "All" -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1
+  else
+    return 0
+  fi
+}
