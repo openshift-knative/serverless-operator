@@ -2,11 +2,11 @@
 project:
   name: serverless-operator
   # For minor and major version bumps, bump all `dependencies.previous` to whatever `dependencies` has set.
-  version: 1.28.0
+  version: 1.29.0
 
 olm:
-  replaces: 1.27.0
-  skipRange: '>=1.27.0 <1.28.0'
+  replaces: 1.28.0
+  skipRange: '>=1.28.0 <1.29.0'
   channels:
     default: 'stable'
     list:
@@ -68,4 +68,6 @@ upgrade_sequence:
   - csv: serverless-operator.v1.27.0
     source: redhat-operators
   - csv: serverless-operator.v1.28.0
+    source: serverless-operator
+  - csv: serverless-operator.v1.29.0
     source: serverless-operator
