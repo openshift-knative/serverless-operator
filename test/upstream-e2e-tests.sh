@@ -20,6 +20,8 @@ if [[ $FULL_MESH != true ]]; then
   trust_router_ca
 fi
 
+run_testselect
+
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   # Set KafkaChannel as default for upgrade tests.
