@@ -71,6 +71,10 @@ func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespa
 
 	// Setup a knative service for the wathola-forwarder
 	ksvc, err := test.WithServiceReady(ctx, name, namespace, pkgTest.ImagePath(test.WatholaForwarderImg), func(service *servingv1.Service) {
+		service.Spec.Template.Annotations = map[string]string{
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+		}
 		service.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{Name: "config", VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
@@ -106,14 +110,19 @@ func AssertPingSourceDataReceivedAtLeastOnce(eventStore *recordevents.EventInfoS
 }
 
 func skipInFullMeshMode(t *testing.T) {
+	if isFullMesh(t) {
+		t.Skip("Channel-based tests cannot run in service mesh mode for now")
+	}
+}
+
+func isFullMesh(t *testing.T) bool {
 	fmStr := os.Getenv("FULL_MESH")
 	if fmStr != "" {
 		fm, err := strconv.ParseBool(fmStr)
 		if err != nil {
 			t.Fatal("FULL_MESH", fmStr, err)
 		}
-		if fm {
-			t.Skip("Channel-based tests cannot run in service mesh mode for now")
-		}
+		return fm
 	}
+	return false
 }

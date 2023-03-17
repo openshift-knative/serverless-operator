@@ -23,6 +23,9 @@ install-tracing:
 install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
+install-serving-with-mesh:
+	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
+
 install-eventing:
 	INSTALL_SERVING="false" ./hack/install.sh
 
