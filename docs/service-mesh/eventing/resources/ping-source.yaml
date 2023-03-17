@@ -37,6 +37,19 @@ spec:
       name: event-display
       apiVersion: v1
 ---
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: pingsource-kafka-sink
+spec:
+  schedule: "* * * * *"
+  data: Hello World, Kafka sink!
+  sink:
+    ref:
+      kind: KafkaSink
+      name: my-kafka-sink
+      apiVersion: eventing.knative.dev/v1alpha1
+---
 apiVersion: v1
 kind: Service
 metadata:
