@@ -29,15 +29,15 @@ requirements:
     label: 'v4.8'
 
 dependencies:
-  serving: 1.7.0
+  serving: 1.8.0
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.7
+  serving_artifacts_branch: release-v1.8
 
   # versions for networking components
-  kourier: 1.7.0
-  net_kourier_artifacts_branch: release-1.7
-  net_istio: 1.7.0
-  net_istio_artifacts_branch: release-1.7
+  kourier: 1.8.0
+  net_kourier_artifacts_branch: release-1.8
+  net_istio: 1.8.0
+  net_istio_artifacts_branch: release-1.8
   maistra: 2.3-latest
 
   eventing: knative-v1.7

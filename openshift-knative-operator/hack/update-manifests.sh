@@ -15,9 +15,9 @@ eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
-istio_files=(networkpolicy-mesh 200-clusterrole 400-config-istio 500-controller 500-webhook-deployment 500-webhook-secret 500-webhook-service 600-mutating-webhook 600-validating-webhook)
+istio_files=(networkpolicy-mesh net-istio)
 
-kourier_files=(kourier config-network)
+kourier_files=(kourier)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_MANIFESTS_DIR=${KNATIVE_SERVING_MANIFESTS_DIR:-""}
