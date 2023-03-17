@@ -1,7 +1,10 @@
 ---
 project:
   name: serverless-operator
-  # For minor and major version bumps, bump all `dependencies.previous` to whatever `dependencies` has set.
+
+  # When bumping the Operator to a new version (major and minor), make sure to also update
+  # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
+  # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   version: 1.29.0
 
 olm:
@@ -54,10 +57,10 @@ dependencies:
   operator: 1.5.2
   # Previous versions required for downgrade testing
   previous:
-    serving: 1.6.0
-    eventing: 1.6
+    serving: 1.7.0
+    eventing: 1.7
     eventing_kafka: 1.1.0
-    eventing_kafka_broker: 1.6
+    eventing_kafka_broker: 1.7
 upgrade_sequence:
   - csv: serverless-operator.v1.25.0
     source: redhat-operators
