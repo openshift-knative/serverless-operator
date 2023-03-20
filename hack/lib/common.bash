@@ -77,8 +77,6 @@ function versions.major_minor {
 function yaml.break_image_references {
   sed -i "s,image: .*,image: TO_BE_REPLACED," "$1"
   sed -i "s,value: gcr.io/knative-releases.*,value: TO_BE_REPLACED," "$1"
-  # TODO: Replace queueSidecarImage with queue-sidecar-image when upstream v1.8 is used. See: https://github.com/knative/serving/pull/13347.
-  sed -i "s,queueSidecarImage: .*,queue-sidecar-image: TO_BE_REPLACED," "$1"
 }
 
 function should_run {
