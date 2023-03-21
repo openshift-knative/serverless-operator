@@ -209,17 +209,6 @@ func (rs *RevisionSpec) defaultSecurityContext(psc *corev1.PodSecurityContext, c
 	if updatedSC.Capabilities == nil {
 		updatedSC.Capabilities = &corev1.Capabilities{}
 		updatedSC.Capabilities.Drop = []corev1.Capability{"ALL"}
-		// Default in NET_BIND_SERVICE to allow binding to low-numbered ports.
-		needsLowPort := false
-		for _, p := range container.Ports {
-			if p.ContainerPort > 0 && p.ContainerPort < 1024 {
-				needsLowPort = true
-				break
-			}
-		}
-		if updatedSC.Capabilities.Add == nil && needsLowPort {
-			updatedSC.Capabilities.Add = []corev1.Capability{"NET_BIND_SERVICE"}
-		}
 	}
 	if psc.RunAsNonRoot == nil && updatedSC.RunAsNonRoot == nil {
 		updatedSC.RunAsNonRoot = ptr.Bool(true)

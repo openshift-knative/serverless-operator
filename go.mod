@@ -32,7 +32,7 @@ require (
 	knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator v0.35.6
 	knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-	knative.dev/serving v0.34.1
+	knative.dev/serving v0.35.5
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -185,7 +185,7 @@ replace (
 	knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator => knative.dev/operator v0.32.2
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230317004934-41ef0e0bf53e
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
 )
 
 replace (
@@ -199,8 +199,8 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 	k8s.io/client-go => k8s.io/client-go v0.25.4
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280
-	k8s.io/utils => k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
+	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.7
 	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2
 )
