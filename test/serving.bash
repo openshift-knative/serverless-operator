@@ -163,6 +163,11 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   # Feature is tested on 4.11+ as this is the version we start enabling it by default.
   if versions.ge "$(versions.major_minor "$ocp_version")" "4.11"; then
+      # Enable secure pod defaults for the following tests.
+      oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
+        --type=merge \
+        --patch='{"spec": {"config": { "features": {"secure-pod-defaults": "enabled"}}}}'
+
     # Verify that the right sc is set by default at the revision side.
     go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
       ${OPENSHIFT_TEST_OPTIONS} \

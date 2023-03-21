@@ -40,9 +40,9 @@ dependencies:
   net_istio_artifacts_branch: release-1.8
   maistra: 2.3-latest
 
-  eventing: knative-v1.7
+  eventing: knative-v1.8
   # eventing core midstream branch name
-  eventing_artifacts_branch: release-v1.7
+  eventing_artifacts_branch: release-v1.8
 
   eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion tag
