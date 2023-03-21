@@ -20,6 +20,7 @@ kubectl apply -n serverless-tests -f "${dir}/resources/ping-source.yaml"
 kubectl apply -n kafka -f "${dir}/resources/kafka-source-topic.yaml"
 kubectl apply -n serverless-tests -f "${dir}/resources/kafka-source-example.yaml"
 kubectl apply -n serverless-tests -f "${dir}/resources/kafka-sink-example.yaml"
+kubectl apply -n serverless-tests -f "${dir}/resources/ping-source-kservice.yaml"
 ```
 
 Wait for them to become ready by running:

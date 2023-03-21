@@ -1,0 +1,28 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: pingsource-kservice
+  annotations:
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      containers:
+        - image: quay.io/pierdipi/event_display-a5130e9507c3d4c9b58499a4ac90be69
+---
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: pingsource-kservice
+spec:
+  schedule: "* * * * *"
+  data: Hello World, Knative Service!
+  sink:
+    ref:
+      kind: Service
+      name: pingsource-kservice
+      apiVersion: serving.knative.dev/v1
