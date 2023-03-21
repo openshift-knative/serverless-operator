@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
 
 	prom "contrib.go.opencensus.io/exporter/prometheus"
 	"go.opencensus.io/resource"
@@ -83,11 +82,10 @@ func startNewPromSrv(e *prom.Exporter, host string, port int) *http.Server {
 	if curPromSrv != nil {
 		curPromSrv.Close()
 	}
-	//nolint:gosec
+	//nolint:gosec // https://github.com/knative/pkg/issues/2632
 	curPromSrv = &http.Server{
-		Addr:              host + ":" + strconv.Itoa(port),
-		Handler:           sm,
-		ReadHeaderTimeout: 60 * time.Second,
+		Addr:    host + ":" + strconv.Itoa(port),
+		Handler: sm,
 	}
 	return curPromSrv
 }
