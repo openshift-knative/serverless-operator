@@ -6,9 +6,6 @@ metadata:
 spec:
   profiles:
   - default
-  security:
-    dataPlane:
-      mtls: true
   proxy:
     networking:
       trafficControl:
