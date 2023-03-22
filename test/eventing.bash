@@ -29,7 +29,7 @@ function upstream_knative_eventing_e2e {
   run_conformance_tests
 }
 
-function upstream_knative_eventinge2e_mesh() {
+function upstream_knative_eventing_e2e_mesh() {
    # TODO(pierdipi) Add tests from eventing-istio
    return 0
 }
