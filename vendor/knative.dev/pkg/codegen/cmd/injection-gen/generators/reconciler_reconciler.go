@@ -150,9 +150,17 @@ func (g *reconcilerReconcilerGenerator) GenerateType(c *generator.Context, t *ty
 			Package: "go.uber.org/zap",
 			Name:    "SugaredLogger",
 		}),
+		"zapDebugLevel": c.Universe.Type(types.Name{
+			Package: "go.uber.org/zapcore",
+			Name:    "DebugLevel",
+		}),
 		"setsNewString": c.Universe.Function(types.Name{
 			Package: "k8s.io/apimachinery/pkg/util/sets",
 			Name:    "NewString",
+		}),
+		"setsString": c.Universe.Type(types.Name{
+			Package: "k8s.io/apimachinery/pkg/util/sets",
+			Name:    "String",
 		}),
 		"controllerOptions": c.Universe.Type(types.Name{
 			Package: "knative.dev/pkg/controller",
@@ -516,7 +524,7 @@ func (r *reconcilerImpl) Reconcile(ctx {{.contextContext|raw}}, key string) erro
 		// the elected leader is expected to write modifications.
 		logger.Warn("Saw status changes when we aren't the leader!")
 	default:
-		if err = r.updateStatus(ctx, original, resource); err != nil {
+		if err = r.updateStatus(ctx, logger, original, resource); err != nil {
 			logger.Warnw("Failed to update resource status", zap.Error(err))
 			r.Recorder.Eventf(resource, {{.corev1EventTypeWarning|raw}}, "UpdateFailed",
 				"Failed to update status for %q: %v", resource.Name, err)
@@ -555,7 +563,7 @@ func (r *reconcilerImpl) Reconcile(ctx {{.contextContext|raw}}, key string) erro
 `
 
 var reconcilerStatusFactory = `
-func (r *reconcilerImpl) updateStatus(ctx {{.contextContext|raw}}, existing *{{.type|raw}}, desired *{{.type|raw}}) error {
+func (r *reconcilerImpl) updateStatus(ctx {{.contextContext|raw}}, logger *{{.zapSugaredLogger|raw}}, existing *{{.type|raw}}, desired *{{.type|raw}}) error {
 	existing = existing.DeepCopy()
 	return {{.reconcilerRetryUpdateConflicts|raw}}(func(attempts int) (err error) {
 		// The first iteration tries to use the injectionInformer's state, subsequent attempts fetch the latest state via API.
@@ -576,8 +584,10 @@ func (r *reconcilerImpl) updateStatus(ctx {{.contextContext|raw}}, existing *{{.
 			return nil
 		}
 
-		if diff, err := {{.kmpSafeDiff|raw}}(existing.Status, desired.Status); err == nil && diff != "" {
-			{{.loggingFromContext|raw}}(ctx).Debug("Updating status with: ", diff)
+		if logger.Desugar().Core().Enabled(zapcore.DebugLevel) {
+			if diff, err := {{.kmpSafeDiff|raw}}(existing.Status, desired.Status); err == nil && diff != "" {
+				logger.Debug("Updating status with: ", diff)
+			}
 		}
 
 		existing.Status = desired.Status
@@ -597,25 +607,14 @@ var reconcilerFinalizerFactory = `
 // updateFinalizersFiltered will update the Finalizers of the resource.
 // TODO: this method could be generic and sync all finalizers. For now it only
 // updates defaultFinalizerName or its override.
-func (r *reconcilerImpl) updateFinalizersFiltered(ctx {{.contextContext|raw}}, resource *{{.type|raw}}) (*{{.type|raw}}, error) {
-	{{if .nonNamespaced}}
-	getter := r.Lister
-	{{else}}
-	getter := r.Lister.{{.type|apiGroup}}(resource.Namespace)
-	{{end}}
-	actual, err := getter.Get(resource.Name)
-	if err != nil {
-		return resource, err
-	}
-
+func (r *reconcilerImpl) updateFinalizersFiltered(ctx {{.contextContext|raw}}, resource *{{.type|raw}}, desiredFinalizers {{.setsString|raw}}) (*{{.type|raw}}, error) {
 	// Don't modify the informers copy.
-	existing := actual.DeepCopy()
+	existing := resource.DeepCopy()
 
 	var finalizers []string
 
 	// If there's nothing to update, just return.
 	existingFinalizers := {{.setsNewString|raw}}(existing.Finalizers...)
-	desiredFinalizers := {{.setsNewString|raw}}(resource.Finalizers...)
 
 	if desiredFinalizers.Has(r.finalizerName) {
 		if existingFinalizers.Has(r.finalizerName) {
@@ -675,10 +674,8 @@ func (r *reconcilerImpl) setFinalizerIfFinalizer(ctx {{.contextContext|raw}}, re
 		finalizers.Insert(r.finalizerName)
 	}
 
-	resource.Finalizers = finalizers.List()
-
 	// Synchronize the finalizers filtered by r.finalizerName.
-	return r.updateFinalizersFiltered(ctx, resource)
+	return r.updateFinalizersFiltered(ctx, resource, finalizers)
 }
 
 func (r *reconcilerImpl) clearFinalizer(ctx {{.contextContext|raw}}, resource *{{.type|raw}}, reconcileEvent {{.reconcilerEvent|raw}}) (*{{.type|raw}}, error) {
@@ -702,10 +699,8 @@ func (r *reconcilerImpl) clearFinalizer(ctx {{.contextContext|raw}}, resource *{
 		finalizers.Delete(r.finalizerName)
 	}
 
-	resource.Finalizers = finalizers.List()
-
 	// Synchronize the finalizers filtered by r.finalizerName.
-	return r.updateFinalizersFiltered(ctx, resource)
+	return r.updateFinalizersFiltered(ctx, resource, finalizers)
 }
 
 `

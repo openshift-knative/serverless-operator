@@ -72,6 +72,10 @@ func (rs *RevisionSpec) SetDefaults(ctx context.Context) {
 	applyDefaultContainerNames(rs.PodSpec.InitContainers, containerNames, defaultInitContainerName)
 	for idx := range rs.PodSpec.Containers {
 		rs.applyDefault(ctx, &rs.PodSpec.Containers[idx], cfg)
+		rs.defaultSecurityContext(rs.PodSpec.SecurityContext, &rs.PodSpec.Containers[idx], cfg)
+	}
+	for idx := range rs.PodSpec.InitContainers {
+		rs.defaultSecurityContext(rs.PodSpec.SecurityContext, &rs.PodSpec.InitContainers[idx], cfg)
 	}
 }
 
@@ -180,5 +184,36 @@ func applyDefaultContainerNames(containers []corev1.Container, containerNames se
 
 			containers[idx].Name = name
 		}
+	}
+}
+
+func (rs *RevisionSpec) defaultSecurityContext(psc *corev1.PodSecurityContext, container *corev1.Container, cfg *config.Config) {
+	if cfg.Features.SecurePodDefaults != config.Enabled {
+		return
+	}
+
+	if psc == nil {
+		psc = &corev1.PodSecurityContext{}
+	}
+
+	updatedSC := container.SecurityContext
+
+	if updatedSC == nil {
+		updatedSC = &corev1.SecurityContext{}
+	}
+
+	if updatedSC.AllowPrivilegeEscalation == nil {
+		updatedSC.AllowPrivilegeEscalation = ptr.Bool(false)
+	}
+
+	if updatedSC.Capabilities == nil {
+		updatedSC.Capabilities = &corev1.Capabilities{}
+		updatedSC.Capabilities.Drop = []corev1.Capability{"ALL"}
+	}
+	if psc.RunAsNonRoot == nil && updatedSC.RunAsNonRoot == nil {
+		updatedSC.RunAsNonRoot = ptr.Bool(true)
+	}
+	if *updatedSC != (corev1.SecurityContext{}) {
+		container.SecurityContext = updatedSC
 	}
 }

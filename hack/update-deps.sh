@@ -13,8 +13,8 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.7"
-EVENTING_VERSION="release-v1.7"
+KN_VERSION="release-1.8"
+EVENTING_VERSION="release-v1.8"
 EVENTING_KAFKA_VERSION="release-v1.4"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.7"
 SERVING_VERSION="release-v1.8"
