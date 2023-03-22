@@ -22,19 +22,25 @@ require (
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7
 	google.golang.org/grpc v1.49.0
-	k8s.io/api v0.25.2
-	k8s.io/apimachinery v0.25.2
-	k8s.io/client-go v0.25.2
+	k8s.io/api v0.25.4
+	k8s.io/apimachinery v0.25.4
+	k8s.io/client-go v0.25.4
 	knative.dev/eventing v0.35.2
 	knative.dev/eventing-kafka v0.35.1
 	knative.dev/eventing-kafka-broker v0.35.5
 	knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 	knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
-	knative.dev/operator v0.34.3-0.20230309061722-d32ccab075c6
+	knative.dev/operator v0.35.6
 	knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-	knative.dev/serving v0.34.1
+	knative.dev/serving v0.35.5
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/yaml v1.3.0
+)
+
+require (
+	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
+	github.com/google/gnostic v0.6.9 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 )
 
 require (
@@ -61,7 +67,6 @@ require (
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/emicklei/go-restful v2.16.0+incompatible // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -82,7 +87,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.1.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
-	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -156,7 +160,7 @@ require (
 	k8s.io/code-generator v0.25.2 // indirect
 	k8s.io/component-base v0.25.2 // indirect
 	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7 // indirect
-	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
+	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
 	knative.dev/caching v0.0.0-20230224210130-1a465b33f202 // indirect
@@ -173,11 +177,15 @@ require (
 )
 
 replace (
-	// Knative forks.
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230303112302-e5e444f985e0
+	// Knative components
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230320072133-8d94f4e19265
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230309155508-7d274916e5ff
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230309023313-fb79933a120b
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230317121228-794aeb2bc0e8
+	knative.dev/hack => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
+	knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
+	knative.dev/operator => knative.dev/operator v0.32.2
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
 )
 
 replace (
@@ -186,21 +194,13 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
-	github.com/pelletier/go-toml/v2 => github.com/pelletier/go-toml/v2 v2.0.0-beta.2
-	k8s.io/api => k8s.io/api v0.23.5
-	k8s.io/apimachinery => k8s.io/apimachinery v0.23.5
-	k8s.io/client-go => k8s.io/client-go v0.23.5
+	github.com/pelletier/go-toml/v2 => github.com/pelletier/go-toml/v2 v2.0.5
+	k8s.io/api => k8s.io/api v0.25.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
+	k8s.io/client-go => k8s.io/client-go v0.25.4
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf
-	k8s.io/utils => k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
+	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.7
-	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2
+	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2
 )
-
-replace knative.dev/pkg => knative.dev/pkg v0.0.0-20221123011941-9d7bd235ceed
-
-replace knative.dev/hack => knative.dev/hack v0.0.0-20220823140917-8d1e4ccf9dc3
-
-replace knative.dev/networking => knative.dev/networking v0.0.0-20230214170450-02a0775a9165
-
-replace knative.dev/operator => knative.dev/operator v0.32.2
