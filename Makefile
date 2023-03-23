@@ -97,8 +97,8 @@ test-e2e-with-kafka-testonly:
 
 test-e2e-with-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	./hack/tracing.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	./hack/teardown.sh
 
