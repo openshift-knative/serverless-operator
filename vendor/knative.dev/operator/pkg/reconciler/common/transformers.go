@@ -32,8 +32,9 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj, logger),
-		OverridesTransform(obj.GetSpec().GetWorkloadOverrides(), logger),
+		DeploymentsTransform(obj, logger),
 		ServicesTransform(obj, logger),
+		PodDisruptionBudgetsTransform(obj, logger),
 	}
 }
 

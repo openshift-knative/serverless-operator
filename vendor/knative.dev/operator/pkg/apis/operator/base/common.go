@@ -18,6 +18,7 @@ package base
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
@@ -67,11 +68,14 @@ type KComponentSpec interface {
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
 
-	// GetWorkloadOverrides gets the component configurations to override.
-	GetWorkloadOverrides() []WorkloadOverride
+	// GetDeploymentOverride gets the deployment configurations to override.
+	GetDeploymentOverride() []DeploymentOverride
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
+
+	// GetPodDisruptionBudgetOverride gets the PodDisruptionBudget configurations to override.
+	GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -133,14 +137,9 @@ type CommonSpec struct {
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
-	// DEPRECATED. Use components
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
-	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
-
-	// Workloads overrides workloads configurations such as resources and replicas.
-	// +optional
-	Workloads []WorkloadOverride `json:"workloads,omitempty"`
+	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
@@ -161,6 +160,10 @@ type CommonSpec struct {
 	// HighAvailability allows specification of HA control plane.
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+
+	// PodDisruptionBudgetOverride overrides PodDisruptionBudget configurations via minAvailable.
+	// +optional
+	PodDisruptionBudgetOverride []PodDisruptionBudgetOverride `json:"podDisruptionBudgets,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -198,14 +201,19 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 	return c.HighAvailability
 }
 
-// GetWorkloadOverrides implements KComponentSpec.
-func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
-	return append(c.DeploymentOverride, c.Workloads...)
+// GetDeploymentOverride implements KComponentSpec.
+func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
+	return c.DeploymentOverride
 }
 
 // GetServiceOverride implements KComponentSpec.
 func (c *CommonSpec) GetServiceOverride() []ServiceOverride {
 	return c.ServiceOverride
+}
+
+// GetPodDisruptionBudgetOverride implements KComponentSpec.
+func (c *CommonSpec) GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride {
+	return c.PodDisruptionBudgetOverride
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -234,8 +242,8 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// WorkloadOverride defines the configurations of deployments to override.
-type WorkloadOverride struct {
+// DeploymentOverride defines the configurations of deployments to override.
+type DeploymentOverride struct {
 	// Name is the name of the deployment to override.
 	Name string `json:"name"`
 
@@ -271,14 +279,6 @@ type WorkloadOverride struct {
 	// Env overrides env vars for the containers.
 	// +optional
 	Env []EnvRequirementsOverride `json:"env,omitempty"`
-
-	// ReadinessProbes overrides readiness probes for the containers.
-	// +optional
-	ReadinessProbes []ProbesRequirementsOverride `json:"readinessProbes,omitempty"`
-
-	// LivenessProbes overrides liveness probes for the containers.
-	// +optional
-	LivenessProbes []ProbesRequirementsOverride `json:"livenessProbes,omitempty"`
 }
 
 // ServiceOverride defines the configurations of the service to override.
@@ -299,6 +299,13 @@ type ServiceOverride struct {
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
+type PodDisruptionBudgetOverride struct {
+	// Name is the name of the podDisruptionBudget to override.
+	Name string `json:"name"`
+	// The desired PodDisruptionBudgetSpec
+	policyv1.PodDisruptionBudgetSpec
+}
+
 // ResourceRequirementsOverride enables the user to override any container's
 // resource requests/limits specified in the embedded manifest
 type ResourceRequirementsOverride struct {
@@ -316,44 +323,6 @@ type EnvRequirementsOverride struct {
 	EnvVars []corev1.EnvVar `json:"envVars,omitempty"`
 }
 
-// ProbesRequirementsOverride enables the user to override any container's env vars.
-type ProbesRequirementsOverride struct {
-	// The container name
-	Container string `json:"container"`
-	// Number of seconds after the container has started before liveness probes are initiated.
-	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
-	// +optional
-	InitialDelaySeconds int32 `json:"initialDelaySeconds,omitempty" protobuf:"varint,2,opt,name=initialDelaySeconds"`
-	// Number of seconds after which the probe times out.
-	// Defaults to 1 second. Minimum value is 1.
-	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
-	// +optional
-	TimeoutSeconds int32 `json:"timeoutSeconds,omitempty" protobuf:"varint,3,opt,name=timeoutSeconds"`
-	// How often (in seconds) to perform the probe.
-	// Default to 10 seconds. Minimum value is 1.
-	// +optional
-	PeriodSeconds int32 `json:"periodSeconds,omitempty" protobuf:"varint,4,opt,name=periodSeconds"`
-	// Minimum consecutive successes for the probe to be considered successful after having failed.
-	// Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
-	// +optional
-	SuccessThreshold int32 `json:"successThreshold,omitempty" protobuf:"varint,5,opt,name=successThreshold"`
-	// Minimum consecutive failures for the probe to be considered failed after having succeeded.
-	// Defaults to 3. Minimum value is 1.
-	// +optional
-	FailureThreshold int32 `json:"failureThreshold,omitempty" protobuf:"varint,6,opt,name=failureThreshold"`
-	// Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
-	// The grace period is the duration in seconds after the processes running in the pod are sent
-	// a termination signal and the time when the processes are forcibly halted with a kill signal.
-	// Set this value longer than the expected cleanup time for your process.
-	// If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
-	// value overrides the value provided by the pod spec.
-	// Value must be non-negative integer. The value zero indicates stop immediately via
-	// the kill signal (no opportunity to shut down).
-	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
-	// Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
-	// +optional
-	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty" protobuf:"varint,7,opt,name=terminationGracePeriodSeconds"`
-}
 // Manifest enables the user to specify the links to the manifests' URLs
 type Manifest struct {
 	// The link of the manifest URL

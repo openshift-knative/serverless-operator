@@ -84,7 +84,11 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
 		return nil
 	}
-	return common.Uninstall(manifest)
+
+	if err = common.Uninstall(manifest); err != nil {
+		logger.Error("Failed to finalize platform resources", err)
+	}
+	return nil
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to
@@ -110,10 +114,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
-		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
-			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing"))))
-			return nil
-		},
 		r.transform,
 		common.Install,
 		common.CheckDeployments,

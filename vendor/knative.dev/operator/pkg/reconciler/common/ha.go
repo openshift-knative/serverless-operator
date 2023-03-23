@@ -26,7 +26,7 @@ import (
 
 func haUnSupported(obj base.KComponent) sets.String {
 	return sets.NewString(
-		"pingsource-mt-adapter", "imc-controller", "imc-dispatcher", "mt-broker-controller", "mt-broker-filter", "mt-broker-ingress",
+		"pingsource-mt-adapter",
 	)
 }
 
@@ -35,7 +35,7 @@ func haUnSupported(obj base.KComponent) sets.String {
 func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
-		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
+		for _, override := range obj.GetSpec().GetDeploymentOverride() {
 			if override.Replicas != nil && override.Name == u.GetName() {
 				return nil
 			}
