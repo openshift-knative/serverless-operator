@@ -1,41 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-from-openshift-monitoring-ns
+  name: allow-from-all
   namespace: knative-eventing
 spec:
   ingress:
     - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: openshift-monitoring
-  podSelector: {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: eventing-webhook
-  namespace: knative-eventing
-  labels:
-    app.kubernetes.io/component: eventing-webhook
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/component: eventing-webhook
-  ingress:
-    - {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: imc-controller
-  namespace: knative-eventing
-  labels:
-    app.kubernetes.io/component: imc-controller
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/component: imc-controller
-  ingress:
-    - {}
-
+        - namespaceSelector: {}
+  podSelector: { }
