@@ -14,13 +14,15 @@ import (
 func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
 	networkPolicies := serviceMeshNetworkPolicies()
 	networkPoliciesUnstr, err := toUnstructured(networkPolicies)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
 
 	m, err := mf.ManifestFrom(mf.Slice(networkPoliciesUnstr))
 	if err != nil {
 		return m, err
 	}
-
-	return m, err
+	return m, nil
 }
 
 func IsEnabled(k kubernetes.Interface) (bool, error) {
