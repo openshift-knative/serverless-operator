@@ -41,7 +41,8 @@ func IsEnabled(k kubernetes.Interface) (bool, error) {
 func toUnstructured(policies []networkingv1.NetworkPolicy) ([]unstructured.Unstructured, error) {
 	r := make([]unstructured.Unstructured, 0, len(policies))
 	for _, p := range policies {
-		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(p)
+		p := p
+		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&p)
 		if err != nil {
 			return nil, err
 		}
