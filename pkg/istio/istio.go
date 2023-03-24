@@ -52,9 +52,17 @@ func toUnstructured(policies []networkingv1.NetworkPolicy) ([]unstructured.Unstr
 }
 
 func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
+
+	gvk := networkingv1.SchemeGroupVersion.WithKind("NetworkPolicy")
+
+	tm := metav1.TypeMeta{
+		Kind:       gvk.Kind,
+		APIVersion: gvk.GroupVersion().String(),
+	}
+
 	return []networkingv1.NetworkPolicy{
 		{
-			TypeMeta: metav1.TypeMeta{},
+			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "allow-from-openshift-monitoring",
 				Namespace: "knative-eventing",
@@ -78,7 +86,7 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 			},
 		},
 		{
-			TypeMeta: metav1.TypeMeta{},
+			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "allow-eventing-webhook",
 				Namespace: "knative-eventing",
@@ -93,7 +101,7 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 			},
 		},
 		{
-			TypeMeta: metav1.TypeMeta{},
+			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "allow-eventing-webhook",
 				Namespace: "knative-eventing",
@@ -108,7 +116,7 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 			},
 		},
 		{
-			TypeMeta: metav1.TypeMeta{},
+			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "kafka-webhook-eventing",
 				Namespace: "knative-eventing",
