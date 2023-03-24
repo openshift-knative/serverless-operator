@@ -6,8 +6,6 @@ import (
 	"os"
 
 	mf "github.com/manifestival/manifestival"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -16,6 +14,10 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/ptr"
+
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/pkg/istio"
 )
 
 const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
@@ -32,7 +34,18 @@ type extension struct {
 }
 
 func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
-	return monitoring.GetEventingMonitoringPlatformManifests(ke)
+	m, err := monitoring.GetEventingMonitoringPlatformManifests(ke)
+	if err != nil {
+		return m, err
+	}
+	p, err := istio.GetServiceMeshNetworkPolicy()
+	if err != nil {
+		return nil, err
+	}
+	if enabled, err := istio.IsEnabled(e.kubeclient); err == nil && enabled {
+		m = append(m, p)
+	}
+	return m, nil
 }
 
 func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
