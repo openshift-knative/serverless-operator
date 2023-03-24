@@ -18,6 +18,8 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/pkg/istio"
+
+	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace/filtered"
 )
 
 const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"

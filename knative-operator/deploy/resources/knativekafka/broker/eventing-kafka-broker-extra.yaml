@@ -82,3 +82,17 @@ rules:
       - get
       - list
       - watch
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-webhook-eventing
+  namespace: knative-eventing
+  labels:
+    app: kafka-webhook-eventing
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka-webhook-eventing
+  ingress:
+    - {}

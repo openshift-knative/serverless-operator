@@ -37,6 +37,8 @@ import (
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace/filtered"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -76,8 +78,12 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})
+		nsSelector := "kubernetes.io/metadata.name=knative-eventing"
+		namespaceinformer.Get(ctx, nsSelector).Informer().AddEventHandler(controller.HandleAll(func(i interface{}) {
+			impl.GlobalResync(knativeEventingInformer.Informer())
+		}))
 
-		go func(){
+		go func() {
 			err = wait.PollImmediate(3*time.Second, 5*time.Minute, func() (bool, error) {
 				err = common.MigrateCustomResource(ctx, dynamicclient.Get(ctx), apixclient.NewForConfigOrDie(injection.GetConfig(ctx)))
 				if err != nil {
