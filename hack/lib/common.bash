@@ -84,6 +84,7 @@ function should_run {
   ts=${1:?Specify test to check}
 
   if [ -n "$OPENSHIFT_CI" ]; then
+    [ -f "${ARTIFACT_DIR}/tests.txt" ] || return 0
     grep -q -e "All" -e "$ts" "${ARTIFACT_DIR}/tests.txt" || return 1
   else
     return 0
