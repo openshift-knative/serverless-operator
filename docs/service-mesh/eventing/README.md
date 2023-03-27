@@ -1,7 +1,7 @@
-## Installing Eventing with Service Mesh
+## Installing components with Service Mesh
 
 ```shell
-make images install-strimzi install-kafka-with-mesh
+make images install-strimzi install-kafka-with-mesh install-serving-with-mesh
 ```
 
 ## Manually testing basic cases

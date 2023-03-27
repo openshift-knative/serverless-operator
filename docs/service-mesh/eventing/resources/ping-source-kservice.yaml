@@ -12,7 +12,10 @@ spec:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:
-        - image: quay.io/pierdipi/event_display-a5130e9507c3d4c9b58499a4ac90be69
+        - image: gcr.io/knative-releases/knative.dev/eventing/cmd/event_display
+          env:
+            key: "REQUEST_LOGGING_ENABLED"
+            value: "true"
 ---
 apiVersion: sources.knative.dev/v1
 kind: PingSource
