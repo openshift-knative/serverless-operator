@@ -15,13 +15,11 @@ package knativeeventing
 
 import (
 	"context"
-	"time"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	apixclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -34,9 +32,7 @@ import (
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
-	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
-	"k8s.io/apimachinery/pkg/util/wait"
 
 	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,19 +91,6 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 				impl.GlobalResync(knativeEventingInformer.Informer())
 			}),
 		})
-
-		go func(){
-			err = wait.PollImmediate(3*time.Second, 5*time.Minute, func() (bool, error) {
-				err = common.MigrateCustomResource(ctx, dynamicclient.Get(ctx), apixclient.NewForConfigOrDie(injection.GetConfig(ctx)))
-				if err != nil {
-					return false, nil
-				}
-				return true, nil
-			})
-			if err != nil {
-				logger.Fatalw("Unable to migrate existing custom resources", zap.Error(err))
-			}
-		}()
 
 		return impl
 	}

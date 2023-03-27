@@ -1,8 +1,8 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index e36178a6..8b79a033 100644
+index ebc0b57e9..e5704143c 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-@@ -875,7 +875,7 @@ spec:
+@@ -995,7 +995,7 @@ spec:
                    If the value is `inclusion`, only namespaces/objects labelled as
                    `bindings.knative.dev/include:true` will be considered. If `exclusion`
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
@@ -11,12 +11,4 @@ index e36178a6..8b79a033 100644
                  type: string
                version:
                  description: The version of Knative Eventing to be installed
-@@ -1771,7 +1771,7 @@ spec:
-                   If the value is `inclusion`, only namespaces/objects labelled as
-                   `bindings.knative.dev/include:true` will be considered. If `exclusion`
-                   is selected, only `bindings.knative.dev/exclude:true` label is checked
--                  and these will NOT be considered. The default is `exclusion`.
-+                  and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
-                 type: string
-               version:
-                 description: The version of Knative Eventing to be installed
+

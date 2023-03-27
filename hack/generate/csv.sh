@@ -109,7 +109,6 @@ image "domainmapping-webhook" "${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK}"
 image "storage-version-migration-serving-serving-$(metadata.get dependencies.serving)__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}"
 
 image "kourier-gateway" "${KNATIVE_KOURIER_GATEWAY}"
-image "kourier-control" "${KNATIVE_KOURIER_CONTROL}"
 image "net-kourier-controller__controller" "${KNATIVE_KOURIER_CONTROL}"
 
 image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}"
