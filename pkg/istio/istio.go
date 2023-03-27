@@ -103,7 +103,7 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 		{
 			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "allow-eventing-webhook",
+				Name:      "allow-imc-webhook",
 				Namespace: "knative-eventing",
 			},
 			Spec: networkingv1.NetworkPolicySpec{
@@ -118,7 +118,7 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 		{
 			TypeMeta: tm,
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "kafka-webhook-eventing",
+				Name:      "allow-kafka-webhook-eventing",
 				Namespace: "knative-eventing",
 			},
 			Spec: networkingv1.NetworkPolicySpec{
