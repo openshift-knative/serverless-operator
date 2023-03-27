@@ -54,7 +54,7 @@ dependencies:
     util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
     tekton_s2i: registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd
     tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023
-  operator: 1.5.2
+  operator: 1.6.0
   # Previous versions required for downgrade testing
   previous:
     serving: 1.7.0
@@ -64,8 +64,8 @@ dependencies:
 upgrade_sequence:
   - csv: serverless-operator.v1.25.0
     source: redhat-operators
-    serving_cr: test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeserving_cr.yaml
-    eventing_cr: test/v1alpha1/resources/operator.knative.dev_v1alpha1_knativeeventing_cr.yaml
+    serving_cr: test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml
+    eventing_cr: test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml
   - csv: serverless-operator.v1.26.0
     source: redhat-operators
   - csv: serverless-operator.v1.27.0

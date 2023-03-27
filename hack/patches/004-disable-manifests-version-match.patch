@@ -1,8 +1,8 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/releases.go b/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
-index 928095ff3..74f7533a8 100644
+index c3c25da57..104918bcd 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
-@@ -217,17 +217,20 @@ func getManifestWithVersionValidation(manifestsPath string, instance base.KCompo
+@@ -216,17 +216,20 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
  		return manifests, nil
  	}
 
@@ -34,4 +34,3 @@ index 928095ff3..74f7533a8 100644
 
  	return manifests, nil
  }
-
