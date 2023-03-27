@@ -27,6 +27,8 @@ if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
     ensure_kafka_channel_default
   fi
   run_rolling_upgrade_tests
+  link_global_pullsecret_to_namespaces "${TEST_NAMESPACES[@]}"
+  create_htpasswd_users && add_roles
   downstream_knative_kafka_e2e_tests
 fi
 
