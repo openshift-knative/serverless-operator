@@ -14,8 +14,8 @@ spec:
       containers:
         - image: gcr.io/knative-releases/knative.dev/eventing/cmd/event_display
           env:
-            key: "REQUEST_LOGGING_ENABLED"
-            value: "true"
+            - name: "REQUEST_LOGGING_ENABLED"
+              value: "true"
 ---
 apiVersion: sources.knative.dev/v1
 kind: PingSource
