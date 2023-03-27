@@ -14,6 +14,8 @@ dump_state.setup # test
 
 logger.success '🚀 Cluster prepared for testing.'
 
+run_testselect
+
 # Run serverless-operator kitchensink tests.
 downstream_kitchensink_e2e_tests
 
