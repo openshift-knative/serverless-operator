@@ -1,18 +1,18 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/controller.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/controller.go
-index 170926033..50c9b28f2 100644
+index cf341fa33..745e3dd70 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/controller.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/controller.go
-@@ -37,6 +37,9 @@ import (
- 	"knative.dev/pkg/injection/clients/dynamicclient"
+@@ -33,6 +33,9 @@ import (
+ 	"knative.dev/pkg/controller"
+ 	"knative.dev/pkg/injection"
  	"knative.dev/pkg/logging"
- 	"k8s.io/apimachinery/pkg/util/wait"
 +
 +	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
 +	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
  )
  
  // NewController initializes the controller and is called by the generated code
-@@ -76,6 +79,22 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
+@@ -72,6 +75,22 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
  			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
  			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
  		})
@@ -33,5 +33,5 @@ index 170926033..50c9b28f2 100644
 +			}),
 +		})
  
- 		go func(){
- 			err = wait.PollImmediate(3*time.Second, 5*time.Minute, func() (bool, error) {
+ 		return impl
+ 	}
