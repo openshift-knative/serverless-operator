@@ -17,7 +17,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	"github.com/openshift-knative/serverless-operator/pkg/istio"
+	"github.com/openshift-knative/serverless-operator/pkg/istio/eventingistio"
 )
 
 const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
@@ -38,11 +38,11 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return m, err
 	}
-	p, err := istio.GetServiceMeshNetworkPolicy()
+	p, err := eventingistio.GetServiceMeshNetworkPolicy()
 	if err != nil {
 		return nil, err
 	}
-	if enabled, err := istio.IsEnabled(e.kubeclient, os.Getenv(requiredNsEnvName)); err == nil && enabled {
+	if enabled, err := eventingistio.IsEnabled(e.kubeclient, os.Getenv(requiredNsEnvName)); err == nil && enabled {
 		m = append(m, p)
 	}
 	return m, nil
