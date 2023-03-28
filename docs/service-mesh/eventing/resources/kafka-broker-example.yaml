@@ -52,7 +52,7 @@ metadata:
 spec:
   containers:
   - name: event-display
-    image: quay.io/pierdipi/event_display-a5130e9507c3d4c9b58499a4ac90be69
+    image: quay.io/openshift-knative/knative-eventing-event-display:knative-nightly
     imagePullPolicy: Always
     ports:
     - containerPort: 8080

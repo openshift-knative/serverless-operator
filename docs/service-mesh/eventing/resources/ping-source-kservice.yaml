@@ -12,7 +12,7 @@ spec:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing/cmd/event_display
+        - image: quay.io/openshift-knative/knative-eventing-event-display:knative-nightly
           env:
             - name: "REQUEST_LOGGING_ENABLED"
               value: "true"
