@@ -119,6 +119,10 @@ function deploy_gateways {
   oc apply -f "${resources_dir}"/namespace.yaml || return $?
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
   oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
+
+  oc create ns "${EVENTING_NAMESPACE}" --dry-run=client -oyaml | kubectl apply -f -
+  oc apply -n "${EVENTING_NAMESPACE}" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
+  oc apply -n "serverless-tests" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
 }
 
 function undeploy_gateways {

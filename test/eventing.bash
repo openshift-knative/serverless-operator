@@ -8,12 +8,17 @@ function upstream_knative_eventing_e2e {
 
   logger.info 'Running eventing tests'
 
-  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-test-{{.Name}}:${KNATIVE_EVENTING_VERSION}"
+  if [[ $FULL_MESH = true ]]; then
+    upstream_knative_eventing_e2e_mesh
+    return $?
+  fi
 
-  cd "${KNATIVE_EVENTING_HOME}"
+  export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-test-{{.Name}}:${KNATIVE_EVENTING_VERSION}"
 
   # shellcheck disable=SC1091
   source "${KNATIVE_EVENTING_HOME}/openshift/e2e-common.sh"
+
+  cd "${KNATIVE_EVENTING_HOME}"
 
   # run_e2e_tests defined in knative-eventing
   logger.info 'Starting eventing e2e tests'
@@ -22,4 +27,9 @@ function upstream_knative_eventing_e2e {
   # run_conformance_tests defined in knative-eventing
   logger.info 'Starting eventing conformance tests'
   run_conformance_tests
+}
+
+function upstream_knative_eventing_e2e_mesh() {
+   # TODO(pierdipi) Add tests from eventing-istio
+   return 0
 }

@@ -3,9 +3,10 @@ package eventinge2e
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing/test/lib"
@@ -13,6 +14,8 @@ import (
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 const (
@@ -68,6 +71,10 @@ func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespa
 
 	// Setup a knative service for the wathola-forwarder
 	ksvc, err := test.WithServiceReady(ctx, name, namespace, pkgTest.ImagePath(test.WatholaForwarderImg), func(service *servingv1.Service) {
+		service.Spec.Template.Annotations = map[string]string{
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+		}
 		service.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{Name: "config", VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
@@ -100,4 +107,22 @@ func AssertPingSourceDataReceivedAtLeastOnce(eventStore *recordevents.EventInfoS
 		}
 		return nil
 	})
+}
+
+func skipInFullMeshMode(t *testing.T) {
+	if isFullMesh(t) {
+		t.Skip("Channel-based tests cannot run in service mesh mode for now")
+	}
+}
+
+func isFullMesh(t *testing.T) bool {
+	fmStr := os.Getenv("FULL_MESH")
+	if fmStr != "" {
+		fm, err := strconv.ParseBool(fmStr)
+		if err != nil {
+			t.Fatal("FULL_MESH", fmStr, err)
+		}
+		return fm
+	}
+	return false
 }

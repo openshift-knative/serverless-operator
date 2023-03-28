@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: pingsource-kservice
+  annotations:
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      containers:
+        - image: quay.io/openshift-knative/knative-eventing-event-display:knative-nightly
+          env:
+            - name: "REQUEST_LOGGING_ENABLED"
+              value: "true"
+---
+apiVersion: sources.knative.dev/v1
+kind: PingSource
+metadata:
+  name: pingsource-kservice
+spec:
+  schedule: "* * * * *"
+  data: Hello World, Knative Service!
+  sink:
+    ref:
+      kind: Service
+      name: pingsource-kservice
+      apiVersion: serving.knative.dev/v1

@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: kafka-cluster
+spec:
+  hosts:
+    - my-cluster-kafka-bootstrap.kafka
+    - my-cluster-kafka-brokers.kafka
+    - my-cluster-kafka-bootstrap.kafka.svc.cluster.local
+    - my-cluster-kafka-brokers.kafka.svc.cluster.local
+  exportTo:
+    - "."
+  ports:
+    - number: 9092
+      name: tcp-plain
+      protocol: TCP
+    - number: 9093
+      name: tls
+      protocol: TCP
+    - number: 9094
+      name: saslssl
+      protocol: TCP
+    - number: 9095
+      name: saslplain
+      protocol: TCP
+    - number: 9096
+      name: sslnoauth
+      protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: NONE
