@@ -62,10 +62,6 @@ dependencies:
     eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.7
 upgrade_sequence:
-  - csv: serverless-operator.v1.25.0
-    source: redhat-operators
-    serving_cr: test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml
-    eventing_cr: test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml
   - csv: serverless-operator.v1.26.0
     source: redhat-operators
   - csv: serverless-operator.v1.27.0
