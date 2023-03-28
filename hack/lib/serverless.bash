@@ -328,7 +328,6 @@ function deploy_knativekafka_cr {
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativekafkas.operator.serverless.openshift.io) -eq 0 ]]"
 
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   knativekafka_cr="$(mktemp -t knativekafka-XXXXX.yaml)"
 
   # Install Knative Kafka
