@@ -42,7 +42,7 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	if enabled, err := istio.IsEnabled(e.kubeclient); err == nil && enabled {
+	if enabled, err := istio.IsEnabled(e.kubeclient, os.Getenv(requiredNsEnvName)); err == nil && enabled {
 		m = append(m, p)
 	}
 	return m, nil

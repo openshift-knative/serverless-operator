@@ -25,8 +25,8 @@ func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
 	return m, nil
 }
 
-func IsEnabled(k kubernetes.Interface) (bool, error) {
-	ns, err := k.CoreV1().Namespaces().Get(context.Background(), "knative-eventing", metav1.GetOptions{})
+func IsEnabled(k kubernetes.Interface, nsName string) (bool, error) {
+	ns, err := k.CoreV1().Namespaces().Get(context.Background(), nsName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}
