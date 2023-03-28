@@ -26,7 +26,7 @@ import (
 
 func haUnSupported(obj base.KComponent) sets.String {
 	return sets.NewString(
-		"pingsource-mt-adapter", "imc-controller", "imc-dispatcher", "mt-broker-controller", "mt-broker-filter", "mt-broker-ingress",
+		"pingsource-mt-adapter",
 	)
 }
 
