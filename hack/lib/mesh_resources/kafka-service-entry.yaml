@@ -2,7 +2,6 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: kafka-cluster
-  # namespace: knative-eventing
 spec:
   hosts:
     - my-cluster-kafka-bootstrap.kafka
