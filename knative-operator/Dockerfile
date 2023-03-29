@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/openshift/release:golang-1.18 AS builder
+FROM registry.ci.openshift.org/openshift/release:golang-1.19 AS builder
 
 ENV BASE=github.com/openshift-knative/serverless-operator
 WORKDIR ${GOPATH}/src/${BASE}
