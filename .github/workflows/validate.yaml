@@ -22,7 +22,7 @@ jobs:
       GOPATH: ${{ github.workspace }}
     steps:
       - name: Setup Golang
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.19.x
 
@@ -114,7 +114,7 @@ jobs:
       GOPATH: ${{ github.workspace }}
     steps:
       - name: Setup Golang
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.19.x
 
