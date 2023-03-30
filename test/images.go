@@ -7,4 +7,5 @@ const (
 	HTTPProxyImg        = "httpproxy"
 	RecordEventsImg     = "recordevents"
 	WatholaForwarderImg = "wathola-forwarder"
+	KafkaImg            = "kafka"
 )
