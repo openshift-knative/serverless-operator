@@ -163,6 +163,10 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		for _, scenario := range tests {
 			scenario := scenario
 			t.Run(scenario.name, func(t *testing.T) {
+				// Create a new context to prevent calling ctx.T.Fatal on parent T.
+				ctx := test.SetupClusterAdmin(t)
+				test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+				defer test.CleanupAll(t, ctx)
 				testServiceToService(t, ctx, test.Namespace, scenario)
 			})
 		}
