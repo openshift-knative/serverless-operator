@@ -152,12 +152,11 @@ function deploy_knativeserving_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
-  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].serving_cr") != "" ]]; then
     cp "${rootdir}/$(metadata.get "upgrade_sequence[0].serving_cr")" "$serving_cr"
   else
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
   fi
-
 
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
@@ -306,7 +305,7 @@ function deploy_knativeeventing_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   eventing_cr="$(mktemp -t eventing-XXXXX.yaml)"
-  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].eventing_cr") != "" ]]; then
     cp "${rootdir}/$(metadata.get "upgrade_sequence[0].eventing_cr")" "$eventing_cr"
   else
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml" "$eventing_cr"
