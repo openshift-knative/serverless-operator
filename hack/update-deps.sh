@@ -54,14 +54,14 @@ if (( GO_GET )); then
     go mod edit -replace "${dep}"
     # Let the dependency update the magic SHA otherwise the
     # following "go mod edit" will fail.
-    go mod tidy -compat=1.19
+    go mod tidy -compat=1.18
     go mod vendor
   done
   go get -d "${FLOATING_DEPS[@]}"
 fi
 
 # Prune modules.
-go mod tidy -compat=1.19
+go mod tidy -compat=1.18
 go mod vendor
 
 # Remove unnecessary files.

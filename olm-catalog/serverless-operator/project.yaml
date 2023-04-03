@@ -21,7 +21,7 @@ requirements:
     # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
     # This value is used for CSV's min version validation.
     minVersion: 1.21.0
-  golang: '1.18'
+  golang: '1.19'
   nodejs: 16.x
   ocpVersion:
     min: '4.8'
