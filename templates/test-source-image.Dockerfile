@@ -8,6 +8,6 @@ COPY --from=registry.ci.openshift.org/openshift/eventing-kafka-broker-src:__EVEN
 
 # Create a temp directory for the go_run() function that is writable by runtime users
 ENV GORUN_PATH=/tmp/gorun
-RUN mkdir /tmp/gorun && chmod g+rw /tmp/gorun
+RUN mkdir -p /tmp/gorun && chmod g+rw /tmp/gorun
 
 RUN chmod g+w /go/src/knative.dev/serving/ && chmod g+w /go/src/knative.dev/eventing/ && chmod g+w /go/src/knative.dev/eventing-kafka/ && chmod g+w /go/src/knative.dev/eventing-kafka-broker/
