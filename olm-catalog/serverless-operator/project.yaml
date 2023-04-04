@@ -14,6 +14,9 @@ olm:
     default: 'stable'
     list:
       - 'stable'
+  previous:
+    replaces: 1.27.0
+    skipRange: '>=1.27.0 <1.28.0'
 
 requirements:
   kube:
@@ -64,7 +67,7 @@ dependencies:
 upgrade_sequence:
   - csv: serverless-operator.v1.26.0
     source: redhat-operators
-  - csv: serverless-operator.v1.27.0
+  - csv: serverless-operator.v1.27.1
     source: redhat-operators
   - csv: serverless-operator.v1.28.0
     source: serverless-operator
