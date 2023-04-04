@@ -22,6 +22,7 @@ values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocpVersion.label')"
 values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
+values[PREVIOUS_REPLACES]="$(metadata.get olm.previous.replaces)"
 
 # Start fresh
 cp "$template" "$target"
