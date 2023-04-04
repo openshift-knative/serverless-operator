@@ -222,6 +222,9 @@ release-files:
 		templates/main.Dockerfile \
 		olm-catalog/serverless-operator/Dockerfile
 	./hack/generate/dockerfile.sh \
+		templates/stopbundle.Dockerfile \
+		olm-catalog/serverless-operator/stopbundle.Dockerfile
+	./hack/generate/dockerfile.sh \
 		templates/test-source-image.Dockerfile \
 		openshift/ci-operator/source-image/Dockerfile
 	./hack/generate/dockerfile.sh \
