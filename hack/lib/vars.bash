@@ -86,13 +86,15 @@ export ENABLE_TRACING="${ENABLE_TRACING:-false}"
 # Define sample-rate for tracing.
 export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
+export QUAY_REGISTRY=quay.io/openshift-knative
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
-quay.io/openshift-knative/{{- with .Name }}
-{{- if eq . "httpproxy" }}serving/{{.}}:v$(echo "${KNATIVE_SERVING_VERSION#v}" | awk -F \. '{printf "%d.%d", $1, $2}')
-{{- else if eq . "recordevents" }}eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else if eq . "wathola-forwarder" }}eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else }}{{.}}:multiarch{{end -}}
+{{- with .Name }}
+{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:v$(echo "${KNATIVE_SERVING_VERSION#v}" | awk -F \. '{printf "%d.%d", $1, $2}')
+{{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else if eq . "kafka" }}strimzi/kafka:0.16.2-kafka-2.4.0
+{{- else }}${QUAY_REGISTRY}/{{.}}:multiarch{{end -}}
 {{end -}}
 EOF
 )
