@@ -22,6 +22,7 @@ export KNATIVE_EVENTING_VERSION_PREVIOUS="${KNATIVE_EVENTING_VERSION_PREVIOUS:-$
 export KNATIVE_EVENTING_KAFKA_VERSION="${KNATIVE_EVENTING_KAFKA_VERSION:-v$(metadata.get dependencies.eventing_kafka)}"
 export KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.eventing_kafka)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-$(metadata.get dependencies.eventing_kafka_broker)}"
+export KNATIVE_EVENTING_ISTIO_VERSION="${KNATIVE_EVENTING_ISTIO_VERSION:-$(metadata.get dependencies.eventing_istio)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.eventing_kafka_broker)}"
 
 CURRENT_VERSION="$(metadata.get project.version)"
