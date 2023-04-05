@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
+	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -65,7 +66,7 @@ func createCronJobObjV1Beta1(name, topic, server string) *batchv1beta1.CronJob {
 							Containers: []corev1.Container{
 								{
 									Name:    "kafka-message-test",
-									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
+									Image:   pkgTest.ImagePath(test.KafkaImg),
 									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
@@ -93,7 +94,7 @@ func createCronJobObjV1(name, topic, server string) *batchv1.CronJob {
 							Containers: []corev1.Container{
 								{
 									Name:    "kafka-message-test",
-									Image:   "strimzi/kafka:0.16.2-kafka-2.4.0",
+									Image:   pkgTest.ImagePath(test.KafkaImg),
 									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
 								},
 							},
