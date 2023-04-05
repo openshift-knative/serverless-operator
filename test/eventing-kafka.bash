@@ -76,6 +76,9 @@ function upstream_knative_eventing_kafka_broker_e2e {
 }
 
 function upstream_knative_eventing_kafka_broker_e2e_mesh() {
-   # TODO(pierdipi) Add tests from eventing-istio
+  # upstream_knative_eventing_e2e_mesh function in eventing.bash runs:
+  # - Eventing core tests
+  # - EKB tests
+  # in the mesh case, so we don't need to do anything here
    return 0
 }
