@@ -49,6 +49,9 @@ dependencies:
   eventing_kafka_broker: knative-v1.7
   # eventing-kafka-broker midstream branch or commit
   eventing_kafka_broker_artifacts_branch: release-v1.7
+  # eventing-istio promotion tag
+  eventing_istio: knative-v1.8
+
   cli: 1.7.1
   func:
     util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
