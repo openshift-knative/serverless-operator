@@ -30,6 +30,9 @@ function upstream_knative_eventing_e2e {
 }
 
 function upstream_knative_eventing_e2e_mesh() {
-   # TODO(pierdipi) Add tests from eventing-istio
-   return 0
+  pushd "${KNATIVE_EVENTING_ISTIO_HOME}" || return $?
+
+  ./openshift/e2e-tests.sh || return $?
+
+  popd || return $?
 }
