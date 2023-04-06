@@ -24,6 +24,7 @@ testsuites:
       - ^serving/ingress/
     tests:
       - serverless_operator_e2e_tests
+      - run_rolling_upgrade_tests
   - name: "Eventing Kafka"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativekafka/"
@@ -33,6 +34,7 @@ testsuites:
       - downstream_knative_kafka_e2e_tests
       - upstream_knative_eventing_kafka_e2e # TODO: Run this at all? Should this test suite be removed completely?
       - upstream_knative_eventing_kafka_broker_e2e
+      - run_rolling_upgrade_tests
   - name: "Eventing"
     run_if_changed:
       - "^knative-operator/pkg/controller/knativeeventing/"

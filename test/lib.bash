@@ -67,7 +67,7 @@ function print_test_result {
 }
 
 function serverless_operator_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -92,7 +92,7 @@ function serverless_operator_e2e_tests {
 }
 
 function serverless_operator_kafka_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -117,7 +117,7 @@ function serverless_operator_kafka_e2e_tests {
 }
 
 function downstream_serving_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -149,7 +149,7 @@ function downstream_serving_e2e_tests {
 }
 
 function downstream_eventing_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -177,7 +177,7 @@ function downstream_eventing_e2e_tests {
 }
 
 function downstream_knative_kafka_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -205,7 +205,7 @@ function downstream_knative_kafka_e2e_tests {
 }
 
 function downstream_monitoring_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   declare -a kubeconfigs
   local kubeconfigs_str
@@ -229,7 +229,7 @@ function downstream_monitoring_e2e_tests {
 }
 
 function downstream_kitchensink_e2e_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   logger.info "Running Knative kitchensink tests"
 
@@ -257,6 +257,8 @@ function downstream_kitchensink_e2e_tests {
 # == Upgrade testing
 
 function run_rolling_upgrade_tests {
+  should_run "${FUNCNAME[0]}" || return 0
+
   logger.info "Running rolling upgrade tests"
 
   local base serving_image_version eventing_image_version eventing_kafka_image_version eventing_kafka_broker_image_version image_template channels common_opts

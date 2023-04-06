@@ -4,7 +4,7 @@
 set -e
 
 function upstream_knative_eventing_kafka_e2e {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   logger.info 'Running eventing-kafka tests'
 
@@ -33,7 +33,7 @@ function upstream_knative_eventing_kafka_e2e {
 }
 
 function upstream_knative_eventing_kafka_broker_e2e {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   if [[ $FULL_MESH = true ]]; then
     upstream_knative_eventing_kafka_broker_e2e_mesh
