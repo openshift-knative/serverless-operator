@@ -70,19 +70,23 @@ class OpenshiftConsole {
   }
 
   sidebarSelectors() {
+    let dataTestAction = 'Delete application'
     if (environment.ocpVersion().satisfies('<4.11')) {
+      dataTestAction = 'Delete Application'
+    }
+    if (environment.ocpVersion().satisfies('<4.10')) {
       return {
         drawer: '.odc-topology .pf-topology-container',
         expandedCls: 'pf-topology-container__with-sidebar--open',
         closeBtn: '.odc-topology .pf-topology-container .pf-topology-side-bar button.close',
-        deleteApplicationBtn: 'button[data-test-action="Delete Application"]'
+        deleteApplicationBtn: `button[data-test-action="${dataTestAction}"]`
       }
     }
     return {
       drawer: '.odc-topology .pf-c-drawer',
       expandedCls: 'pf-m-expanded',
       closeBtn: '.odc-topology .pf-c-drawer button[data-test-id=sidebar-close-button]',
-      deleteApplicationBtn: 'li[data-test-action="Delete application"] button'
+      deleteApplicationBtn: `li[data-test-action="${dataTestAction}"] button`
     }
   }
 }
