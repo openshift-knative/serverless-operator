@@ -33,7 +33,7 @@ function prepare_knative_serving_tests {
 }
 
 function upstream_knative_serving_e2e_and_conformance_tests {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   logger.info "Running Serving E2E and conformance tests"
 

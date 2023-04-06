@@ -4,7 +4,7 @@
 set -e
 
 function upstream_knative_eventing_e2e {
-  should_run "${FUNCNAME[0]}" || return
+  should_run "${FUNCNAME[0]}" || return 0
 
   logger.info 'Running eventing tests'
 
