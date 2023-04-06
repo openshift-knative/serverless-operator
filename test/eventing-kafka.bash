@@ -36,8 +36,11 @@ function upstream_knative_eventing_kafka_broker_e2e {
   should_run "${FUNCNAME[0]}" || return
 
   if [[ $FULL_MESH = true ]]; then
-    upstream_knative_eventing_kafka_broker_e2e_mesh
-    return $?
+    # upstream_knative_eventing_e2e_mesh function in eventing.bash runs:
+    # - Eventing core tests
+    # - EKB tests
+    # in the mesh case, so we don't need to do anything here
+    return 0
   fi
 
   logger.info 'Setting Kafka as default broker class'
@@ -73,12 +76,4 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   # Rollback setting Kafka as default Broker class
   oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"
-}
-
-function upstream_knative_eventing_kafka_broker_e2e_mesh() {
-  # upstream_knative_eventing_e2e_mesh function in eventing.bash runs:
-  # - Eventing core tests
-  # - EKB tests
-  # in the mesh case, so we don't need to do anything here
-   return 0
 }
