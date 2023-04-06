@@ -8,9 +8,11 @@ COPY --from=opm /bin/opm /bin/opm
 COPY configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
-RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_VERSION__:serverless-stop-bundle \
+RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_REPLACES__:serverless-bundle \
+      registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-v__VERSION__:serverless-bundle >> /configs/index.yaml || \
-    /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_VERSION__:serverless-stop-bundle \
+    /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_REPLACES__:serverless-bundle \
+      registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-bundle >> /configs/index.yaml
 
 # The base image is expected to contain

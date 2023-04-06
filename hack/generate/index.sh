@@ -13,18 +13,17 @@ function add_entries {
 - command: update
   path: entries
   value:
-    - name: "${2}"
-    - name: "${3}"
-      replaces: ${2}
-      skipRange: "${4}"
+    - name: "$(metadata.get project.name).v$(metadata.get olm.previous.replaces)"
+    - name: "$(metadata.get project.name).v$(metadata.get olm.replaces)"
+      replaces: "$(metadata.get project.name).v$(metadata.get olm.previous.replaces)"
+      skipRange: "$(metadata.get olm.previous.skipRange)"
+    - name: "$(metadata.get project.name).v$(metadata.get project.version)"
+      replaces: "$(metadata.get project.name).v$(metadata.get olm.replaces)"
+      skipRange: "$(metadata.get olm.skipRange)"
 EOF
 }
 
 # Start fresh
 cp "$template" "$target"
 
-add_entries "$target" \
-  "$(metadata.get project.name).v$(metadata.get olm.replaces)" \
-  "$(metadata.get project.name).v$(metadata.get project.version)" \
-  "$(metadata.get olm.skipRange)"
-
+add_entries "$target"
