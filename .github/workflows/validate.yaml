@@ -107,6 +107,16 @@ jobs:
             exit 33
           fi
 
+      - name: Check existence of skipRange and replaces in ClusterServiceVersion
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: |
+          csv="olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
+          if [[ "$(yq read "$csv" spec.replaces)" == "" || \
+                "$(yq read "$csv" 'metadata.annotations."olm.skipRange"')" == "" ]]; then
+            echo '::error:: Missing spec.replaces or metadata.annotations."olm.skipRange" in CSV.'
+            exit 34
+          fi
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
