@@ -5,6 +5,7 @@ project:
   # When bumping the Operator to a new version (major and minor), make sure to also update
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
+  # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
   version: 1.29.0
 
 olm:
