@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.8
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -181,7 +181,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.8
 rules:
   - apiGroups:
       - ""
@@ -214,7 +214,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.8
 ---
 ---
 
@@ -237,7 +237,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.8
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -270,7 +270,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: v1.7
+    kafka.eventing.knative.dev/release: v1.8
 spec:
   serviceName: kafka-source-dispatcher
   podManagementPolicy: "Parallel"
@@ -284,7 +284,7 @@ spec:
         app: kafka-source-dispatcher
         app-version: v2
         app.kubernetes.io/component: kafka-dispatcher
-        kafka.eventing.knative.dev/release: v1.7
+        kafka.eventing.knative.dev/release: v1.8
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
