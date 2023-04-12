@@ -48,7 +48,6 @@ dependencies:
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.8
 
-  eventing_kafka: 1.1.0
   # eventing-kafka-broker promotion tag
   eventing_kafka_broker: knative-v1.8
   # eventing-kafka-broker midstream branch or commit
@@ -66,7 +65,6 @@ dependencies:
   previous:
     serving: 1.7.0
     eventing: 1.7
-    eventing_kafka: 1.1.0
     eventing_kafka_broker: 1.7
 upgrade_sequence:
   - csv: serverless-operator.v1.26.0

@@ -261,11 +261,10 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_image_version eventing_kafka_broker_image_version image_template channels common_opts
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts
 
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version="${KNATIVE_EVENTING_VERSION}"
-  eventing_kafka_image_version=$(versions.major_minor "${KNATIVE_EVENTING_KAFKA_VERSION}")
   eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
   # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
@@ -273,8 +272,7 @@ function run_rolling_upgrade_tests {
   image_template=$(
     cat <<-EOF
 $base{{- with .Name }}
-{{- if eq .      "wathola-kafka-sender"}}{{.}}:v$eventing_kafka_image_version
-{{- else if eq . "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
+{{- if eq .      "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
 {{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
 {{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
 {{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
