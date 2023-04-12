@@ -5,9 +5,6 @@ metadata:
 spec:
   hosts:
     - my-cluster-kafka-bootstrap.kafka
-    - my-cluster-kafka-brokers.kafka
-    - my-cluster-kafka-bootstrap.kafka.svc.cluster.local
-    - my-cluster-kafka-brokers.kafka.svc.cluster.local
   exportTo:
     - "."
   ports:
