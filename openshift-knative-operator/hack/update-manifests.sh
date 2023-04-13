@@ -91,18 +91,13 @@ function download_eventing {
 function download_ingress {
   component=$1
   version=$2
+  ingress_dir=$3
+  shift
   shift
   shift
 
   files=("$@")
   echo "Files: ${files[*]}"
-
-  ingress_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
-  SKIP_TARGET_DELETION=${SKIP_TARGET_DELETION:-false}
-  if [[ "${SKIP_TARGET_DELETION}" == "false" ]]; then
-    rm -rf "$ingress_dir"
-  fi
-  mkdir -p "$ingress_dir"
 
   branch=$(metadata.get "dependencies.${component/-/_}_artifacts_branch")
   index=0
@@ -138,9 +133,15 @@ fi
 # DOWNLOAD INGRESS
 #
 
-download_ingress net-istio "v$(metadata.get dependencies.net_istio)" "${istio_files[@]}"
+# clean up ingreess_dir
+ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
+rm -rf "${ingress_root_dir}"
 
-SKIP_TARGET_DELETION=true download_ingress net-kourier "v$(metadata.get dependencies.net_kourier)" "${kourier_files[@]}"
+ingress_dir="${ingress_root_dir}/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+mkdir -p "${ingress_dir}"
+
+download_ingress net-istio   "v$(metadata.get dependencies.net_istio)"   "${ingress_dir}" "${istio_files[@]}"
+download_ingress net-kourier "v$(metadata.get dependencies.net_kourier)" "${ingress_dir}" "${kourier_files[@]}"
 
 #
 # DOWNLOAD EVENTING
