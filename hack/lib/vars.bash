@@ -14,8 +14,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.s
 export STRIMZI_VERSION=0.34.0
 
 # Adjust these when upgrading the knative versions.
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-v$(metadata.get dependencies.serving)}"
-export KNATIVE_SERVING_VERSION_PREVIOUS="${KNATIVE_SERVING_VERSION_PREVIOUS:-v$(metadata.get dependencies.previous.serving)}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get dependencies.serving)}"
+export KNATIVE_SERVING_VERSION_PREVIOUS="${KNATIVE_SERVING_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.serving)}"
 export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-$(metadata.get dependencies.eventing)}"
 export KNATIVE_EVENTING_VERSION_PREVIOUS="${KNATIVE_EVENTING_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.eventing)}"
 export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-$(metadata.get dependencies.eventing_kafka_broker)}"
@@ -88,7 +88,7 @@ export QUAY_REGISTRY=quay.io/openshift-knative
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
 {{- with .Name }}
-{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:v$(echo "${KNATIVE_SERVING_VERSION#v}" | awk -F \. '{printf "%d.%d", $1, $2}')
+{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
 {{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "kafka" }}strimzi/kafka:0.16.2-kafka-2.4.0
