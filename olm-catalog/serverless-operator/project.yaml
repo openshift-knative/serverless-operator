@@ -33,7 +33,7 @@ requirements:
     label: 'v4.8'
 
 dependencies:
-  serving: 1.8.0
+  serving: knative-v1.8
   # serving midstream branch name
   serving_artifacts_branch: release-v1.8
 
