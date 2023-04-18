@@ -286,7 +286,7 @@ $base{{- with .Name }}
 {{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
 {{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
 {{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}{{.}}:v$serving_image_version{{end -}}
+{{- else                               }}{{.}}:$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
