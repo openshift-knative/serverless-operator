@@ -213,14 +213,8 @@ function override_storage_version_migration_images {
     images+=("$line");
   done < <(grep storage-version-migration "$csv" | grep "image:" | awk '{ print $2 }' | awk -F"\"" '{ print $2 }')
   for image_pullspec in "${images[@]}"; do
-    if [[ $image_pullspec == *"eventing"* ]]; then
-      name=$(echo "$image_pullspec" | awk -F":" '{print $1}' | awk -F"/" '{print $NF}')
-      version=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
-      sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
-    else
-      name=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
-      version=$(echo "$image_pullspec" | awk -F":" '{ print $1 }' | awk -F"knative-" '{ print $2 }')
-      sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
-    fi
+    name=$(echo "$image_pullspec" | awk -F":" '{print $1}' | awk -F"/" '{print $NF}')
+    version=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
+    sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
   done
 }
