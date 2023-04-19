@@ -33,7 +33,7 @@ function download_serving {
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version:1}"
+  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
@@ -137,7 +137,8 @@ fi
 ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
 rm -rf "${ingress_root_dir}"
 
-ingress_dir="${ingress_root_dir}/$(versions.major_minor "${KNATIVE_SERVING_VERSION}")"
+serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
+ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
 mkdir -p "${ingress_dir}"
 
 download_ingress net-istio   "v$(metadata.get dependencies.net_istio)"   "${ingress_dir}" "${istio_files[@]}"
