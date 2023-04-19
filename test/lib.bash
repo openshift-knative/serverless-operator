@@ -267,7 +267,7 @@ function run_rolling_upgrade_tests {
   eventing_image_version="${KNATIVE_EVENTING_VERSION}"
   eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
-  # mapping based on https://github.com/openshift/release/blob/master/core-services/image-mirroring/knative/mapping_knative_v1_2_quay
+  # mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
   base="quay.io/openshift-knative/"
   image_template=$(
     cat <<-EOF
@@ -286,7 +286,7 @@ $base{{- with .Name }}
 {{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
 {{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
 {{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}{{.}}:$serving_image_version{{end -}}
+{{- else                               }}knative-serving-test-{{.}}:$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
