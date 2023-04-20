@@ -472,6 +472,21 @@ spec:
                 - get
                 - list
                 - watch
+            # These are Tekton resources for building functions on the cluster
+            - apiGroups:
+                - tekton.dev/v1beta1
+              resources:
+                - tasks
+                - taskruns
+                - pipelines
+                - pipelineruns
+              verbs:
+                - create
+                - delete
+                - get
+                - list
+                - update
+                - watch
         - serviceAccountName: knative-operator
           rules:
             # These are needed to create the various different resources.
