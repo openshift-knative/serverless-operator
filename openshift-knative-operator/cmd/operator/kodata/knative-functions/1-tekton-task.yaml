@@ -14,7 +14,7 @@
 # limitations under the License.apiVersion: tekton.dev/v1beta1
 
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: ClusterTask
 metadata:
   name: func-s2i
   labels:
@@ -147,7 +147,7 @@ spec:
 
 ---
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: ClusterTask
 metadata:
   name: func-deploy
   labels:
