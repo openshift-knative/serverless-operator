@@ -948,6 +948,8 @@ spec:
                         value: "deploy/resources/quickstart/serverless-application-quickstart.yaml"
                       - name: DASHBOARDS_ROOT_MANIFEST_PATH
                         value: "deploy/resources/dashboards"
+                      - name: FUNCTIONS_MANIFEST_PATH
+                        value: "deploy/resources/functions"
                       - name: SOURCES_USE_CLUSTER_MONITORING
                         value: "true"
                       - name: SOURCES_GENERATE_SERVICE_MONITORS

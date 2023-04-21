@@ -12,6 +12,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/functions"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
@@ -21,6 +22,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/rest"
+
+	pipelines "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	crds "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 	configv1 "github.com/openshift/api/config/v1"
@@ -183,6 +187,52 @@ func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
 		consoleutil.SetConsoleToInstalledStatus()
 		if err := health.InstallHealthDashboard(cl); err != nil {
 			return fmt.Errorf("failed to setup the Knative Health Status Dashboard: %w", err)
+		}
+	}
+	return nil
+}
+
+// SetupFunctionTasksAndPipelines checks to see if Tekton is installed
+// and if so creates the necessary resources for on-cluster function builds
+func SetupFunctionTasksAndPipelines(cfg *rest.Config) error {
+	cl, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return fmt.Errorf("failed to create a client: %w", err)
+	}
+
+	// Check to see if Tekton is installed by looking for the pipelines CRD
+	pcrd := &crds.CustomResourceDefinition{}
+	if err = cl.Get(context.Background(), client.ObjectKey{Namespace: "", Name: "pipelines.tekton.dev"}, pcrd); err != nil {
+		if apierrors.IsNotFound(err) {
+			// Not sure if we really need to check for IsNotFound here, or if all errors should be treated the same
+			return fmt.Errorf("pipelines not installed: %w", err)
+		} else {
+			return fmt.Errorf("failed to get pipelines CRD: %w", err)
+		}
+	}
+	// We can assume that Tekton is installed because we were able to find the Pipeline CRD
+
+	// Check to see if the function tasks are installed
+	pipeline := &pipelines.Pipeline{}
+	if err = cl.Get(context.Background(), client.ObjectKey{Namespace: "", Name: "s2i-nodejs"}, pipeline); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to get function s2i pipeline: %w", err)
+		}
+		// The pipeline was not found, so install the pipeline and tasks
+		if err = functions.InstallFunctionPipeline(cl); err != nil {
+			return fmt.Errorf("failed to install function pipeline: %w", err)
+		}
+	}
+
+	// Check to see if the function task is installed
+	task := &pipelines.ClusterTask{}
+	if err = cl.Get(context.Background(), client.ObjectKey{Namespace: "", Name: "func-s2i"}, task); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to get function s2i pipeline: %w", err)
+		}
+		// The pipeline was not found, so install the pipeline and tasks
+		if err = functions.InstallFunctionTasks(cl); err != nil {
+			return fmt.Errorf("failed to install function pipeline: %w", err)
 		}
 	}
 	return nil
