@@ -132,6 +132,10 @@ func main() {
 		log.Error(err, "Failed to start monitoring")
 	}
 
+	if err = SetupFunctionTasksAndPipelines(cfg); err != nil {
+		log.Error(err, "Failed to setup Tekton Tasks and Pipelines")
+	}
+
 	log.Info("Starting the Cmd.")
 
 	go func() {
