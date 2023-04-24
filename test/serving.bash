@@ -185,9 +185,9 @@ function configure_cm {
     json_properties["$j_property"]="$VALUE"
   done
 
-  oc -n ${SYSTEM_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch="{\"spec\": {\"config\": { \"$cm\": {$patch} }}}"
+  oc -n ${SERVING_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch="{\"spec\": {\"config\": { \"$cm\": {$patch} }}}"
 
   for j_property in "${!json_properties[@]}"; do
-    timeout 30 "[[ ! \$(oc get cm -n ${SYSTEM_NAMESPACE} config-$cm -o jsonpath={.data.${j_property}}) == \"${json_properties[$j_property]}\" ]]"
+    timeout 30 "[[ ! \$(oc get cm -n ${SERVING_NAMESPACE} config-$cm -o jsonpath={.data.${j_property}}) == \"${json_properties[$j_property]}\" ]]"
   done
 }
