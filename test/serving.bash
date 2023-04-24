@@ -40,37 +40,16 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   prepare_knative_serving_tests
 
   # Enable allow-zero-initial-scale before running e2e tests (for test/e2e/initial_scale_test.go)
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "autoscaler": {"allow-zero-initial-scale": "true"}}}}'
+  configure_cm autoscaler allow-zero-initial-scale:true
 
   # Enable ExternalIP for Kourier.
   oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
     --type=merge \
     --patch='{"spec": {"ingress": { "kourier": {"service-type": "LoadBalancer"}}}}'
 
-  # Also enable emptyDir volumes for the respective tests.
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-volumes-emptydir": "enabled"}}}}'
-
-  # Enable init containers for the respective tests.
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-init-containers": "enabled"}}}}'
-
-  # Enable persistent volume claims feature flags for the respective tests.
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-claim": "enabled"}}}}'
-
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-persistent-volume-write": "enabled"}}}}'
-
-  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-    --type=merge \
-    --patch='{"spec": {"config": { "features": {"kubernetes.podspec-securitycontext": "enabled"}}}}'
+  # Enable the required features for the respective tests.
+  enable_feature_flags kubernetes.podspec-volumes-emptydir kubernetes.podspec-init-containers kubernetes.podspec-persistent-volume-claim \
+  kubernetes.podspec-persistent-volume-write kubernetes.podspec-securitycontext
 
   # Create a persistent volume claim for the respective tests
   oc apply -f ./test/config/pvc/pvc.yaml
@@ -164,9 +143,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Feature is tested on 4.11+ as this is the version we start enabling it by default.
   if versions.ge "$(versions.major_minor "$ocp_version")" "4.11"; then
       # Enable secure pod defaults for the following tests.
-      oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving \
-        --type=merge \
-        --patch='{"spec": {"config": { "features": {"secure-pod-defaults": "enabled"}}}}'
+      enable_feature_flags secure-pod-defaults
 
     # Verify that the right sc is set by default at the revision side.
     go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
@@ -183,4 +160,34 @@ function upstream_knative_serving_e2e_and_conformance_tests {
       ${OPENSHIFT_TEST_OPTIONS} \
       --imagetemplate "$image_template"
   fi
+}
+
+function enable_feature_flags {
+  for feature in "$@"; do
+    echo "Enabling feature: $feature"
+    configure_cm features "$feature":enabled
+  done
+  # Allow settings to be picked up
+  sleep 30
+}
+
+function configure_cm {
+  local cm="$1"
+  local patch=""
+  declare -A json_properties
+
+  for property in "${@:2}"; do
+    KEY="${property%%:*}"
+    VALUE="${property##*:}"
+    patch=${patch:+$patch,}"\"$KEY\": \"$VALUE\""
+    # escape in case property contains dots eg. kubernetes.pod-spec
+    j_property="$(echo "'$KEY'" | sed "s/\./\\\./g")"
+    json_properties["$j_property"]="$VALUE"
+  done
+
+  oc -n ${SERVING_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch="{\"spec\": {\"config\": { \"$cm\": {$patch} }}}"
+
+  for j_property in "${!json_properties[@]}"; do
+    timeout 30 "[[ ! \$(oc get cm -n ${SERVING_NAMESPACE} config-$cm -o jsonpath={.data.${j_property}}) == \"${json_properties[$j_property]}\" ]]"
+  done
 }
