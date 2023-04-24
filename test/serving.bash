@@ -163,19 +163,15 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 }
 
 function enable_feature_flags {
-  local failed=0
-
   for feature in "$@"; do
     echo "Enabling feature: $feature"
-    configure_cm features "$feature":enabled || failed=1
+    configure_cm features "$feature":enabled
   done
   # Allow settings to be picked up
   sleep 30
-  return $failed
 }
 
 function configure_cm {
-  local failed=0
   local cm="$1"
   local patch=""
   declare -A json_properties
@@ -189,10 +185,9 @@ function configure_cm {
     json_properties["$j_property"]="$VALUE"
   done
 
-  oc -n ${SYSTEM_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch="{\"spec\": {\"config\": { \"$cm\": {$patch} }}}" || failed=1
+  oc -n ${SYSTEM_NAMESPACE} patch knativeserving/knative-serving --type=merge --patch="{\"spec\": {\"config\": { \"$cm\": {$patch} }}}"
 
   for j_property in "${!json_properties[@]}"; do
-    timeout 30 "[[ ! \$(oc get cm -n ${SYSTEM_NAMESPACE} config-$cm -o jsonpath={.data.${j_property}}) == \"${json_properties[$j_property]}\" ]]" || failed=1
+    timeout 30 "[[ ! \$(oc get cm -n ${SYSTEM_NAMESPACE} config-$cm -o jsonpath={.data.${j_property}}) == \"${json_properties[$j_property]}\" ]]"
   done
-  return $failed
 }
