@@ -16,7 +16,7 @@ cd "${ROOT_DIR}"
 KN_VERSION="release-1.8"
 EVENTING_VERSION="release-v1.8"
 EVENTING_KAFKA_VERSION="release-v1.4"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.7"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.8"
 SERVING_VERSION="release-v1.8"
 
 # The list of dependencies that we track at HEAD and periodically

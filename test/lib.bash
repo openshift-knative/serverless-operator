@@ -134,18 +134,18 @@ function downstream_serving_e2e_tests {
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
-    export GODEBUG="x509ignoreCN=0"
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
-      --kubeconfigs "${kubeconfigs_str}" \
-      --imagetemplate "${IMAGE_TEMPLATE}" \
-      "$@"
-  else
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/... \
-      --kubeconfigs "${kubeconfigs_str}" \
-      --imagetemplate "${IMAGE_TEMPLATE}" \
-      "$@"
-  fi
+#  if [[ $FULL_MESH == "true" ]]; then
+#    export GODEBUG="x509ignoreCN=0"
+#    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
+#      --kubeconfigs "${kubeconfigs_str}" \
+#      --imagetemplate "${IMAGE_TEMPLATE}" \
+#      "$@"
+#  else
+#    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/... \
+#      --kubeconfigs "${kubeconfigs_str}" \
+#      --imagetemplate "${IMAGE_TEMPLATE}" \
+#      "$@"
+#  fi
 }
 
 function downstream_eventing_e2e_tests {

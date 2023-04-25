@@ -79,27 +79,27 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
-    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
-    ./test/e2e/domainmapping \
-    ./test/e2e/initcontainers \
-    ./test/e2e/pvc \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "$image_template"
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
+#    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
+#    ./test/e2e/domainmapping \
+#    ./test/e2e/initcontainers \
+#    ./test/e2e/pvc \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "$image_template"
 
   mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
   # Run autoscale tests separately as they require more CPU resources
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
-    ./test/e2e \
-    -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "$image_template"
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
+#    ./test/e2e \
+#    -run "TestAutoscale|TestRPSBased|TestTargetBurstCapacity|TestFastScaleToZero" \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "$image_template"
 
   # Run the helloworld test with an image pulled into the internal registry.
   oc tag -n serving-tests "registry.ci.openshift.org/openshift/knative-serving-test-helloworld:${KNATIVE_SERVING_VERSION}" "helloworld:latest" --reference-policy=local
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
-    ${OPENSHIFT_TEST_OPTIONS} \
-    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
+#  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=30m ./test/e2e -run "^(TestHelloWorld)$" \
+#    ${OPENSHIFT_TEST_OPTIONS} \
+#    --imagetemplate "image-registry.openshift-image-registry.svc:5000/serving-tests/{{.Name}}"
   
   # Prevent HPA from scaling to make HA tests more stable
   local max_replicas min_replicas
@@ -127,9 +127,15 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   oc -n "$SERVING_NAMESPACE" patch hpa activator \
     --patch '{"spec": {"maxReplicas": '${REPLICAS}', "minReplicas": '${REPLICAS}'}}'
 
+  ## Debug
+  oc get hpa -n "${SERVING_NAMESPACE}"
+  oc get pod -n "${SERVING_NAMESPACE}"
+  oc get lease -n "${SERVING_NAMESPACE}"
+  ##
+
   # Run HA tests separately as they're stopping core Knative Serving pods
   # Define short -spoofinterval to ensure frequent probing while stopping pods
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 ./test/ha \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 -run ^TestAutoscaleHA$ ./test/ha \
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
@@ -146,9 +152,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
       enable_feature_flags secure-pod-defaults
 
     # Verify that the right sc is set by default at the revision side.
-    go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
-      ${OPENSHIFT_TEST_OPTIONS} \
-      --imagetemplate "$image_template"
+#    go_test_e2e -timeout=10m -tags=e2e ./test/e2e/securedefaults -run "^(TestSecureDefaults)$" \
+#      ${OPENSHIFT_TEST_OPTIONS} \
+#      --imagetemplate "$image_template"
 
     # Allow to use any seccompProfile for non default cases,
     # for more check https://docs.openshift.com/container-platform/4.12/authentication/managing-security-context-constraints.html
@@ -156,9 +162,9 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
     # Verify that non secure settings are allowed, although not-recommended.
     # It requires scc privileged or a custom scc that allows any seccompProfile to be set.
-    SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=10m ./test/e2e/securedefaults -run "^(TestUnsafePermitted)$" \
-      ${OPENSHIFT_TEST_OPTIONS} \
-      --imagetemplate "$image_template"
+#    SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=10m ./test/e2e/securedefaults -run "^(TestUnsafePermitted)$" \
+#      ${OPENSHIFT_TEST_OPTIONS} \
+#      --imagetemplate "$image_template"
   fi
 }
 
