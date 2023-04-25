@@ -77,7 +77,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
+#  mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
 #  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
 #    ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
@@ -87,7 +87,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 #    ${OPENSHIFT_TEST_OPTIONS} \
 #    --imagetemplate "$image_template"
 
-  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
+#  mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
   # Run autoscale tests separately as they require more CPU resources
 #  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=20m -parallel=3 \
 #    ./test/e2e \
@@ -135,7 +135,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   # Run HA tests separately as they're stopping core Knative Serving pods
   # Define short -spoofinterval to ensure frequent probing while stopping pods
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 -run ^TestAutoscaleHA$ ./test/ha \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags=e2e -timeout=15m -failfast -parallel=1 -run ^.*TestAutoscaleHA$ ./test/ha \
     -replicas="${REPLICAS}" -buckets="${BUCKETS}" -spoofinterval="10ms" \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
