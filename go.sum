@@ -377,6 +377,7 @@ github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6D
 github.com/circonus-labs/circonusllhist v0.1.3/go.mod h1:kMXHVDlOchFAehlya5ePtbp5jckzBHf4XRpQvBOLI+I=
 github.com/clbanning/x2j v0.0.0-20191024224557-825249438eec/go.mod h1:jMjuTZXRI4dUb/I5gc9Hdhagfvm9+RyrPryS/auMzxE=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
+github.com/cloudevents/conformance v0.2.0 h1:NvSXOKlagcsOWMEbi8U7Ex/0oQ4JZE1HQ45bnxYf2zk=
 github.com/cloudevents/conformance v0.2.0/go.mod h1:rHKDwylBH89Rns6U3wL9ww8bg9/4GbwRCDNuyoC6bcc=
 github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.12.0/go.mod h1:g7VsRXXYILOchM36AReyfd2bJFJyyE+PMuYa65CxjGo=
 github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1 h1:OdBCW2/cxHaGzY9JI8wfFPI0OcmpZ8y97e1ZxWNsVFc=

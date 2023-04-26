@@ -38,6 +38,7 @@ require (
 )
 
 require (
+	github.com/cloudevents/conformance v0.2.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -62,7 +63,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1 // indirect
 	github.com/cloudevents/sdk-go/sql/v2 v2.8.0 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.12.0 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect

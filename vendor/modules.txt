@@ -61,6 +61,9 @@ github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 # github.com/cespare/xxhash/v2 v2.1.2
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
+# github.com/cloudevents/conformance v0.2.0
+## explicit; go 1.14
+github.com/cloudevents/conformance/pkg/event
 # github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1
 ## explicit; go 1.14
 github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2
@@ -1378,7 +1381,9 @@ knative.dev/eventing/test/rekt/resources/channel
 knative.dev/eventing/test/rekt/resources/channel_impl
 knative.dev/eventing/test/rekt/resources/delivery
 knative.dev/eventing/test/rekt/resources/parallel
+knative.dev/eventing/test/rekt/resources/pingsource
 knative.dev/eventing/test/rekt/resources/sequence
+knative.dev/eventing/test/rekt/resources/source
 knative.dev/eventing/test/rekt/resources/subscription
 knative.dev/eventing/test/rekt/resources/trigger
 knative.dev/eventing/test/test_images
@@ -1596,6 +1601,12 @@ knative.dev/pkg/webhook/resourcesemantics/defaulting
 # knative.dev/reconciler-test v0.0.0-20230420091239-6c21623d2555
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
+knative.dev/reconciler-test/pkg/eventshub
+knative.dev/reconciler-test/pkg/eventshub/assert
+knative.dev/reconciler-test/pkg/eventshub/dropevents
+knative.dev/reconciler-test/pkg/eventshub/dropevents/dropeventsfibonacci
+knative.dev/reconciler-test/pkg/eventshub/dropevents/dropeventsfirst
+knative.dev/reconciler-test/pkg/eventshub/rbac
 knative.dev/reconciler-test/pkg/feature
 knative.dev/reconciler-test/pkg/images/file
 knative.dev/reconciler-test/pkg/images/ko
