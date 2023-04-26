@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function run_testselect {
-  if [[ -n "${ARTIFACT_DIR:-}" ]]; then
+  if [[ -n "${ARTIFACT_DIR:-}" && -n "${CLONEREFS_OPTIONS:-}" ]]; then
     GO111MODULE=off go get github.com/openshift-knative/hack/cmd/testselect
 
     local clonedir rootdir
