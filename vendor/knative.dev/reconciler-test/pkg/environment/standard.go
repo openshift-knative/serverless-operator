@@ -53,6 +53,7 @@ type ConfigurationOption func(Configuration) Configuration
 // standard way. The Kube client will be initialized within the
 // context.Context for later use.
 func NewStandardGlobalEnvironment(opts ...ConfigurationOption) GlobalEnvironment {
+	opts = append(opts, initIstioFlags())
 	config := resolveConfiguration(opts)
 	ctx := testlog.NewContext(config.Context)
 
@@ -67,6 +68,10 @@ func NewStandardGlobalEnvironment(opts ...ConfigurationOption) GlobalEnvironment
 
 	if ipFilePath != nil && *ipFilePath != "" {
 		ctx = withImageProducer(ctx, file.ImageProducer(*ipFilePath))
+	}
+
+	if testNamespace != nil && *testNamespace != "" {
+		ctx = withNamespace(ctx, *testNamespace)
 	}
 
 	// EnableInjectionOrDie will enable client injection, this is used by the

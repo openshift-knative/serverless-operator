@@ -1211,7 +1211,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.25.2
+# k8s.io/code-generator v0.25.4
 ## explicit; go 1.19
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -1250,7 +1250,7 @@ k8s.io/code-generator/third_party/forked/golang/reflect
 ## explicit; go 1.19
 k8s.io/component-base/config
 k8s.io/component-base/config/v1alpha1
-# k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7
+# k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9
 ## explicit; go 1.13
 k8s.io/gengo/args
 k8s.io/gengo/examples/deepcopy-gen/generators
@@ -1262,7 +1262,7 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/klog/v2 v2.80.1 => k8s.io/klog/v2 v2.8.0
+# k8s.io/klog/v2 v2.80.2-0.20221028030830-9ae4992afb54 => k8s.io/klog/v2 v2.8.0
 ## explicit; go 1.13
 k8s.io/klog/v2
 # k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
@@ -1281,7 +1281,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
+# k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2 => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 ## explicit; go 1.12
 k8s.io/utils/buffer
 k8s.io/utils/clock
@@ -1450,7 +1450,7 @@ knative.dev/eventing-kafka-broker/test/pkg/testing
 knative.dev/eventing-kafka-broker/test/upgrade
 knative.dev/eventing-kafka-broker/test/upgrade/continual
 knative.dev/eventing-kafka-broker/test/upgrade/installation
-# knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
+# knative.dev/hack v0.0.0-20230417170854-f591fea109b3 => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 ## explicit; go 1.18
 knative.dev/hack
 knative.dev/hack/shell
@@ -1508,7 +1508,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
-# knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735 => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
+# knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0 => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
 ## explicit; go 1.18
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1593,7 +1593,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20230214092650-9b5e8eef5bc7
+# knative.dev/reconciler-test v0.0.0-20230420091239-6c21623d2555
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/feature
@@ -1604,6 +1604,7 @@ knative.dev/reconciler-test/pkg/knative
 knative.dev/reconciler-test/pkg/logging
 knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
+knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
 # knative.dev/serving v0.35.5 => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977

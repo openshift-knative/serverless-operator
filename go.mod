@@ -28,10 +28,10 @@ require (
 	knative.dev/eventing v0.35.2
 	knative.dev/eventing-kafka v0.35.1
 	knative.dev/eventing-kafka-broker v0.35.5
-	knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
+	knative.dev/hack v0.0.0-20230417170854-f591fea109b3
 	knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator v0.35.6
-	knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
+	knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
 	knative.dev/serving v0.35.5
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/yaml v1.3.0
@@ -157,12 +157,12 @@ require (
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e // indirect
 	istio.io/client-go v1.13.3 // indirect
 	k8s.io/apiserver v0.25.2 // indirect
-	k8s.io/code-generator v0.25.2 // indirect
+	k8s.io/code-generator v0.25.4 // indirect
 	k8s.io/component-base v0.25.2 // indirect
-	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7 // indirect
-	k8s.io/klog/v2 v2.80.1 // indirect
+	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
+	k8s.io/klog/v2 v2.80.2-0.20221028030830-9ae4992afb54 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
-	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
+	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2 // indirect
 	knative.dev/caching v0.0.0-20230224210130-1a465b33f202 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
@@ -173,7 +173,7 @@ require (
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0
 	k8s.io/apiextensions-apiserver v0.25.2
-	knative.dev/reconciler-test v0.0.0-20230214092650-9b5e8eef5bc7
+	knative.dev/reconciler-test v0.0.0-20230420091239-6c21623d2555
 )
 
 replace (
