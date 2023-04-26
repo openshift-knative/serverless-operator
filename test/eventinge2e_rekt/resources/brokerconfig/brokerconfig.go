@@ -33,7 +33,7 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 
 func WithGenericChannelMTBroker() manifest.CfgFn {
 	return func(cfg map[string]interface{}) {
-		cfg["inMemoryChannel"] = map[string]interface{}{
+		cfg["channel"] = map[string]interface{}{
 			"version": "v1",
 		}
 	}
