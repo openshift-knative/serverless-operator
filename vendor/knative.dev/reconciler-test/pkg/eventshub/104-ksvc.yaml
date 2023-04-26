@@ -21,7 +21,8 @@ spec:
     spec:
       containers:
         - name: eventshub
-          image: {{ .image }}
+          # TODO: Return to {{ .image }}
+          image: registry.ci.openshift.org/openshift/knative-nightly:knative-eventing-test-eventshub
           imagePullPolicy: "IfNotPresent"
           env:
             - name: "SYSTEM_NAMESPACE"
