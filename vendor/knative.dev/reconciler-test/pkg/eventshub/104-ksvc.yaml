@@ -19,6 +19,7 @@ spec:
         {{ end }}
     {{ end }}
     spec:
+      serviceAccountName: "{{ .namespace }}"
       containers:
         - name: eventshub
           # TODO: Return to {{ .image }}
@@ -26,13 +27,9 @@ spec:
           imagePullPolicy: "IfNotPresent"
           env:
             - name: "SYSTEM_NAMESPACE"
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.namespace"
+              value: {{ .namespace }}
             - name: "POD_NAME"
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
+              value: {{ .name }}
             - name: "EVENT_LOGS"
               value: "recorder,logger"
             {{ range $key, $value := .envs }}
