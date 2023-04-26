@@ -29,10 +29,13 @@ import (
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
+	"knative.dev/reconciler-test/pkg/resources/knativeservice"
 )
 
-//go:embed *.yaml
-var templates embed.FS
+//go:embed 102-service.yaml 103-pod.yaml
+var servicePodTemplates embed.FS
+//go:embed 104-ksvc.yaml
+var ksvcTemplates embed.FS
 
 // Install starts a new eventshub with the provided name
 // Note: this function expects that the Environment is configured with the
@@ -85,17 +88,35 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		manifest.PodSecurityCfgFn(ctx, t)(cfg)
 
+		var isKsvc bool
+		if envs["IS_KSVC"] == "true" {
+			isKsvc = true
+		}
+
+		templates := servicePodTemplates
+		if isKsvc {
+			templates = ksvcTemplates
+		}
+		// When eventshub is a sender make sure it is not scaled down.
+		if isKsvc && !isReceiver {
+			manifest.WithKnativeMinMaxScale1(cfg)
+		}
+
 		// Deploy
 		if _, err := manifest.InstallYamlFS(ctx, templates, cfg); err != nil {
 			log.Fatal(err)
 		}
 
-		k8s.WaitForPodReadyOrSucceededOrFail(ctx, t, name)
+		if isKsvc {
+			knativeservice.IsReady(name)
+		} else {
+			k8s.WaitForPodReadyOrSucceededOrFail(ctx, t, name)
 
-		// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
-		if isReceiver {
-			k8s.WaitForServiceEndpointsOrFail(ctx, t, name, 1)
-			k8s.WaitForServiceReadyOrFail(ctx, t, name, "/health/ready")
+			// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
+			if isReceiver {
+				k8s.WaitForServiceEndpointsOrFail(ctx, t, name, 1)
+				k8s.WaitForServiceReadyOrFail(ctx, t, name, "/health/ready")
+			}
 		}
 	}
 }

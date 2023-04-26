@@ -40,6 +40,9 @@ type EventsHubOption = func(context.Context, map[string]string) error
 // This can be used together with EchoEvent, ReplyWithTransformedEvent, ReplyWithAppendedData
 var StartReceiver EventsHubOption = envAdditive("EVENT_GENERATORS", "receiver")
 
+// Deploys eventshub as Knative Service instead of Kube Pod and Service.
+var AsKnativeService EventsHubOption = envOption("IS_KSVC", "true")
+
 // StartSender starts the sender in the eventshub
 // This can be used together with InputEvent, AddTracing, EnableIncrementalId, InputEncoding and InputHeader options
 func StartSender(sinkSvc string) EventsHubOption {
