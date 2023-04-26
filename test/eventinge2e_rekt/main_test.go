@@ -1,16 +1,10 @@
 package eventinge2e_rekt
 
 import (
-	"context"
 	"flag"
 	"log"
 	"os"
 	"testing"
-	"time"
-
-	"knative.dev/pkg/system"
-	"knative.dev/reconciler-test/pkg/k8s"
-	"knative.dev/reconciler-test/pkg/knative"
 
 	"knative.dev/pkg/injection"
 	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
@@ -24,17 +18,6 @@ var global environment.GlobalEnvironment
 func init() {
 	// environment.InitFlags registers state and level filter flags.
 	environment.InitFlags(flag.CommandLine)
-}
-
-func defaultContext(t *testing.T) (context.Context, environment.Environment) {
-	return global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		environment.WithPollTimings(4*time.Second, 600*time.Second),
-		environment.Managed(t),
-	)
 }
 
 // TestMain is the first entry point for `go test`.

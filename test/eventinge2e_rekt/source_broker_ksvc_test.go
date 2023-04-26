@@ -10,7 +10,7 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 )
 
-func PingSourceBrokerTriggerKsvc(t *testing.T) {
+func TestPingSourceBrokerTriggerKsvc(t *testing.T) {
 	t.Parallel()
 
 	ctx, env := global.Environment(
@@ -20,7 +20,6 @@ func PingSourceBrokerTriggerKsvc(t *testing.T) {
 		k8s.WithEventListener,
 		environment.Managed(t),
 	)
-	t.Cleanup(env.Finish)
 
 	env.Test(ctx, t, features.SendsEventsWithSinkRef())
 }
