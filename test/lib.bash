@@ -192,7 +192,7 @@ function downstream_eventing_e2e_rekt_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
+  RUN_FLAGS=(-failfast -timeout=30m -parallel=10)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
