@@ -176,6 +176,33 @@ function downstream_eventing_e2e_tests {
     "$@"
 }
 
+function downstream_eventing_e2e_rekt_tests {
+  should_run "${FUNCNAME[0]}" || return 0
+
+  logger.info "Running Eventing REKT downstream tests"
+
+  # Create a secret for reconciler-test. The framework will copy this secret
+  # to newly created namespaces and link to default service account in the namespace.
+  if ! oc -n default get secret kn-test-image-pull-secret; then
+    oc -n openshift-config get secret pull-secret -o yaml | \
+      sed -e 's/name: .*/name: kn-test-image-pull-secret/' -e 's/namespace: .*/namespace: default/' | oc apply -f -
+  fi
+
+  # Used by eventing/test/lib
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
+  export SYSTEM_NAMESPACE
+
+  RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+
+  # TODO: Resolve passing --kubeconfigs later
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt \
+    --imagetemplate "${IMAGE_TEMPLATE}" \
+    "$@"
+}
+
 function downstream_knative_kafka_e2e_tests {
   should_run "${FUNCNAME[0]}" || return 0
 
