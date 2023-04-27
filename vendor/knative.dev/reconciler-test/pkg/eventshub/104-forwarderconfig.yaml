@@ -1,4 +1,4 @@
-# Copyright 2020 The Knative Authors
+# Copyright 2023 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
 # limitations under the License.
 
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: {{ .servicename }}
+  name: {{ .name }}
   namespace: {{ .namespace }}
-spec:
-  selector:
-    app: eventshub-{{ .name }}
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8080
+data:
+  "config.toml": |
+    [forwarder]
+    target = "{{ .forwardersink }}"

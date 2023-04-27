@@ -35,8 +35,8 @@ import (
 //go:embed 102-service.yaml 103-pod.yaml
 var servicePodTemplates embed.FS
 
-//go:embed 104-ksvc.yaml
-var ksvcTemplates embed.FS
+//go:embed 104-forwarderconfig.yaml 105-forwarder.yaml
+var forwarderTemplates embed.FS
 
 // Install starts a new eventshub with the provided name
 // Note: this function expects that the Environment is configured with the
@@ -89,13 +89,14 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			withKsvcForwarder = true
 		}
 
-		eventshubName := name
+		serviceName := name
 		if withKsvcForwarder {
-			eventshubName = feature.MakeRandomK8sName(name)
+			serviceName = feature.MakeRandomK8sName(name)
 		}
 
 		cfg := map[string]interface{}{
-			"name":          eventshubName,
+			"name":          name,
+			"servicename":   serviceName,
 			"envs":          envs,
 			"image":         ImageFromContext(ctx),
 			"withReadiness": isReceiver,
@@ -116,12 +117,12 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
 		if isReceiver {
-			k8s.WaitForServiceEndpointsOrFail(ctx, t, name, 1)
-			k8s.WaitForServiceReadyOrFail(ctx, t, name, "/health/ready")
+			k8s.WaitForServiceEndpointsOrFail(ctx, t, serviceName, 1)
+			k8s.WaitForServiceReadyOrFail(ctx, t, serviceName, "/health/ready")
 		}
 
 		if withKsvcForwarder {
-			sinkURL, err := service.Address(ctx, name)
+			sinkURL, err := service.Address(ctx, serviceName)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -131,10 +132,9 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 				// TODO: Actually include sources for that image in this repo (or vendor from eventing)
 				"image":         ForwarderImageFromContext(ctx),
 				"forwardersink": sinkURL,
-				"externalname":  eventshubName,
 			}
 			// Deploy KSVC forwarder
-			if _, err := manifest.InstallYamlFS(ctx, ksvcTemplates, cfg); err != nil {
+			if _, err := manifest.InstallYamlFS(ctx, forwarderTemplates, cfg); err != nil {
 				log.Fatal(err)
 			}
 			knativeservice.IsReady(name)

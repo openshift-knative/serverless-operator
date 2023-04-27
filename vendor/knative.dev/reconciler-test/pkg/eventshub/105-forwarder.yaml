@@ -11,17 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .name }}
-  namespace: {{ .namespace }}
-data:
-  "config.toml": |
-    [forwarder]
-    target = "{{ .forwardersink }}"
----
+
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -62,13 +52,3 @@ spec:
         - name: config
           configMap:
             name: {{ .name }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .name }}
-  namespace: {{ .namespace }}
-spec:
-  type: ExternalName
-  externalName: {{ .externalname }}.{{ .namespace }}.svc.cluster.local
-
