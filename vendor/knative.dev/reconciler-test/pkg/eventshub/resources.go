@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"knative.dev/pkg/logging"
-
 	"knative.dev/reconciler-test/pkg/environment"
 	eventshubrbac "knative.dev/reconciler-test/pkg/eventshub/rbac"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -30,6 +29,7 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/knativeservice"
+	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
 //go:embed 102-service.yaml 103-pod.yaml
@@ -56,6 +56,14 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		env := environment.FromContext(ctx)
 		namespace := env.Namespace()
 		log := logging.FromContext(ctx)
+
+		if v, ok := env.(*environment.MagicEnvironment); ok {
+			opts := v.GetConfigOptions("eventshub")
+			// prepend environment options to eventshub options to give
+			// eventshub options given to the function priority over environment
+			// options
+			options = append(opts, options...)
+		}
 
 		// Compute the user provided envs
 		envs := make(map[string]string)
@@ -89,35 +97,37 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		manifest.PodSecurityCfgFn(ctx, t)(cfg)
 
-		var isKsvc bool
-		if envs["IS_KSVC"] == "true" {
-			isKsvc = true
-		}
-
-		templates := servicePodTemplates
-		if isKsvc {
-			templates = ksvcTemplates
-		}
-		// When eventshub is a sender make sure it is not scaled down.
-		if isKsvc && !isReceiver {
-			manifest.WithKnativeMinMaxScale1(cfg)
+		var withKsvcForwarder bool
+		if envs["WITH_KSVC_FORWARDER"] == "true" {
+			withKsvcForwarder = true
 		}
 
 		// Deploy
-		if _, err := manifest.InstallYamlFS(ctx, templates, cfg); err != nil {
+		if _, err := manifest.InstallYamlFS(ctx, servicePodTemplates, cfg); err != nil {
 			log.Fatal(err)
 		}
 
-		if isKsvc {
-			knativeservice.IsReady(name)
-		} else {
-			k8s.WaitForPodReadyOrSucceededOrFail(ctx, t, name)
+		k8s.WaitForPodReadyOrSucceededOrFail(ctx, t, name)
 
-			// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
-			if isReceiver {
-				k8s.WaitForServiceEndpointsOrFail(ctx, t, name, 1)
-				k8s.WaitForServiceReadyOrFail(ctx, t, name, "/health/ready")
+		// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
+		if isReceiver {
+			k8s.WaitForServiceEndpointsOrFail(ctx, t, name, 1)
+			k8s.WaitForServiceReadyOrFail(ctx, t, name, "/health/ready")
+		}
+
+		if withKsvcForwarder {
+			cfg := map[string]interface{}{
+				"name": name,
+				"envs": envs,
+				// TODO: Actually include sources for that image in this repo (or vendor from eventing)
+				"image":         ForwarderImageFromContext(ctx),
+				"forwardersink": service.Address(ctx, name),
 			}
+			// Deploy KSVC forwarder
+			if _, err := manifest.InstallYamlFS(ctx, ksvcTemplates, cfg); err != nil {
+				log.Fatal(err)
+			}
+			knativeservice.IsReady(name)
 		}
 	}
 }

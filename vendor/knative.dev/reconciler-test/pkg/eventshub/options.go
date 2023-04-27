@@ -34,14 +34,14 @@ import (
 )
 
 // EventsHubOption is used to define an env for the eventshub image
-type EventsHubOption = func(context.Context, map[string]string) error
+type EventsHubOption = environment.ConfigOption
 
 // StartReceiver starts the receiver in the eventshub
 // This can be used together with EchoEvent, ReplyWithTransformedEvent, ReplyWithAppendedData
 var StartReceiver EventsHubOption = envAdditive("EVENT_GENERATORS", "receiver")
 
-// Deploys eventshub as Knative Service instead of Kube Pod and Service.
-var AsKnativeService EventsHubOption = envOption("IS_KSVC", "true")
+// WithKnativeServiceForwarder deploys a Knative Service forwarder that will forward requests to eventshub.
+var WithKnativeServiceForwarder EventsHubOption = envOption("WITH_KSVC_FORWARDER", "true")
 
 // StartSender starts the sender in the eventshub
 // This can be used together with InputEvent, AddTracing, EnableIncrementalId, InputEncoding and InputHeader options

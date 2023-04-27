@@ -98,3 +98,5 @@ func UnionOpts(opts ...EnvOpts) EnvOpts {
 		return ctx, nil
 	}
 }
+
+type ConfigOption func(context.Context, map[string]string) error

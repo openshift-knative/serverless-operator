@@ -91,12 +91,3 @@ func WithIstioPodAnnotations(cfg map[string]interface{}) {
 	WithAnnotations(podAnnotations)(cfg)
 	WithPodAnnotations(podAnnotations)(cfg)
 }
-
-func WithKnativeMinMaxScale1(cfg map[string]interface{}) {
-	podAnnotations := map[string]interface{}{
-		"autoscaling.knative.dev/min-scale": "1",
-		"autoscaling.knative.dev/max-scale": "1",
-	}
-
-	WithPodAnnotations(podAnnotations)(cfg)
-}

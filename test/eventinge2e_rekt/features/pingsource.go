@@ -36,7 +36,7 @@ func SendsEventsWithSinkRef() *feature.Feature {
 	f.Setup("install trigger", trigger.Install(trig, br,
 		trigger.WithSubscriber(&duckv1.KReference{
 			APIVersion: knativeservice.GVR().GroupVersion().String(),
-			Kind:       "Service", //broker.GVR().Resource
+			Kind:       "Service",
 			Name:       sink,
 		}, "")))
 	f.Setup("trigger goes ready", trigger.IsReady(trig))
