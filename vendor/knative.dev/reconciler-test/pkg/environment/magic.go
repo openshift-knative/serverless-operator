@@ -206,6 +206,7 @@ func (mr *MagicGlobalEnvironment) Environment(opts ...EnvOpts) (context.Context,
 
 		imagePullSecretName:      "kn-test-image-pull-secret",
 		imagePullSecretNamespace: "default",
+		configOptionsByName:      make(map[string][]ConfigOption),
 	}
 
 	ctx := ContextWith(mr.c, env)

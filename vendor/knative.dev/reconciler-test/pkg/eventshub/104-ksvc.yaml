@@ -45,7 +45,7 @@ spec:
     spec:
       serviceAccountName: "{{ .namespace }}"
       containers:
-        - name: eventshub
+        - name: eventshub-forwarder
           # TODO: Return to {{ .image }}
           image: quay.io/openshift-knative/knative-eventing-test-wathola-forwarder:knative-v1.8
           imagePullPolicy: "IfNotPresent"
@@ -59,8 +59,16 @@ spec:
               readOnly: true
               mountPath: "/.config/wathola/"
       volumes:
-        - name:
+        - name: config
           configMap:
             name: {{ .name }}
-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace }}
+spec:
+  type: ExternalName
+  externalName: {{ .externalname }}.{{ .namespace }}.svc.cluster.local
 

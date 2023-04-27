@@ -84,8 +84,18 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		isReceiver := strings.Contains(envs["EVENT_GENERATORS"], "receiver")
 
+		var withKsvcForwarder bool
+		if envs["WITH_KSVC_FORWARDER"] == "true" {
+			withKsvcForwarder = true
+		}
+
+		eventshubName := name
+		if withKsvcForwarder {
+			eventshubName = feature.MakeRandomK8sName(name)
+		}
+
 		cfg := map[string]interface{}{
-			"name":          name,
+			"name":          eventshubName,
 			"envs":          envs,
 			"image":         ImageFromContext(ctx),
 			"withReadiness": isReceiver,
@@ -96,11 +106,6 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		}
 
 		manifest.PodSecurityCfgFn(ctx, t)(cfg)
-
-		var withKsvcForwarder bool
-		if envs["WITH_KSVC_FORWARDER"] == "true" {
-			withKsvcForwarder = true
-		}
 
 		// Deploy
 		if _, err := manifest.InstallYamlFS(ctx, servicePodTemplates, cfg); err != nil {
@@ -116,12 +121,17 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		}
 
 		if withKsvcForwarder {
+			sinkURL, err := service.Address(ctx, name)
+			if err != nil {
+				log.Fatal(err)
+			}
 			cfg := map[string]interface{}{
 				"name": name,
 				"envs": envs,
 				// TODO: Actually include sources for that image in this repo (or vendor from eventing)
 				"image":         ForwarderImageFromContext(ctx),
-				"forwardersink": service.Address(ctx, name),
+				"forwardersink": sinkURL,
+				"externalname":  eventshubName,
 			}
 			// Deploy KSVC forwarder
 			if _, err := manifest.InstallYamlFS(ctx, ksvcTemplates, cfg); err != nil {
