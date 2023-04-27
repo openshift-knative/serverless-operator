@@ -10,7 +10,6 @@ import (
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
-	"knative.dev/reconciler-test/pkg/resources/knativeservice"
 )
 
 func SendsEventsWithSinkRef() *feature.Feature {
@@ -29,22 +28,20 @@ func SendsEventsWithSinkRef() *feature.Feature {
 	f.Requirement("broker is ready", broker.IsReady(br))
 	f.Requirement("broker is addressable", broker.IsAddressable(br))
 
-	f.Setup("install sink", eventshub.Install(sink,
-		eventshub.StartReceiver,
-		eventshub.AsKnativeService))
+	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
 
 	f.Setup("install trigger", trigger.Install(trig, br,
 		trigger.WithSubscriber(&duckv1.KReference{
-			APIVersion: knativeservice.GVR().GroupVersion().String(),
 			Kind:       "Service",
 			Name:       sink,
+			APIVersion: "v1",
 		}, "")))
 	f.Setup("trigger goes ready", trigger.IsReady(trig))
 
 	f.Setup("install pingsource", pingsource.Install(source, pingsource.WithSink(
 		&duckv1.KReference{
 			APIVersion: broker.GVR().GroupVersion().String(),
-			Kind:       "Broker", //broker.GVR().Resource
+			Kind:       "Broker",
 			Name:       br,
 		}, "")))
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
