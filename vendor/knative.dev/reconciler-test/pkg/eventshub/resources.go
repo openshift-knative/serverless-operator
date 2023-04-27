@@ -34,6 +34,7 @@ import (
 
 //go:embed 102-service.yaml 103-pod.yaml
 var servicePodTemplates embed.FS
+
 //go:embed 104-ksvc.yaml
 var ksvcTemplates embed.FS
 
