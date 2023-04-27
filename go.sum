@@ -1313,6 +1313,8 @@ github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88J
 github.com/mbilski/exhaustivestruct v1.2.0/go.mod h1:OeTBVxQWoEmB2J2JCHmXWPJ0aksxSUOUy+nvtVEfzXc=
 github.com/mgechev/dots v0.0.0-20210922191527-e955255bf517/go.mod h1:KQ7+USdGKfpPjXk4Ga+5XxQM4Lm4e3gAogrreFAYpOg=
 github.com/mgechev/revive v1.1.2/go.mod h1:bnXsMr+ZTH09V5rssEI+jHAZ4z+ZdyhgO/zsy3EhK+0=
+github.com/mgencur/reconciler-test v0.0.0-20230427043132-2da11609867d h1:qsy4m+qmZutq8oSPY0YQs+JaeahpySvImzSOQ5aeAe4=
+github.com/mgencur/reconciler-test v0.0.0-20230427043132-2da11609867d/go.mod h1:vZihHUKPh+sMzzx2lHgkM2tKr+f/lZqMJ9O7Jw0DaYs=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.17/go.mod h1:WgzbA6oji13JREwiNsRDNfl7jYdPnmz+VEuLrA+/48M=
 github.com/miekg/dns v1.1.26/go.mod h1:bPDLeHnStXmXAq1m/Ch/hvfNHr14JKNPMBo3VZKjuso=
