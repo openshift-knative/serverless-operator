@@ -543,6 +543,13 @@ spec:
           readinessProbe:
             exec:
               command: ["/ko-app/kourier", "-probe-addr=:18000"]
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: [ "/ko-app/kourier", "-probe-addr=:18000" ]
+            periodSeconds: 10
+            failureThreshold: 6
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -664,6 +671,18 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              httpHeaders:
+                - name: Host
+                  value: internalkourier
+              path: /ready
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
       volumes:
         - name: config-volume
           configMap:
