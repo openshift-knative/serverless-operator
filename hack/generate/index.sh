@@ -30,8 +30,10 @@ for NAME in $CHANNEL_LIST; do
   tmpfile=$(mktemp)
   sed "s/__CHANNEL__/$NAME/g" "$target" > "$tmpfile"
   add_entries "$tmpfile"
+  if [ -n "$OUTPUT" ]; then
+    OUTPUT=---'\n'$OUTPUT$'\n'"---"$'\n'
+  fi
   OUTPUT=$OUTPUT$(cat "$tmpfile")
-  OUTPUT=$OUTPUT$'\n'"---"$'\n'
 done
 rm "$tmpfile"
-echo "$OUTPUT" > "$target"
+echo -e "$OUTPUT" > "$target"
