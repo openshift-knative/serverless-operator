@@ -1,4 +1,4 @@
 ---
 schema: olm.channel
-name: stable
+channel: __CHANNEL__
 package: serverless-operator

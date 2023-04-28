@@ -15,6 +15,7 @@ olm:
     default: 'stable'
     list:
       - 'stable'
+      - 'serverless-1.29'
   previous:
     replaces: 1.27.0
     skipRange: '>=1.27.0 <1.28.0'
