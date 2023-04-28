@@ -1,5 +1,5 @@
 schema: olm.channel
-channel: stable
+name: stable
 package: serverless-operator
 entries:
   - name: "serverless-operator.v1.27.0"
@@ -11,7 +11,7 @@ entries:
     skipRange: ">=1.28.0 <1.29.0"
 ---
 schema: olm.channel
-channel: serverless-1.29
+name: serverless-1.29
 package: serverless-operator
 entries:
   - name: "serverless-operator.v1.27.0"
