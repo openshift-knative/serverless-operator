@@ -58,10 +58,10 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		log := logging.FromContext(ctx)
 
 		if v, ok := env.(*environment.MagicEnvironment); ok {
-			opts := v.GetConfigOptions("eventshub")
-			// prepend environment options to eventshub options to give
+			opts := v.GetConfigOptions(EventsHub)
+			// Prepend environment options to eventshub options to give
 			// eventshub options given to the function priority over environment
-			// options
+			// options.
 			options = append(opts, options...)
 		}
 
@@ -85,18 +85,21 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		isReceiver := strings.Contains(envs["EVENT_GENERATORS"], "receiver")
 
 		var withKsvcForwarder bool
-		if envs["WITH_KSVC_FORWARDER"] == "true" {
+		// Allow forwarder only in the receiver case.
+		if envs["WITH_KSVC_FORWARDER"] == "true" && isReceiver {
 			withKsvcForwarder = true
 		}
 
 		serviceName := name
+		// When forwarder is included we need to rename the eventshub service to
+		// prevent conflict with the forwarder service.
 		if withKsvcForwarder {
 			serviceName = feature.MakeRandomK8sName(name)
 		}
 
 		cfg := map[string]interface{}{
 			"name":          name,
-			"servicename":   serviceName,
+			"serviceName":   serviceName,
 			"envs":          envs,
 			"image":         ImageFromContext(ctx),
 			"withReadiness": isReceiver,
@@ -108,7 +111,7 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		manifest.PodSecurityCfgFn(ctx, t)(cfg)
 
-		// Deploy
+		// Deploy Service/Pod
 		if _, err := manifest.InstallYamlFS(ctx, servicePodTemplates, cfg); err != nil {
 			log.Fatal(err)
 		}
@@ -130,10 +133,10 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 				"name": name,
 				"envs": envs,
 				// TODO: Actually include sources for that image in this repo (or vendor from eventing)
-				"image":         ForwarderImageFromContext(ctx),
-				"forwardersink": sinkURL,
+				"image": ForwarderImageFromContext(ctx),
+				"sink":  sinkURL,
 			}
-			// Deploy KSVC forwarder
+			// Deploy Forwarder
 			if _, err := manifest.InstallYamlFS(ctx, forwarderTemplates, cfg); err != nil {
 				log.Fatal(err)
 			}

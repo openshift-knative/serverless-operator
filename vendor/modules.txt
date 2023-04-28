@@ -76,7 +76,7 @@ github.com/cloudevents/sdk-go/sql/v2/gen
 github.com/cloudevents/sdk-go/sql/v2/parser
 github.com/cloudevents/sdk-go/sql/v2/runtime
 github.com/cloudevents/sdk-go/sql/v2/utils
-# github.com/cloudevents/sdk-go/v2 v2.12.0
+# github.com/cloudevents/sdk-go/v2 v2.13.0
 ## explicit; go 1.17
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
@@ -1301,7 +1301,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.35.2 => github.com/openshift-knative/eventing v0.99.1-0.20230320072133-8d94f4e19265
+# knative.dev/eventing v0.37.0 => github.com/openshift-knative/eventing v0.99.1-0.20230320072133-8d94f4e19265
 ## explicit; go 1.18
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1598,7 +1598,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20230420091239-6c21623d2555 => github.com/mgencur/reconciler-test v0.0.0-20230427124517-e4874fbee399
+# knative.dev/reconciler-test v0.0.0-20230428013536-3c01fe1a8849 => github.com/mgencur/reconciler-test v0.0.0-20230428075135-96ce9b519914
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1709,7 +1709,7 @@ sigs.k8s.io/yaml
 # knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 # knative.dev/operator => knative.dev/operator v0.33.1
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-# knative.dev/reconciler-test => github.com/mgencur/reconciler-test v0.0.0-20230427124517-e4874fbee399
+# knative.dev/reconciler-test => github.com/mgencur/reconciler-test v0.0.0-20230428075135-96ce9b519914
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0

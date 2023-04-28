@@ -33,6 +33,12 @@ import (
 	"knative.dev/reconciler-test/pkg/k8s"
 )
 
+const (
+	// Might be used together with environment.WithConfigOptions to
+	// override eventshub option through environment.
+	EventsHub = "eventshub"
+)
+
 // EventsHubOption is used to define an env for the eventshub image
 type EventsHubOption = environment.ConfigOption
 

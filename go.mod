@@ -25,7 +25,7 @@ require (
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
 	k8s.io/client-go v0.25.4
-	knative.dev/eventing v0.35.2
+	knative.dev/eventing v0.37.0
 	knative.dev/eventing-kafka v0.35.1
 	knative.dev/eventing-kafka-broker v0.35.5
 	knative.dev/hack v0.0.0-20230417170854-f591fea109b3
@@ -63,7 +63,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1 // indirect
 	github.com/cloudevents/sdk-go/sql/v2 v2.8.0 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.12.0
+	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
@@ -174,7 +174,7 @@ require (
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0
 	k8s.io/apiextensions-apiserver v0.25.2
-	knative.dev/reconciler-test v0.0.0-20230420091239-6c21623d2555
+	knative.dev/reconciler-test v0.0.0-20230428013536-3c01fe1a8849
 )
 
 replace (
@@ -186,7 +186,7 @@ replace (
 	knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator => knative.dev/operator v0.33.1
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-	knative.dev/reconciler-test => github.com/mgencur/reconciler-test v0.0.0-20230427124517-e4874fbee399
+	knative.dev/reconciler-test => github.com/mgencur/reconciler-test v0.0.0-20230428075135-96ce9b519914
 	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
 )
 

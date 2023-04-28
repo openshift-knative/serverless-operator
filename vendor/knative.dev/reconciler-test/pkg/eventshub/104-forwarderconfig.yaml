@@ -20,4 +20,4 @@ metadata:
 data:
   "config.toml": |
     [forwarder]
-    target = "{{ .forwardersink }}"
+    target = "{{ .sink }}"
