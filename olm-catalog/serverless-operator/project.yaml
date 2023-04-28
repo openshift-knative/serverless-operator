@@ -29,9 +29,9 @@ requirements:
   golang: '1.19'
   nodejs: 16.x
   ocpVersion:
-    min: '4.8'
-    max: '4.12'
-    label: 'v4.8'
+    min: '4.10'
+    max: '4.13'
+    label: 'v4.10'
 
 dependencies:
   serving: knative-v1.8
