@@ -7,7 +7,7 @@ target="${2:?Provide a target annotations file as arg[2]}"
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
-
+CHANNEL_LIST="$(metadata.get olm.channels.list[*])"
 function add_entries {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
@@ -25,5 +25,13 @@ EOF
 
 # Start fresh
 cp "$template" "$target"
-
-add_entries "$target"
+OUTPUT=""
+for NAME in $CHANNEL_LIST; do
+  tmpfile=$(mktemp)
+  sed "s/__CHANNEL__/$NAME/g" "$target" > "$tmpfile"
+  add_entries "$tmpfile"
+  OUTPUT=$OUTPUT$(cat "$tmpfile")
+  OUTPUT=$OUTPUT$'\n'"---"$'\n'
+done
+rm "$tmpfile"
+echo "$OUTPUT" > $target
