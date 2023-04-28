@@ -187,14 +187,15 @@ spec:
             port: probes
             scheme: HTTP
           periodSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 10
         livenessProbe:
           httpGet:
             path: /health
             port: probes
             scheme: HTTP
           periodSeconds: 5
-          failureThreshold: 6
+          failureThreshold: 15
+          initialDelaySeconds: 20
 
         ports:
         - name: metrics
