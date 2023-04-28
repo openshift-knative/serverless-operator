@@ -34,4 +34,4 @@ for NAME in $CHANNEL_LIST; do
   OUTPUT=$OUTPUT$'\n'"---"$'\n'
 done
 rm "$tmpfile"
-echo "$OUTPUT" > $target
+echo "$OUTPUT" > "$target"
