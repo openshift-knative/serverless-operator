@@ -1,6 +1,7 @@
 package features
 
 import (
+	"context"
 	"github.com/cloudevents/sdk-go/v2/test"
 	"github.com/openshift-knative/serverless-operator/test/eventinge2e_rekt/resources/brokerconfig"
 	"knative.dev/eventing/test/rekt/resources/broker"
@@ -10,6 +11,7 @@ import (
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
+	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
 func SendsEventsWithSinkRef() *feature.Feature {
@@ -30,12 +32,21 @@ func SendsEventsWithSinkRef() *feature.Feature {
 
 	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
 
-	f.Setup("install trigger", trigger.Install(trig, br,
-		trigger.WithSubscriber(&duckv1.KReference{
-			Kind:       "Service",
-			Name:       sink,
-			APIVersion: "v1",
-		}, "")))
+	//f.Setup("install trigger", trigger.Install(trig, br,
+	//	trigger.WithSubscriber(&duckv1.KReference{
+	//		Kind:       "Service",
+	//		Name:       sink,
+	//		APIVersion: "v1",
+	//	}, "")))
+
+	f.Setup("install trigger", func(ctx context.Context, t feature.T) {
+		sinkuri, err := service.Address(ctx, sink)
+		if err != nil || sinkuri == nil {
+			t.Fatal("Failed to get the address of the sink service", sink, err)
+		}
+		trigger.Install(trig, br, trigger.WithSubscriber(nil, sinkuri.String()))(ctx, t)
+	})
+
 	f.Setup("trigger goes ready", trigger.IsReady(trig))
 
 	f.Setup("install pingsource", pingsource.Install(source, pingsource.WithSink(
