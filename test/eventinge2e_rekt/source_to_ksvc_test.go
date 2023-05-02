@@ -19,6 +19,7 @@ func TestPingSourceWithSinkRef(t *testing.T) {
 		knative.WithLoggingConfig,
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
+		// Enables KnativeService in the PingSource scenario.
 		eventshub.WithKnativeServiceForwarder,
 		environment.Managed(t),
 	)
