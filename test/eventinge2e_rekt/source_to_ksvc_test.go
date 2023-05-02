@@ -3,7 +3,7 @@ package eventinge2e_rekt
 import (
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e_rekt/features"
+	"knative.dev/eventing/test/rekt/features/pingsource"
 	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
@@ -11,7 +11,7 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 )
 
-func TestPingSourceBrokerTriggerKsvc(t *testing.T) {
+func TestPingSourceWithSinkRef(t *testing.T) {
 	t.Parallel()
 
 	ctx, env := global.Environment(
@@ -20,10 +20,8 @@ func TestPingSourceBrokerTriggerKsvc(t *testing.T) {
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
 		eventshub.WithKnativeServiceForwarder,
-		//environment.WithConfigOptions("eventshub", eventshub.WithKnativeServiceForwarder),
-		//environment.WithConfigOptions("eventshub", environment.AsConfigOption(broker.WithConfig(config))),
 		environment.Managed(t),
 	)
 
-	env.Test(ctx, t, features.SendsEventsWithSinkRef())
+	env.Test(ctx, t, pingsource.SendsEventsWithSinkRef())
 }
