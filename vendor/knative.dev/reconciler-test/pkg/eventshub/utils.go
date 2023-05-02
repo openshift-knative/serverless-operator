@@ -19,6 +19,7 @@ package eventshub
 import (
 	"context"
 	"net/http"
+	nethttp "net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -33,8 +34,10 @@ import (
 )
 
 const (
-	ConfigTracingEnv = "K_CONFIG_TRACING"
-	ConfigLoggingEnv = "K_CONFIG_LOGGING"
+	ConfigTracingEnv   = "K_CONFIG_TRACING"
+	ConfigLoggingEnv   = "K_CONFIG_LOGGING"
+	EventGeneratorsEnv = "EVENT_GENERATORS"
+	EventLogsEnv       = "EVENT_LOGS"
 )
 
 func ParseHeaders(serializedHeaders string) http.Header {
@@ -115,3 +118,6 @@ func WithClientTracing(client *http.Client) error {
 	}
 	return nil
 }
+
+type HandlerFunc func(handler http.Handler) http.Handler
+type Option func(*nethttp.Client) error

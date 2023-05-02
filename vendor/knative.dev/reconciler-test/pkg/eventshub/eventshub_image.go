@@ -34,16 +34,6 @@ func ImageFromContext(ctx context.Context) string {
 	return "ko://" + eventshubPackage()
 }
 
-type forwarderImageKey struct{}
-
-// ForwarderImageFromContext gets the eventshub forwarder image from context
-func ForwarderImageFromContext(ctx context.Context) string {
-	if e, ok := ctx.Value(forwarderImageKey{}).(string); ok {
-		return e
-	}
-	return "ko://" + forwarderPackage()
-}
-
 // WithCustomImage allows you to specify a custom eventshub image to be used when invoking eventshub.Install
 func WithCustomImage(image string) environment.EnvOpts {
 	return func(ctx context.Context, env environment.Environment) (context.Context, error) {
@@ -62,10 +52,4 @@ func eventshubPackage() string {
 	this := reflect.TypeOf(eventshubImageKey{}).PkgPath()
 	root := path.Dir(path.Dir(this))
 	return path.Join(root, "cmd", "eventshub")
-}
-
-func forwarderPackage() string {
-	this := reflect.TypeOf(forwarderImageKey{}).PkgPath()
-	root := path.Dir(path.Dir(this))
-	return path.Join(root, "cmd", "forwarder")
 }

@@ -24,7 +24,6 @@ metadata:
       {{ end }}
   {{ end }}
 spec:
-  # TODO: Add security context???
   template:
     {{ if .podannotations }}
     annotations:
@@ -36,19 +35,16 @@ spec:
       serviceAccountName: "{{ .namespace }}"
       containers:
         - name: eventshub-forwarder
-          # TODO: Return to {{ .image }}
-          image: quay.io/openshift-knative/knative-eventing-test-wathola-forwarder:knative-v1.8
+          image: {{ .image }}
           imagePullPolicy: "IfNotPresent"
           env:
+            - name: "NAME"
+              value: {{ .name }}
+            - name: "NAMESPACE"
+              value: {{ .namespace }}
+            - name: "SINK"
+              value: {{ .sink }}
             {{ range $key, $value := .envs }}
             - name: {{printf "%q" $key}}
               value: {{printf "%q" $value}}
             {{ end }}
-          volumeMounts:
-            - name: config
-              readOnly: true
-              mountPath: "/.config/wathola/"
-      volumes:
-        - name: config
-          configMap:
-            name: {{ .name }}

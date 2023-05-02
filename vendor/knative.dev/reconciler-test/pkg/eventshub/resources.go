@@ -35,7 +35,7 @@ import (
 //go:embed 102-service.yaml 103-pod.yaml
 var servicePodTemplates embed.FS
 
-//go:embed 104-forwarderconfig.yaml 105-forwarder.yaml
+//go:embed 104-forwarder.yaml
 var forwarderTemplates embed.FS
 
 // Install starts a new eventshub with the provided name
@@ -57,14 +57,6 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		namespace := env.Namespace()
 		log := logging.FromContext(ctx)
 
-		if v, ok := env.(*environment.MagicEnvironment); ok {
-			opts := v.GetConfigOptions(EventsHub)
-			// Prepend environment options to eventshub options to give
-			// eventshub options given to the function priority over environment
-			// options.
-			options = append(opts, options...)
-		}
-
 		// Compute the user provided envs
 		envs := make(map[string]string)
 		if err := compose(options...)(ctx, envs); err != nil {
@@ -82,18 +74,18 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		// Install ServiceAccount, Role, RoleBinding
 		eventshubrbac.Install()(ctx, t)
 
-		isReceiver := strings.Contains(envs["EVENT_GENERATORS"], "receiver")
+		isReceiver := strings.Contains(envs[EventGeneratorsEnv], "receiver")
 
-		var withKsvcForwarder bool
-		// Allow forwarder only in the receiver case.
-		if envs["WITH_KSVC_FORWARDER"] == "true" && isReceiver {
-			withKsvcForwarder = true
+		var withForwarder bool
+		// Allow forwarder only when eventshub is receiver.
+		if isForwarder(ctx) && isReceiver {
+			withForwarder = isForwarder(ctx)
 		}
 
 		serviceName := name
 		// When forwarder is included we need to rename the eventshub service to
 		// prevent conflict with the forwarder service.
-		if withKsvcForwarder {
+		if withForwarder {
 			serviceName = feature.MakeRandomK8sName(name)
 		}
 
@@ -124,16 +116,19 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			k8s.WaitForServiceReadyOrFail(ctx, t, serviceName, "/health/ready")
 		}
 
-		if withKsvcForwarder {
+		if withForwarder {
 			sinkURL, err := service.Address(ctx, serviceName)
 			if err != nil {
 				log.Fatal(err)
 			}
+			// At this point env contains "receiver" so we need to override it.
+			envs[EventGeneratorsEnv] = "forwarder"
+			// No event recording desired, just logging.
+			envs[EventLogsEnv] = "logger"
 			cfg := map[string]interface{}{
-				"name": name,
-				"envs": envs,
-				// TODO: Actually include sources for that image in this repo (or vendor from eventing)
-				"image": ForwarderImageFromContext(ctx),
+				"name":  name,
+				"envs":  envs,
+				"image": ImageFromContext(ctx),
 				"sink":  sinkURL,
 			}
 			// Deploy Forwarder

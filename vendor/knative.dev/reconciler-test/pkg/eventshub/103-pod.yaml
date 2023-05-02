@@ -53,8 +53,7 @@ spec:
           {{ end }}
         allowPrivilegeEscalation: {{ .containerSecurityContext.allowPrivilegeEscalation }}
       {{ end }}
-      # TODO: Return to {{ .image }}
-      image: registry.ci.openshift.org/openshift/knative-nightly:knative-eventing-test-eventshub
+      image: {{ .image }}
       imagePullPolicy: "IfNotPresent"
       {{ if .withReadiness }}
       readinessProbe:

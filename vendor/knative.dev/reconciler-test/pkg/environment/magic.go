@@ -85,10 +85,6 @@ type MagicEnvironment struct {
 	imagePullSecretNamespace string
 
 	teardownOnFail bool
-
-	// configOptionsByName are additional named environment specific config options configured via
-	// WithConfigOptions.
-	configOptionsByName map[string][]ConfigOption
 }
 
 var (
@@ -145,23 +141,10 @@ func (mr *MagicEnvironment) Finish() {
 	}
 }
 
-func (mr *MagicEnvironment) GetConfigOptions(name string) []ConfigOption {
-	return mr.configOptionsByName[name]
-}
-
 // WithPollTimings is an environment option to override default poll timings.
 func WithPollTimings(interval, timeout time.Duration) EnvOpts {
 	return func(ctx context.Context, env Environment) (context.Context, error) {
 		return ContextWithPollTimings(ctx, interval, timeout), nil
-	}
-}
-
-func WithConfigOptions(name string, options ...ConfigOption) EnvOpts {
-	return func(ctx context.Context, env Environment) (context.Context, error) {
-		if e, ok := env.(*MagicEnvironment); ok {
-			e.configOptionsByName[name] = options
-		}
-		return ctx, nil
 	}
 }
 
@@ -206,7 +189,6 @@ func (mr *MagicGlobalEnvironment) Environment(opts ...EnvOpts) (context.Context,
 
 		imagePullSecretName:      "kn-test-image-pull-secret",
 		imagePullSecretNamespace: "default",
-		configOptionsByName:      make(map[string][]ConfigOption),
 	}
 
 	ctx := ContextWith(mr.c, env)
