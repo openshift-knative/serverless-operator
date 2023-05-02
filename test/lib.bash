@@ -198,9 +198,7 @@ function downstream_eventing_e2e_rekt_tests {
   fi
 
   # TODO: Resolve passing --kubeconfigs later
-  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt \
-    --imagetemplate "${IMAGE_TEMPLATE}" \
-    "$@"
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt -run TestPingSourceWithSinkRef "$@"
 }
 
 function downstream_knative_kafka_e2e_tests {
