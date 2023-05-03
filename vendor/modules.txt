@@ -1600,7 +1600,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20230501013554-1d362623689a => github.com/mgencur/reconciler-test v0.0.0-20230502075828-e40729b0626a
+# knative.dev/reconciler-test v0.0.0-20230503093155-937cf5922570
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1711,7 +1711,6 @@ sigs.k8s.io/yaml
 # knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 # knative.dev/operator => knative.dev/operator v0.33.1
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-# knative.dev/reconciler-test => github.com/mgencur/reconciler-test v0.0.0-20230502075828-e40729b0626a
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0

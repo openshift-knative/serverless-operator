@@ -19,7 +19,6 @@ package eventshub
 import (
 	"context"
 	"net/http"
-	nethttp "net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -120,4 +119,4 @@ func WithClientTracing(client *http.Client) error {
 }
 
 type HandlerFunc func(handler http.Handler) http.Handler
-type Option func(*nethttp.Client) error
+type ClientOption func(*http.Client) error

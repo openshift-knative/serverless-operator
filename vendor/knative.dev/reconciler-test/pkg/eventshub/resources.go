@@ -125,12 +125,9 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			envs[EventGeneratorsEnv] = "forwarder"
 			// No event recording desired, just logging.
 			envs[EventLogsEnv] = "logger"
-			cfg := map[string]interface{}{
-				"name":  name,
-				"envs":  envs,
-				"image": ImageFromContext(ctx),
-				"sink":  sinkURL,
-			}
+			cfg["envs"] = envs
+			cfg["sink"] = sinkURL
+
 			// Deploy Forwarder
 			if _, err := manifest.InstallYamlFS(ctx, forwarderTemplates, cfg); err != nil {
 				log.Fatal(err)

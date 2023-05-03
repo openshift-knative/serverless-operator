@@ -53,7 +53,7 @@ spec:
           {{ end }}
         allowPrivilegeEscalation: {{ .containerSecurityContext.allowPrivilegeEscalation }}
       {{ end }}
-      image: docker.io/mgencur/eventshub:latest
+      image: {{ .image }}
       imagePullPolicy: "IfNotPresent"
       {{ if .withReadiness }}
       readinessProbe:
