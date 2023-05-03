@@ -198,7 +198,10 @@ function downstream_eventing_e2e_rekt_tests {
   fi
 
   # TODO: Resolve passing --kubeconfigs later
-  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt -run TestPingSourceWithSinkRef "$@"
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt -run TestPingSourceWithSinkRef \
+    --istio.enabled \
+    --environment.namespace=serverless-tests \
+    "$@"
 }
 
 function downstream_knative_kafka_e2e_tests {
