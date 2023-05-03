@@ -15,6 +15,7 @@ olm:
     default: 'stable'
     list:
       - 'stable'
+      - 'serverless-1.29'
   previous:
     replaces: 1.27.0
     skipRange: '>=1.27.0 <1.28.0'
@@ -28,9 +29,9 @@ requirements:
   golang: '1.19'
   nodejs: 16.x
   ocpVersion:
-    min: '4.8'
-    max: '4.12'
-    label: 'v4.8'
+    min: '4.10'
+    max: '4.13'
+    label: 'v4.10'
 
 dependencies:
   serving: knative-v1.8
