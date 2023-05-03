@@ -46,7 +46,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/applications/odc-viewing-application-composition-using-topology-view.html)
+          more](https://docs.openshift.com/container-platform/4.13/applications/odc-viewing-application-composition-using-topology-view.html)
           about this topic.
         instructions: >-
           #### To verify the application was successfully created:
@@ -83,7 +83,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/applications/odc-viewing-application-composition-using-topology-view.html#odc-scaling-application-pods-and-checking-builds-and-routes_viewing-application-composition-using-topology-view)
+          more](https://docs.openshift.com/container-platform/4.13/applications/odc-viewing-application-composition-using-topology-view.html#odc-scaling-application-pods-and-checking-builds-and-routes_viewing-application-composition-using-topology-view)
           about this topic.
         instructions: >-
           #### To verify the application scaled down:
@@ -124,7 +124,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/serverless/eventing/event-sources/serverless-pingsource.html#serverless-pingsource-odc_serverless-pingsource)
+          more](https://docs.openshift.com/container-platform/4.13/serverless/eventing/event-sources/serverless-pingsource.html#serverless-pingsource-odc_serverless-pingsource)
           about this topic.
         instructions: >-
           #### To verify that the event connected to your Knative service:
@@ -176,7 +176,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task isn’t verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/serverless/knative-serving/traffic-splitting/traffic-splitting-revisions.html#odc-splitting-traffic-between-revisions-using-developer-perspective_traffic-splitting-revisions)
+          more](https://docs.openshift.com/container-platform/4.13/serverless/knative-serving/traffic-splitting/traffic-splitting-revisions.html#odc-splitting-traffic-between-revisions-using-developer-perspective_traffic-splitting-revisions)
           about this topic.
         instructions: >-
           #### To verify that you forced a new revision and set traffic
@@ -204,7 +204,7 @@ spec:
       review:
         failedTaskHelp: >-
           This task is not verified yet. Try the task again, or [read
-          more](https://docs.openshift.com/container-platform/4.12/applications/odc-deleting-applications.html)
+          more](https://docs.openshift.com/container-platform/4.13/applications/odc-deleting-applications.html)
           about this topic.
         instructions: |-
           #### To verify you deleted your application:          :
