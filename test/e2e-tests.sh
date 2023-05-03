@@ -38,6 +38,7 @@ fi
 # Run Knative Serving & Eventing downstream E2E tests.
 downstream_serving_e2e_tests
 downstream_eventing_e2e_tests
+downstream_eventing_e2e_rekt_tests
 downstream_monitoring_e2e_tests
 if [[ $TEST_KNATIVE_KAFKA == true ]]; then
   downstream_knative_kafka_e2e_tests
