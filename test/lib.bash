@@ -197,11 +197,15 @@ function downstream_eventing_e2e_rekt_tests {
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
 
-  # TODO: Resolve passing --kubeconfigs later
-  go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt -run TestPingSourceWithSinkRef \
-    --istio.enabled \
-    --environment.namespace=serverless-tests \
-    "$@"
+  if [[ $FULL_MESH == "true" ]]; then
+    # Need to specify a namespace that is in Mesh.
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt \
+      --environment.namespace=serverless-tests \
+      --istio.enabled="$FULL_MESH" \
+      "$@"
+  else
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt "$@"
+  fi
 }
 
 function downstream_knative_kafka_e2e_tests {
