@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -132,14 +133,14 @@ func countEncryptedRequestsToHost(ctx context.Context,
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
 				if jsonRequestLogFilter(ret) {
 					logging.FromContext(ctx).Infof("%s: %s", podName, line)
-					downstreamTlsCipher := getMapValueAsString(ret, "downstream_tls_cipher")
+					downstreamTLSCipher := getMapValueAsString(ret, "downstream_tls_cipher")
 					// This is a bit arbitrary, but we just want to match something that is surely encrypted,
 					// so we just match what is used at the time of writing...
-					if downstreamTlsCipher != "ECDHE-RSA-AES256-GCM-SHA384" /* TLS 1.2 */ &&
-						downstreamTlsCipher != "TLS_AES_256_GCM_SHA384" /* TLS 1.3 */ {
+					if downstreamTLSCipher != "ECDHE-RSA-AES256-GCM-SHA384" /* TLS 1.2 */ &&
+						downstreamTLSCipher != "TLS_AES_256_GCM_SHA384" /* TLS 1.3 */ {
 						logging.FromContext(ctx).Errorf("%s request unexpected downstream_tls_cipher %q",
 							podName,
-							downstreamTlsCipher)
+							downstreamTLSCipher)
 						unencrypted++
 					} else {
 						encrypted++
@@ -185,7 +186,7 @@ func ForEachLine(ctx context.Context, namespace string, podName string, opts *co
 			}
 		}
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return nil
 			}
 			return err

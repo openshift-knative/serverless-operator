@@ -1,4 +1,4 @@
-package eventinge2e_rekt
+package eventinge2erekt
 
 import (
 	"os"
