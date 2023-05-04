@@ -32,10 +32,17 @@ func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since
 		Must("has encrypted traffic", func(ctx context.Context, t feature.T) {
 			env := environment.FromContext(ctx)
 
-			var ksvcName string
+			var (
+				ksvcName string
+				numKsvc  int
+			)
 			for _, ref := range refs {
 				if ref.GroupVersionKind().GroupVersion() == knativeservice.GVR().GroupVersion() {
+					if numKsvc != 0 {
+						t.Fatalf("Found more than one Knative Service: %s, %s", ksvcName, ref.Name)
+					}
 					ksvcName = ref.Name
+					numKsvc++
 				}
 			}
 
