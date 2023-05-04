@@ -183,7 +183,7 @@ function downstream_eventing_e2e_rekt_tests {
 
   local images_file
 
-  images_file="$(dirname $(realpath "${BASH_SOURCE[0]}"))/images-rekt.yaml"
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
 
   # Create a secret for reconciler-test. The framework will copy this secret
   # to newly created namespaces and link to default service account in the namespace.
