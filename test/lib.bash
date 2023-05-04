@@ -199,12 +199,12 @@ function downstream_eventing_e2e_rekt_tests {
 
   if [[ $FULL_MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
       "$@"
   else
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e_rekt "$@"
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt "$@"
   fi
 }
 
