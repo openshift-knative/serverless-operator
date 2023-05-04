@@ -13,7 +13,7 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 )
 
-func TestPingSourceWithSinkRef(t *testing.T) {
+func TestPingSourceToKsvc(t *testing.T) {
 	t.Parallel()
 
 	ctx, env := global.Environment(
