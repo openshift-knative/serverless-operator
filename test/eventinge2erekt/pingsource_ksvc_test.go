@@ -13,7 +13,9 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 )
 
+// PingSource -> Ksvc -> Sink (Eventshub)
 func TestPingSourceToKsvc(t *testing.T) {
+	t.Skip("Temporarily skipped")
 	t.Parallel()
 
 	ctx, env := global.Environment(

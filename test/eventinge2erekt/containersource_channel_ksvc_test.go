@@ -3,16 +3,19 @@ package eventinge2erekt
 import (
 	"testing"
 
-	"knative.dev/eventing/test/rekt/features/broker"
-	resources "knative.dev/eventing/test/rekt/resources/broker"
+	"knative.dev/eventing/test/rekt/features/channel"
+	"knative.dev/eventing/test/rekt/resources/subscription"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
+	"knative.dev/reconciler-test/pkg/manifest"
 )
 
-func TestChannelBasedBrokerToKsvc(t *testing.T) {
+// ContainerSource -> Channel -> Subscription -> Ksvc -> Sink (Eventshub)
+func TestContainerSourceChannelKsvc(t *testing.T) {
 	t.Parallel()
 
 	ctx, env := global.Environment(
@@ -29,6 +32,8 @@ func TestChannelBasedBrokerToKsvc(t *testing.T) {
 		t.Skip("Channel-based tests cannot run in service mesh mode for now")
 	}
 
-	env.Prerequisite(ctx, t, broker.GoesReady("default", resources.WithEnvConfig()...))
-	env.Test(ctx, t, broker.SourceToSink("default"))
+	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
+		return subscription.WithSubscriber(ref, uri)
+	}
+	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 }
