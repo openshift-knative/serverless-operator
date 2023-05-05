@@ -29,7 +29,7 @@ spec:
   restartPolicy: "Never"
   containers:
     - name: flaker
-      image: registry.ci.openshift.org/openshift/knative-nightly:knative-eventing-test-event-flaker
+      image: registry.ci.openshift.org/openshift/knative-v1.8:knative-eventing-test-event-flaker
       imagePullPolicy: "IfNotPresent"
       {{ if .containerSecurityContext }}
       securityContext:

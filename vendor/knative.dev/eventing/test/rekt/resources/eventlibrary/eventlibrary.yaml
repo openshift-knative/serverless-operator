@@ -29,7 +29,7 @@ spec:
   restartPolicy: "Never"
   containers:
     - name: library
-      image: registry.ci.openshift.org/openshift/knative-nightly:knative-eventing-test-event-library
+      image: registry.ci.openshift.org/openshift/knative-v1.8:knative-eventing-test-event-library
       imagePullPolicy: "IfNotPresent"
       {{ if .containerSecurityContext }}
       securityContext:

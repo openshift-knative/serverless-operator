@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
       - name: heartbeats
-        image: registry.ci.openshift.org/openshift/knative-nightly:knative-eventing-test-heartbeats
+        image: registry.ci.openshift.org/openshift/knative-v1.8:knative-eventing-test-heartbeats
         imagePullPolicy: IfNotPresent
         args:
         - {{ .args }}
