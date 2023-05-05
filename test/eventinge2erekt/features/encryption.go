@@ -29,7 +29,7 @@ type LogFilter struct {
 	PodNamespace  string
 	PodSelector   metav1.ListOptions
 	PodLogOptions *corev1.PodLogOptions
-	JsonLogFilter func(map[string]interface{}) bool
+	JSONLogFilter func(map[string]interface{}) bool
 }
 
 func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
@@ -56,7 +56,7 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			PodNamespace:  "knative-serving",
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
-			JsonLogFilter: func(m map[string]interface{}) bool {
+			JSONLogFilter: func(m map[string]interface{}) bool {
 				return getMapValueAsString(m, "path") == "/" &&
 					getMapValueAsString(m, "authority") == privateURL.Host
 			}}
@@ -80,7 +80,7 @@ func VerifyEncryptedTrafficToApp(refs []corev1.ObjectReference, since time.Time)
 			PodNamespace:  environment.FromContext(ctx).Namespace(),
 			PodSelector:   metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + ksvcName},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
-			JsonLogFilter: func(m map[string]interface{}) bool {
+			JSONLogFilter: func(m map[string]interface{}) bool {
 				return getMapValueAsString(m, "path") == "/" &&
 					strings.HasPrefix(getMapValueAsString(m, "upstream_cluster"), "inbound|80")
 			}}
@@ -165,7 +165,7 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 		if err = ForEachLine(ctx, logFilter.PodNamespace, podName, logFilter.PodLogOptions, func(line string) error {
 			var ret map[string]interface{}
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
-				if logFilter.JsonLogFilter(ret) {
+				if logFilter.JSONLogFilter(ret) {
 					logging.FromContext(ctx).Infof("%s: %s", podName, line)
 					downstreamTLSCipher := getMapValueAsString(ret, "downstream_tls_cipher")
 					// This is a bit arbitrary, but we just want to match something that is surely encrypted,
