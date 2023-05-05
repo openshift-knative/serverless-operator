@@ -14,131 +14,158 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
+	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/resources/knativeservice"
 )
 
-func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
-	// Just a small sleep to let the logs be written.
-	time.Sleep(10 * time.Second)
+// LogFilter defines which logs should be checked.
+type LogFilter struct {
+	PodNamespace  string
+	PodSelector   metav1.ListOptions
+	PodLogOptions *corev1.PodLogOptions
+	JsonLogFilter func(map[string]interface{}) bool
+}
 
+func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("path to activator to app").
-		Must("has encrypted traffic", func(ctx context.Context, t feature.T) {
-			env := environment.FromContext(ctx)
-
-			var (
-				ksvcName string
-				numKsvc  int
-			)
-			for _, ref := range refs {
-				if ref.GroupVersionKind().GroupVersion() == knativeservice.GVR().GroupVersion() {
-					if numKsvc != 0 {
-						t.Fatalf("Found more than one Knative Service: %s, %s", ksvcName, ref.Name)
-					}
-					ksvcName = ref.Name
-					numKsvc++
-				}
-			}
-
-			ksvc, err := dynamicclient.Get(ctx).Resource(knativeservice.GVR()).Namespace(env.Namespace()).
-				Get(ctx, ksvcName, metav1.GetOptions{})
-			if err != nil {
-				t.Fatalf("Unable to get ksvc %s: %v", ksvcName, err)
-			}
-
-			address, _, _ := unstructured.NestedString(ksvc.Object, "status", "address", "url")
-			privateURL, err := url.Parse(address)
-			if err != nil {
-				t.Fatalf("Unable to parse URL %s: %v", address, err)
-			}
-
-			// source -> activator
-			// When running within Mesh a mesh-specific VirtualService is used which
-			// gets istio-ingressgateway out of the path.
-			err = VerifyPodLogsEncryptedRequestToHost(ctx,
-				"knative-serving",
-				metav1.ListOptions{LabelSelector: "app=activator"},
-				&corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
-				func(m map[string]interface{}) bool {
-					return getMapValueAsString(m, "path") == "/" &&
-						getMapValueAsString(m, "authority") == privateURL.Host
-				})
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			// activator -> application
-			err = VerifyPodLogsEncryptedRequestToHost(ctx,
-				env.Namespace(),
-				metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + ksvcName},
-				&corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
-				func(m map[string]interface{}) bool {
-					return getMapValueAsString(m, "path") == "/" &&
-						strings.HasPrefix(getMapValueAsString(m, "upstream_cluster"), "inbound|80")
-				})
-			if err != nil {
-				t.Fatal(err)
-			}
-
-		})
+		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, podNamespace string, podSelector metav1.ListOptions, podLogOptions *corev1.PodLogOptions, jsonLogFilter func(map[string]interface{}) bool) error {
-	encrypted, unencrypted, err := countEncryptedRequestsToHost(ctx, podNamespace, podSelector, podLogOptions, jsonLogFilter)
+func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		_, privateURL, err := getKsvcNameAndURL(ctx, refs)
+		if err != nil {
+			t.Fatalf("Unable to get Knative Service URL: %v", err)
+		}
+
+		// source -> activator
+		// When running within Mesh a mesh-specific VirtualService is used which
+		// gets istio-ingressgateway out of the path.
+		logFilter := LogFilter{
+			PodNamespace:  "knative-serving",
+			PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
+			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+			JsonLogFilter: func(m map[string]interface{}) bool {
+				return getMapValueAsString(m, "path") == "/" &&
+					getMapValueAsString(m, "authority") == privateURL.Host
+			}}
+
+		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func VerifyEncryptedTrafficToApp(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		ksvcName, _, err := getKsvcNameAndURL(ctx, refs)
+		if err != nil {
+			t.Fatalf("Unable to get Knative Service URL: %v", err)
+		}
+
+		// activator -> application
+		logFilter := LogFilter{
+			PodNamespace:  environment.FromContext(ctx).Namespace(),
+			PodSelector:   metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + ksvcName},
+			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+			JsonLogFilter: func(m map[string]interface{}) bool {
+				return getMapValueAsString(m, "path") == "/" &&
+					strings.HasPrefix(getMapValueAsString(m, "upstream_cluster"), "inbound|80")
+			}}
+
+		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func getKsvcNameAndURL(ctx context.Context, refs []corev1.ObjectReference) (string, *url.URL, error) {
+	var (
+		ksvcName string
+		numKsvc  int
+	)
+	for _, ref := range refs {
+		if ref.GroupVersionKind().GroupVersion() == knativeservice.GVR().GroupVersion() {
+			// Make sure we verify traffic for the right Knative Service.
+			// This is for safety and to guarantee the feature invariance.
+			if numKsvc != 0 {
+				return "", nil, fmt.Errorf("found more than one Knative Service: %s, %s", ksvcName, ref.Name)
+			}
+			ksvcName = ref.Name
+			numKsvc++
+		}
+	}
+
+	namespace := environment.FromContext(ctx).Namespace()
+	ksvc, err := dynamicclient.Get(ctx).Resource(knativeservice.GVR()).Namespace(namespace).
+		Get(ctx, ksvcName, metav1.GetOptions{})
 	if err != nil {
-		return err
+		return "", nil, fmt.Errorf("unable to get ksvc %s: %w", ksvcName, err)
 	}
-	if encrypted == 0 && unencrypted == 0 {
-		return fmt.Errorf("no log lines matching filter")
+
+	address, _, _ := unstructured.NestedString(ksvc.Object, "status", "address", "url")
+	privateURL, err := url.Parse(address)
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to parse URL %s: %w", address, err)
 	}
+
+	return ksvcName, privateURL, nil
+}
+
+func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilter) error {
+	var (
+		encrypted, unencrypted int
+		err                    error
+	)
+	interval, timeout := k8s.PollTimings(ctx, nil)
+	if pollErr := wait.PollImmediate(interval, timeout, func() (bool, error) {
+		encrypted, unencrypted, err = getMatchingRequestsToHost(ctx, logFilter)
+		if err != nil {
+			return false, err
+		}
+		// Keep trying until we find matching lines.
+		if encrypted == 0 && unencrypted == 0 {
+			return false, nil
+		}
+		return true, nil
+	}); pollErr != nil {
+		return pollErr
+	}
+
 	if unencrypted != 0 {
-		return fmt.Errorf("unencrypted request found in %v logs", podSelector)
+		return fmt.Errorf("unencrypted request found in %v logs", logFilter.PodSelector)
 	}
 	return nil
 }
 
-func VerifyNoPodLogsEncryptedRequestToHost(ctx context.Context, podNamespace string, listOptions metav1.ListOptions, podLogOptions *corev1.PodLogOptions, jsonLogFilter func(map[string]interface{}) bool) error {
-	encrypted, unencrypted, err := countEncryptedRequestsToHost(ctx, podNamespace, listOptions, podLogOptions, jsonLogFilter)
+func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encrypted int, unencrypted int, err error) {
+	podList, err := kubeclient.Get(ctx).CoreV1().Pods(logFilter.PodNamespace).List(context.Background(), logFilter.PodSelector)
 	if err != nil {
-		return err
-	}
-	if encrypted == 0 && unencrypted == 0 {
-		return fmt.Errorf("no log lines matching filter")
-	}
-	if encrypted != 0 {
-		return fmt.Errorf("an encrypted request found in %v logs", listOptions)
-	}
-	return nil
-}
-
-func countEncryptedRequestsToHost(ctx context.Context,
-	podNamespace string,
-	podSelector metav1.ListOptions,
-	podLogOptions *corev1.PodLogOptions,
-	jsonRequestLogFilter func(map[string]interface{}) bool) (encrypted int, unencrypted int, err error) {
-
-	podList, err := kubeclient.Get(ctx).CoreV1().Pods(podNamespace).List(context.Background(), podSelector)
-	if err != nil {
-		return 0, 0, fmt.Errorf("error listing pods in %s: %w", podNamespace, err)
+		return 0, 0, fmt.Errorf("error listing pods in %s: %w", logFilter.PodNamespace, err)
 	}
 	if len(podList.Items) == 0 {
-		return 0, 0, fmt.Errorf("no %v pods found in %s", podSelector, podNamespace)
+		return 0, 0, fmt.Errorf("no %v pods found in %s", logFilter.PodSelector, logFilter.PodNamespace)
 	}
 
 	for _, pod := range podList.Items {
 		podName := pod.Name
-		if err = ForEachLine(ctx, podNamespace, podName, podLogOptions, func(line string) error {
+		if err = ForEachLine(ctx, logFilter.PodNamespace, podName, logFilter.PodLogOptions, func(line string) error {
 			var ret map[string]interface{}
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
-				if jsonRequestLogFilter(ret) {
+				if logFilter.JsonLogFilter(ret) {
 					logging.FromContext(ctx).Infof("%s: %s", podName, line)
 					downstreamTLSCipher := getMapValueAsString(ret, "downstream_tls_cipher")
 					// This is a bit arbitrary, but we just want to match something that is surely encrypted,
