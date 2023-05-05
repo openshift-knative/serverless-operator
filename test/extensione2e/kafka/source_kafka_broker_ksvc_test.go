@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
@@ -48,7 +46,7 @@ kind: %q`, channelAPIVersion, kafkaChannelKind),
 )
 
 func TestSourceToKafkaChannelBasedBrokerToKnativeService(t *testing.T) {
-	eventinge2e.KnativeSourceBrokerTriggerKnativeService(t, func(client *test.Context) *eventingv1.Broker {
+	KnativeSourceBrokerTriggerKnativeService(t, func(client *test.Context) *eventingv1.Broker {
 		// Create the KafkaChannel template ConfigMap for the Broker
 		_, err := client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Create(context.Background(), kafkaChannelTemplateConfigMap, metav1.CreateOptions{})
 		if err != nil {

@@ -26,6 +26,13 @@ func init() {
 	flowsv1.AddToScheme(scheme.Scheme)
 }
 
+const (
+	ksvcAPIVersion    = "serving.knative.dev/v1"
+	ksvcKind          = "Service"
+	channelAPIVersion = "messaging.knative.dev/v1"
+	channelKind       = "Channel"
+)
+
 func TestEventingUserPermissions(t *testing.T) {
 	paCtx := test.SetupProjectAdmin(t)
 	editCtx := test.SetupEdit(t)
