@@ -35,7 +35,7 @@ spec:
       serviceAccountName: "{{ .namespace }}"
       containers:
         - name: eventshub-forwarder
-          image: docker.io/mgencur/eventshub:latest
+          image: {{ .image }}
           imagePullPolicy: "IfNotPresent"
           env:
             - name: "NAME"
