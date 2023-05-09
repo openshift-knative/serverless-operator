@@ -32,7 +32,7 @@ testsuites:
     tests:
       - serverless_operator_kafka_e2e_tests
       - downstream_knative_kafka_e2e_tests
-      - upstream_knative_eventing_kafka_e2e # TODO: Run this at all? Should this test suite be removed completely?
+      - downstream_knative_kafka_e2e_rekt_tests
       - upstream_knative_eventing_kafka_broker_e2e
       - run_rolling_upgrade_tests
   - name: "Eventing"
