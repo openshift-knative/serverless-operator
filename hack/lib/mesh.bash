@@ -75,7 +75,7 @@ function deploy_servicemeshcontrolplane {
 
 function undeploy_servicemeshcontrolplane {
   logger.info "Deleting ServiceMeshControlPlane"
-  oc delete smcp -n openshift-operators basic --ignore-not-found || return $?
+  oc delete smcp -n istio-system basic --ignore-not-found || return $?
 }
 
 function deploy_gateways {

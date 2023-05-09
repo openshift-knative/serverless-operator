@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
 	pkgTest "knative.dev/pkg/test"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -34,9 +33,6 @@ const (
 	kafkaSourceName    = "smoke-ks"
 	kafkaTopicName     = "smoke-topic"
 	kafkaConsumerGroup = "smoke-cg"
-	helloWorldService  = "helloworld-go"
-	ksvcAPIVersion     = "serving.knative.dev/v1"
-	ksvcKind           = "Service"
 	clusterName        = "my-cluster" // there should be a way to get this from test setup
 	cronJobName        = "smoke-cronjob"
 )
@@ -67,7 +63,7 @@ func createCronJobObjV1Beta1(name, topic, server string) *batchv1beta1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   pkgTest.ImagePath(test.KafkaImg),
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
@@ -95,7 +91,7 @@ func createCronJobObjV1(name, topic, server string) *batchv1.CronJob {
 								{
 									Name:    "kafka-message-test",
 									Image:   pkgTest.ImagePath(test.KafkaImg),
-									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, eventinge2e.PingSourceData, server, topic)},
+									Command: []string{"sh", "-c", fmt.Sprintf(`echo '%s' | bin/kafka-console-producer.sh --broker-list %s --topic %s`, PingSourceData, server, topic)},
 								},
 							},
 							RestartPolicy: corev1.RestartPolicyOnFailure,
@@ -264,7 +260,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 		name := name
 
 		// Setup a knative service
-		eventStore, ksvc := eventinge2e.DeployKsvcWithEventInfoStoreOrFail(client, t, test.Namespace, helloWorldService+"-"+name)
+		eventStore, ksvc := DeployKsvcWithEventInfoStoreOrFail(client, t, test.Namespace, helloWorldService+"-"+name)
 
 		t.Logf("Knative service %s/%s is ready: %#v", ksvc.GetNamespace(), ksvc.GetName(), ksvc.Status)
 
@@ -319,7 +315,7 @@ func TestKafkaSourceToKnativeService(t *testing.T) {
 			}
 		}
 
-		eventinge2e.AssertPingSourceDataReceivedAtLeastOnce(eventStore)
+		AssertPingSourceDataReceivedAtLeastOnce(eventStore)
 	}
 }
 

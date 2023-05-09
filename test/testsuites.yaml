@@ -43,6 +43,7 @@ testsuites:
       - "^openshift-knative-operator/pkg/eventing/"
     tests:
       - downstream_eventing_e2e_tests
+      - downstream_eventing_e2e_rekt_tests
       - upstream_knative_eventing_e2e
   - name: "Monitoring"
     run_if_changed:

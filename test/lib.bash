@@ -176,6 +176,45 @@ function downstream_eventing_e2e_tests {
     "$@"
 }
 
+function downstream_eventing_e2e_rekt_tests {
+  should_run "${FUNCNAME[0]}" || return 0
+
+  logger.info "Running Eventing REKT downstream tests"
+
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
+  # Create a secret for reconciler-test. The framework will copy this secret
+  # to newly created namespaces and link to default service account in the namespace.
+  if ! oc -n default get secret kn-test-image-pull-secret; then
+    oc -n openshift-config get secret pull-secret -o yaml | \
+      sed -e 's/name: .*/name: kn-test-image-pull-secret/' -e 's/namespace: .*/namespace: default/' | oc apply -f -
+  fi
+
+  # Used by eventing/test/lib
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
+  export SYSTEM_NAMESPACE
+
+  RUN_FLAGS=(-failfast -timeout=30m -parallel=10)
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+
+  if [[ $FULL_MESH == "true" ]]; then
+    # Need to specify a namespace that is in Mesh.
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
+      --images.producer.file="${images_file}" \
+      --environment.namespace=serverless-tests \
+      --istio.enabled="$FULL_MESH" \
+      "$@"
+  else
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
+      --images.producer.file="${images_file}" \
+      "$@"
+  fi
+}
+
 function downstream_knative_kafka_e2e_tests {
   should_run "${FUNCNAME[0]}" || return 0
 

@@ -1,4 +1,4 @@
-package eventinge2e
+package knativekafkae2e
 
 import (
 	"context"
@@ -19,9 +19,8 @@ import (
 )
 
 const (
-	pingSourceName = "smoke-test-ping"
-	PingSourceData = "{\"message\":\"Hello, world!\"}"
-
+	PingSourceData    = "{\"message\":\"Hello, world!\"}"
+	pingSourceName    = "smoke-test-ping"
 	triggerName       = "smoke-test-trigger"
 	cmName            = "smoke-test-br-cm"
 	ksvcAPIVersion    = "serving.knative.dev/v1"
@@ -29,8 +28,7 @@ const (
 	helloWorldService = "helloworld-go"
 	brokerAPIVersion  = "eventing.knative.dev/v1"
 	brokerKind        = "Broker"
-
-	subscriptionName = "smoke-test-subscription"
+	subscriptionName  = "smoke-test-subscription"
 )
 
 // DeployKsvcWithEventInfoStoreOrFail deploys a wathola-forwarder ksvc forwarding events to a recordevents receiver

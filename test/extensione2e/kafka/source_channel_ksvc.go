@@ -1,42 +1,41 @@
-package eventinge2e
+package knativekafkae2e
 
 import (
 	"context"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/openshift-knative/serverless-operator/test"
 )
 
-func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail func(*test.Context) *eventingv1.Broker, verifyMetrics func(*test.Context)) {
+func KnativeSourceChannelKnativeService(t *testing.T, createChannelOrFail func(*test.Context) duckv1.KReference) {
 	skipInFullMeshMode(t)
 
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)
-		client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Delete(context.Background(), triggerName, metav1.DeleteOptions{})
+		client.Clients.Eventing.MessagingV1().Subscriptions(test.Namespace).Delete(context.Background(), subscriptionName, metav1.DeleteOptions{})
 		client.Clients.Eventing.SourcesV1().PingSources(test.Namespace).Delete(context.Background(), pingSourceName, metav1.DeleteOptions{})
-		client.Clients.Kube.CoreV1().ConfigMaps(test.Namespace).Delete(context.Background(), cmName, metav1.DeleteOptions{})
 	}
 	test.CleanupOnInterrupt(t, cleanup)
 	defer cleanup()
 
 	eventStore, ksvc := DeployKsvcWithEventInfoStoreOrFail(client, t, test.Namespace, helloWorldService)
 
-	broker := createBrokerOrFail(client)
+	channelRef := createChannelOrFail(client)
 
-	tr := &eventingv1.Trigger{
+	subscription := &messagingv1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      triggerName,
+			Name:      subscriptionName,
 			Namespace: test.Namespace,
 		},
-		Spec: eventingv1.TriggerSpec{
-			Broker: broker.Name,
-			Subscriber: duckv1.Destination{
+		Spec: messagingv1.SubscriptionSpec{
+			Channel: channelRef,
+			Subscriber: &duckv1.Destination{
 				Ref: &duckv1.KReference{
 					APIVersion: ksvcAPIVersion,
 					Kind:       ksvcKind,
@@ -45,11 +44,10 @@ func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail f
 			},
 		},
 	}
-	_, err := client.Clients.Eventing.EventingV1().Triggers(test.Namespace).Create(context.Background(), tr, metav1.CreateOptions{})
+	_, err := client.Clients.Eventing.MessagingV1().Subscriptions(test.Namespace).Create(context.Background(), subscription, metav1.CreateOptions{})
 	if err != nil {
-		t.Fatal("Unable to create trigger: ", err)
+		t.Fatal("Unable to create Subscription: ", err)
 	}
-
 	ps := &sourcesv1.PingSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pingSourceName,
@@ -59,11 +57,7 @@ func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail f
 			Data: PingSourceData,
 			SourceSpec: duckv1.SourceSpec{
 				Sink: duckv1.Destination{
-					Ref: &duckv1.KReference{
-						APIVersion: brokerAPIVersion,
-						Kind:       brokerKind,
-						Name:       broker.Name,
-					},
+					Ref: &channelRef,
 				},
 			},
 		},
@@ -74,9 +68,4 @@ func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail f
 	}
 
 	AssertPingSourceDataReceivedAtLeastOnce(eventStore)
-
-	// Metrics need to be verified before we cleanup, as the dataplane may remove metrics for deleted resources
-	if verifyMetrics != nil {
-		verifyMetrics(client)
-	}
 }

@@ -37,6 +37,7 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/kmeta"
+
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
 )
@@ -251,6 +252,11 @@ func WaitForServiceEndpoints(ctx context.Context, t feature.T, name string, numb
 	if err := wait.PollImmediate(interval, timeout, func() (bool, error) {
 		svc, err := services.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				t.Log("service", "namespace", ns, "name", name, err)
+				// keep polling
+				return false, nil
+			}
 			return false, err
 		}
 		ip := svc.Spec.ClusterIP
@@ -265,6 +271,11 @@ func WaitForServiceEndpoints(ctx context.Context, t feature.T, name string, numb
 	if err := wait.PollImmediate(interval, timeout, func() (bool, error) {
 		endpoint, err := endpoints.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				t.Log("endpoint", "namespace", ns, "name", name, err)
+				// keep polling
+				return false, nil
+			}
 			return false, err
 		}
 		num := countEndpointsNum(endpoint)
@@ -314,6 +325,8 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 	curl := fmt.Sprintf("curl --max-time 2 "+
 		"--trace-ascii %% --trace-time "+
 		"--retry 6 --retry-connrefused %s", sinkURI)
+	maybeQuitIstio := fmt.Sprintf("(curl -fsI -X POST http://localhost:15020/quitquitquit || echo no-istio)")
+	curl = fmt.Sprintf("%s && %s", curl, maybeQuitIstio)
 	var one int32 = 1
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: jobName, Namespace: ns},
@@ -332,6 +345,14 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 			},
 		},
 	}
+
+	if cfg := environment.GetIstioConfig(ctx); cfg.Enabled {
+		job.Spec.Template.Annotations = map[string]string{
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+		}
+	}
+
 	created, err := jobs.Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrWaitingForServiceReady, err)
@@ -365,8 +386,14 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 	return nil
 }
 
-// WaitForPodRunningOrFail waits for the given pod to be in running state.
-func WaitForPodRunningOrFail(ctx context.Context, t feature.T, podName string) {
+var (
+	// WaitForPodRunningOrFail waits for pods to be ready.
+	// Deprecated, use WaitForPodReadyOrSucceededOrFail
+	WaitForPodRunningOrFail = WaitForPodReadyOrSucceededOrFail
+)
+
+// WaitForPodReadyOrSucceededOrFail waits for the given pod to be in running state.
+func WaitForPodReadyOrSucceededOrFail(ctx context.Context, t feature.T, podName string) {
 	ns := environment.FromContext(ctx).Namespace()
 	podClient := kubeclient.Get(ctx).CoreV1().Pods(ns)
 	p := podClient
@@ -374,15 +401,18 @@ func WaitForPodRunningOrFail(ctx context.Context, t feature.T, podName string) {
 	err := wait.PollImmediate(interval, timeout, func() (bool, error) {
 		p, err := p.Get(ctx, podName, metav1.GetOptions{})
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				t.Log("pod", "namespace", ns, "name", podName, err)
+				// keep polling
+				return false, nil
+			}
 			return true, err
 		}
-		isRunning := podRunning(p)
-
-		if !isRunning {
+		isReady := podReadyOrSucceeded(p)
+		if !isReady {
 			t.Logf("Pod %s/%s is not running...", ns, podName)
 		}
-
-		return isRunning, nil
+		return isReady, nil
 	})
 	if err != nil {
 		sb := strings.Builder{}
@@ -465,7 +495,24 @@ func countEndpointsNum(e *corev1.Endpoints) int {
 	return num
 }
 
-// podRunning will check the status conditions of the pod and return true if it's Running.
-func podRunning(pod *corev1.Pod) bool {
-	return pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodSucceeded
+// podReadyOrSucceeded will check the status conditions of the pod and return true if it's Running.
+func podReadyOrSucceeded(pod *corev1.Pod) bool {
+	// Some pods might terminate before we actually check for them to be running, this is fine
+	// for rekt tests pods.
+	if pod.Status.Phase == corev1.PodSucceeded {
+		return true
+	}
+	// Pods that are not in running phase are not ready
+	if pod.Status.Phase != corev1.PodRunning {
+		return false
+	}
+
+	// Pods in running phase is not enough to check for pod readiness, so check
+	// the ready condition.
+	for _, c := range pod.Status.Conditions {
+		if c.Type == corev1.PodReady && c.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }

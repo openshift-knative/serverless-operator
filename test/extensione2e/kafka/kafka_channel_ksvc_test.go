@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test/eventinge2e"
-
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
@@ -33,7 +31,7 @@ var (
 )
 
 func TestSourceToKafkaChanelToKnativeService(t *testing.T) {
-	eventinge2e.KnativeSourceChannelKnativeService(t, func(client *test.Context) duckv1.KReference {
+	KnativeSourceChannelKnativeService(t, func(client *test.Context) duckv1.KReference {
 		channel, err := client.Clients.Kafka.MessagingV1beta1().KafkaChannels(test.Namespace).Create(context.Background(), &kafkaChannel, metav1.CreateOptions{})
 		if err != nil {
 			t.Fatal("Unable to create Channel: ", err)
