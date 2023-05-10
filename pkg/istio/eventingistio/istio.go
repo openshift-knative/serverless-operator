@@ -2,13 +2,20 @@ package eventingistio
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	appsv1 "k8s.io/api/apps/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
@@ -25,17 +32,20 @@ func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
 	return m, nil
 }
 
-func IsEnabled(k kubernetes.Interface, nsName string) (bool, error) {
-	ns, err := k.CoreV1().Namespaces().Get(context.Background(), nsName, metav1.GetOptions{})
-	if err != nil {
-		return false, err
-	}
+func IsEnabled(data base.ConfigMapData) bool {
+	featuresConfigMap := getFeaturesConfig(data)
+	v, ok := featuresConfigMap["istio"]
+	return ok && strings.EqualFold(v, "enabled")
+}
 
-	v, ok := ns.Labels["maistra.io/member-of"]
-	if ok && v != "" {
-		return true, nil
+func getFeaturesConfig(cfg base.ConfigMapData) map[string]string {
+	if v, ok := cfg["features"]; ok {
+		return v
 	}
-	return false, nil
+	if v, ok := cfg["config-features"]; ok {
+		return v
+	}
+	return nil
 }
 
 func toUnstructured(policies []networkingv1.NetworkPolicy) ([]unstructured.Unstructured, error) {
@@ -131,4 +141,43 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 			},
 		},
 	}
+}
+
+func MaybeScaleIstioController(client client.Client, eventing *operatorv1beta1.KnativeEventing) error {
+	if enabled := IsEnabled(eventing.GetSpec().GetConfig()); enabled {
+		return scaleEventingIstioController(client, eventing, func(d *appsv1.Deployment) (bool, int32) {
+			return *d.Spec.Replicas < 1, 1
+		})
+	}
+	return scaleEventingIstioController(client, eventing, func(d *appsv1.Deployment) (bool, int32) {
+		return *d.Spec.Replicas > 0, 0
+	})
+}
+
+func scaleEventingIstioController(client client.Client, eventing *operatorv1beta1.KnativeEventing, shouldScaleFn func(d *appsv1.Deployment) (bool, int32)) error {
+	istioControllerName := types.NamespacedName{Namespace: eventing.GetNamespace(), Name: "eventing-istio-controller"}
+
+	overrides := eventing.GetSpec().GetWorkloadOverrides()
+	for _, v := range overrides {
+		if v.Name == istioControllerName.Name {
+			if v.Replicas != nil {
+				return nil
+			}
+		}
+	}
+
+	istioController := &appsv1.Deployment{}
+	if err := client.Get(context.Background(), istioControllerName, istioController); err != nil {
+		return fmt.Errorf("failed to get %s: %w", istioControllerName.String(), err)
+	}
+
+	if shouldScale, replicas := shouldScaleFn(istioController); shouldScale {
+		istioController = istioController.DeepCopy()
+		istioController.Spec.Replicas = pointer.Int32(replicas)
+		if err := client.Update(context.Background(), istioController); err != nil {
+			return fmt.Errorf("failed to update %s: %w", istioControllerName, err)
+		}
+	}
+
+	return nil
 }

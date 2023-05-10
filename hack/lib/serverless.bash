@@ -225,6 +225,10 @@ function enable_istio_eventing {
   istio_patch="$(mktemp -t istio-XXXXX.yaml)"
   cat - << EOF > "${istio_patch}"
 spec:
+  config
+    features:
+      istio: "enabled"
+      delivery-timeout: "enabled"
   workloads:
   - annotations:
       sidecar.istio.io/inject: "true"

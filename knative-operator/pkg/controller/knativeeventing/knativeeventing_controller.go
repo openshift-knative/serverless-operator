@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	configv1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -23,6 +21,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
+	"github.com/openshift-knative/serverless-operator/pkg/istio/eventingistio"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
@@ -165,6 +167,7 @@ func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconc
 
 func (r *ReconcileKnativeEventing) reconcileKnativeEventing(instance *operatorv1beta1.KnativeEventing) error {
 	stages := []func(*operatorv1beta1.KnativeEventing) error{
+		r.maybeScaleIstioController,
 		r.ensureFinalizers,
 		r.installDashboards,
 	}
@@ -228,4 +231,8 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
 	}
 	return nil
+}
+
+func (r *ReconcileKnativeEventing) maybeScaleIstioController(eventing *operatorv1beta1.KnativeEventing) error {
+	return eventingistio.MaybeScaleIstioController(r.client, eventing)
 }

@@ -12,6 +12,7 @@ source "$root/hack/lib/__sources__.bash"
 # be fairly stable.
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
 eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-channel-broker.yaml eventing-post-install.yaml)
+eventing_istio_files=(eventing-istio-controller.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
@@ -20,6 +21,7 @@ istio_files=(networkpolicy-mesh net-istio)
 kourier_files=(kourier)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
+export KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR=${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_MANIFESTS_DIR=${KNATIVE_SERVING_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_TEST_MANIFESTS_DIR=${KNATIVE_SERVING_TEST_MANIFESTS_DIR:-""}
 
@@ -88,6 +90,37 @@ function download_eventing {
   done
 }
 
+function download_eventing_istio {
+  component=$1
+  version=$2
+  shift
+  shift
+
+  files=("$@")
+  echo "Files: ${files[*]}"
+
+  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
+
+  branch=$(metadata.get dependencies.eventing_istio_artifacts_branch)
+  for ((i = 0; i < ${#files[@]}; i++)); do
+    index=$(( i+1 ))
+    file="${files[$i]}"
+    target_file="$target_dir/$index-$file"
+    if [[ ${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR} = "" ]]; then
+
+      url="https://raw.githubusercontent.com/openshift-knative/eventing-istio/${branch}/openshift/release/artifacts/$file"
+      echo "Downloading file from ${url}"
+      wget --no-check-certificate "$url" -O "$target_file"
+    else
+      cp "${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR}/${file}" "$target_file"
+    fi
+
+    # Break all image references so we know our overrides work correctly.
+    yaml.break_image_references "$target_file"
+  done
+}
+
 function download_ingress {
   component=$1
   version=$2
@@ -148,4 +181,5 @@ download_ingress net-kourier "v$(metadata.get dependencies.net_kourier)" "${ingr
 # DOWNLOAD EVENTING
 #
 download_eventing eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
+download_eventing_istio eventing "$KNATIVE_EVENTING_VERSION" "${eventing_istio_files[@]}"
 
