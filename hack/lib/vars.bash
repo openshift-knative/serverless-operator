@@ -88,9 +88,9 @@ export QUAY_REGISTRY=quay.io/openshift-knative
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
 {{- with .Name }}
-{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/knative-serving-test-{{.}}:${KNATIVE_SERVING_VERSION}
-{{- else if eq . "recordevents" }}${QUAY_REGISTRY}/knative-eventing-test-{{.}}:${KNATIVE_EVENTING_VERSION}
-{{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/knative-eventing-test-{{.}}:${KNATIVE_EVENTING_VERSION}
+{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
+{{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "kafka" }}strimzi/kafka:0.16.2-kafka-2.4.0
 {{- else }}${QUAY_REGISTRY}/{{.}}:multiarch{{end -}}
 {{end -}}
