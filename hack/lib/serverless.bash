@@ -225,24 +225,28 @@ function enable_istio_eventing {
   istio_patch="$(mktemp -t istio-XXXXX.yaml)"
   cat - << EOF > "${istio_patch}"
 spec:
-  config
+  config:
     features:
       istio: "enabled"
       delivery-timeout: "enabled"
   workloads:
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: pingsource-mt-adapter
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-ingress
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-filter
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
@@ -266,30 +270,37 @@ function enable_istio_eventing_kafka {
 spec:
   workloads:
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-broker-receiver
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-broker-dispatcher
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-channel-receiver
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-channel-dispatcher
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-sink-receiver
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-source-dispatcher
   - annotations:
+      sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-controller
