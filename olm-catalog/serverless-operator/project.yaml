@@ -76,3 +76,5 @@ upgrade_sequence:
     source: redhat-operators
   - csv: serverless-operator.v1.29.0
     source: serverless-operator
+  - csv: serverless-operator.v1.30.0
+    source: serverless-operator
