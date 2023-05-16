@@ -1,5 +1,4 @@
 ---
----
 schema: olm.channel
 name: stable
 package: serverless-operator
