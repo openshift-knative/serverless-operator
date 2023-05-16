@@ -179,6 +179,8 @@ function deploy_knativeserving_cr {
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
 
   if [[ $FULL_MESH == "true" ]]; then
+    # Create serving-tests namespace only when it does not exist.
+    ensure_namespace serving-tests
     # metadata-webhook adds istio annotations for e2e test by webhook.
     oc apply -f "${rootdir}/serving/metadata-webhook/config"
   fi
