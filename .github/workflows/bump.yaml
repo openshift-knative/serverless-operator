@@ -4,11 +4,12 @@ name: Bump
 on:
   push:
     branches:
-      - '**'
+      - 'release-**'
   workflow_dispatch: # Manual workflow trigger
 
 jobs:
   bump-so-version:
+    if: github.event.created || github.event_name == 'workflow_dispatch'
     name:
     runs-on: ubuntu-latest
     env:
