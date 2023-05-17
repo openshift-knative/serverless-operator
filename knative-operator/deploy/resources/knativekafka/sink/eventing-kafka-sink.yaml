@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -114,7 +114,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 rules:
   - apiGroups:
       - ""
@@ -147,7 +147,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 ---
 ---
 
@@ -170,7 +170,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -203,7 +203,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
+    app.kubernetes.io/component: kafka-sink-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels:
@@ -213,7 +215,9 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        kafka.eventing.knative.dev/release: v1.8
+        app.kubernetes.io/version: v1.9
+        app.kubernetes.io/component: kafka-sink-receiver
+        app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -355,7 +359,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
+    app.kubernetes.io/component: kafka-sink-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     app: kafka-sink-receiver

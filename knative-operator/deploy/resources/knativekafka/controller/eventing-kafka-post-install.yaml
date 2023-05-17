@@ -20,199 +20,8 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.8
-rules:
-  - apiGroups:
-      - apps
-    resources:
-      - deployments
-    verbs:
-      - delete
-      - deletecollection
-
-  - apiGroups:
-      - "apps"
-    resources:
-      - statefulsets
-    verbs:
-      - get
-      - list
-
-  # sources.knative.dev resources and finalizers we care about.
-  - apiGroups:
-      - sources.knative.dev
-    resources:
-      - kafkasources
-      - kafkasources/status
-    verbs:
-      - get
-      - list
-
-  - apiGroups:
-      - admissionregistration.k8s.io
-    resources:
-      - mutatingwebhookconfigurations
-    resourceNames:
-      - defaulting.webhook.kafka.sources.knative.dev
-      - defaulting.webhook.kafka.messaging.knative.dev
-    verbs:
-      - delete
-
-  - apiGroups:
-      - admissionregistration.k8s.io
-    resources:
-      - validatingwebhookconfigurations
-    resourceNames:
-      - validation.webhook.kafka.sources.knative.dev
-      - config.webhook.kafka.sources.knative.dev
-      - validation.webhook.kafka.messaging.knative.dev
-    verbs:
-      - delete
-
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    resourceNames:
-      - kafka-source-webhook
-      - kafka-controller
-      - kafka-webhook
-      - kafka-ch-dispatcher
-    verbs:
-      - delete
-
-  # to be able to list channel services and patch them
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    verbs:
-      - list
-      - patch
-
-  - apiGroups:
-      - apps
-    resources:
-      - deployments
-    resourceNames:
-      - kafka-controller-manager
-      - kafka-webhook
-      - kafka-ch-controller
-      - kafka-ch-dispatcher
-      - kafka-source-dispatcher
-    verbs:
-      - delete
-
-  # to be able to check readiness of the new dataplane
-  - apiGroups:
-      - apps
-    resources:
-      - deployments
-    resourceNames:
-      - kafka-channel-dispatcher
-      - kafka-channel-receiver
-      - kafka-controller
-    verbs:
-      - get
-
-  - apiGroups:
-      - rbac.authorization.k8s.io
-    resources:
-      - clusterrolebindings
-    resourceNames:
-      - eventing-sources-kafka-controller
-      - eventing-sources-kafka-controller-addressable-resolver
-      - kafka-webhook
-      - kafka-ch-controller
-      - kafka-ch-dispatcher
-      - eventing-sources-kafka-controller-podspecable-binding
-    verbs:
-      - delete
-  - apiGroups:
-      - rbac.authorization.k8s.io
-    resources:
-      - clusterroles
-    resourceNames:
-      - eventing-sources-kafka-controller
-      - kafka-webhook
-      - kafka-ch-controller
-      - kafka-addressable-resolver
-      - kafka-channelable-manipulator
-      - kafka-ch-dispatcher
-    verbs:
-      - delete
-
-  - apiGroups:
-      - ""
-    resources:
-      - serviceaccounts
-    resourceNames:
-      - kafka-controller-manager
-      - kafka-webhook
-      - kafka-ch-controller
-      - kafka-ch-dispatcher
-    verbs:
-      - delete
-
-  - apiGroups:
-      - ""
-    resources:
-      - secrets
-    resourceNames:
-      - kafka-source-webhook-certs
-      - messaging-webhook-certs
-    verbs:
-      - delete
-
-  - apiGroups:
-      - "autoscaling"
-    resources:
-      - horizontalpodautoscalers
-    resourceNames:
-      - kafka-webhook
-    verbs:
-      - delete
-
-  - apiGroups:
-      - "policy"
-    resources:
-      - poddisruptionbudgets
-    resourceNames:
-      - kafka-webhook
-    verbs:
-      - delete
-
-  - apiGroups:
-    - "coordination.k8s.io"
-    resources:
-      - leases
-    resourceNames:
-      - kafkachannel-dispatcher.knative.dev.eventing-kafka.pkg.channel.consolidated.reconciler.dispatcher.reconciler.00-of-01
-    verbs:
-      - delete
-
-  # to be able to read the old configmap and migrate
-  # and then delete them
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    resourceNames:
-      - config-leader-election-kafkachannel
-      - config-kafka
-    verbs:
-      - get
-      - delete
-
-  # to be able update config in the new configmap
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    resourceNames:
-      - kafka-channel-config
-    verbs:
-      - patch
+    app.kubernetes.io/version: v1.9
+rules: []
 ---
 ---
 
@@ -236,7 +45,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -257,7 +66,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -339,7 +148,7 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 
 ---
 
@@ -348,7 +157,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -379,7 +188,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -410,7 +219,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -418,7 +227,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        kafka.eventing.knative.dev/release: v1.8
+        app.kubernetes.io/version: v1.9
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -463,7 +272,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -471,7 +280,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        kafka.eventing.knative.dev/release: v1.8
+        app.kubernetes.io/version: v1.9
       annotations:
         sidecar.istio.io/inject: "false"
     spec:

@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
   annotations:
     knative.dev/example-checksum: "6ce544b6"
 data:
@@ -200,7 +200,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 rules:
   - apiGroups:
       - ""
@@ -233,7 +233,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 ---
 ---
 
@@ -256,7 +256,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -289,7 +289,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
+    app.kubernetes.io/component: kafka-channel-dispatcher
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels:
@@ -299,7 +301,9 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        kafka.eventing.knative.dev/release: v1.8
+        app.kubernetes.io/version: v1.9
+        app.kubernetes.io/component: kafka-channel-dispatcher
+        app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -456,7 +460,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
+    app.kubernetes.io/component: kafka-channel-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     matchLabels:
@@ -466,7 +472,9 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        kafka.eventing.knative.dev/release: v1.8
+        app.kubernetes.io/version: v1.9
+        app.kubernetes.io/component: kafka-channel-receiver
+        app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -608,7 +616,9 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    kafka.eventing.knative.dev/release: v1.8
+    app.kubernetes.io/version: v1.9
+    app.kubernetes.io/component: kafka-channel-receiver
+    app.kubernetes.io/name: knative-eventing
 spec:
   selector:
     app: kafka-channel-receiver
