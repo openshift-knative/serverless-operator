@@ -61,12 +61,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.28.0 <1.29.0'
+    olm.skipRange: '>=1.29.0 <1.30.0'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.29.0
+  name: serverless-operator.v1.30.0
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -892,7 +892,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
                         value: "registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023"
                       - name: "CURRENT_VERSION"
-                        value: "1.29.0"
+                        value: "1.30.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -1069,7 +1069,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.8"
                       - name: "CURRENT_VERSION"
-                        value: "1.29.0"
+                        value: "1.30.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.8"
                     securityContext:
@@ -1335,5 +1335,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.8"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.8"
-  replaces: serverless-operator.v1.28.0
-  version: 1.29.0
+  replaces: serverless-operator.v1.29.0
+  version: 1.30.0
