@@ -18,11 +18,11 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schemas and descriptions
@@ -138,6 +138,32 @@ spec:
                   uri:
                     description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                     type: string
+              namespaceSelector:
+                description: NamespaceSelector is a label selector to capture the namespaces that should be watched by the source.
+                type: object
+                properties:
+                  matchExpressions:
+                    description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          description: key is the label key that the selector applies to.
+                          type: string
+                        operator:
+                          description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                          type: string
+                        values:
+                          description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                          type: array
+                          items:
+                            type: string
+                  matchLabels:
+                    description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+
           status:
             type: object
             properties:
@@ -191,6 +217,11 @@ spec:
               sinkUri:
                 description: SinkURI is the current active sink URI that has been configured for the Source.
                 type: string
+              namespaces:
+                description: Namespaces show the namespaces currently watched by the ApiServerSource
+                type: array
+                items:
+                  type: string
     additionalPrinterColumns:
     - name: Sink
       type: string
@@ -233,10 +264,10 @@ kind: CustomResourceDefinition
 metadata:
   name: brokers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -399,11 +430,11 @@ kind: CustomResourceDefinition
 metadata:
   name: channels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -673,11 +704,11 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
   name: containersources.sources.knative.dev
 spec:
@@ -826,9 +857,9 @@ kind: CustomResourceDefinition
 metadata:
   name: eventtypes.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -974,10 +1005,10 @@ kind: CustomResourceDefinition
 metadata:
   name: parallels.flows.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -1309,11 +1340,11 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schemas and descriptions
@@ -1529,10 +1560,10 @@ kind: CustomResourceDefinition
 metadata:
   name: sequences.flows.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -1848,12 +1879,12 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
   name: sinkbindings.sources.knative.dev
 spec:
@@ -2044,9 +2075,9 @@ kind: CustomResourceDefinition
 metadata:
   name: subscriptions.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -2255,9 +2286,9 @@ kind: CustomResourceDefinition
 metadata:
   name: triggers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: v1.8
+    eventing.knative.dev/release: v1.9
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.8
+    app.kubernetes.io/version: v1.9
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
