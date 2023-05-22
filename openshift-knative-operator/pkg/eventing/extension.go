@@ -88,6 +88,12 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		}
 	}
 
+	if !eventingistio.IsEnabled(ke.GetSpec().GetConfig()) {
+		eventingistio.ScaleIstioController(requiredNs, ke, 0)
+	} else {
+		eventingistio.ScaleIstioController(requiredNs, ke, 1)
+	}
+
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 

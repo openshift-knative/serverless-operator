@@ -1,12 +1,9 @@
 package eventingistio
 
 import (
-	"context"
-	"fmt"
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
-	appsv1 "k8s.io/api/apps/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -15,7 +12,6 @@ import (
 	"k8s.io/utils/pointer"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
@@ -143,45 +139,21 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 	}
 }
 
-func MaybeScaleIstioController(client client.Client, eventing *operatorv1beta1.KnativeEventing) error {
-	if enabled := IsEnabled(eventing.GetSpec().GetConfig()); enabled {
-		return scaleEventingIstioController(client, eventing, func(d *appsv1.Deployment) (bool, int32) {
-			return *d.Spec.Replicas < 1, 1
-		})
-	}
-	return scaleEventingIstioController(client, eventing, func(d *appsv1.Deployment) (bool, int32) {
-		return *d.Spec.Replicas > 0, 0
-	})
-}
-
-func scaleEventingIstioController(client client.Client, eventing *operatorv1beta1.KnativeEventing, shouldScaleFn func(d *appsv1.Deployment) (bool, int32)) error {
-	istioControllerName := types.NamespacedName{Namespace: eventing.GetNamespace(), Name: "eventing-istio-controller"}
-
-	overrides := eventing.GetSpec().GetWorkloadOverrides()
-	for _, v := range overrides {
-		if v.Name == istioControllerName.Name {
-			if v.Replicas != nil {
-				return nil
+func ScaleIstioController(requiredNs string, ke *operatorv1beta1.KnativeEventing, replicas int32) {
+	istioControllerName := types.NamespacedName{Namespace: requiredNs, Name: "eventing-istio-controller"}
+	found := false
+	for _, w := range ke.GetSpec().GetWorkloadOverrides() {
+		if w.Name == istioControllerName.Name {
+			found = true
+			if w.Replicas == nil {
+				w.Replicas = pointer.Int32(replicas)
 			}
 		}
 	}
-
-	if eventing.Spec.HighAvailability != nil && eventing.Spec.HighAvailability.Replicas != nil {
-		return nil
+	if !found {
+		ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
+			Name:     istioControllerName.Name,
+			Replicas: pointer.Int32(replicas),
+		})
 	}
-
-	istioController := &appsv1.Deployment{}
-	if err := client.Get(context.Background(), istioControllerName, istioController); err != nil {
-		return fmt.Errorf("failed to get %s: %w", istioControllerName.String(), err)
-	}
-
-	if shouldScale, replicas := shouldScaleFn(istioController); shouldScale {
-		istioController = istioController.DeepCopy()
-		istioController.Spec.Replicas = pointer.Int32(replicas)
-		if err := client.Update(context.Background(), istioController); err != nil {
-			return fmt.Errorf("failed to update %s: %w", istioControllerName, err)
-		}
-	}
-
-	return nil
 }
