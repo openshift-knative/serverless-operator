@@ -13,8 +13,6 @@ import (
 )
 
 func KnativeSourceChannelKnativeService(t *testing.T, createChannelOrFail func(*test.Context) duckv1.KReference) {
-	skipInFullMeshMode(t)
-
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)

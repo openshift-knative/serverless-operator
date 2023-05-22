@@ -3,8 +3,6 @@ package knativekafkae2e
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -105,22 +103,4 @@ func AssertPingSourceDataReceivedAtLeastOnce(eventStore *recordevents.EventInfoS
 		}
 		return nil
 	})
-}
-
-func skipInFullMeshMode(t *testing.T) {
-	if isFullMesh(t) {
-		t.Skip("Channel-based tests cannot run in service mesh mode for now")
-	}
-}
-
-func isFullMesh(t *testing.T) bool {
-	fmStr := os.Getenv("FULL_MESH")
-	if fmStr != "" {
-		fm, err := strconv.ParseBool(fmStr)
-		if err != nil {
-			t.Fatal("FULL_MESH", fmStr, err)
-		}
-		return fm
-	}
-	return false
 }

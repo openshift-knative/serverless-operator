@@ -13,8 +13,6 @@ import (
 )
 
 func KnativeSourceBrokerTriggerKnativeService(t *testing.T, createBrokerOrFail func(*test.Context) *eventingv1.Broker, verifyMetrics func(*test.Context)) {
-	skipInFullMeshMode(t)
-
 	client := test.SetupClusterAdmin(t)
 	cleanup := func() {
 		test.CleanupAll(t, client)

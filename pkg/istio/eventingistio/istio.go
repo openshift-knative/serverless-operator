@@ -166,6 +166,10 @@ func scaleEventingIstioController(client client.Client, eventing *operatorv1beta
 		}
 	}
 
+	if eventing.Spec.HighAvailability != nil && eventing.Spec.HighAvailability.Replicas != nil {
+		return nil
+	}
+
 	istioController := &appsv1.Deployment{}
 	if err := client.Get(context.Background(), istioControllerName, istioController); err != nil {
 		return fmt.Errorf("failed to get %s: %w", istioControllerName.String(), err)
