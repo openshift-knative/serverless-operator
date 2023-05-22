@@ -1,0 +1,56 @@
+---
+name: Bump
+
+on:
+  push:
+    branches:
+      - 'release-**'
+  workflow_dispatch: # Manual workflow trigger
+
+jobs:
+  bump-so-version:
+    if: github.event.created || github.event_name == 'workflow_dispatch'
+    name:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}
+    steps:
+      - name: Setup Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.20.x
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Always checkout main, we don't support bumping for patch releases (for now)
+          ref: main
+          path: ./src/github.com/${{ github.repository }}
+          fetch-depth: 0
+
+      - name: Install prerequisites
+        env:
+          YQ_VERSION: 3.4.0
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          sudo mv /usr/bin/yq /usr/local/bin/yq
+
+      - name: Bump SO
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: go run hack/cmd/bumpso/bumpso.go
+
+      - name: Regenerate all generated files
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: make generated-files
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          path: ./src/github.com/${{ github.repository }}
+          branch: auto/bump-so-version-${{ github.ref_name }}
+          title: "[${{ github.ref_name }}] Bump Serverless Operator version"
+          commit-message: "Bump SO version"
+          delete-branch: true
+          body: |
+            Bump SO version + run `make generated-files`

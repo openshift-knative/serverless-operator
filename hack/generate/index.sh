@@ -31,7 +31,10 @@ for NAME in $CHANNEL_LIST; do
   sed "s/__CHANNEL__/$NAME/g" "$target" > "$tmpfile"
   add_entries "$tmpfile"
   if [ -n "$OUTPUT" ]; then
-    OUTPUT=---'\n'$OUTPUT$'\n'"---"$'\n'
+    OUTPUT=$OUTPUT$'\n'"---"$'\n'
+  else
+    # First line of the file
+    OUTPUT=$"---"$'\n'
   fi
   OUTPUT=$OUTPUT$(cat "$tmpfile")
 done
