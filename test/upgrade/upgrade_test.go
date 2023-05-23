@@ -183,7 +183,3 @@ func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 		// TODO: Check if we need to sleep 30 more seconds like in the previous bash scripts.
 	})
 }
-
-func TestMain(m *testing.M) {
-	eventingupgrade.RunMainTest(m)
-}
