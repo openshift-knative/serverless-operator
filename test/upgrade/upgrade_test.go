@@ -23,7 +23,6 @@ import (
 	"testing"
 
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
-	"knative.dev/eventing-kafka-broker/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -40,7 +39,6 @@ import (
 func TestServerlessUpgradePrePost(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
@@ -52,13 +50,12 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
-	suite.Execute(cfg)
+	suite.Execute(pkgupgrade.Configuration{T: t})
 }
 
 func TestServerlessUpgradeContinual(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
-	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
@@ -67,7 +64,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 					servingupgrade.AutoscaleSustainingWithTBCTest(),
 					servingupgrade.AutoscaleSustainingTest(),
 				},
-				kafkabrokerupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
+				kafkabrokerupgrade.ChannelContinualTests(),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
@@ -77,7 +74,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
-	suite.Execute(cfg)
+	suite.Execute(pkgupgrade.Configuration{T: t})
 }
 
 func TestClusterUpgrade(t *testing.T) {
@@ -85,7 +82,6 @@ func TestClusterUpgrade(t *testing.T) {
 	if !test.Flags.UpgradeOpenShift {
 		t.Skip("Cluster upgrade tests disabled unless enabled by a flag.")
 	}
-	cfg := upgrade.NewUpgradeConfig(t)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
@@ -110,7 +106,7 @@ func TestClusterUpgrade(t *testing.T) {
 			},
 		},
 	}
-	suite.Execute(cfg)
+	suite.Execute(pkgupgrade.Configuration{T: t})
 }
 
 func merge(slices ...[]pkgupgrade.BackgroundOperation) []pkgupgrade.BackgroundOperation {
@@ -129,7 +125,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{
 		eventingupgrade.PreUpgradeTest(),
 		kafkabrokerupgrade.ChannelPreUpgradeTest(),
-		kafkabrokerupgrade.SourcePreUpgradeTest(),
+		kafkabrokerupgrade.SourcePreUpgradeTest(glob),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
@@ -156,7 +152,7 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
 	tests = append(tests,
 		kafkabrokerupgrade.ChannelPostUpgradeTest(),
-		kafkabrokerupgrade.SourcePostUpgradeTest(),
+		kafkabrokerupgrade.SourcePostUpgradeTest(glob),
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.NamespacedBrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
@@ -172,7 +168,7 @@ func postDowngradeTests() []pkgupgrade.Operation {
 		eventingupgrade.PostDowngradeTest(),
 		eventingupgrade.CRDPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
 		kafkabrokerupgrade.ChannelPostDowngradeTest(),
-		kafkabrokerupgrade.SourcePostDowngradeTest(),
+		kafkabrokerupgrade.SourcePostDowngradeTest(glob),
 		kafkabrokerupgrade.BrokerPostDowngradeTest(),
 		kafkabrokerupgrade.SinkPostDowngradeTest(),
 	)

@@ -122,7 +122,6 @@ func TestKitchensink(t *testing.T) {
 		_, toVersion, _ := strings.Cut(csv, ".")
 
 		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
-			cfg := upgrade.NewUpgradeConfig(t)
 			// Run these tests after each upgrade.
 			post := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
@@ -156,7 +155,7 @@ func TestKitchensink(t *testing.T) {
 					},
 				},
 			}
-			suite.Execute(cfg)
+			suite.Execute(pkgupgrade.Configuration{T: t})
 		})
 	}
 }
