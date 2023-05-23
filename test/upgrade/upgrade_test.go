@@ -23,8 +23,7 @@ import (
 	"testing"
 
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
-	kafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
-	"knative.dev/eventing-kafka/test/upgrade/continual"
+	"knative.dev/eventing-kafka-broker/test/upgrade/continual"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
@@ -68,7 +67,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 					servingupgrade.AutoscaleSustainingWithTBCTest(),
 					servingupgrade.AutoscaleSustainingTest(),
 				},
-				kafkaupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
+				kafkabrokerupgrade.ChannelContinualTests(continual.ChannelTestOptions{}),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
@@ -129,8 +128,8 @@ func merge(slices ...[]pkgupgrade.BackgroundOperation) []pkgupgrade.BackgroundOp
 func preUpgradeTests() []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{
 		eventingupgrade.PreUpgradeTest(),
-		kafkaupgrade.ChannelPreUpgradeTest(),
-		kafkaupgrade.SourcePreUpgradeTest(),
+		kafkabrokerupgrade.ChannelPreUpgradeTest(),
+		kafkabrokerupgrade.SourcePreUpgradeTest(),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
@@ -156,8 +155,8 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	}))
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
 	tests = append(tests,
-		kafkaupgrade.ChannelPostUpgradeTest(),
-		kafkaupgrade.SourcePostUpgradeTest(),
+		kafkabrokerupgrade.ChannelPostUpgradeTest(),
+		kafkabrokerupgrade.SourcePostUpgradeTest(),
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.NamespacedBrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
@@ -172,8 +171,8 @@ func postDowngradeTests() []pkgupgrade.Operation {
 		servingupgrade.CRDStoredVersionPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
 		eventingupgrade.PostDowngradeTest(),
 		eventingupgrade.CRDPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
-		kafkaupgrade.ChannelPostDowngradeTest(),
-		kafkaupgrade.SourcePostDowngradeTest(),
+		kafkabrokerupgrade.ChannelPostDowngradeTest(),
+		kafkabrokerupgrade.SourcePostDowngradeTest(),
 		kafkabrokerupgrade.BrokerPostDowngradeTest(),
 		kafkabrokerupgrade.SinkPostDowngradeTest(),
 	)
