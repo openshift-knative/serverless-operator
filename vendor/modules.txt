@@ -64,11 +64,8 @@ github.com/cespare/xxhash/v2
 # github.com/cloudevents/conformance v0.2.0
 ## explicit; go 1.14
 github.com/cloudevents/conformance/pkg/event
-# github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1
-## explicit; go 1.14
-github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2
-# github.com/cloudevents/sdk-go/sql/v2 v2.8.0
-## explicit; go 1.14
+# github.com/cloudevents/sdk-go/sql/v2 v2.13.0
+## explicit; go 1.17
 github.com/cloudevents/sdk-go/sql/v2
 github.com/cloudevents/sdk-go/sql/v2/expression
 github.com/cloudevents/sdk-go/sql/v2/function
@@ -856,7 +853,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.25.2
+# k8s.io/apiextensions-apiserver v0.25.4
 ## explicit; go 1.19
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
@@ -927,7 +924,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.25.2
+# k8s.io/apiserver v0.25.4
 ## explicit; go 1.19
 k8s.io/apiserver/pkg/storage/names
 # k8s.io/client-go v0.25.4 => k8s.io/client-go v0.25.4
@@ -1252,7 +1249,7 @@ k8s.io/code-generator/cmd/set-gen
 k8s.io/code-generator/pkg/namer
 k8s.io/code-generator/pkg/util
 k8s.io/code-generator/third_party/forked/golang/reflect
-# k8s.io/component-base v0.25.2
+# k8s.io/component-base v0.25.4
 ## explicit; go 1.19
 k8s.io/component-base/config
 k8s.io/component-base/config/v1alpha1
@@ -1304,7 +1301,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.37.0 => github.com/openshift-knative/eventing v0.99.1-0.20230505095202-c949372a733b
+# knative.dev/eventing v0.37.0 => github.com/openshift-knative/eventing v0.99.1-0.20230517140238-581040197fb8
 ## explicit; go 1.18
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1390,7 +1387,6 @@ knative.dev/eventing/test/rekt/resources/channel
 knative.dev/eventing/test/rekt/resources/channel_impl
 knative.dev/eventing/test/rekt/resources/containersource
 knative.dev/eventing/test/rekt/resources/delivery
-knative.dev/eventing/test/rekt/resources/eventlibrary
 knative.dev/eventing/test/rekt/resources/eventtype
 knative.dev/eventing/test/rekt/resources/flaker
 knative.dev/eventing/test/rekt/resources/parallel
@@ -1420,51 +1416,75 @@ knative.dev/eventing-kafka/pkg/apis/messaging
 knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/apis/sources/config
 knative.dev/eventing-kafka/pkg/apis/sources/v1beta1
-knative.dev/eventing-kafka/pkg/channel/consolidated/apis/messaging
-knative.dev/eventing-kafka/pkg/channel/consolidated/reconciler/testing
-knative.dev/eventing-kafka/pkg/channel/distributed/common/kafka/constants
 knative.dev/eventing-kafka/pkg/client/clientset/versioned
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/scheme
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1beta1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1/fake
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1/fake
-knative.dev/eventing-kafka/pkg/client/injection/client
-knative.dev/eventing-kafka/pkg/client/injection/client/fake
-knative.dev/eventing-kafka/pkg/client/listers/messaging/v1beta1
-knative.dev/eventing-kafka/pkg/common/client
-knative.dev/eventing-kafka/pkg/common/config
 knative.dev/eventing-kafka/pkg/common/constants
-knative.dev/eventing-kafka/pkg/common/kafka/offset
-knative.dev/eventing-kafka/pkg/common/kafka/sarama
-knative.dev/eventing-kafka/pkg/common/tracing
-knative.dev/eventing-kafka/test
 knative.dev/eventing-kafka/test/e2e/helpers
 knative.dev/eventing-kafka/test/lib
 knative.dev/eventing-kafka/test/lib/resources
 knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
-knative.dev/eventing-kafka/test/upgrade
-knative.dev/eventing-kafka/test/upgrade/continual
-knative.dev/eventing-kafka/test/upgrade/installation
-# knative.dev/eventing-kafka-broker v0.35.5 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230317121228-794aeb2bc0e8
-## explicit; go 1.18
+# knative.dev/eventing-kafka-broker v0.35.5 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230522152732-481f5d51eed0
+## explicit; go 1.19
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/internals/kafka/eventing
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/internals/kafka/eventing/v1alpha1
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/messaging
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/messaging/v1beta1
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/config
+knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/v1beta1
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned
 knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/scheme
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/typed/bindings/v1beta1
 knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/typed/eventing/v1alpha1
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/typed/messaging/v1beta1
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/typed/sources/v1beta1
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/injection/client
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/clientset/versioned
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/clientset/versioned/scheme
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/clientset/versioned/typed/eventing/v1alpha1
+knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client
+knative.dev/eventing-kafka-broker/control-plane/pkg/config
+knative.dev/eventing-kafka-broker/control-plane/pkg/contract
+knative.dev/eventing-kafka-broker/control-plane/pkg/core/config
+knative.dev/eventing-kafka-broker/control-plane/pkg/counter
 knative.dev/eventing-kafka-broker/control-plane/pkg/kafka
+knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/offset
+knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/sarama
+knative.dev/eventing-kafka-broker/control-plane/pkg/logging
+knative.dev/eventing-kafka-broker/control-plane/pkg/prober
+knative.dev/eventing-kafka-broker/control-plane/pkg/propagator
+knative.dev/eventing-kafka-broker/control-plane/pkg/receiver
+knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/base
+knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/broker
+knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/channel/apis/messaging
+knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/channel/resources
+knative.dev/eventing-kafka-broker/control-plane/pkg/security
+knative.dev/eventing-kafka-broker/control-plane/pkg/util
+knative.dev/eventing-kafka-broker/test/e2e_new/bogus_config
 knative.dev/eventing-kafka-broker/test/e2e_sink
+knative.dev/eventing-kafka-broker/test/lib
+knative.dev/eventing-kafka-broker/test/lib/resources
 knative.dev/eventing-kafka-broker/test/pkg
 knative.dev/eventing-kafka-broker/test/pkg/addressable
 knative.dev/eventing-kafka-broker/test/pkg/broker
 knative.dev/eventing-kafka-broker/test/pkg/kafka
 knative.dev/eventing-kafka-broker/test/pkg/sink
 knative.dev/eventing-kafka-broker/test/pkg/testing
+knative.dev/eventing-kafka-broker/test/rekt/features
+knative.dev/eventing-kafka-broker/test/rekt/features/featuressteps
+knative.dev/eventing-kafka-broker/test/rekt/resources/configmap
+knative.dev/eventing-kafka-broker/test/rekt/resources/configmap/broker
+knative.dev/eventing-kafka-broker/test/rekt/resources/kafkaauthsecret
+knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink
+knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasource
+knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic
 knative.dev/eventing-kafka-broker/test/upgrade
 knative.dev/eventing-kafka-broker/test/upgrade/continual
 knative.dev/eventing-kafka-broker/test/upgrade/installation
@@ -1546,8 +1566,14 @@ knative.dev/pkg/client/injection/kube/client
 knative.dev/pkg/client/injection/kube/client/fake
 knative.dev/pkg/client/injection/kube/informers/admissionregistration/v1/mutatingwebhookconfiguration
 knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment
+knative.dev/pkg/client/injection/kube/informers/core/v1/configmap
 knative.dev/pkg/client/injection/kube/informers/core/v1/namespace
+knative.dev/pkg/client/injection/kube/informers/core/v1/pod
+knative.dev/pkg/client/injection/kube/informers/core/v1/secret
+knative.dev/pkg/client/injection/kube/informers/core/v1/service
+knative.dev/pkg/client/injection/kube/informers/core/v1/serviceaccount
 knative.dev/pkg/client/injection/kube/informers/factory
+knative.dev/pkg/client/injection/kube/informers/rbac/v1/clusterrolebinding
 knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
 knative.dev/pkg/codegen/cmd/injection-gen/generators
@@ -1628,11 +1654,13 @@ knative.dev/reconciler-test/pkg/knative
 knative.dev/reconciler-test/pkg/logging
 knative.dev/reconciler-test/pkg/manifest
 knative.dev/reconciler-test/pkg/milestone
+knative.dev/reconciler-test/pkg/resources/job
 knative.dev/reconciler-test/pkg/resources/knativeservice
+knative.dev/reconciler-test/pkg/resources/secret
 knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.35.5 => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
+# knative.dev/serving v0.35.5 => github.com/openshift-knative/serving v0.10.1-0.20230505074817-c53d1eb23874
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1715,14 +1743,14 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230505095202-c949372a733b
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230517140238-581040197fb8
 # knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230317121228-794aeb2bc0e8
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230522152732-481f5d51eed0
 # knative.dev/hack => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 # knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 # knative.dev/operator => knative.dev/operator v0.33.1
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230505074817-c53d1eb23874
 # github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 # github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0

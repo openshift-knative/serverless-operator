@@ -77,6 +77,15 @@ func WithBrokerClass(class string) manifest.CfgFn {
 	}
 }
 
+// WithAnnotations adds annotations to the broker
+func WithAnnotations(annotations map[string]interface{}) manifest.CfgFn {
+	return func(cfg map[string]interface{}) {
+		if annotations != nil {
+			cfg["annotations"] = annotations
+		}
+	}
+}
+
 func WithBrokerTemplateFiles(dir string) manifest.CfgFn {
 	return func(cfg map[string]interface{}) {
 		cfg["__brokerTemplateDir"] = dir
@@ -91,6 +100,13 @@ func WithConfig(name string) manifest.CfgFn {
 		cfg["apiVersion"] = "v1"
 		cfg["name"] = name
 		templateData["config"] = cfg
+	}
+}
+
+// WithConfigNamespace adds the specified config map namespace to the Broker spec.
+func WithConfigNamespace(namespace string) manifest.CfgFn {
+	return func(cfg map[string]interface{}) {
+		cfg["configNamespace"] = namespace
 	}
 }
 
@@ -129,6 +145,11 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 // IsReady tests to see if a Broker becomes ready within the time given.
 func IsReady(name string, timing ...time.Duration) feature.StepFn {
 	return k8s.IsReady(GVR(), name, timing...)
+}
+
+// IsNotReady tests to see if a Broker becomes NotReady within the time given.
+func IsNotReady(name string, timing ...time.Duration) feature.StepFn {
+	return k8s.IsNotReady(GVR(), name, timing...)
 }
 
 // IsAddressable tests to see if a Broker becomes addressable within the  time

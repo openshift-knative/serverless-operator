@@ -23,15 +23,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
-	bindings "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
-	sources "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
-	eventingkafkaupgrade "knative.dev/eventing-kafka/test/upgrade/continual"
+	bindings "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1"
+	sources "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/v1beta1"
 	"knative.dev/eventing/test/upgrade/prober/sut"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 
-	eventingkafkatestlib "knative.dev/eventing-kafka/test/lib"
+	eventingkafkatestlib "knative.dev/eventing-kafka-broker/test/lib"
 
 	eventing "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	eventingv1alpha1clientset "knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned/typed/eventing/v1alpha1"
@@ -46,14 +45,14 @@ const (
 )
 
 type KafkaSinkSourceTestOptions struct {
-	*eventingkafkaupgrade.TestOptions
+	*TestOptions
 	*Sink
 	*Source
 }
 
 func (o *KafkaSinkSourceTestOptions) setDefaults() {
 	if o.TestOptions == nil {
-		o.TestOptions = &eventingkafkaupgrade.TestOptions{}
+		o.TestOptions = &TestOptions{}
 	}
 	if o.Sink == nil {
 		rf := int16(3)

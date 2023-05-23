@@ -62,8 +62,7 @@ require (
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.4.1 // indirect
-	github.com/cloudevents/sdk-go/sql/v2 v2.8.0 // indirect
+	github.com/cloudevents/sdk-go/sql/v2 v2.13.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.13.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
@@ -158,9 +157,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e // indirect
 	istio.io/client-go v1.13.3 // indirect
-	k8s.io/apiserver v0.25.2 // indirect
+	k8s.io/apiserver v0.25.4 // indirect
 	k8s.io/code-generator v0.25.4 // indirect
-	k8s.io/component-base v0.25.2 // indirect
+	k8s.io/component-base v0.25.4 // indirect
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
 	k8s.io/klog/v2 v2.80.2-0.20221028030830-9ae4992afb54 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
@@ -174,20 +173,20 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0
-	k8s.io/apiextensions-apiserver v0.25.2
+	k8s.io/apiextensions-apiserver v0.25.4
 	knative.dev/reconciler-test v0.0.0-20230503093155-937cf5922570
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230505095202-c949372a733b
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230517140238-581040197fb8
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230317121228-794aeb2bc0e8
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230522152732-481f5d51eed0
 	knative.dev/hack => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 	knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator => knative.dev/operator v0.33.1
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230321121248-c6dc18ac6977
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230505074817-c53d1eb23874
 )
 
 replace (

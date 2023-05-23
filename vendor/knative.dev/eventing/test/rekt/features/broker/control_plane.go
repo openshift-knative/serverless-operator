@@ -370,8 +370,7 @@ func addControlPlaneDelivery(fs *feature.FeatureSet, brokerOpts ...manifest.CfgF
 
 		// Send an event into the matrix and hope for the best
 		prober.SenderFullEvents(1)
-		f.Setup("install source", prober.SenderInstall("source"))
-		f.Requirement("sender is finished", prober.SenderDone("source"))
+		f.Requirement("install source", prober.SenderInstall("source"))
 
 		// All events have been sent, time to look at the specs and confirm we got them.
 		expectedEvents := createExpectedEventPatterns(tt.brokerDS, cfg)
@@ -516,8 +515,8 @@ func addControlPlaneEventRouting(fs *feature.FeatureSet, brokerOpts ...manifest.
 		// All the events generated are currently hardcoded into the com.example.FullEvent
 		// so once prober supports more configuration, wire it up here.
 		prober.SenderFullEvents(1)
-		f.Setup("install source", prober.SenderInstall("source"))
-		f.Requirement("sender is finished", prober.SenderDone("source"))
+
+		f.Requirement("install source", prober.SenderInstall("source"))
 
 		// All events have been sent, time to look at the specs and confirm we got them.
 		expectedEvents := createExpectedEventRoutingMap(tt.config, tt.inEvents)
@@ -583,7 +582,7 @@ func readyBrokerIsAddressable(ctx context.Context, t feature.T) {
 	broker := getBroker(ctx, t)
 
 	if broker.IsReady() {
-		if broker.Status.Address.URL == nil {
+		if broker.Status.AddressStatus.Address == nil || broker.Status.AddressStatus.Address.URL == nil {
 			t.Errorf("broker is not addressable")
 		}
 		// Success!
