@@ -181,7 +181,7 @@ replace (
 	// Knative components
 	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230517140238-581040197fb8
 	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230522152732-481f5d51eed0
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230523075456-9d8d711966b3
 	knative.dev/hack => knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 	knative.dev/networking => knative.dev/networking v0.0.0-20230224212030-2382b698cb6f
 	knative.dev/operator => knative.dev/operator v0.33.1
@@ -191,7 +191,6 @@ replace (
 
 replace (
 	// Adjustments to align transitive deps
-	github.com/antlr/antlr4/runtime/Go/antlr => github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
 	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
