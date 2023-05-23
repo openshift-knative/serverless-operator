@@ -31,7 +31,10 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+	"knative.dev/reconciler-test/pkg/environment"
 )
+
+var global environment.GlobalEnvironment
 
 // FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
 //        this directory are required, so that kafkaupgrade tests will see them.
@@ -125,7 +128,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{
 		eventingupgrade.PreUpgradeTest(),
 		kafkabrokerupgrade.ChannelPreUpgradeTest(),
-		kafkabrokerupgrade.SourcePreUpgradeTest(glob),
+		kafkabrokerupgrade.SourcePreUpgradeTest(global),
 		kafkabrokerupgrade.BrokerPreUpgradeTest(),
 		kafkabrokerupgrade.SinkPreUpgradeTest(),
 	}
@@ -152,7 +155,7 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
 	tests = append(tests,
 		kafkabrokerupgrade.ChannelPostUpgradeTest(),
-		kafkabrokerupgrade.SourcePostUpgradeTest(glob),
+		kafkabrokerupgrade.SourcePostUpgradeTest(global),
 		kafkabrokerupgrade.BrokerPostUpgradeTest(),
 		kafkabrokerupgrade.NamespacedBrokerPostUpgradeTest(),
 		kafkabrokerupgrade.SinkPostUpgradeTest(),
@@ -168,7 +171,7 @@ func postDowngradeTests() []pkgupgrade.Operation {
 		eventingupgrade.PostDowngradeTest(),
 		eventingupgrade.CRDPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
 		kafkabrokerupgrade.ChannelPostDowngradeTest(),
-		kafkabrokerupgrade.SourcePostDowngradeTest(glob),
+		kafkabrokerupgrade.SourcePostDowngradeTest(global),
 		kafkabrokerupgrade.BrokerPostDowngradeTest(),
 		kafkabrokerupgrade.SinkPostDowngradeTest(),
 	)
@@ -182,4 +185,21 @@ func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 		}
 		// TODO: Check if we need to sleep 30 more seconds like in the previous bash scripts.
 	})
+}
+
+func TestMain(m *testing.M) {
+	restConfig, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
+	if err != nil {
+		log.Fatal("Error building client config: ", err)
+	}
+
+	// Getting the rest config explicitly and passing it further will prevent re-initializing the flagset
+	// in NewStandardGlobalEnvironment(). The upgrade tests use knative.dev/pkg/test which initializes the
+	// flagset as well.
+	global = environment.NewStandardGlobalEnvironment(func(cfg environment.Configuration) environment.Configuration {
+		cfg.Config = restConfig
+		return cfg
+	})
+
+	eventingupgrade.RunMainTest(m)
 }
