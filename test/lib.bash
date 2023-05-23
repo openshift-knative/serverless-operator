@@ -300,13 +300,16 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts images_file
 
+  # Specify image mapping for REKT tests
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version="${KNATIVE_EVENTING_VERSION}"
   eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
-  # mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
+  # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
+  # for non-REKT tests.
   base="quay.io/openshift-knative/"
   image_template=$(
     cat <<-EOF
@@ -347,6 +350,7 @@ EOF
     "--kubeconfigs=${KUBECONFIG}" \
     "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
+    "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
