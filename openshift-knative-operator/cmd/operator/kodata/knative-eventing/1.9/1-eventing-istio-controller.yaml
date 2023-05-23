@@ -32,6 +32,18 @@ rules:
       - "watch"
 
   - apiGroups:
+      - ""
+    resources:
+      - "services/finalizers"
+    verbs:
+      - "create"
+      - "update"
+      - "delete"
+      - "get"
+      - "list"
+      - "watch"
+
+  - apiGroups:
       - "networking.istio.io"
     resources:
       - "destinationrules"
