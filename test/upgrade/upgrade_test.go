@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
+	eventingtest "knative.dev/eventing/test"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
 	pkgTest "knative.dev/pkg/test"
@@ -190,6 +191,8 @@ func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 }
 
 func TestMain(m *testing.M) {
+	eventingtest.InitializeEventingFlags()
+
 	restConfig, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
 	if err != nil {
 		log.Fatal("Error building client config: ", err)
