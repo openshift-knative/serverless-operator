@@ -20,11 +20,13 @@ limitations under the License.
 package upgrade_test
 
 import (
+	"log"
 	"testing"
 
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	_ "knative.dev/pkg/system/testing"
+	pkgTest "knative.dev/pkg/test"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 
