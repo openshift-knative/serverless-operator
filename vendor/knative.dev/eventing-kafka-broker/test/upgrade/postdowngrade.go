@@ -17,8 +17,8 @@
 package upgrade
 
 import (
-	eventingkafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+	"knative.dev/reconciler-test/pkg/environment"
 
 	eventing "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
@@ -44,7 +44,10 @@ func NamespacedBrokerPostDowngradeTest() pkgupgrade.Operation {
 // ChannelPostDowngradeTest tests channel basic channel operations after
 // downgrade.
 func ChannelPostDowngradeTest() pkgupgrade.Operation {
-	return eventingkafkaupgrade.ChannelPostDowngradeTest()
+	return pkgupgrade.NewOperation("ChannelPostDowngradeTest",
+		func(c pkgupgrade.Context) {
+			runChannelSmokeTest(c.T)
+		})
 }
 
 // SinkPostDowngradeTest tests sink basic operations after downgrade.
@@ -52,4 +55,12 @@ func SinkPostDowngradeTest() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("SinkPostDowngradeTest", func(c pkgupgrade.Context) {
 		e2e_sink.RunTestKafkaSink(c.T, eventing.ModeBinary, nil)
 	})
+}
+
+// SourcePostDowngradeTest tests source operations after downgrade.
+func SourcePostDowngradeTest(glob environment.GlobalEnvironment) pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SourcePostDowngradeTest",
+		func(c pkgupgrade.Context) {
+			runSourceSmokeTest(glob, c.T)
+		})
 }
