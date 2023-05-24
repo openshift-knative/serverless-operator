@@ -13,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
@@ -118,7 +117,7 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 		expected: ke(
-			func(eventing *v1beta1.KnativeEventing) {
+			func(eventing *operatorv1beta1.KnativeEventing) {
 				if eventing.Spec.Config == nil {
 					eventing.Spec.Config = map[string]map[string]string{}
 				}
