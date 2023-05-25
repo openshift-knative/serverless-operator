@@ -21,8 +21,6 @@ import (
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
-	"knative.dev/reconciler-test/pkg/k8s"
-	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
@@ -31,15 +29,7 @@ import (
 func TestSourceKafkaBrokerKsvc(t *testing.T) {
 	t.Parallel()
 
-	ctx, env := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		// Enables KnativeService in the scenario.
-		eventshub.WithKnativeServiceForwarder,
-		environment.Managed(t),
-	)
+	ctx, env := defaultEnvironment(t)
 
 	env.Test(ctx, t, BrokerSmokeTest(kafka.BrokerClass))
 	env.Test(ctx, t, VerifyMetricsKafkaBroker())
@@ -49,15 +39,7 @@ func TestSourceKafkaBrokerKsvc(t *testing.T) {
 func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 	t.Parallel()
 
-	ctx, env := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		// Enables KnativeService in the scenario.
-		eventshub.WithKnativeServiceForwarder,
-		environment.Managed(t),
-	)
+	ctx, env := defaultEnvironment(t)
 
 	env.Test(ctx, t, BrokerSmokeTest(kafka.NamespacedBrokerClass))
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
@@ -67,15 +49,7 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 	t.Parallel()
 
-	ctx, env := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		// Enables KnativeService in the scenario.
-		eventshub.WithKnativeServiceForwarder,
-		environment.Managed(t),
-	)
+	ctx, env := defaultEnvironment(t)
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 		t.Skip("Channel-based tests cannot run in service mesh mode for now")
