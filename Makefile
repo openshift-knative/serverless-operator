@@ -14,6 +14,7 @@ install-operator:
 
 install-all:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
@@ -27,9 +28,11 @@ install-serving-with-mesh:
 	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	INSTALL_SERVING="false" ./hack/install.sh
 
 install-kafka:
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-kafka-with-mesh:
@@ -43,6 +46,12 @@ install-strimzi:
 
 uninstall-strimzi:
 	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
+
+install-certmanager:
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
+
+uninstall-certmanager:
+	UNINSTALL_CERTMANAGER="true" ./hack/certmanager.sh
 
 install-previous:
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
