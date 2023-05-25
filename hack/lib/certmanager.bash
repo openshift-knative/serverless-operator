@@ -11,12 +11,12 @@ function uninstall_certmanager {
 }
 
 function deploy_certmanager_operator {
-  logger.info "Installing cert manager operator in namespace openshift-operators"
+  logger.info "Installing cert manager operator"
   oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until cert manager operator is available"
-  oc wait --for=condition=Available deployment cert-manager --timeout=300s -n cert-manager || return $?
-  oc wait --for=condition=Available deployment cert-manager-webhook --timeout=300s -n cert-manager || return $?
+
+  timeout 600 "[[ \$(oc get deploy -n cert-manager cert-manager --no-headers | wc -l) != 1 ]]" || return 1
 }
 
 function undeploy_certmanager_operator {
