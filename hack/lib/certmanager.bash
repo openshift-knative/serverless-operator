@@ -16,7 +16,8 @@ function deploy_certmanager_operator {
 
   logger.info "Waiting until cert manager operator is available"
 
-  timeout 600 "[[ \$(oc get deploy -n cert-manager cert-manager --no-headers | wc -l) != 1 ]]" || return 1
+  # TODO: use -n cert-manager when resolving TODOs in "${certmanager_resources_dir}"/subscription.yaml to upgrade cert-manager to its first stable release
+  timeout 600 "[[ \$(oc get deploy -n openshift-cert-manager cert-manager --no-headers | wc -l) != 1 ]]" || return 1
 }
 
 function undeploy_certmanager_operator {
