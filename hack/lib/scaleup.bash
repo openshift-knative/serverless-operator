@@ -65,6 +65,9 @@ function wait_until_machineset_scales_up {
 }
 
 function cluster_scalable {
+  if ! oc get machineconfigpool &>/dev/null; then
+    return 1
+  fi
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     return 1
   fi
