@@ -135,7 +135,7 @@ function downstream_serving_e2e_tests {
   fi
 
   if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
-      mv ./test/servinge2e/user_permissions_test.go ./test/servinge2e/user_permissions_notest.go
+      mv ./test/servinge2e/user_permissions_test.go ./test/servinge2e/user_permissions_notest.go || true
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
@@ -175,7 +175,7 @@ function downstream_eventing_e2e_tests {
   fi
 
   if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
-      mv ./test/eventinge2e/user_permissions_test.go ./test/eventinge2e/user_permissions_notest.go
+      mv ./test/eventinge2e/user_permissions_test.go ./test/eventinge2e/user_permissions_notest.go || true
   fi
 
   go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e \
@@ -246,7 +246,7 @@ function downstream_knative_kafka_e2e_tests {
   fi
 
   if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
-      mv ./test/extensione2e/kafka/user_permissions_test.go ./test/extensione2e/kafka/user_permissions_notest.go
+      mv ./test/extensione2e/kafka/user_permissions_test.go ./test/extensione2e/kafka/user_permissions_notest.go || true
   fi
 
   go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2e/kafka \
