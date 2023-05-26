@@ -35,3 +35,19 @@ func TestChannelBasedBrokerToKsvc(t *testing.T) {
 	env.Prerequisite(ctx, t, broker.GoesReady("default", resources.WithEnvConfig()...))
 	env.Test(ctx, t, broker.SourceToSink("default"))
 }
+
+// Test specifically Broker Filter.
+func TestBrokerDeliverLongResponseMessage(t *testing.T) {
+	t.Parallel()
+
+	ctx, env := global.Environment(
+		knative.WithKnativeNamespace(system.Namespace()),
+		knative.WithLoggingConfig,
+		knative.WithTracingConfig,
+		k8s.WithEventListener,
+		environment.WithPollTimings(5*time.Second, 4*time.Minute),
+		environment.Managed(t),
+	)
+
+	env.TestSet(ctx, t, broker.BrokerDeliverLongResponseMessage())
+}
