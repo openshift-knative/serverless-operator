@@ -74,9 +74,10 @@ function serverless_operator_e2e_tests {
 
   logger.info "Running operator e2e tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -99,9 +100,9 @@ function serverless_operator_kafka_e2e_tests {
 
   logger.info "Running Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -124,9 +125,9 @@ function downstream_serving_e2e_tests {
 
   logger.info "Running Serving tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=60m -parallel=1)
@@ -160,9 +161,9 @@ function downstream_eventing_e2e_tests {
 
   logger.info "Running Eventing downstream tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -231,9 +232,9 @@ function downstream_knative_kafka_e2e_tests {
 
   logger.info "Running Knative Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -263,9 +264,9 @@ function downstream_monitoring_e2e_tests {
 
   logger.info "Running Knative monitoring tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+  while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
