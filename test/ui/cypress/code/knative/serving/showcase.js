@@ -10,13 +10,25 @@ class ShowcaseKservice {
     this.app = ops.app || 'demoapp'
     this.name = ops.name || 'showcase'
     this.namespace = ops.namespace || Cypress.env('TEST_NAMESPACE')
+    this.clusterLocal = ops.clusterLocal || false
     this.image = ops.image || {
       regular: 'quay.io/openshift-knative/showcase',
       updated: 'quay.io/openshift-knative/showcase:js'
     }
   }
 
+  /**
+   * Gets the URL of the deployed kservice.
+   * @returns {Cypress.Chainable<URL>} - the URL of the kservice
+   */
   url() {
+    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.13')) {
+      return cy.get('.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]')
+        .last()
+        .scrollIntoView()
+        .should('have.attr', 'value')
+        .and('include', 'showcase')
+    }
     return cy.get('a.co-external-link')
       .last()
       .scrollIntoView()
@@ -62,9 +74,9 @@ class ShowcaseKservice {
     }
   }
 
-  deployImage({kind = 'regular', clusterLocal = false} = {}) {
+  deployImage({kind = 'regular'} = {}) {
     const ver = environment.ocpVersion()
-    cy.log(`Deploy kservice ${kind}${clusterLocal ? ', cluster-local' : ''} from image`)
+    cy.log(`Deploy kservice ${kind}${this.clusterLocal ? ', cluster-local' : ''} from image`)
     cy.visit(`/deploy-image/ns/${this.namespace}`)
     cy.get('input[name=searchTerm]')
       .type(this.image[kind])
@@ -85,7 +97,7 @@ class ShowcaseKservice {
     cy.get('input#form-checkbox-route-create-field')
       .scrollIntoView()
       .check()
-    if (clusterLocal) {
+    if (this.clusterLocal) {
       cy.get('input#form-checkbox-route-create-field')
         .scrollIntoView()
         .uncheck()
