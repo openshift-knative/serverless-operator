@@ -74,8 +74,8 @@ function serverless_operator_e2e_tests {
 
   logger.info "Running operator e2e tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -99,8 +99,8 @@ function serverless_operator_kafka_e2e_tests {
 
   logger.info "Running Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -124,8 +124,8 @@ function downstream_serving_e2e_tests {
 
   logger.info "Running Serving tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -160,8 +160,8 @@ function downstream_eventing_e2e_tests {
 
   logger.info "Running Eventing downstream tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -231,8 +231,8 @@ function downstream_knative_kafka_e2e_tests {
 
   logger.info "Running Knative Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -263,8 +263,8 @@ function downstream_monitoring_e2e_tests {
 
   logger.info "Running Knative monitoring tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
+  for cfg in $(find "$(pwd -P)" -name "user*.kubeconfig"); do
+    kubeconfigs+=("${cfg}")
   done
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
