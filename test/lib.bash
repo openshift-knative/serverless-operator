@@ -140,7 +140,6 @@ function downstream_serving_e2e_tests {
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
-    export GODEBUG="x509ignoreCN=0"
     go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
