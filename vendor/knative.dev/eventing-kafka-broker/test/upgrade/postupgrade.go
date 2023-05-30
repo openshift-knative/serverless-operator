@@ -29,11 +29,11 @@ import (
 	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/pkg/system"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+	"knative.dev/reconciler-test/pkg/environment"
 
 	eventing "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/e2e_sink"
-	eventingkafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
 )
 
 // BrokerPostUpgradeTest tests channel operations after upgrade.
@@ -64,7 +64,10 @@ func NamespacedBrokerPostUpgradeTest() pkgupgrade.Operation {
 
 // ChannelPostUpgradeTest tests channel operations after upgrade.
 func ChannelPostUpgradeTest() pkgupgrade.Operation {
-	return eventingkafkaupgrade.ChannelPostUpgradeTest()
+	return pkgupgrade.NewOperation("ChannelPostUpgradeTest",
+		func(c pkgupgrade.Context) {
+			runChannelSmokeTest(c.T)
+		})
 }
 
 // SinkPostUpgradeTest tests sink basic operations post upgrade.
@@ -78,6 +81,14 @@ func SinkPostUpgradeTest() pkgupgrade.Operation {
 			e2e_sink.RunTestKafkaSink(t, eventing.ModeBinary, nil)
 		})
 	})
+}
+
+// SourcePostUpgradeTest tests source operations after upgrade.
+func SourcePostUpgradeTest(glob environment.GlobalEnvironment) pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SourcePostUpgradeTest",
+		func(c pkgupgrade.Context) {
+			runSourceSmokeTest(glob, c.T)
+		})
 }
 
 func verifyPostInstall(t *testing.T) {

@@ -11,7 +11,7 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
 
-export STRIMZI_VERSION=0.34.0
+export STRIMZI_VERSION=0.35.0
 
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get dependencies.serving)}"
@@ -98,3 +98,6 @@ EOF
 )
 export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
 export INDEX_IMAGE="${INDEX_IMAGE:-}"
+# Might be used to disable tests which need additional users.
+# Managed environments such as Hypershift might now allow creating new users.
+export USER_MANAGEMENT_ALLOWED="${USER_MANAGEMENT_ALLOWED:-true}"

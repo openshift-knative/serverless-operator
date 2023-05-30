@@ -74,9 +74,10 @@ function serverless_operator_e2e_tests {
 
   logger.info "Running operator e2e tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -99,9 +100,9 @@ function serverless_operator_kafka_e2e_tests {
 
   logger.info "Running Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -124,14 +125,18 @@ function downstream_serving_e2e_tests {
 
   logger.info "Running Serving tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=60m -parallel=1)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+
+  if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
+      mv ./test/servinge2e/user_permissions_test.go ./test/servinge2e/user_permissions_notest.go || true
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
@@ -156,9 +161,9 @@ function downstream_eventing_e2e_tests {
 
   logger.info "Running Eventing downstream tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -168,6 +173,10 @@ function downstream_eventing_e2e_tests {
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+
+  if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
+      mv ./test/eventinge2e/user_permissions_test.go ./test/eventinge2e/user_permissions_notest.go || true
   fi
 
   go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2e \
@@ -223,9 +232,9 @@ function downstream_knative_kafka_e2e_tests {
 
   logger.info "Running Knative Kafka tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -235,6 +244,10 @@ function downstream_knative_kafka_e2e_tests {
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+
+  if [[ "$USER_MANAGEMENT_ALLOWED" == "false" ]]; then
+      mv ./test/extensione2e/kafka/user_permissions_test.go ./test/extensione2e/kafka/user_permissions_notest.go || true
   fi
 
   go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2e/kafka \
@@ -251,9 +264,9 @@ function downstream_monitoring_e2e_tests {
 
   logger.info "Running Knative monitoring tests"
   kubeconfigs+=("${KUBECONFIG}")
-  for cfg in user*.kubeconfig; do
-    kubeconfigs+=("$(pwd)/${cfg}")
-  done
+  while IFS= read -r -d '' cfg; do
+    kubeconfigs+=("${cfg}")
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -300,13 +313,16 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts images_file
 
+  # Specify image mapping for REKT tests
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
   serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
   eventing_image_version="${KNATIVE_EVENTING_VERSION}"
   eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
-  # mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
+  # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
+  # for non-REKT tests.
   base="quay.io/openshift-knative/"
   image_template=$(
     cat <<-EOF
@@ -347,6 +363,7 @@ EOF
     "--kubeconfigs=${KUBECONFIG}" \
     "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
+    "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \

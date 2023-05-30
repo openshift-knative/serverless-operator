@@ -24,7 +24,9 @@ logger.success '🚀 Cluster prepared for testing.'
 # Run serverless-operator specific tests.
 create_namespaces "${TEST_NAMESPACES[@]}"
 link_global_pullsecret_to_namespaces "${TEST_NAMESPACES[@]}"
-create_htpasswd_users && add_roles
+if [[ "$USER_MANAGEMENT_ALLOWED" == "true" ]]; then
+  create_htpasswd_users && add_roles
+fi
 
 run_testselect
 

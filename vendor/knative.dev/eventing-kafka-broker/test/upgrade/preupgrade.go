@@ -17,12 +17,11 @@
 package upgrade
 
 import (
-	pkgupgrade "knative.dev/pkg/test/upgrade"
-
 	eventing "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/e2e_sink"
-	eventingkafkaupgrade "knative.dev/eventing-kafka/test/upgrade"
+	pkgupgrade "knative.dev/pkg/test/upgrade"
+	"knative.dev/reconciler-test/pkg/environment"
 )
 
 // BrokerPreUpgradeTest tests broker basic operations before upgrade.
@@ -41,7 +40,10 @@ func NamespacedBrokerPreUpgradeTest() pkgupgrade.Operation {
 
 // ChannelPreUpgradeTest tests channel basic operations before upgrade.
 func ChannelPreUpgradeTest() pkgupgrade.Operation {
-	return eventingkafkaupgrade.ChannelPreUpgradeTest()
+	return pkgupgrade.NewOperation("ChannelPreUpgradeTest",
+		func(c pkgupgrade.Context) {
+			runChannelSmokeTest(c.T)
+		})
 }
 
 // SinkPreUpgradeTest tests sink basic operations pre upgrade.
@@ -49,4 +51,12 @@ func SinkPreUpgradeTest() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("SinkPreUpgradeTest", func(c pkgupgrade.Context) {
 		e2e_sink.RunTestKafkaSink(c.T, eventing.ModeBinary, nil)
 	})
+}
+
+// SourcePreUpgradeTest tests source operations before upgrade.
+func SourcePreUpgradeTest(glob environment.GlobalEnvironment) pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SourcePreUpgradeTest",
+		func(c pkgupgrade.Context) {
+			runSourceSmokeTest(glob, c.T)
+		})
 }
