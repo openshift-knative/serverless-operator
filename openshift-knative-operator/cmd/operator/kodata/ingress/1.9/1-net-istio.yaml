@@ -21,7 +21,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     serving.knative.dev/controller: "true"
     networking.knative.dev/ingress-provider: istio
 rules:
@@ -51,7 +51,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 data:
   # TODO(nghia): Extract the .svc.cluster.local suffix into its own config.
@@ -122,7 +122,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -140,7 +140,7 @@ spec:
         app: net-istio-controller
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.8.0"
+        app.kubernetes.io/version: "1.9.2"
     spec:
       serviceAccountName: controller
       containers:
@@ -229,7 +229,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -245,7 +245,7 @@ spec:
         role: net-istio-webhook
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.8.0"
+        app.kubernetes.io/version: "1.9.2"
     spec:
       serviceAccountName: controller
       containers:
@@ -277,6 +277,10 @@ spec:
           value: knative.dev/net-istio
         - name: WEBHOOK_NAME
           value: net-istio-webhook
+        # If you change WEBHOOK_PORT, you will also need to change the
+        # containerPort "https-webhook" to the same value.
+        - name: WEBHOOK_PORT
+          value: "8443"
 
         securityContext:
           runAsNonRoot: true
@@ -335,7 +339,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 ---
 # Copyright 2020 The Knative Authors
@@ -361,20 +365,20 @@ metadata:
     role: net-istio-webhook
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 spec:
   ports:
   # Define metrics and profiling for them to be accessible within service meshes.
   - name: http-metrics
     port: 9090
-    targetPort: 9090
+    targetPort: metrics
   - name: http-profiling
     port: 8008
-    targetPort: 8008
+    targetPort: profiling
   - name: https-webhook
     port: 443
-    targetPort: 8443
+    targetPort: https-webhook
   selector:
     app: net-istio-webhook
 ---
@@ -399,7 +403,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
@@ -437,7 +441,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.8.0"
+    app.kubernetes.io/version: "1.9.2"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
