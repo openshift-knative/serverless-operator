@@ -6,7 +6,9 @@ describe('OCP UI for Serverless Serving', () => {
 
   const environment = new Environment()
   const openshiftConsole = new OpenshiftConsole()
-  const showcaseKsvc = new ShowcaseKservice()
+  const showcaseKsvc = new ShowcaseKservice({
+    clusterLocal: true,
+  })
 
   it('can deploy a cluster-local service', () => {
     const range = '>=4.8 || ~4.7.18 || ~4.6.39'
@@ -14,7 +16,7 @@ describe('OCP UI for Serverless Serving', () => {
 
     openshiftConsole.login()
     showcaseKsvc.removeApp()
-    showcaseKsvc.deployImage({clusterLocal: true})
+    showcaseKsvc.deployImage()
     showcaseKsvc.url().and('include', 'cluster.local')
   })
 })
