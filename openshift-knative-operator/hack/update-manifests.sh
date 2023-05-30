@@ -90,9 +90,7 @@ function download_eventing {
 
 function download_ingress {
   component=$1
-  version=$2
-  ingress_dir=$3
-  shift
+  ingress_dir=$2
   shift
   shift
 
@@ -141,8 +139,8 @@ serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
 ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
 mkdir -p "${ingress_dir}"
 
-download_ingress net-istio   "v$(metadata.get dependencies.net_istio)"   "${ingress_dir}" "${istio_files[@]}"
-download_ingress net-kourier "v$(metadata.get dependencies.net_kourier)" "${ingress_dir}" "${kourier_files[@]}"
+download_ingress net-istio   "${ingress_dir}" "${istio_files[@]}"
+download_ingress net-kourier "${ingress_dir}" "${kourier_files[@]}"
 
 #
 # DOWNLOAD EVENTING

@@ -35,9 +35,9 @@ dependencies:
     serving_artifacts_branch: release-v1.9
     # versions for networking components
     kourier: knative-v1.9
-    net_kourier_artifacts_branch: release-1.9
+    net_kourier_artifacts_branch: release-v1.9
     net_istio: knative-v1.9
-    net_istio_artifacts_branch: release-1.9
+    net_istio_artifacts_branch: release-v1.9
     maistra: 2.3-latest
     eventing: knative-v1.9
     # eventing core midstream branch name
