@@ -48,14 +48,25 @@ func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since t
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, since)).
+		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, false /*namespaced*/, since)).
 		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
 		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficForNamespacedKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+	f := feature.NewFeature()
+
+	f.Stable("broker path").
+		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, true /*namespaced*/, since)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+
+	return f
+}
+
+func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespacedBroker bool, since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
 		brokerName, err := getBrokerName(refs)
 		if err != nil {
@@ -63,8 +74,12 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, since ti
 		}
 		// source -> kafka-broker-receiver
 		brokerPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), brokerName)
+		brokerReceiverNamespace := "knative-eventing"
+		if namespacedBroker {
+			brokerReceiverNamespace = environment.FromContext(ctx).Namespace()
+		}
 		logFilter := eventingfeatures.LogFilter{
-			PodNamespace:  "knative-eventing",
+			PodNamespace:  brokerReceiverNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-broker-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {

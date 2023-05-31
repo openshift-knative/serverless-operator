@@ -49,8 +49,14 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
+	since := time.Now()
+
 	env.Test(ctx, t, BrokerSmokeTest(kafka.NamespacedBrokerClass))
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForNamespacedKafkaBroker(env.References(), since))
+	}
 }
 
 // Source (Eventshub) -> MTChannelBased-KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
