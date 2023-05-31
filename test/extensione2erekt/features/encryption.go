@@ -8,15 +8,18 @@ import (
 	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
 )
 
-func VerifyEncryptedTrafficToKafkaSink(sinkName string, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForKafkaSource(refs []corev1.ObjectReference, sinkName string, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
-	f.Stable("path to kafka sink").
-		Must("has encrypted traffic", verifyEncryptedTrafficToKafkaSink(sinkName, since))
+	f.Stable("kafka source path").
+		Must("has encrypted traffic to kafka sink", verifyEncryptedTrafficToKafkaSink(sinkName, since)).
+		Must("has encrypted traffic from kafka source to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
@@ -41,31 +44,57 @@ func verifyEncryptedTrafficToKafkaSink(sinkName string, since time.Time) feature
 	}
 }
 
-func VerifyEncryptedTrafficToKafkaBroker(sinkName string, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
-	f.Stable("path to kafka broker").
-		Must("has encrypted traffic", verifyEncryptedTrafficToKafkaBroker(sinkName, since))
+	f.Stable("broker path").
+		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, since)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func verifyEncryptedTrafficToKafkaBroker(sinkName string, since time.Time) feature.StepFn {
+func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		brokerName, err := getBrokerName(refs)
+		if err != nil {
+			t.Fatalf("Unable to get Broker name: %v", err)
+		}
 		// source -> kafka-broker-receiver
-		sinkPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), sinkName)
+		brokerPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), brokerName)
 		logFilter := eventingfeatures.LogFilter{
 			PodNamespace:  "knative-eventing",
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-broker-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
-				return eventingfeatures.GetMapValueAsString(m, "path") == sinkPath &&
-					eventingfeatures.GetMapValueAsString(m, "authority") == "kafka-sink-ingress.knative-eventing.svc.cluster.local"
+				return eventingfeatures.GetMapValueAsString(m, "path") == brokerPath &&
+					eventingfeatures.GetMapValueAsString(m, "authority") == "kafka-broker-ingress.knative-eventing.svc:8080"
 			}}
 
-		err := eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
+}
+
+func getBrokerName(refs []corev1.ObjectReference) (string, error) {
+	var (
+		brokerName string
+		numBrokers int
+	)
+	for _, ref := range refs {
+		if ref.GroupVersionKind() == broker.GVR().GroupVersion().WithKind("Broker") {
+			// Make sure we verify traffic for the right Broker.
+			// This is for safety and to guarantee the feature invariance.
+			if numBrokers != 0 {
+				return "", fmt.Errorf("found more than one Broker: %s, %s", brokerName, ref.Name)
+			}
+			brokerName = ref.Name
+			numBrokers++
+		}
+	}
+
+	return brokerName, nil
 }
