@@ -1,11 +1,16 @@
 package e2e
 
 import (
+	"context"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/injection/clients/dynamicclient"
+	"knative.dev/pkg/logging"
+	logtesting "knative.dev/pkg/logging/testing"
 )
 
 const (
@@ -27,9 +32,13 @@ func TestKnativeEventing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
+	ctx := context.WithValue(context.Background(), client.Key{}, caCtx.Clients.Kube)
+	ctx = context.WithValue(ctx, dynamicclient.Key{}, caCtx.Clients.Dynamic)
+	ctx = logging.WithLogger(ctx, logtesting.TestLogger(t))
+
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+		if err := monitoringe2e.VerifyHealthStatusMetric(ctx, "eventing_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
 		}
 	})

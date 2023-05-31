@@ -18,15 +18,9 @@ import (
 
 const (
 	PingSourceData    = "{\"message\":\"Hello, world!\"}"
-	pingSourceName    = "smoke-test-ping"
-	triggerName       = "smoke-test-trigger"
-	cmName            = "smoke-test-br-cm"
 	ksvcAPIVersion    = "serving.knative.dev/v1"
 	ksvcKind          = "Service"
 	helloWorldService = "helloworld-go"
-	brokerAPIVersion  = "eventing.knative.dev/v1"
-	brokerKind        = "Broker"
-	subscriptionName  = "smoke-test-subscription"
 )
 
 // DeployKsvcWithEventInfoStoreOrFail deploys a wathola-forwarder ksvc forwarding events to a recordevents receiver
