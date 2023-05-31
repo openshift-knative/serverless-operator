@@ -32,8 +32,14 @@ func TestSourceKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
+	//since := time.Now()
+
 	env.Test(ctx, t, BrokerSmokeTest(kafka.BrokerClass))
 	env.Test(ctx, t, VerifyMetricsKafkaBroker())
+
+	//if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+	//	env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficToKafkaBroker("kafkaSinkChangeMe", since))
+	//}
 }
 
 // Source (Eventshub) -> NamespacedKafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
