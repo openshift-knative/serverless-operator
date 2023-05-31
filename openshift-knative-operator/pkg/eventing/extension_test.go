@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/pointer"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/apis"
@@ -48,7 +49,7 @@ func TestReconcile(t *testing.T) {
 	}{{
 		name:     "all nil",
 		in:       &operatorv1beta1.KnativeEventing{},
-		expected: ke(),
+		expected: ke(istioDisabled),
 	}, {
 		name: "different HA settings",
 		in: &operatorv1beta1.KnativeEventing{
@@ -62,7 +63,7 @@ func TestReconcile(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Spec.HighAvailability.Replicas = ptr.Int32(3)
-		}),
+		}, istioDisabled),
 	}, {
 		name: "With inclusion sinkbinding setting",
 		in: &operatorv1beta1.KnativeEventing{
@@ -72,7 +73,7 @@ func TestReconcile(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "inclusion"
-		}),
+		}, istioDisabled),
 	}, {
 		name: "With exclusion sinkbinding setting",
 		in: &operatorv1beta1.KnativeEventing{
@@ -82,7 +83,7 @@ func TestReconcile(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "exclusion"
-		}),
+		}, istioDisabled),
 	}, {
 		name: "With empty sinkbinding setting",
 		in: &operatorv1beta1.KnativeEventing{
@@ -92,16 +93,40 @@ func TestReconcile(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Spec.SinkBindingSelectionMode = "inclusion"
-		}),
+		}, istioDisabled),
 	}, {
 		name: "Wrong namespace",
 		in: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Namespace = "foo"
-		}),
+		}, istioDisabled),
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			ke.Namespace = "foo"
 			ke.Status.MarkInstallFailed(`Knative Eventing must be installed into the namespace "knative-eventing"`)
-		}),
+		}, istioDisabled),
+	}, {
+		name: "Istio enabled",
+		in: &operatorv1beta1.KnativeEventing{
+			Spec: operatorv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
+						"features": map[string]string{
+							"istio": "Enabled",
+						},
+					},
+				},
+			},
+		},
+		expected: ke(
+			func(eventing *operatorv1beta1.KnativeEventing) {
+				if eventing.Spec.Config == nil {
+					eventing.Spec.Config = map[string]map[string]string{}
+				}
+				eventing.Spec.CommonSpec.Config["features"] = map[string]string{
+					"istio": "Enabled",
+				}
+			},
+			istioEnabled,
+		),
 	}}
 
 	for _, c := range cases {
@@ -138,7 +163,7 @@ func TestMonitoring(t *testing.T) {
 	}{{
 		name:                  "enable monitoring when monitoring toggle is not defined, backend is not defined",
 		in:                    &operatorv1beta1.KnativeEventing{},
-		expected:              ke(),
+		expected:              ke(istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "enable monitoring when monitoring toggle = not defined, backend = defined and not `none`",
@@ -151,7 +176,7 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return true, nil },
 	}, {
 		name: "disable monitoring when monitoring toggle is not defined, backend is `none`",
@@ -164,12 +189,12 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return false, nil },
 	}, {
 		name:                  "enable monitoring when monitoring toggle is on, backend is not defined",
 		in:                    &operatorv1beta1.KnativeEventing{},
-		expected:              ke(),
+		expected:              ke(istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true") },
 	}, {
 		name: "enable monitoring when monitoring toggle is on, backend is defined and not `none`",
@@ -182,7 +207,7 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) {
 			return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
 		},
@@ -197,7 +222,7 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) {
 			return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "true")
 		},
@@ -206,7 +231,7 @@ func TestMonitoring(t *testing.T) {
 		in:   &operatorv1beta1.KnativeEventing{},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "enable monitoring when monitoring toggle = off, backend = defined and not `none`",
@@ -219,7 +244,7 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "prometheus")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return true, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}, {
 		name: "disable monitoring when monitoring toggle is off, backend is `none`",
@@ -232,7 +257,7 @@ func TestMonitoring(t *testing.T) {
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
 			common.Configure(&ke.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
-		}),
+		}, istioDisabled),
 		setupMonitoringToggle: func() (bool, error) { return false, os.Setenv(monitoring.EnableMonitoringEnvVar, "false") },
 	}}
 
@@ -307,4 +332,18 @@ func ke(mods ...func(*operatorv1beta1.KnativeEventing)) *operatorv1beta1.Knative
 	}
 
 	return base
+}
+
+func istioDisabled(ke *operatorv1beta1.KnativeEventing) {
+	ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
+		Name:     "eventing-istio-controller",
+		Replicas: pointer.Int32(0),
+	})
+}
+
+func istioEnabled(ke *operatorv1beta1.KnativeEventing) {
+	ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
+		Name:     "eventing-istio-controller",
+		Replicas: pointer.Int32(1),
+	})
 }

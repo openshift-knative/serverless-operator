@@ -1,14 +1,17 @@
 package eventingistio
 
 import (
-	"context"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
@@ -25,17 +28,20 @@ func GetServiceMeshNetworkPolicy() (mf.Manifest, error) {
 	return m, nil
 }
 
-func IsEnabled(k kubernetes.Interface, nsName string) (bool, error) {
-	ns, err := k.CoreV1().Namespaces().Get(context.Background(), nsName, metav1.GetOptions{})
-	if err != nil {
-		return false, err
-	}
+func IsEnabled(data base.ConfigMapData) bool {
+	featuresConfigMap := getFeaturesConfig(data)
+	v, ok := featuresConfigMap["istio"]
+	return ok && strings.EqualFold(v, "enabled")
+}
 
-	v, ok := ns.Labels["maistra.io/member-of"]
-	if ok && v != "" {
-		return true, nil
+func getFeaturesConfig(cfg base.ConfigMapData) map[string]string {
+	if v, ok := cfg["features"]; ok {
+		return v
 	}
-	return false, nil
+	if v, ok := cfg["config-features"]; ok {
+		return v
+	}
+	return nil
 }
 
 func toUnstructured(policies []networkingv1.NetworkPolicy) ([]unstructured.Unstructured, error) {
@@ -130,5 +136,24 @@ func serviceMeshNetworkPolicies() []networkingv1.NetworkPolicy {
 				Ingress: []networkingv1.NetworkPolicyIngressRule{{}},
 			},
 		},
+	}
+}
+
+func ScaleIstioController(requiredNs string, ke *operatorv1beta1.KnativeEventing, replicas int32) {
+	istioControllerName := types.NamespacedName{Namespace: requiredNs, Name: "eventing-istio-controller"}
+	found := false
+	for _, w := range ke.GetSpec().GetWorkloadOverrides() {
+		if w.Name == istioControllerName.Name {
+			found = true
+			if w.Replicas == nil {
+				w.Replicas = pointer.Int32(replicas)
+			}
+		}
+	}
+	if !found {
+		ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
+			Name:     istioControllerName.Name,
+			Replicas: pointer.Int32(replicas),
+		})
 	}
 }

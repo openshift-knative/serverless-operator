@@ -49,6 +49,14 @@ function default_knative_eventing_images() {
   export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-"${eventing}-apiserver-receive-adapter:${tag}"}
 }
 
+function default_knative_eventing_istio_images() {
+  local eventing_istio
+  eventing_istio="${registry}/knative-eventing-istio"
+  local tag
+  tag=$(metadata.get dependencies.eventing_istio)
+  export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
+}
+
 function default_knative_eventing_kafka_broker_images() {
   local eventing_kafka_broker
   local tag
@@ -73,6 +81,7 @@ function default_knative_ingress_images() {
 }
 
 default_knative_eventing_images
+default_knative_eventing_istio_images
 default_knative_eventing_kafka_broker_images
 default_knative_serving_images
 default_knative_ingress_images
@@ -122,6 +131,7 @@ eventing_version=$(metadata.get dependencies.eventing)
 eventing_version=${eventing_version/knative-v/}
 
 image "eventing-controller__eventing-controller"                                 "${KNATIVE_EVENTING_CONTROLLER}"
+image "eventing-istio-controller__eventing-istio-controller"                     "${KNATIVE_EVENTING_ISTIO_CONTROLLER}"
 image "eventing-webhook__eventing-webhook"                                       "${KNATIVE_EVENTING_WEBHOOK}"
 image "storage-version-migration-eventing-eventing-${eventing_version}__migrate" "${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION}"
 image "mt-broker-controller__mt-broker-controller"                               "${KNATIVE_EVENTING_MTCHANNEL_BROKER}"

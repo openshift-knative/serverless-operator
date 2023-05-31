@@ -42,7 +42,7 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	if enabled, err := eventingistio.IsEnabled(e.kubeclient, os.Getenv(requiredNsEnvName)); err == nil && enabled {
+	if enabled := eventingistio.IsEnabled(ke.GetSpec().GetConfig()); enabled {
 		m = append(m, p)
 	}
 	return m, nil
@@ -86,6 +86,12 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		ke.Spec.HighAvailability = &base.HighAvailability{
 			Replicas: ptr.Int32(2),
 		}
+	}
+
+	if !eventingistio.IsEnabled(ke.GetSpec().GetConfig()) {
+		eventingistio.ScaleIstioController(requiredNs, ke, 0)
+	} else {
+		eventingistio.ScaleIstioController(requiredNs, ke, 1)
 	}
 
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)

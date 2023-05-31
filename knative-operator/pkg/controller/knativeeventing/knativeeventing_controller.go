@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	configv1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -25,8 +23,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 )
 
