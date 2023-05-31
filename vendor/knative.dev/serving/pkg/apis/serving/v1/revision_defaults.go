@@ -162,31 +162,10 @@ func (*RevisionSpec) applyProbes(container *corev1.Container) {
 	}
 }
 
-func applyDefaultContainerNames(containers []corev1.Container, containerNames sets.String, defaultContainerName string) {
-	// Default container name based on ContainerNameFromTemplate value from configmap.
-	// In multi-container or init-container mode, add a numeric suffix, avoiding clashes with user-supplied names.
-	nextSuffix := 0
-	for idx := range containers {
-		if containers[idx].Name == "" {
-			name := defaultContainerName
-
-			if len(containers) > 1 || containerNames.Has(name) {
-				for {
-					name = kmeta.ChildName(defaultContainerName, "-"+strconv.Itoa(nextSuffix))
-					nextSuffix++
-
-					// Continue until we get a name that doesn't clash with a user-supplied name.
-					if !containerNames.Has(name) {
-						break
-					}
-				}
-			}
-
-			containers[idx].Name = name
-		}
-	}
-}
-
+// Upgrade SecurityContext for this container and the Pod definition to use settings
+// for the `restricted` profile when the feature flag is enabled.
+// This does not currently set `runAsNonRoot` for the restricted profile, because
+// that feels harder to default safely.
 func (rs *RevisionSpec) defaultSecurityContext(psc *corev1.PodSecurityContext, container *corev1.Container, cfg *config.Config) {
 	if cfg.Features.SecurePodDefaults != config.Enabled {
 		return
@@ -215,5 +194,30 @@ func (rs *RevisionSpec) defaultSecurityContext(psc *corev1.PodSecurityContext, c
 	}
 	if *updatedSC != (corev1.SecurityContext{}) {
 		container.SecurityContext = updatedSC
+	}
+}
+
+func applyDefaultContainerNames(containers []corev1.Container, containerNames sets.String, defaultContainerName string) {
+	// Default container name based on ContainerNameFromTemplate value from configmap.
+	// In multi-container or init-container mode, add a numeric suffix, avoiding clashes with user-supplied names.
+	nextSuffix := 0
+	for idx := range containers {
+		if containers[idx].Name == "" {
+			name := defaultContainerName
+
+			if len(containers) > 1 || containerNames.Has(name) {
+				for {
+					name = kmeta.ChildName(defaultContainerName, "-"+strconv.Itoa(nextSuffix))
+					nextSuffix++
+
+					// Continue until we get a name that doesn't clash with a user-supplied name.
+					if !containerNames.Has(name) {
+						break
+					}
+				}
+			}
+
+			containers[idx].Name = name
+		}
 	}
 }
