@@ -1423,11 +1423,8 @@ knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1
 knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1
 knative.dev/eventing-kafka/pkg/common/constants
-knative.dev/eventing-kafka/test/e2e/helpers
-knative.dev/eventing-kafka/test/lib
-knative.dev/eventing-kafka/test/lib/resources
 knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
-# knative.dev/eventing-kafka-broker v0.35.5 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
+# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 ## explicit; go 1.19
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1

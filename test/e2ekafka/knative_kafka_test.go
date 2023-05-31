@@ -7,6 +7,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/injection/clients/dynamicclient"
+	"knative.dev/pkg/logging"
+	logtesting "knative.dev/pkg/logging/testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
@@ -41,6 +45,10 @@ var kafkaControlPlaneDeployments = []string{
 func TestKnativeKafka(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
+
+	ctx := context.WithValue(context.Background(), client.Key{}, caCtx.Clients.Kube)
+	ctx = context.WithValue(ctx, dynamicclient.Key{}, caCtx.Clients.Dynamic)
+	ctx = logging.WithLogger(ctx, logtesting.TestLogger(t))
 
 	// Ensure KnativeEventing is already installed.
 	if ev, err := caCtx.Clients.Operator.KnativeEventings(eventingNamespace).
@@ -109,11 +117,11 @@ func TestKnativeKafka(t *testing.T) {
 
 	t.Run("verify health metrics work correctly", func(t *testing.T) {
 		// Eventing should be up
-		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "eventing_status", "1"); err != nil {
+		if err := monitoringe2e.VerifyHealthStatusMetric(ctx, "eventing_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for Eventing", err)
 		}
 		// KnativeKafka should be up
-		if err := monitoringe2e.VerifyHealthStatusMetric(caCtx, "kafka_status", "1"); err != nil {
+		if err := monitoringe2e.VerifyHealthStatusMetric(ctx, "kafka_status", "1"); err != nil {
 			t.Fatal("Failed to verify that health metrics work correctly for KnativeKafka", err)
 		}
 	})
@@ -146,13 +154,13 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify Kafka control plane metrics work correctly", func(t *testing.T) {
-		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaQueries); err != nil {
+		if err := monitoringe2e.VerifyMetrics(ctx, monitoringe2e.KafkaQueries); err != nil {
 			t.Fatal("Failed to verify that Kafka control plane metrics work correctly", err)
 		}
 	})
 
 	t.Run("verify Kafka controller metrics work correctly", func(t *testing.T) {
-		if err := monitoringe2e.VerifyMetrics(caCtx, monitoringe2e.KafkaControllerQueries); err != nil {
+		if err := monitoringe2e.VerifyMetrics(ctx, monitoringe2e.KafkaControllerQueries); err != nil {
 			t.Fatal("Failed to verify that Kafka Broker data plane metrics work correctly", err)
 		}
 	})

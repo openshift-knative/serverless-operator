@@ -107,7 +107,7 @@ test-e2e:
 	./hack/tracing.sh
 	ENABLE_TRACING=true ./hack/install.sh
 	./test/e2e-tests.sh
-	./hack/teardown.sh
+	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+knativeKafka
 test-e2e-with-kafka-testonly:
@@ -118,7 +118,7 @@ test-e2e-with-kafka:
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
-	./hack/teardown.sh
+	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
@@ -213,7 +213,7 @@ test-all-e2e:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 	./test/ui-e2e-tests.sh
-	./hack/teardown.sh
+	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
 # Generates a ci-operator configuration for a specific branch.
 generate-ci-config:

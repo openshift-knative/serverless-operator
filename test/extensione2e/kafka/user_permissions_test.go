@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	kafkasinksv1alpha1 "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/eventing/v1alpha1"
+	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	kafkabindingv1beta1 "knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1"
 	kafkachannelv1beta1 "knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
 	kafkasourcesv1beta1 "knative.dev/eventing-kafka/pkg/apis/sources/v1beta1"
@@ -37,7 +38,7 @@ func TestKafkaUserPermissions(t *testing.T) {
 	kafkaSource := &kafkasourcesv1beta1.KafkaSource{
 		Spec: kafkasourcesv1beta1.KafkaSourceSpec{
 			KafkaAuthSpec: kafkabindingv1beta1.KafkaAuthSpec{
-				BootstrapServers: []string{plainBootstrapServer},
+				BootstrapServers: testpkg.BootstrapServersPlaintextArr,
 			},
 			Topics:        []string{"my-topic"},
 			ConsumerGroup: "my-cg",
@@ -65,7 +66,7 @@ func TestKafkaUserPermissions(t *testing.T) {
 			Topic:             "my-topic",
 			NumPartitions:     ptr.Int32(10),
 			ReplicationFactor: func(rf int16) *int16 { return &rf }(1),
-			BootstrapServers:  []string{plainBootstrapServer},
+			BootstrapServers:  testpkg.BootstrapServersPlaintextArr,
 			ContentMode:       ptr.String(kafkasinksv1alpha1.ModeStructured),
 		},
 	}

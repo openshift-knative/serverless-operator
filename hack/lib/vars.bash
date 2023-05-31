@@ -101,3 +101,4 @@ export INDEX_IMAGE="${INDEX_IMAGE:-}"
 # Might be used to disable tests which need additional users.
 # Managed environments such as Hypershift might now allow creating new users.
 export USER_MANAGEMENT_ALLOWED="${USER_MANAGEMENT_ALLOWED:-true}"
+export DELETE_CRD_ON_TEARDOWN="${DELETE_CRD_ON_TEARDOWN:-true}"

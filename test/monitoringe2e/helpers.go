@@ -9,16 +9,22 @@ import (
 	"strings"
 	"time"
 
-	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
-
-	"github.com/openshift-knative/serverless-operator/test"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/injection/clients/dynamicclient"
+	"knative.dev/pkg/logging"
 
 	prom "github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
+)
+
+const (
+	Interval = 10 * time.Second
 )
 
 var (
@@ -88,12 +94,12 @@ func (a *authRoundtripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	return a.inner.RoundTrip(r)
 }
 
-func newPrometheusClient(caCtx *test.Context) (promv1.API, error) {
-	route, err := getPrometheusRoute(caCtx)
+func newPrometheusClient(ctx context.Context) (promv1.API, error) {
+	host, err := getPrometheusHost(ctx)
 	if err != nil {
 		return nil, err
 	}
-	bToken, err := getBearerTokenForPrometheusAccount(caCtx)
+	bToken, err := getBearerTokenForPrometheusAccount(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +107,7 @@ func newPrometheusClient(caCtx *test.Context) (promv1.API, error) {
 	rt := prom.DefaultRoundTripper.(*http.Transport).Clone()
 	rt.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	client, err := prom.NewClient(prom.Config{
-		Address: "https://" + route.Spec.Host,
+		Address: "https://" + host,
 		RoundTripper: &authRoundtripper{
 			authorization: fmt.Sprintf("Bearer %s", bToken),
 			inner:         rt,
@@ -114,24 +120,27 @@ func newPrometheusClient(caCtx *test.Context) (promv1.API, error) {
 	return promv1.NewAPI(client), nil
 }
 
-func getPrometheusRoute(caCtx *test.Context) (*routev1.Route, error) {
-	r, err := caCtx.Clients.Route.Routes("openshift-monitoring").Get(context.Background(), "prometheus-k8s", metav1.GetOptions{})
+func getPrometheusHost(ctx context.Context) (string, error) {
+	routeGVR := schema.GroupVersionResource{Group: "route.openshift.io", Version: "v1", Resource: "routes"}
+	route, err := dynamicclient.Get(ctx).Resource(routeGVR).Namespace("openshift-monitoring").
+		Get(ctx, "prometheus-k8s", metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error getting Prometheus route: %w", err)
+		return "", fmt.Errorf("unable to get route: %w", err)
 	}
-	return r, nil
+	host, _, _ := unstructured.NestedString(route.Object, "spec", "host")
+	return host, nil
 }
 
-func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue string) error {
-	pc, err := newPrometheusClient(caCtx)
+func VerifyHealthStatusMetric(ctx context.Context, label string, expectedValue string) error {
+	pc, err := newPrometheusClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
+	if err := wait.PollImmediate(Interval, prometheusTargetTimeout, func() (bool, error) {
 		value, _, err := pc.Query(context.Background(), fmt.Sprintf(`knative_up{type="%s"}`, label), time.Time{})
 		if err != nil {
-			caCtx.T.Log("Error querying prometheus metrics:", err)
+			logging.FromContext(ctx).Info("Error querying prometheus metrics:", err)
 			return false, nil
 		}
 
@@ -144,7 +153,7 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 			return false, nil
 		}
 
-		caCtx.T.Logf("Vector value: %v", vec[0].Value.String())
+		logging.FromContext(ctx).Infof("Vector value: %v", vec[0].Value.String())
 		return vec[0].Value.String() == expectedValue, nil
 	}); err != nil {
 		return fmt.Errorf("failed to access the Prometheus API endpoint and get the metric value expected: %w", err)
@@ -152,17 +161,17 @@ func VerifyHealthStatusMetric(caCtx *test.Context, label string, expectedValue s
 	return nil
 }
 
-func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
-	pc, err := newPrometheusClient(caCtx)
+func VerifyMetrics(ctx context.Context, metricQueries []string) error {
+	pc, err := newPrometheusClient(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, metric := range metricQueries {
-		if err := wait.PollImmediate(test.Interval, prometheusTargetTimeout, func() (bool, error) {
+		if err := wait.PollImmediate(Interval, prometheusTargetTimeout, func() (bool, error) {
 			value, _, err := pc.Query(context.Background(), metric, time.Time{})
 			if err != nil {
-				caCtx.T.Log("Error querying prometheus metrics:", err)
+				logging.FromContext(ctx).Info("Error querying prometheus metrics:", err)
 				return false, nil
 			}
 
@@ -179,8 +188,8 @@ func VerifyMetrics(caCtx *test.Context, metricQueries []string) error {
 	return nil
 }
 
-func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
-	secrets, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").List(context.Background(), metav1.ListOptions{})
+func getBearerTokenForPrometheusAccount(ctx context.Context) (string, error) {
+	secrets, err := kubeclient.Get(ctx).CoreV1().Secrets("openshift-monitoring").List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return "", fmt.Errorf("error listing secrets in namespace openshift-monitoring: %w", err)
 	}
@@ -188,7 +197,7 @@ func getBearerTokenForPrometheusAccount(caCtx *test.Context) (string, error) {
 	if tokenSecret == "" {
 		return "", errors.New("token name for prometheus-k8s service account not found")
 	}
-	sec, err := caCtx.Clients.Kube.CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, metav1.GetOptions{})
+	sec, err := kubeclient.Get(ctx).CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("error getting secret %s: %w", tokenSecret, err)
 	}

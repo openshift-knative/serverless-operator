@@ -443,8 +443,10 @@ function teardown_serverless {
   logger.info 'Deleting operators namespace'
   oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
   logger.info 'Ensure not CRDs left'
-  if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
-    oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
+  if [[ "${DELETE_CRD_ON_TEARDOWN}" == "true" ]]; then
+    if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
+      oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
+    fi
   fi
   logger.success 'Serverless has been uninstalled.'
 }
