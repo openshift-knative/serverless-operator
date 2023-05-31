@@ -28,10 +28,6 @@ func TestContainerSourceChannelKsvc(t *testing.T) {
 		environment.Managed(t),
 	)
 
-	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		t.Skip("Channel-based tests cannot run in service mesh mode for now")
-	}
-
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
 		return subscription.WithSubscriber(ref, uri)
 	}
