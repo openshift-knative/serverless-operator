@@ -78,13 +78,15 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 		if namespacedBroker {
 			brokerReceiverNamespace = environment.FromContext(ctx).Namespace()
 		}
+		authority := fmt.Sprintf("kafka-broker-ingress.%s.svc.cluster.local", brokerReceiverNamespace)
+
 		logFilter := eventingfeatures.LogFilter{
 			PodNamespace:  brokerReceiverNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-broker-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return eventingfeatures.GetMapValueAsString(m, "path") == brokerPath &&
-					eventingfeatures.GetMapValueAsString(m, "authority") == "kafka-broker-ingress.knative-eventing.svc:8080"
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority
 			}}
 
 		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
