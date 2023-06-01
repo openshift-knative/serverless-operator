@@ -20,20 +20,21 @@ import (
 	"context"
 	"fmt"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
-
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/pkg/logging"
-	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
+	"knative.dev/operator/pkg/reconciler/knativeserving/security"
 )
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
@@ -84,6 +85,11 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
 		return nil
 	}
+
+	if manifest == nil {
+		return nil
+	}
+
 	if err := common.Uninstall(manifest); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
@@ -111,6 +117,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	stages := common.Stages{
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
+		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
 		r.filterDisabledIngresses,
 		r.appendExtensionManifests,
@@ -140,16 +147,16 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
-	extra = append(extra, ksc.IngressServiceTransform(instance))
 	extra = append(extra, ingress.Transformers(ctx, instance)...)
+	extra = append(extra, ingress.IngressServiceTransform(instance))
+	extra = append(extra, security.Transformers(ctx, instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
-		r.transform}
+	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

@@ -21,12 +21,22 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 func haUnSupported(obj base.KComponent) sets.String {
 	return sets.NewString(
 		"pingsource-mt-adapter",
+	)
+}
+
+// When Deployment has HPA, the replicas should be controlled by HPA's minReplicas instead of operator.
+// Hence, skip changing the spec.replicas in deployment directory for these Deployments.
+func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
+	return sets.NewString(
+		"webhook",
+		"activator",
 	)
 }
 
@@ -43,14 +53,14 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 
 		// stash the HA object
 		ha := obj.GetSpec().GetHighAvailability()
-		if ha == nil {
+		if ha == nil || ha.Replicas == nil {
 			return nil
 		}
 
 		replicas := int64(*ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) {
+		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) && !hasHorizontalPodAutoscaler(obj).Has(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

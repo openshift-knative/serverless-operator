@@ -1,20 +1,21 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/releases.go b/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
-index c3c25da57..104918bcd 100644
+index 7d58c243c..3f91e85ca 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/releases.go
-@@ -216,17 +216,20 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
+@@ -206,18 +206,20 @@ func getManifestWithVersionValidation(manifestsPath string, instance base.KCompo
  		return manifests, nil
  	}
 
 -	targetVersion := SanitizeSemver(version)
--	key := getVersionKey(instance)
+-	key := "app.kubernetes.io/version"
 -	for _, u := range manifests.Resources() {
 -		// Check the labels of the resources one by one to see if the version matches the target version in terms of
 -		// major.minor.
 -		manifestVersion := u.GetLabels()[key]
--		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
+-		manifestVersionSan := SanitizeSemver(u.GetLabels()[key])
+-		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersionSan) {
 -			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
--				"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
+-				"version of the operator CR %s", manifestVersionSan, u.GetName(), targetVersion)
 -		}
 -	}
 +	// We support only one version, there is no need to check manifest consistency and it is actually a pain to experiment
@@ -34,3 +35,4 @@ index c3c25da57..104918bcd 100644
 
  	return manifests, nil
  }
+

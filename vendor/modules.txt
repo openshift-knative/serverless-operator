@@ -1517,8 +1517,8 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.36.5 => knative.dev/operator v0.33.1
-## explicit; go 1.16
+# knative.dev/operator v0.36.5
+## explicit; go 1.19
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
 knative.dev/operator/pkg/apis/operator/v1beta1
@@ -1544,6 +1544,7 @@ knative.dev/operator/pkg/reconciler/knativeeventing/source
 knative.dev/operator/pkg/reconciler/knativeserving
 knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
+knative.dev/operator/pkg/reconciler/knativeserving/security
 # knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0 => knative.dev/pkg v0.0.0-20230224205330-75da922ef055
 ## explicit; go 1.18
 knative.dev/pkg/apis
@@ -1658,7 +1659,7 @@ knative.dev/reconciler-test/pkg/resources/secret
 knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.35.5 => github.com/openshift-knative/serving v0.10.1-0.20230511104239-03cf72c1c069
+# knative.dev/serving v0.36.0 => github.com/openshift-knative/serving v0.10.1-0.20230511104239-03cf72c1c069
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1746,7 +1747,6 @@ sigs.k8s.io/yaml
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 # knative.dev/hack => knative.dev/hack v0.0.0-20230217102752-199139daec7e
 # knative.dev/networking => knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
-# knative.dev/operator => knative.dev/operator v0.33.1
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224205330-75da922ef055
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230511104239-03cf72c1c069
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0

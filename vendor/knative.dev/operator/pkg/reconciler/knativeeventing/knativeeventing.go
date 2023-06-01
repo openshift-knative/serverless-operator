@@ -85,6 +85,10 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		return nil
 	}
 
+	if manifest == nil {
+		return nil
+	}
+
 	if err = common.Uninstall(manifest); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
@@ -144,7 +148,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, source.AppendInstalledSources, r.transform}
+	stages := common.Stages{common.AppendInstalled, source.AppendAllSources, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

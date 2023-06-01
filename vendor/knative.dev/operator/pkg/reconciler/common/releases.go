@@ -18,7 +18,6 @@ package common
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -51,16 +50,16 @@ var cache = map[string]mf.Manifest{}
 func TargetVersion(instance base.KComponent) string {
 	version := instance.GetSpec().GetVersion()
 	if strings.EqualFold(version, LATEST_VERSION) {
-		return getLatestRelease(instance, version)
+		return GetLatestRelease(instance, version)
 	}
 
 	if len(instance.GetSpec().GetManifests()) == 0 {
 		if version == "" {
-			return latestRelease(instance)
+			return LatestRelease(instance)
 		}
 
 		if SanitizeSemver(version) == semver.MajorMinor(SanitizeSemver(version)) {
-			return getLatestRelease(instance, version)
+			return GetLatestRelease(instance, version)
 		}
 	}
 
@@ -179,16 +178,6 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 
 	return fmt.Errorf("not supported to upgrade or downgrade across multiple MINOR versions. The "+
 		"installed KnativeServing version is %v.", current)
-}
-
-func getVersionKey(instance base.KComponent) string {
-	switch instance.(type) {
-	case *v1beta1.KnativeServing:
-		return "serving.knative.dev/release"
-	case *v1beta1.KnativeEventing:
-		return "eventing.knative.dev/release"
-	}
-	return ""
 }
 
 type manifestFetcher func(string) (mf.Manifest, error)
@@ -344,7 +333,10 @@ func installedManifestPath(version string, instance base.KComponent) []string {
 // x.y.z is the standard format we use as the semantic version for Knative. The letter `v` is added for
 // comparison purpose.
 func SanitizeSemver(version string) string {
-	return fmt.Sprintf("v%s", version)
+	if !strings.HasPrefix(version, "v") {
+		return fmt.Sprintf("v%s", version)
+	}
+	return version
 }
 
 // allIngressReleases returns the all the available release versions
@@ -366,7 +358,7 @@ func allReleases(instance base.KComponent) ([]string, error) {
 // allComponentReleases returns the all the available release versions
 // available under kodata directory for a certain path.
 func allReleasesUnderPath(pathname string) ([]string, error) {
-	fileList, err := ioutil.ReadDir(pathname)
+	fileList, err := os.ReadDir(pathname)
 	if err != nil {
 		return nil, err
 	}
@@ -395,9 +387,9 @@ func allReleasesUnderPath(pathname string) ([]string, error) {
 	return releaseTags, nil
 }
 
-// latestRelease returns the latest release tag available under kodata directory for Knative component.
-func latestRelease(instance base.KComponent) string {
-	return getLatestRelease(instance, "")
+// LatestRelease returns the latest release tag available under kodata directory for Knative component.
+func LatestRelease(instance base.KComponent) string {
+	return GetLatestRelease(instance, "")
 }
 
 // GetLatestIngressRelease returns the latest release tag available under kodata directory for the ingress
@@ -411,9 +403,9 @@ func GetLatestIngressRelease(version string) string {
 	return getLatestReleaseFromList(vers, version)
 }
 
-// getLatestRelease returns the latest release tag available under kodata directory for Knative component
+// GetLatestRelease returns the latest release tag available under kodata directory for Knative component
 // based on spec.version.
-func getLatestRelease(instance base.KComponent, version string) string {
+func GetLatestRelease(instance base.KComponent, version string) string {
 	// The versions are in a descending order, so the first one will be the latest version.
 	vers, err := allReleases(instance)
 	if err != nil {

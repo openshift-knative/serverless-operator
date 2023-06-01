@@ -150,7 +150,7 @@ type CommonSpec struct {
 	// +optional
 	ServiceOverride []ServiceOverride `json:"services,omitempty"`
 
-	// Override containers' resource requirements
+	// WorkloadOverride containers' resource requirements
 	// +optional
 	Version string `json:"version,omitempty"`
 
@@ -206,7 +206,7 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 	return c.HighAvailability
 }
 
-// GetWorkloadOverrides implements KComponentSpec.
+// GetDeploymentOverride implements KComponentSpec.
 func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
 	return append(c.DeploymentOverride, c.Workloads...)
 }
@@ -268,6 +268,10 @@ type WorkloadOverride struct {
 	// NodeSelector overrides nodeSelector for the deployment.
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// TopologySpreadConstraints overrides topologySpreadConstraints for the deployment.
+	// +optional
+	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
 
 	// Tolerations overrides tolerations for the deployment.
 	// +optional
@@ -374,6 +378,7 @@ type ProbesRequirementsOverride struct {
 	// +optional
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty" protobuf:"varint,7,opt,name=terminationGracePeriodSeconds"`
 }
+
 // Manifest enables the user to specify the links to the manifests' URLs
 type Manifest struct {
 	// The link of the manifest URL
