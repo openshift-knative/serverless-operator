@@ -283,7 +283,7 @@ function downstream_knative_kafka_e2e_rekt_tests {
 
   if [[ $FULL_MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
-    go_test_e2e -failfast -timeout=30m -parallel=3 ./test/extensione2erekt \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
