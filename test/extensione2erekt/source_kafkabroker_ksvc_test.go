@@ -52,6 +52,11 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 
 	since := time.Now()
 
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// With Istio this issue happens often.
+		t.Skip("https://issues.redhat.com/browse/SRVKE-1424")
+	}
+
 	env.Test(ctx, t, BrokerSmokeTest(kafka.NamespacedBrokerClass))
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
 
@@ -65,6 +70,10 @@ func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 	t.Parallel()
 
 	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		t.Skip("Channel-based tests cannot run in service mesh mode for now")
+	}
 
 	env.Test(ctx, t, BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
 }
