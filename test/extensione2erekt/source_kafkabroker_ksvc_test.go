@@ -8,7 +8,6 @@ import (
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
 	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
@@ -25,6 +24,8 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
+
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 )
 
 // Source (Eventshub) -> KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
