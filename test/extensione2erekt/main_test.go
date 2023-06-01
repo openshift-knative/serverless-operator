@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"testing"
-	"time"
 
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/pkg/system"
@@ -12,11 +11,6 @@ import (
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
-)
-
-const (
-	PollInterval = 3 * time.Second
-	PollTimeout  = 5 * time.Minute
 )
 
 var global environment.GlobalEnvironment
@@ -40,7 +34,6 @@ func defaultEnvironment(t *testing.T) (context.Context, environment.Environment)
 		k8s.WithEventListener,
 		// Enables KnativeService in the scenario.
 		eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(PollInterval, PollTimeout),
 		environment.Managed(t),
 	)
 }
