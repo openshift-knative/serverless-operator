@@ -96,6 +96,43 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 	}
 }
 
+func VerifyEncryptedTrafficForChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+	f := feature.NewFeature()
+
+	f.Stable("broker path").
+		Must("has encrypted traffic to broker", verifyEncryptedTrafficToChannelBasedKafkaBroker(refs, since)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+
+	return f
+}
+
+func verifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		brokerName, err := getBrokerName(refs)
+		if err != nil {
+			t.Fatalf("Unable to get Broker name: %v", err)
+		}
+		// source -> kafka-channel-receiver
+		authority := fmt.Sprintf("%s-kne-trigger-kn-channel.%s.svc.cluster.local", brokerName,
+			environment.FromContext(ctx).Namespace())
+
+		logFilter := eventingfeatures.LogFilter{
+			PodNamespace:  "knative-eventing",
+			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
+			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+			JSONLogFilter: func(m map[string]interface{}) bool {
+				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority
+			}}
+
+		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func getBrokerName(refs []corev1.ObjectReference) (string, error) {
 	var (
 		brokerName string

@@ -70,11 +70,13 @@ func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
-	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		t.Skip("Channel-based tests cannot run in service mesh mode for now")
-	}
+	since := time.Now()
 
 	env.Test(ctx, t, BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForChannelBasedKafkaBroker(env.References(), since))
+	}
 }
 
 func BrokerSmokeTest(brokerClass string) *feature.Feature {
