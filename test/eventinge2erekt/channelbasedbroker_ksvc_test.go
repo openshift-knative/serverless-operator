@@ -28,10 +28,6 @@ func TestChannelBasedBrokerToKsvc(t *testing.T) {
 		environment.Managed(t),
 	)
 
-	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		t.Skip("Channel-based tests cannot run in service mesh mode for now")
-	}
-
 	env.Prerequisite(ctx, t, broker.GoesReady("default", resources.WithEnvConfig()...))
 	env.Test(ctx, t, broker.SourceToSink("default"))
 }
