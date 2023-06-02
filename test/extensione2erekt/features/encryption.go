@@ -8,6 +8,7 @@ import (
 	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/eventing-kafka/test/rekt/resources/kafkachannel"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -133,6 +134,43 @@ func verifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReferen
 	}
 }
 
+func VerifyEncryptedTrafficForKafkaChannel(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+	f := feature.NewFeature()
+
+	f.Stable("channel path").
+		Must("has encrypted traffic to channel", verifyEncryptedTrafficToKafkaChannel(refs, since)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+
+	return f
+}
+
+func verifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		channelName, err := getChannelName(refs)
+		if err != nil {
+			t.Fatalf("Unable to get Channel name: %v", err)
+		}
+		// source -> kafka-channel-receiver
+		authority := fmt.Sprintf("%s-kn-channel.%s.svc.cluster.local", channelName,
+			environment.FromContext(ctx).Namespace())
+
+		logFilter := eventingfeatures.LogFilter{
+			PodNamespace:  "knative-eventing",
+			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
+			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+			JSONLogFilter: func(m map[string]interface{}) bool {
+				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority
+			}}
+
+		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func getBrokerName(refs []corev1.ObjectReference) (string, error) {
 	var (
 		brokerName string
@@ -151,4 +189,24 @@ func getBrokerName(refs []corev1.ObjectReference) (string, error) {
 	}
 
 	return brokerName, nil
+}
+
+func getChannelName(refs []corev1.ObjectReference) (string, error) {
+	var (
+		channelName string
+		numChannels int
+	)
+	for _, ref := range refs {
+		if ref.GroupVersionKind() == kafkachannel.GVR().GroupVersion().WithKind("KafkaChannel") {
+			// Make sure we verify traffic for the right Channel.
+			// This is for safety and to guarantee the feature invariance.
+			if numChannels != 0 {
+				return "", fmt.Errorf("found more than one Kafka Channel: %s, %s", channelName, ref.Name)
+			}
+			channelName = ref.Name
+			numChannels++
+		}
+	}
+
+	return channelName, nil
 }

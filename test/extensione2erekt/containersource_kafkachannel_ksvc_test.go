@@ -2,7 +2,9 @@ package extensione2erekt
 
 import (
 	"testing"
+	"time"
 
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"knative.dev/eventing/test/rekt/features/channel"
 	"knative.dev/eventing/test/rekt/resources/subscription"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -16,13 +18,15 @@ func TestContainerSourceKafkaChannelKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
-	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		t.Skip("Channel-based tests cannot run in service mesh mode for now")
-	}
-
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
 		return subscription.WithSubscriber(ref, uri)
 	}
 
+	since := time.Now()
+
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaChannel(env.References(), since))
+	}
 }
