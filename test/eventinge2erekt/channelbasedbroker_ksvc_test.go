@@ -9,6 +9,7 @@ import (
 	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
+	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
 )
@@ -28,6 +29,8 @@ func TestChannelBasedBrokerToKsvc(t *testing.T) {
 		environment.Managed(t),
 	)
 
-	env.Prerequisite(ctx, t, broker.GoesReady("default", resources.WithEnvConfig()...))
-	env.Test(ctx, t, broker.SourceToSink("default"))
+	brokerName := feature.MakeRandomK8sName("broker")
+
+	env.Prerequisite(ctx, t, broker.GoesReady(brokerName, resources.WithEnvConfig()...))
+	env.Test(ctx, t, broker.SourceToSink(brokerName))
 }
