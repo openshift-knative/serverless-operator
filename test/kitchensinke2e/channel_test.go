@@ -8,12 +8,6 @@ import (
 
 func TestChannelReadiness(t *testing.T) {
 	featureSet := features.ChannelFeatureSet(false)
-	for _, f := range featureSet.Features {
-		f := f
-		t.Run(featureSet.Name, func(t *testing.T) {
-			t.Parallel()
-			ctx, env := defaultContext(t)
-			env.Test(ctx, t, f)
-		})
-	}
+	ctx, env := defaultEnvironment(t)
+	env.ParallelTestSet(ctx, t, &featureSet)
 }

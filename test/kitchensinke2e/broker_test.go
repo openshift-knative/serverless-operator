@@ -13,13 +13,7 @@ func TestBrokerReadiness(t *testing.T) {
 		features.BrokerFeatureSetWithTriggerDLS(false),
 	}
 	for _, fs := range featureSets {
-		for _, f := range fs.Features {
-			f := f
-			t.Run(fs.Name, func(t *testing.T) {
-				t.Parallel()
-				ctx, env := defaultContext(t)
-				env.Test(ctx, t, f)
-			})
-		}
+		ctx, env := defaultEnvironment(t)
+		env.ParallelTestSet(ctx, t, &fs)
 	}
 }

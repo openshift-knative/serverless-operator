@@ -19,7 +19,7 @@ import (
 
 var global environment.GlobalEnvironment
 
-func defaultContext(t *testing.T) (context.Context, environment.Environment) {
+func defaultEnvironment(t *testing.T) (context.Context, environment.Environment) {
 	return global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
