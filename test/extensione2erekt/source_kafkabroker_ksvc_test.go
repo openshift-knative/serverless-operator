@@ -3,9 +3,12 @@ package extensione2erekt
 import (
 	"context"
 	"testing"
+	"time"
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
@@ -22,8 +25,6 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
-
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 )
 
 // Source (Eventshub) -> KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
@@ -32,8 +33,14 @@ func TestSourceKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
+	since := time.Now()
+
 	env.Test(ctx, t, BrokerSmokeTest(kafka.BrokerClass))
 	env.Test(ctx, t, VerifyMetricsKafkaBroker())
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaBroker(env.References(), since))
+	}
 }
 
 // Source (Eventshub) -> NamespacedKafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
@@ -42,8 +49,19 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
+	since := time.Now()
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// With Istio this issue happens often.
+		t.Skip("https://issues.redhat.com/browse/SRVKE-1424")
+	}
+
 	env.Test(ctx, t, BrokerSmokeTest(kafka.NamespacedBrokerClass))
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForNamespacedKafkaBroker(env.References(), since))
+	}
 }
 
 // Source (Eventshub) -> MTChannelBased-KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
@@ -52,7 +70,13 @@ func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
+	since := time.Now()
+
 	env.Test(ctx, t, BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForChannelBasedKafkaBroker(env.References(), since))
+	}
 }
 
 func BrokerSmokeTest(brokerClass string) *feature.Feature {

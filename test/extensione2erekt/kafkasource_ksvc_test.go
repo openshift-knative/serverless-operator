@@ -2,8 +2,11 @@ package extensione2erekt
 
 import (
 	"testing"
+	"time"
 
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
+	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
 )
 
@@ -25,7 +28,13 @@ func TestKafkaSourceTLS(t *testing.T) {
 	kafkaSink := feature.MakeRandomK8sName("kafkaSink")
 	topic := feature.MakeRandomK8sName("topic")
 
+	since := time.Now()
+
 	env.Test(ctx, t, features.KafkaSourceTLS(kafkaSource, kafkaSink, topic))
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaSource(env.References(), kafkaSink, since))
+	}
 }
 
 func TestKafkaSourceSASL(t *testing.T) {

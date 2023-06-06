@@ -57,8 +57,8 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
-				return getMapValueAsString(m, "path") == "/" &&
-					getMapValueAsString(m, "authority") == privateURL.Host
+				return GetMapValueAsString(m, "path") == "/" &&
+					GetMapValueAsString(m, "authority") == privateURL.Host
 			}}
 
 		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
@@ -81,8 +81,8 @@ func VerifyEncryptedTrafficToApp(refs []corev1.ObjectReference, since time.Time)
 			PodSelector:   metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + ksvcName},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
-				return getMapValueAsString(m, "path") == "/" &&
-					strings.HasPrefix(getMapValueAsString(m, "upstream_cluster"), "inbound|80")
+				return GetMapValueAsString(m, "path") == "/" &&
+					strings.HasPrefix(GetMapValueAsString(m, "upstream_cluster"), "inbound|80")
 			}}
 
 		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
@@ -167,7 +167,7 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
 				if logFilter.JSONLogFilter(ret) {
 					logging.FromContext(ctx).Infof("%s: %s", podName, line)
-					downstreamTLSCipher := getMapValueAsString(ret, "downstream_tls_cipher")
+					downstreamTLSCipher := GetMapValueAsString(ret, "downstream_tls_cipher")
 					// This is a bit arbitrary, but we just want to match something that is surely encrypted,
 					// so we just match what is used at the time of writing...
 					if downstreamTLSCipher != "ECDHE-RSA-AES256-GCM-SHA384" /* TLS 1.2 */ &&
@@ -190,7 +190,7 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 	return
 }
 
-func getMapValueAsString(m map[string]interface{}, key string) string {
+func GetMapValueAsString(m map[string]interface{}, key string) string {
 	valueInterface, ok := m[key]
 	if ok {
 		valueString, ok := valueInterface.(string)

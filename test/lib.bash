@@ -287,6 +287,10 @@ function downstream_knative_kafka_e2e_rekt_tests {
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
       "$@"
+
+    # Workaround for https://github.com/knative-sandbox/eventing-kafka-broker/issues/3133
+    oc delete secret strimzi-tls-secret -n serverless-tests || true
+    oc delete secret strimzi-sasl-secret -n serverless-tests || true
   else
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt \
       --images.producer.file="${images_file}" \
