@@ -17,9 +17,9 @@ limitations under the License.
 package common
 
 import (
-v1 "k8s.io/api/core/v1"
-"k8s.io/apimachinery/pkg/util/json"
-"knative.dev/operator/pkg/apis/operator/base"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/json"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 func mergeProbe(override, tgt *v1.Probe) {
