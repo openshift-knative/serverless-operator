@@ -323,6 +323,10 @@ function downstream_kitchensink_e2e_tests {
 
   logger.info "Running Knative kitchensink tests"
 
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
   # Create a secret for reconciler-test. The framework will copy this secret
   # to newly created namespaces and link to default service account in the namespace.
   if ! oc -n default get secret kn-test-image-pull-secret; then
@@ -340,6 +344,7 @@ function downstream_kitchensink_e2e_tests {
   fi
 
   go_test_e2e "${RUN_FLAGS[@]}" ./test/kitchensinke2e \
+  --images.producer.file="${images_file}" \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
 }
@@ -448,10 +453,15 @@ EOF
 function kitchensink_upgrade_tests {
   logger.info "Running kitchensink upgrade tests"
 
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
   go_test_e2e -run=TestKitchensink -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
+     --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
      --catalogsource="$(metadata.get "upgrade_sequence[*].source" | tail -n +2 | tr '\n' ',')" \
      --csv="$(metadata.get "upgrade_sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
