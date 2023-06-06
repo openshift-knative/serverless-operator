@@ -459,7 +459,7 @@ function kitchensink_upgrade_tests {
 
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  go_test_e2e -run=TestKitchensink -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
+  go_test_e2e -run=TestKitchensink -timeout=90m -parallel=10 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
      --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \

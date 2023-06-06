@@ -25,7 +25,7 @@ func defaultContext(t *testing.T) (context.Context, environment.Environment) {
 		knative.WithLoggingConfig,
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
-		environment.WithPollTimings(4*time.Second, 600*time.Second),
+		environment.WithPollTimings(4*time.Second, 15*time.Minute),
 		environment.Managed(t),
 	)
 }
