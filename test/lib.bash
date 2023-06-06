@@ -334,7 +334,7 @@ function downstream_kitchensink_e2e_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  RUN_FLAGS=(-failfast -timeout=120m -parallel=8)
+  RUN_FLAGS=(-failfast -timeout=120m -parallel=20)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
@@ -450,7 +450,7 @@ function kitchensink_upgrade_tests {
 
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  go_test_e2e -run=TestKitchensink -timeout=90m -parallel=10 ./test/upgrade/kitchensink -tags=upgrade \
+  go_test_e2e -run=TestKitchensink -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
      --catalogsource="$(metadata.get "upgrade_sequence[*].source" | tail -n +2 | tr '\n' ',')" \
