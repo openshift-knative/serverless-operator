@@ -417,6 +417,11 @@ EOF
     --resolvabledomain \
     --https)
 
+  if [[ $FULL_MESH == "true" ]]; then
+      common_opts+=("--environment.namespace=serverless-tests")
+      common_opts+=("--istio.enabled=${FULL_MESH}")
+  fi
+
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
     if ! oc get namespace serving-tests &>/dev/null; then
