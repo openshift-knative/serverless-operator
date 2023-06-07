@@ -12,7 +12,7 @@ func TestChannelReadiness(t *testing.T) {
 		f := f
 		t.Run(featureSet.Name, func(t *testing.T) {
 			t.Parallel()
-			ctx, env := defaultContext(t)
+			ctx, env := defaultEnvironment(t)
 			env.Test(ctx, t, f)
 		})
 	}
