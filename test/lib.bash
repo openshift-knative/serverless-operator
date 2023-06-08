@@ -400,9 +400,11 @@ EOF
   # There can be only one SYSTEM_NAMESPACE. Eventing and Serving tests both expect
   # some resources in their own system namespace. We copy the required resources from
   # EVENTING_NAMESPACE to SERVING_NAMESPACE and use that as system namespace.
-  oc get configmap kafka-broker-config --namespace="$EVENTING_NAMESPACE" -o yaml | \
-    sed -e 's/namespace: .*/namespace: '"$SERVING_NAMESPACE"'/' | \
-    yq delete - metadata.ownerReferences | oc apply -f -
+  if ! oc -n "$SERVING_NAMESPACE" get configmap kafka-broker-config; then
+    oc get configmap kafka-broker-config --namespace="$EVENTING_NAMESPACE" -o yaml | \
+      sed -e 's/namespace: .*/namespace: '"$SERVING_NAMESPACE"'/' | \
+      yq delete - metadata.ownerReferences | oc apply -f -
+  fi
 
   common_opts=(./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
