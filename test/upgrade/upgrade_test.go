@@ -23,6 +23,7 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
@@ -214,6 +215,7 @@ func defaultEnvironment(t *testing.T) (context.Context, environment.Environment)
 		knative.WithLoggingConfig,
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
+		environment.WithPollTimings(4*time.Second, 10*time.Minute),
 		environment.Managed(t),
 	)
 }
@@ -257,6 +259,10 @@ func InMemoryChannelPostDowngradeTest() pkgupgrade.Operation {
 
 func inMemoryChannelTest(t *testing.T) {
 	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		t.Skip("Enable when testing upgrades from 1.30 to 1.31")
+	}
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
 		return subscription.WithSubscriber(ref, uri)
@@ -308,6 +314,10 @@ func KafkaChannelPostDowngradeTest() pkgupgrade.Operation {
 
 func kafkaChannelTest(t *testing.T) {
 	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		t.Skip("Enable when testing upgrades from 1.30 to 1.31")
+	}
 
 	channel_impl.EnvCfg.ChannelGK = "KafkaChannel.messaging.knative.dev"
 	channel_impl.EnvCfg.ChannelV = "v1beta1"
