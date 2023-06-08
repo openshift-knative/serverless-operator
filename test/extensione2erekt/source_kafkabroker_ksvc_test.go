@@ -42,7 +42,7 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 		t.Skip("https://issues.redhat.com/browse/SRVKE-1424")
 	}
 
-	env.Test(ctx, t, BrokerSmokeTest(kafka.NamespacedBrokerClass))
+	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.NamespacedBrokerClass))
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {

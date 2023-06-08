@@ -20,6 +20,7 @@ limitations under the License.
 package upgrade_test
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -170,8 +171,8 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 
 func postDowngradeTests() []pkgupgrade.Operation {
 	tests := servingupgrade.ServingPostDowngradeTests()
-	tests = append(tests, EventingPostDowngradeTests())
-	tests = append(tests, EventingKafkaBrokerPostDowngradeTests())
+	tests = append(tests, EventingPostDowngradeTests()...)
+	tests = append(tests, EventingKafkaBrokerPostDowngradeTests()...)
 	tests = append(tests,
 		servingupgrade.CRDStoredVersionPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
 		eventingupgrade.CRDPostUpgradeTest(),             // Check if CRD Stored version check works with downgrades.
@@ -346,6 +347,11 @@ func kafkaBrokerTest(t *testing.T) {
 
 func namespacedKafkaBrokerTest(t *testing.T) {
 	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// With Istio this issue happens often.
+		t.Skip("https://issues.redhat.com/browse/SRVKE-1424")
+	}
 
 	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.NamespacedBrokerClass))
 }
