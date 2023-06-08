@@ -14,6 +14,7 @@ func TestFlowReadiness(t *testing.T) {
 		features.SequenceGlobalReplyFeatureSet(false),
 		features.ParallelGlobalReplyFeatureSet(false),
 	}
+
 	for _, fs := range featureSets {
 		for _, f := range fs.Features {
 			f := f
