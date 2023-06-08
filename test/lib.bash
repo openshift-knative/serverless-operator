@@ -355,7 +355,7 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts images_file
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template common_opts images_file
 
   # Specify image mapping for REKT tests
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
@@ -401,7 +401,6 @@ EOF
 
   common_opts=(./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
-    "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
     "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
