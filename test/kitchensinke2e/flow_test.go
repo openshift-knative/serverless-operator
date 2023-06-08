@@ -14,7 +14,15 @@ func TestFlowReadiness(t *testing.T) {
 		features.SequenceGlobalReplyFeatureSet(false),
 		features.ParallelGlobalReplyFeatureSet(false),
 	}
+
 	for _, fs := range featureSets {
-		testFeatureSet(t, fs)
+		for _, f := range fs.Features {
+			f := f
+			t.Run(fs.Name, func(t *testing.T) {
+				t.Parallel()
+				ctx, env := defaultEnvironment(t)
+				env.Test(ctx, t, f)
+			})
+		}
 	}
 }
