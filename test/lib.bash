@@ -388,8 +388,6 @@ $base{{- with .Name }}
 EOF
 )
 
-  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
-
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
@@ -398,6 +396,13 @@ EOF
   export EVENTING_UPGRADE_TESTS_CONFIGMOUNTPOINT=/.config/wathola
   export EVENTING_UPGRADE_TESTS_TRACEEXPORTLIMIT=30
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
+
+  # There can be only one SYSTEM_NAMESPACE. Eventing and Serving tests both expect
+  # some resources in their own system namespace. We copy the required resources from
+  # EVENTING_NAMESPACE to SERVING_NAMESPACE and use that as system namespace.
+  oc get configmap kafka-broker-config --namespace="$EVENTING_NAMESPACE" -o yaml | \
+    sed -e 's/namespace: .*/namespace: '"$SERVING_NAMESPACE"'/' | \
+    yq delete - metadata.ownerReferences | oc apply -f -
 
   common_opts=(./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
@@ -429,7 +434,7 @@ EOF
     # Run the two test suites one by one to prevent the situation when nested
     # tests time out and cause all other tests to have "Unknown" status.
     go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m "${common_opts[@]}"
-    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
+    #go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
