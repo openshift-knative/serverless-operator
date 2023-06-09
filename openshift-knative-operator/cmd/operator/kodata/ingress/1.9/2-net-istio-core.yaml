@@ -131,7 +131,6 @@ spec:
   template:
     metadata:
       annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         # This must be outside of the mesh to probe the gateways.
         # NOTE: this is allowed here and not elsewhere because
         # this is the Istio controller, and so it may be Istio-aware.
@@ -238,8 +237,6 @@ spec:
       role: net-istio-webhook
   template:
     metadata:
-      annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
         app: net-istio-webhook
         role: net-istio-webhook
