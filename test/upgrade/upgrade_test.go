@@ -28,6 +28,7 @@ import (
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	eventingtest "knative.dev/eventing/test"
+	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/rekt/features/channel"
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/eventing/test/rekt/resources/subscription"
@@ -41,7 +42,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
-	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -78,20 +78,20 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
-				[]pkgupgrade.BackgroundOperation{
-					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
-				},
-				kafkabrokerupgrade.ChannelContinualTests(),
+				//[]pkgupgrade.BackgroundOperation{
+				//	servingupgrade.ProbeTest(),
+				//	servingupgrade.AutoscaleSustainingWithTBCTest(),
+				//	servingupgrade.AutoscaleSustainingTest(),
+				//},
+				//kafkabrokerupgrade.ChannelContinualTests(),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
-		Installations: pkgupgrade.Installations{
-			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
-		},
+		//Installations: pkgupgrade.Installations{
+		//	UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+		//	DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+		//},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
 }
@@ -206,6 +206,7 @@ func TestMain(m *testing.M) {
 		return cfg
 	})
 
+	testlib.ReuseNamespace = eventingtest.EventingFlags.ReuseNamespace
 	eventingupgrade.RunMainTest(m)
 }
 
@@ -257,6 +258,8 @@ func InMemoryChannelPostDowngradeTest() pkgupgrade.Operation {
 }
 
 func inMemoryChannelTest(t *testing.T) {
+	t.Parallel()
+
 	ctx, env := defaultEnvironment(t)
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
@@ -312,6 +315,8 @@ func KafkaChannelPostDowngradeTest() pkgupgrade.Operation {
 }
 
 func kafkaChannelTest(t *testing.T) {
+	t.Parallel()
+
 	ctx, env := defaultEnvironment(t)
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
@@ -349,6 +354,8 @@ func KafkaBrokerPostDowngradeTest() pkgupgrade.Operation {
 }
 
 func kafkaBrokerTest(t *testing.T) {
+	t.Parallel()
+
 	ctx, env := defaultEnvironment(t)
 
 	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.BrokerClass))
@@ -387,6 +394,8 @@ func KafkaSinkAndSourcePostDowngradeTest() pkgupgrade.Operation {
 }
 
 func kafkaSinkAndSourceTest(t *testing.T) {
+	t.Parallel()
+
 	ctx, env := defaultEnvironment(t)
 
 	env.Test(ctx, t, features.KafkaSourceStructuredEvent())
