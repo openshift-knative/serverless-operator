@@ -267,6 +267,7 @@ func (p *prober) deployFetcher() *batchv1.Job {
 					Annotations: map[string]string{
 						"sidecar.istio.io/inject":                "true",
 						"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+						"proxy.istio.io/config":                  `{ "holdApplicationUntilProxyStarts": true }`,
 					},
 				},
 				Spec: corev1.PodSpec{
