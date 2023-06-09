@@ -425,9 +425,9 @@ EOF
 
   if [[ $FULL_MESH == "true" ]]; then
       common_opts+=("--environment.namespace=serverless-tests")
-      common_opts+=("--istio.enabled=${FULL_MESH}")
+      common_opts+=("--istio.enabled")
       # For non-REKT eventing tests.
-      common_opts+=("--reusenamespace=true")
+      common_opts+=("--reusenamespace")
   fi
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
