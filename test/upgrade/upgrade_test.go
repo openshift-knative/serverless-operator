@@ -27,6 +27,7 @@ import (
 
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
+	"knative.dev/eventing-kafka-broker/test/upgrade/continual"
 	eventingtest "knative.dev/eventing/test"
 	testlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/rekt/features/channel"
@@ -83,7 +84,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 				//	servingupgrade.AutoscaleSustainingWithTBCTest(),
 				//	servingupgrade.AutoscaleSustainingTest(),
 				//},
-				//kafkabrokerupgrade.ChannelContinualTests(),
+				ChannelContinualTests(ctx),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
@@ -400,4 +401,18 @@ func kafkaSinkAndSourceTest(t *testing.T) {
 
 	env.Test(ctx, t, features.KafkaSourceStructuredEvent())
 	env.Test(ctx, t, features.KafkaSourceBinaryEvent())
+}
+
+func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
+	ctx, _ := defaultEnvironment(testCtx.T)
+
+	// TODO: Enable when testing upgrades from 1.30 to 1.31
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		return nil
+	}
+
+	return []pkgupgrade.BackgroundOperation{
+		continual.ChannelTest(continual.ChannelTestOptions{}),
+		continual.BrokerBackedByChannelTest(continual.ChannelTestOptions{}),
+	}
 }
