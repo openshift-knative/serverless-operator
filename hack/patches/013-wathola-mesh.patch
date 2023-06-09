@@ -29,16 +29,17 @@ index 864df0e63..8dbc8304e 100644
  				Spec: corev1.PodSpec{
  					Volumes: []corev1.Volume{{
 diff --git a/vendor/knative.dev/eventing/test/upgrade/prober/verify.go b/vendor/knative.dev/eventing/test/upgrade/prober/verify.go
-index 55dc12d38..66591db9b 100644
+index 55dc12d38..cf9106b6e 100644
 --- a/vendor/knative.dev/eventing/test/upgrade/prober/verify.go
 +++ b/vendor/knative.dev/eventing/test/upgrade/prober/verify.go
-@@ -264,6 +264,10 @@ func (p *prober) deployFetcher() *batchv1.Job {
+@@ -264,6 +264,11 @@ func (p *prober) deployFetcher() *batchv1.Job {
  					Labels: map[string]string{
  						"app": fetcherName,
  					},
 +					Annotations: map[string]string{
 +						"sidecar.istio.io/inject":                "true",
 +						"sidecar.istio.io/rewriteAppHTTPProbers": "true",
++						"proxy.istio.io/config":                  `{ "holdApplicationUntilProxyStarts": true }`,
 +					},
  				},
  				Spec: corev1.PodSpec{
