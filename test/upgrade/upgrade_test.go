@@ -43,6 +43,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
