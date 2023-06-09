@@ -18,6 +18,9 @@ create_namespaces "${TEST_NAMESPACES[@]}"
 # Install ServiceMesh and enable mTLS.
 if [[ $FULL_MESH != true ]]; then
   trust_router_ca
+else
+   # metadata-webhook adds istio annotations for e2e test by webhook.
+   oc apply -f "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/serving/metadata-webhook/config"
 fi
 
 run_testselect
