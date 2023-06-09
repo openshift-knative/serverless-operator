@@ -365,25 +365,25 @@ function run_rolling_upgrade_tests {
 
   # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
   # for non-REKT tests.
-  base="quay.io/openshift-knative/"
+  base="quay.io/openshift-knative"
   image_template=$(
     cat <<-EOF
-$base{{- with .Name }}
-{{- if eq .      "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
-{{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
-{{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
-{{- else if eq . "eventshub"           }}knative-eventing-test-eventshub:$eventing_image_version
-{{- else if eq . "heartbeats"          }}knative-eventing-test-heartbeats:$eventing_image_version
-{{- else if eq . "performance"         }}knative-eventing-test-performance:$eventing_image_version
-{{- else if eq . "print"               }}knative-eventing-test-print:$eventing_image_version
-{{- else if eq . "recordevents"        }}knative-eventing-test-recordevents:$eventing_image_version
-{{- else if eq . "request-sender"      }}knative-eventing-test-request-sender:$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}knative-eventing-test-wathola-fetcher:$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
-{{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}knative-serving-test-{{.}}:$serving_image_version{{end -}}
+{{- with .Name }}
+{{- if eq .      "kafka-consumer"      }}${base}/knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
+{{- else if eq . "event-flaker"        }}${base}/knative-eventing-test-event-flaker:$eventing_image_version
+{{- else if eq . "event-library"       }}${base}/knative-eventing-test-event-library:$eventing_image_version
+{{- else if eq . "event-sender"        }}${base}/knative-eventing-test-event-sender:$eventing_image_version
+{{- else if eq . "eventshub"           }}${base}/knative-eventing-test-eventshub:$eventing_image_version
+{{- else if eq . "heartbeats"          }}${base}/knative-eventing-test-heartbeats:$eventing_image_version
+{{- else if eq . "performance"         }}${base}/knative-eventing-test-performance:$eventing_image_version
+{{- else if eq . "print"               }}${base}/knative-eventing-test-print:$eventing_image_version
+{{- else if eq . "recordevents"        }}${base}/knative-eventing-test-recordevents:$eventing_image_version
+{{- else if eq . "request-sender"      }}${base}/knative-eventing-test-request-sender:$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}docker.io/mgencur/wathola-fetcher
+{{- else if eq . "wathola-forwarder"   }}${base}/knative-eventing-test-wathola-forwarder:$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}${base}/knative-eventing-test-wathola-receiver:$eventing_image_version
+{{- else if eq . "wathola-sender"      }}${base}/knative-eventing-test-wathola-sender:$eventing_image_version
+{{- else                               }}${base}/knative-serving-test-{{.}}:$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
