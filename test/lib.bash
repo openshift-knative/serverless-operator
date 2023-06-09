@@ -406,7 +406,7 @@ EOF
       yq delete - metadata.ownerReferences | oc apply -f -
   fi
 
-  common_opts=(./test/upgrade "-tags=upgrade" \
+  common_opts=(-parallel=8 ./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
     "--imagetemplate=${image_template}" \
     "--images.producer.file=${images_file}" \
@@ -437,8 +437,8 @@ EOF
     fi
     # Run the two test suites one by one to prevent the situation when nested
     # tests time out and cause all other tests to have "Unknown" status.
-    go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m -parallel=8 "${common_opts[@]}"
-    #go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
+    #go_test_e2e -run=TestServerlessUpgradePrePost -timeout=90m "${common_opts[@]}"
+    go_test_e2e -run=TestServerlessUpgradeContinual -timeout=60m "${common_opts[@]}"
   fi
 
   # For reuse in downstream test executions. Might be run after Serverless
