@@ -16,9 +16,9 @@ eventing_istio_files=(eventing-istio-controller.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
-istio_files=(networkpolicy-mesh net-istio)
+istio_files=(net-istio-netpolicies-mesh net-istio-core)
 
-kourier_files=(kourier)
+kourier_files=(net-kourier)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
 export KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR=${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR:-""}
@@ -131,19 +131,18 @@ function download_ingress {
   echo "Files: ${files[*]}"
 
   branch=$(metadata.get "dependencies.${component/-/_}_artifacts_branch")
-  index=0
   for (( i=0; i<${#files[@]}; i++ ));
   do
-
+    index=$(( i+1 ))
     file="${files[$i]}.yaml"
     ingress_target_file="$ingress_dir/$index-$file"
-    url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$index-$file"
+
+    url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$file"
 
     wget --no-check-certificate "$url" -O "$ingress_target_file"
 
     # Break all image references so we know our overrides work correctly.
     yaml.break_image_references "$ingress_target_file"
-    index=$(( i+1 ))
   done
 }
 
