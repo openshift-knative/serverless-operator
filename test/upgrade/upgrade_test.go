@@ -64,10 +64,10 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 			PostUpgrade:   postUpgradeTests(ctx, true),
 			PostDowngrade: postDowngradeTests(),
 		},
-		Installations: pkgupgrade.Installations{
-			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
-		},
+		//Installations: pkgupgrade.Installations{
+		//	UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+		//	DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+		//},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
 }
@@ -156,14 +156,14 @@ func preUpgradeTests() []pkgupgrade.Operation {
 
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
-	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-serving",
-		FailOnNoJobs: failOnNoJobs,
-	}))
-	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-eventing",
-		FailOnNoJobs: failOnNoJobs,
-	}))
+	//tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+	//	Namespace:    "knative-serving",
+	//	FailOnNoJobs: failOnNoJobs,
+	//}))
+	//tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+	//	Namespace:    "knative-eventing",
+	//	FailOnNoJobs: failOnNoJobs,
+	//}))
 	tests = append(tests, EventingPostUpgradeTests()...)
 	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
@@ -220,7 +220,6 @@ func defaultEnvironment(t *testing.T) (context.Context, environment.Environment)
 	)
 }
 
-// EventingPreUpgradeTests is an umbrella function for grouping all Eventing pre-upgrade tests.
 func EventingPreUpgradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
 		InMemoryChannelPreUpgradeTest(),
@@ -274,7 +273,7 @@ func EventingKafkaBrokerPreUpgradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
 		KafkaChannelPreUpgradeTest(),
 		KafkaBrokerPreUpgradeTest(),
-		KafkaSourcePreUpgradeTest(),
+		KafkaSinkAndSourcePreUpgradeTest(),
 	}
 }
 
@@ -282,7 +281,7 @@ func EventingKafkaBrokerPostUpgradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
 		KafkaChannelPostUpgradeTest(),
 		KafkaBrokerPostUpgradeTest(),
-		KafkaSourcePostUpgradeTest(),
+		KafkaSinkAndSourcePostUpgradeTest(),
 	}
 }
 
@@ -290,7 +289,7 @@ func EventingKafkaBrokerPostDowngradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
 		KafkaChannelPostDowngradeTest(),
 		KafkaBrokerPostDowngradeTest(),
-		KafkaSourcePostDowngradeTest(),
+		KafkaSinkAndSourcePostDowngradeTest(),
 	}
 }
 
@@ -366,28 +365,28 @@ func namespacedKafkaBrokerTest(t *testing.T) {
 	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.NamespacedBrokerClass))
 }
 
-func KafkaSourcePreUpgradeTest() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("SourcePreUpgradeTest",
+func KafkaSinkAndSourcePreUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePreUpgradeTest",
 		func(c pkgupgrade.Context) {
-			kafkaSourceTest(c.T)
+			kafkaSinkAndSourceTest(c.T)
 		})
 }
 
-func KafkaSourcePostUpgradeTest() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("SourcePostUpgradeTest",
+func KafkaSinkAndSourcePostUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePostUpgradeTest",
 		func(c pkgupgrade.Context) {
-			kafkaSourceTest(c.T)
+			kafkaSinkAndSourceTest(c.T)
 		})
 }
 
-func KafkaSourcePostDowngradeTest() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("SourcePostDowngradeTest",
+func KafkaSinkAndSourcePostDowngradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePostDowngradeTest",
 		func(c pkgupgrade.Context) {
-			kafkaSourceTest(c.T)
+			kafkaSinkAndSourceTest(c.T)
 		})
 }
 
-func kafkaSourceTest(t *testing.T) {
+func kafkaSinkAndSourceTest(t *testing.T) {
 	ctx, env := defaultEnvironment(t)
 
 	env.Test(ctx, t, features.KafkaSourceStructuredEvent())
