@@ -65,10 +65,10 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 			PostUpgrade:   postUpgradeTests(ctx, true),
 			PostDowngrade: postDowngradeTests(),
 		},
-		//Installations: pkgupgrade.Installations{
-		//	UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-		//	DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
-		//},
+		Installations: pkgupgrade.Installations{
+			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
 }
@@ -79,20 +79,20 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
-				//[]pkgupgrade.BackgroundOperation{
-				//	servingupgrade.ProbeTest(),
-				//	servingupgrade.AutoscaleSustainingWithTBCTest(),
-				//	servingupgrade.AutoscaleSustainingTest(),
-				//},
+				[]pkgupgrade.BackgroundOperation{
+					servingupgrade.ProbeTest(),
+					servingupgrade.AutoscaleSustainingWithTBCTest(),
+					servingupgrade.AutoscaleSustainingTest(),
+				},
 				ChannelContinualTests(ctx),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
-		//Installations: pkgupgrade.Installations{
-		//	UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-		//	DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
-		//},
+		Installations: pkgupgrade.Installations{
+			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
 }
@@ -157,14 +157,14 @@ func preUpgradeTests() []pkgupgrade.Operation {
 
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
-	//tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-	//	Namespace:    "knative-serving",
-	//	FailOnNoJobs: failOnNoJobs,
-	//}))
-	//tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-	//	Namespace:    "knative-eventing",
-	//	FailOnNoJobs: failOnNoJobs,
-	//}))
+	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-serving",
+		FailOnNoJobs: failOnNoJobs,
+	}))
+	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+		Namespace:    "knative-eventing",
+		FailOnNoJobs: failOnNoJobs,
+	}))
 	tests = append(tests, EventingPostUpgradeTests()...)
 	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
