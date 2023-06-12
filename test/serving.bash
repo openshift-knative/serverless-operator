@@ -48,7 +48,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     --patch='{"spec": {"ingress": { "kourier": {"service-type": "LoadBalancer"}}}}'
 
   # Enable the required features for the respective tests.
-  enable_feature_flags kubernetes.podspec-volumes-emptydir kubernetes.podspec-init-containers kubernetes.podspec-persistent-volume-claim \
+  enable_feature_flags kubernetes.podspec-init-containers kubernetes.podspec-persistent-volume-claim \
   kubernetes.podspec-persistent-volume-write kubernetes.podspec-securitycontext
 
   # Create a persistent volume claim for the respective tests
