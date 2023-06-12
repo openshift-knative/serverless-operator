@@ -58,7 +58,7 @@ func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 
 	since := time.Now()
 
-	env.Test(ctx, t, BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
+	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForChannelBasedKafkaBroker(env.References(), since))
