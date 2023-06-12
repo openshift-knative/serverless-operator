@@ -1,5 +1,5 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
-index 2c0ed79c1..b3e61aba6 100644
+index d75b043d0..7c90e1a57 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 @@ -46,17 +46,8 @@ spec:
@@ -21,7 +21,7 @@ index 2c0ed79c1..b3e61aba6 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -926,56 +917,13 @@ spec:
+@@ -2203,56 +2194,13 @@ spec:
                        x-kubernetes-int-or-string: true
                ingress:
                  description: The ingress configuration for Knative Serving
@@ -79,8 +79,8 @@ index 2c0ed79c1..b3e61aba6 100644
                        knative-local-gateway:
                          description: A means to override the knative-local-gateway
                          properties:
-@@ -1024,46 +972,6 @@ spec:
-                         type: string
+@@ -2313,46 +2261,6 @@ spec:
+                         type: boolean
                      type: object
                  type: object
 -              manifests:
