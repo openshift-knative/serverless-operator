@@ -46,17 +46,8 @@ spec:
             type: object
           spec:
             description: Spec defines the desired state of KnativeServing
+            x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
             properties:
-              additionalManifests:
-                description: A list of the additional serving manifests, which will
-                  be installed by the operator
-                items:
-                  properties:
-                    URL:
-                      description: The link of the additional manifest URL
-                      type: string
-                  type: object
-                type: array
               config:
                 additionalProperties:
                   additionalProperties:
@@ -2203,56 +2194,13 @@ spec:
                       x-kubernetes-int-or-string: true
               ingress:
                 description: The ingress configuration for Knative Serving
+                x-kubernetes-preserve-unknown-fields: true # To allow for some fields we've deleted.
                 properties:
-                  contour:
-                    description: Contour settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
                   istio:
                     description: Istio settings
                     properties:
                       enabled:
                         type: boolean
-                      knative-ingress-gateway:
-                        description: A means to override the knative-ingress-gateway
-                        properties:
-                          selector:
-                            additionalProperties:
-                              type: string
-                            description: The selector for the ingress-gateway.
-                            type: object
-                          servers:
-                            description: A list of server specifications.
-                            items:
-                              properties:
-                                hosts:
-                                  description: One or more hosts exposed by this gateway.
-                                  items:
-                                    format: string
-                                    type: string
-                                  type: array
-                                port:
-                                  properties:
-                                    name:
-                                      description: Label assigned to the port.
-                                      format: string
-                                      type: string
-                                    number:
-                                      description: A valid non-negative integer port number.
-                                      type: integer
-                                    target_port:
-                                      description: A valid non-negative integer target port number.
-                                      type: integer
-                                    protocol:
-                                      description: The protocol exposed on the port.
-                                      format: string
-                                      type: string
-                                  type: object
-                              type: object
-                            type: array
-                        type: object
                       knative-local-gateway:
                         description: A means to override the knative-local-gateway
                         properties:
@@ -2313,46 +2261,6 @@ spec:
                         type: boolean
                     type: object
                 type: object
-              manifests:
-                description: A list of serving manifests, which will be installed
-                  by the operator
-                items:
-                  properties:
-                    URL:
-                      description: The link of the manifest URL
-                      type: string
-                  type: object
-                type: array
-              registry:
-                description: A means to override the corresponding deployment images
-                  in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
-                properties:
-                  default:
-                    description: The default image reference template to use for all
-                      knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
-                    type: string
-                  imagePullSecrets:
-                    description: A list of secrets to be used when pulling the knative
-                      images. The secret must be created in the same namespace as
-                      the knative-serving deployments, and not the namespace of this
-                      resource.
-                    items:
-                      properties:
-                        name:
-                          description: The name of the secret.
-                          type: string
-                      type: object
-                    type: array
-                  override:
-                    additionalProperties:
-                      type: string
-                    description: A map of a container name or image name to the full
-                      image location of the individual knative image.
-                    type: object
-                type: object
-              version:
-                description: The version of Knative Serving to be installed
-                type: string
             type: object
           status:
             description: Status defines the observed state of KnativeServing
