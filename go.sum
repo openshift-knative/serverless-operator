@@ -979,8 +979,8 @@ github.com/opencontainers/runc v0.0.0-20190115041553-12f6a991201f/go.mod h1:qT5X
 github.com/opencontainers/runc v0.1.1/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
 github.com/opencontainers/runtime-spec v0.1.2-0.20190507144316-5b71a03e2700/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/runtime-tools v0.0.0-20181011054405-1d69bd0f9c39/go.mod h1:r3f7wjNzSs2extwzU3Y+6pKfobzPh+kKFJ3ofN+3nfs=
-github.com/openshift-knative/eventing v0.99.1-0.20230601064810-884c202c6358 h1:2WsOnTKXSB7iXCV7kw4akwqF6GBYpC0wbKEyNE7FrlM=
-github.com/openshift-knative/eventing v0.99.1-0.20230601064810-884c202c6358/go.mod h1:KYXv6I8okKVrCq1EZXlGH+BZhbBEI7TQF86MaDvp7DM=
+github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1 h1:u3cC31YfguU/82QJSvk75GE9/SIOzVGXwlRJgJ3Ytgs=
+github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1/go.mod h1:KYXv6I8okKVrCq1EZXlGH+BZhbBEI7TQF86MaDvp7DM=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc h1:avIbZM/BPZV7PYTgwkxZj9bauRehrSFRPcANeAtRxSE=
 github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc/go.mod h1:RZ/b/xO0sEPL0it4Xm0kSbrhATdsND1WVQq5AcHi7ro=
 github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a h1:e0khjsVw7KCp85NVICO6GxNeQ1AIMsui2nDD3YPf3RE=
