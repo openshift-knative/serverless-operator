@@ -10,10 +10,8 @@ import (
 const (
 	openshiftPassthrough = "serving.knative.openshift.io/enablePassthrough"
 
-	sidecarInject                   = "sidecar.istio.io/inject"
-	sidecarrewriteAppHTTPProbers    = "sidecar.istio.io/rewriteAppHTTPProbers"
-	proxyIstioConfig                = "proxy.istio.io/config"
-	holdApplicationUntilProxyStarts = `{ "holdApplicationUntilProxyStarts": true }`
+	sidecarInject                = "sidecar.istio.io/inject"
+	sidecarrewriteAppHTTPProbers = "sidecar.istio.io/rewriteAppHTTPProbers"
 
 	maistraProxyEnv          = "sidecar.maistra.io/proxyEnv"
 	terminationDrainDuration = `{ "TERMINATION_DRAIN_DURATION_SECONDS": "20" }`
@@ -47,7 +45,6 @@ func (r *TargetKService) SetDefaults(ctx context.Context) {
 	r.Spec.Template.Annotations[sidecarInject] = "true"
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
 	r.Spec.Template.Annotations[maistraProxyEnv] = terminationDrainDuration
-	r.Spec.Template.Annotations[proxyIstioConfig] = holdApplicationUntilProxyStarts
 }
 
 // Validate returns nil due to no need for validation
