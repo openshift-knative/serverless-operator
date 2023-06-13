@@ -59,7 +59,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
 
   image_template="registry.ci.openshift.org/openshift/knative-serving-test-{{.Name}}:${KNATIVE_SERVING_VERSION}"
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
-  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https --skip-cleanup-on-fail"
+  OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https"
 
   if [[ $FULL_MESH == "true" ]]; then
     # TODO: SRVKS-211: Can not run grpc and http2 tests.
