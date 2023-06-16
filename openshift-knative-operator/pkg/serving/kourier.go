@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const (
@@ -62,7 +63,7 @@ func kourierNamespace(servingNs string) string {
 	return servingNs + "-ingress"
 }
 
-func addKourierEnvValues(ks base.KComponent) mf.Transformer {
+func addKourierEnvValues(ks base.KComponent) []mf.Transformer {
 	envVars := []corev1.EnvVar{
 		{Name: "KOURIER_HTTPOPTION_DISABLED", Value: "true"},
 		{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
@@ -80,7 +81,18 @@ func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 				corev1.EnvVar{Name: "CERTS_SECRET_NAME", Value: ingressDefaultCertificateName})
 		}
 	}
-	return common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller", envVars...)
+
+	tf := []mf.Transformer{common.InjectEnvironmentIntoDeployment("net-kourier-controller", "controller", envVars...)}
+	k := ks.(*operatorv1beta1.KnativeServing)
+
+	if t := common.ConfigureEnvValueIfUnset(&k.Spec.CommonSpec, "net-kourier-controller", "controller", "KUBE_API_BURST", "200"); t != nil {
+		tf = append(tf, t)
+	}
+	if t := common.ConfigureEnvValueIfUnset(&k.Spec.CommonSpec, "net-kourier-controller", "controller", "KUBE_API_QPS", "200"); t != nil {
+		tf = append(tf, t)
+	}
+
+	return tf
 }
 
 // addKourierAppProtocol adds appProtocol name to the Kourier service.

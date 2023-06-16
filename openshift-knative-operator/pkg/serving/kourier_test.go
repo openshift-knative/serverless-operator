@@ -116,6 +116,16 @@ func TestKourierEnvValue(t *testing.T) {
 						InternalEncryptionKey: "true",
 					},
 				},
+				Workloads: []base.WorkloadOverride{{
+					Name: "net-kourier-controller",
+					Env: []base.EnvRequirementsOverride{{
+						Container: "controller",
+						EnvVars: []corev1.EnvVar{{
+							Name:  "KUBE_API_BURST",
+							Value: "100",
+						}},
+					}},
+				}},
 			},
 		},
 	}
@@ -153,6 +163,8 @@ func TestKourierEnvValue(t *testing.T) {
 							{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
 							{Name: "CERTS_SECRET_NAMESPACE", Value: ingressDefaultCertificateNameSpace},
 							{Name: "CERTS_SECRET_NAME", Value: ingressDefaultCertificateName},
+							{Name: "KUBE_API_QPS", Value: "200"},
+							// Do not have KUBE_API_BURST as it is set in CR so overwritten by WorkloadOverride.
 						},
 					}},
 				},
@@ -170,7 +182,9 @@ func TestKourierEnvValue(t *testing.T) {
 		t.Fatal("Failed to convert deployment to unstructured", err)
 	}
 
-	addKourierEnvValues(ks)(got)
+	for _, f := range addKourierEnvValues(ks) {
+		f(got)
+	}
 
 	if !cmp.Equal(got, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
@@ -228,6 +242,8 @@ func TestKourierInternalEncryptionOverrideCertName(t *testing.T) {
 							{Name: "SERVING_NAMESPACE", Value: "knative-serving"},
 							{Name: "CERTS_SECRET_NAMESPACE", Value: ingressDefaultCertificateNameSpace},
 							{Name: "CERTS_SECRET_NAME", Value: "custom-cert"},
+							{Name: "KUBE_API_BURST", Value: "200"},
+							{Name: "KUBE_API_QPS", Value: "200"},
 						},
 					}},
 				},
@@ -245,7 +261,9 @@ func TestKourierInternalEncryptionOverrideCertName(t *testing.T) {
 		t.Fatal("Failed to convert deployment to unstructured", err)
 	}
 
-	addKourierEnvValues(ks)(got)
+	for _, f := range addKourierEnvValues(ks) {
+		f(got)
+	}
 
 	if !cmp.Equal(got, want) {
 		t.Errorf("Resource was not as expected:\n%s", cmp.Diff(got, want))
