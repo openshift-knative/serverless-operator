@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	Namespace  = "serverless-tests"
-	Namespace2 = "serverless-tests2"
+	Namespace = "serverless-tests"
 )
 
 // Flags holds the initialized test flags

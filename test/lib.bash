@@ -9,7 +9,7 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 declare -a TEST_NAMESPACES
-TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests2" "serverless-tests-mesh")
+TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests-mesh")
 export TEST_NAMESPACES
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
@@ -140,12 +140,12 @@ function downstream_serving_e2e_tests {
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/servicemesh/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
   else
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/... \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/kourier/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
