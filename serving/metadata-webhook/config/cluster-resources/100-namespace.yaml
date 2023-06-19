@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serving-tests
+  labels:
+    samples.knative.dev/release: devel
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serverless-tests
+  labels:
+    samples.knative.dev/release: devel

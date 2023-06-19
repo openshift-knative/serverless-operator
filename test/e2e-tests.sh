@@ -15,6 +15,9 @@ dump_state.setup # test
 if [[ $FULL_MESH == "true" ]]; then
   # net-istio does not use knative-serving-ingress namespace.
   export INGRESS_NAMESPACE="knative-serving"
+  # metadata-webhook adds istio annotations for e2e test by webhook.
+  oc apply -f "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/serving/metadata-webhook/config/cluster-resources"
+  oc apply -n serverless-tests -f "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/serving/metadata-webhook/config/namespaced-resources"
 else
   trust_router_ca
 fi

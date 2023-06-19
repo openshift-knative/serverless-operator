@@ -6,6 +6,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e/servicemesh"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/networking/pkg/apis/networking"
 	pkgTest "knative.dev/pkg/test"
@@ -62,9 +63,10 @@ func TestServiceToServiceCalls(t *testing.T) {
 	}
 }
 
+// testServiceToService tests calling a ksvc from another service.
 func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc testCase) {
 	// Create a ksvc with the specified annotations and labels
-	service := test.Service(tc.name, namespace, pkgTest.ImagePath(test.HelloworldGoImg), tc.annotations)
+	service := test.Service(tc.name, namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, tc.annotations)
 	service.ObjectMeta.Labels = tc.labels
 
 	service = test.WithServiceReadyOrFail(ctx, service)
@@ -73,7 +75,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
 	if service.GetLabels()[networking.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-		httpProxy := test.WithServiceReadyOrFail(ctx, httpProxyService(tc.name+"-proxy", namespace, service.Status.URL.Host))
+		httpProxy := test.WithServiceReadyOrFail(ctx, servicemesh.HttpProxyService(tc.name+"-proxy", namespace, "" /*gateway*/, service.Status.URL.Host, nil, nil))
 		serviceURL = httpProxy.Status.URL.URL()
 	}
 

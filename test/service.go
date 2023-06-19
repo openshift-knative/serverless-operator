@@ -17,17 +17,18 @@ import (
 
 type ServiceCfgFunc func(*servingv1.Service)
 
-func Service(name, namespace, image string, annotations map[string]string) *servingv1.Service {
+func Service(name, namespace, image string, serviceAnnotations, templateAnnotations map[string]string) *servingv1.Service {
 	s := &servingv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:        name,
+			Namespace:   namespace,
+			Annotations: serviceAnnotations,
 		},
 		Spec: servingv1.ServiceSpec{
 			ConfigurationSpec: servingv1.ConfigurationSpec{
 				Template: servingv1.RevisionTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
-						Annotations: annotations,
+						Annotations: templateAnnotations,
 					},
 					Spec: servingv1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
@@ -82,7 +83,7 @@ func WithServiceReady(ctx *Context, name, namespace, image string, cfgFuncs ...S
 }
 
 func CreateService(ctx *Context, name, namespace, image string, cfgFuncs ...ServiceCfgFunc) (*servingv1.Service, error) {
-	service := Service(name, namespace, image, nil)
+	service := Service(name, namespace, image, nil, nil)
 	for _, f := range cfgFuncs {
 		f(service)
 	}

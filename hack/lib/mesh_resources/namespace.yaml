@@ -7,3 +7,54 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: knative-eventing
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serving-tests
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serving-tests-alt
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serverless-tests
+---
+# Additional namespaces for upgrade tests
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e0
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e1
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e2
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e3
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e4
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-1
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-2
