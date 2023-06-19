@@ -1,0 +1,36 @@
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-tenant-1
+  namespace: tenant-1
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["tenant-1", "knative-serving", "istio-system"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-tenant-2
+  namespace: tenant-2
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["tenant-2", "knative-serving", "istio-system"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-serverless-tests
+  namespace: serverless-tests
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["serverless-tests", "knative-serving", "knative-eventing", "istio-system"]
