@@ -5,7 +5,6 @@ metadata:
     role: webhook
     samples.knative.dev/release: devel
   name: webhook
-  namespace: serving-tests
 spec:
   ports:
     - port: 443
