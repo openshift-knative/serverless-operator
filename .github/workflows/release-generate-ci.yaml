@@ -48,13 +48,6 @@ jobs:
           path: ./src/github.com/openshift-knative/hack
           fetch-depth: 0
 
-      - name: Checkout openshift/release
-        uses: actions/checkout@v3
-        with:
-          branch: 'master'
-          path: ./src/github.com/openshift-knative/hack/openshift/release
-          fetch-depth: 0
-
       - name: Configure Git user
         run: |
           git config --global user.email "serverless-support@redhat.com"
