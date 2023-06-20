@@ -33,26 +33,32 @@ jobs:
           sudo mv /usr/bin/yq /usr/local/bin/yq
 
 
-      - name: Checkout
+      - name: Checkout openshift-knative/serverless-operator
         uses: actions/checkout@v3
         with:
           branch: 'main' # TODO: Remove this once made official
           path: ./src/github.com/openshift-knative/serverless-operator
           fetch-depth: 0
 
-      - name: Configure Git user
-        run: |
-          git config --global user.email "serverless-support@redhat.com"
-          git config --global user.name "OpenShift Serverless"
-
-      - name: Checkout
+      - name: Checkout openshift-knative/hack
         uses: actions/checkout@v3
         with:
-          # Always checkout main, we don't support bumping for patch releases (for now)
           repository: 'pierDipi/openshift-knative-hack' # TODO change it to the official one
           ref: 'prowcopy' # TODO change it to the official one
           path: ./src/github.com/openshift-knative/hack
           fetch-depth: 0
+
+      - name: Checkout openshift/release
+        uses: actions/checkout@v3
+        with:
+          branch: 'master'
+          path: ./src/github.com/openshift-knative/hack/openshift/release
+          fetch-depth: 0
+
+      - name: Configure Git user
+        run: |
+          git config --global user.email "serverless-support@redhat.com"
+          git config --global user.name "OpenShift Serverless"
 
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
@@ -72,7 +78,7 @@ jobs:
           branch: generate-openshift-knative-serverless-operator-${{ github.ref_name }}-ci-config
           title: "[${{ github.ref_name }}] Initialize Serverless Operator CI config"
           commit-message: "[${{ github.ref_name }}] Initialize Serverless Operator CI config"
-          push-to-fork: pierDipi/release
+          push-to-fork: pierdipi/release # TODO Use a proper fork
           delete-branch: true
           body: |
             As per title.
