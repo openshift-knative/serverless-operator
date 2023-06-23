@@ -6,7 +6,32 @@ metadata:
 spec:
   profiles:
   - default
+  runtime:
+    components:
+      pilot:
+        deployment:
+          replicas: 3
+    ingressGateways:
+      - name: istio-ingressgateway
+        k8s:
+          replicaCount: 3
+          resources:
+            limits:
+              cpu: 3000m
+              memory: 2048Mi
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
   proxy:
+    runtime:
+      container:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 128Mi
     networking:
       trafficControl:
         inbound:
