@@ -36,17 +36,14 @@ jobs:
       - name: Checkout openshift-knative/serverless-operator
         uses: actions/checkout@v3
         with:
-          branch: 'main' # TODO: Remove this once made official
           path: ./src/github.com/openshift-knative/serverless-operator
-          fetch-depth: 0
 
       - name: Checkout openshift-knative/hack
         uses: actions/checkout@v3
         with:
-          repository: 'pierDipi/openshift-knative-hack' # TODO change it to the official one
-          ref: 'prowcopy' # TODO change it to the official one
+          repository: 'openshift-knative/hack'
+          ref: 'main'
           path: ./src/github.com/openshift-knative/hack
-          fetch-depth: 0
 
       - name: Checkout openshift/release
         uses: actions/checkout@v3
@@ -73,12 +70,12 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.OPENSHIFT_RELEASE_FORK_PATH }}
+          token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           path: ./src/github.com/openshift-knative/hack/openshift/release
           branch: generate-openshift-knative-serverless-operator-${{ github.ref_name }}-ci-config
           title: "[${{ github.ref_name }}] Initialize Serverless Operator CI config"
           commit-message: "[${{ github.ref_name }}] Initialize Serverless Operator CI config"
-          push-to-fork: pierdipi/release # TODO Use a proper fork
+          push-to-fork: serverless-qe/release
           delete-branch: true
           body: |
-            As per title.
+            Serverless Operator CI config for ${{ github.ref_name }}.
