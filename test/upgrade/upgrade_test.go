@@ -80,11 +80,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
-				[]pkgupgrade.BackgroundOperation{
-					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
-				},
+				ServingContinualTests(ctx),
 				ChannelContinualTests(ctx),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
@@ -415,5 +411,20 @@ func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperati
 	return []pkgupgrade.BackgroundOperation{
 		continual.ChannelTest(continual.ChannelTestOptions{}),
 		continual.BrokerBackedByChannelTest(continual.ChannelTestOptions{}),
+	}
+}
+
+func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
+	ctx, _ := defaultEnvironment(testCtx.T)
+
+	// https://issues.redhat.com/browse/SRVKS-1080
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		return nil
+	}
+
+	return []pkgupgrade.BackgroundOperation{
+		servingupgrade.ProbeTest(),
+		servingupgrade.AutoscaleSustainingWithTBCTest(),
+		servingupgrade.AutoscaleSustainingTest(),
 	}
 }
