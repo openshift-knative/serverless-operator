@@ -177,7 +177,7 @@ test-upstream-upgrade:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
-test-upgrade: test-upgrade-with-mesh
+test-upgrade: test-upstream-upgrade
 
 test-upgrade-with-mesh:
 	FULL_MESH=true UNINSTALL_MESH=false ./hack/mesh.sh
