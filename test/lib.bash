@@ -355,7 +355,7 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts images_file
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template common_opts images_file
 
   # Specify image mapping for REKT tests
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
@@ -388,8 +388,6 @@ $base{{- with .Name }}
 EOF
 )
 
-  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
-
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
@@ -399,9 +397,17 @@ EOF
   export EVENTING_UPGRADE_TESTS_TRACEEXPORTLIMIT=30
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  common_opts=(./test/upgrade "-tags=upgrade" \
+  # There can be only one SYSTEM_NAMESPACE. Eventing and Serving tests both expect
+  # some resources in their own system namespace. We copy the required resources from
+  # EVENTING_NAMESPACE to SERVING_NAMESPACE and use that as system namespace.
+  if ! oc -n "$SERVING_NAMESPACE" get configmap kafka-broker-config; then
+    oc get configmap kafka-broker-config --namespace="$EVENTING_NAMESPACE" -o yaml | \
+      sed -e 's/namespace: .*/namespace: '"$SERVING_NAMESPACE"'/' | \
+      yq delete - metadata.ownerReferences | oc apply -f -
+  fi
+
+  common_opts=(-parallel=8 ./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
-    "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
     "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
@@ -416,6 +422,13 @@ EOF
     "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS/knative-v/}" \
     --resolvabledomain \
     --https)
+
+  if [[ $FULL_MESH == "true" ]]; then
+      common_opts+=("--environment.namespace=serverless-tests")
+      common_opts+=("--istio.enabled")
+      # For non-REKT eventing tests.
+      common_opts+=("--reusenamespace")
+  fi
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
