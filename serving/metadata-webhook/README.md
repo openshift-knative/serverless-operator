@@ -12,7 +12,8 @@ Please install [Knative Serving](https://knative.dev/docs/install/).
 ### Deploy metadata-webhook
 
 ```
-$ kubectl apply -f ./config
+$ kubectl apply -f ./config/cluster-resources
+$ kubectl apply -n serving-tests ./config/namespaced-resources
 
 $ kubectl get pod -n serving-tests -w
 NAME                       READY   STATUS        RESTARTS   AGE
