@@ -6,11 +6,6 @@ import (
 	"knative.dev/eventing/test/rekt/features/channel"
 	"knative.dev/eventing/test/rekt/resources/subscription"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/system"
-	"knative.dev/reconciler-test/pkg/environment"
-	"knative.dev/reconciler-test/pkg/eventshub"
-	"knative.dev/reconciler-test/pkg/k8s"
-	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
 )
 
@@ -18,15 +13,7 @@ import (
 func TestContainerSourceChannelKsvc(t *testing.T) {
 	t.Parallel()
 
-	ctx, env := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		// Enables KnativeService in the scenario.
-		eventshub.WithKnativeServiceForwarder,
-		environment.Managed(t),
-	)
+	ctx, env := defaultEnvironment(t)
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
 		return subscription.WithSubscriber(ref, uri)
