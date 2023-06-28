@@ -6,29 +6,12 @@ metadata:
   namespace: knative-eventing
 spec: { }
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+# Allow imc-dispatcher to receive requests from pingsource-mt-adapter in knative-eventing.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-serverless-tests-mt-channel-based-broker
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "broker-ingress"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "serverless-tests" ]
-      to:
-        - operation:
-            methods: [ "POST" ]
-            paths: [ "/serverless-tests/*" ]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-mt-channel-based-broker-ingress-to-imc-dispatcher
+  name: allow-serverless-tests-pingsource-to-imc
   namespace: knative-eventing
 spec:
   action: ALLOW
@@ -39,21 +22,35 @@ spec:
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-ingress" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
       to:
         - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow imc-dispatcher to receive requests from imc-dispatcher in knative-eventing.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-imc-dispatcher-to-mt-channel-based-broker-filter
+  name: allow-serverless-tests-imc-to-imc
   namespace: knative-eventing
 spec:
   action: ALLOW
   selector:
     matchLabels:
-      app.kubernetes.io/component: "broker-filter"
+      app.kubernetes.io/component: "imc-dispatcher"
   rules:
     - from:
         - source:
@@ -61,12 +58,26 @@ spec:
             principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
       to:
         - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow imc-dispatcher to receive requests from mt-broker-filter in knative-eventing.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-serverless-tests-imc-dispatcher
+  name: allow-serverless-tests-broker-filter-to-imc
   namespace: knative-eventing
 spec:
   action: ALLOW
@@ -76,16 +87,723 @@ spec:
   rules:
     - from:
         - source:
-            namespaces: [ "serverless-tests" ]
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
       to:
         - operation:
-            hosts: [ "*.serverless-tests.svc.cluster.local" ]
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow imc-dispatcher to receive requests from knative-kafka-source-data-plane in knative-eventing.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-serverless-tests-mt-channel-based-broker-reply
+  name: allow-serverless-tests-eks-to-imc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow imc-dispatcher to receive requests from knative-kafka-broker-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekb-to-imc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow imc-dispatcher to receive requests from knative-kafka-channel-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekc-to-imc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from pingsource-mt-adapter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-pingsource-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from imc-dispatcher in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-imc-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from mt-broker-filter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-broker-filter-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from knative-kafka-source-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-eks-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from knative-kafka-broker-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekb-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from knative-kafka-channel-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekc-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from pingsource-mt-adapter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-pingsource-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from imc-dispatcher in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-imc-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from mt-broker-filter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-broker-filter-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from knative-kafka-source-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-eks-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from knative-kafka-broker-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekb-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from knative-kafka-channel-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekc-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from pingsource-mt-adapter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-pingsource-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from imc-dispatcher in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-imc-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from mt-broker-filter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-broker-filter-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from knative-kafka-source-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-eks-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from knative-kafka-broker-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekb-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from knative-kafka-channel-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekc-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from pingsource-mt-adapter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-pingsource-to-broker-ingress
   namespace: knative-eventing
 spec:
   action: ALLOW
@@ -95,18 +813,212 @@ spec:
   rules:
     - from:
         - source:
-            namespaces:
-              - "knative-eventing"
-            principals:
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-              - "cluster.local/ns/knative-eventing/sa/kafka-channel-dispatcher"
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter" ]
       to:
         - operation:
             paths:
               - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from imc-dispatcher in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-imc-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from mt-broker-filter in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-broker-filter-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-filter" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from knative-kafka-source-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-eks-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from knative-kafka-broker-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekb-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-sender-to-knative-receiver.yaml
+---
+# Allow broker-ingress to receive requests from knative-kafka-channel-data-plane in knative-eventing.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-ekc-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-imc-channel.yaml
+# Allow Knative InMemoryChannel to receive requests from serverless-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-imc-channel
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-kafka-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -123,13 +1035,15 @@ spec:
             namespaces:
               - "knative-eventing"
             principals:
-              - "cluster.local/ns/knative-eventing/sa/kafka-broker-dispatcher"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
       to:
         - operation:
             paths:
               - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-kafka-broker.yaml
+# Allow Knative Broker for Apache Kafka to receive requests from serverless-tests.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -151,101 +1065,8 @@ spec:
               - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-mt-channel-based-broker-ingress-to-kafka-channel-receiver
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "kafka-channel-receiver"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-ingress" ]
-      to:
-        - operation:
-            methods: [ "POST" ]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-kafka-channel-dispatcher-to-mt-channel-based-broker-filter
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "broker-filter"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
-      to:
-        - operation:
-            methods: [ "POST" ]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-probe-kafka-broker-receiver
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "kafka-broker-receiver"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/kafka-controller" ]
-      to:
-        - operation:
-            methods: [ "GET" ]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-probe-kafka-sink-receiver
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "kafka-sink-receiver"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/kafka-controller" ]
-      to:
-        - operation:
-            methods: [ "GET" ]
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-probe-kafka-channel-receiver
-  namespace: knative-eventing
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: "kafka-channel-receiver"
-  rules:
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals: [ "cluster.local/ns/knative-eventing/sa/kafka-controller" ]
-      to:
-        - operation:
-            methods: [ "GET" ]
----
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-kafka-channel.yaml
+# Allow Knative Channel for Apache Kafka to receive requests from serverless-tests.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -265,4 +1086,76 @@ spec:
         - operation:
             hosts:
               - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-kafka-sink.yaml
+# Allow Knative Sink for Apache Kafka to receive requests from serverless-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-kafka-sink
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-mt-channel-based-broker-reply.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-mt-channel-based-broker-reply
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+# Source: knative-istio-authz-onboarding/templates/allow-ns-to-mt-channel-based-broker.yaml
+# Allow Knative Broker with class MTChannelBasedBroker to receive requests from serverless-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-mt-channel-based-broker
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
             methods: [ "POST" ]
