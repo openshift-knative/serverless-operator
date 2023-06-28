@@ -23,14 +23,20 @@ spec:
         - source:
             namespaces: ["tenant-2", "knative-serving", "istio-system"]
 ---
+# Source: knative-istio-authz-onboarding/templates/allow-knative-to-ns.yaml
+# Allow namespace serverless-tests to receive requests from Knative system components.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-traffic-to-serverless-tests
+  name: allow-from-knative
   namespace: serverless-tests
 spec:
   action: ALLOW
   rules:
     - from:
         - source:
-            namespaces: ["serverless-tests", "knative-serving", "knative-eventing", "istio-system"]
+            namespaces:
+              - "serverless-tests"
+              - "knative-eventing"
+              - "knative-serving"
+              - "istio-system"
