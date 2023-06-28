@@ -2,6 +2,13 @@
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
+  name: deny-all-by-default
+  namespace: knative-eventing
+spec: { }
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
   name: allow-serverless-tests-mt-channel-based-broker
   namespace: knative-eventing
 spec:
