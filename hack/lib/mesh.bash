@@ -130,6 +130,13 @@ function deploy_gateways {
 }
 
 function undeploy_gateways {
+  oc delete -n serverless-tests -f "${resources_dir}"/network-policy-monitoring.yaml --ignore-not-found || return $?
+  for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
+    oc delete -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
+  done
+  oc delete -f "${resources_dir}"/authorization-policy-test-namespaces.yaml --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/authorization-policy-knative-eventing.yaml --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/authorization-policy-knative-serving.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/gateway.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/smmr.yaml --ignore-not-found || return $?
