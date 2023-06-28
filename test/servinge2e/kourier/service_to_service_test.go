@@ -75,7 +75,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
 	if service.GetLabels()[networking.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-		httpProxy := test.WithServiceReadyOrFail(ctx, servicemesh.HttpProxyService(tc.name+"-proxy", namespace, "" /*gateway*/, service.Status.URL.Host, nil, nil))
+		httpProxy := test.WithServiceReadyOrFail(ctx, servicemesh.HTTPProxyService(tc.name+"-proxy", namespace, "" /*gateway*/, service.Status.URL.Host, nil, nil))
 		serviceURL = httpProxy.Status.URL.URL()
 	}
 

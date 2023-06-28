@@ -22,13 +22,12 @@ type testCase struct {
 	sourceNamespace   string                // Namespace for the source service (http proxy)
 	targetNamespace   string                // Namespace for the target service
 	gateway           string                // Value for gateway that's called by http proxy
-	targetHost        string                // Value for host that's called by http proxy
 	usePrivateService bool                  // Whether http proxy should call target's service private service
 	checkResponseFunc spoof.ResponseChecker // Function to be used to check response
 }
 
-// HttpProxyService returns a knative service acting as "http proxy", redirects requests towards a given "host". Used to test cluster-local services
-func HttpProxyService(name, namespace, gateway, target string, serviceAnnotations, templateAnnotations map[string]string) *servingv1.Service {
+// HTTPProxyService returns a knative service acting as "http proxy", redirects requests towards a given "host". Used to test cluster-local services
+func HTTPProxyService(name, namespace, gateway, target string, serviceAnnotations, templateAnnotations map[string]string) *servingv1.Service {
 	proxy := test.Service(name, namespace, pkgTest.ImagePath(test.HTTPProxyImg), serviceAnnotations, templateAnnotations)
 	if gateway != "" {
 		proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
