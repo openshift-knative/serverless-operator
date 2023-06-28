@@ -127,8 +127,9 @@ test-e2e-with-mesh-testonly:
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	./hack/tracing.sh
-	FULL_MESH=true ENABLE_TRACING=true ./hack/install.sh
-	FULL_MESH=true ./test/e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
