@@ -122,3 +122,66 @@ spec:
             paths:
               - "/serverless-tests/*"
             methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-kafka-broker
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-kafka-channel
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-kafka-sink
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
