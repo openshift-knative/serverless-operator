@@ -8,7 +8,6 @@ import (
 	resources "knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
-	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
@@ -18,16 +17,7 @@ import (
 func TestChannelBasedBrokerToKsvc(t *testing.T) {
 	t.Parallel()
 
-	ctx, env := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		// Enables KnativeService in the scenario.
-		eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(5*time.Second, 4*time.Minute),
-		environment.Managed(t),
-	)
+	ctx, env := defaultEnvironment(t)
 
 	brokerName := feature.MakeRandomK8sName("broker")
 
