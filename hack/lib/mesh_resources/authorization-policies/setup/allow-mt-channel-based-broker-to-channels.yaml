@@ -1,0 +1,75 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-mt-channel-based-broker-ingress-to-imc-dispatcher
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-ingress" ]
+      to:
+        - operation:
+            methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-mt-channel-based-broker-ingress-to-kafka-channel
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/mt-broker-ingress" ]
+      to:
+        - operation:
+            methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-kafka-channel-to-mt-channel-based-broker-filter
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-filter"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane" ]
+      to:
+        - operation:
+            methods: [ "POST" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-imc-to-mt-channel-based-broker-filter
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-filter"
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals: [ "cluster.local/ns/knative-eventing/sa/imc-dispatcher" ]
+      to:
+        - operation:
+            methods: [ "POST" ]
