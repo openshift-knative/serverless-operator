@@ -1,0 +1,35 @@
+---
+# knative-eventing je navic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-activator
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: activator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-serving", "knative-eventing", "istio-system" ]
+---
+# knative-eventing je navic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serverless-tests-to-activator
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: activator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "serverless-tests", "knative-eventing" ]
+      to:
+        - operation:
+            hosts: [ "*.serverless-tests.svc.cluster.local" ]
