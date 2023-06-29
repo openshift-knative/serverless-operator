@@ -1,0 +1,18 @@
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-activator
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: activator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "serving-tests" ]
+      to:
+        - operation:
+            hosts: [ "*.serving-tests.svc.cluster.local", "*.serving-tests", "*.serving-tests.svc" ]
