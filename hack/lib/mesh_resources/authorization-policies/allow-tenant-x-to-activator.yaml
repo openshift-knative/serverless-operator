@@ -1,0 +1,36 @@
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-tenant-1-to-activator
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: activator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "tenant-1" ]
+      to:
+        - operation:
+            hosts: [ "*.tenant-1.svc.cluster.local" ]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-tenant-2-to-activator
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: activator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "tenant-2" ]
+      to:
+        - operation:
+            hosts: [ "*.tenant-2.svc.cluster.local" ]
