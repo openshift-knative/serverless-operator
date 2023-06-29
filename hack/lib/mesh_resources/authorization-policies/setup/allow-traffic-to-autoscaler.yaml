@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-autoscaler
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: autoscaler
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-serving" ]
