@@ -21,6 +21,10 @@ function prepare_knative_serving_tests {
 
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config/cluster-resources.yaml
+  # Workaround for https://issues.redhat.com/browse/OSSM-1397
+  if [[ $FULL_MESH == "true" ]]; then
+    oc label namespace serving-tests maistra.io/member-of=istio-system --overwrite
+  fi
   oc apply -f test/config/test-resources.yaml
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
