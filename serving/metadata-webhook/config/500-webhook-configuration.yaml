@@ -15,19 +15,11 @@ webhooks:
     sideEffects: None
     name: webhook.metadata-webhook.example.com
 ---
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
+apiVersion: v1
+kind: Secret
 metadata:
-  name: webhook.metadata-webhook.example.com
+  name: webhook-certs
+  namespace: serving-tests
   labels:
     samples.knative.dev/release: devel
-webhooks:
-  - admissionReviewVersions:
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook
-        namespace: serverless-tests
-    failurePolicy: Fail
-    sideEffects: None
-    name: webhook.metadata-webhook.example.com
+# The data is populated at install time.
