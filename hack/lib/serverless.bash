@@ -177,6 +177,11 @@ function deploy_knativeserving_cr {
   fi
 
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
+
+  if [[ $FULL_MESH == "true" ]]; then
+    # metadata-webhook adds istio annotations for e2e test by webhook.
+    oc apply -f "${rootdir}/serving/metadata-webhook/config"
+  fi
 }
 
 # If ServiceMesh is enabled:
