@@ -12,6 +12,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: serving-tests
+  labels:
+    maistra.io/member-of: istio-system
 ---
 apiVersion: v1
 kind: Namespace
@@ -22,6 +24,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: serverless-tests
+  labels:
+    maistra.io/member-of: istio-system
 ---
 # Additional namespaces for upgrade tests
 apiVersion: v1
