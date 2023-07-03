@@ -121,6 +121,20 @@ function deploy_gateways {
   oc apply -f "${resources_dir}"/authorization-policies/setup || return $?
   oc apply -f "${resources_dir}"/authorization-policies || return $?
 
+  cat <<-EOF | oc apply -f -
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-cluster-domain
+  namespace: istio-system
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            hosts: [ "*.${subdomain}" ]
+EOF
+
   oc apply -n "${EVENTING_NAMESPACE}" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc apply -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
@@ -133,6 +147,7 @@ function undeploy_gateways {
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc delete -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   done
+  oc delete authorizationpolicy allow-traffic-to-cluster-domain -n istio-system --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/authorization-policies --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
