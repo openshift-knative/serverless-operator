@@ -65,15 +65,15 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https --skip-cleanup-on-fail"
 
+  local parallel=16
   if [[ $FULL_MESH == "true" ]]; then
     # TODO: SRVKS-211: Can not run grpc and http2 tests.
     rm ./test/e2e/grpc_test.go
     rm ./test/e2e/http2_test.go
     # Remove h2c test
     sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
+    parallel=8
   fi
-
-  local parallel=16
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
