@@ -79,8 +79,6 @@ function undeploy_servicemeshcontrolplane {
 }
 
 function deploy_gateways {
-  oc apply -f "${resources_dir}"/smmr.yaml || return $?
-
   # Generate wildcard certs with cluster's subdomain.
 
   local out_dir
@@ -117,6 +115,7 @@ function deploy_gateways {
       --cert="${out_dir}"/wildcard.crt --dry-run=client -o yaml | oc apply -f -
 
   oc apply -f "${resources_dir}"/namespace.yaml || return $?
+  oc apply -f "${resources_dir}"/smmr.yaml || return $?
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
   oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
 
