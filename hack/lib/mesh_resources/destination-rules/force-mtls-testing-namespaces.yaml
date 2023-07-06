@@ -1,0 +1,59 @@
+# The peerauthentication.yaml enables mTLS for the whole mesh, but
+# as this is not working for DomainMappings, these DestinationRules enforce mTLS also on the service level.
+# This forces the istio-ingressgateway to also send mTLS if the destination is itself.
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: tenant-1
+spec:
+  host: "*.tenant-1.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: tenant-2
+spec:
+  host: "*.tenant-2.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: serving-tests
+spec:
+  host: "*.serving-tests.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: serving-tests-alt
+spec:
+  host: "*.serving-tests-alt.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: serverless-tests
+spec:
+  host: "*.serverless-tests.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---

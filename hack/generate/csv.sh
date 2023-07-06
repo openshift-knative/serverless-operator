@@ -76,7 +76,7 @@ function default_knative_ingress_images() {
   export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
-  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${registry}/net-istio-controller:${knative_istio}"}
+  export KNATIVE_ISTIO_CONTROLLER="quay.io/rlehmann/main.go:latest"
   export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-"${registry}/net-istio-webhook:${knative_istio}"}
 }
 

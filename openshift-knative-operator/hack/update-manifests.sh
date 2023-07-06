@@ -164,15 +164,15 @@ fi
 #
 
 # clean up ingreess_dir
-ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
-rm -rf "${ingress_root_dir}"
-
-serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
-ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
-mkdir -p "${ingress_dir}"
-
-download_ingress net-istio   "${ingress_dir}" "${istio_files[@]}"
-download_ingress net-kourier "${ingress_dir}" "${kourier_files[@]}"
+#ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
+#rm -rf "${ingress_root_dir}"
+#
+#serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
+#ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
+#mkdir -p "${ingress_dir}"
+#
+#download_ingress net-istio   "${ingress_dir}" "${istio_files[@]}"
+#download_ingress net-kourier "${ingress_dir}" "${kourier_files[@]}"
 
 #
 # DOWNLOAD EVENTING

@@ -1,0 +1,15 @@
+# Because autoscaler can talk to itself using websockets, we must also enforce
+# strict mTLS again via DestinationRule. Otherwise, if the websocket client is the same
+# as the destination pod, the connection will fail, because it does not use mTLS.
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: knative-serving
+spec:
+  host: "*.knative-serving.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---

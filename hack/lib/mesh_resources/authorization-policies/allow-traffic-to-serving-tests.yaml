@@ -10,3 +10,16 @@ spec:
     - from:
         - source:
             namespaces: ["serving-tests", "knative-serving", "istio-system"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-drain-port
+  namespace: serving-tests
+spec:
+  action: ALLOW
+  rules:
+  - to:
+      - operation:
+          ports: [ "8022" ]
+---

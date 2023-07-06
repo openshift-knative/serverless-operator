@@ -4,6 +4,10 @@ metadata:
   name: basic
   namespace: istio-system
 spec:
+  techPreview:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s
   profiles:
   - default
   proxy:
