@@ -5,6 +5,8 @@ readonly ROOT_DIR
 
 # shellcheck disable=SC1091,SC1090
 source "${ROOT_DIR}/vendor/knative.dev/hack/library.sh"
+# shellcheck disable=SC1091,SC1090
+source "${ROOT_DIR}/hack/lib/metadata.bash"
 
 set -o errexit
 set -o nounset
@@ -18,6 +20,7 @@ EVENTING_VERSION="release-v1.9"
 EVENTING_KAFKA_VERSION="release-v1.4"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.9"
 SERVING_VERSION="release-v1.9"
+GO_VERSION="$(metadata.get requirements.golang)"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
@@ -54,14 +57,14 @@ if (( GO_GET )); then
     go mod edit -replace "${dep}"
     # Let the dependency update the magic SHA otherwise the
     # following "go mod edit" will fail.
-    go mod tidy -compat=1.18
+    go mod tidy -compat="${GO_VERSION}"
     go mod vendor
   done
   go get -d "${FLOATING_DEPS[@]}"
 fi
 
 # Prune modules.
-go mod tidy -compat=1.18
+go mod tidy -compat="${GO_VERSION}"
 go mod vendor
 
 # Remove unnecessary files.
