@@ -4,6 +4,13 @@ metadata:
   name: basic
   namespace: istio-system
 spec:
+  security:
+    dataPlane:
+      mtls: true
+  techPreview:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s
   profiles:
   - default
   proxy:
@@ -12,6 +19,7 @@ spec:
         inbound:
           excludedPorts:
           - 8444
+          - 8022
     accessLogging:
       file:
         name: /dev/stdout
