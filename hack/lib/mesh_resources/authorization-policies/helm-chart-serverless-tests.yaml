@@ -1339,14 +1339,15 @@ spec:
               - "/serverless-tests/*"
             methods: [ "POST" ]
 ---
-# Source: knative-istio-authz-onboarding/templates/peer-authentication.yaml
-# Enforce peer authentication to be mTLS in the namespace serverless-tests, so that we can define
-# authorization policies based on client and server identities.
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: default
-  namespace: serverless-tests
-spec:
-  mtls:
-    mode: STRICT
+## WE PROBABLY DO NOT NEED THIS
+## Source: knative-istio-authz-onboarding/templates/peer-authentication.yaml
+## Enforce peer authentication to be mTLS in the namespace serverless-tests, so that we can define
+## authorization policies based on client and server identities.
+#apiVersion: security.istio.io/v1beta1
+#kind: PeerAuthentication
+#metadata:
+#  name: default
+#  namespace: serverless-tests
+#spec:
+#  mtls:
+#    mode: STRICT
