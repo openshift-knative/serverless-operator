@@ -27,7 +27,6 @@ require (
 	k8s.io/apimachinery v0.25.4
 	k8s.io/client-go v0.25.4
 	knative.dev/eventing v0.37.1
-	knative.dev/eventing-kafka v0.35.1
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230417170854-f591fea109b3
 	knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
