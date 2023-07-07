@@ -8,7 +8,7 @@ import (
 	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/eventing-kafka/test/rekt/resources/kafkachannel"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"

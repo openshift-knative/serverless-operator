@@ -32,7 +32,7 @@ import (
 	servingversioned "knative.dev/serving/pkg/client/clientset/versioned"
 
 	// Extensions
-	kafkaversioned "knative.dev/eventing-kafka/pkg/client/clientset/versioned"
+	kafkaversioned "knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned"
 )
 
 const operatorNamesapce = "openshift-serverless"

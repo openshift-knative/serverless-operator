@@ -1411,24 +1411,6 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka v0.35.1 => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
-## explicit; go 1.16
-knative.dev/eventing-kafka/pkg/apis/bindings
-knative.dev/eventing-kafka/pkg/apis/bindings/v1beta1
-knative.dev/eventing-kafka/pkg/apis/kafka
-knative.dev/eventing-kafka/pkg/apis/kafka/v1alpha1
-knative.dev/eventing-kafka/pkg/apis/messaging
-knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1
-knative.dev/eventing-kafka/pkg/apis/sources/config
-knative.dev/eventing-kafka/pkg/apis/sources/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/scheme
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/bindings/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/kafka/v1alpha1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/messaging/v1beta1
-knative.dev/eventing-kafka/pkg/client/clientset/versioned/typed/sources/v1beta1
-knative.dev/eventing-kafka/pkg/common/constants
-knative.dev/eventing-kafka/test/rekt/resources/kafkachannel
 # knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 ## explicit; go 1.19
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
@@ -1748,7 +1730,6 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 # knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1
-# knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 # knative.dev/hack => knative.dev/hack v0.0.0-20230217102752-199139daec7e
 # knative.dev/networking => knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
