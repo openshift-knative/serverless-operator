@@ -182,7 +182,6 @@ require (
 replace (
 	// Knative components
 	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1
-	knative.dev/eventing-kafka => github.com/openshift-knative/eventing-kafka v0.19.1-0.20221226103243-fa44547a3ccc
 	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 	knative.dev/hack => knative.dev/hack v0.0.0-20230217102752-199139daec7e
 	knative.dev/networking => knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
