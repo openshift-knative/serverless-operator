@@ -7,7 +7,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
 	ksvcresources "github.com/openshift-knative/serverless-operator/test/kitchensinke2e/ksvc"
-	kafkachannelresources "knative.dev/eventing-kafka/test/rekt/resources/kafkachannel"
+	kafkachannelresources "knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
 	channelresources "knative.dev/eventing/test/rekt/resources/channel"
 	parallelresources "knative.dev/eventing/test/rekt/resources/parallel"
