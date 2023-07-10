@@ -69,8 +69,8 @@ function cluster_scalable {
     return 1
   fi
   # Prevent scaling for single-node OpenShift.
-  if [[ $(oc get machineconfigpool master -ojsonpath='{.status.machineCount}') == 1 && \
-        $(oc get machineconfigpool worker -ojsonpath='{.status.machineCount}') == 0 ]]; then
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.controlPlaneTopology}') == SingleReplica && \
+        $(oc get infrastructure cluster -ojsonpath='{.status.infrastructureTopology}') == SingleReplica ]]; then
     return 1
   fi
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
