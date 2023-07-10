@@ -280,3 +280,10 @@ The required linters for that are:
 - [`operator-sdk`](https://sdk.operatorframework.io/docs/installation/) to lint the bundle files
 - [`misspell`](https://github.com/client9/misspell) to lint typos
 - [`prettier`](https://prettier.io/) to format YAML
+
+# Release
+
+- [Merge PRs created by GitHub actions](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
+- Create the `release-1.X` branch
+- [Approve PRs created by GitHub actions bot](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
+- [Approve CI setup for `release-1.X` branch](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
