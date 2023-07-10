@@ -68,6 +68,11 @@ function cluster_scalable {
   if ! oc get machineconfigpool &>/dev/null; then
     return 1
   fi
+  # Prevent scaling for single-node OpenShift.
+  if [[ $(oc get machineconfigpool master -ojsonpath='{.status.machineCount}') == 1 && \
+        $(oc get machineconfigpool worker -ojsonpath='{.status.machineCount}') == 0 ]]; then
+    return 1
+  fi
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
     return 1
   fi
