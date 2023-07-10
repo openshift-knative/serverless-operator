@@ -20,7 +20,7 @@ func ServiceMeshControlPlaneV2(name, namespace string) *unstructured.Unstructure
 				"namespace": namespace,
 			},
 			"spec": map[string]interface{}{
-				"version": "v2.1",
+				"version": "v2.4",
 			},
 		},
 	}
