@@ -32,6 +32,8 @@ func main() {
 		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
 		SecretName:  "knative-operator-webhook-service-cert",
+		ServerKey:   "tls.key",
+		ServerCert:  "tls.crt",
 	})
 
 	if err := apis.AddToScheme(scheme.Scheme); err != nil {
