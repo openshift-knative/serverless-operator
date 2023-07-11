@@ -61,12 +61,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.29.0 <1.30.0'
+    olm.skipRange: '>=1.30.0 <1.31.0'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.30.0
+  name: serverless-operator.v1.31.0
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -898,7 +898,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
                         value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
                       - name: "CURRENT_VERSION"
-                        value: "1.30.0"
+                        value: "1.31.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -1081,7 +1081,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.9"
                       - name: "CURRENT_VERSION"
-                        value: "1.30.0"
+                        value: "1.31.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.9"
                     securityContext:
@@ -1353,5 +1353,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.9"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-storage-version-migration:knative-v1.9"
-  replaces: serverless-operator.v1.29.0
-  version: 1.30.0
+  replaces: serverless-operator.v1.30.0
+  version: 1.31.0
