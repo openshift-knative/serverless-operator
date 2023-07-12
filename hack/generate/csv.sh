@@ -72,7 +72,7 @@ function default_knative_eventing_kafka_broker_images() {
 function default_knative_ingress_images() {
   local knative_kourier knative_istio
   knative_kourier="$(metadata.get dependencies.kourier)"
-  export KNATIVE_KOURIER_CONTROL="gcr.io/gcp-compute-engine-223401/kourier-b74c3918b7eee585f87df62ccd297dc8@sha256:463fe229e9f9e7f9a5da892e905cdaa0a0d7238ca95cf7fd3884acd873056944"
+  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${registry}/net-kourier-kourier:${knative_kourier}"}
   export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
