@@ -163,7 +163,7 @@ func (sc *SpoofingClient) Do(req *http.Request, errorRetryCheckers ...interface{
 // If no retry checkers are specified `DefaultErrorRetryChecker` will be used.
 func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, checkers ...interface{}) (*Response, error) {
 	if len(checkers) == 0 {
-		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker)}
+		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker), ResponseRetryChecker(RouteInconsistencyRetryChecker)}
 	}
 
 	var resp *Response
@@ -250,6 +250,9 @@ func DefaultErrorRetryChecker(err error) (bool, error) {
 	// are usually transient.
 	if isNoRouteToHostError(err) {
 		return true, fmt.Errorf("retrying for 'no route to host' error: %w", err)
+	}
+	if isUnknownAuthority(err) {
+		return true, fmt.Errorf("retrying for certificate signed by unknown authority: %w", err)
 	}
 	return false, err
 }
