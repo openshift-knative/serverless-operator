@@ -80,10 +80,9 @@ jobs:
       #   Since we're generating files based on a floating branch in midstream,
       #   we need to reconcile those files periodically.
       #
-      #   when it's manually triggered or a scheduled run, create a PR
-      #   when there are changes detected.
+      #   when it's manually triggered or a scheduled run.
       - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         uses: peter-evans/create-pull-request@v4
         with:
           path: ./src/github.com/${{ github.repository }}
