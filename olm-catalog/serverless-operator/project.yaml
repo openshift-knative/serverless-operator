@@ -6,19 +6,19 @@ project:
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-  version: 1.29.0
+  version: 1.29.1
 
 olm:
-  replaces: 1.28.0
-  skipRange: '>=1.28.0 <1.29.0'
+  replaces: 1.29.0
+  skipRange: '>=1.29.0 <1.29.1'
   channels:
     default: 'stable'
     list:
       - 'stable'
       - 'stable-1.29'
   previous:
-    replaces: 1.27.0
-    skipRange: '>=1.27.0 <1.28.0'
+    replaces: 1.28.0
+    skipRange: '>=1.28.0 <1.29.0'
 
 requirements:
   kube:
@@ -64,9 +64,9 @@ dependencies:
   operator: 1.6.0
   # Previous versions required for downgrade testing
   previous:
-    serving: 1.7.0
-    eventing: 1.7
-    eventing_kafka_broker: 1.7
+    serving: 1.8
+    eventing: 1.8
+    eventing_kafka_broker: 1.8
 upgrade_sequence:
   - csv: serverless-operator.v1.26.0
     source: redhat-operators
@@ -75,4 +75,6 @@ upgrade_sequence:
   - csv: serverless-operator.v1.28.0
     source: redhat-operators
   - csv: serverless-operator.v1.29.0
+    source: serverless-operator
+  - csv: serverless-operator.v1.29.1
     source: serverless-operator
