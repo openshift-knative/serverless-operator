@@ -192,7 +192,6 @@ replace (
 replace (
 	// Adjustments to align transitive deps
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
-	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 	github.com/pelletier/go-toml/v2 => github.com/pelletier/go-toml/v2 v2.0.5
 	k8s.io/api => k8s.io/api v0.25.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4

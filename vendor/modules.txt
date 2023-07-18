@@ -131,7 +131,6 @@ github.com/go-logfmt/logfmt
 # github.com/go-logr/logr v1.2.3 => github.com/go-logr/logr v0.4.0
 ## explicit; go 1.14
 github.com/go-logr/logr
-github.com/go-logr/logr/testing
 # github.com/go-logr/zapr v1.2.3
 ## explicit; go 1.16
 github.com/go-logr/zapr
@@ -320,7 +319,7 @@ github.com/manifestival/client-go-client/pkg/dynamic
 # github.com/manifestival/controller-runtime-client v0.4.0
 ## explicit; go 1.15
 github.com/manifestival/controller-runtime-client
-# github.com/manifestival/manifestival v0.7.1 => github.com/manifestival/manifestival v0.7.0
+# github.com/manifestival/manifestival v0.7.1
 ## explicit; go 1.15
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/fake
@@ -1737,7 +1736,6 @@ sigs.k8s.io/yaml
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224205330-75da922ef055
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230511104239-03cf72c1c069
 # github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
-# github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
 # github.com/pelletier/go-toml/v2 => github.com/pelletier/go-toml/v2 v2.0.5
 # k8s.io/api => k8s.io/api v0.25.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
