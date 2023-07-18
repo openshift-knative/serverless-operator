@@ -20,7 +20,7 @@ require (
 	github.com/prometheus/common v0.42.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.2.0
 	google.golang.org/grpc v1.56.1
 	k8s.io/api v0.25.4
