@@ -222,3 +222,4 @@ jobs:
         with:
           dry: true
           prettier_options: -c templates/*.yaml
+          working_directory: ./src/github.com/${{ github.repository }}
