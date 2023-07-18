@@ -16,7 +16,7 @@ const (
 	holdApplicationUntilProxyStarts = `{ "holdApplicationUntilProxyStarts": true }`
 
 	maistraProxyEnv          = "sidecar.maistra.io/proxyEnv"
-	terminationDrainDuration = `{ "TERMINATION_DRAIN_DURATION_SECONDS": "20" }`
+	terminationDrainDuration = `{ "TERMINATION_DRAIN_DURATION_SECONDS": "45" }`
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

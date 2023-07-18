@@ -7,10 +7,9 @@ spec:
   security:
     dataPlane:
       mtls: true
-  techPreview:
-    meshConfig:
-      defaultConfig:
-        terminationDrainDuration: 35s
+  gateways:
+    openshiftRoute:
+      enabled: false
   profiles:
   - default
   proxy:
