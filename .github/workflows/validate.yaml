@@ -221,5 +221,4 @@ jobs:
         uses: creyD/prettier_action@v4.3
         with:
           dry: true
-          prettier_options: -c templates/*.yaml
-          working_directory: ./src/github.com/${{ github.repository }}
+          prettier_options: --check src/github.com/${{ github.repository }}/templates/*.yaml
