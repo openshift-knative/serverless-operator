@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- No longer ignoring errors resulting from invalid YAML manifests [#88](https://github.com/manifestival/manifestival/issues/88)
+- No longer preventing cluster-scoped resources from being owned [#90](https://github.com/manifestival/manifestival/issues/90)
+- Fixed panic when unexpected errors occur during deletion [#92](https://github.com/manifestival/manifestival/issues/92)
+
 ### Added
 
 ### Removed

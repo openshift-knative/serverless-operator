@@ -319,7 +319,7 @@ github.com/manifestival/client-go-client/pkg/dynamic
 # github.com/manifestival/controller-runtime-client v0.4.0
 ## explicit; go 1.15
 github.com/manifestival/controller-runtime-client
-# github.com/manifestival/manifestival v0.7.1
+# github.com/manifestival/manifestival v0.7.2-0.20221104184753-f9c7f20fc9c4 => github.com/manifestival/manifestival v0.7.2-0.20221104184753-f9c7f20fc9c4
 ## explicit; go 1.15
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/fake
@@ -1742,6 +1742,7 @@ sigs.k8s.io/yaml
 # knative.dev/networking => knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230224205330-75da922ef055
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230511104239-03cf72c1c069
+# github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.2-0.20221104184753-f9c7f20fc9c4
 # k8s.io/api => k8s.io/api v0.25.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 # k8s.io/client-go => k8s.io/client-go v0.25.4
