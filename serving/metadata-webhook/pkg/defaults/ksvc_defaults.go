@@ -14,9 +14,6 @@ const (
 	sidecarrewriteAppHTTPProbers    = "sidecar.istio.io/rewriteAppHTTPProbers"
 	proxyIstioConfig                = "proxy.istio.io/config"
 	holdApplicationUntilProxyStarts = `{ "holdApplicationUntilProxyStarts": true }`
-
-	maistraProxyEnv          = "sidecar.maistra.io/proxyEnv"
-	terminationDrainDuration = `{ "TERMINATION_DRAIN_DURATION_SECONDS": "45" }`
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -46,7 +43,6 @@ func (r *TargetKService) SetDefaults(ctx context.Context) {
 
 	r.Spec.Template.Annotations[sidecarInject] = "true"
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
-	r.Spec.Template.Annotations[maistraProxyEnv] = terminationDrainDuration
 	r.Spec.Template.Annotations[proxyIstioConfig] = holdApplicationUntilProxyStarts
 }
 
