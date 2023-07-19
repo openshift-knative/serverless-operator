@@ -34,16 +34,19 @@ function ensure_serverless_installed {
 
   deploy_serverless_operator "$csv"
 
-  install_knative_resources
+  install_knative_resources "${csv#serverless-operator.v}"
 
   logger.success "Serverless is installed: $csv"
 }
 
 function install_knative_resources {
+  local serverless_version
+  serverless_version=${1:?Pass serverless version as arg[1]}
+
   # Deploy the resources first and let them install in parallel, then
   # wait for them all to be ready.
   if [[ $INSTALL_SERVING == "true" ]]; then
-    deploy_knativeserving_cr
+    deploy_knativeserving_cr "$serverless_version"
   fi
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr
@@ -145,7 +148,8 @@ function find_install_plan {
 
 function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
-  local rootdir serving_cr
+  local rootdir serving_cr serverless_version
+  serverless_version=${1:?Pass serverless version as arg[1]}
 
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]"
@@ -154,23 +158,20 @@ function deploy_knativeserving_cr {
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].serving_cr") != "" ]]; then
     cp "${rootdir}/$(metadata.get "upgrade_sequence[0].serving_cr")" "$serving_cr"
-    enable_internal_encryption "$serving_cr"
   else
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
+  fi
+
+  # When upgrading from 1.29 or older, disable internal TLS.
+  if versions.le "$(versions.major_minor "$serverless_version")" "1.29"; then
+    logger.warn "Disabling internal encryption. Unsupported version."
+    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
     # Disable internal encryption.
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
-  fi
-
-  # When upgrading from 1.24 or older, disable internal TLS. It works since 1.25.
-  if [[ "$INSTALL_PREVIOUS_VERSION" == "true" ]]; then
-    if versions.le "$(versions.major_minor "$PREVIOUS_VERSION")" "1.24"; then
-      logger.warn "Disabling internal encryption. Unsupported version."
-      yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
-    fi
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
@@ -183,23 +184,6 @@ function deploy_knativeserving_cr {
     # metadata-webhook adds istio annotations for e2e test by webhook.
     oc apply -f "${rootdir}/serving/metadata-webhook/config"
   fi
-}
-
-function enable_internal_encryption {
-  local custom_resource net_patch
-  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
-
-  net_patch="$(mktemp -t net-XXXXX.yaml)"
-  cat - << EOF > "${net_patch}"
-spec:
-  config:
-    network:
-      internal-encryption: "true"
-EOF
-
-  yq merge --inplace --arrays append "$custom_resource" "$net_patch"
-
-  rm -f "${net_patch}"
 }
 
 # If ServiceMesh is enabled:
