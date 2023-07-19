@@ -81,9 +81,15 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
+  if [[ $FULL_MESH == "true" ]]; then
+    # reconfiguring istio-proxies is flaky on too much parallelism,
+    # random pods will fail to start with `PostStartHook failed`
+    parallel=8
+  fi
+
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
-  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=2 \
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
     ./test/e2e/initcontainers \
