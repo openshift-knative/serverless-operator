@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/jaegertracing/jaeger v1.33.0
 	github.com/manifestival/controller-runtime-client v0.4.0
-	github.com/manifestival/manifestival v0.7.2-0.20221104184753-f9c7f20fc9c4
+	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v0.0.0-20220110171111-997c316db5e1
 	github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
 	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
@@ -190,8 +190,6 @@ replace (
 )
 
 replace (
-	// TODO: Drop this after manifestival cut v0.7.2 which includes https://github.com/manifestival/manifestival/pull/94
-	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.2-0.20221104184753-f9c7f20fc9c4
 	// Adjustments to align transitive deps
 	k8s.io/api => k8s.io/api v0.25.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
