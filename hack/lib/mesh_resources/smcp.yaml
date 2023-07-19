@@ -7,9 +7,6 @@ spec:
   security:
     dataPlane:
       mtls: true
-  gateways:
-    openshiftRoute:
-      enabled: false
   profiles:
   - default
   techPreview:
