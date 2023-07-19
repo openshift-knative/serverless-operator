@@ -9,6 +9,10 @@ spec:
   security:
     dataPlane:
       mtls: true
+  techPreview:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s
   proxy:
     networking:
       trafficControl:
