@@ -5,7 +5,7 @@ metadata:
   namespace: knative-serving
 spec:
   selector:
-    istio: ingressgateway
+    knative: ingressgateway
   servers:
     - port:
         number: 443
@@ -24,7 +24,7 @@ metadata:
   namespace: knative-serving
 spec:
   selector:
-    istio: ingressgateway
+    knative: ingressgateway
   servers:
     - port:
         number: 8081
