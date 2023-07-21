@@ -12,6 +12,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Removed
 
 
+## [0.7.2] - 2022-11-08
+
+### Changed
+
+- No longer ignoring errors resulting from invalid YAML manifests [#88](https://github.com/manifestival/manifestival/issues/88)
+- No longer preventing cluster-scoped resources from being owned [#90](https://github.com/manifestival/manifestival/issues/90)
+- Fixed panic when unexpected errors occur during deletion [#92](https://github.com/manifestival/manifestival/issues/92)
+
+
+## [0.7.1] - 2022-01-19
+
+### Changed
+
+- Bump K8s dependencies to v0.22.5 - also bumped klog (v2.40.1) & go-logr (v1.2.2) 
+- Fixed the lifecycle of the `manifestival` annotation to be stored in the
+  database rather than the `Manifest` object state. Namespaces created from
+  varying manifests will now be deleted correctly if the annotation is
+  present. [#85](https://github.com/manifestival/manifestival/issues/85)
+
+
 ## [0.7.0] - 2021-02-11
 
 ### Changed
@@ -261,7 +281,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 [controller-runtime]: https://github.com/manifestival/controller-runtime-client
 [client-go]: https://github.com/manifestival/client-go-client
-[Unreleased]: https://github.com/manifestival/manifestival/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/manifestival/manifestival/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/manifestival/manifestival/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/manifestival/manifestival/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/manifestival/manifestival/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/manifestival/manifestival/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/manifestival/manifestival/compare/v0.5.0...v0.6.0

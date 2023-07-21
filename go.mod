@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/jaegertracing/jaeger v1.33.0
 	github.com/manifestival/controller-runtime-client v0.4.0
-	github.com/manifestival/manifestival v0.7.1
+	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v0.0.0-20220110171111-997c316db5e1
 	github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
 	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
@@ -191,16 +191,9 @@ replace (
 
 replace (
 	// Adjustments to align transitive deps
-	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
-	github.com/go-logr/zapr => github.com/go-logr/zapr v0.4.0
-	github.com/manifestival/manifestival => github.com/manifestival/manifestival v0.7.0
-	github.com/pelletier/go-toml/v2 => github.com/pelletier/go-toml/v2 v2.0.5
 	k8s.io/api => k8s.io/api v0.25.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 	k8s.io/client-go => k8s.io/client-go v0.25.4
-	k8s.io/klog/v2 => k8s.io/klog/v2 v2.8.0
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
 	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.9.7
-	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2
 )
