@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-Package admission provides implementation for admission webhook and methods to implement admission webhook handlers.
-
-See examples/mutatingwebhook.go and examples/validatingwebhook.go for examples of admission webhooks.
-*/
 package admission
 
-import (
-	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
-)
+// DecoderInjector is used by the ControllerManager to inject decoder into webhook handlers.
+type DecoderInjector interface {
+	InjectDecoder(*Decoder) error
+}
 
-var log = logf.RuntimeLog.WithName("admission")
+// InjectDecoderInto will set decoder on i and return the result if it implements Decoder.  Returns
+// false if i does not implement Decoder.
+func InjectDecoderInto(decoder *Decoder, i interface{}) (bool, error) {
+	if s, ok := i.(DecoderInjector); ok {
+		return true, s.InjectDecoder(decoder)
+	}
+	return false, nil
+}

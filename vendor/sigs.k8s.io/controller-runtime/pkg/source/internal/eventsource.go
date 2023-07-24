@@ -17,7 +17,6 @@ limitations under the License.
 package internal
 
 import (
-	"context"
 	"fmt"
 
 	"k8s.io/client-go/tools/cache"
@@ -32,39 +31,17 @@ import (
 
 var log = logf.RuntimeLog.WithName("source").WithName("EventHandler")
 
-// NewEventHandler creates a new EventHandler.
-func NewEventHandler(ctx context.Context, queue workqueue.RateLimitingInterface, handler handler.EventHandler, predicates []predicate.Predicate) *EventHandler {
-	return &EventHandler{
-		ctx:        ctx,
-		handler:    handler,
-		queue:      queue,
-		predicates: predicates,
-	}
-}
+var _ cache.ResourceEventHandler = EventHandler{}
 
 // EventHandler adapts a handler.EventHandler interface to a cache.ResourceEventHandler interface.
 type EventHandler struct {
-	// ctx stores the context that created the event handler
-	// that is used to propagate cancellation signals to each handler function.
-	ctx context.Context
-
-	handler    handler.EventHandler
-	queue      workqueue.RateLimitingInterface
-	predicates []predicate.Predicate
-}
-
-// HandlerFuncs converts EventHandler to a ResourceEventHandlerFuncs
-// TODO: switch to ResourceEventHandlerDetailedFuncs with client-go 1.27
-func (e *EventHandler) HandlerFuncs() cache.ResourceEventHandlerFuncs {
-	return cache.ResourceEventHandlerFuncs{
-		AddFunc:    e.OnAdd,
-		UpdateFunc: e.OnUpdate,
-		DeleteFunc: e.OnDelete,
-	}
+	EventHandler handler.EventHandler
+	Queue        workqueue.RateLimitingInterface
+	Predicates   []predicate.Predicate
 }
 
 // OnAdd creates CreateEvent and calls Create on EventHandler.
-func (e *EventHandler) OnAdd(obj interface{}) {
+func (e EventHandler) OnAdd(obj interface{}) {
 	c := event.CreateEvent{}
 
 	// Pull Object out of the object
@@ -76,20 +53,18 @@ func (e *EventHandler) OnAdd(obj interface{}) {
 		return
 	}
 
-	for _, p := range e.predicates {
+	for _, p := range e.Predicates {
 		if !p.Create(c) {
 			return
 		}
 	}
 
 	// Invoke create handler
-	ctx, cancel := context.WithCancel(e.ctx)
-	defer cancel()
-	e.handler.Create(ctx, c, e.queue)
+	e.EventHandler.Create(c, e.Queue)
 }
 
 // OnUpdate creates UpdateEvent and calls Update on EventHandler.
-func (e *EventHandler) OnUpdate(oldObj, newObj interface{}) {
+func (e EventHandler) OnUpdate(oldObj, newObj interface{}) {
 	u := event.UpdateEvent{}
 
 	if o, ok := oldObj.(client.Object); ok {
@@ -109,20 +84,18 @@ func (e *EventHandler) OnUpdate(oldObj, newObj interface{}) {
 		return
 	}
 
-	for _, p := range e.predicates {
+	for _, p := range e.Predicates {
 		if !p.Update(u) {
 			return
 		}
 	}
 
 	// Invoke update handler
-	ctx, cancel := context.WithCancel(e.ctx)
-	defer cancel()
-	e.handler.Update(ctx, u, e.queue)
+	e.EventHandler.Update(u, e.Queue)
 }
 
 // OnDelete creates DeleteEvent and calls Delete on EventHandler.
-func (e *EventHandler) OnDelete(obj interface{}) {
+func (e EventHandler) OnDelete(obj interface{}) {
 	d := event.DeleteEvent{}
 
 	// Deal with tombstone events by pulling the object out.  Tombstone events wrap the object in a
@@ -141,9 +114,6 @@ func (e *EventHandler) OnDelete(obj interface{}) {
 			return
 		}
 
-		// Set DeleteStateUnknown to true
-		d.DeleteStateUnknown = true
-
 		// Set obj to the tombstone obj
 		obj = tombstone.Obj
 	}
@@ -157,14 +127,12 @@ func (e *EventHandler) OnDelete(obj interface{}) {
 		return
 	}
 
-	for _, p := range e.predicates {
+	for _, p := range e.Predicates {
 		if !p.Delete(d) {
 			return
 		}
 	}
 
 	// Invoke delete handler
-	ctx, cancel := context.WithCancel(e.ctx)
-	defer cancel()
-	e.handler.Delete(ctx, d, e.queue)
+	e.EventHandler.Delete(d, e.Queue)
 }

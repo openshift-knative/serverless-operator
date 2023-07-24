@@ -15,14 +15,8 @@ limitations under the License.
 */
 
 /*
-Package admission provides implementation for admission webhook and methods to implement admission webhook handlers.
-
-See examples/mutatingwebhook.go and examples/validatingwebhook.go for examples of admission webhooks.
+Package inject defines interfaces and functions for propagating dependencies from a ControllerManager to
+the components registered with it.  Dependencies are propagated to Reconciler, Source, EventHandler and Predicate
+objects which implement the Injectable interfaces.
 */
-package admission
-
-import (
-	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
-)
-
-var log = logf.RuntimeLog.WithName("admission")
+package inject
