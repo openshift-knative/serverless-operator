@@ -123,7 +123,7 @@ test-e2e-with-kafka:
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
-	FULL_MESH=true ./test/e2e-tests.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
