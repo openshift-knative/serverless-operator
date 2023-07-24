@@ -218,7 +218,7 @@ jobs:
                 -level="error"
 
       - name: Prettify code
-        uses: creyD/prettier_action@v3.3
+        uses: creyD/prettier_action@v4.3
         with:
           dry: true
-          prettier_options: -c templates/*.yaml
+          prettier_options: --check src/github.com/${{ github.repository }}/templates/*.yaml
