@@ -162,9 +162,8 @@ function deploy_knativeserving_cr {
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
   fi
 
-  # When upgrading from 1.29 or older, disable internal TLS.
-  if versions.le "$(versions.major_minor "$serverless_version")" "1.29"; then
-    logger.warn "Disabling internal encryption. Unsupported version."
+  if [[ "$serverless_version" != "${CURRENT_CSV#serverless-operator.v}" ]]; then
+    logger.warn "Disabling internal encryption in upgrade tests due to SRVKS-1107."
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
