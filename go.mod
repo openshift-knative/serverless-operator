@@ -192,6 +192,7 @@ replace (
 	k8s.io/api => k8s.io/api v0.25.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 	k8s.io/client-go => k8s.io/client-go v0.25.4
+	k8s.io/code-generator => k8s.io/code-generator v0.25.4
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
 	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 )
