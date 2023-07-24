@@ -172,7 +172,7 @@ require (
 )
 
 require (
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.2.4
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0
 	k8s.io/apiextensions-apiserver v0.25.4
