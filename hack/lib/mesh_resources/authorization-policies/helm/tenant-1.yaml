@@ -23,7 +23,7 @@ spec:
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/common-allow-via-knative-serving.yaml
 # Allow activator to receive requests from workloads and resources in tenant-1.
@@ -42,38 +42,42 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1"
+            - "*.tenant-1.svc"
+            - "*.tenant-1.svc.cluster.local"
 
     # Allow to receive requests from eventing sources, subscriptions and triggers in tenant-1.
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1"
+            - "*.tenant-1.svc"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -92,16 +96,16 @@ spec:
             namespaces:
               - "knative-eventing"
             principals:
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -118,20 +122,20 @@ spec:
     - from:
         - source:
             namespaces:
-              - "knative-eventing"
+            - "knative-eventing"
             principals:
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 # Allow imc-dispatcher to receive requests from workloads and resources in tenant-1.
@@ -150,66 +154,66 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -229,66 +233,66 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -308,66 +312,66 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -387,66 +391,66 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -466,66 +470,66 @@ spec:
     - from:
         - source:
             namespaces:
-              - "tenant-1"
+            - "tenant-1"
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             hosts:
-              - "*.tenant-1.svc.cluster.local"
+            - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-
-              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-
-              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
       to:
         - operation:
             paths:
-              - "/tenant-1/*"
+            - "/tenant-1/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-            - "tenant-1"
+          - "tenant-1"
 ---
 # Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in tenant-1
