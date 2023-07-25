@@ -46,6 +46,8 @@ spec:
       to:
         - operation:
             hosts:
+              - "*.tenant-1"
+              - "*.tenant-1.svc"
               - "*.tenant-1.svc.cluster.local"
 
     # Allow to receive requests from eventing sources, subscriptions and triggers in tenant-1.
@@ -68,6 +70,8 @@ spec:
       to:
         - operation:
             hosts:
+              - "*.tenant-1"
+              - "*.tenant-1.svc"
               - "*.tenant-1.svc.cluster.local"
             methods: [ "POST" ]
       when:
@@ -92,7 +96,7 @@ spec:
             namespaces:
               - "knative-eventing"
             principals:
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
       to:
         - operation:
             paths:

@@ -23,7 +23,7 @@ spec:
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/common-allow-via-knative-serving.yaml
 # Allow activator to receive requests from workloads and resources in serverless-tests.
@@ -42,38 +42,42 @@ spec:
     - from:
         - source:
             namespaces:
-            - "serverless-tests"
+              - "serverless-tests"
       to:
         - operation:
             hosts:
-            - "*.serverless-tests.svc.cluster.local"
+              - "*.serverless-tests"
+              - "*.serverless-tests.svc"
+              - "*.serverless-tests.svc.cluster.local"
 
     # Allow to receive requests from eventing sources, subscriptions and triggers in serverless-tests.
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             hosts:
-            - "*.serverless-tests.svc.cluster.local"
+              - "*.serverless-tests"
+              - "*.serverless-tests.svc"
+              - "*.serverless-tests.svc.cluster.local"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -92,16 +96,16 @@ spec:
             namespaces:
               - "knative-eventing"
             principals:
-              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -118,20 +122,20 @@ spec:
     - from:
         - source:
             namespaces:
-            - "knative-eventing"
+              - "knative-eventing"
             principals:
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 # Allow imc-dispatcher to receive requests from workloads and resources in serverless-tests.
@@ -150,66 +154,66 @@ spec:
     - from:
         - source:
             namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
             - "serverless-tests"
-      to:
-        - operation:
-            paths:
-            - "/serverless-tests/*"
-            methods: [ "POST" ]
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
-      to:
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
-      when:
-        - key: request.headers[Kn-Namespace]
-          values:
-          - "serverless-tests"
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -229,66 +233,66 @@ spec:
     - from:
         - source:
             namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
             - "serverless-tests"
-      to:
-        - operation:
-            paths:
-            - "/serverless-tests/*"
-            methods: [ "POST" ]
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
-      to:
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
-      when:
-        - key: request.headers[Kn-Namespace]
-          values:
-          - "serverless-tests"
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -308,66 +312,66 @@ spec:
     - from:
         - source:
             namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
             - "serverless-tests"
-      to:
-        - operation:
-            paths:
-            - "/serverless-tests/*"
-            methods: [ "POST" ]
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
-      to:
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
-      when:
-        - key: request.headers[Kn-Namespace]
-          values:
-          - "serverless-tests"
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -387,66 +391,66 @@ spec:
     - from:
         - source:
             namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
             - "serverless-tests"
-      to:
-        - operation:
-            paths:
-            - "/serverless-tests/*"
-            methods: [ "POST" ]
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
-      to:
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
-      when:
-        - key: request.headers[Kn-Namespace]
-          values:
-          - "serverless-tests"
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
@@ -466,66 +470,66 @@ spec:
     - from:
         - source:
             namespaces:
+              - "serverless-tests"
+      to:
+        - operation:
+            paths:
+              - "/serverless-tests/*"
+            methods: [ "POST" ]
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
+      to:
+        - operation:
+            hosts:
+              - "*.serverless-tests.svc.cluster.local"
+            methods: [ "POST" ]
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
             - "serverless-tests"
-      to:
-        - operation:
-            paths:
-            - "/serverless-tests/*"
-            methods: [ "POST" ]
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
             principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
-      to:
-        - operation:
-            hosts:
-            - "*.serverless-tests.svc.cluster.local"
-            methods: [ "POST" ]
-      when:
-        - key: request.headers[Kn-Namespace]
-          values:
-          - "serverless-tests"
-    - from:
-        - source:
-            namespaces: [ "knative-eventing" ]
-            principals:
-            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
-            
-            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
-            
-            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
-            
-            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
-            
+              - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+
+              - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+
+              - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+
       to:
         - operation:
             paths:
-            - "/serverless-tests/*"
+              - "/serverless-tests/*"
             methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
-          - "serverless-tests"
+            - "serverless-tests"
 ---
 # Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in serverless-tests
