@@ -24,7 +24,7 @@ function install_strimzi_cluster {
       namespace: kafka
     spec:
       kafka:
-        version: 3.4.0
+        version: 3.5.0
         replicas: 3
         listeners:
           # PLAINTEXT
@@ -68,7 +68,7 @@ function install_strimzi_cluster {
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
           transaction.state.log.min.isr: 2
-          inter.broker.protocol.version: "3.4"
+          inter.broker.protocol.version: "3.5"
           auto.create.topics.enable: "false"
         storage:
           type: jbod
