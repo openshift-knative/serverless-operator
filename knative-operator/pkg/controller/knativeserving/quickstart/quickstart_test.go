@@ -50,18 +50,18 @@ type fakeClient struct {
 	err error
 }
 
-func (f *fakeClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (f *fakeClient) Get(_ context.Context, _ client.ObjectKey, _ client.Object) error {
 	return f.err
 }
 
-func (f *fakeClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (f *fakeClient) Create(_ context.Context, _ client.Object, _ ...client.CreateOption) error {
 	return f.err
 }
 
-func (f *fakeClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (f *fakeClient) Update(_ context.Context, _ client.Object, _ ...client.UpdateOption) error {
 	return f.err
 }
 
-func (f *fakeClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+func (f *fakeClient) Delete(_ context.Context, _ client.Object, _ ...client.DeleteOption) error {
 	return f.err
 }

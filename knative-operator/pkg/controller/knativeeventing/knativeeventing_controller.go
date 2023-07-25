@@ -128,7 +128,7 @@ type ReconcileKnativeEventing struct {
 }
 
 // Reconcile reads that state of the cluster for a KnativeEventing
-func (r *ReconcileKnativeEventing) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileKnativeEventing) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling KnativeEventing")
 

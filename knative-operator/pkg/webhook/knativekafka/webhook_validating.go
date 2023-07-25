@@ -72,7 +72,7 @@ func (v *Validator) validate(ctx context.Context, ke *serverlessoperatorv1alpha1
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
+func (v *Validator) validateNamespace(_ context.Context, ke *serverlessoperatorv1alpha1.KnativeKafka) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_KAFKA_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeKafka may only be created in %s namespace", ns), nil

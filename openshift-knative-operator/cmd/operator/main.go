@@ -46,7 +46,7 @@ func main() {
 	)
 }
 
-func newConversionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+func newConversionController(ctx context.Context, _ configmap.Watcher) *controller.Impl {
 	var v1beta1 = operatorv1beta1.SchemeGroupVersion.Version
 
 	return conversion.NewConversionController(ctx,
