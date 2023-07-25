@@ -1,13 +1,14 @@
 package consoleutil
 
 import (
+	"sync/atomic"
+
 	configv1 "github.com/openshift/api/config/v1"
-	"go.uber.org/atomic"
 )
 
 const ConsoleClusterOperatorName = "console"
 
-var ConsoleInstalled = atomic.NewBool(false)
+var ConsoleInstalled = atomic.Bool{}
 
 // SetConsoleToInstalledStatus updates to true the detected status of the console capability.
 // Once a capability is installed it cannot be uninstalled.
