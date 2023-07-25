@@ -8,17 +8,17 @@ import (
 
 const ConsoleClusterOperatorName = "console"
 
-var ConsoleInstalled = atomic.Bool{}
+var consoleInstalled = atomic.Bool{}
 
 // SetConsoleToInstalledStatus updates to true the detected status of the console capability.
 // Once a capability is installed it cannot be uninstalled.
 func SetConsoleToInstalledStatus() {
-	ConsoleInstalled.Store(true)
+	consoleInstalled.Store(true)
 }
 
 // IsConsoleInstalled checks the detected status of the console capability.
 func IsConsoleInstalled() bool {
-	return ConsoleInstalled.Load()
+	return consoleInstalled.Load()
 }
 
 // IsClusterOperatorAvailable iterates over conditions of the related resource
