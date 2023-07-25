@@ -5,7 +5,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// NewClient creates a client that can interact with OLM resources in k8s api
+// NewClient creates a client that can interact with the ALM resources in k8s api
 func NewClient(kubeconfig string) (client versioned.Interface, err error) {
 	var config *rest.Config
 	config, err = getConfig(kubeconfig)

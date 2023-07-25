@@ -13,7 +13,7 @@ require (
 	github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
 	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
 	github.com/operator-framework/api v0.8.1
-	github.com/operator-framework/operator-lifecycle-manager v0.17.1-0.20210607005641-f05ea078ab46
+	github.com/operator-framework/operator-lifecycle-manager v3.11.0+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.66.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.49.0
 	github.com/prometheus/client_golang v1.16.0
