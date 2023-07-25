@@ -133,7 +133,7 @@ function undeploy_gateways {
     oc delete -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   done
   oc delete authorizationpolicy allow-traffic-to-cluster-domain -n istio-system --ignore-not-found || return $?
-  oc delete -f "${resources_dir}"/authorization-policies --ignore-not-found || return $?
+  oc delete -f "${resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/gateway.yaml --ignore-not-found || return $?
