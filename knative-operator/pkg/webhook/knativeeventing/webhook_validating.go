@@ -69,7 +69,7 @@ func (v *Validator) validate(ctx context.Context, ke *operatorv1beta1.KnativeEve
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ke *operatorv1beta1.KnativeEventing) (bool, string, error) {
+func (v *Validator) validateNamespace(_ context.Context, ke *operatorv1beta1.KnativeEventing) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_EVENTING_NAMESPACE")
 	if required && ns != ke.Namespace {
 		return false, fmt.Sprintf("KnativeEventing may only be created in %s namespace", ns), nil

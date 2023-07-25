@@ -79,7 +79,7 @@ type ReconcileSourceDeployment struct {
 }
 
 // Reconcile reads that state of the cluster for an eventing source deployment
-func (r *ReconcileSourceDeployment) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileSourceDeployment) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling the source deployment, setting up a service/service monitor if required")
 	dep := &appsv1.Deployment{}
@@ -180,7 +180,7 @@ type skipDeletePredicate struct {
 	predicate.Funcs
 }
 
-func (skipDeletePredicate) Delete(e event.DeleteEvent) bool {
+func (skipDeletePredicate) Delete(_ event.DeleteEvent) bool {
 	return false
 }
 

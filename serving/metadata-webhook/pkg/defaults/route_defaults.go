@@ -22,7 +22,7 @@ var (
 )
 
 // SetDefaults implements apis.Defaultable
-func (r *TargetRoute) SetDefaults(ctx context.Context) {
+func (r *TargetRoute) SetDefaults(_ context.Context) {
 	if r.Annotations == nil {
 		r.Annotations = make(map[string]string)
 	}
@@ -30,6 +30,6 @@ func (r *TargetRoute) SetDefaults(ctx context.Context) {
 }
 
 // Validate returns nil due to no need for validation
-func (r *TargetRoute) Validate(ctx context.Context) *apis.FieldError {
+func (r *TargetRoute) Validate(_ context.Context) *apis.FieldError {
 	return nil
 }

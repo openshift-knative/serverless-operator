@@ -113,7 +113,7 @@ func reconcileKnConsoleCLIDownload(apiclient client.Client, instance *operatorv1
 }
 
 // Delete deletes kn ConsoleCLIDownload CO and respective deployment resources
-func Delete(instance *operatorv1beta1.KnativeServing, apiclient client.Client, scheme *runtime.Scheme) error {
+func Delete(instance *operatorv1beta1.KnativeServing, apiclient client.Client, _ *runtime.Scheme) error {
 	// If console is not installed skip deleting cdd resources
 	if consoleutil.IsConsoleInstalled() {
 		log.Info("Deleting kn ConsoleCLIDownload CO")

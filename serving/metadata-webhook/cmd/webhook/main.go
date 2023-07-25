@@ -24,7 +24,7 @@ var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 	servingv1alpha1.SchemeGroupVersion.WithKind("DomainMapping"): &defaults.TargetDomainMapping{},
 }
 
-func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+func NewDefaultingAdmissionController(ctx context.Context, _ configmap.Watcher) *controller.Impl {
 	return defaulting.NewAdmissionController(ctx,
 
 		// Name of the resource webhook.

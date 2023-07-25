@@ -19,7 +19,7 @@ const (
 
 // InjectCommonEnvironment injects the specified environment variables into the
 // deployment and statefulset.
-func InjectCommonEnvironment(envs ...corev1.EnvVar) mf.Transformer {
+func InjectCommonEnvironment(_ ...corev1.EnvVar) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		var podSpec *corev1.PodSpec
 		var convert func(spec *corev1.PodSpec) error
