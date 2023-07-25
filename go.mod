@@ -190,6 +190,13 @@ replace (
 )
 
 replace (
+	// OpenShift components
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
+	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230616202415-59a8d308bfa4
+)
+
+replace (
 	// Adjustments to align transitive deps
 	k8s.io/api => k8s.io/api v0.25.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
