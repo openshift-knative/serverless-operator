@@ -149,7 +149,7 @@ func withRouteForServiceReady(ctx *test.Context, serviceName, namespace string) 
 	return test.WaitForRouteState(ctx, route.Name, route.Namespace, routeHasHost)
 }
 
-func routeHasHost(r *routev1.Route, err error) (bool, error) {
+func routeHasHost(r *routev1.Route, _ error) (bool, error) {
 	return len(r.Status.Ingress) != 0 && len(r.Status.Ingress[0].Conditions) != 0 &&
 		r.Status.Ingress[0].Conditions[0].Type == routev1.RouteAdmitted &&
 		r.Status.Ingress[0].Conditions[0].Status == corev1.ConditionTrue, nil

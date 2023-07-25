@@ -22,7 +22,7 @@ var (
 )
 
 // SetDefaults implements apis.Defaultable
-func (r *TargetDomainMapping) SetDefaults(ctx context.Context) {
+func (r *TargetDomainMapping) SetDefaults(_ context.Context) {
 	if r.Annotations == nil {
 		r.Annotations = make(map[string]string)
 	}
@@ -30,6 +30,6 @@ func (r *TargetDomainMapping) SetDefaults(ctx context.Context) {
 }
 
 // Validate returns nil due to no need for validation
-func (r *TargetDomainMapping) Validate(ctx context.Context) *apis.FieldError {
+func (r *TargetDomainMapping) Validate(_ context.Context) *apis.FieldError {
 	return nil
 }

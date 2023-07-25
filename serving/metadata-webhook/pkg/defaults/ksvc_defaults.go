@@ -34,7 +34,7 @@ var (
 )
 
 // SetDefaults implements apis.Defaultable
-func (r *TargetKService) SetDefaults(ctx context.Context) {
+func (r *TargetKService) SetDefaults(_ context.Context) {
 	if r.Annotations == nil {
 		r.Annotations = make(map[string]string)
 	}
@@ -51,6 +51,6 @@ func (r *TargetKService) SetDefaults(ctx context.Context) {
 }
 
 // Validate returns nil due to no need for validation
-func (r *TargetKService) Validate(ctx context.Context) *apis.FieldError {
+func (r *TargetKService) Validate(_ context.Context) *apis.FieldError {
 	return nil
 }

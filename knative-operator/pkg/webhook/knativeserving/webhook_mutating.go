@@ -25,7 +25,7 @@ func NewConfigurator(decoder *admission.Decoder) *Configurator {
 var _ admission.Handler = (*Configurator)(nil)
 
 // Handle implements the Handler interface.
-func (v *Configurator) Handle(ctx context.Context, req admission.Request) admission.Response {
+func (v *Configurator) Handle(_ context.Context, req admission.Request) admission.Response {
 	ks := &operatorv1beta1.KnativeServing{}
 
 	err := v.decoder.Decode(req, ks)
