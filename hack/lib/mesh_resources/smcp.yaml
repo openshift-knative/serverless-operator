@@ -6,6 +6,16 @@ metadata:
 spec:
   profiles:
   - default
+  techPreview:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s
+  gateways:
+    ingress:
+      service:
+        metadata:
+          labels:
+            knative: ingressgateway
   proxy:
     networking:
       trafficControl:
