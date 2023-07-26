@@ -4,3 +4,4 @@ metadata:
   name: serving-tests
   labels:
     samples.knative.dev/release: devel
+    maistra.io/member-of: istio-system # Workaround for OSSM-1397

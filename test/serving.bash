@@ -21,6 +21,10 @@ function prepare_knative_serving_tests {
 
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config/cluster-resources.yaml
+  # Workaround for https://issues.redhat.com/browse/OSSM-1397
+  if [[ $FULL_MESH == "true" ]]; then
+    oc label namespace serving-tests maistra.io/member-of=istio-system --overwrite
+  fi
   oc apply -f test/config/test-resources.yaml
   # Adding scc for anyuid to test TestShouldRunAsUserContainerDefault.
   oc adm policy add-scc-to-user anyuid -z default -n serving-tests
@@ -75,6 +79,12 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     # Since we don't have LoadBalancers working, gRPC tests will always fail.
     rm -f ./test/e2e/grpc_test.go
     parallel=2
+  fi
+
+  if [[ $FULL_MESH == "true" ]]; then
+    # reconfiguring istio-proxies is flaky on too much parallelism,
+    # random pods will fail to start with `PostStartHook failed`
+    parallel=8
   fi
 
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
