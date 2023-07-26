@@ -7,3 +7,51 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: knative-eventing
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serving-tests
+  labels:
+    maistra.io/member-of: istio-system # Workaround for OSSM-1397
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serving-tests-alt
+  labels:
+    maistra.io/member-of: istio-system # Workaround for OSSM-1397
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serverless-tests
+  labels:
+    maistra.io/member-of: istio-system # Workaround for OSSM-1397
+---
+# Additional namespaces for upgrade tests
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e0
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e1
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e2
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e3
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing-e2e4
+---

@@ -25,6 +25,7 @@ install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-serving-with-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
