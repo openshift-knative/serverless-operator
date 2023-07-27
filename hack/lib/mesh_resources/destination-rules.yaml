@@ -13,16 +13,16 @@ spec:
     tls:
       mode: ISTIO_MUTUAL
 ---
-#apiVersion: networking.istio.io/v1beta1
-#kind: DestinationRule
-#metadata:
-#  name: force-mtls
-#  namespace: knative-eventing
-#spec:
-#  host: "*.knative-eventing.svc.cluster.local"
-#  trafficPolicy:
-#    tls:
-#      mode: ISTIO_MUTUAL
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: force-mtls
+  namespace: knative-eventing
+spec:
+  host: "*.knative-eventing.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
