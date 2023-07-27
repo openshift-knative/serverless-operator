@@ -254,6 +254,9 @@ release-files:
 	./hack/generate/quickstart.sh \
   	templates/serverless-application-quickstart.yaml \
   	knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+# TODO: uncomment as soon as chart changes are merged
+#	./hack/generate/mesh-auth-policies.sh \
+#  	tenant-1,tenant-2,serving-tests,serverless-tests
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
