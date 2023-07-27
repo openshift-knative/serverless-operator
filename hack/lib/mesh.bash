@@ -117,8 +117,10 @@ function deploy_gateways {
   oc apply -f "${resources_dir}"/namespace.yaml || return $?
   oc apply -f "${resources_dir}"/smmr.yaml || return $?
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
+  oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
   oc apply -f "${resources_dir}"/authorization-policies/setup || return $?
   oc apply -f "${resources_dir}"/authorization-policies/helm || return $?
+  oc apply -f "${resources_dir}"/destination-rules.yaml || return $?
 
   oc apply -n "${EVENTING_NAMESPACE}" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
@@ -132,6 +134,7 @@ function undeploy_gateways {
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc delete -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   done
+  oc delete -f "${resources_dir}"/destination-rules.yaml --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
   oc delete -f "${resources_dir}"/peerauthentication.yaml --ignore-not-found || return $?
