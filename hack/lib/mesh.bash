@@ -119,7 +119,6 @@ function deploy_gateways {
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
   oc apply -f "${resources_dir}"/peerauthentication.yaml || return $?
 
-  oc create ns "${EVENTING_NAMESPACE}" --dry-run=client -oyaml | kubectl apply -f -
   oc apply -n "${EVENTING_NAMESPACE}" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc apply -n "$ns" -f "${resources_dir}"/kafka-service-entry.yaml || return $?
