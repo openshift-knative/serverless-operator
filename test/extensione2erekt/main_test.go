@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/pkg/system"
@@ -34,6 +35,7 @@ func defaultEnvironment(t *testing.T) (context.Context, environment.Environment)
 		k8s.WithEventListener,
 		// Enables KnativeService in the scenario.
 		eventshub.WithKnativeServiceForwarder,
+		environment.WithPollTimings(5*time.Second, 4*time.Minute),
 		environment.Managed(t),
 	)
 }
