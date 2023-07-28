@@ -27,7 +27,6 @@ func TestChannelBasedBrokerToKsvc(t *testing.T) {
 
 // Test specifically Broker Filter.
 func TestBrokerDeliverLongResponseMessage(t *testing.T) {
-	t.Skip("Broken in FULL_MESH https://github.com/openshift-knative/serverless-operator/pull/2171#issuecomment-1647569195")
 	t.Parallel()
 
 	ctx, env := global.Environment(
