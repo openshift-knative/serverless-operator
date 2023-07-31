@@ -73,7 +73,6 @@ spec:
             - "*.serving-tests"
             - "*.serving-tests.svc"
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -101,7 +100,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -131,7 +129,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -159,11 +156,9 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -184,7 +179,6 @@ spec:
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -209,7 +203,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -238,11 +231,9 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -263,7 +254,6 @@ spec:
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -288,7 +278,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -317,11 +306,9 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -342,7 +329,6 @@ spec:
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -367,7 +353,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -396,11 +381,9 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -421,7 +404,6 @@ spec:
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -446,7 +428,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -475,11 +456,9 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -500,7 +479,6 @@ spec:
         - operation:
             hosts:
             - "*.serving-tests.svc.cluster.local"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
@@ -525,7 +503,6 @@ spec:
         - operation:
             paths:
             - "/serving-tests/*"
-            methods: [ "POST" ]
       when:
         - key: request.headers[Kn-Namespace]
           values:
