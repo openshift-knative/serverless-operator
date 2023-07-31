@@ -86,6 +86,10 @@ func recordEventsPod(imageName string, name string, serviceAccountName string, r
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			Labels: map[string]string{"e2etest": string(uuid.NewUUID())},
+			Annotations: map[string]string{
+				"sidecar.istio.io/inject":                "true",
+				"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+			},
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
