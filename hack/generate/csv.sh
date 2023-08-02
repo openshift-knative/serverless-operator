@@ -39,7 +39,7 @@ function default_knative_eventing_images() {
   tag=$(metadata.get dependencies.eventing)
   export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
   export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
-  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-storage-version-migration:${tag}"}
+  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-migrate:${tag}"}
   export KNATIVE_EVENTING_MTBROKER_INGRESS=${KNATIVE_EVENTING_MTBROKER_INGRESS:-"${eventing}-mtbroker-ingress:${tag}"}
   export KNATIVE_EVENTING_MTBROKER_FILTER=${KNATIVE_EVENTING_MTBROKER_FILTER:-"${eventing}-mtbroker-filter:${tag}"}
   export KNATIVE_EVENTING_MTCHANNEL_BROKER=${KNATIVE_EVENTING_MTCHANNEL_BROKER:-"${eventing}-mtchannel-broker:${tag}"}
