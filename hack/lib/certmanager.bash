@@ -12,12 +12,27 @@ function uninstall_certmanager {
 
 function deploy_certmanager_operator {
   logger.info "Installing cert manager operator"
-  oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
+
+  openshift_version=$(oc version -o yaml | yq read - openshiftVersion)
+  deployment_namespace="cert-manager"
+  if printf '%s\n4.12\n' "${openshift_version}" | sort --version-sort -C; then
+      # OCP version is older as 4.12 and thus cert-manager-operator is only available as tech-preview in this version (cert-manager-operator GA'ed in OCP 4.12)
+      
+      echo "Running on OpenShift ${openshift_version} which supports cert-manager-operator only in tech-preview"
+
+      yq delete "${certmanager_resources_dir}"/subscription.yaml --doc 1 spec | \
+      yq write - --doc 2 spec.channel tech-preview | \
+      oc apply -f - || return $?
+
+      deployment_namespace="openshift-cert-manager"
+  else
+    echo "Running on OpenShift ${openshift_version} which supports GA'ed cert-manager-operator"
+
+    oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
+  fi
 
   logger.info "Waiting until cert manager operator is available"
-
-  # TODO: use -n cert-manager when resolving TODOs in "${certmanager_resources_dir}"/subscription.yaml to upgrade cert-manager to its first stable release
-  timeout 600 "[[ \$(oc get deploy -n openshift-cert-manager cert-manager --no-headers | wc -l) != 1 ]]" || return 1
+  timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager --no-headers | wc -l) != 1 ]]" || return 1
 }
 
 function undeploy_certmanager_operator {
