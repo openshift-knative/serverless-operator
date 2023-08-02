@@ -12,11 +12,10 @@ kind: OperatorGroup
 metadata:
   name: cert-manager-operator
   namespace: cert-manager-operator
-spec: {}
-# TODO: uncomment to upgrade cert-manager to its first stable release
-#  targetNamespaces:
-#    - cert-manager-operator
-#  upgradeStrategy: Default
+spec:
+  targetNamespaces:
+    - cert-manager-operator
+  upgradeStrategy: Default
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -26,8 +25,7 @@ metadata:
   name: openshift-cert-manager-operator
   namespace: cert-manager-operator
 spec:
-  # TODO: use stable-v1 to upgrade cert-manager to its first stable release
-  channel: tech-preview
+  channel: stable-v1
   installPlanApproval: Automatic
   name: openshift-cert-manager-operator
   source: redhat-operators
