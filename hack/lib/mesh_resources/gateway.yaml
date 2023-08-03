@@ -28,8 +28,10 @@ spec:
   servers:
     - port:
         number: 8081
-        name: http
-        protocol: HTTP
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: ISTIO_MUTUAL
       hosts:
         - "*"
 ---

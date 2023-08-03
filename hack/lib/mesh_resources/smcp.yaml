@@ -22,6 +22,7 @@ spec:
         inbound:
           excludedPorts:
           - 8444
+          - 8022
     accessLogging:
       file:
         name: /dev/stdout

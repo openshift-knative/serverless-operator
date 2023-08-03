@@ -1,0 +1,11 @@
+diff --git a/vendor/knative.dev/reconciler-test/pkg/eventshub/102-service.yaml b/vendor/knative.dev/reconciler-test/pkg/eventshub/102-service.yaml
+index 1c591a5e5..1c2635bd2 100644
+--- a/vendor/knative.dev/reconciler-test/pkg/eventshub/102-service.yaml
++++ b/vendor/knative.dev/reconciler-test/pkg/eventshub/102-service.yaml
+@@ -22,5 +22,6 @@ spec:
+     app: eventshub-{{ .name }}
+   ports:
+     - protocol: TCP
++      name: http
+       port: 80
+       targetPort: 8080

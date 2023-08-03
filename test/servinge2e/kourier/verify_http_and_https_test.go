@@ -16,7 +16,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 	defer test.CleanupAll(t, caCtx)
 
-	ksvc := test.Service("redirect-service", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
+	ksvc := test.Service("redirect-service", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, nil)
 	ksvc.ObjectMeta.Annotations = map[string]string{networking.HTTPProtocolAnnotationKey: "redirected"}
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 

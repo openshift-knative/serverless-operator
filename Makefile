@@ -128,8 +128,9 @@ test-e2e-with-mesh-testonly:
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	./hack/tracing.sh
-	FULL_MESH=true ENABLE_TRACING=true ./hack/install.sh
-	FULL_MESH=true ./test/e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
@@ -144,7 +145,7 @@ test-upstream-e2e-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true SCALE_UP=5 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
+	FULL_MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
@@ -253,6 +254,9 @@ release-files:
 	./hack/generate/quickstart.sh \
   	templates/serverless-application-quickstart.yaml \
   	knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+# TODO: uncomment as soon as chart changes are merged
+#	./hack/generate/mesh-auth-policies.sh \
+#  	tenant-1,tenant-2,serving-tests,serverless-tests
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
