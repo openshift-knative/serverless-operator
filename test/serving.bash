@@ -73,6 +73,14 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
   fi
 
+  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+
+  # Disable cgroups test on OCP 4.14+ until it supports cgroups v2.
+  # https://issues.redhat.com/browse/SRVKS-1111
+  if versions.ge "$(versions.major_minor "$ocp_version")" 4.14; then
+    rm ./test/conformance/runtime/cgroup_test.go
+  fi
+
   local parallel=16
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') = VSphere ]]; then
@@ -147,8 +155,6 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   # Restore the original maxReplicas for any tests running after this test suite
   oc -n "$SERVING_NAMESPACE" patch hpa activator --patch \
     '{"spec": {"maxReplicas": '"${max_replicas}"', "minReplicas": '"${min_replicas}"'}}'
-
-  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
 
   # Feature is tested on 4.11+ as this is the version we start enabling it by default.
   if versions.ge "$(versions.major_minor "$ocp_version")" "4.11"; then
