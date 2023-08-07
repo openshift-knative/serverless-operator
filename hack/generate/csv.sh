@@ -14,7 +14,7 @@ registry_host='registry.ci.openshift.org'
 registry="${registry_host}/openshift"
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
-rbac_proxy="registry.ci.openshift.org/origin/"$(metadata.get 'requirements.ocpVersion.min')":kube-rbac-proxy"
+rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.min'):kube-rbac-proxy"
 
 function default_knative_serving_images() {
   local serving
