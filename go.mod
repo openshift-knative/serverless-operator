@@ -17,7 +17,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.67.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.67.0
 	github.com/prometheus/client_golang v1.16.0
-	github.com/prometheus/common v0.42.0
+	github.com/prometheus/common v0.44.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.3
 	go.uber.org/zap v1.24.0
@@ -171,7 +171,6 @@ require (
 
 require (
 	github.com/go-logr/logr v1.2.4
-	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2
 	knative.dev/reconciler-test v0.0.0-20230503093155-937cf5922570
