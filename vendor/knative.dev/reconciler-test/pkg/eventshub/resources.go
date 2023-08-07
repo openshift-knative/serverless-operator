@@ -19,9 +19,17 @@ package eventshub
 import (
 	"context"
 	"embed"
+	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/network"
+
 	"knative.dev/reconciler-test/pkg/environment"
 	eventshubrbac "knative.dev/reconciler-test/pkg/eventshub/rbac"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -29,6 +37,7 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/knativeservice"
+	"knative.dev/reconciler-test/pkg/resources/secret"
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
@@ -37,6 +46,16 @@ var servicePodTemplates embed.FS
 
 //go:embed 104-forwarder.yaml
 var forwarderTemplates embed.FS
+
+//go:embed 105-certificate-service.yaml
+var serviceTLSCertificate embed.FS
+
+//go:embed 105-issuer-ca.yaml 105-certificate-ca.yaml 105-issuer-certificate.yaml
+var caTLSCertificates embed.FS
+
+const (
+	caSecretName = "eventshub-ca"
+)
 
 // Install starts a new eventshub with the provided name
 // Note: this function expects that the Environment is configured with the
@@ -71,10 +90,8 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		eventListener := k8s.EventListenerFromContext(ctx)
 		registerEventsHubStore(ctx, eventListener, name, namespace)
 
-		// Install ServiceAccount, Role, RoleBinding
-		eventshubrbac.Install()(ctx, t)
-
 		isReceiver := strings.Contains(envs[EventGeneratorsEnv], "receiver")
+		isEnforceTLS := strings.Contains(envs[EnforceTLS], "true")
 
 		var withForwarder bool
 		// Allow forwarder only when eventshub is receiver.
@@ -90,18 +107,29 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		}
 
 		cfg := map[string]interface{}{
-			"name":          name,
-			"serviceName":   serviceName,
-			"envs":          envs,
-			"image":         ImageFromContext(ctx),
-			"withReadiness": isReceiver,
+			"name":           name,
+			"serviceName":    serviceName,
+			"envs":           envs,
+			"image":          ImageFromContext(ctx),
+			"isReceiver":     isReceiver,
+			"withEnforceTLS": isEnforceTLS,
+			"clusterDomain":  network.GetClusterDomainName(),
 		}
+
+		// Install ServiceAccount, Role, RoleBinding
+		eventshubrbac.Install(cfg)(ctx, t)
 
 		if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 			manifest.WithIstioPodAnnotations(cfg)
 		}
 
 		manifest.PodSecurityCfgFn(ctx, t)(cfg)
+
+		if isEnforceTLS && isReceiver {
+			if _, err := manifest.InstallYamlFS(ctx, serviceTLSCertificate, cfg); err != nil {
+				log.Fatal(err)
+			}
+		}
 
 		// Deploy Service/Pod
 		if _, err := manifest.InstallYamlFS(ctx, servicePodTemplates, cfg); err != nil {
@@ -112,6 +140,10 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 
 		// If the eventhubs starts an event receiver, we need to wait for the service endpoint to be synced
 		if isReceiver {
+			if isEnforceTLS {
+				secret.IsPresent(fmt.Sprintf("server-tls-%s", name))(ctx, t)
+			}
+
 			k8s.WaitForServiceEndpointsOrFail(ctx, t, serviceName, 1)
 			k8s.WaitForServiceReadyOrFail(ctx, t, serviceName, "/health/ready")
 		}
@@ -135,4 +167,71 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			knativeservice.IsReady(name)
 		}
 	}
+}
+
+func WithTLS(t feature.T) environment.EnvOpts {
+	return func(ctx context.Context, env environment.Environment) (context.Context, error) {
+
+		return environment.WithPostInit(ctx, func(ctx context.Context, env environment.Environment) (context.Context, error) {
+
+			if _, err := manifest.InstallYamlFS(ctx, caTLSCertificates, nil); err != nil {
+				return ctx, fmt.Errorf("failed to install CA certificates and issuer: %w", err)
+			}
+
+			secret.IsPresent(caSecretName, secret.AssertKey("ca.crt"))(ctx, t)
+
+			caCerts, err := getCACertsFromSecret(ctx)
+			if err != nil {
+				return ctx, err
+			}
+			s := string(caCerts)
+			ctx = WithCaCerts(ctx, &s)
+
+			return ctx, nil
+		}), nil
+	}
+}
+
+func ReceiverGVR(ctx context.Context) schema.GroupVersionResource {
+	apiVersion := "v1"
+	if isForwarder(ctx) {
+		apiVersion = "serving.knative.dev/v1"
+	}
+	or := &corev1.ObjectReference{
+		Kind:       "Service",
+		Namespace:  environment.FromContext(ctx).Namespace(),
+		APIVersion: apiVersion,
+	}
+
+	gvr, _ := meta.UnsafeGuessKindToResource(or.GroupVersionKind())
+	return gvr
+}
+
+type caCertsKey struct{}
+
+func WithCaCerts(ctx context.Context, caCerts *string) context.Context {
+	return context.WithValue(ctx, caCertsKey{}, caCerts)
+}
+
+func GetCaCerts(ctx context.Context) *string {
+	caCerts := ctx.Value(caCertsKey{})
+	if caCerts == nil {
+		return nil
+	}
+	return caCerts.(*string)
+}
+
+func getCACertsFromSecret(ctx context.Context) ([]byte, error) {
+	ns := environment.FromContext(ctx).Namespace()
+
+	s, err := kubeclient.Get(ctx).
+		CoreV1().
+		Secrets(ns).
+		Get(ctx, caSecretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get eventshub CA certs secret: %w", err)
+	}
+
+	caCrt, _ := s.Data["ca.crt"]
+	return caCrt, nil
 }
