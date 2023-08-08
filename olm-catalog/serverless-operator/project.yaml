@@ -66,9 +66,9 @@ dependencies:
         eventing: knative-v1.9
         eventing_kafka_broker: knative-v1.9
 upgrade_sequence:
-    - csv: serverless-operator.v1.28.0
-      source: redhat-operators
     - csv: serverless-operator.v1.29.0
+      source: redhat-operators
+    - csv: serverless-operator.v1.29.1
       source: redhat-operators
     - csv: serverless-operator.v1.30.0
       source: serverless-operator
