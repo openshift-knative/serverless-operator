@@ -15,10 +15,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.9"
-EVENTING_VERSION="release-v1.9"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.9"
-SERVING_VERSION="release-v1.9"
+KN_VERSION="release-1.10"
+EVENTING_VERSION="release-v1.10"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.10"
+SERVING_VERSION="release-v1.10"
 GO_VERSION="$(metadata.get requirements.golang)"
 OCP_VERSION="$(metadata.get requirements.ocpVersion.min)"
 
@@ -35,6 +35,7 @@ REPLACE_DEPS=(
   "knative.dev/pkg=knative.dev/pkg@${KN_VERSION}"
   "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
   "knative.dev/networking=knative.dev/networking@${KN_VERSION}"
+  "knative.dev/reconciler-test=knative.dev/reconciler-test@${KN_VERSION}"
   "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
   "github.com/openshift/client-go=github.com/openshift/client-go@release-${OCP_VERSION}"
   "github.com/openshift/machine-config-operator=github.com/openshift/machine-config-operator@release-${OCP_VERSION}"
