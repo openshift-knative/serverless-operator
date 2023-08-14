@@ -438,7 +438,7 @@ github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1
-# github.com/prometheus-operator/prometheus-operator/pkg/client v0.67.0
+# github.com/prometheus-operator/prometheus-operator/pkg/client v0.67.1
 ## explicit; go 1.19
 github.com/prometheus-operator/prometheus-operator/pkg/client/applyconfiguration/monitoring/v1
 github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/scheme
