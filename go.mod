@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/coreos/go-semver v0.3.0
+	github.com/coreos/go-semver v0.3.1
 	github.com/google/go-cmp v0.5.9
 	github.com/jaegertracing/jaeger v1.33.0
 	github.com/manifestival/controller-runtime-client v0.4.0
