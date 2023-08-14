@@ -257,9 +257,8 @@ release-files:
 	./hack/generate/images-rekt.sh \
 		templates/images-rekt.yaml \
 		test/images-rekt.yaml
-# TODO: uncomment as soon as chart changes are merged
-#	./hack/generate/mesh-auth-policies.sh \
-#  	tenant-1,tenant-2,serving-tests,serverless-tests
+	./hack/generate/mesh-auth-policies.sh \
+  	tenant-1,tenant-2,serving-tests,serverless-tests
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.

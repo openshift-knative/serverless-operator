@@ -158,6 +158,8 @@ spec:
             - "/serverless-tests/*"
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
     - from:
         - source:
@@ -178,6 +180,8 @@ spec:
       to:
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
@@ -233,6 +237,8 @@ spec:
             - "/serverless-tests/*"
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
     - from:
         - source:
@@ -253,6 +259,8 @@ spec:
       to:
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
@@ -308,6 +316,8 @@ spec:
             - "/serverless-tests/*"
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
     - from:
         - source:
@@ -328,6 +338,8 @@ spec:
       to:
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
@@ -383,6 +395,8 @@ spec:
             - "/serverless-tests/*"
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
     - from:
         - source:
@@ -403,6 +417,8 @@ spec:
       to:
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
@@ -458,6 +474,8 @@ spec:
             - "/serverless-tests/*"
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
     - from:
         - source:
@@ -478,6 +496,8 @@ spec:
       to:
         - operation:
             hosts:
+            - "*.serverless-tests"
+            - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
