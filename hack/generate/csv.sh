@@ -7,6 +7,7 @@ target="${2:?Provide a target CSV file as arg[2]}"
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
+# shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"nightly"}

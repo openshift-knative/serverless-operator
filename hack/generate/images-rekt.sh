@@ -15,4 +15,4 @@ default_knative_eventing_kafka_broker_images
 default_knative_serving_images
 default_knative_ingress_images
 
-envsubst < $template > $target
+envsubst < "$template" > "$target"

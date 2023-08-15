@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/metadata.bash"
 
 registry_host='registry.ci.openshift.org'
