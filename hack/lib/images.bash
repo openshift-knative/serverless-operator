@@ -40,29 +40,32 @@ function default_knative_eventing_images() {
 
   export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-"${eventing}-appender:${tag}"}
   export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-"${eventing}-event-display:${tag}"}
-  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-"${eventing}-heartbeats:${tag}"}
   export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-"${eventing}-heartbeats-receiver:${tag}"}
   export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-"${eventing}-migrate:${tag}"}
   export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-"${eventing}-pong:${tag}"}
   export KNATIVE_EVENTING_SCHEMA=${KNATIVE_EVENTING_SCHEMA:-"${eventing}-schema:${tag}"}
   export KNATIVE_EVENTING_WEBSOCKETSOURCE=${KNATIVE_EVENTING_WEBSOCKETSOURCE:-"${eventing}-websocketsource:${tag}"}
+  
+  # quay.io multiarch images:
+  tag="${tag/knative-/}"
+  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-"quay.io/openshift-knative/eventing/heartbeats:${tag}"}
 }
 
 function default_knative_eventing_test_images() {
-  local eventing_test
-  eventing_test="${registry}/knative-eventing-test"
   local tag
   tag=$(metadata.get dependencies.eventing)
-  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"${eventing_test}-event-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-"${eventing_test}-eventshub:${tag}"}
-  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-"${eventing_test}-performance:${tag}"}
-  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-"${eventing_test}-print:${tag}"}
-  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-"${eventing_test}-recordevents:${tag}"}
-  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-"${eventing_test}-request-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-"${eventing_test}-wathola-fetcher:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-"${eventing_test}-wathola-forwarder:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-"${eventing_test}-wathola-receiver:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"${eventing_test}-wathola-sender:${tag}"}
+  tag="${tag/knative-/}"
+
+  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"quay.io/openshift-knative/eventing/event-sender:${tag}"}
+  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-"quay.io/openshift-knative/eventing/eventshub:${tag}"}
+  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-"quay.io/openshift-knative/eventing/performance:${tag}"}
+  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-"quay.io/openshift-knative/eventing/print:${tag}"}
+  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-"quay.io/openshift-knative/eventing/recordevents:${tag}"}
+  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-"quay.io/openshift-knative/eventing/request-sender:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-"quay.io/openshift-knative/eventing/wathola-fetcher:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-"quay.io/openshift-knative/eventing/wathola-forwarder:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-"quay.io/openshift-knative/eventing/wathola-receiver:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"quay.io/openshift-knative/eventing/wathola-sender:${tag}"}
 }
 
 function default_knative_eventing_istio_images() {
