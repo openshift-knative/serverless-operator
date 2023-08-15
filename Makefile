@@ -246,14 +246,17 @@ release-files:
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
 	./hack/generate/dockerfile.sh \
-  	templates/index.Dockerfile \
-  	olm-catalog/serverless-operator/index/Dockerfile
+ 		templates/index.Dockerfile \
+		olm-catalog/serverless-operator/index/Dockerfile
 	./hack/generate/index.sh \
 		templates/index.yaml \
 		olm-catalog/serverless-operator/index/configs/index.yaml
 	./hack/generate/quickstart.sh \
-  	templates/serverless-application-quickstart.yaml \
-  	knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+		templates/serverless-application-quickstart.yaml \
+		knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+	./hack/generate/images-rekt.sh \
+		templates/images-rekt.yaml \
+		test/images-rekt.yaml
 # TODO: uncomment as soon as chart changes are merged
 #	./hack/generate/mesh-auth-policies.sh \
 #  	tenant-1,tenant-2,serving-tests,serverless-tests

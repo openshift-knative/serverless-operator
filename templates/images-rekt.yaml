@@ -1,0 +1,2 @@
+knative.dev/reconciler-test/cmd/eventshub: ${KNATIVE_EVENTING_TEST_EVENTSHUB}
+knative.dev/eventing/cmd/heartbeats: ${KNATIVE_EVENTING_HEARTBEATS}
