@@ -47,6 +47,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
+	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
@@ -398,6 +399,13 @@ func kafkaSinkAndSourceTest(t *testing.T) {
 
 	env.Test(ctx, t, features.KafkaSourceStructuredEvent())
 	env.Test(ctx, t, features.KafkaSourceBinaryEvent())
+
+	env.Test(ctx, t, features.KafkaSourceSASL())
+	env.Test(ctx, t, features.KafkaSourceTLS(
+		feature.MakeRandomK8sName("kafkaSource"),
+		feature.MakeRandomK8sName("kafkaSink"),
+		feature.MakeRandomK8sName("topic")),
+	)
 }
 
 func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
