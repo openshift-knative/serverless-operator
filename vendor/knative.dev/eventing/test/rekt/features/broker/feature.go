@@ -25,15 +25,18 @@ import (
 
 	"github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
+	"knative.dev/reconciler-test/pkg/environment"
+
+	eventingduckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/ptr"
 
 	duckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
+	"knative.dev/eventing/test/rekt/features"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/channel"
 	"knative.dev/eventing/test/rekt/resources/subscription"
 	"knative.dev/eventing/test/rekt/resources/trigger"
-	eventingduckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/ptr"
 
 	"knative.dev/reconciler-test/pkg/eventshub"
 	eventasssert "knative.dev/reconciler-test/pkg/eventshub/assert"
@@ -173,18 +176,30 @@ func BrokerChannelFlowWithTransformation(createSubscriberFn func(ref *eventingdu
 	)
 
 	f.Stable("(Trigger1 point to) sink1 has all the events").
-		Must("delivers original events",
-			eventasssert.OnStore(sink1).Match(eventMatcher).AtLeast(1))
+		Must("delivers original events", func(ctx context.Context, t feature.T) {
+			eventasssert.OnStore(sink1).
+				Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
+				Match(eventMatcher).
+				AtLeast(1)(ctx, t)
+		})
 
 	f.Stable("(Trigger2 point to) sink2 has all the events").
 		Must("delivers original events",
 			eventasssert.OnStore(sink2).Match(eventMatcher).AtLeast(1)).
-		Must("delivers transformation events",
-			eventasssert.OnStore(sink2).Match(transformEventMatcher).AtLeast(1))
+		Must("delivers transformation events", func(ctx context.Context, t feature.T) {
+			eventasssert.OnStore(sink2).
+				Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
+				Match(transformEventMatcher).
+				AtLeast(1)(ctx, t)
+		})
 
 	f.Stable("(Trigger3 point to) Channel's subscriber just has events after transformation").
-		Must("delivers transformation events",
-			eventasssert.OnStore(sink3).Match(transformEventMatcher).AtLeast(1)).
+		Must("delivers transformation events", func(ctx context.Context, t feature.T) {
+			eventasssert.OnStore(sink3).
+				Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
+				Match(transformEventMatcher).
+				AtLeast(1)(ctx, t)
+		}).
 		Must("delivers original events",
 			eventasssert.OnStore(sink3).Match(eventMatcher).Not())
 
@@ -347,14 +362,19 @@ func brokerRedeliveryDropN(retryNum int32, dropNum uint) *feature.Feature {
 
 	f.Stable("Broker Redelivery failed the first n events").
 		Must("delivers events",
-			eventasssert.OnStore(sink).Match(
-				eventasssert.MatchKind(eventasssert.EventReceived),
-				eventasssert.MatchEvent(
-					test.HasSource(eventSource),
-					test.HasType(eventType),
-					test.HasData([]byte(eventBody)),
-				),
-			).AtLeast(1))
+			func(ctx context.Context, t feature.T) {
+				eventasssert.OnStore(sink).
+					Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
+					Match(
+						eventasssert.MatchKind(eventasssert.EventReceived),
+						eventasssert.MatchEvent(
+							test.HasSource(eventSource),
+							test.HasType(eventType),
+							test.HasData([]byte(eventBody)),
+						),
+					).
+					AtLeast(1)(ctx, t)
+			})
 
 	return f
 }
@@ -412,11 +432,14 @@ func brokerSubscriberUnreachable() *feature.Feature {
 	))
 
 	f.Assert("Receives dls extensions when subscriber is unreachable",
-		eventasssert.OnStore(sink).
-			MatchEvent(
-				test.HasExtension("knativeerrordest", "http://fake.svc.cluster.local"),
-			).
-			AtLeast(1),
+		func(ctx context.Context, t feature.T) {
+			eventasssert.OnStore(sink).
+				Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
+				MatchEvent(
+					test.HasExtension("knativeerrordest", "http://fake.svc.cluster.local"),
+				).
+				AtLeast(1)(ctx, t)
+		},
 	)
 	return f
 }

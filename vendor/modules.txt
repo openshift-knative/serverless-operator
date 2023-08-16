@@ -1306,8 +1306,9 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.37.1 => github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1
-## explicit; go 1.18
+# knative.dev/eventing v0.38.1 => github.com/openshift-knative/eventing v0.99.1-0.20230816064131-e3223db61a75
+## explicit; go 1.19
+knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
 knative.dev/eventing/pkg/apis/duck/v1
@@ -1380,6 +1381,7 @@ knative.dev/eventing/test/lib/duck
 knative.dev/eventing/test/lib/recordevents
 knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
+knative.dev/eventing/test/rekt/features
 knative.dev/eventing/test/rekt/features/broker
 knative.dev/eventing/test/rekt/features/channel
 knative.dev/eventing/test/rekt/features/knconf
@@ -1729,7 +1731,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230612132502-c991bb2a3cd1
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230816064131-e3223db61a75
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230530161159-ecd8c928d85a
 # knative.dev/hack => knative.dev/hack v0.0.0-20230217102752-199139daec7e
 # knative.dev/networking => knative.dev/networking v0.0.0-20230225001731-5e096d63b0cb
