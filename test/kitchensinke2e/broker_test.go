@@ -11,11 +11,11 @@ import (
 const groupSize = 8
 
 func TestBrokerReadinessBrokerDLS(t *testing.T) {
-	testFeatureSet(t, features.BrokerFeatureSetWithBrokerDLS(false))
+	testFeatureSet(t, features.BrokerFeatureSetWithBrokerDLS())
 }
 
 func TestBrokerReadinessTriggerDLS(t *testing.T) {
-	testFeatureSet(t, features.BrokerFeatureSetWithTriggerDLS(false))
+	testFeatureSet(t, features.BrokerFeatureSetWithTriggerDLS())
 }
 
 func split(featureSet feature.FeatureSet, groupSize int) []feature.FeatureSet {

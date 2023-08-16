@@ -22,9 +22,10 @@ var (
 	repliesShort     = sinksShort
 )
 
-func ChannelReadiness(channel component, subscriber, reply, dls component) *feature.Feature {
+func ChannelReadiness(index int, channel component, subscriber, reply, dls component) *feature.Feature {
 	// Make a unique label to use for uniqueness of the subtest and its resources
 	testLabel := shortLabel(channel) + shortLabel(subscriber) + shortLabel(reply) + shortLabel(dls)
+	testLabel = fmt.Sprintf("%s-%d", testLabel, index)
 	channelName := testLabel
 	receiverName := testLabel + "-receiver"
 	dlsName := testLabel + "-dls"
@@ -65,7 +66,19 @@ func ChannelReadiness(channel component, subscriber, reply, dls component) *feat
 	return f
 }
 
-func ChannelFeatureSet(short bool) feature.FeatureSet {
+func ChannelFeatureSet() feature.FeatureSet {
+	return channelFeatureSet(false, 1)
+}
+
+func ChannelFeatureSetShort() feature.FeatureSet {
+	return channelFeatureSet(true, 1)
+}
+
+func ChannelFeatureSetStress() feature.FeatureSet {
+	return channelFeatureSet(true, NumDeployments)
+}
+
+func channelFeatureSet(short bool, times int) feature.FeatureSet {
 	dls := deadLetterSinks
 	rep := replies
 	subscr := subscribers
@@ -107,12 +120,14 @@ func ChannelFeatureSet(short bool) feature.FeatureSet {
 
 	features := make([]*feature.Feature, 0, len(testCombinations))
 	for _, testCombination := range testCombinations {
-		features = append(features, ChannelReadiness(
-			testCombination.channel,
-			testCombination.subscriber,
-			testCombination.reply,
-			testCombination.deadLetterSink,
-		))
+		for i := 0; i < times; i++ {
+			features = append(features, ChannelReadiness(i,
+				testCombination.channel,
+				testCombination.subscriber,
+				testCombination.reply,
+				testCombination.deadLetterSink,
+			))
+		}
 	}
 
 	return feature.FeatureSet{

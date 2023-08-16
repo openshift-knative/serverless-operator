@@ -73,13 +73,13 @@ func TestKitchensink(t *testing.T) {
 
 	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLS(true),
-		features.BrokerFeatureSetWithTriggerDLS(true),
-		features.ChannelFeatureSet(true),
-		features.SequenceNoReplyFeatureSet(true),
-		features.SequenceGlobalReplyFeatureSet(true),
-		features.ParallelNoReplyFeatureSet(true),
-		features.ParallelGlobalReplyFeatureSet(true),
+		features.BrokerFeatureSetWithBrokerDLSShort(),
+		features.BrokerFeatureSetWithTriggerDLSShort(),
+		features.ChannelFeatureSetShort(),
+		features.SequenceNoReplyFeatureSetShort(),
+		features.SequenceGlobalReplyFeatureSetShort(),
+		features.ParallelNoReplyFeatureSetShort(),
+		features.ParallelGlobalReplyFeatureSetShort(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -154,4 +154,38 @@ func ModifyResourcesTest(ctx *test.Context) pkgupgrade.Operation {
 			c.T.Error(err)
 		}
 	})
+}
+
+func TestUpgradeStress(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+
+	// Add feature sets to be tested during upgrades.
+	featureSets := []feature.FeatureSet{
+		features.BrokerFeatureSetWithBrokerDLSStress(),
+		features.BrokerFeatureSetWithTriggerDLSStress(),
+		features.ChannelFeatureSetStress(),
+		features.SequenceNoReplyFeatureSetStress(),
+		features.SequenceGlobalReplyFeatureSetStress(),
+		features.ParallelNoReplyFeatureSetStress(),
+		features.ParallelGlobalReplyFeatureSetStress(),
+	}
+
+	var featureGroup FeatureWithEnvironmentGroup
+	for _, fs := range featureSets {
+		for _, f := range fs.Features {
+			featureGroup = append(featureGroup, &FeatureWithEnvironment{Feature: f, Global: global})
+		}
+	}
+
+	suite := pkgupgrade.Suite{
+		Tests: pkgupgrade.Tests{
+			PreUpgrade:  featureGroup.PreUpgradeTests(),
+			PostUpgrade: featureGroup.PostUpgradeTests(),
+		},
+		Installations: pkgupgrade.Installations{
+			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+		},
+	}
+	suite.Execute(pkgupgrade.Configuration{T: t})
 }

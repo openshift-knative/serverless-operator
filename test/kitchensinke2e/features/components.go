@@ -17,6 +17,10 @@ import (
 	svcresources "knative.dev/reconciler-test/resources/svc"
 )
 
+const (
+	NumDeployments = 10
+)
+
 /*
 Components are used as bogus sinks/filters/replies. We only test that the whole system becomes Ready,
 so we don't implement any kind of dataplane in the components.

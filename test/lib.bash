@@ -477,6 +477,21 @@ function kitchensink_upgrade_tests {
   logger.success 'Kitchensink upgrade tests passed'
 }
 
+function kitchensink_upgrade_stress_tests {
+  logger.info "Running upgrade tests - stress control plane"
+
+  export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
+
+  go_test_e2e -run=TestUpgradeStress -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
+     --kubeconfigs="${KUBECONFIG}" \
+     --imagetemplate="${IMAGE_TEMPLATE}" \
+     --catalogsource="${OLM_SOURCE}" \
+     --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
+     --csv="${CURRENT_CSV}"
+
+  logger.success 'Upgrade tests - stress control plane - passed'
+}
+
 function teardown {
   if [ -n "$OPENSHIFT_CI" ]; then
     logger.warn 'Skipping teardown as we are running on Openshift CI'
