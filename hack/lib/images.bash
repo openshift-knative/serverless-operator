@@ -52,20 +52,22 @@ function default_knative_eventing_images() {
 }
 
 function default_knative_eventing_test_images() {
+  local eventing
+  eventing="quay.io/openshift-knative/eventing"
   local tag
   tag=$(metadata.get dependencies.eventing)
   tag="${tag/knative-/}"
 
-  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"quay.io/openshift-knative/eventing/event-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-"quay.io/openshift-knative/eventing/eventshub:${tag}"}
-  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-"quay.io/openshift-knative/eventing/performance:${tag}"}
-  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-"quay.io/openshift-knative/eventing/print:${tag}"}
-  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-"quay.io/openshift-knative/eventing/recordevents:${tag}"}
-  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-"quay.io/openshift-knative/eventing/request-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-"quay.io/openshift-knative/eventing/wathola-fetcher:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-"quay.io/openshift-knative/eventing/wathola-forwarder:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-"quay.io/openshift-knative/eventing/wathola-receiver:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"quay.io/openshift-knative/eventing/wathola-sender:${tag}"}
+  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"${eventing}/event-sender:${tag}"}
+  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-"${eventing}/eventshub:${tag}"}
+  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-"${eventing}/performance:${tag}"}
+  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-"${eventing}/print:${tag}"}
+  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-"${eventing}/recordevents:${tag}"}
+  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-"${eventing}/request-sender:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-"${eventing}/wathola-fetcher:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-"${eventing}/wathola-forwarder:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-"${eventing}/wathola-receiver:${tag}"}
+  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"${eventing}/wathola-sender:${tag}"}
 }
 
 function default_knative_eventing_istio_images() {
