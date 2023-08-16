@@ -110,6 +110,13 @@ func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 		for _, td := range teardowns {
 			td.Fn(fe.Context, c.T)
 		}
+
+		// Related to https://issues.redhat.com/browse/SRVKE-1506
+		// The tests are very quick and there might be cases when the reconciler doesn't manage to
+		// update resources in time. Deleting the namespace quickly might cause the resources to
+		// be stuck in FinalizeKind.
+		time.Sleep(30 * time.Second)
+
 		if err := fe.DeleteNamespace(); err != nil {
 			c.T.Error(err)
 		}
