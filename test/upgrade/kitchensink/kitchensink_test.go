@@ -180,8 +180,15 @@ func TestUpgradeStress(t *testing.T) {
 
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:  featureGroup.PreUpgradeTests(),
-			PostUpgrade: featureGroup.PostUpgradeTests(),
+			PreUpgrade: featureGroup.PreUpgradeTests(),
+			PostUpgrade: append([]pkgupgrade.Operation{
+				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+					Namespace: "knative-serving",
+				}),
+				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+					Namespace: "knative-eventing",
+				}),
+			}, featureGroup.PostUpgradeTests()...),
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
