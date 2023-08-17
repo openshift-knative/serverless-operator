@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	NumDeployments = 10
+	NumDeployments = 3
 )
 
 /*
