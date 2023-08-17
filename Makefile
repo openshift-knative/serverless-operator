@@ -198,9 +198,9 @@ test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
 
 test-kitchensink-upgrade-stress:
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	./hack/dev.sh
-	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true ./hack/install.sh
 	./test/kitchensink-upgrade-stress-tests.sh
 
 test-kitchensink-upgrade: test-kitchensink-upgrade-stress
