@@ -487,7 +487,10 @@ function kitchensink_upgrade_stress_tests {
      --imagetemplate="${IMAGE_TEMPLATE}" \
      --catalogsource="${OLM_SOURCE}" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
-     --csv="${CURRENT_CSV}"
+     --csv="${CURRENT_CSV}" \
+     --servingversion="${KNATIVE_SERVING_VERSION/knative-v/}" \
+     --eventingversion="${KNATIVE_EVENTING_VERSION/knative-v/}" \
+     --kafkaversion="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}"
 
   logger.success 'Upgrade tests - stress control plane - passed'
 }
