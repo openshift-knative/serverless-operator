@@ -14,6 +14,12 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
+const (
+	ServingNamespace  = "knative-serving"
+	EventingNamespace = "knative-eventing"
+	IngressNamespace  = "knative-serving-ingress"
+)
+
 func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
 		return err
@@ -35,10 +41,9 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.ServingVersion) == 0 {
 		servingInStateFunc = v1beta1.IsKnativeServingReady
 	}
-	knativeServing := "knative-serving"
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
-		knativeServing,
-		knativeServing,
+		ServingNamespace,
+		ServingNamespace,
 		servingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("serving upgrade failed: %w", err)
@@ -48,10 +53,9 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.EventingVersion) == 0 {
 		eventingInStateFunc = v1beta1.IsKnativeEventingReady
 	}
-	knativeEventing := "knative-eventing"
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
-		knativeEventing,
-		knativeEventing,
+		EventingNamespace,
+		EventingNamespace,
 		eventingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("eventing upgrade failed: %w", err)
@@ -63,7 +67,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	}
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
-		knativeEventing,
+		EventingNamespace,
 		kafkaInStateFunc,
 	); err != nil {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)

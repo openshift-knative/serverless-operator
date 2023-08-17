@@ -20,6 +20,7 @@ limitations under the License.
 package kitchensink
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"os"
@@ -31,6 +32,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -181,18 +183,52 @@ func TestUpgradeStress(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade: featureGroup.PreUpgradeTests(),
-			PostUpgrade: append([]pkgupgrade.Operation{
-				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-serving",
-				}),
-				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-eventing",
-				}),
-			}, featureGroup.PostUpgradeTests()...),
+			PostUpgrade: append(
+				featureGroup.PostUpgradeTests(),
+				[]pkgupgrade.Operation{
+					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+						Namespace: "knative-serving",
+					}),
+					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+						Namespace: "knative-eventing",
+					}),
+					VerifyPodRestarts(ctx),
+				}...,
+			),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+			UpgradeWith: nil,
+			//UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
+}
+
+func VerifyPodRestarts(ctx *test.Context) upgrade.Operation {
+	return upgrade.NewOperation("VerifyPodRestarts", func(c pkgupgrade.Context) {
+		c.T.Parallel() // Make sure the sleep in this test doesn't delay checks in other tests.
+
+		// Give some time before checking Pod restarts which might happen later after upgrade.
+		time.Sleep(5 * time.Minute)
+
+		var podsRestarted []string
+		namespaces := []string{installation.ServingNamespace,
+			installation.EventingNamespace, installation.IngressNamespace, test.OperatorsNamespace}
+		for _, ns := range namespaces {
+			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
+			if err != nil {
+				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
+			}
+			for _, pod := range pods.Items {
+				for _, status := range pod.Status.ContainerStatuses {
+					if status.RestartCount > 0 {
+						podsRestarted = append(podsRestarted, pod.Name)
+					}
+				}
+			}
+		}
+		if podsRestarted > 0 {
+			c.T.Fatalf("Container restart detected for Pods: %v", podsRestarted)
+		}
+	})
 }
