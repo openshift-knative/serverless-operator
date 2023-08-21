@@ -212,11 +212,10 @@ func TestUpgradeStress(t *testing.T) {
 			PostDowngrade: featureGroup.PostDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: []pkgupgrade.Operation{
+			UpgradeWith: append([]pkgupgrade.Operation{
 				// Ensure memory usage is recorded after PreUpgrade tests as those can use t.Parallel.
 				RecordMemoryUsage(ctx, systemPodsMemory),
-				upgrade.ServerlessUpgradeOperations(ctx),
-			},
+			}, upgrade.ServerlessUpgradeOperations(ctx)...),
 			DowngradeWith: []pkgupgrade.Operation{
 				// Skip actual downgrade but run additional checks here. They are ensured to
 				// run after PostUpgrade tests.
