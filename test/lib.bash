@@ -357,11 +357,11 @@ function run_rolling_upgrade_tests {
 
   local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template common_opts images_file
 
-  # Specify image mapping for REKT tests
+   # Specify image mapping for REKT tests
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
-  serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
-  eventing_image_version="${KNATIVE_EVENTING_VERSION}"
-  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
+  serving_image_version=${KNATIVE_SERVING_VERSION#knative-}
+  eventing_image_version="${KNATIVE_EVENTING_VERSION#knative-}"
+  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION#knative-}"
 
   # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
   # for non-REKT tests.
