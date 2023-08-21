@@ -49,7 +49,8 @@ import (
 )
 
 const (
-	memoryWorkingSetQuery = "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"\", namespace=\"%s\", container!=\"\", image!=\"\"}) by (pod)"
+	memoryWorkingSetQuery   = "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"\", namespace=\"%s\", container!=\"\", image!=\"\"}) by (pod)"
+	memoryIncreaseTolerance = 1.2
 )
 
 var global environment.GlobalEnvironment
@@ -133,6 +134,9 @@ func TestKitchensink(t *testing.T) {
 			if i == len(csvs)-1 {
 				post = append(post, ModifyResourcesTest(ctx))
 				post = append(post, featureGroup.PostUpgradeTests()...)
+				// We don't downgrade Serverless in kitshensink upgrade tests but
+				// include post-downgrade tests as they do cleanup.
+				post = append(post, featureGroup.PostDowngradeTests()...)
 			}
 
 			source := sources[i]
@@ -175,12 +179,12 @@ func TestUpgradeStress(t *testing.T) {
 	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
 		features.BrokerFeatureSetWithBrokerDLSStress(),
-		//features.BrokerFeatureSetWithTriggerDLSStress(),
-		//features.ChannelFeatureSetStress(),
-		//features.SequenceNoReplyFeatureSetStress(),
-		//features.SequenceGlobalReplyFeatureSetStress(),
-		//features.ParallelNoReplyFeatureSetStress(),
-		//features.ParallelGlobalReplyFeatureSetStress(),
+		features.BrokerFeatureSetWithTriggerDLSStress(),
+		features.ChannelFeatureSetStress(),
+		features.SequenceNoReplyFeatureSetStress(),
+		features.SequenceGlobalReplyFeatureSetStress(),
+		features.ParallelNoReplyFeatureSetStress(),
+		features.ParallelGlobalReplyFeatureSetStress(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -190,11 +194,10 @@ func TestUpgradeStress(t *testing.T) {
 		}
 	}
 
+	systemPodsMemory := make(map[string]float64)
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade: append(featureGroup.PreUpgradeTests(),
-				RecordMemoryUsage(ctx),
-			),
+			PreUpgrade: featureGroup.PreUpgradeTests(),
 			PostUpgrade: append(
 				featureGroup.PostUpgradeTests(),
 				[]pkgupgrade.Operation{
@@ -204,14 +207,22 @@ func TestUpgradeStress(t *testing.T) {
 					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 						Namespace: "knative-eventing",
 					}),
-					VerifyPodRestarts(ctx),
-					//VerifyMemoryUsage(ctx),
 				}...,
 			),
+			PostDowngrade: featureGroup.PostDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith: nil,
-			//UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+			UpgradeWith: []pkgupgrade.Operation{
+				// Ensure memory usage is recorded after PreUpgrade tests as those can use t.Parallel.
+				RecordMemoryUsage(ctx, systemPodsMemory),
+				upgrade.ServerlessUpgradeOperations(ctx),
+			},
+			DowngradeWith: []pkgupgrade.Operation{
+				// Skip actual downgrade but run additional checks here. They are ensured to
+				// run after PostUpgrade tests.
+				VerifyPodRestarts(ctx),
+				VerifyMemoryUsage(ctx, systemPodsMemory),
+			},
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
@@ -246,51 +257,71 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 	})
 }
 
-func RecordMemoryUsage(ctx *test.Context) pkgupgrade.Operation {
+func RecordMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("RecordMemoryUsage", func(c pkgupgrade.Context) {
-		prometheusCtx := context.WithValue(context.Background(), client.Key{}, ctx.Clients.Kube)
-		prometheusCtx = context.WithValue(prometheusCtx, dynamicclient.Key{}, ctx.Clients.Dynamic)
-		prometheusCtx = logging.WithLogger(prometheusCtx, logtesting.TestLogger(c.T))
-		prometheus, err := test.NewPrometheusClient(prometheusCtx)
-		if err != nil {
-			c.T.Fatalf("Unable to get Prometheus client: %v", err)
+		recordMemoryUsage(c.T, ctx, systemPodsMemory)
+		for pod, mem := range systemPodsMemory {
+			c.T.Logf("Old Pod %s: %.2f", pod, mem)
 		}
-
-		systemPodsMemory := make(map[string]float64)
-
-		namespaces := []string{installation.ServingNamespace,
-			installation.EventingNamespace, installation.IngressNamespace, test.OperatorsNamespace}
-		for _, ns := range namespaces {
-			value, warnings, err := prometheus.Query(context.Background(),
-				fmt.Sprintf(memoryWorkingSetQuery, ns),
-				time.Now())
-			for _, w := range warnings {
-				c.T.Logf("Prometheus warning: %v", w)
-			}
-			vector := value.(model.Vector)
-
-			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
-			if err != nil {
-				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
-			}
-			for _, pod := range pods.Items {
-				for _, sample := range vector {
-					if string(sample.Metric["pod"]) == pod.Name {
-						systemPodsMemory[pod.Name] = float64(sample.Value)
-					}
-				}
-			}
-		}
-
-		for pod, memory := range systemPodsMemory {
-			c.T.Logf("%s: %f", pod, memory)
-		}
-
 	})
 }
 
-func VerifyMemoryUsage(ctx *test.Context) pkgupgrade.Operation {
+func VerifyMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("VerifyMemoryUsage", func(c pkgupgrade.Context) {
-		RecordMemoryUsage(ctx)
+
+		newSystemPodsMemory := make(map[string]float64)
+
+		recordMemoryUsage(c.T, ctx, newSystemPodsMemory)
+
+		for pod, mem := range newSystemPodsMemory {
+			c.T.Logf("New Pod %s: %.2f", pod, mem)
+		}
+
+		for pod, mem := range newSystemPodsMemory {
+			origMem, ok := systemPodsMemory[pod]
+			if !ok {
+				continue
+			}
+			if mem > (origMem * memoryIncreaseTolerance) {
+				c.T.Errorf("Memory consumption for %s higher than (%.1f * original). Original: %.1f, new: %.1f ",
+					pod, memoryIncreaseTolerance, origMem, mem)
+			}
+		}
 	})
+}
+
+func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[string]float64) {
+	prometheusCtx := context.WithValue(context.Background(), client.Key{}, ctx.Clients.Kube)
+	prometheusCtx = context.WithValue(prometheusCtx, dynamicclient.Key{}, ctx.Clients.Dynamic)
+	prometheusCtx = logging.WithLogger(prometheusCtx, logtesting.TestLogger(t))
+	prometheus, err := test.NewPrometheusClient(prometheusCtx)
+	if err != nil {
+		t.Fatalf("Unable to get Prometheus client: %v", err)
+	}
+
+	namespaces := []string{installation.ServingNamespace,
+		installation.EventingNamespace, installation.IngressNamespace, test.OperatorsNamespace}
+
+	for _, ns := range namespaces {
+		value, warnings, err := prometheus.Query(context.Background(),
+			fmt.Sprintf(memoryWorkingSetQuery, ns),
+			time.Now())
+		if err != nil {
+			t.Fatalf("Unable to query metrics: %v", err)
+		}
+		for _, w := range warnings {
+			t.Logf("Prometheus warning: %v", w)
+		}
+
+		vector := value.(model.Vector)
+		for _, sample := range vector {
+			pod := string(sample.Metric["pod"])
+			split := strings.Split(pod, "-")
+			// Remove the last two parts split by dash, containing random chars.
+			// Example: converts imc-controller-644bd94dff-7nhkx to imc-controller
+			component := strings.Join(split[0:len(split)-2], "-")
+			// There might be more Pods for each component due to HA. Compute the sum of values.
+			systemPodsMemory[component] = systemPodsMemory[component] + float64(sample.Value)
+		}
+	}
 }
