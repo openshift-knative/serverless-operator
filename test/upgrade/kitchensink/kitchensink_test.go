@@ -124,10 +124,10 @@ func TestKitchensink(t *testing.T) {
 			// Run these tests after each upgrade.
 			post := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-serving",
+					Namespace: test.ServingNamespace,
 				}),
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-eventing",
+					Namespace: test.EventingNamespace,
 				}),
 			}
 			// In the last step. Run also post-upgrade tests for all features.
@@ -202,10 +202,10 @@ func TestUpgradeStress(t *testing.T) {
 				featureGroup.PostUpgradeTests(),
 				[]pkgupgrade.Operation{
 					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-						Namespace: "knative-serving",
+						Namespace: test.ServingNamespace,
 					}),
 					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-						Namespace: "knative-eventing",
+						Namespace: test.EventingNamespace,
 					}),
 				}...,
 			),
@@ -235,8 +235,8 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 		time.Sleep(2 * time.Minute)
 
 		var podsRestarted []string
-		namespaces := []string{installation.ServingNamespace,
-			installation.EventingNamespace, installation.IngressNamespace, test.OperatorsNamespace}
+		namespaces := []string{test.ServingNamespace,
+			test.EventingNamespace, test.IngressNamespace, test.OperatorsNamespace}
 		for _, ns := range namespaces {
 			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
 			if err != nil {
@@ -298,8 +298,8 @@ func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[str
 		t.Fatalf("Unable to get Prometheus client: %v", err)
 	}
 
-	namespaces := []string{installation.ServingNamespace,
-		installation.EventingNamespace, installation.IngressNamespace, test.OperatorsNamespace}
+	namespaces := []string{test.ServingNamespace,
+		test.EventingNamespace, test.IngressNamespace, test.OperatorsNamespace}
 
 	for _, ns := range namespaces {
 		value, warnings, err := prometheus.Query(context.Background(),
@@ -317,7 +317,7 @@ func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[str
 			pod := string(sample.Metric["pod"])
 			split := strings.Split(pod, "-")
 			// Remove the last two parts split by dash, containing random chars.
-			// Example: converts imc-controller-644bd94dff-7nhkx to imc-controller
+			// Example: imc-controller-644bd94dff-7nhkx -> imc-controller
 			component := strings.Join(split[0:len(split)-2], "-")
 			// There might be more Pods for each component due to HA. Compute the sum of values.
 			systemPodsMemory[component] = systemPodsMemory[component] + float64(sample.Value)

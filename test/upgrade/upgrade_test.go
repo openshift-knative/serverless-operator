@@ -155,11 +155,11 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-serving",
+		Namespace:    test.ServingNamespace,
 		FailOnNoJobs: failOnNoJobs,
 	}))
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-eventing",
+		Namespace:    test.EventingNamespace,
 		FailOnNoJobs: failOnNoJobs,
 	}))
 	tests = append(tests, EventingPostUpgradeTests()...)

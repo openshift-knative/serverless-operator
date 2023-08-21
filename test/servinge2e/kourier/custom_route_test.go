@@ -44,7 +44,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 
 	// Verify that operator did not create OpenShift route.
-	routes, err := caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), metav1.ListOptions{
+	routes, err := caCtx.Clients.Route.Routes(test.IngressNamespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", resources.OpenShiftIngressLabelKey, ksvc.Name),
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	route := &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "myroute",
-			Namespace: "knative-serving-ingress",
+			Namespace: test.IngressNamespace,
 		},
 		Spec: routev1.RouteSpec{
 			Host: ksvc.Status.URL.Host,
@@ -75,7 +75,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 			},
 		},
 	}
-	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, metav1.CreateOptions{})
+	route, err = caCtx.Clients.Route.Routes(test.IngressNamespace).Create(context.Background(), route, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}
@@ -106,7 +106,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	dm = withDomainMappingReadyOrFail(caCtx, dm)
 
 	// Verify that operator did not create OpenShift route.
-	routes, err = caCtx.Clients.Route.Routes("knative-serving-ingress").List(context.Background(), metav1.ListOptions{
+	routes, err = caCtx.Clients.Route.Routes(test.IngressNamespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", resources.OpenShiftIngressLabelKey, dm.Name),
 	})
 	if err != nil {
@@ -120,7 +120,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	route = &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "myroute-for-dm",
-			Namespace: "knative-serving-ingress",
+			Namespace: test.IngressNamespace,
 		},
 		Spec: routev1.RouteSpec{
 			Host: dm.Status.URL.Host,
@@ -133,7 +133,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 			},
 		},
 	}
-	route, err = caCtx.Clients.Route.Routes("knative-serving-ingress").Create(context.Background(), route, metav1.CreateOptions{})
+	route, err = caCtx.Clients.Route.Routes(test.IngressNamespace).Create(context.Background(), route, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("Error creating OpenShift Route: %v", err)
 	}

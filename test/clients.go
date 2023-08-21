@@ -35,7 +35,11 @@ import (
 	kafkaversioned "knative.dev/eventing-kafka-broker/control-plane/pkg/client/clientset/versioned"
 )
 
-const operatorNamesapce = "openshift-serverless"
+const (
+	ServingNamespace  = "knative-serving"
+	EventingNamespace = "knative-eventing"
+	IngressNamespace  = "knative-serving-ingress"
+)
 
 // Context holds objects related to test execution
 type Context struct {
@@ -194,14 +198,14 @@ func (c *Context) AddToCleanup(f CleanupFunc) {
 func (c *Context) DeleteOperatorPods(ctx context.Context) error {
 	pods, err := c.Clients.Kube.
 		CoreV1().
-		Pods(operatorNamesapce).
+		Pods(OperatorsNamespace).
 		List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to list pods in %s", operatorNamesapce)
+		return fmt.Errorf("failed to list pods in %s", OperatorsNamespace)
 	}
 
 	for _, p := range pods.Items {
-		if err := c.Clients.Kube.CoreV1().Pods(operatorNamesapce).Delete(ctx, p.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		if err := c.Clients.Kube.CoreV1().Pods(OperatorsNamespace).Delete(ctx, p.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 	}
@@ -213,10 +217,10 @@ func (c *Context) WaitForOperatorPodsReady(ctx context.Context) error {
 	return wait.PollImmediate(Interval, Timeout, func() (done bool, err error) {
 		pods, err := c.Clients.Kube.
 			CoreV1().
-			Pods(operatorNamesapce).
+			Pods(OperatorsNamespace).
 			List(ctx, metav1.ListOptions{})
 		if err != nil {
-			return false, fmt.Errorf("failed to list pods in %s", operatorNamesapce)
+			return false, fmt.Errorf("failed to list pods in %s", OperatorsNamespace)
 		}
 
 		// Verify pod readiness

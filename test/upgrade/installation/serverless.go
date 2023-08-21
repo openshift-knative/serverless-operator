@@ -14,12 +14,6 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
-const (
-	ServingNamespace  = "knative-serving"
-	EventingNamespace = "knative-eventing"
-	IngressNamespace  = "knative-serving-ingress"
-)
-
 func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
 		return err
@@ -41,9 +35,10 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.ServingVersion) == 0 {
 		servingInStateFunc = v1beta1.IsKnativeServingReady
 	}
+	knativeServing := test.ServingNamespace
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
-		ServingNamespace,
-		ServingNamespace,
+		knativeServing,
+		knativeServing,
 		servingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("serving upgrade failed: %w", err)
@@ -53,9 +48,10 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.EventingVersion) == 0 {
 		eventingInStateFunc = v1beta1.IsKnativeEventingReady
 	}
+	knativeEventing := test.EventingNamespace
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
-		EventingNamespace,
-		EventingNamespace,
+		knativeEventing,
+		knativeEventing,
 		eventingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("eventing upgrade failed: %w", err)
@@ -67,7 +63,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	}
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
-		EventingNamespace,
+		knativeEventing,
 		kafkaInStateFunc,
 	); err != nil {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
@@ -137,7 +133,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	knativeServing := "knative-serving"
+	knativeServing := test.ServingNamespace
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
@@ -146,7 +142,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("serving downgrade failed: %w", err)
 	}
 
-	knativeEventing := "knative-eventing"
+	knativeEventing := test.EventingNamespace
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
