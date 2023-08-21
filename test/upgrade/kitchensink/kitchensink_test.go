@@ -229,8 +229,6 @@ func TestUpgradeStress(t *testing.T) {
 
 func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("VerifyPodRestarts", func(c pkgupgrade.Context) {
-		c.T.Parallel() // Make sure the sleep in this test doesn't delay checks in other tests.
-
 		// Give some time before checking Pod restarts which might happen later after upgrade.
 		time.Sleep(2 * time.Minute)
 
@@ -259,9 +257,6 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 func RecordMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("RecordMemoryUsage", func(c pkgupgrade.Context) {
 		recordMemoryUsage(c.T, ctx, systemPodsMemory)
-		for pod, mem := range systemPodsMemory {
-			c.T.Logf("Old Pod %s: %.2f", pod, mem)
-		}
 	})
 }
 
@@ -271,10 +266,6 @@ func VerifyMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) p
 		newSystemPodsMemory := make(map[string]float64)
 
 		recordMemoryUsage(c.T, ctx, newSystemPodsMemory)
-
-		for pod, mem := range newSystemPodsMemory {
-			c.T.Logf("New Pod %s: %.2f", pod, mem)
-		}
 
 		for pod, mem := range newSystemPodsMemory {
 			origMem, ok := systemPodsMemory[pod]
