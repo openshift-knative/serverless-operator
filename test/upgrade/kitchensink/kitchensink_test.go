@@ -232,7 +232,7 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 		c.T.Parallel() // Make sure the sleep in this test doesn't delay checks in other tests.
 
 		// Give some time before checking Pod restarts which might happen later after upgrade.
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Minute)
 
 		var podsRestarted []string
 		namespaces := []string{installation.ServingNamespace,
