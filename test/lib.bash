@@ -369,21 +369,21 @@ function run_rolling_upgrade_tests {
   image_template=$(
     cat <<-EOF
 $base{{- with .Name }}
-{{- if eq .      "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
-{{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
-{{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
-{{- else if eq . "eventshub"           }}knative-eventing-test-eventshub:$eventing_image_version
-{{- else if eq . "heartbeats"          }}knative-eventing-test-heartbeats:$eventing_image_version
-{{- else if eq . "performance"         }}knative-eventing-test-performance:$eventing_image_version
-{{- else if eq . "print"               }}knative-eventing-test-print:$eventing_image_version
-{{- else if eq . "recordevents"        }}knative-eventing-test-recordevents:$eventing_image_version
-{{- else if eq . "request-sender"      }}knative-eventing-test-request-sender:$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}knative-eventing-test-wathola-fetcher:$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
-{{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}knative-serving-test-{{.}}:$serving_image_version{{end -}}
+{{- if eq .      "kafka-consumer"      }}eventing-kafka-broker/{{.}}:$eventing_kafka_broker_image_version
+{{- else if eq . "event-flaker"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "event-library"       }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "event-sender"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "eventshub"           }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "heartbeats"          }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "performance"         }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "print"               }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "recordevents"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "request-sender"      }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-forwarder"   }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-sender"      }}eventing/{{.}}:$eventing_image_version
+{{- else                               }}serving/{{.}}:$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
