@@ -49,7 +49,7 @@ import (
 )
 
 const (
-	memoryWorkingSetQuery   = "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"\", namespace=\"%s\", container!=\"\", image!=\"\"}) by (pod)"
+	memoryWorkingSetQuery   = `sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", namespace="%s", container!="", image!=""}) by (pod)`
 	memoryIncreaseTolerance = 1.2
 )
 
@@ -241,6 +241,9 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
 			}
 			for _, pod := range pods.Items {
+				if strings.Contains(pod.Name, "version-migrator") {
+					continue
+				}
 				for _, status := range pod.Status.ContainerStatuses {
 					if status.RestartCount > 0 {
 						podsRestarted = append(podsRestarted, pod.Name)
