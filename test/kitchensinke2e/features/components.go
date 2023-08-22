@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/brokerconfig"
-	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
-	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
-	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
-
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
 	ksvcresources "github.com/openshift-knative/serverless-operator/test/kitchensinke2e/ksvc"
+	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	kafkachannelresources "knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
+	"knative.dev/eventing/test/rekt/resources/apiserversource"
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
 	channelresources "knative.dev/eventing/test/rekt/resources/channel"
+	"knative.dev/eventing/test/rekt/resources/containersource"
 	parallelresources "knative.dev/eventing/test/rekt/resources/parallel"
+	"knative.dev/eventing/test/rekt/resources/pingsource"
 	sequenceresources "knative.dev/eventing/test/rekt/resources/sequence"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/manifest"
@@ -267,6 +269,42 @@ var kafkaSink = genericComponent{
 			kafkasink.Install(name, topic, testpkg.BootstrapServersPlaintextArr,
 				kafkasink.WithNumPartitions(10),
 				kafkasink.WithReplicationFactor(1))(ctx, t)
+		}
+	},
+}
+
+var pingSource = genericComponent{
+	shortLabel: "ps",
+	label:      "PingSource",
+	kind:       "PingSoure",
+	gvr:        pingsource.Gvr(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			pingsource.Install(name, opts...)(ctx, t)
+		}
+	},
+}
+
+var containerSource = genericComponent{
+	shortLabel: "cs",
+	label:      "ContainerSource",
+	kind:       "ContainerSource",
+	gvr:        containersource.Gvr(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			containersource.Install(name, opts...)(ctx, t)
+		}
+	},
+}
+
+var apiServerSource = genericComponent{
+	shortLabel: "apis",
+	label:      "ApiServerSource",
+	kind:       "ApiServerSource",
+	gvr:        apiserversource.Gvr(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			//containersource.Install(name, opts...)(ctx, t)
 		}
 	},
 }
