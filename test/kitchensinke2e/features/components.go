@@ -6,10 +6,13 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/brokerconfig"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
 	ksvcresources "github.com/openshift-knative/serverless-operator/test/kitchensinke2e/ksvc"
+	rbacv1 "k8s.io/api/rbac/v1"
 	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	kafkachannelresources "knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
+	v1 "knative.dev/eventing/pkg/apis/sources/v1"
+	"knative.dev/eventing/test/rekt/resources/account_role"
 	"knative.dev/eventing/test/rekt/resources/apiserversource"
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
 	channelresources "knative.dev/eventing/test/rekt/resources/channel"
@@ -304,7 +307,29 @@ var apiServerSource = genericComponent{
 	gvr:        apiserversource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
-			//containersource.Install(name, opts...)(ctx, t)
+			saName := name + "-sa"
+
+			// Install necessary ServiceAccount and Roles
+			account_role.Install(saName,
+				account_role.WithRole(saName+"-clusterrole"),
+				account_role.WithRules(rbacv1.PolicyRule{
+					APIGroups: []string{""},
+					Resources: []string{"events", "pods"},
+					Verbs:     []string{"get", "list", "watch"},
+				}),
+			)(ctx, t)
+
+			// Setup common options except for Sink
+			commonsOpts := []manifest.CfgFn{
+				apiserversource.WithServiceAccountName(saName),
+				apiserversource.WithEventMode(v1.ResourceMode),
+				apiserversource.WithResources(v1.APIVersionKindSelector{
+					APIVersion: "v1",
+					Kind:       "Event",
+				}),
+			}
+
+			apiserversource.Install(name, append(commonsOpts, opts...)...)(ctx, t)
 		}
 	},
 }
