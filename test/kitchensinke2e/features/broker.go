@@ -21,6 +21,7 @@ var sinksAll = []component{
 	inMemoryChannelParallel,
 	kafkaChannelParallel,
 	ksvc,
+	kafkaSink,
 }
 
 var sinksShort = []component{

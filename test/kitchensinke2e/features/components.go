@@ -4,6 +4,9 @@ import (
 	"context"
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/brokerconfig"
+	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
 	ksvcresources "github.com/openshift-knative/serverless-operator/test/kitchensinke2e/ksvc"
@@ -248,6 +251,22 @@ var kafkaChannelParallel = genericComponent{
 				parallelresources.WithSubscriberAt(1, svcresources.AsKReference(branch2), ""),
 				parallelresources.WithReply(kafkaChannel.KReference(reply), ""),
 			)(ctx, t)
+		}
+	},
+}
+
+var kafkaSink = genericComponent{
+	shortLabel: "kasi",
+	label:      "KafkaSink",
+	kind:       "KafkaSink",
+	gvr:        kafkasink.GVR(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			topic := name + "-t"
+			kafkatopic.Install(topic)
+			kafkasink.Install(name, topic, testpkg.BootstrapServersPlaintextArr,
+				kafkasink.WithNumPartitions(10),
+				kafkasink.WithReplicationFactor(1))(ctx, t)
 		}
 	},
 }
