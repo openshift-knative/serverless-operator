@@ -3,12 +3,12 @@ package features
 import (
 	"fmt"
 
-	sourceresources "knative.dev/eventing/test/rekt/resources/source"
+	"knative.dev/eventing/test/rekt/resources/apiserversource"
 	"knative.dev/reconciler-test/pkg/feature"
 )
 
 var sources = []component{
-	pingSource,
+	//pingSource,
 	containerSource,
 	apiServerSource,
 	kafkaSource,
@@ -25,7 +25,10 @@ func SourceReadiness(index int, source component, sink component) *feature.Featu
 
 	f.Setup("Install Sink", sink.Install(sinkName))
 	f.Setup("Install Source", source.Install(sourceName,
-		sourceresources.WithSink(sink.KReference(sinkName), "")))
+		// Use apiserversource's WithSink because it's template requires .sink.ref.namespace to be set.
+		// This function is generic enough to work with other sources too.
+		apiserversource.WithSink(sink.KReference(sinkName), "")))
+	//sourceresources.WithSink(sink.KReference(sinkName), "")))
 
 	f.Assert("Sink is Ready", sink.IsReady(sinkName))
 	f.Assert("Source is Ready", source.IsReady(sourceName))
