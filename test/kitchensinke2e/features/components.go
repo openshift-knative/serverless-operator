@@ -10,6 +10,7 @@ import (
 	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	kafkachannelresources "knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasource"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
 	v1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/test/rekt/resources/account_role"
@@ -283,6 +284,7 @@ var pingSource = genericComponent{
 	gvr:        pingsource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
+			// pingsource.WithSink(service.AsKReference(sink), "")) // source.WithSink
 			pingsource.Install(name, opts...)(ctx, t)
 		}
 	},
@@ -295,6 +297,7 @@ var containerSource = genericComponent{
 	gvr:        containersource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
+			//containersource.WithSink(channel_impl.AsRef(channels[0]), "")) // source.WithSink
 			containersource.Install(name, opts...)(ctx, t)
 		}
 	},
@@ -319,8 +322,7 @@ var apiServerSource = genericComponent{
 				}),
 			)(ctx, t)
 
-			// Setup common options except for Sink
-			commonsOpts := []manifest.CfgFn{
+			commonOpts := []manifest.CfgFn{
 				apiserversource.WithServiceAccountName(saName),
 				apiserversource.WithEventMode(v1.ResourceMode),
 				apiserversource.WithResources(v1.APIVersionKindSelector{
@@ -328,8 +330,27 @@ var apiServerSource = genericComponent{
 					Kind:       "Event",
 				}),
 			}
+			//apiserversource.WithSink(svc.AsKReference(sink), ""), // je tam namespace
+			apiserversource.Install(name, append(commonOpts, opts...)...)(ctx, t)
+		}
+	},
+}
 
-			apiserversource.Install(name, append(commonsOpts, opts...)...)(ctx, t)
+var kafkaSource = genericComponent{
+	shortLabel: "kaso",
+	label:      "KafkaSource",
+	kind:       "KafkaSource",
+	gvr:        kafkasource.GVR(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			topic := name + "-t"
+			kafkatopic.Install(topic)
+			//kafkasource.WithSink(service.AsKReference(receiver), ""),
+			commonOpts := []manifest.CfgFn{
+				kafkasource.WithTopics([]string{topic}),
+				kafkasource.WithBootstrapServers(testpkg.BootstrapServersPlaintextArr),
+			}
+			kafkasource.Install(name, append(commonOpts, opts...)...)(ctx, t)
 		}
 	},
 }
