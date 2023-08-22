@@ -284,7 +284,7 @@ var pingSource = genericComponent{
 	gvr:        pingsource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
-			// pingsource.WithSink(service.AsKReference(sink), "")) // source.WithSink
+			//pingsource.WithSink(service.AsKReference(sink), "")) // source.WithSink
 			pingsource.Install(name, opts...)(ctx, t)
 		}
 	},

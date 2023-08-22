@@ -93,6 +93,7 @@ func TestKitchensink(t *testing.T) {
 		features.SequenceGlobalReplyFeatureSetShort(),
 		features.ParallelNoReplyFeatureSetShort(),
 		features.ParallelGlobalReplyFeatureSetShort(),
+		features.SourceFeatureSetShort(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -185,6 +186,7 @@ func TestUpgradeStress(t *testing.T) {
 		features.SequenceGlobalReplyFeatureSetStress(),
 		features.ParallelNoReplyFeatureSetStress(),
 		features.ParallelGlobalReplyFeatureSetStress(),
+		features.SourceFeatureSetStress(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
