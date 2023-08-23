@@ -31,6 +31,18 @@ func IsServiceMeshInstalled(ctx *Context) bool {
 	return false
 }
 
+func IsInternalEncryption(ctx *Context) bool {
+	knativeServing := "knative-serving"
+	serving, err := ctx.Clients.Operator.KnativeServings(knativeServing).Get(context.Background(), knativeServing, metav1.GetOptions{})
+	if err != nil {
+		ctx.T.Fatalf("Error getting KnativeServing: %v", err)
+	}
+
+	networkConfig, ok := serving.Spec.Config["network"]
+
+	return ok && networkConfig["internal-encryption"] == "true"
+}
+
 func LinkGlobalPullSecretToNamespace(ctx *Context, ns string) error {
 	// Wait for the default ServiceAccount to exist.
 	if err := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {

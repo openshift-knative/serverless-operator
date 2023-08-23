@@ -277,6 +277,11 @@ func jwtHTTPGetRequestBytes(ctx *test.Context, url *url.URL, token *string) (*sp
 // via istio authentication Policy to allow valid JWT only.
 // Skipped unless ServiceMesh has been installed via "make install-mesh"
 func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	if test.IsServiceMeshInstalled(ctx) && test.IsInternalEncryption(ctx) {
+		t.Skip("JWT integration not working with internal encryption, see SRVCOM-2648")
+	}
+
 	runTestForAllServiceMeshVersions(t, func(ctx *test.Context) {
 		t := ctx.T
 		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
