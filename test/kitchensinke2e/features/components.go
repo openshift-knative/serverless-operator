@@ -12,7 +12,7 @@ import (
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasource"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
-	v1 "knative.dev/eventing/pkg/apis/sources/v1"
+	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/test/rekt/resources/account_role"
 	"knative.dev/eventing/test/rekt/resources/apiserversource"
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
@@ -322,8 +322,8 @@ var apiServerSource = genericComponent{
 
 			commonOpts := []manifest.CfgFn{
 				apiserversource.WithServiceAccountName(saName),
-				apiserversource.WithEventMode(v1.ResourceMode),
-				apiserversource.WithResources(v1.APIVersionKindSelector{
+				apiserversource.WithEventMode(sourcesv1.ResourceMode),
+				apiserversource.WithResources(sourcesv1.APIVersionKindSelector{
 					APIVersion: "v1",
 					Kind:       "Event",
 				}),

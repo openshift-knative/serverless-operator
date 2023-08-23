@@ -34,7 +34,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"github.com/prometheus/common/model"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
@@ -238,7 +238,7 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 		namespaces := []string{test.ServingNamespace,
 			test.EventingNamespace, test.IngressNamespace, test.OperatorsNamespace}
 		for _, ns := range namespaces {
-			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
+			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
 			}
