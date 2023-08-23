@@ -346,8 +346,8 @@ function downstream_kitchensink_e2e_tests {
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
-
-  go_test_e2e "${RUN_FLAGS[@]}" ./test/kitchensinke2e -run=TestSourceReadiness \
+#  export GO_TEST_VERBOSITY=standard-verbose
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/kitchensinke2e \
   --images.producer.file="${images_file}" \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
