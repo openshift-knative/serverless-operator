@@ -1,81 +1,12 @@
-# Because autoscaler can talk to itself using websockets, we must also enforce
-# strict mTLS again via DestinationRule. Otherwise, if the websocket client is the same
-# as the destination pod, the connection will fail, because it does not use mTLS.
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: force-mtls
-  namespace: knative-serving
-spec:
-  host: "*.knative-serving.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
+  name: disable-mtls-zipkin
   namespace: knative-eventing
 spec:
-  host: "*.knative-eventing.svc.cluster.local"
+  host: "zipkin.knative-eventing.svc.cluster.local"
   trafficPolicy:
     tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
-  namespace: tenant-1
-spec:
-  host: "*.tenant-1.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
-  namespace: tenant-2
-spec:
-  host: "*.tenant-2.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
-  namespace: serving-tests
-spec:
-  host: "*.serving-tests.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
-  namespace: serving-tests-alt
-spec:
-  host: "*.serving-tests-alt.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
----
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: force-mtls
-  namespace: serverless-tests
-spec:
-  host: "*.serverless-tests.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
+      mode: DISABLE
 ---
