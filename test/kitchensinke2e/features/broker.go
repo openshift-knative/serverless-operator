@@ -38,6 +38,7 @@ var (
 	deadLetterSinks      = sinksAll
 	deadLetterSinksShort = sinksShort
 	triggers             = sinksAll
+	triggersShort        = sinksShort
 )
 
 func BrokerReadiness(index int, broker component, brokerDls component, triggers []component, triggerDls component) *feature.Feature {
@@ -111,14 +112,16 @@ func BrokerFeatureSetWithBrokerDLSStress() feature.FeatureSet {
 // each broker with all possible Triggers with the DeadLetterSink set on the Broker.
 func brokerFeatureSetWithBrokerDLS(short bool, times int) feature.FeatureSet {
 	dls := deadLetterSinks
+	trgs := triggers
 	if short {
 		dls = deadLetterSinksShort
+		trgs = triggersShort
 	}
 	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
 	for _, broker := range brokers {
 		for _, deadLetterSink := range dls {
 			for i := 0; i < times; i++ {
-				features = append(features, BrokerReadiness(i, broker, deadLetterSink, triggers, nil))
+				features = append(features, BrokerReadiness(i, broker, deadLetterSink, trgs, nil))
 			}
 		}
 	}
@@ -144,14 +147,16 @@ func BrokerFeatureSetWithTriggerDLSStress() feature.FeatureSet {
 // each broker with all possible Triggers with the DeadLetterSink set on the Trigger.
 func brokerFeatureSetWithTriggerDLS(short bool, times int) feature.FeatureSet {
 	dls := deadLetterSinks
+	trgs := triggers
 	if short {
 		dls = deadLetterSinksShort
+		trgs = triggersShort
 	}
 	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
 	for _, broker := range brokers {
 		for _, deadLetterSink := range dls {
 			for i := 0; i < times; i++ {
-				features = append(features, BrokerReadiness(i, broker, nil, triggers, deadLetterSink))
+				features = append(features, BrokerReadiness(i, broker, nil, trgs, deadLetterSink))
 			}
 		}
 	}
