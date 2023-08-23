@@ -269,7 +269,7 @@ var kafkaSink = genericComponent{
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			topic := name + "-t"
-			kafkatopic.Install(topic)
+			kafkatopic.Install(topic)(ctx, t)
 			kafkasink.Install(name, topic, testpkg.BootstrapServersPlaintextArr,
 				kafkasink.WithNumPartitions(10),
 				kafkasink.WithReplicationFactor(1))(ctx, t)
@@ -284,7 +284,6 @@ var pingSource = genericComponent{
 	gvr:        pingsource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
-			//pingsource.WithSink(service.AsKReference(sink), "")) // source.WithSink
 			pingsource.Install(name, opts...)(ctx, t)
 		}
 	},
@@ -297,7 +296,6 @@ var containerSource = genericComponent{
 	gvr:        containersource.Gvr(),
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
-			//containersource.WithSink(channel_impl.AsRef(channels[0]), "")) // source.WithSink
 			containersource.Install(name, opts...)(ctx, t)
 		}
 	},
@@ -330,7 +328,6 @@ var apiServerSource = genericComponent{
 					Kind:       "Event",
 				}),
 			}
-			//apiserversource.WithSink(svc.AsKReference(sink), ""), // je tam namespace
 			apiserversource.Install(name, append(commonOpts, opts...)...)(ctx, t)
 		}
 	},
@@ -344,8 +341,7 @@ var kafkaSource = genericComponent{
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			topic := name + "-t"
-			kafkatopic.Install(topic)
-			//kafkasource.WithSink(service.AsKReference(receiver), ""),
+			kafkatopic.Install(topic)(ctx, t)
 			commonOpts := []manifest.CfgFn{
 				kafkasource.WithTopics([]string{topic}),
 				kafkasource.WithBootstrapServers(testpkg.BootstrapServersPlaintextArr),
