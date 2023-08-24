@@ -69,6 +69,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 			corev1.EnvVar{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
 		),
 		overrideKourierNamespace(ks),
+		overrideKourierBootstrap(ks),
 		addKourierEnvValues(ks),
 		addKourierAppProtocol(ks),
 		common.VersionedJobNameTransform(),
