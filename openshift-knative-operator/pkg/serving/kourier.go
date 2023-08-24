@@ -31,11 +31,16 @@ const (
 
 	// ingressDefaultCertificateName is the name of the default ingress certificate.
 	ingressDefaultCertificateName = "router-certs-default"
+
+	// bootStrapConfigKey is the key of kourier-bootstrap configmap data.
+	bootStrapConfigKey = "envoy-bootstrap.yaml"
+
+	// defaultControllerAddress is the address of net-kourier-controller defined in kourier-bootstrap configmap by default.
+	defaultControllerAddress = "net-kourier-controller.knative-serving"
 )
 
-// overrideKourierNamespace overrides the namespace of all Kourier related resources to
-// the -ingress suffix to be backwards compatible.
-func overrideKourierBootstrap() mf.Transformer {
+// overrideKourierBootstrap overrides the address of kourier controller address.
+func overrideKourierBootstrap(ks base.KComponent) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() != "ConfigMap" || u.GetName() != "kourier-bootstrap" {
 			return nil
@@ -48,10 +53,12 @@ func overrideKourierBootstrap() mf.Transformer {
 			return err
 		}
 
-		controllerAddress := "net-kourier-controller.knative-serving-ingress.svc." + clusterLocalDomain + "."
+		controllerAddress := "net-kourier-controller." + kourierNamespace(ks.GetNamespace()) + ".svc." + clusterLocalDomain + "."
+		data := cm.Data[bootStrapConfigKey]
 
-		data := cm.Data["envoy-bootstrap.yaml"]
-		cm.Data["envoy-bootstrap.yaml"] = strings.Replace(data, "net-kourier-controller.knative-serving", controllerAddress, 1)
+		// Replace defaultControllerAddress with the complete kourier controller address.
+		// i.e. "net-kourier-controller.knative-serving" to "net-kourier-controller.knative-serving-ingress.svc.cluster.local."
+		cm.Data[bootStrapConfigKey] = strings.Replace(data, defaultControllerAddress, controllerAddress, 1)
 
 		return scheme.Scheme.Convert(cm, u, nil)
 	}

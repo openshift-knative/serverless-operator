@@ -105,6 +105,13 @@ func TestKourierServiceAppProtocol(t *testing.T) {
 }
 
 func TestKourierBootstrap(t *testing.T) {
+	ks := &operatorv1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-serving",
+			Name:      "test",
+		},
+	}
+
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   "kourier-bootstrap",
@@ -126,7 +133,7 @@ func TestKourierBootstrap(t *testing.T) {
 		t.Fatal("Failed to convert configmap to unstructured", err)
 	}
 
-	overrideKourierBootstrap()(got)
+	overrideKourierBootstrap(ks)(got)
 
 	want := &unstructured.Unstructured{}
 	if err := scheme.Scheme.Convert(expected, want, nil); err != nil {
