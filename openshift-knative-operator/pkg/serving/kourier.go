@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/pkg/network"
 )
 
 const (
@@ -31,6 +32,30 @@ const (
 	// ingressDefaultCertificateName is the name of the default ingress certificate.
 	ingressDefaultCertificateName = "router-certs-default"
 )
+
+// overrideKourierNamespace overrides the namespace of all Kourier related resources to
+// the -ingress suffix to be backwards compatible.
+func overrideKourierBootstrap() mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != "kourier-bootstrap" {
+			return nil
+		}
+
+		clusterLocalDomain := network.GetClusterDomainName()
+
+		cm := &corev1.ConfigMap{}
+		if err := scheme.Scheme.Convert(u, cm, nil); err != nil {
+			return err
+		}
+
+		controllerAddress := "net-kourier-controller.knative-serving-ingress.svc." + clusterLocalDomain + "."
+
+		data := cm.Data["envoy-bootstrap.yaml"]
+		cm.Data["envoy-bootstrap.yaml"] = strings.Replace(data, "net-kourier-controller.knative-serving", controllerAddress, 1)
+
+		return scheme.Scheme.Convert(cm, u, nil)
+	}
+}
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
 // the -ingress suffix to be backwards compatible.
