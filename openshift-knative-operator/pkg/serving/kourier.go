@@ -128,7 +128,7 @@ func addKourierAppProtocol(ks base.KComponent) mf.Transformer {
 		return nil
 	}
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() != "Service" && u.GetName() != "kourier" {
+		if u.GetKind() != "Service" || u.GetName() != "kourier" {
 			return nil
 		}
 
