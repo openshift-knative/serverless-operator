@@ -28,6 +28,12 @@ var sinksShort = []component{
 	ksvc,
 }
 
+// sinksLight is used when deploying multiple instances of the sink
+// to reduce CPU/Mem requirements.
+var sinksLight = []component{
+	inMemoryChannel,
+}
+
 var brokers = []component{
 	inMemoryChannelMtBroker,
 	kafkaChannelMtBroker,
