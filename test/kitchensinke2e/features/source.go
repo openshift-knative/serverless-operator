@@ -14,16 +14,22 @@ var sources = []component{
 	kafkaSource,
 }
 
-func SourceReadiness(index int, source component, sink component) *feature.Feature {
+func SourceReadiness(index int, source component, sink component, installSink bool, sinkNameOverride string) *feature.Feature {
 	testLabel := shortLabel(source) + shortLabel(sink)
 	testLabel = fmt.Sprintf("%s-%d", testLabel, index)
 
 	sourceName := testLabel
 	sinkName := testLabel + "-sink"
+	if sinkNameOverride != "" {
+		sinkName = sinkNameOverride
+	}
 
 	f := feature.NewFeatureNamed(fmt.Sprintf("%s with %s as sink", label(source), label(sink)))
 
-	f.Setup("Install Sink", sink.Install(sinkName))
+	if installSink {
+		f.Setup("Install Sink", sink.Install(sinkName))
+	}
+
 	f.Setup("Install Source", source.Install(sourceName,
 		// Use apiserversource's WithSink because its template requires .sink.ref.namespace to be set.
 		// This function is generic enough to work with other sources too.
@@ -44,7 +50,7 @@ func SourceFeatureSetShort() feature.FeatureSet {
 }
 
 func SourceFeatureSetStress() feature.FeatureSet {
-	return sourceFeatureSet(true, NumDeployments)
+	return sourceFeatureSet(true, 50)
 }
 
 // sourceFeatureSet returns all combinations of Source x Sinks.
@@ -55,9 +61,21 @@ func sourceFeatureSet(short bool, times int) feature.FeatureSet {
 	}
 	features := make([]*feature.Feature, 0, len(sources)*len(sinks))
 	for _, source := range sources {
-		for _, sink := range sinks {
+		if times > 1 {
+			// When deploying multiple instances of the same Source, make them share one sink
+			// to prevent running out of CPU/MEM.
+			sink := sinks[0]
 			for i := 0; i < times; i++ {
-				features = append(features, SourceReadiness(i, source, sink))
+				sinkNameOverride := shortLabel(sink) + "-sink"
+				if i == 0 {
+					features = append(features, SourceReadiness(i, source, sink, true /*installSink*/, sinkNameOverride))
+				} else {
+					features = append(features, SourceReadiness(i, source, sink, false, sinkNameOverride))
+				}
+			}
+		} else {
+			for _, sink := range sinks {
+				features = append(features, SourceReadiness(0, source, sink, true, ""))
 			}
 		}
 	}
