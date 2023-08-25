@@ -177,6 +177,10 @@ function deploy_knativeserving_cr {
     enable_tracing "$serving_cr"
   fi
 
+  if [[ "" != $(oc get ingresscontroller default -n openshift-ingress-operator -ojsonpath='{.spec.defaultCertificate}') ]]; then
+    override_ingress_cert "$serving_cr"
+  fi
+
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
 
   if [[ $FULL_MESH == "true" ]]; then
@@ -256,6 +260,26 @@ EOF
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
+}
+
+function override_ingress_cert {
+  local custom_resource network_patch cert_name
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  cert_name=$(oc get ingresscontroller default -n openshift-ingress-operator \
+    -ojsonpath='{.spec.defaultCertificate.name}')
+
+  network_patch="$(mktemp -t network-XXXXX.yaml)"
+  cat - << EOF > "${network_patch}"
+spec:
+  config:
+    network:
+      openshift-ingress-default-certificate: "${cert_name}"
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$network_patch"
+
+  rm -f "${network_patch}"
 }
 
 # If ServiceMesh is enabled:
