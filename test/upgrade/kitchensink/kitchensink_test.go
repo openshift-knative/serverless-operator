@@ -243,7 +243,8 @@ func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
 				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
 			}
 			for _, pod := range pods.Items {
-				if strings.Contains(pod.Name, "version-migrator") {
+				// Ignore storage version migration pods.
+				if strings.Contains(pod.Name, "storage-version") {
 					continue
 				}
 				for _, status := range pod.Status.ContainerStatuses {
