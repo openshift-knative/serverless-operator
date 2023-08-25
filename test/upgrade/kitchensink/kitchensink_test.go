@@ -315,7 +315,7 @@ func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[str
 			split := strings.Split(pod, "-")
 			// Remove the last two parts split by dash, containing random chars.
 			// Example: imc-controller-644bd94dff-7nhkx -> imc-controller
-			component := strings.Join(split[0:len(split)-2], "-")
+			component := ns + "/" + strings.Join(split[0:len(split)-2], "-")
 			// There might be more Pods for each component due to HA. Compute the sum of values.
 			systemPodsMemory[component] = systemPodsMemory[component] + float64(sample.Value)
 		}
