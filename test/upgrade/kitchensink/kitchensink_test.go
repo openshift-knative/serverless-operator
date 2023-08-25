@@ -25,6 +25,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -287,6 +288,9 @@ func VerifyMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) p
 }
 
 func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[string]float64) {
+	// Force garbage collection before checking memory usage.
+	runtime.GC()
+
 	prometheusCtx := context.WithValue(context.Background(), client.Key{}, ctx.Clients.Kube)
 	prometheusCtx = context.WithValue(prometheusCtx, dynamicclient.Key{}, ctx.Clients.Dynamic)
 	prometheusCtx = logging.WithLogger(prometheusCtx, logtesting.TestLogger(t))
