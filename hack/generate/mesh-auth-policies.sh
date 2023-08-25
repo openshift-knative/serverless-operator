@@ -11,7 +11,11 @@ helm > /dev/null || exit 127
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 policies_path="$(dirname "${BASH_SOURCE[0]}")/../lib/mesh_resources/authorization-policies/helm"
-chart_version="$(metadata.get project.version)"
+if [ -z "${ISTIO_CHART_VERSION:-}" ]; then
+  chart_version="$(metadata.get project.version)"
+else
+  chart_version="${ISTIO_CHART_VERSION}"
+fi
 
 echo "Cleaning up old resources in $policies_path"
 
