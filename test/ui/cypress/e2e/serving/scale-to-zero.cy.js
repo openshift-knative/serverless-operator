@@ -4,7 +4,9 @@ import OpenshiftConsole from '../../code/openshift/openshiftConsole'
 describe('OCP UI for Serverless Serving', () => {
 
   const openshiftConsole = new OpenshiftConsole()
-  const showcaseKsvc = new ShowcaseKservice()
+  const showcaseKsvc = new ShowcaseKservice({
+    namespace: 'test-scale-to-zero'
+  })
 
   it('can deploy kservice and scale it', () => {
     openshiftConsole.login()
