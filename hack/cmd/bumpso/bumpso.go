@@ -7,10 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/openshift-knative/serverless-operator/hack/cmd/common"
 )
 
 func main() {
@@ -26,8 +29,10 @@ func run() error {
 		log.Fatal(err)
 	}
 	projectPath := filepath.Join(wd, "olm-catalog/serverless-operator/project.yaml")
+	branch := ""
 
 	flag.StringVar(&projectPath, "project-path", projectPath, "")
+	flag.StringVar(&branch, "branch", "", "")
 	flag.Parse()
 
 	var node yaml.Node
@@ -53,8 +58,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	// We don't care about path versions (patch versions are potentially skipped, etc)
+	// We don't care about patch versions (patch versions are potentially skipped, etc)
 	currentVersion.Patch = 0
+
+	if branch != "" {
+		majorMinor := strings.Replace(branch, "release-", "", 1)
+		currentVersion = semver.New(fmt.Sprintf("%s.%d", majorMinor, 0))
+	}
 
 	newVersion := &semver.Version{
 		Major:      currentVersion.Major,
@@ -85,17 +95,17 @@ func run() error {
 	eventing, _, _ := unstructured.NestedString(project, "dependencies", "eventing")
 	ekb, _, _ := unstructured.NestedString(project, "dependencies", "eventing_kafka_broker")
 
-	_ = setNestedField(&node, newVersion.String(), "project", "version")
-	_ = setNestedField(&node, currentVersion.String(), "olm", "replaces")
-	_ = setNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
-	_ = setNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
-	_ = setNestedField(&node, skipRange(previousVersion, currentVersion), "olm", "previous", "skipRange")
-	_ = setNestedField(&node, upgradeSequence, "upgrade_sequence")
-	_ = setNestedField(&node, channelsList, "olm", "channels", "list")
+	_ = common.SetNestedField(&node, newVersion.String(), "project", "version")
+	_ = common.SetNestedField(&node, currentVersion.String(), "olm", "replaces")
+	_ = common.SetNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
+	_ = common.SetNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
+	_ = common.SetNestedField(&node, skipRange(previousVersion, currentVersion), "olm", "previous", "skipRange")
+	_ = common.SetNestedField(&node, upgradeSequence, "upgrade_sequence")
+	_ = common.SetNestedField(&node, channelsList, "olm", "channels", "list")
 
-	_ = setNestedField(&node, serving, "dependencies", "previous", "serving")
-	_ = setNestedField(&node, eventing, "dependencies", "previous", "eventing")
-	_ = setNestedField(&node, ekb, "dependencies", "previous", "eventing_kafka_broker")
+	_ = common.SetNestedField(&node, serving, "dependencies", "previous", "serving")
+	_ = common.SetNestedField(&node, eventing, "dependencies", "previous", "eventing")
+	_ = common.SetNestedField(&node, ekb, "dependencies", "previous", "eventing_kafka_broker")
 
 	buf := bytes.NewBuffer(nil)
 	if err := yaml.NewEncoder(buf).Encode(&node); err != nil {
@@ -129,46 +139,4 @@ func previousVersion(project map[string]interface{}) (*semver.Version, error) {
 
 func skipRange(prev, curr *semver.Version) string {
 	return fmt.Sprintf(">=%s <%s", prev.String(), curr.String())
-}
-
-func setNestedField(node *yaml.Node, value interface{}, fields ...string) error {
-
-	for i, n := range node.Content {
-
-		if i > 0 && node.Content[i-1].Value == fields[0] {
-
-			// Base case for scalar nodes
-			if len(fields) == 1 && n.Kind == yaml.ScalarNode {
-				n.SetString(fmt.Sprintf("%s", value))
-				break
-			}
-			// base case for sequence node
-			if len(fields) == 1 && n.Kind == yaml.SequenceNode {
-
-				if v, ok := value.([]interface{}); ok {
-					var s yaml.Node
-
-					b, err := yaml.Marshal(v)
-					if err != nil {
-						return err
-					}
-					if err := yaml.NewDecoder(bytes.NewBuffer(b)).Decode(&s); err != nil {
-						return err
-					}
-
-					n.Content = s.Content[0].Content
-				}
-				break
-			}
-
-			// Continue to the next level
-			return setNestedField(n, value, fields[1:]...)
-		}
-
-		if node.Kind == yaml.DocumentNode {
-			return setNestedField(n, value, fields...)
-		}
-	}
-
-	return nil
 }
