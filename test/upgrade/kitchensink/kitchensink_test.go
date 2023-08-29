@@ -25,7 +25,6 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -288,8 +287,7 @@ func VerifyMemoryUsage(ctx *test.Context, systemPodsMemory map[string]float64) p
 }
 
 func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[string]float64) {
-	// Force garbage collection before checking memory usage.
-	runtime.GC()
+	time.Sleep(7 * time.Minute)
 
 	prometheusCtx := context.WithValue(context.Background(), client.Key{}, ctx.Clients.Kube)
 	prometheusCtx = context.WithValue(prometheusCtx, dynamicclient.Key{}, ctx.Clients.Dynamic)
@@ -324,4 +322,6 @@ func recordMemoryUsage(t *testing.T, ctx *test.Context, systemPodsMemory map[str
 			systemPodsMemory[component] = systemPodsMemory[component] + float64(sample.Value)
 		}
 	}
+
+	ctx.T.Fatal("Induced failure")
 }
