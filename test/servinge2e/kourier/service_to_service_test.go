@@ -18,10 +18,6 @@ import (
 // services from within the cluster.
 func TestServiceToServiceCalls(t *testing.T) {
 
-	caCtx := test.SetupClusterAdmin(t)
-	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
-	defer test.CleanupAll(t, caCtx)
-
 	tests := []testCase{{
 		// Requests go via gateway -> activator -> pod.
 		name: "service-call-via-activator",
@@ -58,7 +54,11 @@ func TestServiceToServiceCalls(t *testing.T) {
 	for _, scenario := range tests {
 		scenario := scenario
 		t.Run(scenario.name, func(t *testing.T) {
-			testServiceToService(t, caCtx, test.Namespace, scenario)
+			// Create a new context to prevent calling ctx.T.Fatal on parent T.
+			ctx := test.SetupClusterAdmin(t)
+			test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+			defer test.CleanupAll(t, ctx)
+			testServiceToService(t, ctx, test.Namespace, scenario)
 		})
 	}
 }
