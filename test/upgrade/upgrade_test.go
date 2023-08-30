@@ -415,8 +415,6 @@ func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperati
 }
 
 func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
-	ctx, _ := defaultEnvironment(testCtx.T)
-
 	return []pkgupgrade.BackgroundOperation{
 		servingupgrade.ProbeTest(),
 		servingupgrade.AutoscaleSustainingWithTBCTest(),
