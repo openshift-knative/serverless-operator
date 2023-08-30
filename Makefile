@@ -48,6 +48,12 @@ install-strimzi:
 uninstall-strimzi:
 	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
 
+install-keda:
+	UNINSTALL_KEDA="false" ./hack/keda.sh
+
+uninstall-keda:
+	UNINSTALL_KEDA="true" ./hack/keda.sh
+
 install-certmanager:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 
