@@ -10,6 +10,8 @@ spec:
         envVars:
         - name: GODEBUG
           value: "gctrace=1"
+        - name: GOGC
+          value: "20"
   config:
     network:
       internal-encryption: "true"
