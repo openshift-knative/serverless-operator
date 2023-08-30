@@ -14,8 +14,14 @@ function install_tracing {
 function dedicate_node_to_zipkin {
   logger.info "Placing zipkin taint on first worker node"
   local zipkin_node
+<<<<<<< HEAD
   if [[ -z "$(oc get node -l 'zipkin,node-role.kubernetes.io/worker')"  ]]; then
     zipkin_node=$(oc get node -l 'node-role.kubernetes.io/worker' -ojsonpath='{.items[0].metadata.name}')
+=======
+  zipkin_node=$(oc get node -l 'zipkin,node-role.kubernetes.io/worker' -oname | head -n 1)
+  if [[ -z "$zipkin_node"  ]]; then
+    zipkin_node=$(oc get node -l 'node-role.kubernetes.io/worker' -oname | head -n 1)
+>>>>>>> d3ddfd18d (Use -n for head command)
     # Add label for placing the Zipkin pod via nodeAffinity
     oc label node "$zipkin_node" zipkin=
     # Add taint to prevent pods other than Zipkin from scheduling there
