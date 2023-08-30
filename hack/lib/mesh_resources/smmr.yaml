@@ -10,6 +10,7 @@ spec:
   - serving-tests
   - serving-tests-alt
   - serverless-tests
+  - serverless-tests2
   - eventing-e2e0
   - eventing-e2e1
   - eventing-e2e2

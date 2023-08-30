@@ -25,7 +25,13 @@ mkdir -p "$policies_path"
 for tenant in ${tenants//,/ }; do
   echo "Generating AuthorizationPolicies for tenant $tenant"
 
-  helm template oci://quay.io/openshift-knative/knative-istio-authz-onboarding --version "$chart_version" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
+  # shellcheck disable=SC2206
+  parts=(${tenant//=/ })
+  echo "Parts --> ${parts[*]}"
+  name=${parts[0]}
+  ns=${parts[1]/+/,}
+
+  helm template oci://quay.io/openshift-knative/knative-istio-authz-onboarding --version "$chart_version" --set "name=$name" --set "namespaces={$ns}" > "$policies_path/$name.yaml"
 done
 
 echo "Istio AuthorizationPolicies successfully updated for version $chart_version"

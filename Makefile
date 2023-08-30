@@ -258,7 +258,7 @@ release-files:
 		templates/images-rekt.yaml \
 		test/images-rekt.yaml
 	./hack/generate/mesh-auth-policies.sh \
-  	tenant-1,tenant-2,serving-tests,serverless-tests
+  	tenant-1=tenant-1,tenant-2=tenant-2,serving-tests=serving-tests,serverless-tests=serverless-tests+serverless-tests2
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.

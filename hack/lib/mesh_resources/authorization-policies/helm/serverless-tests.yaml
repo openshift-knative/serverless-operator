@@ -13,6 +13,7 @@ spec:
         - source:
             namespaces:
               - "serverless-tests"
+              - "serverless-tests2"
               - "knative-serving"
               - "istio-system"
 
@@ -24,9 +25,39 @@ spec:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
+---
+# Source: knative-istio-authz-onboarding/templates/common-allow-knative-to-ns.yaml
+---
+# Allow namespace serverless-tests2 to receive requests from Knative system components, from istio-system and from all namespaces of the tenant.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-knative-and-istio
+  namespace: serverless-tests2
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serverless-tests"
+              - "serverless-tests2"
+              - "knative-serving"
+              - "istio-system"
+
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/common-allow-via-knative-serving.yaml
-# Allow activator to receive requests from workloads and resources in serverless-tests.
+# Allow activator to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -38,19 +69,23 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "activator"
   rules:
-    # Allow to receive requests for Knative services in serverless-tests
+    # Allow to receive requests for Knative services in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
 
-    # Allow to receive requests from eventing sources, subscriptions and triggers in serverless-tests.
+    # Allow to receive requests from eventing sources, subscriptions and triggers in serverless-tests,serverless-tests2.
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -73,10 +108,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -100,10 +139,12 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
 apiVersion: security.istio.io/v1beta1
@@ -129,13 +170,15 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
-# Allow imc-dispatcher to receive requests from workloads and resources in serverless-tests.
+# Allow imc-dispatcher to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -147,20 +190,25 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "imc-dispatcher"
   rules:
-    # Allow to receive requests from event sources in serverless-tests
+    # Allow to receive requests from event sources in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -183,10 +231,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -207,14 +259,16 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
-# Allow kafka-broker-receiver to receive requests from workloads and resources in serverless-tests.
+# Allow kafka-broker-receiver to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -226,20 +280,25 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "kafka-broker-receiver"
   rules:
-    # Allow to receive requests from event sources in serverless-tests
+    # Allow to receive requests from event sources in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -262,10 +321,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -286,14 +349,16 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
-# Allow kafka-channel-receiver to receive requests from workloads and resources in serverless-tests.
+# Allow kafka-channel-receiver to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -305,20 +370,25 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "kafka-channel-receiver"
   rules:
-    # Allow to receive requests from event sources in serverless-tests
+    # Allow to receive requests from event sources in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -341,10 +411,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -365,14 +439,16 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
-# Allow kafka-sink-receiver to receive requests from workloads and resources in serverless-tests.
+# Allow kafka-sink-receiver to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -384,20 +460,25 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "kafka-sink-receiver"
   rules:
-    # Allow to receive requests from event sources in serverless-tests
+    # Allow to receive requests from event sources in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -420,10 +501,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -444,14 +529,16 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
-# Allow broker-ingress to receive requests from workloads and resources in serverless-tests.
+# Allow broker-ingress to receive requests from workloads and resources in serverless-tests,serverless-tests2.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -463,20 +550,25 @@ spec:
     matchLabels:
       app.kubernetes.io/component: "broker-ingress"
   rules:
-    # Allow to receive requests from event sources in serverless-tests
+    # Allow to receive requests from event sources in serverless-tests,serverless-tests2
     - from:
         - source:
             namespaces:
             - "serverless-tests"
+            - "serverless-tests2"
       to:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
         - operation:
             hosts:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -499,10 +591,14 @@ spec:
             - "*.serverless-tests"
             - "*.serverless-tests.svc"
             - "*.serverless-tests.svc.cluster.local"
+            - "*.serverless-tests2"
+            - "*.serverless-tests2.svc"
+            - "*.serverless-tests2.svc.cluster.local"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
     - from:
         - source:
             namespaces: [ "knative-eventing" ]
@@ -523,10 +619,12 @@ spec:
         - operation:
             paths:
             - "/serverless-tests/*"
+            - "/serverless-tests2/*"
       when:
         - key: request.headers[Kn-Namespace]
           values:
           - "serverless-tests"
+          - "serverless-tests2"
 ---
 # Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in serverless-tests
@@ -535,6 +633,22 @@ kind: AuthorizationPolicy
 metadata:
   name: "allow-wait-for-drain"
   namespace: "serverless-tests"
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            ports:
+              - "8022"
+---
+# Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
+---
+# Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in serverless-tests2
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "allow-wait-for-drain"
+  namespace: "serverless-tests2"
 spec:
   action: ALLOW
   rules:
