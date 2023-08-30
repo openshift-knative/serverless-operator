@@ -287,3 +287,10 @@ The required linters for that are:
 - Create the `release-1.X` branch
 - [Approve PRs created by GitHub actions bot](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
 - [Approve CI setup for `release-1.X` branch](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
+- Verify
+  that [`knative-istio-authz-chart`](https://github.com/openshift-knative/knative-istio-authz-chart/branches)
+  has a branch with the same name as the `release-1.X` branch created previously in
+  serverless-operator
+- Verify
+  that [`knative-istio-authz-chart`'s `Chart.yaml`](https://github.com/openshift-knative/knative-istio-authz-chart/blob/main/Chart.yaml)
+  has `version` and `appVersion` set to the next version.
