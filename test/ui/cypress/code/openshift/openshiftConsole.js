@@ -1,6 +1,8 @@
 import Environment from '../environment'
+import Kubernetes from '../kubernetes'
 
 const environment = new Environment()
+const k8s = new Kubernetes()
 
 class OpenshiftConsole {
   login() {
@@ -42,6 +44,8 @@ class OpenshiftConsole {
       // restore exception processing
       return true
     })
+
+    k8s.ensureNamespaceExists(namespace)
 
     cy.visit(`/add/ns/${namespace}?view=graph`)
     cy.get('#content').contains('Add')
