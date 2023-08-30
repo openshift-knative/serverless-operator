@@ -417,11 +417,6 @@ func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperati
 func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
 	ctx, _ := defaultEnvironment(testCtx.T)
 
-	// https://issues.redhat.com/browse/SRVKS-1080
-	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		return nil
-	}
-
 	return []pkgupgrade.BackgroundOperation{
 		servingupgrade.ProbeTest(),
 		servingupgrade.AutoscaleSustainingWithTBCTest(),
