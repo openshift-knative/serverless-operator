@@ -23,7 +23,7 @@ class ShowcaseKservice {
    * @returns {Cypress.Chainable<URL>} - the URL of the kservice
    */
   url() {
-    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.13')) {
+    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.12')) {
       return cy.get('.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]')
         .last()
         .scrollIntoView()
