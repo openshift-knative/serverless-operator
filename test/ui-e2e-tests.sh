@@ -41,9 +41,7 @@ if [ -n "${BUILD_ID:-}" ]; then
 fi
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
-create_namespaces "${TEST_NAMESPACES[@]}"
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
-oc adm policy add-role-to-user edit "$OCP_USERNAME" -n "$TEST_NAMESPACE"
 check_node
 archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
