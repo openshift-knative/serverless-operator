@@ -415,9 +415,19 @@ func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperati
 }
 
 func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
-	return []pkgupgrade.BackgroundOperation{
+	tests := []pkgupgrade.BackgroundOperation{
 		servingupgrade.ProbeTest(),
-		servingupgrade.AutoscaleSustainingWithTBCTest(),
-		servingupgrade.AutoscaleSustainingTest(),
 	}
+
+	ctx, _ := defaultEnvironment(testCtx.T)
+
+	// Run AutoscaleSustaining tests only without Mesh to
+	// give them enough CPU/Mem for scaling on CI clusters.
+	if ic := environment.GetIstioConfig(ctx); !ic.Enabled {
+		tests = append(tests,
+			servingupgrade.AutoscaleSustainingWithTBCTest(),
+			servingupgrade.AutoscaleSustainingTest())
+	}
+
+	return tests
 }
