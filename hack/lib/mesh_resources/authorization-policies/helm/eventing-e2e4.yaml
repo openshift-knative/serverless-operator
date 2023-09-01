@@ -1,0 +1,544 @@
+---
+# Source: knative-istio-authz-onboarding/templates/common-allow-knative-to-ns.yaml
+# Allow namespace eventing-e2e4 to receive requests from Knative system components, from istio-system and from all namespaces of the tenant.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-knative-and-istio
+  namespace: eventing-e2e4
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "eventing-e2e4"
+              - "knative-serving"
+              - "istio-system"
+
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/common-allow-via-knative-serving.yaml
+# Allow activator to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-activator
+  namespace: knative-serving
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "activator"
+  rules:
+    # Allow to receive requests for Knative services in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+
+    # Allow to receive requests from eventing sources, subscriptions and triggers in eventing-e2e4.
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-kafka-broker-reply
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-mt-channel-based-broker-reply
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces:
+            - "knative-eventing"
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+# Allow imc-dispatcher to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-imc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow broker-ingress to receive requests from workloads and resources in eventing-e2e4.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e4-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e4
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e4"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e4"
+            - "*.eventing-e2e4.svc"
+            - "*.eventing-e2e4.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e4/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e4"
+---
+# Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
+# Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in eventing-e2e4
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "allow-wait-for-drain"
+  namespace: "eventing-e2e4"
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            ports:
+              - "8022"
