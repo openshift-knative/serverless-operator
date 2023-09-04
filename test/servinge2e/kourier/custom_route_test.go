@@ -16,7 +16,7 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
 const (
@@ -88,13 +88,13 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
 
 	// Create DomainMapping with disable Annotation.
-	dm := &servingv1alpha1.DomainMapping{
+	dm := &servingv1beta1.DomainMapping{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        domainMappingName,
 			Namespace:   test.Namespace,
 			Annotations: map[string]string{resources.DisableRouteAnnotation: "true"},
 		},
-		Spec: servingv1alpha1.DomainMappingSpec{
+		Spec: servingv1beta1.DomainMappingSpec{
 			Ref: duckv1.KReference{
 				Kind:       "Service",
 				Name:       serviceName,
