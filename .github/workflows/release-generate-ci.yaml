@@ -34,19 +34,19 @@ jobs:
 
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ./src/github.com/openshift-knative/serverless-operator
 
       - name: Checkout openshift-knative/hack
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openshift-knative/hack'
           ref: 'main'
           path: ./src/github.com/openshift-knative/hack
 
       - name: Checkout openshift/release
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           branch: 'master'
           repository: 'openshift/release'
