@@ -183,7 +183,7 @@ test-upgrade: test-upstream-upgrade
 
 test-upgrade-with-mesh:
 	FULL_MESH=true UNINSTALL_MESH=false ./hack/mesh.sh
-	TRACING_BACKEND=zipkin ZIPKIN_DEDICATED_NODE=true ./hack/tracing.sh
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	FULL_MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
@@ -258,7 +258,7 @@ release-files:
 		templates/images-rekt.yaml \
 		test/images-rekt.yaml
 	./hack/generate/mesh-auth-policies.sh \
-  	tenant-1,tenant-2,serving-tests,serverless-tests
+  	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
