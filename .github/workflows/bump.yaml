@@ -33,7 +33,7 @@ jobs:
           sudo mv /usr/bin/yq /usr/local/bin/yq
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Always checkout main, we don't support bumping for patch releases (for now)
           ref: main
@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout openshift-knative/knative-istio-authz-chart
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openshift-knative/knative-istio-authz-chart'
           path: ./src/github.com/openshift-knative/knative-istio-authz-chart
