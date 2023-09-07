@@ -193,7 +193,7 @@ spec:
 
   customresourcedefinitions:
     owned:
-      - description: Represents an installation of a particular version of Knative Serving
+      - description: A platform for streamlined application deployment, traffic-based auto-scaling from zero to N, and traffic-split rollouts
         displayName: Knative Serving
         kind: KnativeServing
         name: knativeservings.operator.knative.dev
@@ -207,7 +207,7 @@ spec:
             x-descriptors:
               - "urn:alm:descriptor:io.kubernetes.conditions"
         version: v1beta1
-      - description: Represents an installation of a particular version of Knative Eventing
+      - description: An event-driven application platform that leverages CloudEvents with a simple HTTP interface
         displayName: Knative Eventing
         kind: KnativeEventing
         name: knativeeventings.operator.knative.dev
@@ -216,7 +216,7 @@ spec:
             displayName: Version
             path: version
         version: v1beta1
-      - description: Represents an installation of a particular version of Knative Kafka components
+      - description: An extension to Knative Eventing, merging HTTP accessibility with Apache Kafka's proven efficiency and reliability
         displayName: Knative Kafka
         kind: KnativeKafka
         name: knativekafkas.operator.serverless.openshift.io
