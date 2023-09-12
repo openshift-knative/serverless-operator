@@ -329,6 +329,16 @@ func convertSlackConfigTo(in SlackConfig) v1alpha1.SlackConfig {
 	}
 }
 
+func convertWebexConfigTo(in WebexConfig) v1alpha1.WebexConfig {
+	return v1alpha1.WebexConfig{
+		APIURL:       (*v1alpha1.URL)(in.APIURL),
+		HTTPConfig:   convertHTTPConfigTo(in.HTTPConfig),
+		Message:      in.Message,
+		RoomID:       in.RoomID,
+		SendResolved: in.SendResolved,
+	}
+}
+
 func convertWebhookConfigTo(in WebhookConfig) v1alpha1.WebhookConfig {
 	return v1alpha1.WebhookConfig{
 		SendResolved: in.SendResolved,
@@ -427,6 +437,7 @@ func convertTelegramConfigTo(in TelegramConfig) v1alpha1.TelegramConfig {
 		SendResolved:         in.SendResolved,
 		APIURL:               in.APIURL,
 		BotToken:             convertSecretKeySelectorTo(in.BotToken),
+		BotTokenFile:         in.BotTokenFile,
 		ChatID:               in.ChatID,
 		Message:              in.Message,
 		DisableNotifications: in.DisableNotifications,
@@ -471,6 +482,13 @@ func (src *AlertmanagerConfig) ConvertTo(dstRaw conversion.Hub) error {
 			out.SlackConfigs = append(
 				out.SlackConfigs,
 				convertSlackConfigTo(in),
+			)
+		}
+
+		for _, in := range in.WebexConfigs {
+			out.WebexConfigs = append(
+				out.WebexConfigs,
+				convertWebexConfigTo(in),
 			)
 		}
 
