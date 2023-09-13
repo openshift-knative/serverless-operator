@@ -57,6 +57,7 @@ spec:
         "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
       logging.enable-request-log: "true"
       logging.enable-probe-request-log: "true"
+      profiling.enable: "true"
     tracing:
       backend: "none"
       sample-rate: "0.1"
