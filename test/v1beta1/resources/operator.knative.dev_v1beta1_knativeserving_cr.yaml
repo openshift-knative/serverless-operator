@@ -3,15 +3,6 @@ kind: KnativeServing
 metadata:
   name: knative-serving
 spec:
-  workloads:
-    - name: controller
-      env:
-      - container: controller
-        envVars:
-        - name: GODEBUG
-          value: "gctrace=1"
-        - name: GOGC
-          value: "20"
   config:
     network:
       internal-encryption: "true"
