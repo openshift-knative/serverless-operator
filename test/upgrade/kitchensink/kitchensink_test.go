@@ -42,11 +42,6 @@ import (
 	pkgTest "knative.dev/pkg/test"
 )
 
-const (
-	memoryWorkingSetQuery   = `sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", namespace="%s", container!="", image!=""}) by (pod)`
-	memoryIncreaseTolerance = 1.2
-)
-
 var global environment.GlobalEnvironment
 
 func TestMain(m *testing.M) {
