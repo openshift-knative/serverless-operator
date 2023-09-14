@@ -188,11 +188,11 @@ test-upgrade-with-mesh:
 	FULL_MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-#test-kitchensink-upgrade:
-#	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-#	./hack/dev.sh
-#	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
-#	./test/kitchensink-upgrade-tests.sh
+test-kitchensink-upgrade:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	./hack/dev.sh
+	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
+	./test/kitchensink-upgrade-tests.sh
 
 test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
@@ -201,8 +201,6 @@ test-kitchensink-upgrade-stress:
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true SCALE_UP=5 ./hack/install.sh
 	./test/kitchensink-upgrade-stress-tests.sh
-
-test-kitchensink-upgrade: test-kitchensink-upgrade-stress
 
 test-kitchensink-upgrade-stress-testonly:
 	./test/kitchensink-upgrade-stress-tests.sh
