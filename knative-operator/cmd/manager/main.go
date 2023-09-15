@@ -124,7 +124,7 @@ func main() {
 	// Kafka Webhooks
 	hookServer.Register("/validate-knativekafkas", &webhook.Admission{Handler: knativekafka.NewValidator(mgr.GetClient(), decoder)})
 
-	if err := setupServerlesOperatorMonitoring(cfg); err != nil {
+	if err := setupServerlessOperatorMonitoring(cfg); err != nil {
 		log.Error(err, "Failed to start monitoring")
 	}
 
@@ -148,7 +148,7 @@ func main() {
 	}
 }
 
-func setupServerlesOperatorMonitoring(cfg *rest.Config) error {
+func setupServerlessOperatorMonitoring(cfg *rest.Config) error {
 	cl, err := client.New(cfg, client.Options{})
 	if err != nil {
 		return fmt.Errorf("failed to create a client: %w", err)

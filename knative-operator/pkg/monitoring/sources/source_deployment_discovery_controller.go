@@ -98,7 +98,7 @@ func (r *ReconcileSourceDeployment) Reconcile(_ context.Context, request reconci
 	}
 	// If monitoring is set to on/off this triggers a global resync to source adapters.
 	// Same applies if we change any of the env vars affecting cluster monitoring or service monitor resource generation.
-	// The Serverless operator pod is restarted and local informer caches are synched.
+	// The Serverless operator pod is restarted and local informer caches are synchronized.
 	if okomon.ShouldEnableMonitoring(eventing.Spec.GetConfig()) {
 		// If in deletion there is nothing to be done, owner refs will remove source service monitors
 		// Make sure we do not setup any resources if the source is being deleted

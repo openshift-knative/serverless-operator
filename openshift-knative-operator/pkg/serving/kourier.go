@@ -82,7 +82,7 @@ func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
 		labels[socommon.ServingOwnerName] = ks.GetName()
 		u.SetLabels(labels)
 
-		// We need to unset OwnerReferences so Openshift doesn't delete Kourier ressources.
+		// We need to unset OwnerReferences so Openshift doesn't delete Kourier resources.
 		u.SetOwnerReferences(nil)
 		return nsInjector(u)
 	}

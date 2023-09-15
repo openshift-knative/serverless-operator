@@ -66,7 +66,7 @@ func MakeRoutes(ci *networkingv1alpha1.Ingress) ([]*routev1.Route, error) {
 }
 
 func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alpha1.IngressRule) (*routev1.Route, error) {
-	// Take over annotaitons from ingress.
+	// Take over annotations from ingress.
 	annotations := ci.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
