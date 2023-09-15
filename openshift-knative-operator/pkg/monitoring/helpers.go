@@ -68,7 +68,7 @@ func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *ba
 		}
 		return nil
 	}
-	// If "opencensus" is used we still dont want to scrape from a Serverless controlled namespace
+	// If "opencensus" is used we still don't want to scrape from a Serverless controlled namespace
 	// user can always push to an agent collector in some other namespace and then integrate with OCP monitoring stack
 	if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, false); err != nil {
 		return fmt.Errorf("failed to disable monitoring %w ", err)

@@ -58,7 +58,7 @@ type ReconcileHealthDashboard struct {
 func (r *ReconcileHealthDashboard) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling HealthDashboard")
-	// in any case restore the current health dashboard, since the configmap shouldnt
+	// in any case restore the current health dashboard, since the configmap shouldn't
 	// be modified, if the configmap has not changed this will not trigger a real update
 	err := InstallHealthDashboard(r.client)
 	if err != nil {
