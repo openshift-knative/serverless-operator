@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
 type ServiceCfgFunc func(*servingv1.Service)
@@ -140,13 +140,13 @@ func WaitForReadyServices(ctx *Context, namespace string) error {
 	return nil
 }
 
-func WaitForDomainMappingState(ctx *Context, name, namespace string, inState func(dm *servingv1alpha1.DomainMapping, err error) (bool, error)) (*servingv1alpha1.DomainMapping, error) {
+func WaitForDomainMappingState(ctx *Context, name, namespace string, inState func(dm *servingv1beta1.DomainMapping, err error) (bool, error)) (*servingv1beta1.DomainMapping, error) {
 	var (
-		lastState *servingv1alpha1.DomainMapping
+		lastState *servingv1beta1.DomainMapping
 		err       error
 	)
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err = ctx.Clients.Serving.ServingV1alpha1().DomainMappings(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		lastState, err = ctx.Clients.Serving.ServingV1beta1().DomainMappings(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -160,7 +160,7 @@ func IsServiceReady(s *servingv1.Service, err error) (bool, error) {
 	return s.IsReady() && s.Status.URL != nil && s.Status.URL.Host != "", err
 }
 
-func IsDomainMappingReady(dm *servingv1alpha1.DomainMapping, err error) (bool, error) {
+func IsDomainMappingReady(dm *servingv1beta1.DomainMapping, err error) (bool, error) {
 	return dm.IsReady() && dm.Status.URL != nil && dm.Status.URL.Host != "", err
 }
 
