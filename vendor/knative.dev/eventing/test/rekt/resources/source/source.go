@@ -39,6 +39,7 @@ func WithSink(ref *duckv1.KReference, uri string) manifest.CfgFn {
 			sref := sink["ref"].(map[string]interface{})
 			sref["apiVersion"] = ref.APIVersion
 			sref["kind"] = ref.Kind
+			sref["namespace"] = ref.Namespace
 			// skip namespace
 			sref["name"] = ref.Name
 		}
