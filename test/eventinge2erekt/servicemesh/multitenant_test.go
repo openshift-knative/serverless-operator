@@ -39,7 +39,7 @@ func TestPingSourceToKsvc(t *testing.T) {
 		knative.WithTracingConfig,
 		k8s.WithEventListener,
 		eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(5*time.Second, 1*time.Minute),
+		environment.WithPollTimings(5*time.Second, 4*time.Minute),
 		environment.WithNamespace("tenant-2"),
 		environment.Managed(t),
 	)
@@ -49,7 +49,7 @@ func TestPingSourceToKsvc(t *testing.T) {
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, KsvcSink(sink))
 	// Check PingSource deployed in tenant-2
-	envTenant2.Test(ctxTenant2, t, VerifyPingSource(sink, ctxTenant1))
+	envTenant2.Test(ctxTenant2, t, VerifyPingSourceToKsvcBlocked(sink, ctxTenant1))
 }
 
 func KsvcSink(name string) *feature.Feature {
@@ -60,24 +60,37 @@ func KsvcSink(name string) *feature.Feature {
 	return f
 }
 
-func VerifyPingSource(sink string, otherContext context.Context) *feature.Feature {
+func VerifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context) *feature.Feature {
 	source := feature.MakeRandomK8sName("pingsource")
 	f := feature.NewFeature()
 
 	sinkRef := service.AsKReference(sink)
-	sinkRef.Namespace = environment.FromContext(otherContext).Namespace()
+	sinkRef.Namespace = environment.FromContext(sinkCtx).Namespace()
 	f.Requirement("install pingsource", pingsource.Install(source, pingsource.WithSink(sinkRef, "")))
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
 
 	f.Stable("pingsource as event source").
-		Must("delivers events",
+		Must("does not deliever events to ksvc cross-tenant",
 			func(ctx context.Context, t feature.T) {
 				assert.OnStore(sink).
 					Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
 					MatchEvent(test.HasType("dev.knative.sources.ping")).
-					AtLeast(1)(otherContext, t) // Use the other context for checking event store.
+					Not()(sinkCtx, t)
 			},
 		)
+
+	// TODO: The Activator Pod's istio-proxy throws 403 as expected:
+	// { "authority": "sink-xshqhaao.tenant-1.svc.cluster.local",
+	//"bytes_received": 0, "bytes_sent": 19, "downstream_local_address": "10.128.4.21:8012",
+	//"downstream_peer_cert_v_end": "2023-09-19T09:23:12.000Z", "downstream_peer_cert_v_start":
+	//"2023-09-18T09:21:12.000Z", "downstream_remote_address": "10.131.3.179:54072",
+	//"downstream_tls_cipher": "TLS_AES_256_GCM_SHA384", "downstream_tls_version": "TLSv1.3",
+	//"duration": 0, "hostname": "activator-69b7f975bb-5rhsx", "istio_policy_status": "-",
+	//"method": "POST", "path": "/", "protocol": "HTTP/1.1", "request_duration": 0, "request_id":
+	//"a00c9d1d-daa7-432c-8b98-196c3dbf4dee", "requested_server_name":
+	//"outbound_.80_._.sink-xshqhaao-00001.tenant-1.svc.cluster.local",
+	//"response_code": "403", "response_duration": -, "response_tx_duration": -,
+	//"response_flags": "-", "route_name": "-", "start_time": "2023-09-18T11:11:00.370Z",
 
 	return f
 }
