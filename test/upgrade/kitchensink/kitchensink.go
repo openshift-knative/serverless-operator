@@ -106,6 +106,20 @@ func (fe *FeatureWithEnvironment) PostUpgrade() pkgupgrade.Operation {
 		for _, a := range asserts {
 			a.Fn(fe.Context, c.T)
 		}
+	})
+}
+
+func (fe *FeatureWithEnvironment) PostDowngrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation(fe.Feature.Name, func(c pkgupgrade.Context) {
+		c.T.Parallel()
+		requirements := filterStepTimings(fe.Feature.Steps, feature.Requirement)
+		for _, r := range requirements {
+			r.Fn(fe.Context, c.T)
+		}
+		asserts := filterStepTimings(fe.Feature.Steps, feature.Assert)
+		for _, a := range asserts {
+			a.Fn(fe.Context, c.T)
+		}
 		teardowns := filterStepTimings(fe.Feature.Steps, feature.Teardown)
 		for _, td := range teardowns {
 			td.Fn(fe.Context, c.T)
@@ -137,6 +151,14 @@ func (fg FeatureWithEnvironmentGroup) PostUpgradeTests() []pkgupgrade.Operation 
 	ops := make([]pkgupgrade.Operation, 0, len(fg))
 	for _, ft := range fg {
 		ops = append(ops, ft.PostUpgrade())
+	}
+	return ops
+}
+
+func (fg FeatureWithEnvironmentGroup) PostDowngradeTests() []pkgupgrade.Operation {
+	ops := make([]pkgupgrade.Operation, 0, len(fg))
+	for _, ft := range fg {
+		ops = append(ops, ft.PostDowngrade())
 	}
 	return ops
 }

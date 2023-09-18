@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +31,7 @@ func verifyEncryptedTrafficToKafkaSink(sinkName string, since time.Time) feature
 		// source -> kafka-sink-receiver
 		sinkPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), sinkName)
 		logFilter := eventingfeatures.LogFilter{
-			PodNamespace:  "knative-eventing",
+			PodNamespace:  test.EventingNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-sink-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
@@ -75,7 +76,7 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 		}
 		// source -> kafka-broker-receiver
 		brokerPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), brokerName)
-		brokerReceiverNamespace := "knative-eventing"
+		brokerReceiverNamespace := test.EventingNamespace
 		if namespacedBroker {
 			brokerReceiverNamespace = environment.FromContext(ctx).Namespace()
 		}
@@ -119,7 +120,7 @@ func verifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReferen
 			environment.FromContext(ctx).Namespace())
 
 		logFilter := eventingfeatures.LogFilter{
-			PodNamespace:  "knative-eventing",
+			PodNamespace:  test.EventingNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
@@ -156,7 +157,7 @@ func verifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since t
 			environment.FromContext(ctx).Namespace())
 
 		logFilter := eventingfeatures.LogFilter{
-			PodNamespace:  "knative-eventing",
+			PodNamespace:  test.EventingNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {

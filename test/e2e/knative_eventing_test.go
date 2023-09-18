@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	eventingNamespace  = "knative-eventing"
+	eventingNamespace  = test.EventingNamespace
 	eventingHaReplicas = 2
 )
 

@@ -23,8 +23,8 @@ import (
 
 const (
 	eventingName          = "knative-eventing"
-	eventingNamespace     = "knative-eventing"
-	knativeKafkaNamespace = "knative-eventing"
+	eventingNamespace     = test.EventingNamespace
+	knativeKafkaNamespace = test.EventingNamespace
 	defaultNamespace      = "default"
 )
 

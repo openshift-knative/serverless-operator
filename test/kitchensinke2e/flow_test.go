@@ -9,10 +9,10 @@ import (
 
 func TestFlowReadiness(t *testing.T) {
 	featureSets := []feature.FeatureSet{
-		features.SequenceNoReplyFeatureSet(false),
-		features.ParallelNoReplyFeatureSet(false),
-		features.SequenceGlobalReplyFeatureSet(false),
-		features.ParallelGlobalReplyFeatureSet(false),
+		features.SequenceNoReplyFeatureSet(),
+		features.ParallelNoReplyFeatureSet(),
+		features.SequenceGlobalReplyFeatureSet(),
+		features.ParallelGlobalReplyFeatureSet(),
 	}
 
 	for _, fs := range featureSets {

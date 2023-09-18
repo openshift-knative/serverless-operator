@@ -203,6 +203,14 @@ test-kitchensink-upgrade:
 test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
 
+test-kitchensink-upgrade-stress:
+	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
+	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true SCALE_UP=5 ./hack/install.sh
+	./test/kitchensink-upgrade-stress-tests.sh
+
+test-kitchensink-upgrade-stress-testonly:
+	./test/kitchensink-upgrade-stress-tests.sh
+
 # Run Console UI e2e tests.
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh

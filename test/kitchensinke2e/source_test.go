@@ -6,6 +6,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 )
 
-func TestChannelReadiness(t *testing.T) {
-	testFeatureSet(t, features.ChannelFeatureSet())
+func TestSourceReadiness(t *testing.T) {
+	testFeatureSet(t, features.SourceFeatureSet())
 }

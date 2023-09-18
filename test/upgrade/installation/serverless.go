@@ -35,7 +35,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.ServingVersion) == 0 {
 		servingInStateFunc = v1beta1.IsKnativeServingReady
 	}
-	knativeServing := "knative-serving"
+	knativeServing := test.ServingNamespace
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
@@ -48,7 +48,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 	if len(test.Flags.EventingVersion) == 0 {
 		eventingInStateFunc = v1beta1.IsKnativeEventingReady
 	}
-	knativeEventing := "knative-eventing"
+	knativeEventing := test.EventingNamespace
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
@@ -133,7 +133,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	knativeServing := "knative-serving"
+	knativeServing := test.ServingNamespace
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
@@ -142,7 +142,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("serving downgrade failed: %w", err)
 	}
 
-	knativeEventing := "knative-eventing"
+	knativeEventing := test.EventingNamespace
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
