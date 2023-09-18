@@ -35,12 +35,9 @@ var (
 )
 
 func init() {
-	// Need to avoid conflict with knative sharedmain kubeconfig parsing
-	// For more check here: https://github.com/kubernetes-sigs/controller-runtime/issues/878
-	if flag.Lookup("kubeconfig") == nil {
-		flag.StringVar(&kubeconfig, "kubeconfig", "",
-			"Paths to a kubeconfig. Only required if out-of-cluster.")
-	}
+	// TODO: Fix this to allow double vendoring this library but still register flags on behalf of users
+	flag.StringVar(&kubeconfig, "kubeconfig", "",
+		"Paths to a kubeconfig. Only required if out-of-cluster.")
 }
 
 // GetConfig creates a *rest.Config for talking to a Kubernetes API server.
