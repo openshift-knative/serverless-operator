@@ -3,56 +3,32 @@ package servicemesh
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/cloudevents/sdk-go/v2/test"
-	"knative.dev/eventing/test/rekt/features"
 	"knative.dev/eventing/test/rekt/resources/pingsource"
-	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
-	"knative.dev/reconciler-test/pkg/k8s"
-	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
 // PingSource -> Ksvc -> Sink (Eventshub)
-func TestPingSourceToKsvc(t *testing.T) {
+func TestPingSourceToKsvcCrossTenant(t *testing.T) {
 	t.Parallel()
 
-	ctxTenant1, envTenant1 := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(5*time.Second, 4*time.Minute),
-		environment.WithNamespace("tenant-1"),
-		environment.Managed(t),
-	)
-
-	ctxTenant2, envTenant2 := global.Environment(
-		knative.WithKnativeNamespace(system.Namespace()),
-		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
-		k8s.WithEventListener,
-		eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(5*time.Second, 4*time.Minute),
-		environment.WithNamespace("tenant-2"),
-		environment.Managed(t),
-	)
+	ctxTenant1, envTenant1 := environmentWithNamespace(t, "tenant-1")
+	ctxTenant2, envTenant2 := environmentWithNamespace(t, "tenant-2")
 
 	sink := feature.MakeRandomK8sName("sink")
 
 	// Deploy sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, KsvcSink(sink))
-	// Check PingSource deployed in tenant-2
-	envTenant2.Test(ctxTenant2, t, VerifyPingSourceToKsvcBlocked(sink, ctxTenant1))
+	envTenant1.Test(ctxTenant1, t, ksvcSink(sink))
+	// Check cross-tenant event.
+	envTenant2.Test(ctxTenant2, t, verifyPingSourceToKsvcBlocked(sink, ctxTenant1))
 }
 
-func KsvcSink(name string) *feature.Feature {
+func ksvcSink(name string) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Setup("install sink", eventshub.Install(name, eventshub.StartReceiver))
@@ -60,7 +36,7 @@ func KsvcSink(name string) *feature.Feature {
 	return f
 }
 
-func VerifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context) *feature.Feature {
+func verifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context) *feature.Feature {
 	source := feature.MakeRandomK8sName("pingsource")
 	f := feature.NewFeature()
 
@@ -69,15 +45,13 @@ func VerifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context) *featur
 	f.Requirement("install pingsource", pingsource.Install(source, pingsource.WithSink(sinkRef, "")))
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
 
-	f.Stable("pingsource as event source").
-		Must("does not deliever events to ksvc cross-tenant",
-			func(ctx context.Context, t feature.T) {
-				assert.OnStore(sink).
-					Match(features.HasKnNamespaceHeader(environment.FromContext(ctx).Namespace())).
-					MatchEvent(test.HasType("dev.knative.sources.ping")).
-					Not()(sinkCtx, t)
-			},
-		)
+	f.Assert("ping source does not deliver event to ksvc across tenants",
+		func(ctx context.Context, t feature.T) {
+			assert.OnStore(sink).
+				MatchEvent(test.HasType("dev.knative.sources.ping")).
+				Not()(sinkCtx, t)
+		},
+	)
 
 	// TODO: The Activator Pod's istio-proxy throws 403 as expected:
 	// { "authority": "sink-xshqhaao.tenant-1.svc.cluster.local",

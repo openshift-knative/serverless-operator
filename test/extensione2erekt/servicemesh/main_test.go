@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"knative.dev/eventing/test/rekt/resources/broker"
+	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/pkg/system"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -20,7 +20,8 @@ var global environment.GlobalEnvironment
 
 // TestMain is the first entry point for `go test`.
 func TestMain(m *testing.M) {
-	broker.EnvCfg.BrokerClass = "MTChannelBasedBroker"
+	channel_impl.EnvCfg.ChannelGK = "KafkaChannel.messaging.knative.dev"
+	channel_impl.EnvCfg.ChannelV = "v1beta1"
 
 	restConfig, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
 	if err != nil {
