@@ -211,3 +211,24 @@ func getChannelName(refs []corev1.ObjectReference) (string, error) {
 
 	return channelName, nil
 }
+
+func VerifyRequestToSinkForbidden(sinkName, namespace string, since time.Time) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		sinkLabel := fmt.Sprintf("app=eventshub-%s", sinkName)
+		authority := fmt.Sprintf("%s.%s.svc.cluster.local", sinkName, namespace)
+		logFilter := eventingfeatures.LogFilter{
+			PodNamespace:  namespace,
+			PodSelector:   metav1.ListOptions{LabelSelector: sinkLabel},
+			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+			JSONLogFilter: func(m map[string]interface{}) bool {
+				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
+					eventingfeatures.GetMapValueAsString(m, "response_code") == "403"
+			}}
+
+		err := eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}

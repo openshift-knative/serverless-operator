@@ -7,6 +7,7 @@ import (
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
@@ -144,15 +145,16 @@ func TestContainerSourceKafkaChannelKsvcWithReplyAndDLSCrossTenant(t *testing.T)
 		environment.Managed(t),
 	)
 
-	replySink := feature.MakeRandomK8sName("sink")
+	since := time.Now()
+	sink := feature.MakeRandomK8sName("sink")
 
 	// Deploy reply-sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, replySinkKsvc(replySink))
+	envTenant1.Test(ctxTenant1, t, deploySink(sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelWithReplyAndDLS(replySink, ctxTenant1))
+	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelWithReplyAndDLS(sink, ctxTenant1, since))
 }
 
-func replySinkKsvc(sink string) *feature.Feature {
+func deploySink(sink string) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
@@ -160,7 +162,7 @@ func replySinkKsvc(sink string) *feature.Feature {
 	return f
 }
 
-func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCtx context.Context) *feature.Feature {
+func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	channel := feature.MakeRandomK8sName("channel")
@@ -213,21 +215,9 @@ func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCt
 			Not()(replySinkCtx, t)
 	})
 
-	// TODO: Automatically assert istio-proxy 403 in receiver pod:
-	// { "authority": "sink-rizhoevd.tenant-1.svc.cluster.local", "bytes_received": 0,
-	//"bytes_sent": 19, "downstream_local_address": "10.131.2.67:8080",
-	//"downstream_peer_cert_v_end": "2023-09-20T07:46:34.000Z", "downstream_peer_cert_v_start": "2023-09-19T07:44:34.000Z",
-	//"downstream_remote_address": "10.129.3.8:57676",
-	//"downstream_tls_cipher": "TLS_AES_256_GCM_SHA384",
-	//"downstream_tls_version": "TLSv1.3", "duration": 0, "hostname": "sink-rizhoevd",
-	//"istio_policy_status": "-", "method": "POST", "path": "/", "protocol": "HTTP/1.1",
-	//"request_duration": -, "request_id": "7768b8a1-1159-4e97-98e1-c9a93267cd1f",
-	//"requested_server_name": "outbound_.80_._.sink-rizhoevd.tenant-1.svc.cluster.local",
-	//"response_code": "403", "response_duration": -, "response_tx_duration": -,
-	//"response_flags": "-", "route_name": "-", "start_time": "2023-09-19T13:06:08.311Z",
-	//"upstream_cluster": "inbound|8080||", "upstream_host": "-", "upstream_local_address": "-",
-	//"upstream_service_time": -, "upstream_transport_failure_reason": "-",
-	//"user_agent": "Vert.x-WebClient/4.3.4", "x_forwarded_for": "-" }
+	f.Assert("request to event sink is forbidden", func(ctx context.Context, t feature.T) {
+		kafkafeatures.VerifyRequestToSinkForbidden(replySink, environment.FromContext(replySinkCtx).Namespace(), since)
+	})
 
 	return f
 }
