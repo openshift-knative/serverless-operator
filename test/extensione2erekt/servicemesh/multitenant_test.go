@@ -116,8 +116,8 @@ func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 
 // ContainerSource -> KafkaChannel -> Subscription -> Sink (tenant-1)
 //
-//	-> with reply to Sink (tenant-2)
-//	-> with deadLetterSink to Sink (tenant-1)
+//	-> subscription with reply to Sink (tenant-2)
+//	-> subscription with deadLetterSink to Sink (tenant-1)
 //
 // The sink in "reply" should not receive any event because it's in a different tenant.
 // The original sink and dead letter sink should receive an event.
@@ -171,7 +171,8 @@ func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCt
 	f.Setup("install channel", channel_impl.Install(channel))
 	f.Setup("channel is ready", channel_impl.IsReady(channel))
 
-	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
+	f.Setup("install sink", eventshub.Install(sink,
+		eventshub.StartReceiver, eventshub.EchoEvent))
 	f.Setup("install dls", eventshub.Install(dls, eventshub.StartReceiver))
 
 	replySinkRef := service.AsKReference(replySink)
@@ -211,6 +212,22 @@ func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCt
 			MatchEvent(cetest.HasType("dev.knative.eventing.samples.heartbeat")).
 			Not()(replySinkCtx, t)
 	})
+
+	// TODO: Automatically assert istio-proxy 403 in receiver pod:
+	// { "authority": "sink-rizhoevd.tenant-1.svc.cluster.local", "bytes_received": 0,
+	//"bytes_sent": 19, "downstream_local_address": "10.131.2.67:8080",
+	//"downstream_peer_cert_v_end": "2023-09-20T07:46:34.000Z", "downstream_peer_cert_v_start": "2023-09-19T07:44:34.000Z",
+	//"downstream_remote_address": "10.129.3.8:57676",
+	//"downstream_tls_cipher": "TLS_AES_256_GCM_SHA384",
+	//"downstream_tls_version": "TLSv1.3", "duration": 0, "hostname": "sink-rizhoevd",
+	//"istio_policy_status": "-", "method": "POST", "path": "/", "protocol": "HTTP/1.1",
+	//"request_duration": -, "request_id": "7768b8a1-1159-4e97-98e1-c9a93267cd1f",
+	//"requested_server_name": "outbound_.80_._.sink-rizhoevd.tenant-1.svc.cluster.local",
+	//"response_code": "403", "response_duration": -, "response_tx_duration": -,
+	//"response_flags": "-", "route_name": "-", "start_time": "2023-09-19T13:06:08.311Z",
+	//"upstream_cluster": "inbound|8080||", "upstream_host": "-", "upstream_local_address": "-",
+	//"upstream_service_time": -, "upstream_transport_failure_reason": "-",
+	//"user_agent": "Vert.x-WebClient/4.3.4", "x_forwarded_for": "-" }
 
 	return f
 }
