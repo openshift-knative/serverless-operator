@@ -4,14 +4,25 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudevents/sdk-go/v2/test"
+	cetest "github.com/cloudevents/sdk-go/v2/test"
+	"github.com/google/uuid"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/configmap"
+	duckv1 "knative.dev/eventing/pkg/apis/duck/v1"
+	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/eventing/test/rekt/resources/containersource"
 	"knative.dev/eventing/test/rekt/resources/subscription"
+	"knative.dev/eventing/test/rekt/resources/trigger"
+	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
+	"knative.dev/reconciler-test/pkg/k8s"
+	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
@@ -64,7 +75,7 @@ func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 	f.Assert("container source does not deliver event to channel across tenants",
 		func(ctx context.Context, t feature.T) {
 			assert.OnStore(sink).
-				MatchEvent(test.HasType("dev.knative.eventing.samples.heartbeat")).
+				MatchEvent(cetest.HasType("dev.knative.eventing.samples.heartbeat")).
 				Not()(channelCtx, t)
 		},
 	)
@@ -96,6 +107,110 @@ func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 	//	"start_time": "2023-09-19T07:43:17.249Z", "upstream_cluster": "inbound|8080||", "upstream_host": "-",
 	//	"upstream_local_address": "-", "upstream_service_time": -, "upstream_transport_failure_reason": "-",
 	//	"user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
+
+	return f
+}
+
+// Source (Eventshub) -> KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
+func TestSourceToKafkaBrokerKsvcCrossTenant(t *testing.T) {
+	t.Parallel()
+
+	ctxTenant1, envTenant1 := environmentWithNamespace(t, "tenant-1")
+	ctxTenant2, envTenant2 := environmentWithNamespace(t, "tenant-2")
+
+	broker := feature.MakeRandomK8sName("broker")
+	sink := feature.MakeRandomK8sName("sink")
+
+	// Deploy sink in tenant-1.
+	envTenant1.Test(ctxTenant1, t, brokerTriggerKsvc(broker, sink))
+	// Check cross-tenant event.
+	envTenant2.Test(ctxTenant2, t, verifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1))
+}
+
+func brokerTriggerKsvc(brokerName, sink string) *feature.Feature {
+	f := feature.NewFeatureNamed("broker smoke test")
+
+	config := feature.MakeRandomK8sName("kafka-broker-config")
+	triggerName := feature.MakeRandomK8sName("trigger")
+
+	f.Setup("create broker config", configmap.Copy(
+		types.NamespacedName{Namespace: system.Namespace(), Name: "kafka-broker-config"},
+		config,
+	))
+
+	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
+
+	f.Setup("install broker", broker.Install(brokerName,
+		append([]manifest.CfgFn{broker.WithConfig(config)}, broker.WithBrokerClass(kafka.BrokerClass))...))
+	f.Setup("broker ready", broker.IsReady(brokerName))
+
+	backoffPolicy := duckv1.BackoffPolicyLinear
+	f.Requirement("install trigger", trigger.Install(
+		triggerName,
+		brokerName,
+		trigger.WithRetry(3, &backoffPolicy, pointer.String("PT1S")),
+		trigger.WithSubscriber(service.AsKReference(sink), ""),
+	))
+	f.Requirement("trigger ready", trigger.IsReady(triggerName))
+
+	return f
+}
+
+func verifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context) *feature.Feature {
+	f := feature.NewFeature()
+
+	event := cetest.FullEvent()
+	event.SetID(uuid.New().String())
+
+	eventMatchers := []cetest.EventMatcher{
+		cetest.HasId(event.ID()),
+		cetest.HasSource(event.Source()),
+		cetest.HasType(event.Type()),
+		cetest.HasSubject(event.Subject()),
+	}
+
+	f.Requirement("install eventshub source",
+		func(ctx context.Context, t feature.T) {
+			u, err := k8s.Address(sinkCtx, broker.GVR(), brokerName)
+			if err != nil {
+				t.Fatal(err)
+			}
+			eventshub.Install(
+				feature.MakeRandomK8sName("source"),
+				eventshub.StartSenderURL(u.String()),
+				eventshub.InputEvent(event),
+			)(ctx, t)
+		},
+	)
+
+	f.Assert("source does not deliver event to kafka broker across tenants",
+		func(ctx context.Context, t feature.T) {
+			assert.OnStore(sink).
+				MatchEvent(eventMatchers...).
+				Not()(sinkCtx, t)
+		},
+	)
+
+	// TODO: Assert istio-proxy logs automatically.
+	//source pod:
+	//{ "authority": "kafka-broker-ingress.knative-eventing.svc.cluster.local", "bytes_received": 7,
+	//	"bytes_sent": 19, "downstream_local_address": "172.30.44.70:80", "downstream_peer_cert_v_end": "-",
+	//	"downstream_peer_cert_v_start": "-", "downstream_remote_address": "10.129.3.19:36436",
+	//	"downstream_tls_cipher": "-", "downstream_tls_version": "-", "duration": 2, "hostname": "source-wiyvyqvk",
+	//	"istio_policy_status": "-", "method": "POST", "path": "/tenant-1/broker-mgwpiglw", "protocol": "HTTP/1.1", "request_duration": 0, "request_id": "27a61707-798c-400c-a3d5-49319dab0201", "requested_server_name": "-", "response_code": "403", "response_duration": 1, "response_tx_duration": 0, "response_flags": "-", "route_name": "default", "start_time": "2023-09-19T09:04:14.944Z", "upstream_cluster": "outbound|80||kafka-broker-ingress.knative-eventing.svc.cluster.local", "upstream_host": "10.128.4.89:8080", "upstream_local_address": "10.129.3.19:52354", "upstream_service_time": 1, "upstream_transport_failure_reason": "-", "user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
+	//kafka-broker-receiver:
+	//{ "authority": "kafka-broker-ingress.knative-eventing.svc.cluster.local", "bytes_received": 0,
+	//	"bytes_sent": 19, "downstream_local_address": "10.128.4.89:8080",
+	//	"downstream_peer_cert_v_end": "2023-09-20T09:04:09.000Z", "downstream_peer_cert_v_start": "2023-09-19T09:02:09.000Z",
+	//	"downstream_remote_address": "10.129.3.19:52354", "downstream_tls_cipher": "TLS_AES_256_GCM_SHA384",
+	//	"downstream_tls_version": "TLSv1.3", "duration": 0, "hostname": "kafka-broker-receiver-566bbcd5c6-lxdc8",
+	//	"istio_policy_status": "-", "method": "POST", "path": "/tenant-1/broker-mgwpiglw", "protocol": "HTTP/1.1",
+	//	"request_duration": -, "request_id": "27a61707-798c-400c-a3d5-49319dab0201",
+	//	"requested_server_name": "outbound_.80_._.kafka-broker-ingress.knative-eventing.svc.cluster.local",
+	//	"response_code": "403", "response_duration": -, "response_tx_duration": -, "response_flags": "-",
+	//	"route_name": "-", "start_time": "2023-09-19T09:04:14.947Z", "upstream_cluster": "inbound|8080||",
+	//	"upstream_host": "-", "upstream_local_address": "-", "upstream_service_time": -,
+	//	"upstream_transport_failure_reason": "-", "user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
 
 	return f
 }
