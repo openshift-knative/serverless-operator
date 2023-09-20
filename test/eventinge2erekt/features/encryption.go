@@ -50,7 +50,7 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
 		}
 
-		responseCode := "200"
+		responseCode := "202"
 		if trafficBlocked {
 			responseCode = "403"
 		}
