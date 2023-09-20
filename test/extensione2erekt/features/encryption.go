@@ -50,7 +50,7 @@ func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since t
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, false /*namespaced*/, since)).
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(refs, false /*namespaced*/, since, false)).
 		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
 		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
@@ -61,14 +61,14 @@ func VerifyEncryptedTrafficForNamespacedKafkaBroker(refs []corev1.ObjectReferenc
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", verifyEncryptedTrafficToKafkaBroker(refs, true /*namespaced*/, since)).
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(refs, true /*namespaced*/, since, false)).
 		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
 		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespacedBroker bool, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespaced bool, since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
 		brokerName, err := getBrokerName(refs)
 		if err != nil {
@@ -77,10 +77,15 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 		// source -> kafka-broker-receiver
 		brokerPath := fmt.Sprintf("/%s/%s", environment.FromContext(ctx).Namespace(), brokerName)
 		brokerReceiverNamespace := test.EventingNamespace
-		if namespacedBroker {
+		if namespaced {
 			brokerReceiverNamespace = environment.FromContext(ctx).Namespace()
 		}
 		authority := fmt.Sprintf("kafka-broker-ingress.%s.svc.cluster.local", brokerReceiverNamespace)
+
+		responseCode := "200"
+		if trafficBlocked {
+			responseCode = "403"
+		}
 
 		logFilter := eventingfeatures.LogFilter{
 			PodNamespace:  brokerReceiverNamespace,
@@ -88,7 +93,8 @@ func verifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return eventingfeatures.GetMapValueAsString(m, "path") == brokerPath &&
-					eventingfeatures.GetMapValueAsString(m, "authority") == authority
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
+					eventingfeatures.GetMapValueAsString(m, "response_code") == responseCode
 			}}
 
 		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
@@ -102,14 +108,14 @@ func VerifyEncryptedTrafficForChannelBasedKafkaBroker(refs []corev1.ObjectRefere
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", verifyEncryptedTrafficToChannelBasedKafkaBroker(refs, since)).
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToChannelBasedKafkaBroker(refs, since)).
 		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
 		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func verifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
 		brokerName, err := getBrokerName(refs)
 		if err != nil {
@@ -139,14 +145,14 @@ func VerifyEncryptedTrafficForKafkaChannel(refs []corev1.ObjectReference, since 
 	f := feature.NewFeature()
 
 	f.Stable("channel path").
-		Must("has encrypted traffic to channel", verifyEncryptedTrafficToKafkaChannel(refs, since)).
+		Must("has encrypted traffic to channel", VerifyEncryptedTrafficToKafkaChannel(refs, since, false)).
 		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since)).
 		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func verifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
 		channelName, err := getChannelName(refs)
 		if err != nil {
@@ -156,14 +162,21 @@ func verifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since t
 		authority := fmt.Sprintf("%s-kn-channel.%s.svc.cluster.local", channelName,
 			environment.FromContext(ctx).Namespace())
 
+		responseCode := "200"
+		if trafficBlocked {
+			responseCode = "403"
+		}
+
 		logFilter := eventingfeatures.LogFilter{
 			PodNamespace:  test.EventingNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
-					eventingfeatures.GetMapValueAsString(m, "authority") == authority
-			}}
+					eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
+					eventingfeatures.GetMapValueAsString(m, "response_code") == responseCode
+			},
+		}
 
 		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
 		if err != nil {
@@ -214,11 +227,10 @@ func getChannelName(refs []corev1.ObjectReference) (string, error) {
 
 func VerifyRequestToSinkForbidden(sinkName, namespace string, since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		sinkLabel := fmt.Sprintf("app=eventshub-%s", sinkName)
 		authority := fmt.Sprintf("%s.%s.svc.cluster.local", sinkName, namespace)
 		logFilter := eventingfeatures.LogFilter{
 			PodNamespace:  namespace,
-			PodSelector:   metav1.ListOptions{LabelSelector: sinkLabel},
+			PodSelector:   metav1.ListOptions{LabelSelector: fmt.Sprintf("app=eventshub-%s", sinkName)},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&

@@ -40,10 +40,11 @@ func TestContainerSourceKafkaChannelKsvcCrossTenant(t *testing.T) {
 	channel := feature.MakeRandomK8sName("channel")
 	sink := feature.MakeRandomK8sName("sink")
 
+	since := time.Now()
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, kafkaChannelKsvc(channel, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelBlocked(channel, sink, ctxTenant1))
+	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelBlocked(channel, sink, ctxTenant1, since))
 }
 
 func kafkaChannelKsvc(channel, sink string) *feature.Feature {
@@ -65,7 +66,7 @@ func kafkaChannelKsvc(channel, sink string) *feature.Feature {
 	return f
 }
 
-func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx context.Context) *feature.Feature {
+func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	cs := feature.MakeRandomK8sName("containersource")
@@ -84,33 +85,10 @@ func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 		},
 	)
 
-	// TODO: Verify istio-proxy logs automatically:
-	//container source pod:
-	//{ "authority": "channel-rxjpvaev-kn-channel.tenant-1.svc.cluster.local", "bytes_received": 19, "bytes_sent": 19,
-	//	"downstream_local_address": "172.30.8.184:80", "downstream_peer_cert_v_end": "-",
-	//	"downstream_peer_cert_v_start": "-", "downstream_remote_address": "10.128.4.87:57748", "downstream_tls_cipher": "-",
-	//	"downstream_tls_version": "-", "duration": 2, "hostname": "containersource-gmjuflkm-deployment-85c8c487b6-tjlxg",
-	//	"istio_policy_status": "-", "method": "POST", "path": "/", "protocol": "HTTP/1.1", "request_duration": 0, "request_id":
-	//	"dc70c751-57b3-4989-ad16-2f11c9841099", "requested_server_name": "-", "response_code": "403", "response_duration": 2,
-	//	"response_tx_duration": 0, "response_flags": "-", "route_name": "default", "start_time": "2023-09-19T07:42:07.245Z",
-	//	"upstream_cluster": "outbound|80||channel-rxjpvaev-kn-channel.tenant-1.svc.cluster.local", "upstream_host":
-	//	"172.30.8.184:80", "upstream_local_address": "10.128.4.87:57752", "upstream_service_time": 2,
-	//	"upstream_transport_failure_reason": "...
-
-	//kafka-channel-receiver:
-	//{ "authority": "channel-rxjpvaev-kn-channel.tenant-1.svc.cluster.local",
-	//	"bytes_received": 0, "bytes_sent": 19, "downstream_local_address": "10.128.2.232:8080",
-	//	"downstream_peer_cert_v_end": "2023-09-20T07:41:51.000Z", "downstream_peer_cert_v_start":
-	//	"2023-09-19T07:39:51.000Z", "downstream_remote_address": "10.128.4.87:36012", "downstream_tls_cipher":
-	//	"TLS_AES_256_GCM_SHA384", "downstream_tls_version": "TLSv1.3", "duration": 0, "hostname":
-	//	"kafka-channel-receiver-5d8f99847b-fjtmj", "istio_policy_status": "-",
-	//	"method": "POST", "path": "/", "protocol": "HTTP/1.1", "request_duration": -,
-	//	"request_id": "2cb01579-cc17-4600-b880-ef9b5faadc72", "requested_server_name":
-	//	"outbound_.80_._.channel-rxjpvaev-kn-channel.tenant-1.svc.cluster.local", "response_code": "403",
-	//	"response_duration": -, "response_tx_duration": -, "response_flags": "-", "route_name": "-",
-	//	"start_time": "2023-09-19T07:43:17.249Z", "upstream_cluster": "inbound|8080||", "upstream_host": "-",
-	//	"upstream_local_address": "-", "upstream_service_time": -, "upstream_transport_failure_reason": "-",
-	//	"user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
+	f.Assert("request to kafka channel is forbidden", func(ctx context.Context, t feature.T) {
+		kafkafeatures.VerifyEncryptedTrafficToKafkaChannel(
+			environment.FromContext(channelCtx).References(), since, true /*trafficBlocked*/)
+	})
 
 	return f
 }
@@ -232,10 +210,11 @@ func TestSourceToKafkaBrokerKsvcCrossTenant(t *testing.T) {
 	broker := feature.MakeRandomK8sName("broker")
 	sink := feature.MakeRandomK8sName("sink")
 
+	since := time.Now()
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, brokerTriggerKsvc(broker, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1))
+	envTenant2.Test(ctxTenant2, t, verifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1, since))
 }
 
 func brokerTriggerKsvc(brokerName, sink string) *feature.Feature {
@@ -267,7 +246,7 @@ func brokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	return f
 }
 
-func verifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context) *feature.Feature {
+func verifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	event := cetest.FullEvent()
@@ -302,26 +281,10 @@ func verifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.C
 		},
 	)
 
-	// TODO: Assert istio-proxy logs automatically.
-	//source pod:
-	//{ "authority": "kafka-broker-ingress.knative-eventing.svc.cluster.local", "bytes_received": 7,
-	//	"bytes_sent": 19, "downstream_local_address": "172.30.44.70:80", "downstream_peer_cert_v_end": "-",
-	//	"downstream_peer_cert_v_start": "-", "downstream_remote_address": "10.129.3.19:36436",
-	//	"downstream_tls_cipher": "-", "downstream_tls_version": "-", "duration": 2, "hostname": "source-wiyvyqvk",
-	//	"istio_policy_status": "-", "method": "POST", "path": "/tenant-1/broker-mgwpiglw", "protocol": "HTTP/1.1", "request_duration": 0, "request_id": "27a61707-798c-400c-a3d5-49319dab0201", "requested_server_name": "-", "response_code": "403", "response_duration": 1, "response_tx_duration": 0, "response_flags": "-", "route_name": "default", "start_time": "2023-09-19T09:04:14.944Z", "upstream_cluster": "outbound|80||kafka-broker-ingress.knative-eventing.svc.cluster.local", "upstream_host": "10.128.4.89:8080", "upstream_local_address": "10.129.3.19:52354", "upstream_service_time": 1, "upstream_transport_failure_reason": "-", "user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
-	//kafka-broker-receiver:
-	//{ "authority": "kafka-broker-ingress.knative-eventing.svc.cluster.local", "bytes_received": 0,
-	//	"bytes_sent": 19, "downstream_local_address": "10.128.4.89:8080",
-	//	"downstream_peer_cert_v_end": "2023-09-20T09:04:09.000Z", "downstream_peer_cert_v_start": "2023-09-19T09:02:09.000Z",
-	//	"downstream_remote_address": "10.129.3.19:52354", "downstream_tls_cipher": "TLS_AES_256_GCM_SHA384",
-	//	"downstream_tls_version": "TLSv1.3", "duration": 0, "hostname": "kafka-broker-receiver-566bbcd5c6-lxdc8",
-	//	"istio_policy_status": "-", "method": "POST", "path": "/tenant-1/broker-mgwpiglw", "protocol": "HTTP/1.1",
-	//	"request_duration": -, "request_id": "27a61707-798c-400c-a3d5-49319dab0201",
-	//	"requested_server_name": "outbound_.80_._.kafka-broker-ingress.knative-eventing.svc.cluster.local",
-	//	"response_code": "403", "response_duration": -, "response_tx_duration": -, "response_flags": "-",
-	//	"route_name": "-", "start_time": "2023-09-19T09:04:14.947Z", "upstream_cluster": "inbound|8080||",
-	//	"upstream_host": "-", "upstream_local_address": "-", "upstream_service_time": -,
-	//	"upstream_transport_failure_reason": "-", "user_agent": "Go-http-client/1.1", "x_forwarded_for": "-" }
+	f.Assert("request to kafka broker is forbidden", func(ctx context.Context, t feature.T) {
+		kafkafeatures.VerifyEncryptedTrafficToKafkaBroker(
+			environment.FromContext(sinkCtx).References(), false /*namespaced*/, since, true /*trafficBlocked*/)
+	})
 
 	return f
 }
