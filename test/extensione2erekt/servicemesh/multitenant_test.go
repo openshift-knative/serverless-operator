@@ -92,10 +92,10 @@ func VerifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 	return f
 }
 
-// ContainerSource (tenant-1) -> KafkaChannel (tenant-1) -> Subscription -> Sink (tenant-1)
+// ContainerSource (tenant-2) -> KafkaChannel (tenant-2) -> Subscription -> Sink (tenant-2)
 //
-//	-> subscription with reply to Sink (tenant-2)
-//	-> subscription with deadLetterSink to Sink (tenant-1)
+//	-> subscription with reply to Sink (tenant-1)
+//	-> subscription with deadLetterSink to Sink (tenant-2)
 //
 // The sink in "reply" should not receive any event because it's in a different tenant.
 // The original sink and dead letter sink should receive an event.
