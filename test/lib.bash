@@ -211,7 +211,7 @@ function downstream_eventing_e2e_rekt_tests {
 
   if [[ $FULL_MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt ./test/eventinge2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
@@ -282,7 +282,7 @@ function downstream_knative_kafka_e2e_rekt_tests {
 
   if [[ $FULL_MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt ./test/extensione2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
