@@ -15,7 +15,7 @@ import (
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
-// PingSource -> Ksvc -> Sink (Eventshub)
+// PingSource (tenant-2) -> Ksvc (tenant-1) -> Sink (tenant-1)
 func TestPingSourceToKsvcCrossTenant(t *testing.T) {
 	t.Parallel()
 
@@ -23,15 +23,14 @@ func TestPingSourceToKsvcCrossTenant(t *testing.T) {
 	ctxTenant2, envTenant2 := environmentWithNamespace(t, "tenant-2")
 
 	sink := feature.MakeRandomK8sName("sink")
-	since := time.Now()
 
 	// Deploy sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, ksvcSink(sink))
+	envTenant1.Test(ctxTenant1, t, DeployKsvcSink(sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifyPingSourceToKsvcBlocked(sink, ctxTenant1, since))
+	envTenant2.Test(ctxTenant2, t, VerifyPingSourceToKsvcBlocked(sink, ctxTenant1, time.Now()))
 }
 
-func ksvcSink(name string) *feature.Feature {
+func DeployKsvcSink(name string) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Setup("install sink", eventshub.Install(name, eventshub.StartReceiver))
@@ -39,7 +38,7 @@ func ksvcSink(name string) *feature.Feature {
 	return f
 }
 
-func verifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
 	source := feature.MakeRandomK8sName("pingsource")
 	f := feature.NewFeature()
 

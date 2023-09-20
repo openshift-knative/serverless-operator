@@ -30,7 +30,7 @@ import (
 	"knative.dev/reconciler-test/pkg/resources/service"
 )
 
-// ContainerSource -> KafkaChannel -> Subscription -> Ksvc -> Sink (Eventshub)
+// ContainerSource (tenant-2) -> KafkaChannel (tenant-1) -> Subscription -> Ksvc (tenant-1) -> Sink (tenant-1)
 func TestContainerSourceKafkaChannelKsvcCrossTenant(t *testing.T) {
 	t.Parallel()
 
@@ -40,14 +40,13 @@ func TestContainerSourceKafkaChannelKsvcCrossTenant(t *testing.T) {
 	channel := feature.MakeRandomK8sName("channel")
 	sink := feature.MakeRandomK8sName("sink")
 
-	since := time.Now()
 	// Deploy sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, kafkaChannelKsvc(channel, sink))
+	envTenant1.Test(ctxTenant1, t, DeployKafkaChannelKsvc(channel, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelBlocked(channel, sink, ctxTenant1, since))
+	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelBlocked(channel, sink, ctxTenant1, time.Now()))
 }
 
-func kafkaChannelKsvc(channel, sink string) *feature.Feature {
+func DeployKafkaChannelKsvc(channel, sink string) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Setup("install channel", channel_impl.Install(channel))
@@ -66,7 +65,7 @@ func kafkaChannelKsvc(channel, sink string) *feature.Feature {
 	return f
 }
 
-func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx context.Context, since time.Time) *feature.Feature {
+func VerifyContainerSourceToChannelBlocked(channel, sink string, channelCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	cs := feature.MakeRandomK8sName("containersource")
@@ -93,7 +92,7 @@ func verifyContainerSourceToChannelBlocked(channel, sink string, channelCtx cont
 	return f
 }
 
-// ContainerSource -> KafkaChannel -> Subscription -> Sink (tenant-1)
+// ContainerSource (tenant-1) -> KafkaChannel (tenant-1) -> Subscription -> Sink (tenant-1)
 //
 //	-> subscription with reply to Sink (tenant-2)
 //	-> subscription with deadLetterSink to Sink (tenant-1)
@@ -123,16 +122,15 @@ func TestContainerSourceKafkaChannelKsvcWithReplyAndDLSCrossTenant(t *testing.T)
 		environment.Managed(t),
 	)
 
-	since := time.Now()
-	sink := feature.MakeRandomK8sName("sink")
+	replySink := feature.MakeRandomK8sName("sink")
 
 	// Deploy reply-sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, deploySink(sink))
+	envTenant1.Test(ctxTenant1, t, DeploySink(replySink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifyContainerSourceToChannelWithReplyAndDLS(sink, ctxTenant1, since))
+	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelWithReplyAndDLS(replySink, ctxTenant1, time.Now()))
 }
 
-func deploySink(sink string) *feature.Feature {
+func DeploySink(sink string) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
@@ -140,7 +138,7 @@ func deploySink(sink string) *feature.Feature {
 	return f
 }
 
-func verifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	channel := feature.MakeRandomK8sName("channel")
@@ -210,14 +208,13 @@ func TestSourceToKafkaBrokerKsvcCrossTenant(t *testing.T) {
 	broker := feature.MakeRandomK8sName("broker")
 	sink := feature.MakeRandomK8sName("sink")
 
-	since := time.Now()
 	// Deploy sink in tenant-1.
-	envTenant1.Test(ctxTenant1, t, brokerTriggerKsvc(broker, sink))
+	envTenant1.Test(ctxTenant1, t, DeployBrokerTriggerKsvc(broker, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, verifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1, since))
+	envTenant2.Test(ctxTenant2, t, VerifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1, time.Now()))
 }
 
-func brokerTriggerKsvc(brokerName, sink string) *feature.Feature {
+func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	f := feature.NewFeatureNamed("broker smoke test")
 
 	config := feature.MakeRandomK8sName("kafka-broker-config")
@@ -246,7 +243,7 @@ func brokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	return f
 }
 
-func verifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	event := cetest.FullEvent()
