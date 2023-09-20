@@ -22,6 +22,10 @@ Possible causes can be:
 
 You should check both OpenShift Serverless operator and Knative Serving control plane status.
 
+## Prerequisites
+
+1. You must have admin access to the cluster via `oc` CLI.
+
 ## Steps
 
 1. Check to see if all the pods are running in `openshift-serverless` namespace:
@@ -48,7 +52,7 @@ $ done
 $ oc -n openshift-serverless get events
 
 # Check pod status fields
-$ oc -n openshift-serverless get pods -o jsonpath="{range .items[*]}{.status}{\"\n\n\"}{end}"
+$ oc -n openshift-serverless get pods -o jsonpath="{range .items[*]}{.status}{\"\n\n\"}{end}" 
 ```
 
 3. Redeploy any failing controllers by restarting the deployments:
