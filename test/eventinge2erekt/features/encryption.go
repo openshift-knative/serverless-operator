@@ -37,17 +37,22 @@ func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since
 	f := feature.NewFeature()
 
 	f.Stable("path to activator to app").
-		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(refs, since)).
+		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(refs, since, false)).
 		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(refs, since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
 		_, privateURL, err := getKsvcNameAndURL(ctx, refs)
 		if err != nil {
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
+		}
+
+		responseCode := "200"
+		if trafficBlocked {
+			responseCode = "403"
 		}
 
 		// source -> activator
@@ -59,7 +64,8 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return GetMapValueAsString(m, "path") == "/" &&
-					GetMapValueAsString(m, "authority") == privateURL.Host
+					GetMapValueAsString(m, "authority") == privateURL.Host &&
+					GetMapValueAsString(m, "response_code") == responseCode
 			}}
 
 		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
