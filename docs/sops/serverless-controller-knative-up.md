@@ -92,6 +92,6 @@ $ oc -n knative-serving rollout restart deployments -l app.kubernetes.io/name=kn
 
 This should result in new pods getting deployed, attempt step (5) again and see if the pods achieve running state.
 
-8. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team.
+8. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team with a Knative ["must-gather"](https://github.com/openshift-knative/must-gather) dump.
 
 
