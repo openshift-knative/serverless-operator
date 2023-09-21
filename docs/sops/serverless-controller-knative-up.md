@@ -61,14 +61,14 @@ $ oc -n openshift-serverless get pods
 
 ```bash
 # Get Pod names as we don't have a common label
-$ SERVERLESS_OPERATOR_POD_NAMES_STR=$(oc -n openshift-serverless get pods --template '{{range .items}}{{.metadata.name}}{{" "}}{{end}}')
-$ SERVERLESS_OPERATOR_POD_NAMES=($(echo "$SERVERLESS_OPERATOR_POD_NAMES_STR" | tr ' ' '\n'))
+SERVERLESS_OPERATOR_POD_NAMES_STR=$(oc -n openshift-serverless get pods --template '{{range .items}}{{.metadata.name}}{{" "}}{{end}}')
+SERVERLESS_OPERATOR_POD_NAMES=($(echo "$SERVERLESS_OPERATOR_POD_NAMES_STR" | tr ' ' '\n'))
 
 # Check pod logs
-$ for element in "${SERVERLESS_OPERATOR_POD_NAMES[@]}"
-$ do
-$     oc -n openshift-serverless logs "$element" --prefix=true
-$ done
+for element in "${SERVERLESS_OPERATOR_POD_NAMES[@]}"
+do
+     oc -n openshift-serverless logs "$element" --prefix=true
+done
 
 
 # Check events 
@@ -81,9 +81,9 @@ $ oc -n openshift-serverless get pods -o jsonpath="{range .items[*]}{.status}{\"
 3. Redeploy any failing controllers by restarting the deployments:
 
 ```bash
-$ oc -n openshift-serverless rollout restart deployments/knative-openshift
-$ oc -n openshift-serverless rollout restart deployments/knative-openshift-ingress
-$ oc -n openshift-serverless rollout restart deployments/knative-operator-webhook
+oc -n openshift-serverless rollout restart deployments/knative-openshift
+oc -n openshift-serverless rollout restart deployments/knative-openshift-ingress
+oc -n openshift-serverless rollout restart deployments/knative-operator-webhook
 ```
 
 This should result in new pods getting deployed, attempt step (1) again and see if the pods achieve running state.
