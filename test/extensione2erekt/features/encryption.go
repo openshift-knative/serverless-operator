@@ -82,7 +82,7 @@ func VerifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 		}
 		authority := fmt.Sprintf("kafka-broker-ingress.%s.svc.cluster.local", brokerReceiverNamespace)
 
-		responseCode := "200"
+		responseCode := "202"
 		if trafficBlocked {
 			responseCode = "403"
 		}
