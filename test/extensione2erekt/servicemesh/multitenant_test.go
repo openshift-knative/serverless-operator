@@ -43,7 +43,7 @@ func TestContainerSourceKafkaChannelKsvcCrossTenant(t *testing.T) {
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, DeployKafkaChannelKsvc(channel, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelBlocked(channel, sink, ctxTenant1, time.Now()))
+	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelBlocked(ctxTenant1, channel, sink, time.Now()))
 }
 
 func DeployKafkaChannelKsvc(channel, sink string) *feature.Feature {
@@ -65,7 +65,7 @@ func DeployKafkaChannelKsvc(channel, sink string) *feature.Feature {
 	return f
 }
 
-func VerifyContainerSourceToChannelBlocked(channel, sink string, channelCtx context.Context, since time.Time) *feature.Feature {
+func VerifyContainerSourceToChannelBlocked(channelCtx context.Context, channel, sink string, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	cs := feature.MakeRandomK8sName("containersource")
