@@ -20,11 +20,34 @@ Possible causes can be:
 - Resource starvation on the cluster
 - OpenShift Serverless upgrade issues
 
-You should check both OpenShift Serverless operator and Knative Serving control plane status.
+You should check the control plane status of OpenShift Serverless operator, Knative Serving and the used Knative Serving Ingress.
 
 ## Prerequisites
 
 1. You must have admin access to the cluster via `oc` CLI.
+
+2. You must find out which Knative Serving Ingress is used.
+
+Run the following command to see the Knative Serving spec's ingress related section:
+
+```shell
+$ k get knativeserving -n knative-serving knative-serving -o jsonpath='{.spec.ingress}'
+```
+
+If the output is empty, then Kourier is used as the Knative Serving Ingress. 
+
+If the output is not empty, check which Ingress is used by looking at which ingress has `enabled: true`:
+
+```yaml
+  contour:
+    enabled: false
+  istio:
+    enabled: true
+  kourier:
+    enabled: false
+```
+
+In this case, Istio is used as the Knative Serving Ingress.
 
 ## Steps
 
@@ -92,6 +115,35 @@ $ oc -n knative-serving rollout restart deployments -l app.kubernetes.io/name=kn
 
 This should result in new pods getting deployed, attempt step (5) again and see if the pods achieve running state.
 
-8. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team with a Knative ["must-gather"](https://github.com/openshift-knative/must-gather) dump.
+8. If Kourier is used as the Knative Serving Ingress, check to see if all the relevant pods are running in `knative-serving-ingress` namespace:
+
+```bash
+$ oc -n knative-serving-ingress get pods -l 'app in (3scale-kourier-gateway, net-kourier-controller)'
+```
+
+9. If they are not running, look at the pod's logs/events to see what may be causing the issues. Please make sure to grab the logs/events so they can be shared with the engineering team later:
+
+```bash
+# Check pod logs 
+$ oc -n knative-serving-ingress logs -l 'app in (3scale-kourier-gateway, net-kourier-controller)' --prefix=true
+
+# Check events 
+$ oc -n knative-serving-ingress get events | grep pod
+
+# Check pod status fields
+$ oc -n knative-serving-ingress get pods -l 'app in (3scale-kourier-gateway, net-kourier-controller)' -o jsonpath="{range .items[*]}{.status}{\"\n\n\"}{end}"
+```
+
+10. Redeploy Knative Serving Ingress controllers by restarting the deployments:
+
+```bash
+$ oc -n knative-serving-ingress rollout restart deployments -l app.kubernetes.io/component=net-kourier
+```
+
+This should result in new pods getting deployed, attempt step (8) again and see if the pods achieve running state.
+
+11. If Istio is used as the Knative Serving Ingress, check Istio status. You may find the SOPs for Istio by contacting Istio support. 
+
+12. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team with a Knative ["must-gather"](https://github.com/openshift-knative/must-gather) dump.
 
 
