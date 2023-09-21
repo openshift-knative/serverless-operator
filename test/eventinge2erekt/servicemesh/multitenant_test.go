@@ -27,7 +27,7 @@ func TestPingSourceToKsvcCrossTenant(t *testing.T) {
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, DeployKsvcSink(sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, VerifyPingSourceToKsvcBlocked(sink, ctxTenant1, time.Now()))
+	envTenant2.Test(ctxTenant2, t, VerifyPingSourceToKsvcBlocked(ctxTenant1, sink, time.Now()))
 }
 
 func DeployKsvcSink(name string) *feature.Feature {
@@ -38,7 +38,7 @@ func DeployKsvcSink(name string) *feature.Feature {
 	return f
 }
 
-func VerifyPingSourceToKsvcBlocked(sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifyPingSourceToKsvcBlocked(sinkCtx context.Context, sink string, since time.Time) *feature.Feature {
 	source := feature.MakeRandomK8sName("pingsource")
 	f := feature.NewFeature()
 

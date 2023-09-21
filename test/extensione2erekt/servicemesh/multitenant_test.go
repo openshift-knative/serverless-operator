@@ -127,7 +127,7 @@ func TestContainerSourceKafkaChannelKsvcWithReplyAndDLSCrossTenant(t *testing.T)
 	// Deploy reply-sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, DeploySink(replySink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelWithReplyAndDLS(replySink, ctxTenant1, time.Now()))
+	envTenant2.Test(ctxTenant2, t, VerifyContainerSourceToChannelWithReplyAndDLS(ctxTenant1, replySink, time.Now()))
 }
 
 func DeploySink(sink string) *feature.Feature {
@@ -138,7 +138,7 @@ func DeploySink(sink string) *feature.Feature {
 	return f
 }
 
-func VerifyContainerSourceToChannelWithReplyAndDLS(replySink string, replySinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifyContainerSourceToChannelWithReplyAndDLS(replySinkCtx context.Context, replySink string, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	channel := feature.MakeRandomK8sName("channel")
@@ -211,7 +211,7 @@ func TestSourceToKafkaBrokerKsvcCrossTenant(t *testing.T) {
 	// Deploy sink in tenant-1.
 	envTenant1.Test(ctxTenant1, t, DeployBrokerTriggerKsvc(broker, sink))
 	// Check cross-tenant event.
-	envTenant2.Test(ctxTenant2, t, VerifySourceToKafkaBrokerBlocked(broker, sink, ctxTenant1, time.Now()))
+	envTenant2.Test(ctxTenant2, t, VerifySourceToKafkaBrokerBlocked(ctxTenant1, broker, sink, time.Now()))
 }
 
 func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
@@ -243,7 +243,7 @@ func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	return f
 }
 
-func VerifySourceToKafkaBrokerBlocked(brokerName, sink string, sinkCtx context.Context, since time.Time) *feature.Feature {
+func VerifySourceToKafkaBrokerBlocked(sinkCtx context.Context, brokerName, sink string, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	event := cetest.FullEvent()
