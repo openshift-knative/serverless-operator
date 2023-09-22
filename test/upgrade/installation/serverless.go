@@ -2,6 +2,7 @@ package installation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -26,7 +28,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 
 	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source, timeout)
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if !errors.Is(err, wait.ErrWaitTimeout) {
 			return err
 		}
 		if source != test.ServerlessOperatorPackage {
