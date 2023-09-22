@@ -98,11 +98,7 @@ func TestKitchensink(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
-	sources := strings.Split(strings.Trim(test.Flags.CatalogSource, ","), ",")
 	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
-	if len(sources) != len(csvs) {
-		t.Fatal("The number of operator sources and CSVs for upgrades must match")
-	}
 
 	// Split features across upgrades.
 	groups := featureGroup.Split(len(csvs))
@@ -129,8 +125,6 @@ func TestKitchensink(t *testing.T) {
 				post = append(post, featureGroup.PostDowngradeTests()...)
 			}
 
-			source := sources[i]
-
 			suite := pkgupgrade.Suite{
 				Tests: pkgupgrade.Tests{
 					// Run pre-upgrade tests only for given sub-group
@@ -140,7 +134,7 @@ func TestKitchensink(t *testing.T) {
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-							if err := installation.UpgradeServerlessTo(ctx, csv, source); err != nil {
+							if err := installation.UpgradeServerlessTo(ctx, csv, "redhat-operators", 3*time.Minute); err != nil {
 								c.T.Error("Serverless upgrade failed:", err)
 							}
 						}),

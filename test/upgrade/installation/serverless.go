@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
@@ -14,14 +15,26 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
-func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
+const (
+	DefaultInstallPlanTimeout = 15 * time.Minute
+)
+
+func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Duration) error {
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
 		return err
 	}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source)
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source, timeout)
 	if err != nil {
-		return err
+		if !strings.Contains(err.Error(), "not found") {
+			return err
+		}
+		// InstallPlan not found in the original catalog source, try the one that was just built.
+		installPlan, err = test.WaitForInstallPlan(ctx,
+			test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
@@ -73,7 +86,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 }
 
 func UpgradeServerless(ctx *test.Context) error {
-	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource)
+	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
 }
 
 func DowngradeServerless(ctx *test.Context) error {
