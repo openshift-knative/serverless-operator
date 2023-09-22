@@ -18,10 +18,10 @@ import (
 )
 
 var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
-	servingv1.SchemeGroupVersion.WithKind("Service"):           &defaults.TargetKService{},
-	servingv1.SchemeGroupVersion.WithKind("Route"):             &defaults.TargetRoute{},
-	servingv1.SchemeGroupVersion.WithKind("Configurtion"):      &defaults.TargetConfiguration{},
-	servingv1beta1.SchemeGroupVersion.WithKind("DomainMappig"): &defaults.TargetDomainMapping{},
+	servingv1.SchemeGroupVersion.WithKind("Service"):            &defaults.TargetKService{},
+	servingv1.SchemeGroupVersion.WithKind("Route"):              &defaults.TargetRoute{},
+	servingv1.SchemeGroupVersion.WithKind("Configuration"):      &defaults.TargetConfiguration{},
+	servingv1beta1.SchemeGroupVersion.WithKind("DomainMapping"): &defaults.TargetDomainMapping{},
 }
 
 func NewDefaultingAdmissionController(ctx context.Context, _ configmap.Watcher) *controller.Impl {
