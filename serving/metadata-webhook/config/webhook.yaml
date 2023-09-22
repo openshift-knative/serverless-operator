@@ -32,7 +32,7 @@ spec:
       serviceAccountName: controller
       containers:
       - name: webhook
-        image: registry.ci.openshift.org/knative/openshift-serverless-nightly:metadata-webhook
+        image: gcr.io/gcp-compute-engine-223401/webhook-b7df1373529077cf183b940dd39dc62a@sha256:943e35a04d09f6fab499e6eb05acb24ec859fedc1025c8671ee4006b7af1cc94
         resources:
           requests:
             cpu: 20m
