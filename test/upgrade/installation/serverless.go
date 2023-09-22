@@ -29,11 +29,17 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 		if !strings.Contains(err.Error(), "not found") {
 			return err
 		}
-		// InstallPlan not found in the original catalog source, try the one that was just built.
-		installPlan, err = test.WaitForInstallPlan(ctx,
-			test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
-		if err != nil {
-			return err
+		if source != test.ServerlessOperatorPackage {
+			// InstallPlan not found in the original catalog source, try the one that was just built.
+			if _, err := test.UpdateSubscriptionChannelSource(ctx,
+				test.Flags.Subscription, test.Flags.UpgradeChannel, test.ServerlessOperatorPackage); err != nil {
+				return err
+			}
+			installPlan, err = test.WaitForInstallPlan(ctx,
+				test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -133,7 +139,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource)
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
 	if err != nil {
 		return err
 	}
