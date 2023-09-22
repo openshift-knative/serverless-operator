@@ -108,7 +108,7 @@ func TestKitchensink(t *testing.T) {
 
 		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
 			// Run these tests after each upgrade.
-			post := []pkgupgrade.Operation{
+			postUpgrade := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 					Namespace: test.ServingNamespace,
 				}),
@@ -116,20 +116,22 @@ func TestKitchensink(t *testing.T) {
 					Namespace: test.EventingNamespace,
 				}),
 			}
+			var postDowngrade []pkgupgrade.Operation
 			// In the last step. Run also post-upgrade tests for all features.
 			if i == len(csvs)-1 {
-				post = append(post, ModifyResourcesTest(ctx))
-				post = append(post, featureGroup.PostUpgradeTests()...)
+				postUpgrade = append(postUpgrade, ModifyResourcesTest(ctx))
+				postUpgrade = append(postUpgrade, featureGroup.PostUpgradeTests()...)
 				// We don't downgrade Serverless in kitshensink upgrade tests but
 				// include post-downgrade tests as they do cleanup.
-				post = append(post, featureGroup.PostDowngradeTests()...)
+				postDowngrade = append(postDowngrade, featureGroup.PostDowngradeTests()...)
 			}
 
 			suite := pkgupgrade.Suite{
 				Tests: pkgupgrade.Tests{
 					// Run pre-upgrade tests only for given sub-group
-					PreUpgrade:  groups[i].PreUpgradeTests(),
-					PostUpgrade: post,
+					PreUpgrade:    groups[i].PreUpgradeTests(),
+					PostUpgrade:   postUpgrade,
+					PostDowngrade: postDowngrade,
 				},
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
