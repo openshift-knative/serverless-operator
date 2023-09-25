@@ -480,7 +480,6 @@ function kitchensink_upgrade_tests {
      --kubeconfigs="${KUBECONFIG}" \
      --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
-     --catalogsource="$(metadata.get "upgrade_sequence[*].source" | tail -n +2 | tr '\n' ',')" \
      --csv="$(metadata.get "upgrade_sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 

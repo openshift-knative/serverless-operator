@@ -17,7 +17,7 @@ function ensure_serverless_installed {
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
     csv="$(metadata.get "upgrade_sequence[0].csv")"
-    OLM_SOURCE="$(metadata.get "upgrade_sequence[0].source")"
+    OLM_SOURCE=redhat-operators
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else

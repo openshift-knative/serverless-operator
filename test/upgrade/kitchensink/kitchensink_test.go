@@ -98,11 +98,7 @@ func TestKitchensink(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
-	sources := strings.Split(strings.Trim(test.Flags.CatalogSource, ","), ",")
 	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
-	if len(sources) != len(csvs) {
-		t.Fatal("The number of operator sources and CSVs for upgrades must match")
-	}
 
 	// Split features across upgrades.
 	groups := featureGroup.Split(len(csvs))
@@ -112,7 +108,7 @@ func TestKitchensink(t *testing.T) {
 
 		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
 			// Run these tests after each upgrade.
-			post := []pkgupgrade.Operation{
+			postUpgrade := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 					Namespace: test.ServingNamespace,
 				}),
@@ -120,27 +116,27 @@ func TestKitchensink(t *testing.T) {
 					Namespace: test.EventingNamespace,
 				}),
 			}
+			var postDowngrade []pkgupgrade.Operation
 			// In the last step. Run also post-upgrade tests for all features.
 			if i == len(csvs)-1 {
-				post = append(post, ModifyResourcesTest(ctx))
-				post = append(post, featureGroup.PostUpgradeTests()...)
+				postUpgrade = append(postUpgrade, ModifyResourcesTest(ctx))
+				postUpgrade = append(postUpgrade, featureGroup.PostUpgradeTests()...)
 				// We don't downgrade Serverless in kitshensink upgrade tests but
 				// include post-downgrade tests as they do cleanup.
-				post = append(post, featureGroup.PostDowngradeTests()...)
+				postDowngrade = append(postDowngrade, featureGroup.PostDowngradeTests()...)
 			}
-
-			source := sources[i]
 
 			suite := pkgupgrade.Suite{
 				Tests: pkgupgrade.Tests{
 					// Run pre-upgrade tests only for given sub-group
-					PreUpgrade:  groups[i].PreUpgradeTests(),
-					PostUpgrade: post,
+					PreUpgrade:    groups[i].PreUpgradeTests(),
+					PostUpgrade:   postUpgrade,
+					PostDowngrade: postDowngrade,
 				},
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-							if err := installation.UpgradeServerlessTo(ctx, csv, source); err != nil {
+							if err := installation.UpgradeServerlessTo(ctx, csv, "redhat-operators", 3*time.Minute); err != nil {
 								c.T.Error("Serverless upgrade failed:", err)
 							}
 						}),

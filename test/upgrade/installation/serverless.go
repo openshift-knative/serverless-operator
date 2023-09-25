@@ -2,8 +2,10 @@ package installation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
@@ -11,17 +13,36 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
 )
 
-func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
+const (
+	DefaultInstallPlanTimeout = 15 * time.Minute
+)
+
+func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Duration) error {
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
 		return err
 	}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source)
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source, timeout)
 	if err != nil {
-		return err
+		if !errors.Is(err, wait.ErrWaitTimeout) {
+			return err
+		}
+		if source != test.ServerlessOperatorPackage {
+			// InstallPlan not found in the original catalog source, try the one that was just built.
+			if _, err := test.UpdateSubscriptionChannelSource(ctx,
+				test.Flags.Subscription, test.Flags.UpgradeChannel, test.ServerlessOperatorPackage); err != nil {
+				return err
+			}
+			installPlan, err = test.WaitForInstallPlan(ctx,
+				test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
@@ -73,7 +94,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string) error {
 }
 
 func UpgradeServerless(ctx *test.Context) error {
-	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource)
+	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
 }
 
 func DowngradeServerless(ctx *test.Context) error {
@@ -120,7 +141,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource)
+	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
 	if err != nil {
 		return err
 	}
