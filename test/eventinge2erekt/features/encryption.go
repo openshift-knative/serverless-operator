@@ -72,6 +72,13 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		if trafficBlocked {
+			err = VerifyNoRequestToHost(ctx, logFilter)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 }
 
@@ -155,6 +162,19 @@ func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilte
 	if unencrypted != 0 {
 		return fmt.Errorf("unencrypted request found in %v logs", logFilter.PodSelector)
 	}
+	return nil
+}
+
+func VerifyNoRequestToHost(ctx context.Context, logFilter LogFilter) error {
+	encrypted, unencrypted, err := getMatchingRequestsToHost(ctx, logFilter)
+	if err != nil {
+		return err
+	}
+
+	if (unencrypted + encrypted) > 0 {
+		return fmt.Errorf("request matching filter found in %v logs", logFilter.PodSelector)
+	}
+
 	return nil
 }
 
