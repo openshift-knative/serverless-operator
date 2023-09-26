@@ -9,9 +9,9 @@ This means, any new Knative Services might not be created, and any existing Knat
 
 ## Summary
 
-OpenShift Serverless does not create any alerts out-of-the box. However, users can create alerts based on the metrics exposed.
+OpenShift Serverless does not create any alerts out-of-the box. However, users can create alerts based on the gauges and metrics exposed.
 
-The metric `knative_up{namespace="openshift-serverless", type="serving_status"}` should always have a value of `1`. 
+The gauge `knative_up{namespace="openshift-serverless", type="serving_status"}` should always have a value of `1`.  You should create an alert as described in https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0/ for using this gauge and measure it over some period of time.
 
 This failure should only occur in extremely catastrophic scenarios as all components are deployed in HA configuration.
 
