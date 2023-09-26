@@ -20,8 +20,8 @@ func VerifyEncryptedTrafficForKafkaSource(refs []corev1.ObjectReference, sinkNam
 
 	f.Stable("kafka source path").
 		Must("has encrypted traffic to kafka sink", verifyEncryptedTrafficToKafkaSink(sinkName, since)).
-		Must("has encrypted traffic from kafka source to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic from kafka source to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
@@ -50,9 +50,9 @@ func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since t
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(refs, false /*namespaced*/, since, false)).
-		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(false /*namespaced*/, since, false)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
@@ -61,15 +61,16 @@ func VerifyEncryptedTrafficForNamespacedKafkaBroker(refs []corev1.ObjectReferenc
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(refs, true /*namespaced*/, since, false)).
-		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToKafkaBroker(true /*namespaced*/, since, false)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespaced bool, since time.Time, trafficBlocked bool) feature.StepFn {
+func VerifyEncryptedTrafficToKafkaBroker(namespaced bool, since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		brokerName, err := getBrokerName(refs)
 		if err != nil {
 			t.Fatalf("Unable to get Broker name: %v", err)
@@ -126,15 +127,16 @@ func VerifyEncryptedTrafficForChannelBasedKafkaBroker(refs []corev1.ObjectRefere
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
-		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToChannelBasedKafkaBroker(refs, since)).
-		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to broker", VerifyEncryptedTrafficToChannelBasedKafkaBroker(since)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToChannelBasedKafkaBroker(since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		brokerName, err := getBrokerName(refs)
 		if err != nil {
 			t.Fatalf("Unable to get Broker name: %v", err)
@@ -163,15 +165,16 @@ func VerifyEncryptedTrafficForKafkaChannel(refs []corev1.ObjectReference, since 
 	f := feature.NewFeature()
 
 	f.Stable("channel path").
-		Must("has encrypted traffic to channel", VerifyEncryptedTrafficToKafkaChannel(refs, since, false)).
-		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to channel", VerifyEncryptedTrafficToKafkaChannel(since, false)).
+		Must("has encrypted traffic to activator", eventingfeatures.VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", eventingfeatures.VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since time.Time, trafficBlocked bool) feature.StepFn {
+func VerifyEncryptedTrafficToKafkaChannel(since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		channelName, err := getChannelName(refs)
 		if err != nil {
 			t.Fatalf("Unable to get Channel name: %v", err)

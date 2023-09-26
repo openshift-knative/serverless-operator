@@ -37,14 +37,15 @@ func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since
 	f := feature.NewFeature()
 
 	f.Stable("path to activator to app").
-		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(refs, since, false)).
-		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time.Time, trafficBlocked bool) feature.StepFn {
+func VerifyEncryptedTrafficToActivator(since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		_, privateURL, err := getKsvcNameAndURL(ctx, refs)
 		if err != nil {
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
@@ -93,8 +94,9 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 	}
 }
 
-func VerifyEncryptedTrafficToApp(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToApp(since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		ksvcName, _, err := getKsvcNameAndURL(ctx, refs)
 		if err != nil {
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
@@ -219,8 +221,6 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 						encrypted++
 					}
 				}
-			} else {
-				logging.FromContext(ctx).Infof("Unable to unmarshall line: %s: %v", line, err)
 			}
 			return nil
 		}); err != nil {
