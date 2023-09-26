@@ -57,7 +57,7 @@ func VerifyPingSourceToKsvcBlocked(sinkCtx context.Context, sink string, since t
 
 	f.Assert("request to activator is forbidden", func(ctx context.Context, t feature.T) {
 		eventingfeatures.VerifyEncryptedTrafficToActivator(
-			environment.FromContext(sinkCtx).References(), since, true /*trafficBlocked*/)(ctx, t)
+			environment.FromContext(sinkCtx).References(), since, true /*trafficBlocked*/)(sinkCtx, t)
 	})
 
 	return f

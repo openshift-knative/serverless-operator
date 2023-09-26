@@ -201,6 +201,7 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 	for _, pod := range podList.Items {
 		podName := pod.Name
 		if err = ForEachLine(ctx, logFilter.PodNamespace, podName, logFilter.PodLogOptions, func(line string) error {
+			line = sanitizeJSON(line)
 			var ret map[string]interface{}
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
 				if logFilter.JSONLogFilter(ret) {
@@ -218,6 +219,8 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 						encrypted++
 					}
 				}
+			} else {
+				logging.FromContext(ctx).Infof("Unable to unmarshall line: %s: %v", line, err)
 			}
 			return nil
 		}); err != nil {
@@ -226,6 +229,16 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 	}
 
 	return
+}
+
+// sanitizeJSON fixes common issues with log lines - istio-proxy produces invalid JSON
+// when the request is forbidden.
+func sanitizeJSON(input string) string {
+	output := strings.ReplaceAll(input, "\"response_duration\": -,", "\"response_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"response_tx_duration\": -,", "\"response_tx_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"request_duration\": -,", "\"request_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"upstream_service_time\": -,", "\"upstream_service_time\": 0,")
+	return output
 }
 
 func GetMapValueAsString(m map[string]interface{}, key string) string {
