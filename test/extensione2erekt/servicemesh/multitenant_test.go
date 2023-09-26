@@ -86,7 +86,7 @@ func VerifyContainerSourceToChannelBlocked(channelCtx context.Context, channel, 
 
 	f.Assert("request to kafka channel is forbidden", func(ctx context.Context, t feature.T) {
 		kafkafeatures.VerifyEncryptedTrafficToKafkaChannel(
-			environment.FromContext(channelCtx).References(), since, true /*trafficBlocked*/)
+			environment.FromContext(channelCtx).References(), since, true /*trafficBlocked*/)(ctx, t)
 	})
 
 	return f
@@ -192,7 +192,7 @@ func VerifyContainerSourceToChannelWithReplyAndDLS(replySinkCtx context.Context,
 	})
 
 	f.Assert("request to event sink is forbidden", func(ctx context.Context, t feature.T) {
-		kafkafeatures.VerifyRequestToSinkForbidden(replySink, environment.FromContext(replySinkCtx).Namespace(), since)
+		kafkafeatures.VerifyRequestToSinkForbidden(replySink, environment.FromContext(replySinkCtx).Namespace(), since)(ctx, t)
 	})
 
 	return f
@@ -280,7 +280,7 @@ func VerifySourceToKafkaBrokerBlocked(sinkCtx context.Context, brokerName, sink 
 
 	f.Assert("request to kafka broker is forbidden", func(ctx context.Context, t feature.T) {
 		kafkafeatures.VerifyEncryptedTrafficToKafkaBroker(
-			environment.FromContext(sinkCtx).References(), false /*namespaced*/, since, true /*trafficBlocked*/)
+			environment.FromContext(sinkCtx).References(), false /*namespaced*/, since, true /*trafficBlocked*/)(ctx, t)
 	})
 
 	return f

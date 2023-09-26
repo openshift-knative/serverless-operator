@@ -101,6 +101,24 @@ func VerifyEncryptedTrafficToKafkaBroker(refs []corev1.ObjectReference, namespac
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		// When traffic is blocked and 403 was detected, we also verify that there was no
+		// successful request during that period.
+		if trafficBlocked {
+			logFilter202 := eventingfeatures.LogFilter{
+				PodNamespace:  brokerReceiverNamespace,
+				PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-broker-receiver"},
+				PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+				JSONLogFilter: func(m map[string]interface{}) bool {
+					return eventingfeatures.GetMapValueAsString(m, "path") == brokerPath &&
+						eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
+						eventingfeatures.GetMapValueAsString(m, "response_code") == "202"
+				}}
+			err = eventingfeatures.VerifyNoMatchingRequestToHost(ctx, logFilter202)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 }
 
@@ -181,6 +199,25 @@ func VerifyEncryptedTrafficToKafkaChannel(refs []corev1.ObjectReference, since t
 		err = eventingfeatures.VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		// When traffic is blocked and 403 was detected, we also verify that there was no
+		// successful request during that period.
+		if trafficBlocked {
+			logFilter200 := eventingfeatures.LogFilter{
+				PodNamespace:  test.EventingNamespace,
+				PodSelector:   metav1.ListOptions{LabelSelector: "app=kafka-channel-receiver"},
+				PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+				JSONLogFilter: func(m map[string]interface{}) bool {
+					return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
+						eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
+						eventingfeatures.GetMapValueAsString(m, "response_code") == "200"
+				},
+			}
+			err = eventingfeatures.VerifyNoMatchingRequestToHost(ctx, logFilter200)
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }

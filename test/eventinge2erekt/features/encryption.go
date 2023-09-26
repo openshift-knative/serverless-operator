@@ -73,8 +73,19 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			t.Fatal(err)
 		}
 
+		// When traffic is blocked and 403 was detected, we also verify that there was no
+		// successful request during that period.
 		if trafficBlocked {
-			err = VerifyNoRequestToHost(ctx, logFilter)
+			logFilter202 := LogFilter{
+				PodNamespace:  test.ServingNamespace,
+				PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
+				PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+				JSONLogFilter: func(m map[string]interface{}) bool {
+					return GetMapValueAsString(m, "path") == "/" &&
+						GetMapValueAsString(m, "authority") == privateURL.Host &&
+						GetMapValueAsString(m, "response_code") == "202"
+				}}
+			err = VerifyNoMatchingRequestToHost(ctx, logFilter202)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -165,7 +176,7 @@ func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilte
 	return nil
 }
 
-func VerifyNoRequestToHost(ctx context.Context, logFilter LogFilter) error {
+func VerifyNoMatchingRequestToHost(ctx context.Context, logFilter LogFilter) error {
 	encrypted, unencrypted, err := getMatchingRequestsToHost(ctx, logFilter)
 	if err != nil {
 		return err
