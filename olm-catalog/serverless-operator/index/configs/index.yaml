@@ -3,34 +3,34 @@ schema: olm.channel
 name: stable
 package: serverless-operator
 entries:
-  - name: "serverless-operator.v1.28.0"
   - name: "serverless-operator.v1.29.0"
-    replaces: "serverless-operator.v1.28.0"
-    skipRange: ">=1.28.0 <1.29.0"
   - name: "serverless-operator.v1.30.0"
     replaces: "serverless-operator.v1.29.0"
     skipRange: ">=1.29.0 <1.30.0"
+  - name: "serverless-operator.v1.30.1"
+    replaces: "serverless-operator.v1.30.0"
+    skipRange: ">=1.30.0 <1.30.1"
 ---
 schema: olm.channel
 name: stable-1.29
 package: serverless-operator
 entries:
-  - name: "serverless-operator.v1.28.0"
   - name: "serverless-operator.v1.29.0"
-    replaces: "serverless-operator.v1.28.0"
-    skipRange: ">=1.28.0 <1.29.0"
   - name: "serverless-operator.v1.30.0"
     replaces: "serverless-operator.v1.29.0"
     skipRange: ">=1.29.0 <1.30.0"
+  - name: "serverless-operator.v1.30.1"
+    replaces: "serverless-operator.v1.30.0"
+    skipRange: ">=1.30.0 <1.30.1"
 ---
 schema: olm.channel
 name: stable-1.30
 package: serverless-operator
 entries:
-  - name: "serverless-operator.v1.28.0"
   - name: "serverless-operator.v1.29.0"
-    replaces: "serverless-operator.v1.28.0"
-    skipRange: ">=1.28.0 <1.29.0"
   - name: "serverless-operator.v1.30.0"
     replaces: "serverless-operator.v1.29.0"
     skipRange: ">=1.29.0 <1.30.0"
+  - name: "serverless-operator.v1.30.1"
+    replaces: "serverless-operator.v1.30.0"
+    skipRange: ">=1.30.0 <1.30.1"
