@@ -1,0 +1,227 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/ha.go b/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
+index 3d1004e09..968608658 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/ha.go
+@@ -18,32 +18,21 @@ package common
+ 
+ import (
+ 	mf "github.com/manifestival/manifestival"
+-	"go.uber.org/zap"
+ 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+ 	"k8s.io/apimachinery/pkg/util/sets"
+ 
+ 	"knative.dev/operator/pkg/apis/operator/base"
+ )
+ 
+-func haUnSupported(obj base.KComponent) sets.String {
++func haUnSupported(name string) bool {
+ 	return sets.NewString(
+ 		"pingsource-mt-adapter",
+-	)
+-}
+-
+-// When Deployment has HPA, the replicas should be controlled by HPA's minReplicas instead of operator.
+-// Hence, skip changing the spec.replicas in deployment directory for these Deployments.
+-func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
+-	return sets.NewString(
+-		"webhook",
+-		"activator",
+-		"3scale-kourier-gateway",
+-	)
++	).Has(name)
+ }
+ 
+ // HighAvailabilityTransform mutates configmaps and replicacounts of certain
+ // controllers when HA control plane is specified.
+-func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
++func HighAvailabilityTransform(obj base.KComponent) mf.Transformer {
+ 	return func(u *unstructured.Unstructured) error {
+ 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
+ 		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
+@@ -61,39 +50,14 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
+ 		replicas := int64(*ha.Replicas)
+ 
+ 		// Transform deployments that support HA.
+-		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) && !hasHorizontalPodAutoscaler(obj).Has(u.GetName()) {
++		if u.GetKind() == "Deployment" && !haUnSupported(u.GetName()) && !hasHorizontalPodAutoscaler(u.GetName()) {
+ 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
+ 				return err
+ 			}
+ 		}
+ 
+ 		if u.GetKind() == "HorizontalPodAutoscaler" {
+-			min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
+-			if err != nil {
+-				return err
+-			}
+-			// Do nothing if the HPA ships with even more replicas out of the box.
+-			if min >= replicas {
+-				return nil
+-			}
+-
+-			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "minReplicas"); err != nil {
+-				return err
+-			}
+-
+-			max, found, err := unstructured.NestedInt64(u.Object, "spec", "maxReplicas")
+-			if err != nil {
+-				return err
+-			}
+-
+-			// Do nothing if maxReplicas is not defined.
+-			if !found {
+-				return nil
+-			}
+-
+-			// Increase maxReplicas to the amount that we increased,
+-			// because we need to avoid minReplicas > maxReplicas happenning.
+-			if err := unstructured.SetNestedField(u.Object, max+(replicas-min), "spec", "maxReplicas"); err != nil {
++			if err := hpaTransform(u, replicas); err != nil {
+ 				return err
+ 			}
+ 		}
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go b/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go
+new file mode 100644
+index 000000000..fba4a35cd
+--- /dev/null
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go
+@@ -0,0 +1,89 @@
++/*
++Copyright 2023 The Knative Authors
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++*/
++
++package common
++
++import (
++	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
++	"k8s.io/apimachinery/pkg/util/sets"
++)
++
++// When a Podspecable has HPA, the replicas should be controlled by HPAs minReplicas instead of operator.
++// Hence, skip changing the spec.replicas for these Podspecables.
++func hasHorizontalPodAutoscaler(name string) bool {
++	return sets.NewString(
++		"webhook",
++		"activator",
++		"3scale-kourier-gateway",
++		"eventing-webhook",
++		"mt-broker-ingress",
++		"mt-broker-filter",
++	).Has(name)
++}
++
++// Maps a Podspecables name to the HPAs name.
++// Add overrides here, if your HPA is named differently to the workloads name,
++// if no override is defined, the name of the podspecable is used as HPA name.
++func getHPAName(podspecableName string) string {
++	overrides := map[string]string{
++		"mt-broker-ingress": "broker-ingress-hpa",
++		"mt-broker-filter":  "broker-filter-hpa",
++	}
++	if v, ok := overrides[podspecableName]; ok {
++		return v
++	} else {
++		return podspecableName
++	}
++}
++
++// hpaTransform sets the minReplicas and maxReplicas of an HPA based on a replica override value.
++// If minReplica needs to be increased, the maxReplica is increased by the same value.
++func hpaTransform(u *unstructured.Unstructured, replicas int64) error {
++	if u.GetKind() != "HorizontalPodAutoscaler" {
++		return nil
++	}
++
++	min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
++	if err != nil {
++		return err
++	}
++
++	// Do nothing if the HPA ships with even more replicas out of the box.
++	if min >= replicas {
++		return nil
++	}
++
++	if err := unstructured.SetNestedField(u.Object, replicas, "spec", "minReplicas"); err != nil {
++		return err
++	}
++
++	max, found, err := unstructured.NestedInt64(u.Object, "spec", "maxReplicas")
++	if err != nil {
++		return err
++	}
++
++	// Do nothing if maxReplicas is not defined.
++	if !found {
++		return nil
++	}
++
++	// Increase maxReplicas to the amount that we increased,
++	// because we need to avoid minReplicas > maxReplicas happening.
++	if err := unstructured.SetNestedField(u.Object, max+(replicas-min), "spec", "maxReplicas"); err != nil {
++		return err
++	}
++	return nil
++}
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go b/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
+index 14e111b34..1ec05996b 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/transformers.go
+@@ -29,7 +29,7 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
+ 		mf.InjectOwner(obj),
+ 		mf.InjectNamespace(obj.GetNamespace()),
+ 		JobTransform(obj),
+-		HighAvailabilityTransform(obj, logger),
++		HighAvailabilityTransform(obj),
+ 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
+ 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
+ 		ResourceRequirementsTransform(obj, logger),
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go b/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go
+index 35cddf29e..b64a141a9 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/workload_override.go
+@@ -46,7 +46,9 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
+ 				}
+ 				obj = deployment
+ 				ps = &deployment.Spec.Template
+-				if override.Replicas != nil {
++
++				// Do not set replicas, if this resource is controlled by a HPA
++				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
+ 					deployment.Spec.Replicas = override.Replicas
+ 				}
+ 			}
+@@ -57,11 +59,20 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
+ 				}
+ 				obj = ss
+ 				ps = &ss.Spec.Template
+-				if override.Replicas != nil {
++
++				// Do not set replicas, if this resource is controlled by a HPA
++				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
+ 					ss.Spec.Replicas = override.Replicas
+ 				}
+ 			}
+ 
++			if u.GetKind() == "HorizontalPodAutoscaler" && override.Replicas != nil && u.GetName() == getHPAName(override.Name) {
++				overrideReplicas := int64(*override.Replicas)
++				if err := hpaTransform(u, overrideReplicas); err != nil {
++					return err
++				}
++			}
++
+ 			if obj == nil {
+ 				continue
+ 			}
