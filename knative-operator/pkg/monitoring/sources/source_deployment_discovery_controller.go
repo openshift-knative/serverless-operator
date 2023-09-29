@@ -206,5 +206,5 @@ func (s skipNonSystemNamespaceSources) Update(e event.UpdateEvent) bool {
 }
 
 func (s skipNonSystemNamespaceSources) Create(e event.CreateEvent) bool {
-	return s.Generic(event.GenericEvent{Object: e.Object})
+	return s.Generic(event.GenericEvent(e))
 }
