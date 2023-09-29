@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# This is due to anonymous token request issue created by the Helm image pulling bellow.
+# Ideally we want to login properly if this comes up elsewhere.
+if [[ "${SKIP_MESH_AUTH_POLICY_GENERATION}" == "true" ]]; then
+  exit 0
+fi
+
+
 set -Eeuo pipefail
 
 tenants="${1:?Provide tenants as comma-delimited as arg[1]}"
