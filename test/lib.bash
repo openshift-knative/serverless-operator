@@ -139,11 +139,6 @@ function downstream_serving_e2e_tests {
       mv ./test/servinge2e/user_permissions_test.go ./test/servinge2e/user_permissions_notest.go || true
   fi
 
-  # Tracing tests require Jaeger to be installed.
-  if [[ $(oc get pods -l app=jaeger --no-headers -n "$TRACING_NAMESPACE" | wc -l) -eq 0 ]]; then
-    mv ./test/servinge2e/tracing_test.go ./test/servinge2e/tracing_notest.go || true
-  fi
-
   if [[ $FULL_MESH == "true" ]]; then
     go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
       --kubeconfigs "${kubeconfigs_str}" \
