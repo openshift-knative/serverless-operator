@@ -166,9 +166,8 @@ func TestKafkaSourceRecreateSoak(t *testing.T) {
 	namesFn := func(fn func(kafkaSourceScenarioNames) *feature.Feature) SoakFn {
 		return func(copyID, iteration int) *feature.Feature {
 			return fn(kafkaSourceScenarioNames{
-				receiver: "receiver",
-				sender:   fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
-
+				receiver:    "receiver",
+				sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
 				kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, copyID),
 				kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, copyID),
 				kafkaSource: fmt.Sprintf("%s-%d", kafkaSourcePrefix, iteration),
@@ -212,10 +211,10 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 	names := func(copyID, iteration int) kafkaSourceScenarioNames {
 		return kafkaSourceScenarioNames{
 			receiver:   "receiver",
+			sender:     fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
 			kafkaTopic: fmt.Sprintf("%s-%d", topicPrefix, copyID),
 			kafkaSink:  fmt.Sprintf("%s-%d", kafkaSinkPrefix, copyID),
 			// kafkaSource:  not used, generated below dynamically for each of the 16 kafkasources
-			sender: fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
 		}
 	}
 
