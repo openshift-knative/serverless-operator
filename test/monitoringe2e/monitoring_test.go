@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 func TestKnativeMetrics(t *testing.T) {
@@ -31,7 +32,7 @@ func TestKnativeMetrics(t *testing.T) {
 		}
 	})
 
-	t.Run("verify Eventing control plane metrics work correctly", func(t *testing.T) {
+	t.Run("verify Eventing metrics work correctly", func(t *testing.T) {
 		// Eventing control plane metrics should work
 		if err := VerifyMetrics(ctx, eventingMetricQueries); err != nil {
 			t.Fatal("Failed to verify that Eventing control plane metrics work correctly", err)
