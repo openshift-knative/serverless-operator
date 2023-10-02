@@ -22,8 +22,10 @@ import (
 // var global environment.GlobalEnvironment
 
 type SoakFlagsStruct struct {
-	Duration time.Duration
-	Copies   int
+	Duration     time.Duration
+	Copies       int
+	PollInterval time.Duration
+	PollDuration time.Duration
 }
 
 var Flags SoakFlagsStruct
@@ -35,8 +37,10 @@ func TestMain(m *testing.M) {
 	channel_impl.EnvCfg.ChannelGK = "KafkaChannel.messaging.knative.dev"
 	channel_impl.EnvCfg.ChannelV = "v1beta1"
 
-	flag.DurationVar(&Flags.Duration, "soak-duration", 1*time.Hour, "Soak test duration (defaults to 1 hour)")
-	flag.IntVar(&Flags.Copies, "soak-copies", 1, "Number of copies for each soak test scenario (defaults to 1)")
+	flag.DurationVar(&Flags.Duration, "soak-duration", 1*time.Hour, "Soak test duration")
+	flag.IntVar(&Flags.Copies, "soak-copies", 1, "Number of copies for each soak test scenario")
+	flag.DurationVar(&Flags.PollInterval, "soak-poll-interval", 5*time.Second, "Poll interval used in soak tests")
+	flag.DurationVar(&Flags.PollDuration, "soak-poll-duration", 10*time.Minute, "Poll duration used in soak tests")
 
 	restConfig, err := pkgTest.Flags.ClientConfig.GetRESTConfig()
 	if err != nil {
@@ -63,7 +67,7 @@ func soakTestEnvironment(t *testing.T, namespace string) (context.Context, envir
 		k8s.WithEventListener,
 		// Enables KnativeService in the scenario.
 		//eventshub.WithKnativeServiceForwarder,
-		environment.WithPollTimings(5*time.Second, 4*time.Minute),
+		environment.WithPollTimings(Flags.PollInterval, Flags.PollDuration),
 		environment.WithTestLogger(t),
 	)
 }
