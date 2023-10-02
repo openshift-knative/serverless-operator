@@ -5,9 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
-	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -21,6 +18,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 var (
@@ -64,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipUpdatePredicate{})
+	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -184,13 +185,26 @@ func (skipDeletePredicate) Delete(_ event.DeleteEvent) bool {
 	return false
 }
 
-type skipUpdatePredicate struct {
-	predicate.Funcs
+var _ predicate.Predicate = skipSystemNamespaceSources{}
+
+type skipSystemNamespaceSources struct {
 }
 
-func (skipUpdatePredicate) Update(e event.UpdateEvent) bool {
+func (s skipSystemNamespaceSources) Delete(event.DeleteEvent) bool {
+	return false
+}
+
+func (s skipSystemNamespaceSources) Generic(e event.GenericEvent) bool {
 	// This controller does not handle source monitoring setup in knative-eventing ns when monitoring is set to off
 	// So it is safe to avoid pingsource-mt deployment updates, for example due to HPA
 	// Note that if users scale sources up and down in a user ns this will trigger source reconciliation
-	return e.ObjectOld.GetNamespace() != "knative-eventing"
+	return e.Object.GetNamespace() != "knative-eventing"
+}
+
+func (s skipSystemNamespaceSources) Update(e event.UpdateEvent) bool {
+	return s.Generic(event.GenericEvent{Object: e.ObjectNew})
+}
+
+func (s skipSystemNamespaceSources) Create(e event.CreateEvent) bool {
+	return s.Generic(event.GenericEvent(e))
 }

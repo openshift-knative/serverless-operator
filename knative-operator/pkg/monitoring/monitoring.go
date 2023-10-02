@@ -8,7 +8,6 @@ import (
 
 	mfclient "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
-	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -20,6 +19,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	okomon "github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 )
 
 const (
@@ -79,6 +80,28 @@ func RemoveOldServiceMonitorResourcesIfExist(namespace string, api client.Client
 	}
 	oldSM.SetName("knative-eventing-metrics-broker-ingr")
 	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	return nil
+}
+
+func RemoveOldPingSourceServiceMonitorResourcesIfExist(api client.Client) error {
+	oldSM := monitoringv1.ServiceMonitor{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "knative-eventing",
+			Name:      "pingsource-mt-adapter",
+		},
+	}
+	oldService := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: oldSM.Namespace,
+			Name:      oldSM.Name,
+		},
+	}
+	if err := api.Delete(context.Background(), &oldSM); err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	if err := api.Delete(context.Background(), &oldService); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 	return nil
