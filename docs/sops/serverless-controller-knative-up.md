@@ -47,7 +47,7 @@ If the output is not empty, check which Ingress is used by looking at which ingr
     enabled: false
 ```
 
-In this case, Istio is used as the Knative Serving Ingress.
+In this case, Istio (or Red Hat OpenShift OpenShift Service Mesh) is used as the Knative Serving Ingress.
 
 ## Steps
 
@@ -142,8 +142,8 @@ $ oc -n knative-serving-ingress rollout restart deployments -l app.kubernetes.io
 
 This should result in new pods getting deployed, attempt step (8) again and see if the pods achieve running state.
 
-11. If Istio is used as the Knative Serving Ingress, check Istio status. You may find the SOPs for Istio by contacting Istio support. 
+11. If Istio (or Red Hat OpenShift OpenShift Service Mesh) is used as the Knative Serving Ingress, check its status. You may find the SOPs for Istio (Red Hat OpenShift OpenShift Service Mesh) by contacting Istio (Red Hat OpenShift OpenShift Service Mesh) support. 
 
-12. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team with a Knative ["must-gather"](https://github.com/openshift-knative/must-gather) dump.
+12. If the problem persists, capture the logs and escalate to OpenShift Serverless engineering team.
 
 
