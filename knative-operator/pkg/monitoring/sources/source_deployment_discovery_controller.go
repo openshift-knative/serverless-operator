@@ -65,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipNonSystemNamespaceSources{})
+	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler
@@ -185,26 +185,26 @@ func (skipDeletePredicate) Delete(_ event.DeleteEvent) bool {
 	return false
 }
 
-var _ predicate.Predicate = skipNonSystemNamespaceSources{}
+var _ predicate.Predicate = skipSystemNamespaceSources{}
 
-type skipNonSystemNamespaceSources struct {
+type skipSystemNamespaceSources struct {
 }
 
-func (s skipNonSystemNamespaceSources) Delete(event.DeleteEvent) bool {
+func (s skipSystemNamespaceSources) Delete(event.DeleteEvent) bool {
 	return false
 }
 
-func (s skipNonSystemNamespaceSources) Generic(e event.GenericEvent) bool {
+func (s skipSystemNamespaceSources) Generic(e event.GenericEvent) bool {
 	// This controller does not handle source monitoring setup in knative-eventing ns when monitoring is set to off
 	// So it is safe to avoid pingsource-mt deployment updates, for example due to HPA
 	// Note that if users scale sources up and down in a user ns this will trigger source reconciliation
 	return e.Object.GetNamespace() != "knative-eventing"
 }
 
-func (s skipNonSystemNamespaceSources) Update(e event.UpdateEvent) bool {
+func (s skipSystemNamespaceSources) Update(e event.UpdateEvent) bool {
 	return s.Generic(event.GenericEvent{Object: e.ObjectNew})
 }
 
-func (s skipNonSystemNamespaceSources) Create(e event.CreateEvent) bool {
+func (s skipSystemNamespaceSources) Create(e event.CreateEvent) bool {
 	return s.Generic(event.GenericEvent(e))
 }
