@@ -51,7 +51,7 @@ dependencies:
     eventing_istio: knative-v1.10
     # eventing-istio midstream branch or commit
     eventing_istio_artifacts_branch: release-v1.10
-    cli: 1.9.2
+    cli: 1.10.0
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
         tekton_s2i: registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd
