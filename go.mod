@@ -30,7 +30,7 @@ require (
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
-	knative.dev/operator v0.37.5-0.20231002134039-d2e39067b426
+	knative.dev/operator v0.37.5-0.20231003090852-6520c3411c05
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
 	knative.dev/serving v0.37.0
 	sigs.k8s.io/controller-runtime v0.15.0
@@ -185,7 +185,7 @@ replace (
 	knative.dev/networking => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
 	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230913105533-08434dbf32cd
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
 )
 
 replace (

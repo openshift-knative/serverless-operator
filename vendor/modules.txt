@@ -1533,7 +1533,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.37.5-0.20231002134039-d2e39067b426
+# knative.dev/operator v0.37.5-0.20231003090852-6520c3411c05
 ## explicit; go 1.19
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1676,7 +1676,7 @@ knative.dev/reconciler-test/pkg/resources/secret
 knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.37.0 => github.com/openshift-knative/serving v0.10.1-0.20230913105533-08434dbf32cd
+# knative.dev/serving v0.37.0 => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1768,7 +1768,7 @@ sigs.k8s.io/yaml
 # knative.dev/networking => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
 # knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230913105533-08434dbf32cd
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
 # github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
