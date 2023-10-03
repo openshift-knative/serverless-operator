@@ -76,8 +76,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 		common.InjectCommonEnvironment(),
 	}
 	tf = append(tf, enableSecretInformerFilteringTransformers(ks)...)
-	tf = append(tf, monitoring.GetServingTransformers(ks)...)
-	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
+	return append(tf, monitoring.GetServingTransformers(ks)...)
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {

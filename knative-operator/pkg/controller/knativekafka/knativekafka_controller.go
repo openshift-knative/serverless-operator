@@ -338,7 +338,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		}
 	}
 	tfs := []mf.Transformer{}
-	tfs = append(append(tfs,
+	tfs = append(tfs,
 		mf.InjectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
@@ -352,7 +352,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
-		injectNamespacedBrokerMonitoring(r.client)), socommon.DeprecatedAPIsTranformersFromConfig()...)
+		injectNamespacedBrokerMonitoring(r.client))
 	tfs = append(tfs, rbacProxyTranforms...)
 
 	m, err := manifest.Transform(tfs...)

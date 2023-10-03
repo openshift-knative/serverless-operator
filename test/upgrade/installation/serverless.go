@@ -7,13 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
+	"github.com/blang/semver/v4"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -97,6 +98,36 @@ func UpgradeServerless(ctx *test.Context) error {
 	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
 }
 
+// checkMinimumKubeVersion checks if current K8s version we are on is higher than the one passed.
+// If an error is returned then we
+func checkMinimumKubeVersion(versioner discovery.ServerVersionInterface, version string) error {
+	v, err := versioner.ServerVersion()
+	if err != nil {
+		return err
+	}
+	currentVersion, err := semver.Make(normalizeVersion(v.GitVersion))
+	if err != nil {
+		return err
+	}
+
+	minimumVersion, err := semver.Make(normalizeVersion(version))
+	if err != nil {
+		return err
+	}
+
+	// If no specific pre-release requirement is set, we default to "-0" to always allow
+	// pre-release versions of the same Major.Minor.Patch version.
+	if len(minimumVersion.Pre) == 0 {
+		minimumVersion.Pre = []semver.PRVersion{{VersionNum: 0, IsNum: true}}
+	}
+
+	if currentVersion.LT(minimumVersion) {
+		return fmt.Errorf("kubernetes version %q is not compatible, need at least %q",
+			currentVersion, minimumVersion)
+	}
+	return nil
+}
+
 func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
 	crds := []string{"knativeservings.operator.knative.dev", "knativeeventings.operator.knative.dev"}
@@ -121,7 +152,7 @@ func DowngradeServerless(ctx *test.Context) error {
 	// If we are on OCP 4.8 we need to apply the workaround in https://access.redhat.com/solutions/6992396.
 	// Currently, we only test in 4.8 (1.21) and 4.11+ (1.24+). Latest versions (eg. 4.11+) have a fix for this so no need to patch the crds,
 	// but we do it anyway for supported versions up to 4.10.
-	if err := common.CheckMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.24.0"); err != nil {
+	if err := checkMinimumKubeVersion(ctx.Clients.Kube.Discovery(), "1.24.0"); err != nil {
 		for _, name := range crds {
 			if err := setWebookStrategyToNone(ctx, name); err != nil {
 				return err
@@ -193,4 +224,12 @@ func setWebookStrategyToNone(ctx *test.Context, name string) error {
 		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
 		return err
 	})
+}
+
+func normalizeVersion(v string) string {
+	if strings.HasPrefix(v, "v") {
+		// No need to account for unicode widths.
+		return v[1:]
+	}
+	return v
 }
