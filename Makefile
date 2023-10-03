@@ -197,7 +197,7 @@ test-upgrade-with-mesh:
 test-kitchensink-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/dev.sh
-	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" SCALE_UP=4 ./hack/install.sh
 	./test/kitchensink-upgrade-tests.sh
 
 test-kitchensink-upgrade-testonly:

@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/reconciler-test/pkg/feature"
 )
 
 type AllowedOperations struct {
@@ -44,7 +45,7 @@ func RunUserPermissionTests(t *testing.T, objects map[schema.GroupVersionResourc
 				client := test.UserContext.Clients.Dynamic.Resource(gvr).Namespace("serverless-tests")
 
 				obj := objects[gvr].DeepCopy()
-				obj.SetName("test-" + gvr.Resource)
+				obj.SetName(feature.MakeRandomK8sName("test-" + gvr.Resource))
 
 				_, err := client.Create(context.Background(), obj, metav1.CreateOptions{})
 				if (allowed.Create && err != nil) || (!allowed.Create && !apierrs.IsForbidden(err)) {

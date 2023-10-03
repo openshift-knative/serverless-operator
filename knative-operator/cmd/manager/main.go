@@ -9,6 +9,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/pflag"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"k8s.io/client-go/rest"
+
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
@@ -17,12 +22,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
-	"github.com/spf13/pflag"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"k8s.io/client-go/rest"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 	configv1 "github.com/openshift/api/config/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,6 +34,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -166,6 +168,11 @@ func setupServerlessOperatorMonitoring(cfg *rest.Config) error {
 	// If we upgrade from an old version we need to remove the old Service Monitor
 	// that is not managed by OLM. See SRVCOM-1237 for more.
 	if err = monitoring.RemoveOldServiceMonitorResourcesIfExist(namespace, cl); err != nil {
+		return err
+	}
+	// If we upgrade from an old version we need to remove the old Service Monitor
+	// that is not managed by OLM. It can be removed after SRVKE-1510 is out.
+	if err = monitoring.RemoveOldPingSourceServiceMonitorResourcesIfExist(cl); err != nil {
 		return err
 	}
 

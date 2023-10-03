@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -19,6 +18,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
+
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 )
 
 const (
@@ -255,6 +256,8 @@ func getSelectorLabels(component string) map[string]string {
 		labels["eventing.knative.dev/brokerRole"] = "ingress"
 	case "kafka-controller-manager":
 		labels["control-plane"] = "kafka-controller-manager"
+	case "pingsource-mt-adapter":
+		labels["app.kubernetes.io/component"] = component
 	default:
 		labels["app"] = component
 	}

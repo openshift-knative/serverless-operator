@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"knative.dev/pkg/apis"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // TargetDomainMapping is a wrapper around Configuration.
 type TargetDomainMapping struct {
-	servingv1alpha1.DomainMapping `json:",inline"`
+	servingv1beta1.DomainMapping `json:",inline"`
 }
 
 // Verify that Deployment adheres to the appropriate interfaces.
