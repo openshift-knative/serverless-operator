@@ -30,7 +30,7 @@ require (
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
-	knative.dev/operator v0.37.4
+	knative.dev/operator v0.37.5-0.20231003090852-6520c3411c05
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
 	knative.dev/serving v0.37.0
 	sigs.k8s.io/controller-runtime v0.15.0
@@ -179,20 +179,20 @@ require (
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20230811091754-f22178d5c46c
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230803130431-bf8f4e608e85
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230915103906-b2724325cb05
 	knative.dev/hack => knative.dev/hack v0.0.0-20230417170854-f591fea109b3
 	knative.dev/networking => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230821061021-2bb06e7fe6c2
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230721070749-1af735104330
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
 )
 
 replace (
 	// OpenShift components
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230616202415-59a8d308bfa4
+	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
 )
 
 replace (
