@@ -283,6 +283,7 @@ The required linters for that are:
 
 # Release
 
+- [Run the `validate` action in `serverless-operator` and wait for it to complete](https://github.com/openshift-knative/serverless-operator/actions/workflows/validate.yaml)
 - [Merge PRs created by GitHub actions](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
 - Create the `release-1.X` branch
 - [Approve PRs created by GitHub actions bot in `serverless-operator`](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
