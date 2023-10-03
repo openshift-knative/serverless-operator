@@ -124,7 +124,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 						}},
 						Resources: corev1.ResourceRequirements{
 							Limits:   limits,
-							Requests: defaultKubeRBACProxyReqeusts,
+							Requests: defaultKubeRBACProxyRequests,
 						},
 						Args: []string{
 							"--secure-listen-address=0.0.0.0:8444",

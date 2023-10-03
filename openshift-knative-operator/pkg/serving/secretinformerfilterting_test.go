@@ -9,7 +9,7 @@ import (
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-func TestSecretInformerFitleringOverride(t *testing.T) {
+func TestSecretInformerFilteringOverride(t *testing.T) {
 	cases := []struct {
 		name                   string
 		in                     *operatorv1beta1.KnativeServing

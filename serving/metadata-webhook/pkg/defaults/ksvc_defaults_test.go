@@ -30,9 +30,9 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 						Template: servingv1.RevisionTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
 								Annotations: map[string]string{
+									proxyIstioConfig:             holdApplicationUntilProxyStarts,
 									sidecarInject:                "true",
 									sidecarrewriteAppHTTPProbers: "true",
-									maistraProxyEnv:              terminationDrainDuration,
 								},
 							},
 						},
@@ -56,7 +56,6 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 								Annotations: map[string]string{
 									sidecarInject:                "false",
 									sidecarrewriteAppHTTPProbers: "false",
-									maistraProxyEnv:              `{ "TERMINATION_DRAIN_DURATION_SECONDS": "5" }`,
 								},
 							},
 						},
@@ -76,9 +75,9 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 						Template: servingv1.RevisionTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
 								Annotations: map[string]string{
+									proxyIstioConfig:             holdApplicationUntilProxyStarts,
 									sidecarInject:                "true",
 									sidecarrewriteAppHTTPProbers: "true",
-									maistraProxyEnv:              terminationDrainDuration,
 								},
 							},
 						},

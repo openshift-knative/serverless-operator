@@ -7,5 +7,5 @@ import (
 )
 
 func TestChannelReadiness(t *testing.T) {
-	testFeatureSet(t, features.ChannelFeatureSet(false))
+	testFeatureSet(t, features.ChannelFeatureSet())
 }

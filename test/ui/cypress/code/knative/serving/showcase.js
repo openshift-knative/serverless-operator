@@ -1,4 +1,5 @@
 import Environment from '../../environment'
+import Kubernetes from '../../kubernetes'
 import OpenshiftConsole from '../../openshift/openshiftConsole'
 
 const environment = new Environment()
@@ -22,14 +23,18 @@ class ShowcaseKservice {
    * @returns {Cypress.Chainable<URL>} - the URL of the kservice
    */
   url() {
-    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.13')) {
+    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.12')) {
       return cy.get('.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]')
         .last()
         .scrollIntoView()
         .should('have.attr', 'value')
         .and('include', 'showcase')
     }
-    return cy.get('a.co-external-link')
+    let selector = '.co-external-link--block a'
+    if (environment.ocpVersion().satisfies('<=4.13')) {
+      selector = 'a.co-external-link'
+    }
+    return cy.get(selector)
       .last()
       .scrollIntoView()
       .should('have.attr', 'href')
@@ -137,6 +142,8 @@ class ShowcaseKservice {
   }
 
   removeApp() {
+    const k8s = new Kubernetes()
+    k8s.ensureNamespaceExists(this.namespace)
     this.isServiceDeployed().then((deployed) => {
       if (deployed) {
         cy.log("Service is deployed. Removing it.")

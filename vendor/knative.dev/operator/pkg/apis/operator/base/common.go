@@ -137,7 +137,7 @@ type CommonSpec struct {
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
-	// DEPRECATED. Use components
+	// DEPRECATED. Use workloads
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
 	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
@@ -296,6 +296,11 @@ type WorkloadOverride struct {
 	// LivenessProbes overrides liveness probes for the containers.
 	// +optional
 	LivenessProbes []ProbesRequirementsOverride `json:"livenessProbes,omitempty"`
+
+	// HostNetwork overrides hostNetwork for the containers.
+	// When hostNetwork is enabled, this will set dnsPolicy to ClusterFirstWithHostNet automatically for the containers.
+	// +optional
+	HostNetwork *bool `json:"hostNetwork,omitempty"`
 }
 
 // ServiceOverride defines the configurations of the service to override.

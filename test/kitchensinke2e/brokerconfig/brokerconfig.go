@@ -6,7 +6,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/eventing-kafka/test/rekt/resources/kafkachannel"
+	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/manifest"
 )

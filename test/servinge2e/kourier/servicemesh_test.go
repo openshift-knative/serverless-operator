@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test/servinge2e/servicemesh"
 	"knative.dev/serving/pkg/apis/autoscaling"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -30,21 +31,19 @@ import (
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/spoof"
 	"knative.dev/serving/pkg/apis/serving"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingTest "knative.dev/serving/test"
+)
+
+const (
+	serviceMeshTestNamespaceName = "serverless-tests-mesh"
 )
 
 type testCase struct {
 	name               string
-	labels             map[string]string // Ksvc labels
-	annotations        map[string]string // Revision template annotations
+	labels             map[string]string // Ksvc Labels
+	annotations        map[string]string // Revision template Annotations
 	expectIstioSidecar bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
 }
-
-const (
-	serviceMeshTestNamespaceName = "serverless-tests-mesh"
-	istioInjectKey               = "sidecar.istio.io/inject"
-)
 
 // Following https://docs.openshift.com/container-platform/4.9/serverless/admin_guide/serverless-ossm-setup.html
 func setupNamespaceForServiceMesh(ctx *test.Context, serviceMeshNamespace, testNamespace string) {
@@ -95,17 +94,6 @@ func runTestForAllServiceMeshVersions(t *testing.T, testFunc func(ctx *test.Cont
 	}
 }
 
-// A knative service acting as an "http proxy", redirects requests towards a given "host". Used to test cluster-local services
-func httpProxyService(name, namespace, host string) *servingv1.Service {
-	proxy := test.Service(name, namespace, pkgTest.ImagePath(test.HTTPProxyImg), nil)
-	proxy.Spec.Template.Spec.Containers[0].Env = append(proxy.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
-		Name:  "TARGET_HOST",
-		Value: host,
-	})
-
-	return proxy
-}
-
 // Skipped unless ServiceMesh has been installed via "make install-mesh"
 func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 	runTestForAllServiceMeshVersions(t, func(ctx *test.Context) {
@@ -114,7 +102,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Verifies the activator can connect to the pod
 			name: "sidecar-via-activator",
 			annotations: map[string]string{
-				istioInjectKey:                     "true",
+				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "-1",
 			},
 			expectIstioSidecar: true,
@@ -123,7 +111,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Verifies the gateway can connect to the pod directly
 			name: "sidecar-without-activator",
 			annotations: map[string]string{
-				istioInjectKey:                     "true",
+				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
 			},
@@ -132,27 +120,27 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Verifies the "sidecar.istio.io/inject" annotation is really what decides the istio-proxy presence
 			name: "no-sidecar",
 			annotations: map[string]string{
-				istioInjectKey: "false",
+				servicemesh.IstioInjectKey: "false",
 			},
 			expectIstioSidecar: false,
 		}, {
-			// A cluster-local variant of the "sidecar-via-activator" scenario
+			// A cluster-local variant of the "sidecar-via-activator" testCase
 			name: "local-sidecar-via-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 			},
 			annotations: map[string]string{
-				istioInjectKey: "true",
+				servicemesh.IstioInjectKey: "true",
 			},
 			expectIstioSidecar: true,
 		}, {
-			// A cluster-local variant of the "sidecar-without-activator" scenario
+			// A cluster-local variant of the "sidecar-without-activator" testCase
 			name: "local-sidecar-without-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 			},
 			annotations: map[string]string{
-				istioInjectKey:                     "true",
+				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
 			},
@@ -160,14 +148,14 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 		}}
 
 		t := ctx.T
-		for _, scenario := range tests {
-			scenario := scenario
-			t.Run(scenario.name, func(t *testing.T) {
+		for _, testCase := range tests {
+			testCase := testCase
+			t.Run(testCase.name, func(t *testing.T) {
 				// Create a new context to prevent calling ctx.T.Fatal on parent T.
 				ctx := test.SetupClusterAdmin(t)
 				test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 				defer test.CleanupAll(t, ctx)
-				testServiceToService(t, ctx, test.Namespace, scenario)
+				testServiceToService(t, ctx, test.Namespace, testCase)
 			})
 		}
 	})
@@ -289,6 +277,11 @@ func jwtHTTPGetRequestBytes(ctx *test.Context, url *url.URL, token *string) (*sp
 // via istio authentication Policy to allow valid JWT only.
 // Skipped unless ServiceMesh has been installed via "make install-mesh"
 func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	if test.IsServiceMeshInstalled(ctx) && test.IsInternalEncryption(ctx) {
+		t.Skip("JWT integration not working with internal encryption, see SRVCOM-2648")
+	}
+
 	runTestForAllServiceMeshVersions(t, func(ctx *test.Context) {
 		t := ctx.T
 		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -331,7 +324,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		// istio-pilot caches the JWKS content if a new Policy has the same jwksUri as some old policy.
 		// Rerunning this test would fail if we kept the jwksUri constant across invocations then,
 		// hence the random suffix for the jwks ksvc.
-		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, pkgTest.ImagePath(test.HelloOpenshiftImg), nil)
+		jwksKsvc := test.Service(helpers.AppendRandomString("jwks"), test.Namespace, pkgTest.ImagePath(test.HelloOpenshiftImg), nil, nil)
 		jwksKsvc.Spec.Template.Spec.Containers[0].Env = append(jwksKsvc.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name:  "RESPONSE",
 			Value: jwks,
@@ -482,7 +475,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 		}
 
 		// Create a test ksvc, should be accessible only via proper JWT token
-		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), map[string]string{
+		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, map[string]string{
 			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
@@ -632,7 +625,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
-	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil)
+	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, nil)
 	aux = test.WithServiceReadyOrFail(ctx, aux)
 
 	ips, err := net.LookupIP(aux.Status.URL.Host)

@@ -14,17 +14,17 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics"
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
 var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
-	servingv1.SchemeGroupVersion.WithKind("Service"):             &defaults.TargetKService{},
-	servingv1.SchemeGroupVersion.WithKind("Route"):               &defaults.TargetRoute{},
-	servingv1.SchemeGroupVersion.WithKind("Configuration"):       &defaults.TargetConfiguration{},
-	servingv1alpha1.SchemeGroupVersion.WithKind("DomainMapping"): &defaults.TargetDomainMapping{},
+	servingv1.SchemeGroupVersion.WithKind("Service"):            &defaults.TargetKService{},
+	servingv1.SchemeGroupVersion.WithKind("Route"):              &defaults.TargetRoute{},
+	servingv1.SchemeGroupVersion.WithKind("Configuration"):      &defaults.TargetConfiguration{},
+	servingv1beta1.SchemeGroupVersion.WithKind("DomainMapping"): &defaults.TargetDomainMapping{},
 }
 
-func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+func NewDefaultingAdmissionController(ctx context.Context, _ configmap.Watcher) *controller.Impl {
 	return defaulting.NewAdmissionController(ctx,
 
 		// Name of the resource webhook.

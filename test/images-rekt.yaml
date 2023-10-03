@@ -1,1 +1,2 @@
-knative.dev/reconciler-test/cmd/eventshub: registry.ci.openshift.org/openshift/knative-eventing-test-eventshub:knative-nightly
+knative.dev/reconciler-test/cmd/eventshub: quay.io/openshift-knative/eventing/eventshub:v1.10
+knative.dev/eventing/cmd/heartbeats: quay.io/openshift-knative/eventing/heartbeats:v1.10

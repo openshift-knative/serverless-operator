@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/pkg/network"
 )
 
 const (
@@ -30,7 +31,38 @@ const (
 
 	// ingressDefaultCertificateName is the name of the default ingress certificate.
 	ingressDefaultCertificateName = "router-certs-default"
+
+	// bootStrapConfigKey is the key of kourier-bootstrap configmap data.
+	bootStrapConfigKey = "envoy-bootstrap.yaml"
+
+	// defaultControllerAddress is the address of net-kourier-controller defined in kourier-bootstrap configmap by default.
+	defaultControllerAddress = "net-kourier-controller.knative-serving"
 )
+
+// overrideKourierBootstrap overrides the address of kourier controller address.
+func overrideKourierBootstrap(ks base.KComponent) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != "kourier-bootstrap" {
+			return nil
+		}
+
+		clusterLocalDomain := network.GetClusterDomainName()
+
+		cm := &corev1.ConfigMap{}
+		if err := scheme.Scheme.Convert(u, cm, nil); err != nil {
+			return err
+		}
+
+		controllerAddress := "net-kourier-controller." + kourierNamespace(ks.GetNamespace()) + ".svc." + clusterLocalDomain + "."
+		data := cm.Data[bootStrapConfigKey]
+
+		// Replace defaultControllerAddress with the complete kourier controller address.
+		// i.e. "net-kourier-controller.knative-serving" to "net-kourier-controller.knative-serving-ingress.svc.cluster.local."
+		cm.Data[bootStrapConfigKey] = strings.Replace(data, defaultControllerAddress, controllerAddress, 1)
+
+		return scheme.Scheme.Convert(cm, u, nil)
+	}
+}
 
 // overrideKourierNamespace overrides the namespace of all Kourier related resources to
 // the -ingress suffix to be backwards compatible.
@@ -50,7 +82,7 @@ func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
 		labels[socommon.ServingOwnerName] = ks.GetName()
 		u.SetLabels(labels)
 
-		// We need to unset OwnerReferences so Openshift doesn't delete Kourier ressources.
+		// We need to unset OwnerReferences so Openshift doesn't delete Kourier resources.
 		u.SetOwnerReferences(nil)
 		return nsInjector(u)
 	}
@@ -96,7 +128,7 @@ func addKourierAppProtocol(ks base.KComponent) mf.Transformer {
 		return nil
 	}
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() != "Service" && u.GetName() != "kourier" {
+		if u.GetKind() != "Service" || u.GetName() != "kourier" {
 			return nil
 		}
 

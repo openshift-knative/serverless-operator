@@ -20,7 +20,7 @@ jobs:
       GOPATH: ${{ github.workspace }}
     steps:
       - name: Setup Golang
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.20.x
 
@@ -34,19 +34,19 @@ jobs:
 
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ./src/github.com/openshift-knative/serverless-operator
 
       - name: Checkout openshift-knative/hack
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openshift-knative/hack'
           ref: 'main'
           path: ./src/github.com/openshift-knative/hack
 
       - name: Checkout openshift/release
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           branch: 'master'
           repository: 'openshift/release'
@@ -60,12 +60,12 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag "$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.name)-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
+        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag "openshift-serverless-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
 
       - name: Generate CI (on branch created)
         if: github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.name)-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
+        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "openshift-serverless-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5

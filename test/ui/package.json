@@ -10,13 +10,13 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
-    "chalk": "^5.0.1",
-    "cypress": "^10.9.0",
-    "cypress-multi-reporters": "^1.5.0",
+    "cachedir": "^2.3.0",
+    "chalk": "^5.2.0",
+    "cypress": "^13.2.0",
+    "cypress-multi-reporters": "^1.6.3",
     "diff": "^5.0.0",
-    "mocha": "^10.0.0",
-    "mocha-junit-reporter": "^2.0.2",
-    "semver": "^7.3.5",
-    "cachedir": "^2.3.0"
+    "mocha": "^10.2.0",
+    "mocha-junit-reporter": "^2.2.0",
+    "semver": "^7.5.3"
   }
 }

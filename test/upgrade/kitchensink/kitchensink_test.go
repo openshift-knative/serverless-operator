@@ -20,6 +20,7 @@ limitations under the License.
 package kitchensink
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"os"
@@ -31,6 +32,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -73,13 +75,14 @@ func TestKitchensink(t *testing.T) {
 
 	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLS(true),
-		features.BrokerFeatureSetWithTriggerDLS(true),
-		features.ChannelFeatureSet(true),
-		features.SequenceNoReplyFeatureSet(true),
-		features.SequenceGlobalReplyFeatureSet(true),
-		features.ParallelNoReplyFeatureSet(true),
-		features.ParallelGlobalReplyFeatureSet(true),
+		features.BrokerFeatureSetWithBrokerDLSShort(),
+		features.BrokerFeatureSetWithTriggerDLSShort(),
+		features.ChannelFeatureSetShort(),
+		features.SequenceNoReplyFeatureSetShort(),
+		features.SequenceGlobalReplyFeatureSetShort(),
+		features.ParallelNoReplyFeatureSetShort(),
+		features.ParallelGlobalReplyFeatureSetShort(),
+		features.SourceFeatureSetShort(),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -95,11 +98,7 @@ func TestKitchensink(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
-	sources := strings.Split(strings.Trim(test.Flags.CatalogSource, ","), ",")
 	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
-	if len(sources) != len(csvs) {
-		t.Fatal("The number of operator sources and CSVs for upgrades must match")
-	}
 
 	// Split features across upgrades.
 	groups := featureGroup.Split(len(csvs))
@@ -109,32 +108,35 @@ func TestKitchensink(t *testing.T) {
 
 		t.Run("UpgradeTo "+toVersion, func(t *testing.T) {
 			// Run these tests after each upgrade.
-			post := []pkgupgrade.Operation{
+			postUpgrade := []pkgupgrade.Operation{
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-serving",
+					Namespace: test.ServingNamespace,
 				}),
 				upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-					Namespace: "knative-eventing",
+					Namespace: test.EventingNamespace,
 				}),
 			}
+			var postDowngrade []pkgupgrade.Operation
 			// In the last step. Run also post-upgrade tests for all features.
 			if i == len(csvs)-1 {
-				post = append(post, ModifyResourcesTest(ctx))
-				post = append(post, featureGroup.PostUpgradeTests()...)
+				postUpgrade = append(postUpgrade, ModifyResourcesTest(ctx))
+				postUpgrade = append(postUpgrade, featureGroup.PostUpgradeTests()...)
+				// We don't downgrade Serverless in kitshensink upgrade tests but
+				// include post-downgrade tests as they do cleanup.
+				postDowngrade = append(postDowngrade, featureGroup.PostDowngradeTests()...)
 			}
-
-			source := sources[i]
 
 			suite := pkgupgrade.Suite{
 				Tests: pkgupgrade.Tests{
 					// Run pre-upgrade tests only for given sub-group
-					PreUpgrade:  groups[i].PreUpgradeTests(),
-					PostUpgrade: post,
+					PreUpgrade:    groups[i].PreUpgradeTests(),
+					PostUpgrade:   postUpgrade,
+					PostDowngrade: postDowngrade,
 				},
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-							if err := installation.UpgradeServerlessTo(ctx, csv, source); err != nil {
+							if err := installation.UpgradeServerlessTo(ctx, csv, "redhat-operators", 3*time.Minute); err != nil {
 								c.T.Error("Serverless upgrade failed:", err)
 							}
 						}),
@@ -152,6 +154,88 @@ func ModifyResourcesTest(ctx *test.Context) pkgupgrade.Operation {
 		// The parallel tests delete namespaces so patching the resources must be done earlier.
 		if err := PatchKnativeResources(ctx); err != nil {
 			c.T.Error(err)
+		}
+	})
+}
+
+func TestUpgradeStress(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+
+	// Add feature sets to be tested during upgrades.
+	featureSets := []feature.FeatureSet{
+		features.BrokerFeatureSetWithBrokerDLSStress(),
+		features.BrokerFeatureSetWithTriggerDLSStress(),
+		features.ChannelFeatureSetStress(),
+		features.SequenceNoReplyFeatureSetStress(),
+		features.SequenceGlobalReplyFeatureSetStress(),
+		features.ParallelNoReplyFeatureSetStress(),
+		features.ParallelGlobalReplyFeatureSetStress(),
+		features.SourceFeatureSetStress(),
+	}
+
+	var featureGroup FeatureWithEnvironmentGroup
+	for _, fs := range featureSets {
+		for _, f := range fs.Features {
+			featureGroup = append(featureGroup, &FeatureWithEnvironment{Feature: f, Global: global})
+		}
+	}
+
+	suite := pkgupgrade.Suite{
+		Tests: pkgupgrade.Tests{
+			PreUpgrade: featureGroup.PreUpgradeTests(),
+			PostUpgrade: append(
+				featureGroup.PostUpgradeTests(),
+				[]pkgupgrade.Operation{
+					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+						Namespace: test.ServingNamespace,
+					}),
+					upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
+						Namespace: test.EventingNamespace,
+					}),
+				}...,
+			),
+			PostDowngrade: featureGroup.PostDowngradeTests(),
+		},
+		Installations: pkgupgrade.Installations{
+			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+			DowngradeWith: []pkgupgrade.Operation{
+				// Skip actual downgrade but run additional checks here. They are ensured to
+				// run after PostUpgrade tests.
+				VerifyPodRestarts(ctx),
+			},
+		},
+	}
+	suite.Execute(pkgupgrade.Configuration{T: t})
+}
+
+func VerifyPodRestarts(ctx *test.Context) pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("VerifyPodRestarts", func(c pkgupgrade.Context) {
+		// Give some time before checking Pod restarts which might happen later after upgrade.
+		time.Sleep(2 * time.Minute)
+
+		var podsRestarted []string
+		namespaces := []string{test.ServingNamespace,
+			test.EventingNamespace, test.IngressNamespace, test.OperatorsNamespace}
+		for _, ns := range namespaces {
+			pods, err := ctx.Clients.Kube.CoreV1().Pods(ns).List(context.Background(), metav1.ListOptions{})
+			if err != nil {
+				c.T.Fatalf("Error listing Pods in %q: %v", ns, err)
+			}
+			for _, pod := range pods.Items {
+				// Ignore storage version migration pods.
+				if strings.Contains(pod.Name, "storage-version") {
+					continue
+				}
+				for _, status := range pod.Status.ContainerStatuses {
+					if status.RestartCount > 0 {
+						podsRestarted = append(podsRestarted, pod.Name)
+					}
+				}
+			}
+		}
+		if len(podsRestarted) > 0 {
+			c.T.Fatalf("Container restart detected for Pods: %v", podsRestarted)
 		}
 	})
 }

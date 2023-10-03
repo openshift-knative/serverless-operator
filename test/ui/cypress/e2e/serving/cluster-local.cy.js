@@ -8,6 +8,7 @@ describe('OCP UI for Serverless Serving', () => {
   const openshiftConsole = new OpenshiftConsole()
   const showcaseKsvc = new ShowcaseKservice({
     clusterLocal: true,
+    namespace:    'test-cluster-local'
   })
 
   it('can deploy a cluster-local service', () => {

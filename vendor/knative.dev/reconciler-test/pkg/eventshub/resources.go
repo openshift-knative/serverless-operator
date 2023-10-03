@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"knative.dev/pkg/logging"
+
 	"knative.dev/reconciler-test/pkg/environment"
 	eventshubrbac "knative.dev/reconciler-test/pkg/eventshub/rbac"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -71,9 +72,6 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 		eventListener := k8s.EventListenerFromContext(ctx)
 		registerEventsHubStore(ctx, eventListener, name, namespace)
 
-		// Install ServiceAccount, Role, RoleBinding
-		eventshubrbac.Install()(ctx, t)
-
 		isReceiver := strings.Contains(envs[EventGeneratorsEnv], "receiver")
 
 		var withForwarder bool
@@ -96,6 +94,9 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			"image":         ImageFromContext(ctx),
 			"withReadiness": isReceiver,
 		}
+
+		// Install ServiceAccount, Role, RoleBinding
+		eventshubrbac.Install(cfg)(ctx, t)
 
 		if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 			manifest.WithIstioPodAnnotations(cfg)

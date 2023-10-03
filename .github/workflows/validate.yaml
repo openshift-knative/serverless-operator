@@ -35,7 +35,7 @@ jobs:
           sudo mv /usr/bin/yq /usr/local/bin/yq
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ./src/github.com/${{ github.repository }}
           fetch-depth: 0
@@ -56,7 +56,7 @@ jobs:
 
       - name: Set CURRENT_VERSION_IMAGES on push
         working-directory: ./src/github.com/${{ github.repository }}
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main'
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main' && !contains(github.ref_name, 'dependabot/')
         run: |
           branch="$(yq read olm-catalog/serverless-operator/project.yaml project.version)" # example output: "1.26.0"
           # Add "v", so that the final variable is like "v1.27.0"
@@ -80,11 +80,10 @@ jobs:
       #   Since we're generating files based on a floating branch in midstream,
       #   we need to reconcile those files periodically.
       #
-      #   when it's manually triggered or a scheduled run, create a PR
-      #   when there are changes detected.
+      #   when it's manually triggered or a scheduled run.
       - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push'
-        uses: peter-evans/create-pull-request@v4
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        uses: peter-evans/create-pull-request@v5
         with:
           path: ./src/github.com/${{ github.repository }}
           branch: auto/update-generated-files-${{ github.ref_name }}
@@ -129,7 +128,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ./src/github.com/${{ github.repository }}
 
@@ -219,7 +218,7 @@ jobs:
                 -level="error"
 
       - name: Prettify code
-        uses: creyD/prettier_action@v3.3
+        uses: creyD/prettier_action@v4.3
         with:
           dry: true
-          prettier_options: -c templates/*.yaml
+          prettier_options: --check src/github.com/${{ github.repository }}/templates/*.yaml

@@ -12,10 +12,7 @@ import (
 )
 
 const (
-	helloworldService     = "helloworld-go"
-	helloworldService2    = "helloworld-go2"
-	kubeHelloworldService = "kube-helloworld-go"
-	helloworldText        = "Hello World!"
+	helloworldText = "Hello World!"
 )
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {

@@ -9,7 +9,7 @@ source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sou
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 declare -a TEST_NAMESPACES
-TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests2" "serverless-tests-mesh")
+TEST_NAMESPACES=("${TEST_NAMESPACE}" "serverless-tests-mesh")
 export TEST_NAMESPACES
 
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/serving.bash"
@@ -76,7 +76,7 @@ function serverless_operator_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
 
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
@@ -102,7 +102,7 @@ function serverless_operator_kafka_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -127,7 +127,7 @@ function downstream_serving_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=60m -parallel=1)
@@ -140,12 +140,12 @@ function downstream_serving_e2e_tests {
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/servicemesh/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
   else
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/... \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/kourier/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
@@ -162,7 +162,7 @@ function downstream_eventing_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -233,7 +233,7 @@ function downstream_knative_kafka_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   # Used by eventing/test/lib
@@ -308,7 +308,7 @@ function downstream_monitoring_e2e_tests {
   kubeconfigs+=("${KUBECONFIG}")
   while IFS= read -r -d '' cfg; do
     kubeconfigs+=("${cfg}")
-  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0)
+  done < <(find "$(pwd -P)" -name 'user*.kubeconfig' -print0 | sort -z)
   kubeconfigs_str="$(array.join , "${kubeconfigs[@]}")"
 
   RUN_FLAGS=(-failfast -timeout=30m -parallel=1)
@@ -327,6 +327,10 @@ function downstream_kitchensink_e2e_tests {
 
   logger.info "Running Knative kitchensink tests"
 
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
   # Create a secret for reconciler-test. The framework will copy this secret
   # to newly created namespaces and link to default service account in the namespace.
   if ! oc -n default get secret kn-test-image-pull-secret; then
@@ -342,8 +346,9 @@ function downstream_kitchensink_e2e_tests {
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
-
+#  export GO_TEST_VERBOSITY=standard-verbose
   go_test_e2e "${RUN_FLAGS[@]}" ./test/kitchensinke2e \
+  --images.producer.file="${images_file}" \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
 }
@@ -355,13 +360,13 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template channels common_opts images_file
+  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template common_opts images_file
 
   # Specify image mapping for REKT tests
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
-  serving_image_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
-  eventing_image_version="${KNATIVE_EVENTING_VERSION}"
-  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
+  serving_image_version=${KNATIVE_SERVING_VERSION#knative-}
+  eventing_image_version="${KNATIVE_EVENTING_VERSION#knative-}"
+  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION#knative-}"
 
   # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
   # for non-REKT tests.
@@ -369,26 +374,24 @@ function run_rolling_upgrade_tests {
   image_template=$(
     cat <<-EOF
 $base{{- with .Name }}
-{{- if eq .      "kafka-consumer"      }}knative-eventing-kafka-broker-test-kafka-consumer:$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}knative-eventing-test-event-flaker:$eventing_image_version
-{{- else if eq . "event-library"       }}knative-eventing-test-event-library:$eventing_image_version
-{{- else if eq . "event-sender"        }}knative-eventing-test-event-sender:$eventing_image_version
-{{- else if eq . "eventshub"           }}knative-eventing-test-eventshub:$eventing_image_version
-{{- else if eq . "heartbeats"          }}knative-eventing-test-heartbeats:$eventing_image_version
-{{- else if eq . "performance"         }}knative-eventing-test-performance:$eventing_image_version
-{{- else if eq . "print"               }}knative-eventing-test-print:$eventing_image_version
-{{- else if eq . "recordevents"        }}knative-eventing-test-recordevents:$eventing_image_version
-{{- else if eq . "request-sender"      }}knative-eventing-test-request-sender:$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}knative-eventing-test-wathola-fetcher:$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}knative-eventing-test-wathola-forwarder:$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}knative-eventing-test-wathola-receiver:$eventing_image_version
-{{- else if eq . "wathola-sender"      }}knative-eventing-test-wathola-sender:$eventing_image_version
-{{- else                               }}knative-serving-test-{{.}}:$serving_image_version{{end -}}
+{{- if eq .      "kafka-consumer"      }}eventing-kafka-broker/{{.}}:$eventing_kafka_broker_image_version
+{{- else if eq . "event-flaker"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "event-library"       }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "event-sender"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "eventshub"           }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "heartbeats"          }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "performance"         }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "print"               }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "recordevents"        }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "request-sender"      }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-fetcher"     }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-forwarder"   }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-receiver"    }}eventing/{{.}}:$eventing_image_version
+{{- else if eq . "wathola-sender"      }}eventing/{{.}}:$eventing_image_version
+{{- else                               }}serving/{{.}}:$serving_image_version{{end -}}
 {{end -}}
 EOF
 )
-
-  channels=messaging.knative.dev/v1beta1:KafkaChannel,messaging.knative.dev/v1:InMemoryChannel
 
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
@@ -399,12 +402,21 @@ EOF
   export EVENTING_UPGRADE_TESTS_TRACEEXPORTLIMIT=30
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
-  common_opts=(./test/upgrade "-tags=upgrade" \
+  # There can be only one SYSTEM_NAMESPACE. Eventing and Serving tests both expect
+  # some resources in their own system namespace. We copy the required resources from
+  # EVENTING_NAMESPACE to SERVING_NAMESPACE and use that as system namespace.
+  if ! oc -n "$SERVING_NAMESPACE" get configmap kafka-broker-config; then
+    oc get configmap kafka-broker-config --namespace="$EVENTING_NAMESPACE" -o yaml | \
+      sed -e 's/namespace: .*/namespace: '"$SERVING_NAMESPACE"'/' | \
+      yq delete - metadata.ownerReferences | oc apply -f -
+  fi
+
+  common_opts=(-parallel=8 ./test/upgrade "-tags=upgrade" \
     "--kubeconfigs=${KUBECONFIG}" \
-    "--channels=${channels}" \
     "--imagetemplate=${image_template}" \
     "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
+    "--channel=${OLM_CHANNEL}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
     "--csvprevious=${PREVIOUS_CSV}" \
@@ -416,6 +428,13 @@ EOF
     "--kafkaversionprevious=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS/knative-v/}" \
     --resolvabledomain \
     --https)
+
+  if [[ $FULL_MESH == "true" ]]; then
+      common_opts+=("--environment.namespace=serverless-tests")
+      common_opts+=("--istio.enabled")
+      # For non-REKT eventing tests.
+      common_opts+=("--reusenamespace")
+  fi
 
   if [[ "${UPGRADE_SERVERLESS}" == "true" ]]; then
     # TODO: Remove creating the NS when this commit is backported: https://github.com/knative/serving/commit/1cc3a318e185926f5a408a8ec72371ba89167ee7
@@ -452,16 +471,43 @@ EOF
 function kitchensink_upgrade_tests {
   logger.info "Running kitchensink upgrade tests"
 
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
   go_test_e2e -run=TestKitchensink -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
+     --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
-     --catalogsource="$(metadata.get "upgrade_sequence[*].source" | tail -n +2 | tr '\n' ',')" \
      --csv="$(metadata.get "upgrade_sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 
   logger.success 'Kitchensink upgrade tests passed'
+}
+
+function kitchensink_upgrade_stress_tests {
+  logger.info "Running upgrade tests - stress control plane"
+
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
+  export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
+
+  go_test_e2e -run=TestUpgradeStress -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
+     --kubeconfigs="${KUBECONFIG}" \
+     --images.producer.file="${images_file}" \
+     --imagetemplate="${IMAGE_TEMPLATE}" \
+     --catalogsource="${OLM_SOURCE}" \
+     --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
+     --csv="${CURRENT_CSV}" \
+     --servingversion="${KNATIVE_SERVING_VERSION/knative-v/}" \
+     --eventingversion="${KNATIVE_EVENTING_VERSION/knative-v/}" \
+     --kafkaversion="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}"
+
+  logger.success 'Upgrade tests - stress control plane - passed'
 }
 
 function teardown {

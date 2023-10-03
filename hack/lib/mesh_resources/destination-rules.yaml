@@ -1,0 +1,12 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: disable-mtls-zipkin
+  namespace: knative-eventing
+spec:
+  host: "zipkin.knative-eventing.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---

@@ -29,6 +29,8 @@ oc get routes -n openshift-gitops openshift-gitops-server
 - then select only namespaces and the openshift-serverless subscription
 - Once Sync is OK, sync everything
 
+> NOTE: It may be required to _retry_ the synchronization, if resources are unhealthy
+
 ### Verify installation
 
 ```shell

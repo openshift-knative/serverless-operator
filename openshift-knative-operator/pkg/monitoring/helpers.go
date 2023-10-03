@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
-	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -19,6 +18,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
+
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 )
 
 const (
@@ -68,7 +69,7 @@ func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *ba
 		}
 		return nil
 	}
-	// If "opencensus" is used we still dont want to scrape from a Serverless controlled namespace
+	// If "opencensus" is used we still don't want to scrape from a Serverless controlled namespace
 	// user can always push to an agent collector in some other namespace and then integrate with OCP monitoring stack
 	if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, false); err != nil {
 		return fmt.Errorf("failed to disable monitoring %w ", err)
@@ -255,6 +256,8 @@ func getSelectorLabels(component string) map[string]string {
 		labels["eventing.knative.dev/brokerRole"] = "ingress"
 	case "kafka-controller-manager":
 		labels["control-plane"] = "kafka-controller-manager"
+	case "pingsource-mt-adapter":
+		labels["app.kubernetes.io/component"] = component
 	default:
 		labels["app"] = component
 	}

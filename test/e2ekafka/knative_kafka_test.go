@@ -13,7 +13,7 @@ import (
 	logtesting "knative.dev/pkg/logging/testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/eventing-kafka/pkg/apis/messaging/v1beta1"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/apis/messaging/v1beta1"
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
@@ -23,8 +23,8 @@ import (
 
 const (
 	eventingName          = "knative-eventing"
-	eventingNamespace     = "knative-eventing"
-	knativeKafkaNamespace = "knative-eventing"
+	eventingNamespace     = test.EventingNamespace
+	knativeKafkaNamespace = test.EventingNamespace
 	defaultNamespace      = "default"
 )
 

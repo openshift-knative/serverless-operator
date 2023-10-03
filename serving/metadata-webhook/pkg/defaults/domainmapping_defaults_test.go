@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -19,7 +19,7 @@ func TestTargetDomainMappingDefaulting(t *testing.T) {
 		name: "empty",
 		in:   &TargetDomainMapping{},
 		want: &TargetDomainMapping{
-			servingv1alpha1.DomainMapping{
+			servingv1beta1.DomainMapping{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						openshiftPassthrough: "true",
@@ -30,7 +30,7 @@ func TestTargetDomainMappingDefaulting(t *testing.T) {
 	}, {
 		name: "override",
 		in: &TargetDomainMapping{
-			servingv1alpha1.DomainMapping{
+			servingv1beta1.DomainMapping{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						openshiftPassthrough: "false",
@@ -39,7 +39,7 @@ func TestTargetDomainMappingDefaulting(t *testing.T) {
 			},
 		},
 		want: &TargetDomainMapping{
-			servingv1alpha1.DomainMapping{
+			servingv1beta1.DomainMapping{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						openshiftPassthrough: "true",
@@ -77,7 +77,7 @@ func TestDeepCopyObjectDomainMapping(t *testing.T) {
 	}{{
 		name: "with name",
 		in: &TargetDomainMapping{
-			servingv1alpha1.DomainMapping{
+			servingv1beta1.DomainMapping{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo-deployment",
 				},

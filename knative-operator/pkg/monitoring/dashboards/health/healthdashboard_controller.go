@@ -55,10 +55,10 @@ type ReconcileHealthDashboard struct {
 }
 
 // Reconcile reads that state of the cluster for a HealthDashboard
-func (r *ReconcileHealthDashboard) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileHealthDashboard) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling HealthDashboard")
-	// in any case restore the current health dashboard, since the configmap shouldnt
+	// in any case restore the current health dashboard, since the configmap shouldn't
 	// be modified, if the configmap has not changed this will not trigger a real update
 	err := InstallHealthDashboard(r.client)
 	if err != nil {
@@ -72,6 +72,6 @@ type skipCreatePredicate struct {
 }
 
 // since operator is responsible to create the dashboard no need to process it
-func (skipCreatePredicate) Create(e event.CreateEvent) bool {
+func (skipCreatePredicate) Create(_ event.CreateEvent) bool {
 	return false
 }

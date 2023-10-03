@@ -212,7 +212,7 @@ type ReconcileKnativeKafka struct {
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
 // and what is in the KnativeKafka.Spec
-func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileKnativeKafka) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling KnativeKafka")
 
@@ -298,7 +298,7 @@ func (r *ReconcileKnativeKafka) executeDeleteStages(instance *serverlessoperator
 }
 
 // set defaults for Openshift
-func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) configure(_ *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if instance.Spec.HighAvailability == nil {
 		instance.Spec.HighAvailability = &base.HighAvailability{
 			Replicas: ptr.Int32(1),
@@ -316,7 +316,7 @@ func (r *ReconcileKnativeKafka) configure(manifest *mf.Manifest, instance *serve
 }
 
 // set a finalizer to clean up cluster-scoped resources and resources from other namespaces
-func (r *ReconcileKnativeKafka) ensureFinalizers(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) ensureFinalizers(_ *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
@@ -437,7 +437,7 @@ func (r *ReconcileKnativeKafka) checkStatefulSets(manifest *mf.Manifest, instanc
 }
 
 // Delete Knative Kafka resources
-func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, _ *serverlessoperatorv1alpha1.KnativeKafka) error {
 	if len(manifest.Resources()) <= 0 {
 		return nil
 	}
@@ -789,9 +789,6 @@ func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
 			return fmt.Errorf("failed to add monitoring resources for namespaced broker: %w", err)
 		}
 
-		if err := unstructured.SetNestedField(u.Object, additionalResources, "data", "resources"); err != nil {
-			return err
-		}
-		return nil
+		return unstructured.SetNestedField(u.Object, additionalResources, "data", "resources")
 	}
 }

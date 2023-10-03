@@ -183,7 +183,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 				}
 			}
 
-			// check if things that shouldnt exist is deleted
+			// check if things that shouldn't exist is deleted
 			for _, d := range test.doesNotExist {
 				_, _, err := getPodTemplateSpec(cl, d)
 				if err == nil || !apierrors.IsNotFound(err) {
@@ -616,7 +616,7 @@ func TestDisabledControllers(t *testing.T) {
 				t.Fatalf("configureKafkaBroker: (%v)", err)
 			}
 
-			// disabled controller arguments are stored on first container, as first arguemt
+			// disabled controller arguments are stored on first container, as first argument
 			disabledControllerArgs := extractDeployment(t, defaultDeployment).Spec.Template.Spec.Containers[0].Args[0]
 			for _, v := range test.expectedDisabledControllers {
 				assert.True(t, strings.Contains(disabledControllerArgs, v))

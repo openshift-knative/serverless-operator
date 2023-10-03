@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync/atomic"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
@@ -16,7 +17,6 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	"go.uber.org/atomic"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -59,7 +59,7 @@ const (
 )
 
 var (
-	cliDownloadWatchSet = atomic.NewBool(false)
+	cliDownloadWatchSet = atomic.Bool{}
 	log                 = common.Log.WithName("controller")
 )
 
@@ -182,7 +182,7 @@ type ReconcileKnativeServing struct {
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
-func (r *ReconcileKnativeServing) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileKnativeServing) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling KnativeServing")
 
@@ -341,36 +341,36 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1beta1.K
 	} else if err != nil {
 		return nil, err
 	} else {
-		copy := cm.DeepCopy()
+		cp := cm.DeepCopy()
 		changed := false
 		if !equality.Semantic.DeepEqual(labels, cm.Labels) {
-			copy.Labels = labels
+			cp.Labels = labels
 			changed = true
 		}
 		if !equality.Semantic.DeepEqual(annotations, cm.Annotations) {
-			copy.Annotations = annotations
+			cp.Annotations = annotations
 			changed = true
 		}
 
 		// We only want to interfere with data if we actually desire new data.
 		if data != nil && !equality.Semantic.DeepEqual(data, cm.Data) {
-			copy.Data = data
+			cp.Data = data
 			changed = true
 		}
 
 		// Only update if we've actually seen a change.
 		if changed {
 			log.Info("Updating config map", "name", name)
-			if err = r.client.Update(ctx, copy); err != nil {
+			if err = r.client.Update(ctx, cp); err != nil {
 				return nil, fmt.Errorf("failed to update config map %s: %w", name, err)
 			}
-			return copy, nil
+			return cp, nil
 		}
 	}
 	return cm, nil
 }
 
-func (r *ReconcileKnativeServing) installQuickstarts(instance *operatorv1beta1.KnativeServing) error {
+func (r *ReconcileKnativeServing) installQuickstarts(_ *operatorv1beta1.KnativeServing) error {
 	if consoleutil.IsConsoleInstalled() {
 		return quickstart.Apply(r.client)
 	}

@@ -22,7 +22,7 @@ var (
 )
 
 // SetDefaults implements apis.Defaultable
-func (r *TargetConfiguration) SetDefaults(ctx context.Context) {
+func (r *TargetConfiguration) SetDefaults(_ context.Context) {
 	if r.Spec.Template.Annotations == nil {
 		r.Spec.Template.Annotations = make(map[string]string)
 	}
@@ -32,6 +32,6 @@ func (r *TargetConfiguration) SetDefaults(ctx context.Context) {
 }
 
 // Validate returns nil due to no need for validation
-func (r *TargetConfiguration) Validate(ctx context.Context) *apis.FieldError {
+func (r *TargetConfiguration) Validate(_ context.Context) *apis.FieldError {
 	return nil
 }

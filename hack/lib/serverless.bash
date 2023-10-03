@@ -17,7 +17,7 @@ function ensure_serverless_installed {
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
     csv="$(metadata.get "upgrade_sequence[0].csv")"
-    OLM_SOURCE="$(metadata.get "upgrade_sequence[0].source")"
+    OLM_SOURCE=redhat-operators
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else
@@ -34,16 +34,19 @@ function ensure_serverless_installed {
 
   deploy_serverless_operator "$csv"
 
-  install_knative_resources
+  install_knative_resources "${csv#serverless-operator.v}"
 
   logger.success "Serverless is installed: $csv"
 }
 
 function install_knative_resources {
+  local serverless_version
+  serverless_version=${1:?Pass serverless version as arg[1]}
+
   # Deploy the resources first and let them install in parallel, then
   # wait for them all to be ready.
   if [[ $INSTALL_SERVING == "true" ]]; then
-    deploy_knativeserving_cr
+    deploy_knativeserving_cr "$serverless_version"
   fi
   if [[ $INSTALL_EVENTING == "true" ]]; then
     deploy_knativeeventing_cr
@@ -145,7 +148,8 @@ function find_install_plan {
 
 function deploy_knativeserving_cr {
   logger.info 'Deploy Knative Serving'
-  local rootdir serving_cr
+  local rootdir serving_cr serverless_version
+  serverless_version=${1:?Pass serverless version as arg[1]}
 
   # Wait for the CRD to appear
   timeout 900 "[[ \$(oc get crd | grep -c knativeservings) -eq 0 ]]"
@@ -158,22 +162,23 @@ function deploy_knativeserving_cr {
     cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
   fi
 
+  if [[ "$serverless_version" != "${CURRENT_CSV#serverless-operator.v}" ]]; then
+    logger.warn "Disabling internal encryption in upgrade tests due to SRVKS-1107."
+    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+  fi
+
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
     # Disable internal encryption.
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
-  # When upgrading from 1.24 or older, disable internal TLS. It works since 1.25.
-  if [[ "$INSTALL_PREVIOUS_VERSION" == "true" ]]; then
-    if versions.le "$(versions.major_minor "$PREVIOUS_VERSION")" "1.24"; then
-      logger.warn "Disabling internal encryption. Unsupported version."
-      yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
-    fi
-  fi
-
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$serving_cr"
+  fi
+
+  if [[ "" != $(oc get ingresscontroller default -n openshift-ingress-operator -ojsonpath='{.spec.defaultCertificate}') ]]; then
+    override_ingress_cert "$serving_cr"
   fi
 
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
@@ -255,6 +260,26 @@ EOF
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
+}
+
+function override_ingress_cert {
+  local custom_resource network_patch cert_name
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  cert_name=$(oc get ingresscontroller default -n openshift-ingress-operator \
+    -ojsonpath='{.spec.defaultCertificate.name}')
+
+  network_patch="$(mktemp -t network-XXXXX.yaml)"
+  cat - << EOF > "${network_patch}"
+spec:
+  config:
+    network:
+      openshift-ingress-default-certificate: "${cert_name}"
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$network_patch"
+
+  rm -f "${network_patch}"
 }
 
 # If ServiceMesh is enabled:

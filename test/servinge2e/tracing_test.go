@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
@@ -45,6 +46,9 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 		// Traces look different when ServiceMesh is installed.
 		t.Skip("ServiceMesh installed, skipping tracing test.")
 	}
+	if !IsJaegerInstalled(ctx) {
+		t.Skip("Jaeger not installed, skipping tracing test.")
+	}
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	defer test.CleanupAll(t, ctx)
 	name := strings.ToLower(t.Name())
@@ -54,7 +58,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	if activatorInPath {
 		annotations = nil
 	}
-	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(test.HelloworldGoImg), annotations))
+	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, annotations))
 
 	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), helloworldText)
 
@@ -263,4 +267,18 @@ func getJaegerService(ctx *test.Context, queryClient jaegerapi.QueryServiceClien
 		return "", fmt.Errorf("didn't find any services with %q prefix in Jaeger", traceServiceNamePrefix)
 	}
 	return serviceName, nil
+}
+
+func IsJaegerInstalled(ctx *test.Context) bool {
+	list, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource{
+		Group:    "jaegertracing.io",
+		Version:  "v1",
+		Resource: "jaegers",
+	}).Namespace(tracingNamespace).List(context.Background(), metav1.ListOptions{})
+
+	if err != nil {
+		ctx.T.Fatal(err)
+	}
+
+	return len(list.Items) == 1
 }

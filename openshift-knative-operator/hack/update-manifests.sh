@@ -124,8 +124,12 @@ function download_eventing_istio {
 function download_ingress {
   component=$1
   ingress_dir=$2
+  subdir=$3
   shift
   shift
+  shift
+
+  mkdir -p "$ingress_dir/$subdir"
 
   files=("$@")
   echo "Files: ${files[*]}"
@@ -135,7 +139,7 @@ function download_ingress {
   do
     index=$(( i+1 ))
     file="${files[$i]}.yaml"
-    ingress_target_file="$ingress_dir/$index-$file"
+    ingress_target_file="$ingress_dir/$subdir/$index-$file"
 
     url="https://raw.githubusercontent.com/openshift-knative/${component}/${branch}/openshift/release/artifacts/$file"
 
@@ -171,8 +175,10 @@ serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
 ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
 mkdir -p "${ingress_dir}"
 
-download_ingress net-istio   "${ingress_dir}" "${istio_files[@]}"
-download_ingress net-kourier "${ingress_dir}" "${kourier_files[@]}"
+# ingress_dir has to contain a sub folder for each ingress
+# that corresponds to the string in https://github.com/knative/operator/blob/main/pkg/reconciler/knativeserving/ingress/ingress.go#L76
+download_ingress net-istio "${ingress_dir}" "istio" "${istio_files[@]}"
+download_ingress net-kourier "${ingress_dir}" "kourier" "${kourier_files[@]}"
 
 #
 # DOWNLOAD EVENTING

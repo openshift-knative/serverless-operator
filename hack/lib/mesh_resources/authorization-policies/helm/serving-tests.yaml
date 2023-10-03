@@ -1,0 +1,544 @@
+---
+# Source: knative-istio-authz-onboarding/templates/common-allow-knative-to-ns.yaml
+# Allow namespace serving-tests to receive requests from Knative system components, from istio-system and from all namespaces of the tenant.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-knative-and-istio
+  namespace: serving-tests
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "serving-tests"
+              - "knative-serving"
+              - "istio-system"
+
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/common-allow-via-knative-serving.yaml
+# Allow activator to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-activator
+  namespace: knative-serving
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "activator"
+  rules:
+    # Allow to receive requests for Knative services in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+
+    # Allow to receive requests from eventing sources, subscriptions and triggers in serving-tests.
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-kafka-broker-reply
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - "knative-eventing"
+            principals:
+              - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-mt-channel-based-broker-reply
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    - from:
+        - source:
+            namespaces:
+            - "knative-eventing"
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+# Allow imc-dispatcher to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-imc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "imc-dispatcher"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-broker-receiver to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-ekb
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-broker-receiver"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-channel-receiver to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-ekc
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-channel-receiver"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow kafka-sink-receiver to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-eks
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "kafka-sink-receiver"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow broker-ingress to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-broker-ingress
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "broker-ingress"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
+# Source: knative-istio-authz-onboarding/templates/serving-allow-wait-for-drain.yaml
+# Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in serving-tests
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "allow-wait-for-drain"
+  namespace: "serving-tests"
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            ports:
+              - "8022"

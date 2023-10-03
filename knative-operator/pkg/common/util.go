@@ -143,7 +143,7 @@ type SkipPredicate struct {
 	predicate.Funcs
 }
 
-func (SkipPredicate) Delete(e event.DeleteEvent) bool {
+func (SkipPredicate) Delete(_ event.DeleteEvent) bool {
 	return false
 }
 

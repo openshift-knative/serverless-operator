@@ -5,7 +5,9 @@ import Environment from '../../code/environment'
 describe('OCP UI for Serverless Serving', () => {
 
   const openshiftConsole = new OpenshiftConsole()
-  const showcaseKsvc = new ShowcaseKservice()
+  const showcaseKsvc = new ShowcaseKservice({
+    namespace: 'test-multiple-revisions'
+  })
   const environment = new Environment()
 
   it('can route traffic to multiple revisions', () => {

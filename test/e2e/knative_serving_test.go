@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	servingNamespace = "knative-serving"
+	servingNamespace = test.ServingNamespace
 	haReplicas       = 2
 )
 

@@ -69,7 +69,7 @@ func (v *Validator) validate(ctx context.Context, ks *operatorv1beta1.KnativeSer
 }
 
 // validate required namespace, if any
-func (v *Validator) validateNamespace(ctx context.Context, ks *operatorv1beta1.KnativeServing) (bool, string, error) {
+func (v *Validator) validateNamespace(_ context.Context, ks *operatorv1beta1.KnativeServing) (bool, string, error) {
 	ns, required := os.LookupEnv("REQUIRED_SERVING_NAMESPACE")
 	if required && ns != ks.Namespace {
 		return false, fmt.Sprintf("KnativeServing may only be created in %s namespace", ns), nil

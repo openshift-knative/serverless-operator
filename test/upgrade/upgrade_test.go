@@ -20,21 +20,36 @@ limitations under the License.
 package upgrade_test
 
 import (
+	"context"
 	"log"
 	"testing"
+	"time"
 
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
+	"knative.dev/eventing-kafka-broker/test/upgrade/continual"
 	eventingtest "knative.dev/eventing/test"
+	testlib "knative.dev/eventing/test/lib"
+	"knative.dev/eventing/test/rekt/features/channel"
+	"knative.dev/eventing/test/rekt/resources/channel_impl"
+	"knative.dev/eventing/test/rekt/resources/subscription"
 	eventingupgrade "knative.dev/eventing/test/upgrade"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/system"
 	_ "knative.dev/pkg/system/testing"
 	pkgTest "knative.dev/pkg/test"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
 	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
+	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
+	"knative.dev/reconciler-test/pkg/k8s"
+	"knative.dev/reconciler-test/pkg/knative"
+	"knative.dev/reconciler-test/pkg/manifest"
 )
 
 var global environment.GlobalEnvironment
@@ -65,12 +80,8 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
-				[]pkgupgrade.BackgroundOperation{
-					servingupgrade.ProbeTest(),
-					servingupgrade.AutoscaleSustainingWithTBCTest(),
-					servingupgrade.AutoscaleSustainingTest(),
-				},
-				kafkabrokerupgrade.ChannelContinualTests(),
+				ServingContinualTests(ctx),
+				ChannelContinualTests(ctx),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
@@ -128,13 +139,9 @@ func merge(slices ...[]pkgupgrade.BackgroundOperation) []pkgupgrade.BackgroundOp
 }
 
 func preUpgradeTests() []pkgupgrade.Operation {
-	tests := []pkgupgrade.Operation{
-		eventingupgrade.PreUpgradeTest(),
-		kafkabrokerupgrade.ChannelPreUpgradeTest(),
-		kafkabrokerupgrade.SourcePreUpgradeTest(global),
-		kafkabrokerupgrade.BrokerPreUpgradeTest(),
-		kafkabrokerupgrade.SinkPreUpgradeTest(),
-	}
+	var tests []pkgupgrade.Operation
+	tests = append(tests, EventingPreUpgradeTests()...)
+	tests = append(tests, EventingKafkaBrokerPreUpgradeTests()...)
 	// We might want to skip pre-upgrade test if we want to re-use the services
 	// from the previous run. For example, to let them survive both Serverless
 	// and OCP upgrades. This allows for more variants of tests, with different
@@ -148,35 +155,26 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-serving",
+		Namespace:    test.ServingNamespace,
 		FailOnNoJobs: failOnNoJobs,
 	}))
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
-		Namespace:    "knative-eventing",
+		Namespace:    test.EventingNamespace,
 		FailOnNoJobs: failOnNoJobs,
 	}))
-	tests = append(tests, eventingupgrade.PostUpgradeTests()...)
-	tests = append(tests,
-		kafkabrokerupgrade.ChannelPostUpgradeTest(),
-		kafkabrokerupgrade.SourcePostUpgradeTest(global),
-		kafkabrokerupgrade.BrokerPostUpgradeTest(),
-		kafkabrokerupgrade.NamespacedBrokerPostUpgradeTest(),
-		kafkabrokerupgrade.SinkPostUpgradeTest(),
-	)
+	tests = append(tests, EventingPostUpgradeTests()...)
+	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
 	return tests
 }
 
 func postDowngradeTests() []pkgupgrade.Operation {
 	tests := servingupgrade.ServingPostDowngradeTests()
+	tests = append(tests, EventingPostDowngradeTests()...)
+	tests = append(tests, EventingKafkaBrokerPostDowngradeTests()...)
 	tests = append(tests,
 		servingupgrade.CRDStoredVersionPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
-		eventingupgrade.PostDowngradeTest(),
-		eventingupgrade.CRDPostUpgradeTest(), // Check if CRD Stored version check works with downgrades.
-		kafkabrokerupgrade.ChannelPostDowngradeTest(),
-		kafkabrokerupgrade.SourcePostDowngradeTest(global),
-		kafkabrokerupgrade.BrokerPostDowngradeTest(),
-		kafkabrokerupgrade.SinkPostDowngradeTest(),
+		eventingupgrade.CRDPostUpgradeTest(),             // Check if CRD Stored version check works with downgrades.
 	)
 	return tests
 }
@@ -206,5 +204,230 @@ func TestMain(m *testing.M) {
 		return cfg
 	})
 
+	testlib.ReuseNamespace = eventingtest.EventingFlags.ReuseNamespace
 	eventingupgrade.RunMainTest(m)
+}
+
+func defaultEnvironment(t *testing.T) (context.Context, environment.Environment) {
+	return global.Environment(
+		knative.WithKnativeNamespace(system.Namespace()),
+		knative.WithLoggingConfig,
+		knative.WithTracingConfig,
+		k8s.WithEventListener,
+		environment.WithPollTimings(4*time.Second, 10*time.Minute),
+		environment.Managed(t),
+	)
+}
+
+func EventingPreUpgradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		InMemoryChannelPreUpgradeTest(),
+	}
+}
+
+func EventingPostUpgradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		InMemoryChannelPostUpgradeTest(),
+	}
+}
+
+func EventingPostDowngradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		InMemoryChannelPostDowngradeTest(),
+	}
+}
+
+func InMemoryChannelPreUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("InMemoryChannelPreUpgradeTest", func(c pkgupgrade.Context) {
+		inMemoryChannelTest(c.T)
+	})
+}
+
+func InMemoryChannelPostUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("InMemoryChannelPostUpgradeTest", func(c pkgupgrade.Context) {
+		inMemoryChannelTest(c.T)
+	})
+}
+
+func InMemoryChannelPostDowngradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("InMemoryChannelPostDowngradeTest", func(c pkgupgrade.Context) {
+		inMemoryChannelTest(c.T)
+	})
+}
+
+func inMemoryChannelTest(t *testing.T) {
+	t.Parallel()
+
+	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		t.Skip("Enable when testing upgrades from 1.30 to 1.31")
+	}
+
+	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
+		return subscription.WithSubscriber(ref, uri)
+	}
+	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
+}
+
+func EventingKafkaBrokerPreUpgradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		KafkaChannelPreUpgradeTest(),
+		KafkaBrokerPreUpgradeTest(),
+		KafkaSinkAndSourcePreUpgradeTest(),
+	}
+}
+
+func EventingKafkaBrokerPostUpgradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		KafkaChannelPostUpgradeTest(),
+		KafkaBrokerPostUpgradeTest(),
+		KafkaSinkAndSourcePostUpgradeTest(),
+	}
+}
+
+func EventingKafkaBrokerPostDowngradeTests() []pkgupgrade.Operation {
+	return []pkgupgrade.Operation{
+		KafkaChannelPostDowngradeTest(),
+		KafkaBrokerPostDowngradeTest(),
+		KafkaSinkAndSourcePostDowngradeTest(),
+	}
+}
+
+func KafkaChannelPreUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaChannelPreUpgradeTest", func(c pkgupgrade.Context) {
+		kafkaChannelTest(c.T)
+	})
+}
+
+func KafkaChannelPostUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaChannelPostUpgradeTest", func(c pkgupgrade.Context) {
+		kafkaChannelTest(c.T)
+	})
+}
+
+func KafkaChannelPostDowngradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaChannelPostDowngradeTest", func(c pkgupgrade.Context) {
+		kafkaChannelTest(c.T)
+	})
+}
+
+func kafkaChannelTest(t *testing.T) {
+	t.Parallel()
+
+	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		t.Skip("Enable when testing upgrades from 1.30 to 1.31")
+	}
+
+	channel_impl.EnvCfg.ChannelGK = "KafkaChannel.messaging.knative.dev"
+	channel_impl.EnvCfg.ChannelV = "v1beta1"
+
+	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
+		return subscription.WithSubscriber(ref, uri)
+	}
+	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
+}
+
+func KafkaBrokerPreUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaBrokerPreUpgradeTest", func(c pkgupgrade.Context) {
+		kafkaBrokerTest(c.T)
+		namespacedKafkaBrokerTest(c.T)
+	})
+}
+
+func KafkaBrokerPostUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaBrokerPostUpgradeTest", func(c pkgupgrade.Context) {
+		kafkaBrokerTest(c.T)
+		namespacedKafkaBrokerTest(c.T)
+	})
+}
+
+func KafkaBrokerPostDowngradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("KafkaBrokerPostDowngradeTest", func(c pkgupgrade.Context) {
+		kafkaBrokerTest(c.T)
+		namespacedKafkaBrokerTest(c.T)
+	})
+}
+
+func kafkaBrokerTest(t *testing.T) {
+	t.Parallel()
+
+	ctx, env := defaultEnvironment(t)
+
+	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.BrokerClass))
+}
+
+func namespacedKafkaBrokerTest(t *testing.T) {
+	ctx, env := defaultEnvironment(t)
+
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// With Istio this issue happens often.
+		t.Skip("https://issues.redhat.com/browse/SRVKE-1424")
+	}
+
+	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(kafka.NamespacedBrokerClass))
+}
+
+func KafkaSinkAndSourcePreUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePreUpgradeTest",
+		func(c pkgupgrade.Context) {
+			kafkaSinkAndSourceTest(c.T)
+		})
+}
+
+func KafkaSinkAndSourcePostUpgradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePostUpgradeTest",
+		func(c pkgupgrade.Context) {
+			kafkaSinkAndSourceTest(c.T)
+		})
+}
+
+func KafkaSinkAndSourcePostDowngradeTest() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("SinkSourcePostDowngradeTest",
+		func(c pkgupgrade.Context) {
+			kafkaSinkAndSourceTest(c.T)
+		})
+}
+
+func kafkaSinkAndSourceTest(t *testing.T) {
+	t.Parallel()
+
+	ctx, env := defaultEnvironment(t)
+
+	env.Test(ctx, t, features.KafkaSourceStructuredEvent())
+	env.Test(ctx, t, features.KafkaSourceBinaryEvent())
+}
+
+func ChannelContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
+	ctx, _ := defaultEnvironment(testCtx.T)
+
+	// TODO: Enable when testing upgrades from 1.30 to 1.31
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		return nil
+	}
+
+	return []pkgupgrade.BackgroundOperation{
+		continual.ChannelTest(continual.ChannelTestOptions{}),
+		continual.BrokerBackedByChannelTest(continual.ChannelTestOptions{}),
+	}
+}
+
+func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperation {
+	tests := []pkgupgrade.BackgroundOperation{
+		servingupgrade.ProbeTest(),
+	}
+
+	ctx, _ := defaultEnvironment(testCtx.T)
+
+	// Run AutoscaleSustaining tests only without Mesh to
+	// give them enough CPU/Mem for scaling on CI clusters.
+	if ic := environment.GetIstioConfig(ctx); !ic.Enabled {
+		tests = append(tests,
+			servingupgrade.AutoscaleSustainingWithTBCTest(),
+			servingupgrade.AutoscaleSustainingTest())
+	}
+
+	return tests
 }

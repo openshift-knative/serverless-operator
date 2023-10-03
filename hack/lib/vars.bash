@@ -11,7 +11,7 @@ fi
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
 
-export STRIMZI_VERSION=0.35.1
+export STRIMZI_VERSION=0.37.0
 
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get dependencies.serving)}"
@@ -91,7 +91,7 @@ DEFAULT_IMAGE_TEMPLATE=$(
 {{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
 {{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else if eq . "kafka" }}strimzi/kafka:0.16.2-kafka-2.4.0
+{{- else if eq . "kafka" }}quay.io/strimzi/kafka:latest-kafka-3.4.0
 {{- else }}${QUAY_REGISTRY}/{{.}}:multiarch{{end -}}
 {{end -}}
 EOF

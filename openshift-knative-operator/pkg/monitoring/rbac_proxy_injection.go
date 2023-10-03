@@ -21,14 +21,14 @@ const (
 	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
 )
 
-var defaultKubeRBACProxyReqeusts = corev1.ResourceList{
+var defaultKubeRBACProxyRequests = corev1.ResourceList{
 	"memory": resource.MustParse("20Mi"),
 	"cpu":    resource.MustParse("10m"),
 }
 
 func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) mf.Transformer {
 	resources := corev1.ResourceRequirements{
-		Requests: defaultKubeRBACProxyReqeusts,
+		Requests: defaultKubeRBACProxyRequests,
 		Limits:   corev1.ResourceList{},
 	}
 	if cfg != nil && cfg["deployment"] != nil {

@@ -25,7 +25,7 @@ const (
 // NewIstioController returns a new Ingress controller for Ingress on Openshift.
 func NewIstioController(
 	ctx context.Context,
-	cmw configmap.Watcher,
+	_ configmap.Watcher,
 ) *controller.Impl {
 	logger := logging.FromContext(ctx)
 
@@ -65,7 +65,7 @@ func NewIstioController(
 // NewKourierController returns a new Ingress controller for Ingress on Openshift.
 func NewKourierController(
 	ctx context.Context,
-	cmw configmap.Watcher,
+	_ configmap.Watcher,
 ) *controller.Impl {
 	logger := logging.FromContext(ctx)
 

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -53,7 +54,7 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 		// When running within Mesh a mesh-specific VirtualService is used which
 		// gets istio-ingressgateway out of the path.
 		logFilter := LogFilter{
-			PodNamespace:  "knative-serving",
+			PodNamespace:  test.ServingNamespace,
 			PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {

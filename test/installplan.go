@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource string) (*operatorsv1alpha1.InstallPlan, error) {
+func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource string, timeout time.Duration) (*operatorsv1alpha1.InstallPlan, error) {
 	var plan *operatorsv1alpha1.InstallPlan
-	if waitErr := wait.PollImmediate(Interval, 15*time.Minute, func() (bool, error) {
+	if waitErr := wait.PollImmediate(Interval, timeout, func() (bool, error) {
 		installPlans, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			return false, err

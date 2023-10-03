@@ -25,6 +25,7 @@ install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-serving-with-mesh:
+	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
@@ -46,6 +47,12 @@ install-strimzi:
 
 uninstall-strimzi:
 	UNINSTALL_STRIMZI="true" ./hack/strimzi.sh
+
+install-keda:
+	UNINSTALL_KEDA="false" ./hack/keda.sh
+
+uninstall-keda:
+	UNINSTALL_KEDA="true" ./hack/keda.sh
 
 install-certmanager:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
@@ -127,8 +134,9 @@ test-e2e-with-mesh-testonly:
 test-e2e-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	./hack/tracing.sh
-	FULL_MESH=true ENABLE_TRACING=true ./hack/install.sh
-	FULL_MESH=true ./test/e2e-tests.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	FULL_MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
@@ -143,7 +151,7 @@ test-upstream-e2e-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true SCALE_UP=5 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
+	FULL_MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
@@ -172,21 +180,36 @@ test-upstream-upgrade-testonly:
 
 test-upstream-upgrade:
 	TRACING_BACKEND=zipkin ZIPKIN_DEDICATED_NODE=true ./hack/tracing.sh
-	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
+	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
+	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 # Alias.
 test-upgrade: test-upstream-upgrade
 
+test-upgrade-with-mesh:
+	FULL_MESH=true UNINSTALL_MESH=false ./hack/mesh.sh
+	TRACING_BACKEND=zipkin ./hack/tracing.sh
+	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
+	FULL_MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
+	FULL_MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+
 test-kitchensink-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/dev.sh
-	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" ./hack/install.sh
+	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" SCALE_UP=4 ./hack/install.sh
 	./test/kitchensink-upgrade-tests.sh
 
 test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
+
+test-kitchensink-upgrade-stress:
+	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
+	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true SCALE_UP=5 ./hack/install.sh
+	./test/kitchensink-upgrade-stress-tests.sh
+
+test-kitchensink-upgrade-stress-testonly:
+	./test/kitchensink-upgrade-stress-tests.sh
 
 # Run Console UI e2e tests.
 test-ui-e2e-testonly:
@@ -237,14 +260,19 @@ release-files:
 		templates/build-image.Dockerfile \
 		openshift/ci-operator/build-image/Dockerfile
 	./hack/generate/dockerfile.sh \
-  	templates/index.Dockerfile \
-  	olm-catalog/serverless-operator/index/Dockerfile
+ 		templates/index.Dockerfile \
+		olm-catalog/serverless-operator/index/Dockerfile
 	./hack/generate/index.sh \
 		templates/index.yaml \
 		olm-catalog/serverless-operator/index/configs/index.yaml
 	./hack/generate/quickstart.sh \
-  	templates/serverless-application-quickstart.yaml \
-  	knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+		templates/serverless-application-quickstart.yaml \
+		knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
+	./hack/generate/images-rekt.sh \
+		templates/images-rekt.yaml \
+		test/images-rekt.yaml
+	./hack/generate/mesh-auth-policies.sh \
+  	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.

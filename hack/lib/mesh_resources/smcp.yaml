@@ -6,12 +6,26 @@ metadata:
 spec:
   profiles:
   - default
+  security:
+    dataPlane:
+      mtls: true
+  techPreview:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s
+  gateways:
+    ingress:
+      service:
+        metadata:
+          labels:
+            knative: ingressgateway
   proxy:
     networking:
       trafficControl:
         inbound:
           excludedPorts:
-          - 8444
+          - 8444 # metrics
+          - 8022 # serving: wait-for-drain k8s pre-stop hook
     accessLogging:
       file:
         name: /dev/stdout
