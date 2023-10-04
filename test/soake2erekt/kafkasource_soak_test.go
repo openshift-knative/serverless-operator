@@ -2,11 +2,12 @@ package soake2erekt
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -117,7 +118,7 @@ that belonged to the test namespace. This test relies on the implementation deta
 func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 	f := feature.NewFeatureNamed("verify-dispatcher-cm-clean")
 	f.Assert("no source from test namespace left in dispatcher cm", func(ctx context.Context, t feature.T) {
-		//ns := environment.FromContext(ctx).Namespace()
+		ns := environment.FromContext(ctx).Namespace()
 		cmlist, err := kubeclient.Get(ctx).CoreV1().ConfigMaps("knative-eventing").List(ctx, metav1.ListOptions{})
 		if err != nil {
 			t.Errorf("error listing knative-eventing configmaps: %v", err)
@@ -129,18 +130,42 @@ func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 
 				dataBytes := cm.BinaryData["data"]
 				if dataBytes != nil {
-					data := make([]byte, base64.StdEncoding.DecodedLen(len(dataBytes)))
-					_, err := base64.StdEncoding.Decode(data, dataBytes)
-					if err != nil {
-						t.Errorf("error decoding %s configmap data: %v", cm.Name, err)
-						return
-					}
-
-					var unstructured map[string]interface{}
-					err = json.Unmarshal(data, &unstructured)
+					var u map[string]interface{}
+					err = json.Unmarshal(dataBytes, &u)
 					if err != nil {
 						t.Errorf("error unmarshalling %s configmap: %v", cm.Name, err)
 						return
+					}
+
+					uResources, found, err := unstructured.NestedSlice(u, "resources")
+					if !found {
+						// could be still empty?
+						continue
+					}
+					if err != nil {
+						t.Errorf("error getting .resources from %s configmap: %v", cm.Name, err)
+					}
+
+					for _, uResource := range uResources {
+						uResourceMap, ok := uResource.(map[string]interface{})
+						if !ok {
+							t.Errorf("unexpected type of a `resources` item in %s configmap", cm.Name)
+							continue
+						}
+						uNamespace, found, err := unstructured.NestedString(uResourceMap, "reference", "namespace")
+						if !found {
+							// could be not set?
+							continue
+						}
+						if err != nil {
+							t.Errorf("error getting .reference.namespace from %s configmap: %v", cm.Name, err)
+						}
+
+						// t.Logf("XXX reference namespace: %s", uNamespace)
+
+						if uNamespace == ns {
+							t.Errorf("Found reference to a resource in the test namespace %q in the %s configmap", uNamespace, cm.Name)
+						}
 					}
 				}
 			}
