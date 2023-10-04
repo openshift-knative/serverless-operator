@@ -45,6 +45,7 @@ jobs:
         with:
           repository: 'openshift-knative/knative-istio-authz-chart'
           path: ./src/github.com/openshift-knative/knative-istio-authz-chart
+          token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           fetch-depth: 0
 
       - name: Set branch
@@ -65,10 +66,6 @@ jobs:
         working-directory: ./src/github.com/openshift-knative/knative-istio-authz-chart
         run: |
           set -euo pipefail
-          
-          git config --global user.email "serverless-support@redhat.com"
-          git config --global user.name "OpenShift Serverless"
-          git config --global user.password "${{ secrets.SERVERLESS_QE_ROBOT }}"
           
           # Check if target branch exists, otherwise create it starting from main
           if git show-ref --quiet refs/heads/${RELEASE_BRANCH}; then
