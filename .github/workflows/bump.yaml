@@ -80,6 +80,9 @@ jobs:
         working-directory: ./src/github.com/openshift-knative/knative-istio-authz-chart
         run: |
           set -euo pipefail
+          
+          git config --global user.email "serverless-support@redhat.com"
+          git config --global user.name "serverless-qe"
 
           if [[ `git status --porcelain` ]]; then
             # Commit changes
