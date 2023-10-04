@@ -37,17 +37,23 @@ func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since
 	f := feature.NewFeature()
 
 	f.Stable("path to activator to app").
-		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(refs, since)).
-		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(refs, since))
+		Must("has encrypted traffic to activator", VerifyEncryptedTrafficToActivator(since, false)).
+		Must("has encrypted traffic to app", VerifyEncryptedTrafficToApp(since))
 
 	return f
 }
 
-func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToActivator(since time.Time, trafficBlocked bool) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		_, privateURL, err := getKsvcNameAndURL(ctx, refs)
 		if err != nil {
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
+		}
+
+		responseCode := "202"
+		if trafficBlocked {
+			responseCode = "403"
 		}
 
 		// source -> activator
@@ -59,18 +65,38 @@ func VerifyEncryptedTrafficToActivator(refs []corev1.ObjectReference, since time
 			PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return GetMapValueAsString(m, "path") == "/" &&
-					GetMapValueAsString(m, "authority") == privateURL.Host
+					GetMapValueAsString(m, "authority") == privateURL.Host &&
+					GetMapValueAsString(m, "response_code") == responseCode
 			}}
 
 		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		// When traffic is blocked and 403 was detected, we also verify that there was no
+		// successful request during that period.
+		if trafficBlocked {
+			logFilter202 := LogFilter{
+				PodNamespace:  test.ServingNamespace,
+				PodSelector:   metav1.ListOptions{LabelSelector: "app=activator"},
+				PodLogOptions: &corev1.PodLogOptions{Container: "istio-proxy", SinceTime: &metav1.Time{Time: since}},
+				JSONLogFilter: func(m map[string]interface{}) bool {
+					return GetMapValueAsString(m, "path") == "/" &&
+						GetMapValueAsString(m, "authority") == privateURL.Host &&
+						GetMapValueAsString(m, "response_code") == "202"
+				}}
+			err = VerifyNoMatchingRequestToHost(ctx, logFilter202)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 }
 
-func VerifyEncryptedTrafficToApp(refs []corev1.ObjectReference, since time.Time) feature.StepFn {
+func VerifyEncryptedTrafficToApp(since time.Time) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
+		refs := environment.FromContext(ctx).References()
 		ksvcName, _, err := getKsvcNameAndURL(ctx, refs)
 		if err != nil {
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
@@ -152,6 +178,19 @@ func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilte
 	return nil
 }
 
+func VerifyNoMatchingRequestToHost(ctx context.Context, logFilter LogFilter) error {
+	encrypted, unencrypted, err := getMatchingRequestsToHost(ctx, logFilter)
+	if err != nil {
+		return err
+	}
+
+	if (unencrypted + encrypted) > 0 {
+		return fmt.Errorf("request matching filter found in %v logs", logFilter.PodSelector)
+	}
+
+	return nil
+}
+
 func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encrypted int, unencrypted int, err error) {
 	podList, err := kubeclient.Get(ctx).CoreV1().Pods(logFilter.PodNamespace).List(context.Background(), logFilter.PodSelector)
 	if err != nil {
@@ -164,6 +203,7 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 	for _, pod := range podList.Items {
 		podName := pod.Name
 		if err = ForEachLine(ctx, logFilter.PodNamespace, podName, logFilter.PodLogOptions, func(line string) error {
+			line = sanitizeJSON(line)
 			var ret map[string]interface{}
 			if err := json.Unmarshal([]byte(line), &ret); err == nil {
 				if logFilter.JSONLogFilter(ret) {
@@ -189,6 +229,16 @@ func getMatchingRequestsToHost(ctx context.Context, logFilter LogFilter) (encryp
 	}
 
 	return
+}
+
+// sanitizeJSON fixes common issues with log lines - istio-proxy produces invalid JSON
+// when the request is forbidden.
+func sanitizeJSON(input string) string {
+	output := strings.ReplaceAll(input, "\"response_duration\": -,", "\"response_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"response_tx_duration\": -,", "\"response_tx_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"request_duration\": -,", "\"request_duration\": 0,")
+	output = strings.ReplaceAll(output, "\"upstream_service_time\": -,", "\"upstream_service_time\": 0,")
+	return output
 }
 
 func GetMapValueAsString(m map[string]interface{}, key string) string {

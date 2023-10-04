@@ -1331,7 +1331,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.37.1 => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
+# knative.dev/eventing v0.38.3 => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
@@ -1653,7 +1653,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20230810072039-8843b15af690 => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
+# knative.dev/reconciler-test v0.0.0-20230920080213-4b73d83f40fc => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub

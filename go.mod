@@ -26,7 +26,7 @@ require (
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
-	knative.dev/eventing v0.37.1
+	knative.dev/eventing v0.38.3
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
@@ -174,7 +174,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2
-	knative.dev/reconciler-test v0.0.0-20230810072039-8843b15af690
+	knative.dev/reconciler-test v0.0.0-20230920080213-4b73d83f40fc
 )
 
 replace (
