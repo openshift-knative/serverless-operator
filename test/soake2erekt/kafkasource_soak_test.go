@@ -128,7 +128,7 @@ func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 			if strings.HasPrefix(cm.Name, "kafka-source-dispatcher-") {
 
 				dataBytes := cm.BinaryData["data"]
-				if dataBytes != nil && len(dataBytes) != 0 {
+				if dataBytes != nil {
 					data := make([]byte, base64.StdEncoding.DecodedLen(len(dataBytes)))
 					_, err := base64.StdEncoding.Decode(data, dataBytes)
 					if err != nil {
