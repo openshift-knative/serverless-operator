@@ -58,10 +58,6 @@ jobs:
         run: |
           echo "RELEASE_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Bump chart version
-        working-directory: ./src/github.com/${{ github.repository }}
-        run: go run hack/cmd/bumpistiochart/bumpistiochart.go --branch "${RELEASE_BRANCH}" --chart-metadata-path "${{ github.workspace }}/src/github.com/openshift-knative/knative-istio-authz-chart/Chart.yaml"
-
       - name: Create branch
         working-directory: ./src/github.com/openshift-knative/knative-istio-authz-chart
         run: |
@@ -74,6 +70,25 @@ jobs:
             git checkout -b ${RELEASE_BRANCH} main
             git push origin ${RELEASE_BRANCH}:${RELEASE_BRANCH}
             git checkout main
+          fi
+
+      - name: Bump chart version
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: go run hack/cmd/bumpistiochart/bumpistiochart.go --branch "${RELEASE_BRANCH}" --chart-metadata-path "${{ github.workspace }}/src/github.com/openshift-knative/knative-istio-authz-chart/Chart.yaml"
+
+      - name: Push new chart version
+        working-directory: ./src/github.com/openshift-knative/knative-istio-authz-chart
+        run: |
+          set -euo pipefail
+
+          if [[ `git status --porcelain` ]]; then
+            # Commit changes
+            git --no-pager diff
+            git add Chart.yaml
+            git commit -m "Bump chart to ${RELEASE_BRANCH}"
+            git push origin main
+          else
+            echo "No changes detected for ${RELEASE_BRANCH} bump"
           fi
 
       - name: Set chart version
