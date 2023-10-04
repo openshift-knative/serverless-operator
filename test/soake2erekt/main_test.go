@@ -170,13 +170,11 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			ctx, env := soakTestEnvironment(t, namespace)
 
 			// Execute the setup "features", store the references created during setup for cleanup at the end
-			srefs := make([]corev1.ObjectReference, 0)
-
 			setupCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
 				copyID:    copyID,
 				iteration: -1,
 				namespace: namespace,
-				refs:      srefs,
+				refs:      make([]corev1.ObjectReference, 0),
 				refsMu:    sync.Mutex{},
 			})
 
@@ -184,7 +182,7 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				test.SetupFn(setupCtx, env, t)
 			}
 			if t.Failed() {
-				feature.LogReferences(srefs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
 				return
 			}
 
@@ -193,14 +191,11 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			for since.Add(Flags.Duration).After(time.Now()) {
 				// During each iteration, generate the "iteration" features and run them as Tests
 				// Cleanup all resources for these features at the end of the iteration
-
-				irefs := make([]corev1.ObjectReference, 0)
-
 				iterationCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
 					copyID:    copyID,
 					iteration: iteration,
 					namespace: namespace,
-					refs:      irefs,
+					refs:      make([]corev1.ObjectReference, 0),
 					refsMu:    sync.Mutex{},
 				})
 
@@ -209,16 +204,16 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				}
 
 				if t.Failed() {
-					feature.LogReferences(srefs...)(ctx, t)
-					feature.LogReferences(irefs...)(ctx, t)
+					feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+					feature.LogReferences(soakEnvImplFromContext(iterationCtx).refs...)(ctx, t)
 					return
 				}
 
 				// Cleanup all resources created in this iteration
-				err := deleteResources(ctx, t, irefs)
+				err := deleteResources(ctx, t, soakEnvImplFromContext(iterationCtx).refs)
 				if err != nil {
-					feature.LogReferences(srefs...)(ctx, t)
-					feature.LogReferences(irefs...)(ctx, t)
+					feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+					feature.LogReferences(soakEnvImplFromContext(iterationCtx).refs...)(ctx, t)
 					t.Fatalf("error deleting resources: %v", err)
 				}
 
@@ -229,13 +224,11 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				t.Errorf("No iteration ran")
 			}
 
-			trefs := make([]corev1.ObjectReference, 0)
-
 			teardownCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
 				copyID:    copyID,
 				iteration: iteration,
 				namespace: namespace,
-				refs:      srefs,
+				refs:      make([]corev1.ObjectReference, 0),
 				refsMu:    sync.Mutex{},
 			})
 
@@ -244,23 +237,23 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			}
 
 			if t.Failed() {
-				feature.LogReferences(srefs...)(ctx, t)
-				feature.LogReferences(trefs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
 				return
 			}
 
-			err := deleteResources(ctx, t, trefs)
+			err := deleteResources(ctx, t, soakEnvImplFromContext(teardownCtx).refs)
 			if err != nil {
-				feature.LogReferences(srefs...)(ctx, t)
-				feature.LogReferences(trefs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
 				t.Fatalf("error deleting resources: %v", err)
 			}
 
 			// cleanup all the references from the setup phase
-			err = deleteResources(ctx, t, srefs)
+			err = deleteResources(ctx, t, soakEnvImplFromContext(setupCtx).refs)
 			if err != nil {
-				feature.LogReferences(srefs...)(ctx, t)
-				feature.LogReferences(trefs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
 				t.Fatalf("error deleting resources: %v", err)
 			}
 			env.Finish()
