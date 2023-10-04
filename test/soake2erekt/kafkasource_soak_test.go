@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"testing"
+
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/reconciler-test/pkg/environment"
-	"strings"
-	"testing"
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
