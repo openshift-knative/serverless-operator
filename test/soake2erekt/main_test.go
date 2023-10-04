@@ -346,7 +346,7 @@ func deleteResources(ctx context.Context, t *testing.T, refs []corev1.ObjectRefe
 		return true, nil
 	})
 	if err != nil {
-		return fmt.Errorf("failed to wait for resources to be deleted: %v", err)
+		return fmt.Errorf("failed to wait for resources to be deleted: %w", err)
 	}
 
 	return nil
