@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/reconciler-test/pkg/environment"
 
@@ -118,7 +118,7 @@ func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 	f := feature.NewFeatureNamed("verify-dispatcher-cm-clean")
 	f.Assert("no source from test namespace left in dispatcher cm", func(ctx context.Context, t feature.T) {
 		//ns := environment.FromContext(ctx).Namespace()
-		cmlist, err := kubeclient.Get(ctx).CoreV1().ConfigMaps("knative-eventing").List(ctx, meta.ListOptions{})
+		cmlist, err := kubeclient.Get(ctx).CoreV1().ConfigMaps("knative-eventing").List(ctx, metav1.ListOptions{})
 		if err != nil {
 			t.Errorf("error listing knative-eventing configmaps: %v", err)
 			return
