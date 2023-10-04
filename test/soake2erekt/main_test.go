@@ -194,13 +194,13 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				// During each iteration, generate the "iteration" features and run them as Tests
 				// Cleanup all resources for these features at the end of the iteration
 
-				frefs := make([]corev1.ObjectReference, 0)
+				irefs := make([]corev1.ObjectReference, 0)
 
 				iterationCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
 					copyID:    copyID,
 					iteration: iteration,
 					namespace: namespace,
-					refs:      frefs,
+					refs:      irefs,
 					refsMu:    sync.Mutex{},
 				})
 
@@ -210,14 +210,15 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 
 				if t.Failed() {
 					feature.LogReferences(srefs...)(ctx, t)
-					feature.LogReferences(frefs...)(ctx, t)
+					feature.LogReferences(irefs...)(ctx, t)
 					return
 				}
 
-				err := deleteResources(ctx, t, frefs)
+				// Cleanup all resources created in this iteration
+				err := deleteResources(ctx, t, irefs)
 				if err != nil {
 					feature.LogReferences(srefs...)(ctx, t)
-					feature.LogReferences(frefs...)(ctx, t)
+					feature.LogReferences(irefs...)(ctx, t)
 					t.Fatalf("error deleting resources: %v", err)
 				}
 
@@ -225,7 +226,7 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			}
 
 			if iteration == 0 {
-				t.Errorf("No iteration run")
+				t.Errorf("No iteration ran")
 			}
 
 			trefs := make([]corev1.ObjectReference, 0)
