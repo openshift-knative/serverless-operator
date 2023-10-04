@@ -2,7 +2,13 @@ package soake2erekt
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/reconciler-test/pkg/environment"
+	"strings"
 	"testing"
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
@@ -104,6 +110,46 @@ func verifySingleEventReceivedFeature(names kafkaSourceScenarioNames) *feature.F
 }
 
 /*
+verifyNoKafkaSourceLeftInDispatcherConfigMap verifies there are no mentions of kafkasources in the dispatcher configmaps
+that belonged to the test namespace. This test relies on the implementation detail of the dispatcher configmaps structure.
+*/
+func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
+	f := feature.NewFeatureNamed("verify-dispatcher-cm-clean")
+	f.Assert("no source from test namespace left in dispatcher cm", func(ctx context.Context, t feature.T) {
+		//ns := environment.FromContext(ctx).Namespace()
+		cmlist, err := kubeclient.Get(ctx).CoreV1().ConfigMaps("knative-eventing").List(ctx, meta.ListOptions{})
+		if err != nil {
+			t.Errorf("error listing knative-eventing configmaps: %v", err)
+			return
+		}
+
+		for _, cm := range cmlist.Items {
+			if strings.HasPrefix(cm.Name, "kafka-source-dispatcher-") {
+
+				dataBytes := cm.BinaryData["data"]
+				if dataBytes != nil && len(dataBytes) != 0 {
+					data := make([]byte, base64.StdEncoding.DecodedLen(len(dataBytes)))
+					_, err := base64.StdEncoding.Decode(data, dataBytes)
+					if err != nil {
+						t.Errorf("error decoding %s configmap data: %v", cm.Name, err)
+						return
+					}
+
+					var unstructured map[string]interface{}
+					err = json.Unmarshal(data, &unstructured)
+					if err != nil {
+						t.Errorf("error unmarshalling %s configmap: %v", cm.Name, err)
+						return
+					}
+				}
+			}
+		}
+	})
+
+	return f
+}
+
+/*
 TestKafkaSourceStableSoak on each iteration,
 sends an event to a kafkasource
 verifies an event is received
@@ -116,33 +162,31 @@ func TestKafkaSourceStableSoak(t *testing.T) {
 	kafkaSourceName := feature.MakeRandomK8sName("kafkaSource")
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
-	names := func(copyID, iteration int) kafkaSourceScenarioNames {
+	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
 		return kafkaSourceScenarioNames{
 			receiver:    "receiver",
-			sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
-			kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, copyID),
-			kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, copyID),
+			sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
 			kafkaSource: kafkaSourceName,
-		}
-	}
-
-	namesFn := func(fn func(kafkaSourceScenarioNames) *feature.Feature) SoakFn {
-		return func(copyID, iteration int) *feature.Feature {
-			return fn(names(copyID, iteration))
 		}
 	}
 
 	soakTest := SoakTest{
 		NamespacePrefix: "test-kafka-source-stable-",
-		SetupFns: []SoakFn{
-			namesFn(eventshubReceiverFeature),
-			namesFn(kafkaSourceScenarioTopicAndSinkSetupFeature),
-			namesFn(kafkaSourceScenarioInstallKafkaSourceFeature),
-			namesFn(kafkaSourceScenarioIsReadyKafkaSourceFeature),
+		SetupFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			RunSoakFeatureFnWithMapping(ctx, env, t, eventshubReceiverFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioTopicAndSinkSetupFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioInstallKafkaSourceFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioIsReadyKafkaSourceFeature, namesFn)
 		},
-		IterationFns: []SoakFn{
-			namesFn(kafkaSinkSendFeature),
-			namesFn(verifySingleEventReceivedFeature),
+		IterationFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, verifySingleEventReceivedFeature, namesFn)
+		},
+		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
+			RunSoakFeature(ctx, env, t, f)
 		},
 	}
 
@@ -163,29 +207,31 @@ func TestKafkaSourceRecreateSoak(t *testing.T) {
 	kafkaSourcePrefix := feature.MakeRandomK8sName("kafkaSource")
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
-	namesFn := func(fn func(kafkaSourceScenarioNames) *feature.Feature) SoakFn {
-		return func(copyID, iteration int) *feature.Feature {
-			return fn(kafkaSourceScenarioNames{
-				receiver:    "receiver",
-				sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
-				kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, copyID),
-				kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, copyID),
-				kafkaSource: fmt.Sprintf("%s-%d", kafkaSourcePrefix, iteration),
-			})
+	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
+		return kafkaSourceScenarioNames{
+			receiver:    "receiver",
+			sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
+			kafkaSource: fmt.Sprintf("%s-%d", kafkaSourcePrefix, env.Iteration()),
 		}
 	}
 
 	soakTest := SoakTest{
 		NamespacePrefix: "test-kafka-source-recreate-",
-		SetupFns: []SoakFn{
-			namesFn(eventshubReceiverFeature),
-			namesFn(kafkaSourceScenarioTopicAndSinkSetupFeature),
+		SetupFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			RunSoakFeatureFnWithMapping(ctx, env, t, eventshubReceiverFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioTopicAndSinkSetupFeature, namesFn)
 		},
-		IterationFns: []SoakFn{
-			namesFn(kafkaSourceScenarioInstallKafkaSourceFeature),
-			namesFn(kafkaSourceScenarioIsReadyKafkaSourceFeature),
-			namesFn(kafkaSinkSendFeature),
-			namesFn(verifySingleEventReceivedFeature),
+		IterationFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioInstallKafkaSourceFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioIsReadyKafkaSourceFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, verifySingleEventReceivedFeature, namesFn)
+		},
+		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
+			RunSoakFeature(ctx, env, t, f)
 		},
 	}
 
@@ -206,53 +252,55 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 	kafkaSourcePrefix := feature.MakeRandomK8sName("kafkaSource")
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
+	// Number of kafkasources to create and delete at once on each iteration
 	const max = 16
 
-	names := func(copyID, iteration int) kafkaSourceScenarioNames {
+	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
 		return kafkaSourceScenarioNames{
 			receiver:   "receiver",
-			sender:     fmt.Sprintf("%s-%d-%d", senderPrefix, copyID, iteration),
-			kafkaTopic: fmt.Sprintf("%s-%d", topicPrefix, copyID),
-			kafkaSink:  fmt.Sprintf("%s-%d", kafkaSinkPrefix, copyID),
+			sender:     fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			kafkaTopic: fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			kafkaSink:  fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
 			// kafkaSource:  not used, generated below dynamically for each of the 16 kafkasources
 		}
 	}
 
-	namesFn := func(fn func(kafkaSourceScenarioNames) *feature.Feature) func(copyID, iteration int) *feature.Feature {
-		return func(copyID, iteration int) *feature.Feature {
-			return fn(names(copyID, iteration))
-		}
-	}
-
-	// As part of this soak test, we crate 16 kafkasources, then wait for them to be ready,
-	// and finally send an event and verify an event was received 16 times
-	iterationFuncs := make([]SoakFn, max*2+2)
-	for j := 0; j < max; j++ {
-		j := j
-
-		iterationFuncs[j] = func(copyID, iteration int) *feature.Feature {
-			ns := names(copyID, iteration)
-			ns.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, iteration, j)
-			return kafkaSourceScenarioInstallKafkaSourceFeature(ns)
-		}
-		iterationFuncs[max+j] = func(copyID, iteration int) *feature.Feature {
-			ns := names(copyID, iteration)
-			ns.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, iteration, j)
-			return kafkaSourceScenarioIsReadyKafkaSourceFeature(ns)
-		}
-	}
-	iterationFuncs[2*max] = namesFn(kafkaSinkSendFeature)
-	iterationFuncs[2*max+1] = func(copyID, iteration int) *feature.Feature {
-		return verifyEventReceivedFeature(names(copyID, iteration), max)
-	}
-
 	soakTest := SoakTest{
 		NamespacePrefix: "test-kafka-source-addrm-",
-		SetupFns: []SoakFn{
-			namesFn(eventshubReceiverFeature),
-			namesFn(kafkaSourceScenarioTopicAndSinkSetupFeature),
+		SetupFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			RunSoakFeatureFnWithMapping(ctx, env, t, eventshubReceiverFeature, namesFn)
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioTopicAndSinkSetupFeature, namesFn)
 		},
-		IterationFns: iterationFuncs,
+		// As part of this soak test, we crate 16 kafkasources, then wait for them to be ready,
+		// and finally send an event and verify an event was received 16 times
+		IterationFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			for j := 0; j < max; j++ {
+				soakEnv := SoakEnvFromContext(ctx)
+				names := namesFn(soakEnv)
+				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
+
+				f := kafkaSourceScenarioInstallKafkaSourceFeature(names)
+				RunSoakFeature(ctx, env, t, f)
+			}
+
+			for j := 0; j < max; j++ {
+				soakEnv := SoakEnvFromContext(ctx)
+				names := namesFn(soakEnv)
+				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
+
+				f := kafkaSourceScenarioIsReadyKafkaSourceFeature(names)
+				RunSoakFeature(ctx, env, t, f)
+			}
+
+			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
+
+			f := verifyEventReceivedFeature(namesFn(SoakEnvFromContext(ctx)), max)
+			RunSoakFeature(ctx, env, t, f)
+		},
+		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
+			RunSoakFeature(ctx, env, t, f)
+		},
 	}
 
 	RunSoakTestWithDefaultCopies(t, soakTest)
