@@ -46,16 +46,10 @@ func ConfigureIfUnsetDefaultDomain(s *base.CommonSpec, cm, key, value string) {
 		s.Config[cm] = make(map[string]string, 1)
 	}
 
-	if _, ok := s.Config[cm][key]; ok {
+	if len(s.Config[cm]) != 0 {
 		// Already set, nothing to do here.
 		return
 	}
 
-	for _, v := range s.Config[cm] {
-		// Already set default domain (empty value), nothing to do here.
-		if v == "" {
-			return
-		}
-	}
 	s.Config[cm][key] = value
 }
