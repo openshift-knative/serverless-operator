@@ -20,7 +20,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 policies_path="$(dirname "${BASH_SOURCE[0]}")/../lib/mesh_resources/authorization-policies/helm"
 chart_version="$(metadata.get project.version | grep -Eo '[0-9]+\.[0-9]+')" # grep removes the patch version in semver
 
-# Pull image template from Github
+# Pull helm chart from Github
 template_cache=$(mktemp -d)
 
 if ! git clone -b "release-${chart_version}" --depth 1 https://github.com/openshift-knative/knative-istio-authz-chart.git "$template_cache"; then
@@ -37,7 +37,7 @@ mkdir -p "$policies_path"
 for tenant in ${tenants//,/ }; do
   echo "Generating AuthorizationPolicies for tenant $tenant"
 
-  helm template "$template_cache" --version "$chart_version" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
+  helm template "$template_cache" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
 done
 
 echo "Istio AuthorizationPolicies successfully updated for version $chart_version"
