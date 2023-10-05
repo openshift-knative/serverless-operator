@@ -99,7 +99,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	if domain, err := e.fetchClusterHost(ctx); err != nil {
 		return fmt.Errorf("failed to fetch cluster host: %w", err)
 	} else if domain != "" {
-		common.ConfigureIfUnsetDefaultDomain(&ks.Spec.CommonSpec, domain, "")
+		common.ConfigureIfUnsetAny(&ks.Spec.CommonSpec, "domain", domain, "")
 	}
 
 	// Attempt to locate kibana route which is available if openshift-logging has been configured

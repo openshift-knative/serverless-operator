@@ -35,10 +35,9 @@ func ConfigureIfUnset(s *base.CommonSpec, cm, key, value string) {
 	s.Config[cm][key] = value
 }
 
-// ConfigureIfUnsetDomain sets a value in the config-domain if it's not already set.
-// config-domain can take a domain as a key so it is different from ConfigureIfUnset.
-func ConfigureIfUnsetDefaultDomain(s *base.CommonSpec, key, value string) {
-	const cm = "domain"
+// ConfigureIfUnsetAny sets a value in the config-domain if any configuration is not already set.
+// For example, the config-domain can take an arbitrary domain as a key, so it should be used here.
+func ConfigureIfUnsetAny(s *base.CommonSpec, cm, key, value string) {
 	if s.Config == nil {
 		s.Config = make(map[string]map[string]string, 1)
 	}
