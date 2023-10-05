@@ -21,7 +21,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     serving.knative.dev/controller: "true"
     networking.knative.dev/ingress-provider: istio
 rules:
@@ -51,7 +51,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 data:
   # TODO(nghia): Extract the .svc.cluster.local suffix into its own config.
@@ -94,11 +94,6 @@ data:
     # will search for the local gateway in the serving system namespace
     # `knative-serving`
     local-gateway.knative-serving.knative-local-gateway: "knative-local-gateway.istio-system.svc.cluster.local"
-
-    # If true, knative will use the Istio VirtualService's status to determine
-    # endpoint readiness. Otherwise, probe as usual.
-    # NOTE: This feature is currently experimental and should not be used in production.
-    enable-virtualservice-status: "false"
 ---
 # Copyright 2019 The Knative Authors
 #
@@ -122,7 +117,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -139,7 +134,7 @@ spec:
         app: net-istio-controller
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "release-v1.10"
+        app.kubernetes.io/version: "release-v1.11"
     spec:
       serviceAccountName: controller
       containers:
@@ -228,7 +223,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -242,7 +237,7 @@ spec:
         role: net-istio-webhook
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "release-v1.10"
+        app.kubernetes.io/version: "release-v1.11"
     spec:
       serviceAccountName: controller
       containers:
@@ -336,7 +331,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 ---
 # Copyright 2020 The Knative Authors
@@ -362,7 +357,7 @@ metadata:
     role: net-istio-webhook
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 spec:
   ports:
@@ -400,7 +395,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
@@ -438,7 +433,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.10"
+    app.kubernetes.io/version: "release-v1.11"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
