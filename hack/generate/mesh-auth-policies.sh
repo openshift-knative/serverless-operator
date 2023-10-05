@@ -24,6 +24,8 @@ else
   chart_version="${ISTIO_CHART_VERSION}"
 fi
 
+helm version
+
 echo "Cleaning up old resources in $policies_path"
 
 rm -rf "$policies_path"
