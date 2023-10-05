@@ -29,10 +29,14 @@ echo "Cleaning up old resources in $policies_path"
 rm -rf "$policies_path"
 mkdir -p "$policies_path"
 
+# Pull image template only once
+template_cache=$(mktemp -d)
+helm pull oci://quay.io/openshift-knative/knative-istio-authz-onboarding --version "$chart_version" -d "$template_cache" --untar
+
 for tenant in ${tenants//,/ }; do
   echo "Generating AuthorizationPolicies for tenant $tenant"
 
-  helm template oci://quay.io/openshift-knative/knative-istio-authz-onboarding --version "$chart_version" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
+  helm template "$template_cache/knative-istio-authz-onboarding" --version "$chart_version" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
 done
 
 echo "Istio AuthorizationPolicies successfully updated for version $chart_version"
