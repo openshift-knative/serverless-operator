@@ -94,16 +94,6 @@ jobs:
             echo "No changes detected for ${RELEASE_BRANCH} bump"
           fi
 
-      - name: Set chart version
-        run: |
-          chart_version=${RELEASE_BRANCH/release-/} # remove `release-` prefix
-          
-          # This temporary use the current chart version because using the next version might fail
-          # since it's not published yet, see `mesh-auth-policies.sh` as part of the
-          # `make generated-files` command
-          
-          echo "ISTIO_CHART_VERSION=${chart_version}.0" >> $GITHUB_ENV
-
       - name: Bump SO
         working-directory: ./src/github.com/${{ github.repository }}
         run: go run hack/cmd/bumpso/bumpso.go --branch "${RELEASE_BRANCH}"
