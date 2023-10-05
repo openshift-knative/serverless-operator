@@ -32,14 +32,14 @@ requirements:
         max: '4.13'
         label: 'v4.10'
 dependencies:
-    serving: knative-v1.10
+    serving: knative-v1.11
     # serving midstream branch name
-    serving_artifacts_branch: release-v1.10
+    serving_artifacts_branch: release-v1.11
     # versions for networking components
-    kourier: knative-v1.10
-    net_kourier_artifacts_branch: release-v1.10
-    net_istio: knative-v1.10
-    net_istio_artifacts_branch: release-v1.10
+    kourier: knative-v1.11
+    net_kourier_artifacts_branch: release-v1.11
+    net_istio: knative-v1.11
+    net_istio_artifacts_branch: release-v1.11
     maistra: 2.4-latest
     eventing: knative-v1.10
     # eventing core midstream branch name
