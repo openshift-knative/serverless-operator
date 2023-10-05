@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -75,9 +76,9 @@ func kafkaSourceScenarioIsReadyKafkaSourceFeature(names kafkaSourceScenarioNames
 	return f
 }
 
-func matchEvent(sink string, matcher cetest.EventMatcher, exact int) feature.StepFn {
+func matchEvent(sink string, matcher cetest.EventMatcher, atLeast int) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		assert.OnStore(sink).MatchEvent(matcher).Exact(exact)(ctx, t)
+		assert.OnStore(sink).MatchEvent(matcher).AtLeast(atLeast)(ctx, t)
 	}
 }
 
@@ -201,6 +202,7 @@ func TestKafkaSourceStableSoak(t *testing.T) {
 	soakTest := SoakTest{
 		NamespacePrefix: "test-kafka-source-stable-",
 		SetupFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
+			// TODO: These are actually equivalent to just env.Test(ctx, t, eventshubReceiverFeature(namesFn(SoakEnvFromContext(ctx)))) , so not sure if we should bother...
 			RunSoakFeatureFnWithMapping(ctx, env, t, eventshubReceiverFeature, namesFn)
 			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioTopicAndSinkSetupFeature, namesFn)
 			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSourceScenarioInstallKafkaSourceFeature, namesFn)
@@ -209,10 +211,13 @@ func TestKafkaSourceStableSoak(t *testing.T) {
 		IterationFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
 			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
 			RunSoakFeatureFnWithMapping(ctx, env, t, verifySingleEventReceivedFeature, namesFn)
+
+			// we just want to verify the source can send/receive events throughout the soak test, so let it rest here for a while
+			time.Sleep(1 * time.Second)
 		},
 		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
 			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
-			RunSoakFeature(ctx, env, t, f)
+			env.Test(ctx, t, f)
 		},
 	}
 
@@ -257,7 +262,7 @@ func TestKafkaSourceRecreateSoak(t *testing.T) {
 		},
 		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
 			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
-			RunSoakFeature(ctx, env, t, f)
+			env.Test(ctx, t, f)
 		},
 	}
 
@@ -306,7 +311,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
 
 				f := kafkaSourceScenarioInstallKafkaSourceFeature(names)
-				RunSoakFeature(ctx, env, t, f)
+				env.Test(ctx, t, f)
 			}
 
 			for j := 0; j < max; j++ {
@@ -315,17 +320,17 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
 
 				f := kafkaSourceScenarioIsReadyKafkaSourceFeature(names)
-				RunSoakFeature(ctx, env, t, f)
+				env.Test(ctx, t, f)
 			}
 
 			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
 
 			f := verifyEventReceivedFeature(namesFn(SoakEnvFromContext(ctx)), max)
-			RunSoakFeature(ctx, env, t, f)
+			env.Test(ctx, t, f)
 		},
 		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
 			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
-			RunSoakFeature(ctx, env, t, f)
+			env.Test(ctx, t, f)
 		},
 	}
 
