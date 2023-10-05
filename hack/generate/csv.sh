@@ -53,8 +53,6 @@ image "autoscaler"     "${KNATIVE_SERVING_AUTOSCALER}"
 image "autoscaler-hpa" "${KNATIVE_SERVING_AUTOSCALER_HPA}"
 image "controller__controller"     "${KNATIVE_SERVING_CONTROLLER}"
 image "webhook__webhook" "${KNATIVE_SERVING_WEBHOOK}"
-image "domain-mapping" "${KNATIVE_SERVING_DOMAIN_MAPPING}"
-image "domainmapping-webhook" "${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK}"
 image "storage-version-migration-serving-serving-${serving_version}__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}"
 
 image "kourier-gateway" "${KNATIVE_KOURIER_GATEWAY}"

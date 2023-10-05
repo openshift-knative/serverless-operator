@@ -34,7 +34,7 @@ func TestKnativeServing(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
-		servingDeployments := []string{"activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook"}
+		servingDeployments := []string{"activator", "autoscaler", "autoscaler-hpa", "controller", "webhook"}
 
 		for _, deployment := range servingDeployments {
 			// Check the desired scale of deployments in the knative serving namespace

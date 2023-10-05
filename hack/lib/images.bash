@@ -17,8 +17,6 @@ function default_knative_serving_images() {
   export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-"${serving}-autoscaler-hpa:${tag}"}
   export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"${serving}-controller:${tag}"}
   export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-"${serving}-webhook:${tag}"}
-  export KNATIVE_SERVING_DOMAIN_MAPPING=${KNATIVE_SERVING_DOMAIN_MAPPING:-"${serving}-domain-mapping:${tag}"}
-  export KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK=${KNATIVE_SERVING_DOMAIN_MAPPING_WEBHOOK:-"${serving}-domain-mapping-webhook:${tag}"}
   export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-"${serving}-storage-version-migration:${tag}"}
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	servingDeployments = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "domain-mapping", "domainmapping-webhook", "webhook")
+	servingDeployments = sets.NewString("activator", "autoscaler", "autoscaler-hpa", "controller", "webhook")
 )
 
 func ReconcileMonitoringForServing(ctx context.Context, api kubernetes.Interface, ks *operatorv1beta1.KnativeServing) error {
