@@ -40,4 +40,6 @@ for tenant in ${tenants//,/ }; do
   helm template "$template_cache" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
 done
 
+rm -rf "$template_cache"
+
 echo "Istio AuthorizationPolicies successfully updated for version $chart_version"
