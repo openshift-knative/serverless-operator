@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -123,8 +122,6 @@ type soakEnvImpl struct {
 	copyID    int
 	iteration int
 	namespace string
-	refs      []corev1.ObjectReference
-	refsMu    sync.Mutex
 }
 
 func (env *soakEnvImpl) CopyID() int {
@@ -137,15 +134,6 @@ func (env *soakEnvImpl) Iteration() int {
 
 func (env *soakEnvImpl) Namespace() string {
 	return env.namespace
-}
-
-func (env *soakEnvImpl) References() []corev1.ObjectReference {
-	env.refsMu.Lock()
-	defer env.refsMu.Unlock()
-
-	r := make([]corev1.ObjectReference, len(env.refs))
-	copy(r, env.refs)
-	return r
 }
 
 func soakEnvImplFromContext(ctx context.Context) *soakEnvImpl {
@@ -175,15 +163,13 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				copyID:    copyID,
 				iteration: -1,
 				namespace: namespace,
-				refs:      make([]corev1.ObjectReference, 0),
-				refsMu:    sync.Mutex{},
 			})
 
 			if test.SetupFn != nil {
 				test.SetupFn(setupCtx, env, t)
 			}
 			if t.Failed() {
-				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
+				feature.LogReferences(env.References()...)(ctx, t)
 				return
 			}
 
@@ -192,29 +178,35 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			for since.Add(Flags.Duration).After(time.Now()) {
 				// During each iteration, generate the "iteration" features and run them as Tests
 				// Cleanup all resources for these features at the end of the iteration
+
+				// TODO: can we do this? (use an empty env for the iteration, but keep using the original context?)
+				_, iterationEnv := global.Environment(
+					environment.InNamespace(namespace),
+				)
+
 				iterationCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
 					copyID:    copyID,
 					iteration: iteration,
 					namespace: namespace,
-					refs:      make([]corev1.ObjectReference, 0),
-					refsMu:    sync.Mutex{},
 				})
 
+				iterationCtx = environment.ContextWith(iterationCtx, iterationEnv)
+
 				if test.IterationFn != nil {
-					test.IterationFn(iterationCtx, env, t)
+					test.IterationFn(iterationCtx, iterationEnv, t)
 				}
 
 				if t.Failed() {
-					feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
-					feature.LogReferences(soakEnvImplFromContext(iterationCtx).refs...)(ctx, t)
+					feature.LogReferences(env.References()...)(ctx, t)
+					feature.LogReferences(iterationEnv.References()...)(ctx, t)
 					return
 				}
 
 				// Cleanup all resources created in this iteration
-				err := deleteResources(ctx, t, soakEnvImplFromContext(iterationCtx).refs)
+				err := deleteResources(ctx, t, iterationEnv.References())
 				if err != nil {
-					feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
-					feature.LogReferences(soakEnvImplFromContext(iterationCtx).refs...)(ctx, t)
+					feature.LogReferences(env.References()...)(ctx, t)
+					feature.LogReferences(iterationEnv.References()...)(ctx, t)
 					t.Fatalf("error deleting resources: %v", err)
 				}
 
@@ -229,8 +221,6 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				copyID:    copyID,
 				iteration: iteration,
 				namespace: namespace,
-				refs:      make([]corev1.ObjectReference, 0),
-				refsMu:    sync.Mutex{},
 			})
 
 			if test.TeardownFn != nil {
@@ -238,23 +228,14 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			}
 
 			if t.Failed() {
-				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
-				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
+				feature.LogReferences(env.References()...)(ctx, t)
 				return
 			}
 
-			err := deleteResources(ctx, t, soakEnvImplFromContext(teardownCtx).refs)
-			if err != nil {
-				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
-				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
-				t.Fatalf("error deleting resources: %v", err)
-			}
-
 			// cleanup all the references from the setup phase
-			err = deleteResources(ctx, t, soakEnvImplFromContext(setupCtx).refs)
+			err := deleteResources(ctx, t, env.References())
 			if err != nil {
-				feature.LogReferences(soakEnvImplFromContext(setupCtx).refs...)(ctx, t)
-				feature.LogReferences(soakEnvImplFromContext(teardownCtx).refs...)(ctx, t)
+				feature.LogReferences(env.References()...)(ctx, t)
 				t.Fatalf("error deleting resources: %v", err)
 			}
 			env.Finish()
@@ -267,14 +248,7 @@ func RunSoakTestWithDefaultCopies(t *testing.T, test SoakTest) {
 }
 
 func RunSoakFeature(ctx context.Context, env environment.Environment, t *testing.T, f *feature.Feature) {
-	soakEnv := soakEnvImplFromContext(ctx)
-
 	env.Test(ctx, t, f)
-
-	soakEnv.refsMu.Lock()
-	defer soakEnv.refsMu.Unlock()
-
-	soakEnv.refs = append(soakEnv.refs, f.References()...)
 }
 
 func RunSoakFeatureFn(ctx context.Context, env environment.Environment, t *testing.T, sfn SoakFeatureFn) {
