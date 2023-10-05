@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
   annotations:
     knative.dev/example-checksum: "6ce544b6"
 data:
@@ -200,7 +200,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
 rules:
   - apiGroups:
       - ""
@@ -233,7 +233,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
 ---
 ---
 
@@ -256,7 +256,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -289,7 +289,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
     app.kubernetes.io/component: kafka-channel-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -301,7 +301,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        app.kubernetes.io/version: v1.10
+        app.kubernetes.io/version: devel
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -460,7 +460,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -472,7 +472,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        app.kubernetes.io/version: v1.10
+        app.kubernetes.io/version: devel
         app.kubernetes.io/component: kafka-channel-receiver
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -515,12 +515,18 @@ spec:
             - mountPath: /etc/tracing
               name: config-tracing
               readOnly: true
+            - mountPath: /etc/receiver-tls-secret
+              name: channel-receiver-tls-secret
+              readOnly: true
           ports:
             - containerPort: 9090
               name: http-metrics
               protocol: TCP
             - containerPort: 8080
               name: http
+              protocol: TCP
+            - containerPort: 8443
+              name: https
               protocol: TCP
           env:
             - name: SERVICE_NAME
@@ -531,6 +537,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: INGRESS_PORT
               value: "8080"
+            - name: INGRESS_TLS_PORT
+              value: "8443"
             - name: PRODUCER_CONFIG_FILE_PATH
               value: /etc/config/config-kafka-channel-producer.properties
             - name: HTTPSERVER_CONFIG_FILE_PATH
@@ -606,6 +614,10 @@ spec:
         - name: config-tracing
           configMap:
             name: config-tracing
+        - name: channel-receiver-tls-secret
+          secret:
+            secretName: kafka-channel-ingress-server-tls
+            optional: true
       restartPolicy: Always
 ---
 
@@ -616,7 +628,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: devel
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -627,6 +639,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 8080
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8443
     - name: http-container
       port: 8080
       protocol: TCP
