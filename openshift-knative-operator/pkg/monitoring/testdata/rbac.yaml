@@ -105,6 +105,9 @@ subjects:
   - kind: ServiceAccount
     name: controller
     namespace: knative-serving
+  - kind: ServiceAccount
+    name: activator
+    namespace: knative-serving
 ---
 apiVersion: v1
 kind: Service
