@@ -21,10 +21,10 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 	resources := manifests[0].Resources()
 
 	// We create a service monitor and a service monitor service per deployment: len(servingDeployments)*2 resources.
-	// One clusterrolebinding for allowing tokenreviews, subjectaccessreviews
-	// to be used by kube proxy. All deployments share the same sa: 1 resource.
+	// Two clusterrolebindings for allowing tokenreviews, subjectaccessreviews
+	// to be used by kube proxy. Most deployments share the same sa (controller), activator has its own (activator): 2 resources.
 	// RBAC resources from rbac-proxy.yaml: 5 resources that don't depend on the deployments number.
-	expectedServingMonitoringResources := len(servingDeployments)*2 + 5 + 1
+	expectedServingMonitoringResources := len(servingDeployments)*2 + 5 + 2
 
 	if len(resources) != expectedServingMonitoringResources {
 		t.Errorf("Got %d, want %d", len(resources), expectedServingMonitoringResources)
@@ -44,7 +44,8 @@ func TestLoadPlatformServingMonitoringManifests(t *testing.T) {
 			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
 				continue
 			}
-			if strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "controller" {
+			if strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "controller" &&
+				strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-") != "activator" {
 				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
 			}
 		case "role":

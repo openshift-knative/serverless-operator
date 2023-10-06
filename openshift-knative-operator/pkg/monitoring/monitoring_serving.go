@@ -33,12 +33,17 @@ func GetServingMonitoringPlatformManifests(ks base.KComponent) ([]mf.Manifest, e
 	if err != nil {
 		return nil, err
 	}
-	// Serving has one common sa for all pods
-	crbM, err := CreateClusterRoleBindingManifest("controller", ks.GetNamespace())
-	if err != nil {
-		return nil, err
+
+	// Serving has one sa for the control plane and one for the data plane, both need to be able to
+	// authenticate requests for monitoring via kube rbac proxy
+	for _, sa := range []string{"controller", "activator"} {
+		rbM, err := CreateClusterRoleBindingManifest(sa, ks.GetNamespace())
+		if err != nil {
+			return nil, err
+		}
+		rbacManifest = rbacManifest.Append(*rbM)
 	}
-	rbacManifest = rbacManifest.Append(*crbM)
+
 	for c := range servingDeployments {
 		if err := AppendManifestsForComponent(c, ks.GetNamespace(), &rbacManifest); err != nil {
 			return nil, err
