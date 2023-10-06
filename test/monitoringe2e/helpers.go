@@ -23,8 +23,6 @@ var (
 		"autoscaler_go_mallocs",
 		"hpaautoscaler_go_mallocs",
 		"controller_go_mallocs{namespace=\"knative-serving\"}",
-		"domainmapping_go_mallocs",
-		"domainmapping_webhook_go_mallocs",
 		"webhook_go_mallocs",
 	}
 	eventingMetricQueries = []string{
