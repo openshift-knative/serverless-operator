@@ -28,7 +28,7 @@ function install_catalogsource {
     mkdir -p "${rootdir}/_output"
     cp "$csv" "${rootdir}/_output/bkp.yaml"
 
-    if [ "${OPENSHIFT_BUILD_NAME:-}" = "serverless-operator-src" ]; then
+    if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-operator-src* ]]; then
       # Image variables supplied by ci-operator only when running within serverless-operator's CI.
       sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
       sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
