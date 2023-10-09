@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	"github.com/go-logr/logr"
@@ -61,7 +62,7 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 
-	dependentConfigMaps = sets.NewString("config-observability", "config-tracing", "kafka-config-logging")
+	dependentConfigMaps = sets.NewString("config-observability", "config-tracing", "kafka-config-logging", "config-features")
 )
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
@@ -212,7 +213,7 @@ type ReconcileKnativeKafka struct {
 
 // Reconcile reads that state of the cluster for a KnativeKafka object and makes changes based on the state read
 // and what is in the KnativeKafka.Spec
-func (r *ReconcileKnativeKafka) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling KnativeKafka")
 
@@ -236,7 +237,7 @@ func (r *ReconcileKnativeKafka) Reconcile(_ context.Context, request reconcile.R
 	}
 
 	instance := original.DeepCopy()
-	reconcileErr := r.reconcileKnativeKafka(instance)
+	reconcileErr := r.reconcileKnativeKafka(ctx, instance)
 
 	if !equality.Semantic.DeepEqual(original.Status, instance.Status) {
 		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
@@ -253,18 +254,18 @@ func (r *ReconcileKnativeKafka) Reconcile(_ context.Context, request reconcile.R
 	return reconcile.Result{}, reconcileErr
 }
 
-func (r *ReconcileKnativeKafka) reconcileKnativeKafka(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) reconcileKnativeKafka(ctx context.Context, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	instance.Status.InitializeConditions()
 
 	// install the components that are enabled
-	if err := r.executeInstallStages(instance); err != nil {
+	if err := r.executeInstallStages(ctx, instance); err != nil {
 		return err
 	}
 	// delete the components that are disabled
 	return r.executeDeleteStages(instance)
 }
 
-func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
+func (r *ReconcileKnativeKafka) executeInstallStages(ctx context.Context, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	manifest, err := r.buildManifest(instance, manifestBuildEnabledOnly)
 	if err != nil {
 		return fmt.Errorf("failed to load and build manifest: %w", err)
@@ -275,6 +276,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(instance *serverlessoperato
 		r.ensureFinalizers,
 		r.transform,
 		removeCreationTimestamp,
+		r.handleTLSResources(ctx),
 		r.apply,
 		r.checkDeployments,
 		r.checkStatefulSets,
@@ -351,7 +353,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.VersionedJobNameTransform(),
 		socommon.InjectCommonEnvironment(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
-		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, sets.NewString("config-tracing", "kafka-config-logging")),
+		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, dependentConfigMaps),
 		injectNamespacedBrokerMonitoring(r.client)), socommon.DeprecatedAPIsTranformersFromConfig()...)
 	tfs = append(tfs, rbacProxyTranforms...)
 
@@ -441,14 +443,28 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, _ *server
 	if len(manifest.Resources()) <= 0 {
 		return nil
 	}
-	log.Info("Deleting resources in manifest")
-	if err := manifest.Filter(mf.NoCRDs, mf.Not(roleOrRoleBinding)).Delete(); err != nil {
-		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
+
+	// For optional resources like cert-manager's Certificates and Issuers, we don't want to fail
+	// finalization when such operator is not installed, so we split the resources in
+	// - optional resources (TLS resources, etc)
+	// - resources (core k8s resources)
+	//
+	// Then, we delete `resources` first and after we delete optional resources while also ignoring
+	// errors returned when such operators are not installed
+
+	optionalResourcesPred := mf.Any(tlsResourcesPred)
+
+	optionalResources := manifest.Filter(optionalResourcesPred)
+	resources := manifest.Filter(mf.Not(optionalResourcesPred))
+
+	if err := operatorcommon.Uninstall(&resources); err != nil {
+		return fmt.Errorf("failed to remove resources: %v", err)
 	}
-	// Delete Roles last, as they may be useful for human operators to clean up.
-	if err := manifest.Filter(roleOrRoleBinding).Delete(); err != nil {
-		return fmt.Errorf("failed to remove rbac: %w", err)
+
+	if err := operatorcommon.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
+		return fmt.Errorf("failed to remove optional resources: %v", err)
 	}
+
 	return nil
 }
 
