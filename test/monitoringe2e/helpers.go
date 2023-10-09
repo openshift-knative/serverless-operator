@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"knative.dev/pkg/logging"
+
+	"github.com/openshift-knative/serverless-operator/test"
 
 	prommodel "github.com/prometheus/common/model"
 )
@@ -33,6 +34,7 @@ var (
 		"mt_broker_controller_go_mallocs",
 		"mt_broker_filter_go_mallocs",
 		"mt_broker_ingress_go_mallocs",
+		"pingsource_event_count",
 	}
 
 	KafkaQueries = []string{
