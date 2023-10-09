@@ -119,11 +119,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
-		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
-			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing"))))
-			return nil
-		},
 		r.transform,
+		r.handleTLSResources,
 		manifests.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
