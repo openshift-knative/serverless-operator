@@ -124,6 +124,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 			return nil
 		},
 		r.transform,
+		r.handleTLSResources,
 		manifests.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
@@ -143,14 +144,27 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		kec.ReplicasEnvVarsTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
-	return common.Transform(ctx, manifest, instance, extra...)
+	return common.Transform(ctx, manifest, instance)
+}
+
+// injectNamespace mutates the namespace of all installed resources
+func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+	return common.InjectNamespace(manifest, comp)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
-	// Create new, empty manifest with valid client and logger
-	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, source.AppendAllSources, r.transform}
-	err := stages.Execute(ctx, &installed, instance)
+	paths := instance.GetStatus().GetManifests()
+	installed, err := common.FetchManifestFromArray(paths)
+
+	if err != nil {
+		return &installed, err
+	}
+	installed = r.manifest.Append(installed)
+
+	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
+	// in the stages.
+	stages := common.Stages{r.injectNamespace}
+	err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }
 

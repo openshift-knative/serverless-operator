@@ -17,6 +17,9 @@ limitations under the License.
 package eventshub
 
 import (
+	"crypto/tls"
+	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"strings"
 	"time"
@@ -37,7 +40,21 @@ const (
 
 	EventSent     EventKind = "Sent"
 	EventResponse EventKind = "Response"
+
+	PeerCertificatesReceived EventKind = "PeerCertificatesReceived"
 )
+
+type ConnectionTLS struct {
+	CipherSuite           uint16   `json:"cipherSuite,omitempty"`
+	CipherSuiteName       string   `json:"cipherSuiteName,omitempty"`
+	HandshakeComplete     bool     `json:"handshakeComplete,omitempty"`
+	IsInsecureCipherSuite bool     `json:"isInsecureCipherSuite,omitempty"`
+	PemPeerCertificates   []string `json:"pemPeerCertificates,omitempty"`
+}
+
+type Connection struct {
+	TLS *ConnectionTLS `json:"TLS,omitempty"`
+}
 
 // Structure to hold information about an event seen by eventshub pod.
 type EventInfo struct {
@@ -55,6 +72,9 @@ type EventInfo struct {
 	Body []byte `json:"body,omitempty"`
 
 	StatusCode int `json:"statusCode,omitempty"`
+
+	// Connection holds some underlying connection info like TLS, etc.
+	Connection *Connection `json:"connection,omitempty"`
 
 	Origin   string    `json:"origin,omitempty"`
 	Observer string    `json:"observer,omitempty"`
@@ -99,6 +119,11 @@ func (ei *EventInfo) String() string {
 	if ei.StatusCode != 0 {
 		sb.WriteString(fmt.Sprintf("--- Status Code: %d ---\n", ei.StatusCode))
 	}
+	if ei.Connection != nil {
+		sb.WriteString("--- Connection ---\n")
+		c, _ := json.MarshalIndent(ei.Connection, "", "  ")
+		sb.WriteString(string(c) + "\n")
+	}
 	sb.WriteString("--- Origin: '" + ei.Origin + "' ---\n")
 	sb.WriteString("--- Observer: '" + ei.Observer + "' ---\n")
 	sb.WriteString("--- Time: " + ei.Time.String() + " ---\n")
@@ -127,4 +152,38 @@ func (s *SearchedInfo) String() string {
 		sb.WriteRune('\n')
 	}
 	return sb.String()
+}
+
+func TLSConnectionStateToConnection(state *tls.ConnectionState) *Connection {
+
+	if state != nil {
+		c := &Connection{TLS: &ConnectionTLS{}}
+		c.TLS.CipherSuite = state.CipherSuite
+		c.TLS.CipherSuiteName = tls.CipherSuiteName(state.CipherSuite)
+		c.TLS.HandshakeComplete = state.HandshakeComplete
+		c.TLS.IsInsecureCipherSuite = IsInsecureCipherSuite(state)
+
+		for _, cert := range state.PeerCertificates {
+			pemCert := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}))
+			c.TLS.PemPeerCertificates = append(c.TLS.PemPeerCertificates, pemCert)
+		}
+
+		return c
+	}
+
+	return nil
+}
+
+func IsInsecureCipherSuite(conn *tls.ConnectionState) bool {
+	if conn == nil {
+		return true
+	}
+
+	res := false
+	for _, s := range tls.InsecureCipherSuites() {
+		if s.ID == conn.CipherSuite {
+			res = true
+		}
+	}
+	return res
 }
