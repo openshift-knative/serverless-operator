@@ -129,6 +129,22 @@ func DowngradeServerless(ctx *test.Context) error {
 		}
 	}
 
+	dcrd := "domainmappings.serving.knative.dev"
+
+	if err := moveCRDsToAlpha(ctx, dcrd); err != nil {
+		return err
+	}
+
+	// We might have to do an empty patch as in the example bellow for all existing resources
+	//if _, err :=	ctx.Clients.Serving.ServingV1alpha1().DomainMappings("...").Patch(context.Background(), "dm_name", types.MergePatchType, []byte("{}"), metav1.PatchOptions{}, ""); err != nil {
+	//	return err
+	//}
+	//
+
+	if err := setStorageToAlpha(ctx, dcrd); err != nil {
+		return err
+	}
+
 	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
 		return err
 	}
@@ -191,6 +207,47 @@ func setWebookStrategyToNone(ctx *test.Context, name string) error {
 		}
 		crd.Spec.Conversion = &apiextensionsv1.CustomResourceConversion{Strategy: apiextensionsv1.ConversionStrategyType("None")}
 		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
+		return err
+	})
+}
+
+func moveCRDsToAlpha(ctx *test.Context, name string) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		for i, v := range crd.Spec.Versions {
+			if v.Name == "v1beta1" {
+				crd.Spec.Versions[i].Served = false
+				crd.Spec.Versions[i].Storage = false
+			}
+
+			if v.Name == "v1alpha1" {
+				crd.Spec.Versions[i].Served = true
+				crd.Spec.Versions[i].Storage = true
+			}
+		}
+		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), crd, metav1.UpdateOptions{})
+		return err
+	})
+}
+
+func setStorageToAlpha(ctx *test.Context, name string) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		crd, err := ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		oldStoredVersions := crd.Status.StoredVersions
+		newStoredVersions := make([]string, 0, len(oldStoredVersions))
+		for _, stored := range oldStoredVersions {
+			if stored != "v1beta1" {
+				newStoredVersions = append(newStoredVersions, stored)
+			}
+		}
+		crd.Status.StoredVersions = newStoredVersions
+		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().UpdateStatus(context.Background(), crd, metav1.UpdateOptions{})
 		return err
 	})
 }
