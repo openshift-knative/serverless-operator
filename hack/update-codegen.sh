@@ -4,14 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export GO111MODULE=on
 # If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
 export GOFLAGS=-mod=
-
-if [ -z "${GOPATH:-}" ]; then
-  export GOPATH
-  GOPATH=$(go env GOPATH)
-fi
 
 REPO_ROOT=$(dirname "${BASH_SOURCE[@]}")/..
 CODEGEN_PKG=${CODEGEN_PKG:-"${REPO_ROOT}/vendor/k8s.io/code-generator"}
