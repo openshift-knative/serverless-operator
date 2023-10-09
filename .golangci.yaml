@@ -54,6 +54,7 @@ issues:
       linters:
         - gosec
         - unparam
+        - importas
 
     - text: "should have comment"
       linters:
