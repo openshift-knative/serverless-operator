@@ -4,11 +4,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+
 # If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
 export GOFLAGS=-mod=
 
 REPO_ROOT=$(dirname "${BASH_SOURCE[@]}")/..
 CODEGEN_PKG=${CODEGEN_PKG:-"${REPO_ROOT}/vendor/k8s.io/code-generator"}
+
+# shellcheck disable=SC1091
+source "${REPO_ROOT}"/vendor/knative.dev/hack/codegen-library.sh
 
 KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-"${REPO_ROOT}/vendor/knative.dev/pkg"}
 
