@@ -8,7 +8,7 @@ root="$(dirname "${BASH_SOURCE[0]}")/../.."
 # shellcheck disable=SC1091,SC1090
 source "$root/hack/lib/__sources__.bash"
 
-kafka_controller_files=(eventing-kafka-controller.yaml eventing-kafka-post-install.yaml)
+kafka_controller_files=(eventing-kafka-controller.yaml eventing-kafka-post-install.yaml eventing-kafka-tls-networking.yaml)
 kafka_broker_files=(eventing-kafka-broker.yaml)
 kafka_channel_files=(eventing-kafka-channel.yaml)
 kafka_source_files=(eventing-kafka-source.yaml)
