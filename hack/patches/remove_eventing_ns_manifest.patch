@@ -1,7 +1,8 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
---- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go	(revision db82259937f61c191d61a8458c7079da57c7fb60)
-+++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go	(date 1691045721039)
-@@ -119,6 +119,10 @@
+index cd82b4030..e40517f15 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+@@ -119,6 +119,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
  		source.AppendTargetSources,
  		common.AppendAdditionalManifests,
  		r.appendExtensionManifests,
@@ -10,5 +11,5 @@ diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativee
 +			return nil
 +		},
  		r.transform,
+ 		r.handleTLSResources,
  		manifests.Install,
- 		common.CheckDeployments,
