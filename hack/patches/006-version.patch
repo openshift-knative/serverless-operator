@@ -1,34 +1,30 @@
 diff --git a/vendor/knative.dev/pkg/environment/client_config.go b/vendor/knative.dev/pkg/environment/client_config.go
-index 04d4220b..d094bf0c 100644
+index aef33927e..585d66fdf 100644
 --- a/vendor/knative.dev/pkg/environment/client_config.go
 +++ b/vendor/knative.dev/pkg/environment/client_config.go
-@@ -42,9 +42,10 @@ func (c *ClientConfig) InitFlags(fs *flag.FlagSet) {
+@@ -44,8 +44,10 @@ func (c *ClientConfig) InitFlags(fs *flag.FlagSet) {
  	fs.StringVar(&c.ServerURL, "server", "",
  		"The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 
 -	fs.StringVar(&c.Kubeconfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 -		"Path to a kubeconfig. Only required if out-of-cluster.")
--
 +	if fs.Lookup("kubeconfig") == nil {
 +		fs.StringVar(&c.Kubeconfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 +			"Path to a kubeconfig. Only required if out-of-cluster.")
 +	}
- 	fs.IntVar(&c.Burst, "kube-api-burst", 0, "Maximum burst for throttle.")
 
- 	fs.Float64Var(&c.QPS, "kube-api-qps", 0, "Maximum QPS to the server from the client.")
+ 	fs.IntVar(&c.Burst, "kube-api-burst", int(envVarOrDefault("KUBE_API_BURST", 0)), "Maximum burst for throttle.")
+
 diff --git a/vendor/sigs.k8s.io/controller-runtime/pkg/client/config/config.go b/vendor/sigs.k8s.io/controller-runtime/pkg/client/config/config.go
-index 235a7e45..d4110dc9 100644
+index fd2772412..54aab6c3d 100644
 --- a/vendor/sigs.k8s.io/controller-runtime/pkg/client/config/config.go
 +++ b/vendor/sigs.k8s.io/controller-runtime/pkg/client/config/config.go
-@@ -35,9 +35,12 @@ var (
- )
+@@ -36,8 +36,10 @@ var (
 
  func init() {
--	// TODO: Fix this to allow double vendoring this library but still register flags on behalf of users
+ 	// TODO: Fix this to allow double vendoring this library but still register flags on behalf of users
 -	flag.StringVar(&kubeconfig, "kubeconfig", "",
 -		"Paths to a kubeconfig. Only required if out-of-cluster.")
-+	// Need to avoid conflict with knative sharedmain kubeconfig parsing
-+	// For more check here: https://github.com/kubernetes-sigs/controller-runtime/issues/878
 +	if flag.Lookup("kubeconfig") == nil {
 +		flag.StringVar(&kubeconfig, "kubeconfig", "",
 +			"Paths to a kubeconfig. Only required if out-of-cluster.")
@@ -36,3 +32,4 @@ index 235a7e45..d4110dc9 100644
  }
 
  // GetConfig creates a *rest.Config for talking to a Kubernetes API server.
+ 
