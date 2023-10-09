@@ -4,12 +4,13 @@ import (
 	"testing"
 	"time"
 
-	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"knative.dev/eventing/test/rekt/features/channel"
 	"knative.dev/eventing/test/rekt/resources/subscription"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/manifest"
+
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 )
 
 // ContainerSource -> KafkaChannel -> Subscription -> Ksvc -> Sink (Eventshub)
@@ -27,6 +28,6 @@ func TestContainerSourceKafkaChannelKsvc(t *testing.T) {
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaChannel(env.References(), since))
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaChannel(since))
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"k8s.io/utils/pointer"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/configmap"
-	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
+	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1" // nolint
 	"knative.dev/eventing/test/rekt/features"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/channel_impl"

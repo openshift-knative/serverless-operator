@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkachannel"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 )
 
-func VerifyEncryptedTrafficForKafkaSource(refs []corev1.ObjectReference, sinkName string, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForKafkaSource(sinkName string, since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("kafka source path").
@@ -46,7 +47,7 @@ func verifyEncryptedTrafficToKafkaSink(sinkName string, since time.Time) feature
 	}
 }
 
-func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForKafkaBroker(since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
@@ -57,7 +58,7 @@ func VerifyEncryptedTrafficForKafkaBroker(refs []corev1.ObjectReference, since t
 	return f
 }
 
-func VerifyEncryptedTrafficForNamespacedKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForNamespacedKafkaBroker(since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
@@ -123,7 +124,7 @@ func VerifyEncryptedTrafficToKafkaBroker(namespaced bool, since time.Time, traff
 	}
 }
 
-func VerifyEncryptedTrafficForChannelBasedKafkaBroker(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForChannelBasedKafkaBroker(since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("broker path").
@@ -161,7 +162,7 @@ func VerifyEncryptedTrafficToChannelBasedKafkaBroker(since time.Time) feature.St
 	}
 }
 
-func VerifyEncryptedTrafficForKafkaChannel(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficForKafkaChannel(since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("channel path").

@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -25,6 +24,8 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/resources/knativeservice"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 // LogFilter defines which logs should be checked.
