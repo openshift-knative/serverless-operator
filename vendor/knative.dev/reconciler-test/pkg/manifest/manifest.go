@@ -19,6 +19,9 @@ package manifest
 import (
 	"context"
 	"fmt"
+	"strings"
+	
+	"gopkg.in/yaml.v3"
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -79,6 +82,19 @@ func (f *YamlManifest) ApplyAll() error {
 	return nil
 }
 
+func toYaml(spec *unstructured.Unstructured) string {
+	s := strings.Builder{}
+	enc := yaml.NewEncoder(&s)
+	enc.SetIndent(2)
+	
+	if err := enc.Encode(spec.Object); err != nil {
+		return err.Error()
+	}
+	_ = enc.Close()
+	
+	return s.String()
+}
+
 func (f *YamlManifest) Apply(spec *unstructured.Unstructured) error {
 	current, err := f.Get(spec)
 	if err != nil {
@@ -88,7 +104,7 @@ func (f *YamlManifest) Apply(spec *unstructured.Unstructured) error {
 		f.log.Info("Creating type ", spec.GroupVersionKind(), " name ", spec.GetName())
 		gvr, _ := meta.UnsafeGuessKindToResource(spec.GroupVersionKind())
 		if _, err := f.client.Resource(gvr).Namespace(spec.GetNamespace()).Create(context.Background(), spec, v1.CreateOptions{}); err != nil {
-			return err
+			return fmt.Errorf("%v - Resource:\n%s", err, toYaml(spec))
 		}
 	} else {
 		// Update existing one
@@ -97,7 +113,7 @@ func (f *YamlManifest) Apply(spec *unstructured.Unstructured) error {
 
 			gvr, _ := meta.UnsafeGuessKindToResource(spec.GroupVersionKind())
 			if _, err = f.client.Resource(gvr).Namespace(current.GetNamespace()).Update(context.Background(), current, v1.UpdateOptions{}); err != nil {
-				return err
+				return fmt.Errorf("%v - Resource:\n%s", err, toYaml(spec))
 			}
 		}
 	}
