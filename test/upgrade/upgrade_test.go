@@ -256,13 +256,15 @@ func InMemoryChannelPostDowngradeTest() pkgupgrade.Operation {
 }
 
 func inMemoryChannelTest(t *testing.T) {
-	t.Parallel()
-
+	// Avoid using t.Parallel() to prevent race conditions on channel_impl.EnvCfg.ChannelGK.
 	ctx, env := defaultEnvironment(t)
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 		t.Skip("Enable when testing upgrades from 1.30 to 1.31")
 	}
+
+	channel_impl.EnvCfg.ChannelGK = "InMemoryChannel.messaging.knative.dev"
+	channel_impl.EnvCfg.ChannelV = "v1"
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
 		return subscription.WithSubscriber(ref, uri)
