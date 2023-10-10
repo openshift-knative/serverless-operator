@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +35,7 @@ type LogFilter struct {
 	JSONLogFilter func(map[string]interface{}) bool
 }
 
-func VerifyEncryptedTrafficToActivatorToApp(refs []corev1.ObjectReference, since time.Time) *feature.Feature {
+func VerifyEncryptedTrafficToActivatorToApp(since time.Time) *feature.Feature {
 	f := feature.NewFeature()
 
 	f.Stable("path to activator to app").
@@ -51,9 +53,9 @@ func VerifyEncryptedTrafficToActivator(since time.Time, trafficBlocked bool) fea
 			t.Fatalf("Unable to get Knative Service URL: %v", err)
 		}
 
-		responseCode := "202"
+		responseCode := http.StatusAccepted
 		if trafficBlocked {
-			responseCode = "403"
+			responseCode = http.StatusForbidden
 		}
 
 		// source -> activator
@@ -66,7 +68,7 @@ func VerifyEncryptedTrafficToActivator(since time.Time, trafficBlocked bool) fea
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return GetMapValueAsString(m, "path") == "/" &&
 					GetMapValueAsString(m, "authority") == privateURL.Host &&
-					GetMapValueAsString(m, "response_code") == responseCode
+					GetMapValueAsString(m, "response_code") == strconv.Itoa(responseCode)
 			}}
 
 		err = VerifyPodLogsEncryptedRequestToHost(ctx, logFilter)
@@ -84,7 +86,7 @@ func VerifyEncryptedTrafficToActivator(since time.Time, trafficBlocked bool) fea
 				JSONLogFilter: func(m map[string]interface{}) bool {
 					return GetMapValueAsString(m, "path") == "/" &&
 						GetMapValueAsString(m, "authority") == privateURL.Host &&
-						GetMapValueAsString(m, "response_code") == "202"
+						GetMapValueAsString(m, "response_code") == strconv.Itoa(http.StatusAccepted)
 				}}
 			err = VerifyNoMatchingRequestToHost(ctx, logFilter202)
 			if err != nil {
