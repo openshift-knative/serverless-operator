@@ -82,7 +82,7 @@ jobs:
       #
       #   when it's manually triggered or a scheduled run.
       - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
         uses: peter-evans/create-pull-request@v5
         with:
           path: ./src/github.com/${{ github.repository }}
