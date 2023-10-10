@@ -20,6 +20,6 @@ func TestPingSourceToKsvc(t *testing.T) {
 	env.Test(ctx, t, pingsource.SendsEventsWithSinkRef())
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		env.Test(ctx, t, features.VerifyEncryptedTrafficToActivatorToApp(env.References(), since))
+		env.Test(ctx, t, features.VerifyEncryptedTrafficToActivatorToApp(since))
 	}
 }
