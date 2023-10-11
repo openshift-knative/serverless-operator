@@ -26,6 +26,7 @@ func (r *ReconcileKnativeKafka) handleTLSResources(ctx context.Context) func(man
 			return err
 		}
 		if enabled {
+			log.Info("Eventing TLS is enabled")
 			return nil
 		}
 

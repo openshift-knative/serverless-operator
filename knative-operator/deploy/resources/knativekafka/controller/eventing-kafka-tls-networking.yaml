@@ -27,8 +27,8 @@ spec:
       app.kubernetes.io/component: kafka-broker-receiver
       app.kubernetes.io/name: knative-eventing
 
-  duration: 2160h # 90d
-  renewBefore: 360h # 15d
+  duration: 2160h0m0s # 90d
+  renewBefore: 360h0m0s # 15d
   subject:
     organizations:
       - local
@@ -41,6 +41,7 @@ spec:
 
   dnsNames:
     - kafka-broker-ingress.knative-eventing.svc.cluster.local
+    - kafka-broker-ingress.knative-eventing.svc
 
   issuerRef:
     name: selfsigned-ca-issuer
@@ -75,8 +76,8 @@ spec:
       app.kubernetes.io/component: kafka-channel-receiver
       app.kubernetes.io/name: knative-eventing
 
-  duration: 2160h # 90d
-  renewBefore: 360h # 15d
+  duration: 2160h0m0s # 90d
+  renewBefore: 360h0m0s # 15d
   subject:
     organizations:
       - local
@@ -89,6 +90,7 @@ spec:
 
   dnsNames:
     - kafka-channel-ingress.knative-eventing.svc.cluster.local
+    - kafka-channel-ingress.knative-eventing.svc
 
   issuerRef:
     name: selfsigned-ca-issuer
@@ -124,8 +126,8 @@ spec:
       app.kubernetes.io/component: kafka-sink-receiver
       app.kubernetes.io/name: knative-eventing
 
-  duration: 2160h # 90d
-  renewBefore: 360h # 15d
+  duration: 2160h0m0s # 90d
+  renewBefore: 360h0m0s # 15d
   subject:
     organizations:
       - local
@@ -138,6 +140,7 @@ spec:
 
   dnsNames:
     - kafka-sink-ingress.knative-eventing.svc.cluster.local
+    - kafka-sink-ingress.knative-eventing.svc
 
   issuerRef:
     name: selfsigned-ca-issuer

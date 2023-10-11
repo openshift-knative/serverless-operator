@@ -731,6 +731,19 @@ spec:
                 - get
                 - list
                 - watch
+            # Eventing TLS
+            - apiGroups:
+                - "cert-manager.io"
+              resources:
+                - certificates
+                - issuers
+              verbs:
+                - create
+                - delete
+                - update
+                - list
+                - get
+                - watch
         - serviceAccountName: knative-openshift-ingress
           rules:
             - apiGroups:
@@ -771,19 +784,6 @@ spec:
                 - get
                 - list
                 - update
-                - watch
-            # Eventing TLS
-            - apiGroups:
-                - "cert-manager.io"
-              resources:
-                - certificates
-                - issuers
-              verbs:
-                - create
-                - delete
-                - update
-                - list
-                - get
                 - watch
       deployments:
         # Our version of the upstream operator. This is responsible for installing Knative
