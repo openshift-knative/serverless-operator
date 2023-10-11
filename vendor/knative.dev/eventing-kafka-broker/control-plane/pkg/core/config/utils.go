@@ -66,11 +66,14 @@ func EgressConfigFromDelivery(
 		if destination.Ref != nil && destination.Ref.Namespace == "" {
 			destination.Ref.Namespace = parent.GetNamespace()
 		}
-		deadLetterSinkURL, err := resolver.URIFromDestinationV1(ctx, *delivery.DeadLetterSink, parent)
+		deadLetterSinkAddr, err := resolver.AddressableFromDestinationV1(ctx, *delivery.DeadLetterSink, parent)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve Spec.Delivery.DeadLetterSink: %w", err)
 		}
-		egressConfig.DeadLetter = deadLetterSinkURL.String()
+		egressConfig.DeadLetter = deadLetterSinkAddr.URL.String()
+		if deadLetterSinkAddr.CACerts != nil {
+			egressConfig.DeadLetterCACerts = *deadLetterSinkAddr.CACerts
+		}
 	}
 
 	if delivery.Retry != nil {

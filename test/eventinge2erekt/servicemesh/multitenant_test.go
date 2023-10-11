@@ -6,13 +6,15 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/test"
-	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	"knative.dev/eventing/test/rekt/resources/pingsource"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/resources/service"
+
+	eventingfeatures "github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 )
 
 // PingSource (tenant-2) -> Ksvc (tenant-1) -> Sink (tenant-1)
@@ -44,7 +46,7 @@ func VerifyPingSourceToKsvcBlocked(sinkCtx context.Context, sink string, since t
 
 	sinkRef := service.AsKReference(sink)
 	sinkRef.Namespace = environment.FromContext(sinkCtx).Namespace()
-	f.Requirement("install pingsource", pingsource.Install(source, pingsource.WithSink(sinkRef, "")))
+	f.Requirement("install pingsource", pingsource.Install(source, pingsource.WithSink(&duckv1.Destination{Ref: sinkRef})))
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
 
 	f.Assert("ping source does not deliver event to ksvc across tenants",

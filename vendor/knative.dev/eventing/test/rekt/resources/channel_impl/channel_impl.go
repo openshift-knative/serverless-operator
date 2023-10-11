@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/reconciler-test/pkg/environment"
@@ -145,7 +144,7 @@ func HasDeadLetterSinkURI(name string, gvr schema.GroupVersionResource) feature.
 }
 
 // Address returns a Channel's address.
-func Address(ctx context.Context, name string, timings ...time.Duration) (*apis.URL, error) {
+func Address(ctx context.Context, name string, timings ...time.Duration) (*duckv1.Addressable, error) {
 	return addressable.Address(ctx, GVR(), name, timings...)
 }
 
@@ -156,6 +155,18 @@ func AsRef(name string) *duckv1.KReference {
 		Kind:       kind,
 		APIVersion: apiVersion,
 		Name:       name,
+	}
+}
+
+// AsRef returns a KRef for a Channel without namespace.
+func AsDestinationRef(name string) *duckv1.Destination {
+	apiVersion, kind := GVK().ToAPIVersionAndKind()
+	return &duckv1.Destination{
+		Ref: &duckv1.KReference{
+			Kind:       kind,
+			APIVersion: apiVersion,
+			Name:       name,
+		},
 	}
 }
 

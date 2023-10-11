@@ -19,12 +19,13 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+
 	eventingv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	"knative.dev/eventing/pkg/apis/eventing"
 	v1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	"knative.dev/eventing/pkg/client/injection/reconciler/eventing/v1/broker"
-	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // BrokerOption enables further configuration of a Broker.
@@ -173,9 +174,18 @@ func WithChannelAddressAnnotation(address string) BrokerOption {
 	}
 }
 
-func WithBrokerStatusDLSURI(dlsURI *apis.URL) BrokerOption {
+func WithChannelCACertsAnnotation(caCerts string) BrokerOption {
 	return func(b *v1.Broker) {
-		b.Status.MarkDeadLetterSinkResolvedSucceeded(dlsURI)
+		if b.Status.Annotations == nil {
+			b.Status.Annotations = make(map[string]string, 1)
+		}
+		b.Status.Annotations[eventing.BrokerChannelCACertsStatusAnnotationKey] = caCerts
+	}
+}
+
+func WithBrokerStatusDLS(dls duckv1.Addressable) BrokerOption {
+	return func(b *v1.Broker) {
+		b.Status.MarkDeadLetterSinkResolvedSucceeded(eventingv1.NewDeliveryStatusFromAddressable(&dls))
 	}
 }
 
@@ -206,19 +216,12 @@ func WithChannelNameAnnotation(name string) BrokerOption {
 	}
 }
 
-func WithDeadLeaderSink(ref *duckv1.KReference, uri string) BrokerOption {
+func WithDeadLeaderSink(d duckv1.Destination) BrokerOption {
 	return func(b *v1.Broker) {
 		if b.Spec.Delivery == nil {
 			b.Spec.Delivery = new(eventingv1.DeliverySpec)
 		}
-		var u *apis.URL
-		if uri != "" {
-			u, _ = apis.ParseURL(uri)
-		}
-		b.Spec.Delivery.DeadLetterSink = &duckv1.Destination{
-			Ref: ref,
-			URI: u,
-		}
+		b.Spec.Delivery.DeadLetterSink = &d
 	}
 }
 
@@ -251,5 +254,19 @@ func WithDLSResolvedFailed() BrokerOption {
 func WithDLSNotConfigured() BrokerOption {
 	return func(b *v1.Broker) {
 		b.Status.MarkDeadLetterSinkNotConfigured()
+	}
+}
+
+func WithBrokerAddressHTTPS(address duckv1.Addressable) BrokerOption {
+	return func(b *v1.Broker) {
+		b.Status.Address = &address
+		b.GetConditionSet().Manage(b.GetStatus()).MarkTrue(v1.BrokerConditionAddressable)
+	}
+}
+
+func WithBrokersAddresses(addresses []duckv1.Addressable) BrokerOption {
+	return func(b *v1.Broker) {
+		b.Status.Addresses = addresses
+		b.GetConditionSet().Manage(b.GetStatus()).MarkTrue(v1.BrokerConditionAddressable)
 	}
 }

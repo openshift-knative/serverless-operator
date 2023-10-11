@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -90,9 +91,27 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		return nil
 	}
 
-	if err = common.Uninstall(manifest); err != nil {
+	// For optional resources like cert-manager's Certificates and Issuers, we don't want to fail
+	// finalization when such operator is not installed, so we split the resources in
+	// - optional resources (TLS resources, etc)
+	// - resources (core k8s resources)
+	//
+	// Then, we delete `resources` first and after we delete optional resources while also ignoring
+	// errors returned when such operators are not installed.
+
+	optionalResourcesPred := mf.Any(tlsResourcesPred)
+
+	optionalResources := manifest.Filter(optionalResourcesPred)
+	resources := manifest.Filter(mf.Not(optionalResourcesPred))
+
+	if err = common.Uninstall(&resources); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
+
+	if err := common.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
+		logger.Error("Failed to finalize platform resources", err)
+	}
+
 	return nil
 }
 
@@ -124,6 +143,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 			return nil
 		},
 		r.transform,
+		r.handleTLSResources,
 		manifests.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
@@ -146,11 +166,24 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
+// injectNamespace mutates the namespace of all installed resources
+func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+	return common.InjectNamespace(manifest, comp)
+}
+
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
-	// Create new, empty manifest with valid client and logger
-	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, source.AppendAllSources, r.transform}
-	err := stages.Execute(ctx, &installed, instance)
+	paths := instance.GetStatus().GetManifests()
+	installed, err := common.FetchManifestFromArray(paths)
+
+	if err != nil {
+		return &installed, err
+	}
+	installed = r.manifest.Append(installed)
+
+	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
+	// in the stages.
+	stages := common.Stages{r.injectNamespace}
+	err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }
 
