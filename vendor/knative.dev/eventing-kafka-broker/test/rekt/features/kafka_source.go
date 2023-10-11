@@ -44,6 +44,7 @@ import (
 
 	internalscg "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/internals/kafka/eventing/v1alpha1"
 	sources "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/v1beta1"
+	sourcesv1beta1 "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/v1beta1"
 	kafkaclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/injection/client"
 	sourcesclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/injection/client"
 	consumergroupclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client"
@@ -489,6 +490,7 @@ func KafkaSourceTLS(kafkaSource, kafkaSink, topic string) *feature.Feature {
 			authMech:   TLSMech,
 			topic:      topic,
 			sourceName: kafkaSource,
+			opts:       []manifest.CfgFn{kafkasource.WithOrdering(string(sourcesv1beta1.Ordered))},
 		},
 		kafkaSinkConfig{
 			sinkName: kafkaSink,
@@ -534,6 +536,7 @@ func KafkaSourceWithEventAfterUpdate(kafkaSource, kafkaSink, topic string) *feat
 		// Keep the original topic.
 		kafkasource.WithTopics([]string{topic}),
 		kafkasource.WithBootstrapServers(testingpkg.BootstrapServersPlaintextArr),
+		kafkasource.WithOrdering(string(sourcesv1beta1.Unordered)),
 		kafkasource.WithTLSDisabled(),
 		kafkasource.WithSASLDisabled(),
 	}

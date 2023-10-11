@@ -25,11 +25,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	v1 "knative.dev/eventing/pkg/apis/messaging/v1"
-	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // SubscriptionOption enables further configuration of a Subscription.
@@ -201,30 +201,32 @@ func WithSubscriptionDeliveryRef(gvk metav1.GroupVersionKind, name, namespace st
 	}
 }
 
-func WithSubscriptionPhysicalSubscriptionSubscriber(uri *apis.URL) SubscriptionOption {
+func WithSubscriptionPhysicalSubscriptionSubscriber(subscriber *duckv1.Addressable) SubscriptionOption {
 	return func(s *v1.Subscription) {
-		if uri == nil {
-			panic(errors.New("nil URI"))
+		if subscriber == nil {
+			panic(errors.New("nil subscriber"))
 		}
-		s.Status.PhysicalSubscription.SubscriberURI = uri
+		s.Status.PhysicalSubscription.SubscriberURI = subscriber.URL
+		s.Status.PhysicalSubscription.SubscriberCACerts = subscriber.CACerts
 	}
 }
 
-func WithSubscriptionPhysicalSubscriptionReply(uri *apis.URL) SubscriptionOption {
+func WithSubscriptionPhysicalSubscriptionReply(reply *duckv1.Addressable) SubscriptionOption {
 	return func(s *v1.Subscription) {
-		if uri == nil {
-			panic(errors.New("nil URI"))
+		if reply == nil {
+			panic(errors.New("nil reply"))
 		}
-		s.Status.PhysicalSubscription.ReplyURI = uri
+		s.Status.PhysicalSubscription.ReplyURI = reply.URL
+		s.Status.PhysicalSubscription.ReplyCACerts = reply.CACerts
 	}
 }
 
-func WithSubscriptionDeadLetterSinkURI(uri *apis.URL) SubscriptionOption {
+func WithSubscriptionDeadLetterSink(dls *duckv1.Addressable) SubscriptionOption {
 	return func(s *v1.Subscription) {
-		if uri == nil {
+		if dls == nil {
 			panic(errors.New("nil URI"))
 		}
-		s.Status.PhysicalSubscription.DeadLetterSinkURI = uri
+		s.Status.PhysicalSubscription.DeliveryStatus = eventingduckv1.NewDeliveryStatusFromAddressable(dls)
 	}
 }
 

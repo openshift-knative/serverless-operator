@@ -2,8 +2,12 @@ package assert
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -11,7 +15,7 @@ import (
 
 type MatchAssertionBuilder struct {
 	storeName string
-	matchers  []eventshub.EventInfoMatcher
+	matchers  []eventshub.EventInfoMatcherCtx
 }
 
 // OnStore creates an assertion builder starting from the name of the store
@@ -24,13 +28,60 @@ func OnStore(name string) MatchAssertionBuilder {
 
 // Match adds the provided matchers in this builder
 func (m MatchAssertionBuilder) Match(matchers ...eventshub.EventInfoMatcher) MatchAssertionBuilder {
+	for _, matcher := range matchers {
+		m.matchers = append(m.matchers, matcher.WithContext())
+	}
+	return m
+}
+
+// MatchWithContext adds the provided matchers in this builder
+func (m MatchAssertionBuilder) MatchWithContext(matchers ...eventshub.EventInfoMatcherCtx) MatchAssertionBuilder {
 	m.matchers = append(m.matchers, matchers...)
 	return m
 }
 
-// MatchEvent is a shortcut for Match(MatchEvent())
+// MatchPeerCertificates adds the provided matchers in this builder
+func (m MatchAssertionBuilder) MatchPeerCertificatesReceived(matchers ...eventshub.EventInfoMatcherCtx) MatchAssertionBuilder {
+	m.matchers = append(m.matchers, MatchKind(eventshub.PeerCertificatesReceived).WithContext())
+	m.matchers = append(m.matchers, matchers...)
+	return m
+}
+
+// MatchReceivedEvent is a shortcut for Match(MatchKind(eventshub.EventReceived), MatchEvent(matchers...))
+func (m MatchAssertionBuilder) MatchReceivedEvent(matchers ...cetest.EventMatcher) MatchAssertionBuilder {
+	m.matchers = append(m.matchers, MatchKind(eventshub.EventReceived).WithContext())
+	m.matchers = append(m.matchers, MatchEvent(matchers...).WithContext())
+	return m
+}
+
+// MatchRejectedEvent is a shortcut for Match(MatchKind(eventshub.EventRejected), MatchEvent(matchers...))
+func (m MatchAssertionBuilder) MatchRejectedEvent(matchers ...cetest.EventMatcher) MatchAssertionBuilder {
+	m.matchers = append(m.matchers, MatchKind(eventshub.EventRejected).WithContext())
+	m.matchers = append(m.matchers, MatchEvent(matchers...).WithContext())
+	return m
+}
+
+// MatchSentEvent is a shortcut for Match(MatchKind(eventshub.EventSent), MatchEvent(matchers...))
+func (m MatchAssertionBuilder) MatchSentEvent(matchers ...cetest.EventMatcher) MatchAssertionBuilder {
+	m.matchers = append(m.matchers, MatchKind(eventshub.EventSent).WithContext())
+	m.matchers = append(m.matchers, MatchEvent(matchers...).WithContext())
+	return m
+}
+
+// MatchResponseEvent is a shortcut for Match(MatchKind(eventshub.EventResponse), MatchEvent(matchers...))
+func (m MatchAssertionBuilder) MatchResponseEvent(matchers ...cetest.EventMatcher) MatchAssertionBuilder {
+	m.matchers = append(m.matchers, MatchKind(eventshub.EventResponse).WithContext())
+	m.matchers = append(m.matchers, MatchEvent(matchers...).WithContext())
+	return m
+}
+
+// MatchEvent is a shortcut for Match(MatchEvent(), OneOf(MatchKind(eventshub.EventReceived), MatchKind(eventshub.EventSent)))
 func (m MatchAssertionBuilder) MatchEvent(matchers ...cetest.EventMatcher) MatchAssertionBuilder {
-	m.matchers = append(m.matchers, MatchEvent(matchers...))
+	m.matchers = append(m.matchers, OneOf(
+		MatchKind(eventshub.EventReceived),
+		MatchKind(eventshub.EventSent),
+	).WithContext())
+	m.matchers = append(m.matchers, MatchEvent(matchers...).WithContext())
 	return m
 }
 
@@ -38,7 +89,7 @@ func (m MatchAssertionBuilder) MatchEvent(matchers ...cetest.EventMatcher) Match
 // OnStore(store).Match(matchers).AtLeast(min) is equivalent to StoreFromContext(ctx, store).AssertAtLeast(min, matchers)
 func (m MatchAssertionBuilder) AtLeast(min int) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		eventshub.StoreFromContext(ctx, m.storeName).AssertAtLeast(t, min, m.matchers...)
+		eventshub.StoreFromContext(ctx, m.storeName).AssertAtLeast(t, min, toFixedContextMatchers(ctx, m.matchers)...)
 	}
 }
 
@@ -46,7 +97,7 @@ func (m MatchAssertionBuilder) AtLeast(min int) feature.StepFn {
 // OnStore(store).Match(matchers).InRange(min, max) is equivalent to StoreFromContext(ctx, store).AssertInRange(min, max, matchers)
 func (m MatchAssertionBuilder) InRange(min int, max int) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		eventshub.StoreFromContext(ctx, m.storeName).AssertInRange(t, min, max, m.matchers...)
+		eventshub.StoreFromContext(ctx, m.storeName).AssertInRange(t, min, max, toFixedContextMatchers(ctx, m.matchers)...)
 	}
 }
 
@@ -54,7 +105,7 @@ func (m MatchAssertionBuilder) InRange(min int, max int) feature.StepFn {
 // OnStore(store).Match(matchers).Exact(n) is equivalent to StoreFromContext(ctx, store).AssertExact(n, matchers)
 func (m MatchAssertionBuilder) Exact(n int) feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		eventshub.StoreFromContext(ctx, m.storeName).AssertExact(t, n, m.matchers...)
+		eventshub.StoreFromContext(ctx, m.storeName).AssertExact(t, n, toFixedContextMatchers(ctx, m.matchers)...)
 	}
 }
 
@@ -62,6 +113,44 @@ func (m MatchAssertionBuilder) Exact(n int) feature.StepFn {
 // OnStore(store).Match(matchers).Not() is equivalent to StoreFromContext(ctx, store).AssertNot(matchers)
 func (m MatchAssertionBuilder) Not() feature.StepFn {
 	return func(ctx context.Context, t feature.T) {
-		eventshub.StoreFromContext(ctx, m.storeName).AssertNot(t, m.matchers...)
+		eventshub.StoreFromContext(ctx, m.storeName).AssertNot(t, toFixedContextMatchers(ctx, m.matchers)...)
+	}
+}
+
+func toFixedContextMatchers(ctx context.Context, matchers []eventshub.EventInfoMatcherCtx) []eventshub.EventInfoMatcher {
+	out := make([]eventshub.EventInfoMatcher, 0, len(matchers))
+	for _, matcher := range matchers {
+		out = append(out, matcher.WithContext(ctx))
+	}
+	return out
+}
+
+func MatchPeerCertificatesFromSecret(namespace, name string, key string) eventshub.EventInfoMatcherCtx {
+	return func(ctx context.Context, info eventshub.EventInfo) error {
+		secret, err := kubeclient.Get(ctx).CoreV1().
+			Secrets(namespace).
+			Get(ctx, name, metav1.GetOptions{})
+
+		if err != nil {
+			return fmt.Errorf("failed to get secret: %w", err)
+		}
+
+		value, ok := secret.Data[key]
+		if !ok {
+			return fmt.Errorf("failed to get value from secret %s/%s for key %s", secret.Namespace, secret.Name, key)
+		}
+
+		if info.Connection == nil || info.Connection.TLS == nil {
+			return fmt.Errorf("failed to match peer certificates, connection is not TLS")
+		}
+
+		for _, cert := range info.Connection.TLS.PemPeerCertificates {
+			if cert == string(value) {
+				return nil
+			}
+		}
+
+		bytes, _ := json.MarshalIndent(info.Connection.TLS.PemPeerCertificates, "", "  ")
+		return fmt.Errorf("failed to find peer certificate with value\n%s\nin:\n%s", string(value), string(bytes))
 	}
 }

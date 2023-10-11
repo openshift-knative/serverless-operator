@@ -7,18 +7,18 @@ import (
 
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
-	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/configmap"
-	duckv1 "knative.dev/eventing/pkg/apis/duck/v1"
+	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1" // nolint
 	"knative.dev/eventing/test/rekt/features"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/eventing/test/rekt/resources/containersource"
 	"knative.dev/eventing/test/rekt/resources/subscription"
 	"knative.dev/eventing/test/rekt/resources/trigger"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/system"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
@@ -28,6 +28,8 @@ import (
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
+
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 )
 
 // ContainerSource (tenant-2) -> KafkaChannel (tenant-1) -> Subscription -> Ksvc (tenant-1) -> Sink (tenant-1)
@@ -73,7 +75,7 @@ func VerifyContainerSourceToChannelBlocked(channelCtx context.Context, channel, 
 	channelRef := channel_impl.AsRef(channel)
 	channelRef.Namespace = environment.FromContext(channelCtx).Namespace()
 
-	f.Setup("install containersource", containersource.Install(cs, containersource.WithSink(channelRef, "")))
+	f.Setup("install containersource", containersource.Install(cs, containersource.WithSink(&duckv1.Destination{Ref: channelRef})))
 	f.Setup("containersource goes ready", containersource.IsReady(cs))
 
 	f.Assert("container source does not deliver event to channel across tenants",
@@ -166,7 +168,7 @@ func VerifyContainerSourceToChannelWithReplyAndDLS(replySinkCtx context.Context,
 	f.Setup("subscription is ready", subscription.IsReady(sub))
 
 	f.Requirement("install containersource", containersource.Install(cs,
-		containersource.WithSink(channel_impl.AsRef(channel), "")))
+		containersource.WithSink(&duckv1.Destination{Ref: channel_impl.AsRef(channel)})))
 	f.Requirement("containersource goes ready", containersource.IsReady(cs))
 
 	f.Assert("sink receives events", func(ctx context.Context, t feature.T) {
@@ -230,7 +232,7 @@ func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 		append([]manifest.CfgFn{broker.WithConfig(config)}, broker.WithBrokerClass(kafka.BrokerClass))...))
 	f.Setup("broker ready", broker.IsReady(brokerName))
 
-	backoffPolicy := duckv1.BackoffPolicyLinear
+	backoffPolicy := eventingduckv1.BackoffPolicyLinear
 	f.Requirement("install trigger", trigger.Install(
 		triggerName,
 		brokerName,
@@ -263,7 +265,7 @@ func VerifySourceToKafkaBrokerBlocked(sinkCtx context.Context, brokerName, sink 
 			}
 			eventshub.Install(
 				feature.MakeRandomK8sName("source"),
-				eventshub.StartSenderURL(u.String()),
+				eventshub.StartSenderURL(u.URL.String()),
 				eventshub.InputEvent(event),
 			)(ctx, t)
 		},

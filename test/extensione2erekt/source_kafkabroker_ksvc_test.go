@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
-	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing/pkg/apis/eventing"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
+
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 )
 
 // Source (Eventshub) -> KafkaBroker -> Trigger -> Ksvc -> Sink (Eventshub)
@@ -25,7 +26,7 @@ func TestSourceKafkaBrokerKsvc(t *testing.T) {
 	env.Test(ctx, t, VerifyMetricsKafkaBroker())
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaBroker(env.References(), since))
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaBroker(since))
 	}
 }
 
@@ -46,7 +47,7 @@ func TestSourceNamespacedKafkaBrokerKsvc(t *testing.T) {
 	env.Test(ctx, t, VerifyMetricsNamespacedKafkaBroker(environment.FromContext(ctx).Namespace()))
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForNamespacedKafkaBroker(env.References(), since))
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForNamespacedKafkaBroker(since))
 	}
 }
 
@@ -61,7 +62,7 @@ func TestSourceChannelBasedKafkaBrokerKsvc(t *testing.T) {
 	env.Test(ctx, t, kafkafeatures.BrokerSmokeTest(eventing.MTChannelBrokerClassValue))
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
-		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForChannelBasedKafkaBroker(env.References(), since))
+		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForChannelBasedKafkaBroker(since))
 	}
 }
 
