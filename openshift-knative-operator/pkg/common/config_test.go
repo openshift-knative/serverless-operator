@@ -75,7 +75,7 @@ func TestConfigure(t *testing.T) {
 	}
 }
 
-func TestConfigureIfUnsetAny(t *testing.T) {
+func TestConfigureIfConfigmapUnset(t *testing.T) {
 	cases := []struct {
 		name     string
 		in       base.ConfigMapData
@@ -146,7 +146,7 @@ func TestConfigureIfUnsetAny(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s := &base.CommonSpec{Config: c.in}
-			ConfigureIfUnsetAny(s, "foo", "bar", "baz")
+			ConfigureIfConfigmapUnset(s, "foo", "bar", "baz")
 
 			if !cmp.Equal(s.Config, c.expected) {
 				t.Errorf("Got = %v, want: %v, diff:\n%s", s.Config, c.expected, cmp.Diff(s.Config, c.expected))
