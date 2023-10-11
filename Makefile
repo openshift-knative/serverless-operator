@@ -223,6 +223,7 @@ test-ui-e2e:
 test-kitchensink-e2e-testonly:
 	./test/kitchensink-e2e-tests.sh
 
+# Run only a subset of e2e tests, e.g. "make test-kitchensink-e2e-single-testonly TEST=TestBroker"
 test-kitchensink-e2e-single-testonly:
 	./test/kitchensink-e2e-tests.sh -run $(TEST)
 
@@ -230,7 +231,11 @@ test-kitchensink-e2e-setup:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 
-test-kitchensink-e2e: test-kitchensink-e2e-setup test-kitchensink-e2e-testonly
+test-kitchensink-e2e:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
+	./test/kitchensink-e2e-tests.sh
+
 
 # Run all E2E tests.
 test-all-e2e:
