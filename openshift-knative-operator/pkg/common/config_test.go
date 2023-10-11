@@ -110,6 +110,20 @@ func TestConfigureIfUnsetAny(t *testing.T) {
 			},
 		},
 	}, {
+		name: "override multiple entries",
+		in: base.ConfigMapData{
+			"foo": map[string]string{
+				"bar": "nope",
+				"qux": "baz",
+			},
+		},
+		expected: base.ConfigMapData{
+			"foo": map[string]string{
+				"bar": "nope",
+				"qux": "baz",
+			},
+		},
+	}, {
 		name: "unrelated values",
 		in: base.ConfigMapData{
 			"foo": map[string]string{
