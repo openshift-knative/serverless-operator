@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -467,7 +468,7 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, _ *server
 	}
 
 	if err := operatorcommon.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
-		return fmt.Errorf("failed to remove optional resources: %v", err)
+		return fmt.Errorf("failed to remove optional resources: (%s) %v", reflect.TypeOf(err), err)
 	}
 
 	return nil
