@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -138,7 +139,11 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		r.rawKafkaSinkManifest,
 	)
 
-	for _, t := range gvkToResource {
+	for key, t := range gvkToResource {
+		if strings.EqualFold(key.Group, "cert-manager.io") {
+			// We cannot watch cert-manager resources since it's an optional addon.
+			continue
+		}
 		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
 		if err != nil {
 			return err
