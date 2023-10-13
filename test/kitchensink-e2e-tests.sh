@@ -17,6 +17,6 @@ logger.success '🚀 Cluster prepared for testing.'
 run_testselect
 
 # Run serverless-operator kitchensink tests.
-downstream_kitchensink_e2e_tests
+downstream_kitchensink_e2e_tests "$@"
 
 success

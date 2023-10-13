@@ -27,6 +27,7 @@ spec:
       app.kubernetes.io/component: broker-filter
       app.kubernetes.io/name: knative-eventing
 
+  # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
   duration: 2160h0m0s # 90d
   renewBefore: 360h0m0s # 15d
   subject:
@@ -75,6 +76,7 @@ spec:
       app.kubernetes.io/component: broker-ingress
       app.kubernetes.io/name: knative-eventing
 
+  # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
   duration: 2160h0m0s # 90d
   renewBefore: 360h0m0s # 15d
   subject:
@@ -123,6 +125,7 @@ spec:
       app.kubernetes.io/component: imc-dispatcher
       app.kubernetes.io/name: knative-eventing
 
+  # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
   duration: 2160h0m0s # 90d
   renewBefore: 360h0m0s # 15d
   subject:
