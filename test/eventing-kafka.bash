@@ -30,9 +30,6 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-test-{{.Name}}:${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
 
-  GORUN_PATH="$(mktemp -t -d -u gopath.XXXXXXXX)"
-  export GORUN_PATH
-
   # || true -> Suppress errors due to readonly or undefined variables
   # shellcheck disable=SC1091,SC1090
   source "${KNATIVE_EVENTING_KAFKA_BROKER_HOME}/openshift/e2e-common.sh" || true
