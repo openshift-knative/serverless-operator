@@ -464,11 +464,11 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, _ *server
 	resources := manifest.Filter(mf.Not(optionalResourcesPred))
 
 	if err := operatorcommon.Uninstall(&resources); err != nil {
-		return fmt.Errorf("failed to remove resources: %v", err)
+		return fmt.Errorf("failed to remove resources: %w", err)
 	}
 
 	if err := operatorcommon.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
-		return fmt.Errorf("failed to remove optional resources: (%s) %v", reflect.TypeOf(err), err)
+		return fmt.Errorf("failed to remove optional resources: (%s) %w", reflect.TypeOf(err), err)
 	}
 
 	return nil

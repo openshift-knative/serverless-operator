@@ -33,7 +33,7 @@ func (r *ReconcileKnativeKafka) handleTLSResources(ctx context.Context) func(man
 		// Delete TLS resources (if present)
 		toBeDeleted := manifests.Filter(tlsResourcesPred)
 		if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !meta.IsNoMatchError(err) {
-			return fmt.Errorf("failed to delete TLS resources: %v", err)
+			return fmt.Errorf("failed to delete TLS resources: %w", err)
 		}
 
 		// Filter out TLS resources from the final list of manifests
@@ -52,7 +52,7 @@ func (r *ReconcileKnativeKafka) isTLSEnabled(ctx context.Context, instance *serv
 
 	f, err := feature.NewFlagsConfigFromConfigMap(cm)
 	if err != nil {
-		return false, fmt.Errorf("failed to build feature flags from ConfigMap %s: %v", key.String(), err)
+		return false, fmt.Errorf("failed to build feature flags from ConfigMap %s: %w", key.String(), err)
 	}
 
 	return f.IsPermissiveTransportEncryption() || f.IsStrictTransportEncryption(), nil
