@@ -2,9 +2,9 @@ package knativekafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -30,7 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -227,7 +227,7 @@ func (r *ReconcileKnativeKafka) Reconcile(ctx context.Context, request reconcile
 	original := &serverlessoperatorv1alpha1.KnativeKafka{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, original)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
@@ -401,7 +401,7 @@ func (r *ReconcileKnativeKafka) checkDeployments(manifest *mf.Manifest, instance
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			instance.Status.MarkDeploymentsNotReady()
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return nil
 			}
 			return err
@@ -426,7 +426,7 @@ func (r *ReconcileKnativeKafka) checkStatefulSets(manifest *mf.Manifest, instanc
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			instance.Status.MarkStatefulSetNotReady()
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return nil
 			}
 			return err
@@ -467,8 +467,8 @@ func (r *ReconcileKnativeKafka) deleteResources(manifest *mf.Manifest, _ *server
 		return fmt.Errorf("failed to remove resources: %w", err)
 	}
 
-	if err := operatorcommon.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
-		return fmt.Errorf("failed to remove optional resources: (%s) %w", reflect.TypeOf(err), err)
+	if err := operatorcommon.Uninstall(&optionalResources); err != nil && !isNoMatchError(err) {
+		return fmt.Errorf("failed to remove optional resources: %w", err)
 	}
 
 	return nil
@@ -813,4 +813,8 @@ func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
 
 		return unstructured.SetNestedField(u.Object, additionalResources, "data", "resources")
 	}
+}
+
+func isNoMatchError(err error) bool {
+	return errors.Is(err, &meta.NoKindMatchError{}) || errors.Is(err, &meta.NoResourceMatchError{})
 }
