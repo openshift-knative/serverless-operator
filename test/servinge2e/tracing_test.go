@@ -16,6 +16,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -277,6 +278,9 @@ func IsJaegerInstalled(ctx *test.Context) bool {
 	}).Namespace(tracingNamespace).List(context.Background(), metav1.ListOptions{})
 
 	if err != nil {
+		if apierrs.IsNotFound(err) {
+			return false
+		}
 		ctx.T.Fatal(err)
 	}
 
