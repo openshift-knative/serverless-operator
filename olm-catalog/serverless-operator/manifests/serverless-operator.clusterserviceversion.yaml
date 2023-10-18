@@ -188,7 +188,7 @@ spec:
   maturity: stable
   provider:
     name: Red Hat
-  minKubeVersion: 1.23.0
+  minKubeVersion: 1.24.0
   customresourcedefinitions:
     owned:
       - description: A platform for streamlined application deployment, traffic-based auto-scaling from zero to N, and traffic-split rollouts
@@ -878,7 +878,7 @@ spec:
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.10"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.10:kube-rbac-proxy"
+                        value: "registry.ci.openshift.org/origin/4.11:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
@@ -1039,7 +1039,7 @@ spec:
                       - name: "IMAGE_DISPATCHER_IMAGE"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.10"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.10:kube-rbac-proxy"
+                        value: "registry.ci.openshift.org/origin/4.11:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
@@ -1310,7 +1310,7 @@ spec:
     - name: "IMAGE_DISPATCHER_IMAGE"
       image: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.10"
     - name: "IMAGE_KUBE_RBAC_PROXY"
-      image: "registry.ci.openshift.org/origin/4.10:kube-rbac-proxy"
+      image: "registry.ci.openshift.org/origin/4.11:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
       image: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
     - name: "IMAGE_KN_CLIENT"
