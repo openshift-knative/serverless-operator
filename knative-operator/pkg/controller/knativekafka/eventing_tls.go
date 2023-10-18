@@ -6,7 +6,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/eventing/pkg/apis/feature"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,7 +31,7 @@ func (r *ReconcileKnativeKafka) handleTLSResources(ctx context.Context) func(man
 
 		// Delete TLS resources (if present)
 		toBeDeleted := manifests.Filter(tlsResourcesPred)
-		if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !meta.IsNoMatchError(err) {
+		if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !isNoMatchError(err) {
 			return fmt.Errorf("failed to delete TLS resources: %w", err)
 		}
 

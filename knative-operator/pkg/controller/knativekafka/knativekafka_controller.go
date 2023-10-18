@@ -816,5 +816,7 @@ func injectNamespacedBrokerMonitoring(apiClient client.Client) mf.Transformer {
 }
 
 func isNoMatchError(err error) bool {
-	return errors.Is(err, &meta.NoKindMatchError{}) || errors.Is(err, &meta.NoResourceMatchError{})
+	k := &meta.NoKindMatchError{}
+	r := &meta.NoResourceMatchError{}
+	return errors.As(err, &k) || errors.As(err, &r)
 }

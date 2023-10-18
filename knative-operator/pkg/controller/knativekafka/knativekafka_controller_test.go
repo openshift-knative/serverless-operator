@@ -15,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -909,4 +910,18 @@ func (m *MockManager) GetClient() client.Client {
 
 func (m *MockManager) GetScheme() *runtime.Scheme {
 	return nil
+}
+
+func TestIsNoMatchError(t *testing.T) {
+
+	err := fmt.Errorf("failed to %w", &meta.NoKindMatchError{})
+	if !isNoMatchError(err) {
+		t.Fatal("1 -", err)
+	}
+
+	err = fmt.Errorf("failed to %w", &meta.NoResourceMatchError{})
+	if !isNoMatchError(err) {
+		t.Fatal("2 -", err)
+	}
+
 }
