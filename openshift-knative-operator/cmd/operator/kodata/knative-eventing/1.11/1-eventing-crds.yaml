@@ -21,7 +21,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schemas
@@ -155,6 +155,9 @@ spec:
                   uri:
                     description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                     type: string
+                  CACerts:
+                    description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                    type: string
               namespaceSelector:
                 description: NamespaceSelector is a label selector to capture the namespaces that should be watched by the source.
                 type: object
@@ -234,6 +237,9 @@ spec:
               sinkUri:
                 description: SinkURI is the current active sink URI that has been configured for the Source.
                 type: string
+              sinkCACerts:
+                description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                type: string
               namespaces:
                 description: Namespaces show the namespaces currently watched by the ApiServerSource
                 type: array
@@ -283,7 +289,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -351,6 +357,9 @@ spec:
                       uri:
                         description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                         type: string
+                      CACerts:
+                        description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                        type: string
                   retry:
                     description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                     type: integer
@@ -364,8 +373,24 @@ spec:
                 description: Broker is Addressable. It exposes the endpoint as an URI to get events delivered into the Broker mesh.
                 type: object
                 properties:
+                  name:
+                    type: string
                   url:
                     type: string
+                  CACerts:
+                    type: string
+              addresses:
+                description: Broker is Addressable. It exposes the endpoints as URIs to get events delivered into the Broker mesh.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    CACerts:
+                      type: string
               annotations:
                 description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                 type: object
@@ -399,6 +424,9 @@ spec:
                       type: string
               deadLetterSinkUri:
                 description: DeadLetterSinkURI is the resolved URI of the dead letter sink that will be used as a fallback when not specified by Triggers.
+                type: string
+              deadLetterSinkCACerts:
+                description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
                 type: string
               observedGeneration:
                 description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
@@ -453,7 +481,7 @@ metadata:
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -532,6 +560,9 @@ spec:
                       uri:
                         description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                         type: string
+                      CACerts:
+                        description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                        type: string
                   retry:
                     description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                     type: integer
@@ -588,8 +619,14 @@ spec:
                     replyUri:
                       description: ReplyURI is the endpoint for the reply
                       type: string
+                    replyCACerts:
+                      description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                      type: string
                     subscriberUri:
                       description: SubscriberURI is the endpoint for the subscriber
+                      type: string
+                    subscriberCACerts:
+                      description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
                       type: string
                     uid:
                       description: UID is used to understand the origin of the subscriber.
@@ -599,10 +636,27 @@ spec:
             type: object
             properties:
               address:
+                description: Channel is Addressable. It exposes the endpoint as an URI to get events delivered into the Channel mesh.
                 type: object
                 properties:
+                  name:
+                    type: string
                   url:
                     type: string
+                  CACerts:
+                    type: string
+              addresses:
+                description: Channel is Addressable. It exposes the endpoints as URIs to get events delivered into the Channel mesh.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    CACerts:
+                      type: string
               annotations:
                 description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                 type: object
@@ -669,6 +723,9 @@ spec:
               deadLetterSinkUri:
                 description: DeadLetterSinkURI is the resolved URI of the dead letter sink that will be used as a fallback when not specified by Triggers.
                 type: string
+              deadLetterSinkCACerts:
+                description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                type: string
               observedGeneration:
                 description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                 type: integer
@@ -726,7 +783,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
   name: containersources.sources.knative.dev
 spec:
@@ -775,6 +832,9 @@ spec:
                           type: string
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                    CACerts:
+                      description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
                       type: string
                 # WARNING: the schema tool can not parse PodTemplateSpec, stub here and redirect to Deployment documentation.
                 template:
@@ -834,6 +894,9 @@ spec:
                 sinkUri:
                   description: SinkURI is the current active sink URI that has been configured for the Source.
                   type: string
+                sinkCACerts:
+                  description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                  type: string
       additionalPrinterColumns:
         - name: Sink
           type: string
@@ -876,12 +939,13 @@ metadata:
   name: eventtypes.eventing.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
   versions:
-  - name: v1beta1
+  - &version
+    name: v1beta1
     served: true
     storage: true
     subresources:
@@ -897,6 +961,22 @@ spec:
             properties:
               broker:
                 type: string
+              reference:
+                description: Reference Broker. For example
+                type: object
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  kind:
+                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is an optional field, it gets defaulted to the object holding it if left out.'
+                    type: string
               description:
                 description: 'Description is an optional field used to describe the
                     EventType, in any meaningful way.'
@@ -981,19 +1061,26 @@ spec:
     - name: Schema
       type: string
       jsonPath: ".spec.schema"
-    - name: Broker
+    - name: Reference Name
       type: string
-      jsonPath: ".spec.broker"
+      jsonPath: ".spec.reference.name"
+    - name: Reference Kind
+      type: string
+      jsonPath: ".spec.reference.kind"
     - name: Description
       type: string
       jsonPath: ".spec.description"
-    # TODO remove Status https://github.com/knative/eventing/issues/2750
     - name: Ready
       type: string
       jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
     - name: Reason
       type: string
       jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+  - <<: *version
+    name: v1beta2
+    served: true
+    storage: false
+    # v1beta1 schema is identical to the v1beta2 schema
   names:
     kind: EventType
     plural: eventtypes
@@ -1003,6 +1090,14 @@ spec:
       - knative
       - eventing
   scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1", "v1beta1"]
+      clientConfig:
+        service:
+          name: eventing-webhook
+          namespace: knative-eventing
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -1024,7 +1119,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -1104,6 +1199,9 @@ spec:
                                   URIs will be resolved using the base
                                   URI retrieved from Ref.
                               type: string
+                            CACerts:
+                              description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                              type: string
                         retry:
                           description: Retry is the minimum number of retries
                               the sender should attempt when sending an
@@ -1166,9 +1264,26 @@ spec:
             type: object
             properties:
               address:
+                description: Parallel is Addressable. It exposes the endpoint as an URI to get events delivered into the Parallel.
                 type: object
                 properties:
+                  name:
+                    type: string
                   url:
+                    type: string
+                  CACerts:
+                    type: string
+              addresses:
+                description: Parallel is Addressable. It exposes the endpoints as URIs to get events delivered into the Parallel.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    CACerts:
                       type: string
               annotations:
                 description: Annotations is additional Status fields for the Resource
@@ -1359,7 +1474,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schema
@@ -1446,6 +1561,9 @@ spec:
                                 Relative URIs will be resolved using the base URI retrieved
                                 from Ref.'
                     type: string
+                  CACerts:
+                    description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                    type: string
               timezone:
                 description: 'Timezone modifies the actual time relative to the specified
                         timezone. Defaults to the system time zone. More general information
@@ -1521,6 +1639,9 @@ spec:
                 description: 'SinkURI is the current active sink URI that has been
                           configured for the Source.'
                 type: string
+              sinkCACerts:
+                description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                type: string
     additionalPrinterColumns:
     - name: Sink
       type: string
@@ -1580,7 +1701,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -1675,6 +1796,9 @@ spec:
                             uri:
                               description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                               type: string
+                            CACerts:
+                              description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                              type: string
                         retry:
                           description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                           type: integer
@@ -1699,15 +1823,35 @@ spec:
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                       type: string
+                    CACerts:
+                      description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                      type: string
           status:
             description: Status represents the current state of the Sequence. This data may be out of date.
             type: object
             properties:
               address:
+                description: Sequence is Addressable. It exposes the endpoint as an URI to get events delivered into the Sequence.
                 type: object
                 properties:
+                  name:
+                    type: string
                   url:
                     type: string
+                  CACerts:
+                    type: string
+              addresses:
+                description: Sequence is Addressable. It exposes the endpoints as URIs to get events delivered into the Sequence.
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    CACerts:
+                      type: string
               annotations:
                 description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                 type: object
@@ -1900,7 +2044,7 @@ metadata:
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
   name: sinkbindings.sources.knative.dev
 spec:
@@ -1954,6 +2098,9 @@ spec:
                           type: string
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                    CACerts:
+                      description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
                       type: string
                 subject:
                   description: Subject references the resource(s) whose "runtime contract" should be augmented by Binding implementations.
@@ -2049,6 +2196,9 @@ spec:
                 sinkUri:
                   description: SinkURI is the current active sink URI that has been configured for the Source.
                   type: string
+                sinkCACerts:
+                  description: CACerts is the Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                  type: string
       additionalPrinterColumns:
         - name: Sink
           type: string
@@ -2092,7 +2242,7 @@ metadata:
   name: subscriptions.messaging.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -2157,6 +2307,9 @@ spec:
                       uri:
                         description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                         type: string
+                      CACerts:
+                        description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                        type: string
                   retry:
                     description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                     type: integer
@@ -2185,6 +2338,9 @@ spec:
                   uri:
                     description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                     type: string
+                  CACerts:
+                    description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                    type: string
               subscriber:
                 description: Subscriber is reference to (optional) function for processing events. Events from the Channel will be delivered here and replies are sent to a Destination as specified by the Reply.
                 type: object
@@ -2208,6 +2364,9 @@ spec:
                     x-kubernetes-preserve-unknown-fields: true # This is necessary to enable the experimental feature
                   uri:
                     description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                    type: string
+                  CACerts:
+                    description: Certification Authority (CA) certificates in PEM format that the subscription trusts when sending events to the sink.
                     type: string
           status:
             type: object
@@ -2254,11 +2413,20 @@ spec:
                   deadLetterSinkUri:
                     description: ReplyURI is the fully resolved URI for the spec.delivery.deadLetterSink.
                     type: string
+                  deadLetterSinkCACerts:
+                    description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                    type: string
                   replyUri:
                     description: ReplyURI is the fully resolved URI for the spec.reply.
                     type: string
+                  replyCACerts:
+                    description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                    type: string
                   subscriberUri:
                     description: SubscriberURI is the fully resolved URI for spec.subscriber.
+                    type: string
+                  subscriberCACerts:
+                    description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
                     type: string
     additionalPrinterColumns:
     - name: Age
@@ -2302,7 +2470,7 @@ metadata:
   name: triggers.eventing.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.10
+    app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -2375,6 +2543,9 @@ spec:
                       uri:
                         description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                         type: string
+                      CACerts:
+                        description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
+                        type: string
                   retry:
                     description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                     type: integer
@@ -2409,6 +2580,9 @@ spec:
                         type: string
                   uri:
                     description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                    type: string
+                  CACerts:
+                    description: Certification Authority (CA) certificates in PEM format that the source trusts when sending events to the sink.
                     type: string
           status:
             description: Status represents the current state of the Trigger. This data may be out of date.
@@ -2448,12 +2622,18 @@ spec:
               deadLetterSinkUri:
                 description: DeadLetterSinkURI is the resolved URI of the dead letter sink for this Trigger, in case there is none this will fallback to it's Broker status DeadLetterSinkURI.
                 type: string
+              deadLetterSinkCACerts:
+                description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
+                type: string
               observedGeneration:
                 description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                 type: integer
                 format: int64
               subscriberUri:
                 description: SubscriberURI is the resolved URI of the receiver for this Trigger.
+                type: string
+              subscriberCACerts:
+                description: Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468.
                 type: string
   names:
     kind: Trigger

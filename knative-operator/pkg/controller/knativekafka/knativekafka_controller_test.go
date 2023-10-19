@@ -15,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -49,10 +50,11 @@ func init() {
 
 func TestKnativeKafkaReconcile(t *testing.T) {
 	tests := []struct {
-		name         string
-		instance     *v1alpha1.KnativeKafka
-		exists       []types.NamespacedName
-		doesNotExist []types.NamespacedName
+		name                   string
+		instance               *v1alpha1.KnativeKafka
+		eventingConfigFeatures *corev1.ConfigMap
+		exists                 []types.NamespacedName
+		doesNotExist           []types.NamespacedName
 	}{{
 		name:     "Create CR with channel and source enabled",
 		instance: makeCr(withChannelEnabled, withSourceEnabled, withKubeRbacProxyDeploymentOverride),
@@ -104,7 +106,18 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 	t.Setenv("TEST_DEPRECATED_APIS_K8S_VERSION", "v1.24.0")
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cl := fake.NewClientBuilder().WithObjects(test.instance, &operatorv1beta1.KnativeEventing{}).Build()
+
+			if test.eventingConfigFeatures == nil {
+				test.eventingConfigFeatures = &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{
+					Namespace: defaultRequest.Namespace,
+					Name:      "config-features",
+				}}
+			}
+
+			cl := fake.NewClientBuilder().
+				WithObjects(test.instance, &operatorv1beta1.KnativeEventing{}).
+				WithObjects(test.eventingConfigFeatures).
+				Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/channel/eventing-kafka-channel.yaml"))
 			if err != nil {
@@ -897,4 +910,18 @@ func (m *MockManager) GetClient() client.Client {
 
 func (m *MockManager) GetScheme() *runtime.Scheme {
 	return nil
+}
+
+func TestIsNoMatchError(t *testing.T) {
+
+	err := fmt.Errorf("failed to %w", &meta.NoKindMatchError{})
+	if !isNoMatchError(err) {
+		t.Fatal("1 -", err)
+	}
+
+	err = fmt.Errorf("failed to %w", &meta.NoResourceMatchError{})
+	if !isNoMatchError(err) {
+		t.Fatal("2 -", err)
+	}
+
 }

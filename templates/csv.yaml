@@ -472,6 +472,19 @@ spec:
                 - get
                 - list
                 - watch
+            # Eventing TLS
+            - apiGroups:
+                - "cert-manager.io"
+              resources:
+                - certificates
+                - issuers
+              verbs:
+                - create
+                - delete
+                - update
+                - list
+                - get
+                - watch
         - serviceAccountName: knative-operator
           rules:
             # These are needed to create the various different resources.
@@ -723,6 +736,19 @@ spec:
               verbs:
                 - get
                 - list
+                - watch
+            # Eventing TLS
+            - apiGroups:
+                - "cert-manager.io"
+              resources:
+                - certificates
+                - issuers
+              verbs:
+                - create
+                - delete
+                - update
+                - list
+                - get
                 - watch
 
         - serviceAccountName: knative-openshift-ingress
