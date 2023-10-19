@@ -3502,7 +3502,7 @@ spec:
     - knative
     - messaging
     shortNames:
-    - sub
+    - ksub
   scope: Namespaced
 ---
 # Copyright 2020 The Knative Authors
