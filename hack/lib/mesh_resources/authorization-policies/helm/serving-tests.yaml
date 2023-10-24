@@ -542,3 +542,21 @@ spec:
         - operation:
             ports:
               - "8022"
+---
+# Source: knative-istio-authz-onboarding/templates/common-tenant-sidecar.yaml
+# Restrict namespace serving-tests sidecars egress rules to tenants specific namespaces so that
+# application sidecars don't consumer a ton of memory/cpu.
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: default
+  namespace: serving-tests
+spec:
+  egress:
+    - hosts:
+        - "serving-tests/*"
+        
+        - "istio-system/*"
+        - "knative-serving/*"
+        
+        - "knative-eventing/*"
