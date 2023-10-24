@@ -1,0 +1,13 @@
+diff --git a/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/server.go b/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/server.go
+index d2338d0b7..af34768cb 100644
+--- a/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/server.go
++++ b/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/server.go
+@@ -232,7 +232,7 @@ func (s *Server) Start(ctx context.Context) error {
+ 	}
+
+ 	cfg := &tls.Config{ //nolint:gosec
+-		NextProtos:     []string{"h2"},
++		NextProtos:     []string{"http/1.1"},
+ 		GetCertificate: certWatcher.GetCertificate,
+ 		MinVersion:     tlsMinVersion,
+ 	}
