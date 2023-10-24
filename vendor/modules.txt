@@ -358,13 +358,13 @@ github.com/munnerz/goautoneg
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
 ## explicit; go 1.16
 github.com/openshift/api/config/v1
 github.com/openshift/api/console/v1
 github.com/openshift/api/console/v1alpha1
 github.com/openshift/api/route/v1
-# github.com/openshift/client-go v0.0.0-20220525160904-9e1acff93e4a => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
+# github.com/openshift/client-go v0.0.0-20220525160904-9e1acff93e4a => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
 ## explicit; go 1.16
 github.com/openshift/client-go/config/clientset/versioned/scheme
 github.com/openshift/client-go/config/clientset/versioned/typed/config/v1
@@ -372,8 +372,8 @@ github.com/openshift/client-go/console/clientset/versioned/scheme
 github.com/openshift/client-go/console/clientset/versioned/typed/console/v1
 github.com/openshift/client-go/route/clientset/versioned/scheme
 github.com/openshift/client-go/route/clientset/versioned/typed/route/v1
-# github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
-## explicit; go 1.17
+# github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f => github.com/openshift/machine-config-operator v0.0.1-0.20230828122850-e2409e886dd0
+## explicit; go 1.18
 github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned
 github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/scheme
@@ -555,7 +555,7 @@ go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/internal/ztest
 go.uber.org/zap/zapcore
 go.uber.org/zap/zaptest
-# golang.org/x/crypto v0.13.0
+# golang.org/x/crypto v0.14.0
 ## explicit; go 1.17
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/chacha20poly1305
@@ -571,7 +571,7 @@ golang.org/x/crypto/pbkdf2
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.15.0
+# golang.org/x/net v0.17.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -596,15 +596,14 @@ golang.org/x/oauth2/jwt
 ## explicit; go 1.17
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.12.0
+# golang.org/x/sys v0.13.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.12.0
+# golang.org/x/term v0.13.0
 ## explicit; go 1.17
 golang.org/x/term
 # golang.org/x/text v0.13.0
@@ -1327,11 +1326,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20230418150356-05a86ad5d7db
+# knative.dev/caching v0.0.0-20231012200747-14d7888733e8
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.38.3 => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
+# knative.dev/eventing v0.38.3 => github.com/openshift-knative/eventing v0.99.1-0.20231024090438-637a701a62f2
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
@@ -1439,7 +1438,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230915103906-b2724325cb05
+# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231019130510-b95e7da0dcd4
 ## explicit; go 1.19
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1
@@ -1506,7 +1505,7 @@ knative.dev/eventing-kafka-broker/test/upgrade/installation
 ## explicit; go 1.18
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20230419144338-e5d04e805e50 => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
+# knative.dev/networking v0.0.0-20231012063223-0b0f2107abef => knative.dev/networking v0.0.0-20231012063223-0b0f2107abef
 ## explicit; go 1.18
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1533,7 +1532,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.37.5-0.20231003090852-6520c3411c05
+# knative.dev/operator v0.37.7
 ## explicit; go 1.19
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1562,7 +1561,7 @@ knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
 knative.dev/operator/pkg/reconciler/knativeserving/security
 knative.dev/operator/pkg/reconciler/manifests
-# knative.dev/pkg v0.0.0-20230718152110-aef227e72ead => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
+# knative.dev/pkg v0.0.0-20231023160942-0c39ce4b3a7f => knative.dev/pkg v0.0.0-20231023160942-0c39ce4b3a7f
 ## explicit; go 1.18
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1653,7 +1652,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20230920080213-4b73d83f40fc => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
+# knative.dev/reconciler-test v0.0.0-20231023114053-616ce2cecb19 => knative.dev/reconciler-test v0.0.0-20231023114053-616ce2cecb19
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1676,7 +1675,7 @@ knative.dev/reconciler-test/pkg/resources/secret
 knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.37.0 => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
+# knative.dev/serving v0.37.4 => github.com/openshift-knative/serving v0.10.1-0.20231024095055-faa755988118
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1762,16 +1761,16 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230915103906-b2724325cb05
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231024090438-637a701a62f2
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231019130510-b95e7da0dcd4
 # knative.dev/hack => knative.dev/hack v0.0.0-20230417170854-f591fea109b3
-# knative.dev/networking => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
-# knative.dev/pkg => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
-# knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
-# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
-# github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
+# knative.dev/networking => knative.dev/networking v0.0.0-20231012063223-0b0f2107abef
+# knative.dev/pkg => knative.dev/pkg v0.0.0-20231023160942-0c39ce4b3a7f
+# knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231023114053-616ce2cecb19
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095055-faa755988118
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
+# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
+# github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230828122850-e2409e886dd0
 # k8s.io/api => k8s.io/api v0.25.4
 # k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 # k8s.io/client-go => k8s.io/client-go v0.25.4

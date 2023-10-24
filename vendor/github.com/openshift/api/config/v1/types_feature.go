@@ -40,9 +40,6 @@ var (
 
 	// TopologyManager enables ToplogyManager support. Upgrades are enabled with this feature.
 	LatencySensitive FeatureSet = "LatencySensitive"
-
-	// IPv6DualStackNoUpgrade enables dual-stack. Turning this feature set on IS NOT SUPPORTED, CANNOT BE UNDONE, and PREVENTS UPGRADES.
-	IPv6DualStackNoUpgrade FeatureSet = "IPv6DualStackNoUpgrade"
 )
 
 type FeatureGateSpec struct {
@@ -101,8 +98,7 @@ type FeatureGateEnabledDisabled struct {
 // version of this file. In this upgrade scenario the map could return nil.
 //
 // example:
-//
-//	if featureSet, ok := FeatureSets["SomeNewFeature"]; ok { }
+//   if featureSet, ok := FeatureSets["SomeNewFeature"]; ok { }
 //
 // If you put an item in either of these lists, put your area and name on it so we can find owners.
 var FeatureSets = map[FeatureSet]*FeatureGateEnabledDisabled{
@@ -112,13 +108,8 @@ var FeatureSets = map[FeatureSet]*FeatureGateEnabledDisabled{
 		Disabled: []string{},
 	},
 	TechPreviewNoUpgrade: newDefaultFeatures().
-		with("CSIDriverAzureDisk").          // sig-storage, jsafrane, OCP specific
-		with("CSIDriverAzureFile").          // sig-storage, fbertina, OCP specific
-		with("CSIDriverVSphere").            // sig-storage, jsafrane, OCP specific
 		with("CSIMigrationAWS").             // sig-storage, jsafrane, Kubernetes feature gate
-		with("CSIMigrationOpenStack").       // sig-storage, jsafrane, Kubernetes feature gate
 		with("CSIMigrationGCE").             // sig-storage, fbertina, Kubernetes feature gate
-		with("CSIMigrationAzureDisk").       // sig-storage, fbertina, Kubernetes feature gate
 		with("CSIMigrationAzureFile").       // sig-storage, fbertina, Kubernetes feature gate
 		with("CSIMigrationvSphere").         // sig-storage, fbertina, Kubernetes feature gate
 		with("ExternalCloudProvider").       // sig-cloud-provider, jspeed, OCP specific
@@ -132,11 +123,6 @@ var FeatureSets = map[FeatureSet]*FeatureGateEnabledDisabled{
 			"TopologyManager", // sig-pod, sjenning
 		).
 		toFeatures(),
-	IPv6DualStackNoUpgrade: newDefaultFeatures().
-		with(
-			"IPv6DualStack", // sig-network, danwinship
-		).
-		toFeatures(),
 }
 
 var defaultFeatures = &FeatureGateEnabledDisabled{
@@ -148,9 +134,7 @@ var defaultFeatures = &FeatureGateEnabledDisabled{
 	},
 	Disabled: []string{
 		"CSIMigrationAWS",       // sig-storage, jsafrane
-		"CSIMigrationOpenStack", // sig-storage, jsafrane
 		"CSIMigrationGCE",       // sig-storage, jsafrane
-		"CSIMigrationAzureDisk", // sig-storage, jsafrane
 		"CSIMigrationAzureFile", // sig-storage, jsafrane
 		"CSIMigrationvSphere",   // sig-storage, jsafrane
 	},
