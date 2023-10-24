@@ -232,7 +232,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}
 
 	cfg := &tls.Config{ //nolint:gosec
-		NextProtos:     []string{"h2"},
+		NextProtos:     []string{"http/1.1"},
 		GetCertificate: certWatcher.GetCertificate,
 		MinVersion:     tlsMinVersion,
 	}
