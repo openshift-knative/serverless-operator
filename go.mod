@@ -29,10 +29,10 @@ require (
 	knative.dev/eventing v0.38.3
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
-	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
-	knative.dev/operator v0.37.5-0.20231003090852-6520c3411c05
-	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
-	knative.dev/serving v0.37.0
+	knative.dev/networking v0.0.0-20231012063223-0b0f2107abef
+	knative.dev/operator v0.37.7
+	knative.dev/pkg v0.0.0-20231023160942-0c39ce4b3a7f
+	knative.dev/serving v0.37.4
 	sigs.k8s.io/controller-runtime v0.15.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -138,12 +138,12 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
@@ -165,7 +165,7 @@ require (
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
-	knative.dev/caching v0.0.0-20230418150356-05a86ad5d7db // indirect
+	knative.dev/caching v0.0.0-20231012200747-14d7888733e8 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
@@ -174,25 +174,25 @@ require (
 	github.com/go-logr/logr v1.2.4
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2
-	knative.dev/reconciler-test v0.0.0-20230920080213-4b73d83f40fc
+	knative.dev/reconciler-test v0.0.0-20231023114053-616ce2cecb19
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231002125248-41968276709b
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20230915103906-b2724325cb05
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231024090438-637a701a62f2
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231019130510-b95e7da0dcd4
 	knative.dev/hack => knative.dev/hack v0.0.0-20230417170854-f591fea109b3
-	knative.dev/networking => knative.dev/networking v0.0.0-20230419144338-e5d04e805e50
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20230928102338-4ae7322c84fa
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231002135714-c13b18deead4
+	knative.dev/networking => knative.dev/networking v0.0.0-20231012063223-0b0f2107abef
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20231023160942-0c39ce4b3a7f
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231023114053-616ce2cecb19
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095055-faa755988118
 )
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
+	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230828122850-e2409e886dd0
 )
 
 replace (
