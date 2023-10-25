@@ -14,7 +14,7 @@ export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"nightly"}
 
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
-rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.min'):kube-rbac-proxy"
+rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_knative_eventing_images
 default_knative_eventing_istio_images
