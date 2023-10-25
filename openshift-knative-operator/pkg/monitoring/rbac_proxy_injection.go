@@ -99,6 +99,7 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 					"--tls-cert-file=" + filepath.Join(mountPath, "tls.crt"),
 					"--tls-private-key-file=" + filepath.Join(mountPath, "tls.key"),
 					"--logtostderr=true",
+					"--http2-disable",
 					"--v=10",
 				},
 			}
