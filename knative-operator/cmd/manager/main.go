@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"flag"
 	"fmt"
@@ -110,6 +111,9 @@ func main() {
 	hookServer.CertDir = "/apiserver.local.config/certificates"
 	hookServer.KeyName = "apiserver.key"
 	hookServer.CertName = "apiserver.crt"
+
+	disableHTTP2 := func(c *tls.Config) { c.NextProtos = []string{"http/1.1"} }
+	hookServer.TLSOpts = []func(config *tls.Config){disableHTTP2}
 
 	decoder, err := admission.NewDecoder(mgr.GetScheme())
 	if err != nil {

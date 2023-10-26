@@ -26,13 +26,13 @@ require (
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
-	knative.dev/eventing v0.38.3
+	knative.dev/eventing v0.38.5
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
-	knative.dev/networking v0.0.0-20230718160410-75dcd54d9510
-	knative.dev/operator v0.38.8-0.20231009173108-3159a1128ae8
-	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
-	knative.dev/serving v0.38.0
+	knative.dev/networking v0.0.0-20231012062757-a5958051caf8
+	knative.dev/operator v0.38.9
+	knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
+	knative.dev/serving v0.38.2
 	sigs.k8s.io/controller-runtime v0.15.0
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -165,7 +165,7 @@ require (
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
-	knative.dev/caching v0.0.0-20230718155311-24ff72399d90 // indirect
+	knative.dev/caching v0.0.0-20231012200751-ee89f751874f // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
@@ -174,25 +174,25 @@ require (
 	github.com/go-logr/logr v1.2.4
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2
-	knative.dev/reconciler-test v0.0.0-20230928102338-f561fc2e2d66
+	knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231009103303-19cd2525a354
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231009131540-1a8612400f66
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231024090734-f798ec4dff89
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231023140437-5e3ca70850a0
 	knative.dev/hack => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
-	knative.dev/networking => knative.dev/networking v0.0.0-20230718160410-75dcd54d9510
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231010075208-03cc77c11831
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20230914021315-6b31a4dc9f06
+	knative.dev/networking => knative.dev/networking v0.0.0-20231023175057-21fb00ea6096
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
 )
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20221013123533-341d389bd4a7
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20211209144617-7385dd6338e3
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230908201248-46b93e64dea6
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
+	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230828122850-e2409e886dd0
 )
 
 replace (
