@@ -8,6 +8,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/test"
 	"knative.dev/eventing/test/rekt/resources/pingsource"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/logging"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
@@ -46,6 +47,7 @@ func VerifyPingSourceToKsvcBlocked(sinkCtx context.Context, sink string, since t
 
 	sinkRef := service.AsKReference(sink)
 	sinkRef.Namespace = environment.FromContext(sinkCtx).Namespace()
+	logging.FromContext(sinkCtx).Info("SINK REF: %+v", sinkRef)
 	f.Requirement("install pingsource", pingsource.Install(source, pingsource.WithSink(&duckv1.Destination{Ref: sinkRef})))
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
 

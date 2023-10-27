@@ -46,6 +46,7 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 		fn(cfg)
 	}
 	return func(ctx context.Context, t feature.T) {
+		t.Logf("Applied CFG: %+v", cfg)
 		if _, err := manifest.InstallYamlFS(ctx, yaml, cfg); err != nil {
 			t.Fatal(err, cfg)
 		}
