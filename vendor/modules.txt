@@ -1762,9 +1762,10 @@ sigs.k8s.io/structured-merge-diff/v4/fieldpath
 sigs.k8s.io/structured-merge-diff/v4/schema
 sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
-# sigs.k8s.io/yaml v1.3.0
+# sigs.k8s.io/yaml v1.4.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+sigs.k8s.io/yaml/goyaml.v2
 # knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231024090734-f798ec4dff89
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231023140437-5e3ca70850a0
 # knative.dev/hack => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
