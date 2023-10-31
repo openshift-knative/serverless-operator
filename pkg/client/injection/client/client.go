@@ -1367,6 +1367,260 @@ func (w *wrapConfigV1ImageContentPolicyImpl) Watch(ctx context.Context, opts met
 	return nil, errors.New("NYI: Watch")
 }
 
+func (w *wrapConfigV1) ImageDigestMirrorSets() typedconfigv1.ImageDigestMirrorSetInterface {
+	return &wrapConfigV1ImageDigestMirrorSetImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "config.openshift.io",
+			Version:  "v1",
+			Resource: "imagedigestmirrorsets",
+		}),
+	}
+}
+
+type wrapConfigV1ImageDigestMirrorSetImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+}
+
+var _ typedconfigv1.ImageDigestMirrorSetInterface = (*wrapConfigV1ImageDigestMirrorSetImpl)(nil)
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Create(ctx context.Context, in *v1.ImageDigestMirrorSet, opts metav1.CreateOptions) (*v1.ImageDigestMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageDigestMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
+	return w.dyn.Delete(ctx, name, opts)
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
+	return w.dyn.DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.ImageDigestMirrorSet, error) {
+	uo, err := w.dyn.Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) List(ctx context.Context, opts metav1.ListOptions) (*v1.ImageDigestMirrorSetList, error) {
+	uo, err := w.dyn.List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSetList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ImageDigestMirrorSet, err error) {
+	uo, err := w.dyn.Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Update(ctx context.Context, in *v1.ImageDigestMirrorSet, opts metav1.UpdateOptions) (*v1.ImageDigestMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageDigestMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) UpdateStatus(ctx context.Context, in *v1.ImageDigestMirrorSet, opts metav1.UpdateOptions) (*v1.ImageDigestMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageDigestMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageDigestMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageDigestMirrorSetImpl) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
+func (w *wrapConfigV1) ImageTagMirrorSets() typedconfigv1.ImageTagMirrorSetInterface {
+	return &wrapConfigV1ImageTagMirrorSetImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "config.openshift.io",
+			Version:  "v1",
+			Resource: "imagetagmirrorsets",
+		}),
+	}
+}
+
+type wrapConfigV1ImageTagMirrorSetImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+}
+
+var _ typedconfigv1.ImageTagMirrorSetInterface = (*wrapConfigV1ImageTagMirrorSetImpl)(nil)
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Create(ctx context.Context, in *v1.ImageTagMirrorSet, opts metav1.CreateOptions) (*v1.ImageTagMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageTagMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
+	return w.dyn.Delete(ctx, name, opts)
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
+	return w.dyn.DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.ImageTagMirrorSet, error) {
+	uo, err := w.dyn.Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) List(ctx context.Context, opts metav1.ListOptions) (*v1.ImageTagMirrorSetList, error) {
+	uo, err := w.dyn.List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSetList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ImageTagMirrorSet, err error) {
+	uo, err := w.dyn.Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Update(ctx context.Context, in *v1.ImageTagMirrorSet, opts metav1.UpdateOptions) (*v1.ImageTagMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageTagMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) UpdateStatus(ctx context.Context, in *v1.ImageTagMirrorSet, opts metav1.UpdateOptions) (*v1.ImageTagMirrorSet, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "ImageTagMirrorSet",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.ImageTagMirrorSet{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1ImageTagMirrorSetImpl) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
 func (w *wrapConfigV1) Infrastructures() typedconfigv1.InfrastructureInterface {
 	return &wrapConfigV1InfrastructureImpl{
 		dyn: w.dyn.Resource(schema.GroupVersionResource{
@@ -1745,6 +1999,133 @@ func (w *wrapConfigV1NetworkImpl) UpdateStatus(ctx context.Context, in *v1.Netwo
 }
 
 func (w *wrapConfigV1NetworkImpl) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
+func (w *wrapConfigV1) Nodes() typedconfigv1.NodeInterface {
+	return &wrapConfigV1NodeImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "config.openshift.io",
+			Version:  "v1",
+			Resource: "nodes",
+		}),
+	}
+}
+
+type wrapConfigV1NodeImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+}
+
+var _ typedconfigv1.NodeInterface = (*wrapConfigV1NodeImpl)(nil)
+
+func (w *wrapConfigV1NodeImpl) Create(ctx context.Context, in *v1.Node, opts metav1.CreateOptions) (*v1.Node, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "Node",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.Node{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
+	return w.dyn.Delete(ctx, name, opts)
+}
+
+func (w *wrapConfigV1NodeImpl) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
+	return w.dyn.DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapConfigV1NodeImpl) Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.Node, error) {
+	uo, err := w.dyn.Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.Node{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) List(ctx context.Context, opts metav1.ListOptions) (*v1.NodeList, error) {
+	uo, err := w.dyn.List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.NodeList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Node, err error) {
+	uo, err := w.dyn.Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.Node{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) Update(ctx context.Context, in *v1.Node, opts metav1.UpdateOptions) (*v1.Node, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "Node",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.Node{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) UpdateStatus(ctx context.Context, in *v1.Node, opts metav1.UpdateOptions) (*v1.Node, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "Node",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1.Node{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapConfigV1NodeImpl) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return nil, errors.New("NYI: Watch")
 }
 

@@ -187,7 +187,7 @@ const (
 // router.
 type RouteIngressCondition struct {
 	// Type is the type of the condition.
-	// Currently only Ready.
+	// Currently only Admitted.
 	Type RouteIngressConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=RouteIngressConditionType"`
 	// Status is the status of the condition.
 	// Can be True, False, Unknown.
@@ -205,8 +205,7 @@ type RouteIngressCondition struct {
 // generate host names and routing table entries when a routing shard is
 // allocated for a specific route.
 // Caveat: This is WIP and will likely undergo modifications when sharding
-//
-//	support is added.
+//         support is added.
 type RouterShard struct {
 	// shardName uniquely identifies a router shard in the "set" of
 	// routers used for routing traffic to the services.
