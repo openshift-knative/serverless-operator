@@ -35,7 +35,7 @@ func TestKnativeMetrics(t *testing.T) {
 	t.Run("verify Eventing metrics work correctly", func(t *testing.T) {
 		// Eventing control plane metrics should work
 		if err := VerifyMetrics(ctx, eventingMetricQueries); err != nil {
-			t.Fatal("Failed to verify that Eventing control plane metrics work correctly", err)
+			t.Fatal("Failed to verify that Eventing metrics work correctly", err)
 		}
 	})
 

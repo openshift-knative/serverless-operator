@@ -6,13 +6,20 @@ import (
 	"os"
 
 	mf "github.com/manifestival/manifestival"
+	"go.uber.org/zap"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection/clients/dynamicclient"
+	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -25,12 +32,16 @@ const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
 // NewExtension creates a new extension for a Knative Eventing controller.
 func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
 	return &extension{
-		kubeclient: kubeclient.Get(ctx),
+		kubeclient:    kubeclient.Get(ctx),
+		dynamicclient: dynamicclient.Get(ctx),
+		logger:        logging.FromContext(ctx),
 	}
 }
 
 type extension struct {
-	kubeclient kubernetes.Interface
+	kubeclient    kubernetes.Interface
+	dynamicclient dynamic.Interface
+	logger        *zap.SugaredLogger
 }
 
 func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
@@ -44,8 +55,27 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	}
 	if enabled := eventingistio.IsEnabled(ke.GetSpec().GetConfig()); enabled {
 		m = append(m, p)
+	} else {
+		// This handles the case when it transitions from "enabled" to "disabled".
+		e.deleteResourcesSilently(p)
 	}
 	return m, nil
+}
+
+func (e *extension) deleteResourcesSilently(m mf.Manifest) {
+	for _, np := range m.Resources() {
+		r /* plural */, _ /* singular  */ := meta.UnsafeGuessKindToResource(np.GroupVersionKind())
+		err := e.dynamicclient.Resource(r).
+			Namespace(np.GetNamespace()).
+			Delete(context.Background(), np.GetName(), metav1.DeleteOptions{})
+		if err != nil && !apierrors.IsNotFound(err) {
+			// Do not fail completely, just log the error
+			e.logger.Warnw("Failed to delete resource",
+				zap.Any("resource", r),
+				zap.String("namespace", np.GetNamespace()),
+				zap.String("name", np.GetName()))
+		}
+	}
 }
 
 func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
