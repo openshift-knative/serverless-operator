@@ -54,8 +54,8 @@ dependencies:
     cli: 1.10.0
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
-        tekton_s2i: registry.redhat.io/ocp-tools-4-tech-preview/source-to-image-rhel8@sha256:98d8cb3a255641ca6a1bce854e5e2460c20de9fb9b28e3cc67eb459f122873dd
-        tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:a1e5cc0fb334e333e5eab69689223e8bd1f0c060810d260603b26cf8c0da2023
+        tekton_s2i: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:8a70f50122691cca6ba4a97bacd56bd5f4e55bcdd37ba86712da0e41160d0263
+        tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae
         nodejs_16: registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078
         openjdk_17: registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5
         python-39: registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41
