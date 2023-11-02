@@ -11,11 +11,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/pointer"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/apis"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
+	dynamicfake "knative.dev/pkg/injection/clients/dynamicclient/fake"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
@@ -138,6 +140,7 @@ func TestReconcile(t *testing.T) {
 
 			ke := c.in.DeepCopy()
 			ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
+			ctx, _ = dynamicfake.With(ctx, scheme.Scheme)
 			ext := NewExtension(ctx, nil)
 			ext.Reconcile(context.Background(), ke)
 
@@ -271,6 +274,7 @@ func TestMonitoring(t *testing.T) {
 			c.expected.Namespace = ke.Namespace
 			ctx, _ := ocpfake.With(context.Background(), objs...)
 			ctx, kube := kubefake.With(ctx, &eventingNamespace)
+			ctx, _ = dynamicfake.With(ctx, scheme.Scheme)
 			ext := NewExtension(ctx, nil)
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()
 
