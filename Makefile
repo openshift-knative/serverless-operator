@@ -148,6 +148,7 @@ test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-mesh:
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh # This avoids early failures for the skipped Eventing TLS tests
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
