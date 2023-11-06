@@ -2,10 +2,11 @@ package eventinge2erekt
 
 import (
 	"context"
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
-	"knative.dev/reconciler-test/pkg/feature"
 	"testing"
 	"time"
+
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
+	"knative.dev/reconciler-test/pkg/feature"
 
 	"github.com/openshift-knative/serverless-operator/test/eventinge2erekt/features"
 	"knative.dev/eventing/test/rekt/features/pingsource"
