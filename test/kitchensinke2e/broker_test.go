@@ -8,7 +8,7 @@ import (
 	"knative.dev/reconciler-test/pkg/feature"
 )
 
-const groupSize = 4
+const groupSize = 8
 
 func TestBrokerReadinessBrokerDLS(t *testing.T) {
 	testFeatureSet(t, features.BrokerFeatureSetWithBrokerDLS())
