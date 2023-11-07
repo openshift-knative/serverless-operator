@@ -108,8 +108,8 @@ function build_image {
 
   if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
-    oc -n "${OLM_NAMESPACE}" new-build --binary \
-      --strategy=docker --name "$name"
+    oc -n "${OLM_NAMESPACE}" new-build \
+      --strategy=docker --name "$name" --dockerfile "$(cat "${build_dir}/Dockerfile")"
   else
     logger.info "${name} image build is already created"
   fi
@@ -124,7 +124,7 @@ function build_image {
       ! sha1sum --check --status "${rootdir}/_output/${name}.sha1sum"; then
     logger.info 'Build the image in the cluster-internal registry.'
     oc -n "${OLM_NAMESPACE}" start-build "${name}" \
-      --from-dir "${build_dir}" -F
+      --from-dir "${rootdir}" -F
     mkdir -p "${rootdir}/_output"
     find "${build_dir}" -type f -exec sha1sum {} + \
       > "${rootdir}/_output/${name}.sha1sum"
