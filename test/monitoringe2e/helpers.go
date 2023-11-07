@@ -34,6 +34,9 @@ var (
 		"mt_broker_controller_go_mallocs",
 		"mt_broker_filter_go_mallocs",
 		"mt_broker_ingress_go_mallocs",
+	}
+
+	EventingPingSourceMetricQueries = []string{
 		"pingsource_event_count",
 	}
 
