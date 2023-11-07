@@ -1,7 +1,10 @@
 FROM scratch
 
-COPY manifests /manifests
-COPY metadata/annotations.yaml /metadata/annotations.yaml
+COPY . .
+# Backwards compatible with CI config that specifies context_dir pointing to
+# olm-catalog/serverless-operator folder.
+RUN mv olm-catalog/serverless-operator/manifests /manifests || mv manifests /manifests
+RUN mv olm-catalog/serverless-operator/metadata /metadata || mv metadata /metadata
 
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
