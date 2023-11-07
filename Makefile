@@ -265,6 +265,18 @@ release-files:
 		templates/annotations.yaml \
 		olm-catalog/serverless-operator/metadata/annotations.yaml
 	./hack/generate/dockerfile.sh \
+		templates/knative-operator.Dockerfile \
+		knative-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/openshift-knative-operator.Dockerfile \
+		openshift-knative-operator/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/serving-ingress.Dockerfile \
+		serving/ingress/Dockerfile
+	./hack/generate/dockerfile.sh \
+		templates/serving-metadata-webhook.Dockerfile \
+		serving/metadata-webhook/Dockerfile
+	./hack/generate/dockerfile.sh \
 		templates/main.Dockerfile \
 		olm-catalog/serverless-operator/Dockerfile
 	./hack/generate/dockerfile.sh \

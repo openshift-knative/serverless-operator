@@ -1,6 +1,6 @@
-FROM quay.io/openshift/origin-operator-registry:__OCP_MAX_VERSION__ AS opm
+FROM registry.ci.openshift.org/origin/__OCP_MAX_VERSION__:operator-registry AS opm
 
-FROM quay.io/openshift/origin-base:__OCP_MAX_VERSION__ as builder
+FROM registry.ci.openshift.org/ocp/__OCP_MAX_VERSION__:base as builder
 
 COPY --from=opm /bin/opm /bin/opm
 

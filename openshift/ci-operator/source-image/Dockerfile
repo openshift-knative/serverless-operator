@@ -1,6 +1,8 @@
+FROM registry.ci.openshift.org/ocp/4.13:cli AS oc-image
+
 FROM src
 
-COPY oc /usr/bin/oc
+COPY --from=oc-image /usr/bin/oc /usr/bin/oc
 COPY --from=registry.ci.openshift.org/openshift/knative-serving-src:knative-v1.11 /go/src/github.com/openshift-knative/serving/ /go/src/knative.dev/serving/
 COPY --from=registry.ci.openshift.org/openshift/knative-eventing-src:knative-v1.11 /go/src/github.com/openshift-knative/eventing/ /go/src/knative.dev/eventing/
 COPY --from=registry.ci.openshift.org/openshift/eventing-kafka-broker-src:knative-v1.11 /go/src/github.com/openshift-knative/eventing-kafka-broker/ /go/src/knative.dev/eventing-kafka-broker/
