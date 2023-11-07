@@ -120,12 +120,14 @@ test-e2e:
 test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
-test-e2e-with-kafka:
+operator-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
+
+test-e2e-with-kafka: operator-e2e
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
@@ -147,7 +149,7 @@ test-upstream-e2e-mesh-testonly:
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-mesh:
+mesh-e2e:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh # This avoids early failures for the skipped Eventing TLS tests
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
@@ -155,6 +157,8 @@ test-upstream-e2e-mesh:
 	FULL_MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+
+test-upstream-e2e-mesh: mesh-e2e
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
@@ -164,42 +168,47 @@ test-upstream-e2e-no-upgrade-testonly:
 test-upstream-e2e-kafka-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-no-upgrade:
+upstream-e2e:
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=false TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-test-upstream-e2e-kafka-no-upgrade:
+test-upstream-e2e-no-upgrade: upstream-e2e
+
+upstream-e2e-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	SCALE_UP=5 INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
+test-upstream-e2e-kafka-no-upgrade: upstream-e2e-kafka
+
 # Run only upstream upgrade tests.
 test-upstream-upgrade-testonly:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-test-upstream-upgrade:
+test-upgrade:
 	TRACING_BACKEND=zipkin ZIPKIN_DEDICATED_NODE=true ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-# Alias.
-test-upgrade: test-upstream-upgrade
-
-test-upgrade-with-mesh:
+mesh-upgrade:
 	FULL_MESH=true UNINSTALL_MESH=false ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	FULL_MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	FULL_MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-test-kitchensink-upgrade:
+test-upgrade-with-mesh: mesh-upgrade
+
+kitchensink-upgrade:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/dev.sh
 	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" SCALE_UP=4 ./hack/install.sh
 	./test/kitchensink-upgrade-tests.sh
+
+test-kitchensink-upgrade: kitchensink-upgrade
 
 test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
@@ -216,9 +225,11 @@ test-kitchensink-upgrade-stress-testonly:
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-test-ui-e2e:
+ui-e2e:
 	./hack/install.sh
 	./test/ui-e2e-tests.sh
+
+test-ui-e2e: ui-e2e
 
 # Run only kitchensink e2e tests
 test-kitchensink-e2e-testonly:
@@ -233,7 +244,7 @@ test-kitchensink-e2e-setup:
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 
 # Runs all subsets of kitchensink tests. Runs tests separately so `go test` doesn't take too much memory in CI
-test-kitchensink-e2e:
+kitchensink-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/kitchensink-e2e-tests.sh -run TestBrokerReadinessBrokerDLS
@@ -241,6 +252,8 @@ test-kitchensink-e2e:
 	./test/kitchensink-e2e-tests.sh -run TestChannelReadiness
 	./test/kitchensink-e2e-tests.sh -run TestFlowReadiness
 	./test/kitchensink-e2e-tests.sh -run TestSourceReadiness
+
+test-kitchensink-e2e: kitchensink-e2e
 
 # Run all E2E tests.
 test-all-e2e:
