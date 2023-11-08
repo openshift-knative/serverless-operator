@@ -162,7 +162,7 @@ func createServiceMonitor(component string, ns string, serviceName string) monit
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
 				BearerTokenFile:   "/var/run/secrets/kubernetes.io/serviceaccount/token",
-				BearerTokenSecret: corev1.SecretKeySelector{Key: ""},
+				BearerTokenSecret: &corev1.SecretKeySelector{Key: ""},
 				Port:              "https",
 				Scheme:            "https",
 				TLSConfig: &monitoringv1.TLSConfig{

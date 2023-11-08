@@ -147,7 +147,7 @@ func serviceMonitor(component string) *monitoringv1.ServiceMonitor {
 			Endpoints: []monitoringv1.Endpoint{
 				{
 					BearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
-					BearerTokenSecret: corev1.SecretKeySelector{
+					BearerTokenSecret: &corev1.SecretKeySelector{
 						Key: "",
 					},
 					Port:   "https",
