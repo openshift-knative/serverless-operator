@@ -1,7 +1,7 @@
 FROM scratch
 
-COPY manifests /manifests
-COPY metadata/annotations.yaml /metadata/annotations.yaml
+COPY olm-catalog/serverless-operator/manifests /manifests
+COPY olm-catalog/serverless-operator/metadata/annotations.yaml /metadata/annotations.yaml
 
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
