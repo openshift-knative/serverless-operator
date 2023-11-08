@@ -30,9 +30,9 @@ function install_catalogsource {
 
     if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-operator-src* ]]; then
       # Image variables supplied by ci-operator only when running within serverless-operator's CI.
-      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${KNATIVE_OPERATOR}," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${KNATIVE_OPENSHIFT_INGRESS}," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${SERVERLESS_KNATIVE_OPERATOR:-${KNATIVE_OPERATOR}}," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${SERVERLESS_INGRESS:-${KNATIVE_OPENSHIFT_INGRESS}}," "$csv"
+      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-${OPENSHIFT_KNATIVE_OPERATOR}}," "$csv"
       override_storage_version_migration_images "$csv"
     elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
       sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
