@@ -4,12 +4,14 @@ name: Validate
 on:
   push:
     branches:
-      - '**'
+      - 'main'
+      - 'release-**'
     tags:
       - 'v*.*.*'
   pull_request:
     branches:
-      - '**'
+      - 'main'
+      - 'release-**'
   schedule:
     - cron: "0 6 * * *" # Daily at 06:00.
   workflow_dispatch: # Manual workflow trigger
