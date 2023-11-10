@@ -30,7 +30,7 @@ function download_kafka {
     file="${files[$i]}"
     target_file="$component_dir/$subdir/$file"
     if [[ ${KNATIVE_EVENTING_KAFKA_BROKER_MANIFESTS_DIR} = "" ]]; then
-      branch=$(metadata.get dependencies.eventing_kafka_broker_artifacts_branch)
+      branch=$(metadata.get .dependencies.eventing_kafka_broker_artifacts_branch)
       url="https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/${branch}/openshift/release/artifacts/$file"
       echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"

@@ -28,7 +28,7 @@ jobs:
 
       - name: Install prerequisites
         env:
-          YQ_VERSION: 3.4.0
+          YQ_VERSION: 4.35.2
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq

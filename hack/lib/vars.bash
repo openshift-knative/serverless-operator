@@ -14,18 +14,18 @@ source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.s
 export STRIMZI_VERSION=0.38.0
 
 # Adjust these when upgrading the knative versions.
-export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get dependencies.serving)}"
-export KNATIVE_SERVING_VERSION_PREVIOUS="${KNATIVE_SERVING_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.serving)}"
-export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-$(metadata.get dependencies.eventing)}"
-export KNATIVE_EVENTING_VERSION_PREVIOUS="${KNATIVE_EVENTING_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.eventing)}"
-export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-$(metadata.get dependencies.eventing_kafka_broker)}"
-export KNATIVE_EVENTING_ISTIO_VERSION="${KNATIVE_EVENTING_ISTIO_VERSION:-$(metadata.get dependencies.eventing_istio)}"
-export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-$(metadata.get dependencies.previous.eventing_kafka_broker)}"
+export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get .dependencies.serving)}"
+export KNATIVE_SERVING_VERSION_PREVIOUS="${KNATIVE_SERVING_VERSION_PREVIOUS:-$(metadata.get .dependencies.previous.serving)}"
+export KNATIVE_EVENTING_VERSION="${KNATIVE_EVENTING_VERSION:-$(metadata.get .dependencies.eventing)}"
+export KNATIVE_EVENTING_VERSION_PREVIOUS="${KNATIVE_EVENTING_VERSION_PREVIOUS:-$(metadata.get .dependencies.previous.eventing)}"
+export KNATIVE_EVENTING_KAFKA_BROKER_VERSION="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION:-$(metadata.get .dependencies.eventing_kafka_broker)}"
+export KNATIVE_EVENTING_ISTIO_VERSION="${KNATIVE_EVENTING_ISTIO_VERSION:-$(metadata.get .dependencies.eventing_istio)}"
+export KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION_PREVIOUS:-$(metadata.get .dependencies.previous.eventing_kafka_broker)}"
 
-CURRENT_VERSION="$(metadata.get project.version)"
-PREVIOUS_VERSION="$(metadata.get olm.replaces)"
-CURRENT_CSV="$(metadata.get project.name).v$CURRENT_VERSION"
-PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
+CURRENT_VERSION="$(metadata.get .project.version)"
+PREVIOUS_VERSION="$(metadata.get .olm.replaces)"
+CURRENT_CSV="$(metadata.get .project.name).v$CURRENT_VERSION"
+PREVIOUS_CSV="$(metadata.get .project.name).v$PREVIOUS_VERSION"
 export CURRENT_VERSION PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
@@ -63,7 +63,7 @@ export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
 export INSTALL_OLDEST_COMPATIBLE="${INSTALL_OLDEST_COMPATIBLE:-"false"}"
 
 # Using first channel on the list, instead of default one
-OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get 'olm.channels.list[*]' | head -n 1)}"
+OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get '.olm.channels.list[]' | head -n 1)}"
 export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
