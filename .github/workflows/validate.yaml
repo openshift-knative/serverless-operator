@@ -58,7 +58,7 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main' && !contains(github.ref_name, 'dependabot/')
         run: |
-          branch="$(yq read olm-catalog/serverless-operator/project.yaml project.version)" # example output: "1.26.0"
+          branch="$(yq .project.version olm-catalog/serverless-operator/project.yaml )" # example output: "1.26.0"
           # Add "v", so that the final variable is like "v1.27.0"
           echo "CURRENT_VERSION_IMAGES=v${branch}" >> $GITHUB_ENV
         shell: bash
@@ -67,7 +67,7 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         if: github.event_name == 'pull_request' && github.base_ref != 'main'
         run: |
-          branch="$(yq read olm-catalog/serverless-operator/project.yaml project.version)" # example output: "1.26.0"
+          branch="$(yq .project.version olm-catalog/serverless-operator/project.yaml)" # example output: "1.26.0"
           # Add "v", so that the final variable is like "v1.27.0"
           echo "CURRENT_VERSION_IMAGES=v${branch}" >> $GITHUB_ENV
         shell: bash
@@ -110,8 +110,8 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         run: |
           csv="olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-          if [[ "$(yq read "$csv" spec.replaces)" == "" || \
-                "$(yq read "$csv" 'metadata.annotations."olm.skipRange"')" == "" ]]; then
+          if [[ "$(yq .spec.replaces "$csv")" == "" || \
+                "$(yq '.metadata.annotations."olm.skipRange"' "$csv")" == "" ]]; then
             echo '::error:: Missing spec.replaces or metadata.annotations."olm.skipRange" in CSV.'
             exit 34
           fi
