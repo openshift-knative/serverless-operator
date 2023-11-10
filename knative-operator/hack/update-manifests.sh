@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+set -x
+
 root="$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Source the main vars file to get the serving/eventing version to be used.
