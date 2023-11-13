@@ -25,6 +25,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	// Injection stuff
@@ -197,6 +198,32 @@ func New(
 				}
 				return &cert, nil
 			},
+		}
+
+		if os.Getenv("USE_OLM_TLS") != "" {
+			webhook.tlsConfig.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+				secret, err := secretInformer.Lister().Secrets(system.Namespace()).Get(opts.SecretName)
+				if err != nil {
+					logger.Errorw("failed to fetch secret", zap.Error(err))
+					return nil, nil
+				}
+
+				serverKey, ok := secret.Data["tls.key"]
+				if !ok {
+					logger.Warn("server key missing")
+					return nil, nil
+				}
+				serverCert, ok := secret.Data["tls.crt"]
+				if !ok {
+					logger.Warn("server cert missing")
+					return nil, nil
+				}
+				cert, err := tls.X509KeyPair(serverCert, serverKey)
+				if err != nil {
+					return nil, err
+				}
+				return &cert, nil
+			}
 		}
 	}
 
