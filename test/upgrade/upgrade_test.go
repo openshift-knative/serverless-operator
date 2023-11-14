@@ -38,6 +38,7 @@ import (
 	"knative.dev/pkg/system"
 	_ "knative.dev/pkg/system/testing"
 	pkgTest "knative.dev/pkg/test"
+	"knative.dev/pkg/test/logstream/v2"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 
@@ -60,6 +61,8 @@ var global environment.GlobalEnvironment
 func TestServerlessUpgradePrePost(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+	canceler := exportEventingLogsOnError(t)
+	defer canceler()
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:    preUpgradeTests(),
@@ -77,6 +80,8 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 func TestServerlessUpgradeContinual(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
+	canceler := exportEventingLogsOnError(t)
+	defer canceler()
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
@@ -432,4 +437,24 @@ func ServingContinualTests(testCtx *test.Context) []pkgupgrade.BackgroundOperati
 	}
 
 	return tests
+}
+
+func exportEventingLogsOnError(t *testing.T) logstream.Canceler {
+	podPrefixes := []string{
+		"kafka-broker-receiver",
+		"kafka-broker-dispatcher",
+		"kafka-channel-receiver",
+		"kafka-channel-dispatcher",
+		"kafka-sink-receiver",
+		"kafka-source-dispatcher",
+		"eventing-controller",
+		"eventing-webhook",
+		"imc-controller",
+		"imc-dispatcher",
+		"mt-broker-controller",
+		"mt-broker-ingress",
+		"mt-broker-filter",
+	}
+
+	return testlib.ExportLogStreamOnError(t, testlib.SystemLogsDir, test.EventingNamespace, podPrefixes...)
 }
