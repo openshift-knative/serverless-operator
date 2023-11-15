@@ -164,13 +164,13 @@ function deploy_knativeserving_cr {
 
   if [[ "$serverless_version" != "${CURRENT_CSV#serverless-operator.v}" ]]; then
     logger.warn "Disabling internal encryption in upgrade tests due to SRVKS-1107."
-    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+    yq --inplace 'del(.spec.config.network.internal-encryption)' "$serving_cr"
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio "$serving_cr"
     # Disable internal encryption.
-    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+    yq --inplace 'del(spec.config.network.internal-encryption)' "$serving_cr"
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
@@ -214,7 +214,8 @@ spec:
     name: autoscaler
 EOF
 
-  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+  yq --inplace ". *+ load($istio_patch)" "$custom_resource"
+  #yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
 }
@@ -257,7 +258,8 @@ spec:
     name: imc-dispatcher
 EOF
 
-  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+  yq --inplace ". *+ load($istio_patch)" "$custom_resource"
+  #yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
 }
@@ -277,7 +279,8 @@ spec:
       openshift-ingress-default-certificate: "${cert_name}"
 EOF
 
-  yq merge --inplace --arrays append "$custom_resource" "$network_patch"
+  yq --inplace ". *+ load($istio_patch)" "$custom_resource"
+  #yq merge --inplace --arrays append "$custom_resource" "$network_patch"
 
   rm -f "${network_patch}"
 }
@@ -331,7 +334,8 @@ spec:
     name: kafka-controller
 EOF
 
-  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+  yq --inplace ". *+ load($istio_patch)" "$custom_resource"
+  #yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
 
   rm -f "${istio_patch}"
 }

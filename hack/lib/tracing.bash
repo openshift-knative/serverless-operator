@@ -244,7 +244,9 @@ spec:
       zipkin-endpoint: "${tracing_endpoint}"
 EOF
 
-  yq merge --inplace --arrays=append --overwrite "$custom_resource" "$tracing_patch"
+  yq --inplace ". *+ load(\"$tracing_patch\")" "$custom_resource"
+
+  #yq merge --inplace --arrays=append --overwrite "$custom_resource" "$tracing_patch"
 
   rm -f "${tracing_patch}"
 }

@@ -20,8 +20,8 @@ function deploy_certmanager_operator {
       
       echo "Running on OpenShift ${openshift_version} which supports cert-manager-operator only in tech-preview"
 
-      yq delete "${certmanager_resources_dir}"/subscription.yaml --doc 1 spec | \
-      yq write - --doc 2 spec.channel tech-preview | \
+      yq --inplace 'del(select(document_index == 1) | .spec)' "${certmanager_resources_dir}"/subscription.yaml | \
+      yq --inplace 'select(document_index == 2) | .spec.channel = "tech-preview"' "${certmanager_resources_dir}"/subscription.yaml | \
       oc apply -f - || return $?
 
       deployment_namespace="openshift-cert-manager"
