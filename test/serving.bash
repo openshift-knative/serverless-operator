@@ -93,9 +93,21 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
     ./test/e2e/initcontainers \
+    ${OPENSHIFT_TEST_OPTIONS} \
+    --imagetemplate "$image_template"
+
+  # Set longer progressDeadline for PVC tests as provisioning a volume might take longer.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving --type=merge \
+    --patch='{"spec": {"config": { "deployment": {"progressDeadline": "600s"}}}}'
+
+  SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=15m -parallel=$parallel \
     ./test/e2e/pvc \
     ${OPENSHIFT_TEST_OPTIONS} \
     --imagetemplate "$image_template"
+
+  # Back to default.
+  oc -n "${SERVING_NAMESPACE}" patch knativeserving/knative-serving --type=merge \
+      --patch='{"spec": {"config": { "deployment": {"progressDeadline": "120s"}}}}'
 
   mv ./test/e2e/autoscale_test.backup ./test/e2e/autoscale_test.go
   # Run autoscale tests separately as they require more CPU resources
