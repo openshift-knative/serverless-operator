@@ -174,7 +174,7 @@ require (
 	github.com/go-logr/logr v1.3.0
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.28.3
-	knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
+	knative.dev/reconciler-test v0.0.0-20231121121446-f747d069af11
 )
 
 replace (
@@ -184,7 +184,7 @@ replace (
 	knative.dev/hack => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 	knative.dev/networking => knative.dev/networking v0.0.0-20231023175057-21fb00ea6096
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231121134246-52a86c40f40c
 	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
 )
 
