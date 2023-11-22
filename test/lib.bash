@@ -213,6 +213,7 @@ function downstream_eventing_e2e_rekt_tests {
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt ./test/eventinge2erekt/servicemesh \
       --images.producer.file="${images_file}" \
+      --poll.timeout="8m" \
       --environment.namespace=serverless-tests \
       --istio.enabled="$FULL_MESH" \
       "$@"
@@ -285,6 +286,7 @@ function downstream_knative_kafka_e2e_rekt_tests {
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt ./test/extensione2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
+      --poll.timeout="8m" \
       --istio.enabled="$FULL_MESH" \
       "$@"
 
@@ -349,6 +351,7 @@ function downstream_kitchensink_e2e_tests {
 #  export GO_TEST_VERBOSITY=standard-verbose
   go_test_e2e "${RUN_FLAGS[@]}" ./test/kitchensinke2e \
   --images.producer.file="${images_file}" \
+  --poll.timeout="8m" \
   --imagetemplate "${IMAGE_TEMPLATE}" \
   "$@"
 }
@@ -432,6 +435,7 @@ EOF
   if [[ $FULL_MESH == "true" ]]; then
       common_opts+=("--environment.namespace=serverless-tests")
       common_opts+=("--istio.enabled")
+      common_opts+=("--poll.timeout=8m")
       # For non-REKT eventing tests.
       common_opts+=("--reusenamespace")
   fi
@@ -499,6 +503,7 @@ function kitchensink_upgrade_stress_tests {
   go_test_e2e -run=TestUpgradeStress -timeout=90m -parallel=20 ./test/upgrade/kitchensink -tags=upgrade \
      --kubeconfigs="${KUBECONFIG}" \
      --images.producer.file="${images_file}" \
+     --poll.timeout="8m" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
      --catalogsource="${OLM_SOURCE}" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}" \

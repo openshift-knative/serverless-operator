@@ -1657,7 +1657,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1 => knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
+# knative.dev/reconciler-test v0.0.0-20231121121446-f747d069af11 => knative.dev/reconciler-test v0.0.0-20231121134246-52a86c40f40c
 ## explicit; go 1.18
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1773,7 +1773,7 @@ sigs.k8s.io/yaml/goyaml.v2
 # knative.dev/hack => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 # knative.dev/networking => knative.dev/networking v0.0.0-20231023175057-21fb00ea6096
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
-# knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231024065608-1f72fcb94bc1
+# knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231121134246-52a86c40f40c
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
