@@ -9,7 +9,7 @@ target="${2:?Provide a target quickstart file as arg[2]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 declare -A vars
-vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
+vars[OCP_TARGET]="$(metadata.get '.requirements.ocpVersion.max')"
 
 # Start fresh
 cp "$template" "$target"

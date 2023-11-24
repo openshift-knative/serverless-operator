@@ -26,9 +26,9 @@ jobs:
 
       - name: Install prerequisites
         env:
-          YQ_VERSION: 3.4.0
+          YQ_VERSION: 4.35.2
         run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
+          sudo wget https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
           sudo mv /usr/bin/yq /usr/local/bin/yq
 
@@ -60,12 +60,12 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag "openshift-serverless-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
+        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag "openshift-serverless-v$(yq .project.version ../serverless-operator/olm-catalog/serverless-operator/project.yaml)"
 
       - name: Generate CI (on branch created)
         if: github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "openshift-serverless-v$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml project.version)"
+        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "openshift-serverless-v$(yq .project.version ../serverless-operator/olm-catalog/serverless-operator/project.yaml)"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5

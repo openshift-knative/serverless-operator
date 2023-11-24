@@ -18,7 +18,7 @@ helm > /dev/null || exit 127
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 policies_path="$(dirname "${BASH_SOURCE[0]}")/../lib/mesh_resources/authorization-policies/helm"
-chart_version="$(metadata.get project.version | grep -Eo '[0-9]+\.[0-9]+')" # grep removes the patch version in semver
+chart_version="$(metadata.get .project.version | grep -Eo '[0-9]+\.[0-9]+')" # grep removes the patch version in semver
 
 # Pull helm chart from Github
 template_cache=$(mktemp -d)

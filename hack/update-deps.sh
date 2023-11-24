@@ -19,8 +19,8 @@ KN_VERSION="release-1.11"
 EVENTING_VERSION="release-v1.11"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.11"
 SERVING_VERSION="release-v1.11"
-GO_VERSION="$(metadata.get requirements.golang)"
-OCP_VERSION="$(metadata.get requirements.ocpVersion.min)"
+GO_VERSION="$(metadata.get .requirements.golang)"
+OCP_VERSION="$(metadata.get .requirements.ocpVersion.min)"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.

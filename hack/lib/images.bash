@@ -10,7 +10,7 @@ function default_knative_serving_images() {
   local serving
   serving="${registry}/knative-serving"
   local tag
-  tag=$(metadata.get dependencies.serving)
+  tag="$(metadata.get .dependencies.serving)"
   export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-"${serving}-queue:${tag}"}
   export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"${serving}-activator:${tag}"}
   export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler:${tag}"}
@@ -24,7 +24,7 @@ function default_knative_eventing_images() {
   local eventing
   eventing="${registry}/knative-eventing"
   local tag
-  tag=$(metadata.get dependencies.eventing)
+  tag="$(metadata.get .dependencies.eventing)"
   export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
   export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
   export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-migrate:${tag}"}
@@ -53,7 +53,7 @@ function default_knative_eventing_test_images() {
   local eventing
   eventing="quay.io/openshift-knative/eventing"
   local tag
-  tag=$(metadata.get dependencies.eventing)
+  tag=$(metadata.get .dependencies.eventing)
   tag="${tag/knative-/}"
 
   export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"${eventing}/event-sender:${tag}"}
@@ -72,14 +72,14 @@ function default_knative_eventing_istio_images() {
   local eventing_istio
   eventing_istio="${registry}/knative-eventing-istio"
   local tag
-  tag=$(metadata.get dependencies.eventing_istio)
+  tag="$(metadata.get .dependencies.eventing_istio)"
   export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
 }
 
 function default_knative_eventing_kafka_broker_images() {
   local eventing_kafka_broker
   local tag
-  tag=$(metadata.get dependencies.eventing_kafka_broker)
+  tag="$(metadata.get .dependencies.eventing_kafka_broker)"
   eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
   export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher:${tag}"}
   export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver:${tag}"}
@@ -90,11 +90,11 @@ function default_knative_eventing_kafka_broker_images() {
 
 function default_knative_ingress_images() {
   local knative_kourier knative_istio
-  knative_kourier="$(metadata.get dependencies.kourier)"
+  knative_kourier="$(metadata.get .dependencies.kourier)"
   export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${registry}/net-kourier-kourier:${knative_kourier}"}
-  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
+  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get .dependencies.maistra)"}
 
-  knative_istio="$(metadata.get dependencies.net_istio)"
+  knative_istio="$(metadata.get .dependencies.net_istio)"
   export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${registry}/net-istio-controller:${knative_istio}"}
   export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-"${registry}/net-istio-webhook:${knative_istio}"}
 }

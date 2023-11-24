@@ -857,72 +857,6 @@ spec:
                         value: "true"
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
-                      - name: "IMAGE_queue-proxy"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11"
-                      - name: "IMAGE_activator"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-activator:knative-v1.11"
-                      - name: "IMAGE_autoscaler"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-autoscaler:knative-v1.11"
-                      - name: "IMAGE_autoscaler-hpa"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-autoscaler-hpa:knative-v1.11"
-                      - name: "IMAGE_controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-controller:knative-v1.11"
-                      - name: "IMAGE_webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-webhook:knative-v1.11"
-                      - name: "IMAGE_storage-version-migration-serving-__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-storage-version-migration:knative-v1.11"
-                      - name: "IMAGE_kourier-gateway"
-                        value: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
-                      - name: "IMAGE_net-kourier-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/net-kourier-kourier:knative-v1.11"
-                      - name: "IMAGE_net-istio-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/net-istio-controller:knative-v1.11"
-                      - name: "IMAGE_net-istio-webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.11"
-                      - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-controller:knative-v1.11"
-                      - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.11"
-                      - name: "IMAGE_eventing-webhook__eventing-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-webhook:knative-v1.11"
-                      - name: "IMAGE_storage-version-migration-eventing-__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
-                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtchannel-broker:knative-v1.11"
-                      - name: "IMAGE_mt-broker-filter__filter"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-filter:knative-v1.11"
-                      - name: "IMAGE_mt-broker-ingress__ingress"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-ingress:knative-v1.11"
-                      - name: "IMAGE_imc-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-controller:knative-v1.11"
-                      - name: "IMAGE_imc-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtping:knative-v1.11"
-                      - name: "IMAGE_APISERVER_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-apiserver-receive-adapter:knative-v1.11"
-                      - name: "IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-                      - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.13:kube-rbac-proxy"
-                      - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
-                      - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.10.0:knative-client"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-                        value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-                        value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
-                      - name: "CURRENT_VERSION"
-                        value: "1.32.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -1018,93 +952,93 @@ spec:
                         value: "true"
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
-                      - name: "IMAGE_queue-proxy"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11"
-                      - name: "IMAGE_activator"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-activator:knative-v1.11"
-                      - name: "IMAGE_autoscaler"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-autoscaler:knative-v1.11"
-                      - name: "IMAGE_autoscaler-hpa"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-autoscaler-hpa:knative-v1.11"
-                      - name: "IMAGE_controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-controller:knative-v1.11"
-                      - name: "IMAGE_webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-webhook:knative-v1.11"
-                      - name: "IMAGE_storage-version-migration-serving-__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-serving-storage-version-migration:knative-v1.11"
-                      - name: "IMAGE_kourier-gateway"
-                        value: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
-                      - name: "IMAGE_net-kourier-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/net-kourier-kourier:knative-v1.11"
-                      - name: "IMAGE_net-istio-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/net-istio-controller:knative-v1.11"
-                      - name: "IMAGE_net-istio-webhook__webhook"
-                        value: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.11"
-                      - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-controller:knative-v1.11"
-                      - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.11"
-                      - name: "IMAGE_eventing-webhook__eventing-webhook"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-webhook:knative-v1.11"
-                      - name: "IMAGE_storage-version-migration-eventing-__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
-                      - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtchannel-broker:knative-v1.11"
-                      - name: "IMAGE_mt-broker-filter__filter"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-filter:knative-v1.11"
-                      - name: "IMAGE_mt-broker-ingress__ingress"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-ingress:knative-v1.11"
-                      - name: "IMAGE_imc-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-controller:knative-v1.11"
-                      - name: "IMAGE_imc-dispatcher__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-                      - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-mtping:knative-v1.11"
-                      - name: "IMAGE_APISERVER_RA_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-apiserver-receive-adapter:knative-v1.11"
-                      - name: "IMAGE_DISPATCHER_IMAGE"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-                      - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.13:kube-rbac-proxy"
-                      - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
-                      - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.10.0:knative-client"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-                        value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-                        value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
-                      - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-controller__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-kafka-controller:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-webhook-kafka:knative-v1.11"
-                      - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.11"
-                      - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
-                        value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
-                      - name: "CURRENT_VERSION"
-                        value: "1.32.0"
-                      - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
+                      - name: IMAGE_queue-proxy
+                        value: registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11
+                      - name: IMAGE_activator
+                        value: registry.ci.openshift.org/openshift/knative-serving-activator:knative-v1.11
+                      - name: IMAGE_autoscaler
+                        value: registry.ci.openshift.org/openshift/knative-serving-autoscaler:knative-v1.11
+                      - name: IMAGE_autoscaler-hpa
+                        value: registry.ci.openshift.org/openshift/knative-serving-autoscaler-hpa:knative-v1.11
+                      - name: IMAGE_controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-serving-controller:knative-v1.11
+                      - name: IMAGE_webhook__webhook
+                        value: registry.ci.openshift.org/openshift/knative-serving-webhook:knative-v1.11
+                      - name: IMAGE_storage-version-migration-serving-__migrate
+                        value: registry.ci.openshift.org/openshift/knative-serving-storage-version-migration:knative-v1.11
+                      - name: IMAGE_kourier-gateway
+                        value: quay.io/maistra-dev/proxyv2-ubi8:2.4-latest
+                      - name: IMAGE_net-kourier-controller__controller
+                        value: registry.ci.openshift.org/openshift/net-kourier-kourier:knative-v1.11
+                      - name: IMAGE_net-istio-controller__controller
+                        value: registry.ci.openshift.org/openshift/net-istio-controller:knative-v1.11
+                      - name: IMAGE_net-istio-webhook__webhook
+                        value: registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.11
+                      - name: IMAGE_eventing-controller__eventing-controller
+                        value: registry.ci.openshift.org/openshift/knative-eventing-controller:knative-v1.11
+                      - name: IMAGE_eventing-istio-controller__eventing-istio-controller
+                        value: registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.11
+                      - name: IMAGE_eventing-webhook__eventing-webhook
+                        value: registry.ci.openshift.org/openshift/knative-eventing-webhook:knative-v1.11
+                      - name: IMAGE_storage-version-migration-eventing-__migrate
+                        value: registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11
+                      - name: IMAGE_mt-broker-controller__mt-broker-controller
+                        value: registry.ci.openshift.org/openshift/knative-eventing-mtchannel-broker:knative-v1.11
+                      - name: IMAGE_mt-broker-filter__filter
+                        value: registry.ci.openshift.org/openshift/knative-eventing-mtbroker-filter:knative-v1.11
+                      - name: IMAGE_mt-broker-ingress__ingress
+                        value: registry.ci.openshift.org/openshift/knative-eventing-mtbroker-ingress:knative-v1.11
+                      - name: IMAGE_imc-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-eventing-channel-controller:knative-v1.11
+                      - name: IMAGE_imc-dispatcher__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11
+                      - name: IMAGE_pingsource-mt-adapter__dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-eventing-mtping:knative-v1.11
+                      - name: IMAGE_APISERVER_RA_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-eventing-apiserver-receive-adapter:knative-v1.11
+                      - name: IMAGE_DISPATCHER_IMAGE
+                        value: registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11
+                      - name: IMAGE_KUBE_RBAC_PROXY
+                        value: registry.ci.openshift.org/origin/4.13:kube-rbac-proxy
+                      - name: IMAGE_KN_PLUGIN_EVENT_SENDER
+                        value: registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender
+                      - name: IMAGE_KN_CLIENT
+                        value: registry.ci.openshift.org/openshift/knative-v1.10.0:knative-client
+                      - name: IMAGE_KN_PLUGIN_FUNC_UTIL
+                        value: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
+                      - name: IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I
+                        value: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
+                      - name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
+                        value: registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae
+                      - name: IMAGE_KN_PLUGIN_FUNC_NODEJS_16
+                        value: registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078
+                      - name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_17
+                        value: registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5
+                      - name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
+                        value: registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41
+                      - name: KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-controller__controller
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-kafka-controller:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-webhook-kafka:knative-v1.11
+                      - name: KAFKA_IMAGE_kafka-controller-post-install__post-install
+                        value: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.11
+                      - name: KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate
+                        value: registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11
+                      - name: CURRENT_VERSION
+                        value: 1.32.0
+                      - name: KNATIVE_EVENTING_KAFKA_BROKER_VERSION
                         value: "1.11"
                     securityContext:
                       allowPrivilegeEscalation: false
@@ -1289,89 +1223,89 @@ spec:
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
       image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
-    - name: "IMAGE_queue-proxy"
-      image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11"
-    - name: "IMAGE_activator"
-      image: "registry.ci.openshift.org/openshift/knative-serving-activator:knative-v1.11"
-    - name: "IMAGE_autoscaler"
-      image: "registry.ci.openshift.org/openshift/knative-serving-autoscaler:knative-v1.11"
-    - name: "IMAGE_autoscaler-hpa"
-      image: "registry.ci.openshift.org/openshift/knative-serving-autoscaler-hpa:knative-v1.11"
-    - name: "IMAGE_controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-serving-controller:knative-v1.11"
-    - name: "IMAGE_webhook__webhook"
-      image: "registry.ci.openshift.org/openshift/knative-serving-webhook:knative-v1.11"
-    - name: "IMAGE_storage-version-migration-serving-__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-serving-storage-version-migration:knative-v1.11"
-    - name: "IMAGE_kourier-gateway"
-      image: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
-    - name: "IMAGE_net-kourier-controller__controller"
-      image: "registry.ci.openshift.org/openshift/net-kourier-kourier:knative-v1.11"
-    - name: "IMAGE_net-istio-controller__controller"
-      image: "registry.ci.openshift.org/openshift/net-istio-controller:knative-v1.11"
-    - name: "IMAGE_net-istio-webhook__webhook"
-      image: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.11"
-    - name: "IMAGE_eventing-controller__eventing-controller"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-controller:knative-v1.11"
-    - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.11"
-    - name: "IMAGE_eventing-webhook__eventing-webhook"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-webhook:knative-v1.11"
-    - name: "IMAGE_storage-version-migration-eventing-__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
-    - name: "IMAGE_mt-broker-controller__mt-broker-controller"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-mtchannel-broker:knative-v1.11"
-    - name: "IMAGE_mt-broker-filter__filter"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-filter:knative-v1.11"
-    - name: "IMAGE_mt-broker-ingress__ingress"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-mtbroker-ingress:knative-v1.11"
-    - name: "IMAGE_imc-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-channel-controller:knative-v1.11"
-    - name: "IMAGE_imc-dispatcher__dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-    - name: "IMAGE_pingsource-mt-adapter__dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-mtping:knative-v1.11"
-    - name: "IMAGE_APISERVER_RA_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-apiserver-receive-adapter:knative-v1.11"
-    - name: "IMAGE_DISPATCHER_IMAGE"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11"
-    - name: "IMAGE_KUBE_RBAC_PROXY"
-      image: "registry.ci.openshift.org/origin/4.13:kube-rbac-proxy"
-    - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender"
-    - name: "IMAGE_KN_CLIENT"
-      image: "registry.ci.openshift.org/openshift/knative-v1.10.0:knative-client"
-    - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-      image: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
-    - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-      image: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
-    - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-      image: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
-    - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-      image: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
-    - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-      image: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
-    - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-      image: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
-    - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-controller__controller"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-kafka-controller:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-webhook-kafka:knative-v1.11"
-    - name: "KAFKA_IMAGE_kafka-controller-post-install__post-install"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.11"
-    - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
-      image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
+    - name: IMAGE_queue-proxy
+      image: registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11
+    - name: IMAGE_activator
+      image: registry.ci.openshift.org/openshift/knative-serving-activator:knative-v1.11
+    - name: IMAGE_autoscaler
+      image: registry.ci.openshift.org/openshift/knative-serving-autoscaler:knative-v1.11
+    - name: IMAGE_autoscaler-hpa
+      image: registry.ci.openshift.org/openshift/knative-serving-autoscaler-hpa:knative-v1.11
+    - name: IMAGE_controller__controller
+      image: registry.ci.openshift.org/openshift/knative-serving-controller:knative-v1.11
+    - name: IMAGE_webhook__webhook
+      image: registry.ci.openshift.org/openshift/knative-serving-webhook:knative-v1.11
+    - name: IMAGE_storage-version-migration-serving-__migrate
+      image: registry.ci.openshift.org/openshift/knative-serving-storage-version-migration:knative-v1.11
+    - name: IMAGE_kourier-gateway
+      image: quay.io/maistra-dev/proxyv2-ubi8:2.4-latest
+    - name: IMAGE_net-kourier-controller__controller
+      image: registry.ci.openshift.org/openshift/net-kourier-kourier:knative-v1.11
+    - name: IMAGE_net-istio-controller__controller
+      image: registry.ci.openshift.org/openshift/net-istio-controller:knative-v1.11
+    - name: IMAGE_net-istio-webhook__webhook
+      image: registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.11
+    - name: IMAGE_eventing-controller__eventing-controller
+      image: registry.ci.openshift.org/openshift/knative-eventing-controller:knative-v1.11
+    - name: IMAGE_eventing-istio-controller__eventing-istio-controller
+      image: registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.11
+    - name: IMAGE_eventing-webhook__eventing-webhook
+      image: registry.ci.openshift.org/openshift/knative-eventing-webhook:knative-v1.11
+    - name: IMAGE_storage-version-migration-eventing-__migrate
+      image: registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11
+    - name: IMAGE_mt-broker-controller__mt-broker-controller
+      image: registry.ci.openshift.org/openshift/knative-eventing-mtchannel-broker:knative-v1.11
+    - name: IMAGE_mt-broker-filter__filter
+      image: registry.ci.openshift.org/openshift/knative-eventing-mtbroker-filter:knative-v1.11
+    - name: IMAGE_mt-broker-ingress__ingress
+      image: registry.ci.openshift.org/openshift/knative-eventing-mtbroker-ingress:knative-v1.11
+    - name: IMAGE_imc-controller__controller
+      image: registry.ci.openshift.org/openshift/knative-eventing-channel-controller:knative-v1.11
+    - name: IMAGE_imc-dispatcher__dispatcher
+      image: registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11
+    - name: IMAGE_pingsource-mt-adapter__dispatcher
+      image: registry.ci.openshift.org/openshift/knative-eventing-mtping:knative-v1.11
+    - name: IMAGE_APISERVER_RA_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-eventing-apiserver-receive-adapter:knative-v1.11
+    - name: IMAGE_DISPATCHER_IMAGE
+      image: registry.ci.openshift.org/openshift/knative-eventing-channel-dispatcher:knative-v1.11
+    - name: IMAGE_KUBE_RBAC_PROXY
+      image: registry.ci.openshift.org/origin/4.13:kube-rbac-proxy
+    - name: IMAGE_KN_PLUGIN_EVENT_SENDER
+      image: registry.ci.openshift.org/knative/release-1.10:client-plugin-event-sender
+    - name: IMAGE_KN_CLIENT
+      image: registry.ci.openshift.org/openshift/knative-v1.10.0:knative-client
+    - name: IMAGE_KN_PLUGIN_FUNC_UTIL
+      image: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
+    - name: IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I
+      image: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
+    - name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
+      image: registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae
+    - name: IMAGE_KN_PLUGIN_FUNC_NODEJS_16
+      image: registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078
+    - name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_17
+      image: registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5
+    - name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
+      image: registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41
+    - name: KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-controller__controller
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-kafka-controller:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-dispatcher:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-webhook-kafka:knative-v1.11
+    - name: KAFKA_IMAGE_kafka-controller-post-install__post-install
+      image: registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.11
+    - name: KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate
+      image: registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11
   replaces: serverless-operator.v1.31.0
   version: 1.32.0

@@ -12,9 +12,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"nightly"}
 
-client_version="$(metadata.get dependencies.cli)"
+client_version="$(metadata.get .dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
-rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
+rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get '.requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_knative_eventing_images
 default_knative_eventing_istio_images
@@ -44,7 +44,7 @@ function kafka_image {
   kafka_images_addresses["${name}"]="${address}"
 }
 
-serving_version=$(metadata.get dependencies.serving)
+serving_version=$(metadata.get .dependencies.serving)
 serving_version=${serving_version/knative-v/}
 
 image "queue-proxy"    "${KNATIVE_SERVING_QUEUE}"
@@ -61,7 +61,7 @@ image "net-kourier-controller__controller" "${KNATIVE_KOURIER_CONTROL}"
 image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}"
 image "net-istio-webhook__webhook" "${KNATIVE_ISTIO_WEBHOOK}"
 
-eventing_version=$(metadata.get dependencies.eventing)
+eventing_version=$(metadata.get .dependencies.eventing)
 eventing_version=${eventing_version/knative-v/}
 
 image "eventing-controller__eventing-controller"                                 "${KNATIVE_EVENTING_CONTROLLER}"
@@ -90,43 +90,45 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
-image 'KN_CLIENT'              "${registry}/knative-v$(metadata.get dependencies.cli):knative-client"
+image 'KN_CLIENT'              "${registry}/knative-v$(metadata.get .dependencies.cli):knative-client"
 
-image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
-image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
-image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get dependencies.func.tekton_buildah)"
-image 'KN_PLUGIN_FUNC_NODEJS_16'      "$(metadata.get dependencies.func.nodejs_16)"
-image 'KN_PLUGIN_FUNC_OPENJDK_17'     "$(metadata.get dependencies.func.openjdk_17)"
-image 'KN_PLUGIN_FUNC_PYTHON_39'      "$(metadata.get dependencies.func.python-39)"
+image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get .dependencies.func.util)"
+image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get .dependencies.func.tekton_s2i)"
+image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get .dependencies.func.tekton_buildah)"
+image 'KN_PLUGIN_FUNC_NODEJS_16'      "$(metadata.get .dependencies.func.nodejs_16)"
+image 'KN_PLUGIN_FUNC_OPENJDK_17'     "$(metadata.get .dependencies.func.openjdk_17)"
+image 'KN_PLUGIN_FUNC_PYTHON_39'      "$(metadata.get .dependencies.func.python-39)"
 
 declare -A yaml_keys
-yaml_keys[spec.version]="$(metadata.get project.version)"
-yaml_keys[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
-yaml_keys['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
-yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
-yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
+yaml_keys[.spec.version]="$(metadata.get .project.version)"
+yaml_keys[.metadata.name]="$(metadata.get .project.name).v$(metadata.get .project.version)"
+yaml_keys['.metadata.annotations["olm.skipRange"]']="$(metadata.get .olm.skipRange)"
+yaml_keys[.spec.minKubeVersion]="$(metadata.get .requirements.kube.minVersion)"
+yaml_keys[.spec.replaces]="$(metadata.get .project.name).v$(metadata.get .olm.replaces)"
 
 declare -A vars
-vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
+vars[OCP_TARGET]="$(metadata.get '.requirements.ocpVersion.max')"
 
 function add_related_image {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.relatedImages[+]
-  value:
-    name: "${2}"
-    image: "${3}"
-EOF
+#   cat << EOF | yq write --inplace --script - "$1"
+# - command: update
+#   path: spec.relatedImages[+]
+#   value:
+#     name: "${2}"
+#     image: "${3}"
+# EOF
+  yq e --inplace ".spec.relatedImages += {\"name\": \"${2}\", \"image\": \"${3}\"}" "$1"
 }
 
 function add_downstream_operator_deployment_env {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
-  value:
-    name: "${2}"
-    value: "${3}"
-EOF
+#   cat << EOF | yq write --inplace --script - "$1"
+# - command: update
+#   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
+#   value:
+#     name: "${2}"
+#     value: "${3}"
+# EOF
+  yq e --inplace "(.spec.install.spec.deployments[] | select(.name == \"knative-openshift\").spec.template.spec.containers[] | select(.name == \"knative-openshift\").env) += {\"name\": \"${2}\", \"value\": \"${3}\"}" "$1"
 }
 
 # since we also parse the environment variables in the upstream (actually midstream) operator,
@@ -134,13 +136,14 @@ EOF
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
 function add_upstream_operator_deployment_env {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
-  value:
-    name: "${2}"
-    value: "${3}"
-EOF
+#   cat << EOF | yq write --inplace --script - "$1"
+# - command: update
+#   path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
+#   value:
+#     name: "${2}"
+#     value: "${3}"
+# EOF
+  yq e --inplace "(.spec.install.spec.deployments[] | select(.name == \"knative-openshift\").spec.template.spec.initContainers[] | select(.name == \"cli-artifacts\").image) |= \"${registry}/knative-v$(metadata.get .dependencies.cli):kn-cli-artifacts\"" "$target"
 }
 
 # Start fresh
@@ -161,19 +164,21 @@ for name in "${kafka_images[@]}"; do
 done
 
 # Add Knative Kafka version to the downstream operator
-add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
-ekb_version=$(metadata.get dependencies.eventing_kafka_broker)
+add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get .project.version)"
+ekb_version=$(metadata.get .dependencies.eventing_kafka_broker)
 add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Add Serverless version to be used for naming storage jobs for Serving, Eventing
-add_upstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
+add_upstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get .project.version)"
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+#yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get .dependencies.cli):kn-cli-artifacts"
+yq e --inplace "(.spec.install.spec.deployments[] | select(.name == \"knative-openshift\").spec.template.spec.initContainers[] | select(.name == \"cli-artifacts\").image) |= \"${registry}/knative-v$(metadata.get .dependencies.cli):kn-cli-artifacts\"" "$target"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"
-  yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
+  #yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
+  yq e --inplace "$name = \"${yaml_keys[$name]}\"" "$target"
 done
 
 for name in "${!vars[@]}"; do

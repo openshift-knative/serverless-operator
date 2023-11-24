@@ -39,7 +39,7 @@ function download_serving {
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
-  branch=$(metadata.get dependencies.serving_artifacts_branch)
+  branch=$(metadata.get .dependencies.serving_artifacts_branch)
   for (( i=0; i<${#files[@]}; i++ ));
   do
     index=$(( i+1 ))
@@ -71,7 +71,7 @@ function download_eventing {
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
-  branch=$(metadata.get dependencies.eventing_artifacts_branch)
+  branch=$(metadata.get .dependencies.eventing_artifacts_branch)
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
     file="${files[$i]}"
@@ -102,7 +102,7 @@ function download_eventing_istio {
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
   target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
 
-  branch=$(metadata.get dependencies.eventing_istio_artifacts_branch)
+  branch=$(metadata.get .dependencies.eventing_istio_artifacts_branch)
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
     file="${files[$i]}"
@@ -134,7 +134,7 @@ function download_ingress {
   files=("$@")
   echo "Files: ${files[*]}"
 
-  branch=$(metadata.get "dependencies.${component/-/_}_artifacts_branch")
+  branch=$(metadata.get ".dependencies.${component/-/_}_artifacts_branch")
   for (( i=0; i<${#files[@]}; i++ ));
   do
     index=$(( i+1 ))
