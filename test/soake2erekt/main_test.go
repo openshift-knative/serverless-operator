@@ -3,21 +3,12 @@ package soake2erekt
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"testing"
 	"time"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"knative.dev/pkg/apis"
-	"knative.dev/pkg/injection/clients/dynamicclient"
-
-	corev1 "k8s.io/api/core/v1"
 	"knative.dev/eventing/test/rekt/resources/channel_impl"
 	"knative.dev/pkg/system"
 	pkgTest "knative.dev/pkg/test"
@@ -68,7 +59,7 @@ func TestMain(m *testing.M) {
 
 func soakTestEnvironment(t *testing.T, namespace string) (context.Context, environment.Environment) {
 	return global.Environment(
-		environment.InNamespace(namespace),
+		environment.WithNamespace(namespace),
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
 		knative.WithTracingConfig,
@@ -181,7 +172,7 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 
 				// TODO: can we do this? (use an empty env for the iteration, but keep using the original context?)
 				_, iterationEnv := global.Environment(
-					environment.InNamespace(namespace),
+					environment.WithNamespace(namespace),
 				)
 
 				iterationCtx := context.WithValue(ctx, soakKey{}, &soakEnvImpl{
@@ -203,7 +194,7 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				}
 
 				// Cleanup all resources created in this iteration
-				err := deleteResources(ctx, t, iterationEnv.References())
+				err := feature.DeleteResources(ctx, t, iterationEnv.References())
 				if err != nil {
 					feature.LogReferences(env.References()...)(ctx, t)
 					feature.LogReferences(iterationEnv.References()...)(ctx, t)
@@ -233,7 +224,7 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 			}
 
 			// cleanup all the references from the setup phase
-			err := deleteResources(ctx, t, env.References())
+			err := feature.DeleteResources(ctx, t, env.References())
 			if err != nil {
 				feature.LogReferences(env.References()...)(ctx, t)
 				t.Fatalf("error deleting resources: %v", err)
@@ -260,68 +251,4 @@ func RunSoakFeatureFnWithMapping[X any](ctx context.Context, env environment.Env
 	soakEnv := soakEnvImplFromContext(ctx)
 	f := sfn(mf(soakEnv))
 	RunSoakFeature(ctx, env, t, f)
-}
-
-/*
-copy from features, with Poll changes to use the ones provided by environment.PollTimingsFromContext
-TODO: move upstream
-*/
-func deleteResources(ctx context.Context, t *testing.T, refs []corev1.ObjectReference) error {
-	dc := dynamicclient.Get(ctx)
-
-	for _, ref := range refs {
-
-		gv, err := schema.ParseGroupVersion(ref.APIVersion)
-		if err != nil {
-			return fmt.Errorf("could not parse GroupVersion for %+v", ref.APIVersion)
-		}
-
-		resource := apis.KindToResource(gv.WithKind(ref.Kind))
-		t.Logf("Deleting %s/%s of GVR: %+v", ref.Namespace, ref.Name, resource)
-
-		deleteOptions := &metav1.DeleteOptions{}
-		// Set delete propagation policy to foreground
-		foregroundDeletePropagation := metav1.DeletePropagationForeground
-		deleteOptions.PropagationPolicy = &foregroundDeletePropagation
-
-		err = dc.Resource(resource).Namespace(ref.Namespace).Delete(ctx, ref.Name, *deleteOptions)
-		// Ignore not found errors.
-		if err != nil && !apierrors.IsNotFound(err) {
-			t.Logf("Warning, failed to delete %s/%s of GVR: %+v: %v", ref.Namespace, ref.Name, resource, err)
-		}
-	}
-
-	interval, duration := environment.PollTimingsFromContext(ctx)
-	err := wait.Poll(interval, duration, func() (bool, error) {
-		for _, ref := range refs {
-			gv, err := schema.ParseGroupVersion(ref.APIVersion)
-			if err != nil {
-				return false, fmt.Errorf("could not parse GroupVersion for %+v", ref.APIVersion)
-			}
-
-			resource := apis.KindToResource(gv.WithKind(ref.Kind))
-			t.Logf("Deleting %s/%s of GVR: %+v", ref.Namespace, ref.Name, resource)
-
-			_, err = dc.Resource(resource).
-				Namespace(ref.Namespace).
-				Get(ctx, ref.Name, metav1.GetOptions{})
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-			if err != nil {
-				feature.LogReferences(ref)(ctx, t)
-				return false, fmt.Errorf("failed to get resource %+v %s/%s: %w", resource, ref.Namespace, ref.Name, err)
-			}
-
-			t.Logf("Resource %+v %s/%s still present", resource, ref.Namespace, ref.Name)
-			return false, nil
-		}
-
-		return true, nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to wait for resources to be deleted: %w", err)
-	}
-
-	return nil
 }
