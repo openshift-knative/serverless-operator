@@ -48,6 +48,11 @@ mkdir -p "$policies_path"
 
 for tenant in ${tenants//,/ }; do
   echo "Generating AuthorizationPolicies for tenant $tenant"
+  # Steps to verify the final helm chart packaged as .tgz:
+  # 1. Use a URL pointing to the tgz file below. Example: helm template https://github.com/Kaustubh-pande/charts/raw/knative-istio-authz-1.31-release/charts/redhat/redhat/knative-istio-authz/1.31.0/knative-istio-authz-1.31.0.tgz --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
+  # 2. Send a PR against Github.
+  # 3. Check if the Github action called "Validate / Generated files are committed" passes. If the
+  #    action fails it means the helm chart is different from what was tested in CI.
   helm template "$template_cache" --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
 done
 
