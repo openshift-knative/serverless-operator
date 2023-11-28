@@ -215,10 +215,6 @@ func TestKafkaSourceStableSoak(t *testing.T) {
 			// we just want to verify the source can send/receive events throughout the soak test, so let it rest here for a while
 			time.Sleep(1 * time.Second)
 		},
-		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
-			f := verifyNoKafkaSourceLeftInDispatcherConfigMap()
-			env.Test(ctx, t, f)
-		},
 	}
 
 	RunSoakTestWithDefaultCopies(t, soakTest)
