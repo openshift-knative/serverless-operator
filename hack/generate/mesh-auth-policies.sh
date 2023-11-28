@@ -18,6 +18,11 @@ helm > /dev/null || exit 127
 
 policies_path="$(dirname "${BASH_SOURCE[0]}")/../lib/mesh_resources/authorization-policies/helm"
 
+logger.info "Cleaning up old resources in $policies_path"
+
+rm -rf "$policies_path"
+mkdir -p "$policies_path"
+
 # Flag for testing a released helm chart.
 if [[ "${USE_RELEASED_HELM_CHART}" == "true" ]]; then
   logger.info "Installing helm chart redhat-knative-istio-authz from https://charts.openshift.io/"
@@ -44,11 +49,6 @@ else
      echo "Failed to clone knative-istio-authz-chart with branch release-${chart_version}. Falling back to using main."
      git clone --depth 1 https://github.com/openshift-knative/knative-istio-authz-chart.git "$template_cache"
   fi
-
-  echo "Cleaning up old resources in $policies_path"
-
-  rm -rf "$policies_path"
-  mkdir -p "$policies_path"
 
   for tenant in ${tenants//,/ }; do
     echo "Generating AuthorizationPolicies for tenant $tenant"
