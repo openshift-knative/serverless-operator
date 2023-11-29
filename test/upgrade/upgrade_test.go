@@ -447,6 +447,8 @@ func exportEventingLogsOnError(t *testing.T) logstream.Canceler {
 		"kafka-channel-dispatcher",
 		"kafka-sink-receiver",
 		"kafka-source-dispatcher",
+		"kafka-controller",
+		"kafka-webhook",
 		"eventing-controller",
 		"eventing-webhook",
 		"imc-controller",
