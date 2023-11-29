@@ -232,7 +232,7 @@ func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	validateUnstructuredDeploymentChanged(t, tt, &unstructuredDeployment)
 
 	// test for daemonSet
-	unstructuredDaemonSet := util.MakeUnstructured(t, makeDaemonSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
+	unstructuredDaemonSet := util.MakeUnstructured(t, util.MakeDaemonSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	daemonSetTransform := ImageTransform(tt.overrideMap)
 	daemonSetTransform(&unstructuredDaemonSet)
 	validateUnstructuredDaemonSetChanged(t, tt, &unstructuredDaemonSet)
@@ -263,22 +263,6 @@ func validateUnstructuredJobChanged(t *testing.T, tt *updateImageTest, u *unstru
 	err := scheme.Scheme.Convert(u, job, nil)
 	util.AssertEqual(t, err, nil)
 	util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
-}
-
-func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
-	return &appsv1.DaemonSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "DaemonSet",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: appsv1.DaemonSetSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
 }
 
 func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
