@@ -242,6 +242,12 @@ func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	jobTransform := ImageTransform(tt.overrideMap)
 	jobTransform(&unstructuredJob)
 	validateUnstructuredJobChanged(t, tt, &unstructuredJob)
+
+	// test for statefulSet
+	unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
+	statefulSetTransform := ImageTransform(tt.overrideMap)
+	statefulSetTransform(&unstructuredStatefulSet)
+	validateUnstructuredStatefulSetChanged(t, tt, &unstructuredStatefulSet)
 }
 
 func validateUnstructuredDeploymentChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
@@ -265,6 +271,13 @@ func validateUnstructuredJobChanged(t *testing.T, tt *updateImageTest, u *unstru
 	util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
 }
 
+func validateUnstructuredStatefulSetChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
+	var s = &appsv1.StatefulSet{}
+	err := scheme.Scheme.Convert(u, s, nil)
+	util.AssertEqual(t, err, nil)
+	util.AssertDeepEqual(t, s.Spec.Template.Spec.Containers, tt.expected)
+}
+
 func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
 	return &batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
@@ -274,6 +287,22 @@ func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
 			Name: name,
 		},
 		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "StatefulSet",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: appsv1.StatefulSetSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},
