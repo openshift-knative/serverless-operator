@@ -1324,11 +1324,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20231012200751-ee89f751874f
+# knative.dev/caching v0.0.0-20231023175240-c47a37c662c8
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.38.5 => github.com/openshift-knative/eventing v0.99.1-0.20231024090734-f798ec4dff89
+# knative.dev/eventing v0.38.7 => github.com/openshift-knative/eventing v0.99.1-0.20231024090734-f798ec4dff89
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
@@ -1506,7 +1506,7 @@ knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic
 knative.dev/eventing-kafka-broker/test/upgrade
 knative.dev/eventing-kafka-broker/test/upgrade/continual
 knative.dev/eventing-kafka-broker/test/upgrade/installation
-# knative.dev/hack v0.0.0-20230712131415-ddae80293c43 => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
+# knative.dev/hack v0.0.0-20231123073118-c0f04e812cfe => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 ## explicit; go 1.18
 knative.dev/hack
 knative.dev/hack/shell
@@ -1537,7 +1537,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.38.9
+# knative.dev/operator v0.38.11
 ## explicit; go 1.19
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1566,7 +1566,7 @@ knative.dev/operator/pkg/reconciler/knativeserving/common
 knative.dev/operator/pkg/reconciler/knativeserving/ingress
 knative.dev/operator/pkg/reconciler/knativeserving/security
 knative.dev/operator/pkg/reconciler/manifests
-# knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626 => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
+# knative.dev/pkg v0.0.0-20231103161548-f5b42e8dea44 => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
 ## explicit; go 1.18
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1681,7 +1681,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.38.2 => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
+# knative.dev/serving v0.38.5 => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
