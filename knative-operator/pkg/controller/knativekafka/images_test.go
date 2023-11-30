@@ -6,7 +6,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
@@ -238,13 +237,13 @@ func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	validateUnstructuredDaemonSetChanged(t, tt, &unstructuredDaemonSet)
 
 	// test for job
-	unstructuredJob := util.MakeUnstructured(t, makeJob(tt.name, corev1.PodSpec{Containers: tt.containers}))
+	unstructuredJob := util.MakeUnstructured(t, util.MakeJob(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	jobTransform := ImageTransform(tt.overrideMap)
 	jobTransform(&unstructuredJob)
 	validateUnstructuredJobChanged(t, tt, &unstructuredJob)
 
 	// test for statefulSet
-	unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
+	unstructuredStatefulSet := util.MakeUnstructured(t, util.MakeStatefulSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	statefulSetTransform := ImageTransform(tt.overrideMap)
 	statefulSetTransform(&unstructuredStatefulSet)
 	validateUnstructuredStatefulSetChanged(t, tt, &unstructuredStatefulSet)
@@ -276,36 +275,4 @@ func validateUnstructuredStatefulSetChanged(t *testing.T, tt *updateImageTest, u
 	err := scheme.Scheme.Convert(u, s, nil)
 	util.AssertEqual(t, err, nil)
 	util.AssertDeepEqual(t, s.Spec.Template.Spec.Containers, tt.expected)
-}
-
-func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
-	return &batchv1.Job{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
-	return &appsv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "StatefulSet",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: appsv1.StatefulSetSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
 }
