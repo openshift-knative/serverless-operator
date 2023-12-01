@@ -45,7 +45,8 @@ func ApplyCABundlesTransform() mf.Transformer {
 
 		// Now that the injected certificates have been added as a volume, let's
 		// mount them via volumeMounts in the containers
-		for i, c := range podSpec.Containers {
+		for i := range podSpec.Containers {
+			c := podSpec.Containers[i] // Create a copy of the container
 			AddCABundlesToContainerVolumes(&c)
 			podSpec.Containers[i] = c
 		}
