@@ -20,6 +20,15 @@ import (
 
 const clusterVersionName = "version"
 
+var (
+	// adminAcks includes admin acks for cluster upgrades.
+	// See https://access.redhat.com/articles/6955381 for more details.
+	adminAcks = []string{
+		"ack-4.11-kube-1.25-api-removals-in-4.12",
+		"ack-4.13-kube-1.27-api-removals-in-4.14",
+	}
+)
+
 func UpgradeOpenShift(ctx *test.Context) error {
 	clusterVersion, err := ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), clusterVersionName, metav1.GetOptions{})
 	if err != nil {
@@ -176,5 +185,21 @@ func pauseMachineConfigPool(ctx *test.Context, pause bool) error {
 		); err != nil {
 		return err
 	}
+	return nil
+}
+
+func ApplyAdminAcks(ctx *test.Context) error {
+	for _, adminAck := range adminAcks {
+		if _, err := ctx.Clients.Kube.CoreV1().ConfigMaps("openshift-config").
+			Patch(context.Background(),
+				"admin-acks",
+				types.MergePatchType,
+				[]byte(fmt.Sprintf(`{"data":{"%s": "true"}}`, adminAck)),
+				metav1.PatchOptions{},
+			); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
