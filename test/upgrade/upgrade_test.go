@@ -113,6 +113,9 @@ func TestClusterUpgrade(t *testing.T) {
 		Installations: pkgupgrade.Installations{
 			UpgradeWith: []pkgupgrade.Operation{
 				pkgupgrade.NewOperation("OpenShift Upgrade", func(c pkgupgrade.Context) {
+					if err := installation.ApplyAdminAcks(ctx); err != nil {
+						c.T.Error("Applying admin acks failed:", err)
+					}
 					upgradeFunc := installation.UpgradeOpenShift
 					eus, err := installation.IsChannelEUS(ctx)
 					if err != nil {
