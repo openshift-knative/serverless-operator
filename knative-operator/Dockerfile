@@ -8,7 +8,7 @@ COPY . .
 ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
 
-FROM registry.ci.openshift.org/ocp/4.13:base
+FROM registry.ci.openshift.org/ocp/4.14:base
 USER 65532
 
 COPY --from=builder /tmp/operator /ko-app/operator

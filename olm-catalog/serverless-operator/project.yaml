@@ -29,7 +29,7 @@ requirements:
     nodejs: 16.x
     ocpVersion:
         min: '4.11'
-        max: '4.13'
+        max: '4.14'
         label: 'v4.11'
 dependencies:
     serving: knative-v1.11
