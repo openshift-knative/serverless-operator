@@ -196,8 +196,8 @@ spec:
       zipkin:
     processors:
     exporters:
-      jaeger:
-        endpoint: jaeger-collector-headless.${TRACING_NAMESPACE}.svc:14250
+      otlp:
+        endpoint: jaeger-collector-headless.${TRACING_NAMESPACE}.svc:4317
         tls:
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
       logging:
@@ -206,7 +206,7 @@ spec:
         traces:
           receivers: [zipkin]
           processors: []
-          exporters: [jaeger, logging]
+          exporters: [otlp, logging]
 EOF
 }
 
@@ -221,6 +221,16 @@ metadata:
   namespace: ${TRACING_NAMESPACE}
 spec:
   strategy: allInOne
+  allInOne:
+    options:
+      collector:
+        otlp:
+          enabled: true
+          grpc:
+            tls:
+              enabled: true
+              cert: /etc/tls-config/tls.crt
+              key: /etc/tls-config/tls.key
 EOF
 
   logger.info "Wait for Jaeger to be running"
