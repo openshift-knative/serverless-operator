@@ -221,6 +221,16 @@ metadata:
   namespace: ${TRACING_NAMESPACE}
 spec:
   strategy: allInOne
+  allInOne:
+    options:
+      collector:
+        otlp:
+          enabled: true
+          grpc:
+            tls:
+              enabled: true
+              cert: /etc/tls-config/tls.crt
+              key: /etc/tls-config/tls.key
 EOF
 
   logger.info "Wait for Jaeger to be running"
