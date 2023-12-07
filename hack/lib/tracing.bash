@@ -196,7 +196,7 @@ spec:
       zipkin:
     processors:
     exporters:
-      jaeger:
+      otlp:
         endpoint: jaeger-collector-headless.${TRACING_NAMESPACE}.svc:14250
         tls:
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
@@ -206,7 +206,7 @@ spec:
         traces:
           receivers: [zipkin]
           processors: []
-          exporters: [jaeger, logging]
+          exporters: [otlp, logging]
 EOF
 }
 
