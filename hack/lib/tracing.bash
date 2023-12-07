@@ -197,7 +197,7 @@ spec:
     processors:
     exporters:
       otlp:
-        endpoint: jaeger-collector-headless.${TRACING_NAMESPACE}.svc:14250
+        endpoint: jaeger-collector-headless.${TRACING_NAMESPACE}.svc:4317
         tls:
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
       logging:
