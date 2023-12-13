@@ -28,16 +28,16 @@ function install_catalogsource {
     mkdir -p "${rootdir}/_output"
     cp "$csv" "${rootdir}/_output/bkp.yaml"
 
-    if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-operator-src* ]]; then
+    if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-source-image* ]]; then
       # Image variables supplied by ci-operator only when running within serverless-operator's CI.
-      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${SERVERLESS_KNATIVE_OPERATOR:-${KNATIVE_OPERATOR}}," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${SERVERLESS_INGRESS:-${KNATIVE_OPENSHIFT_INGRESS}}," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-${OPENSHIFT_KNATIVE_OPERATOR}}," "$csv"
+      sed -i "s,image: .*serverless-knative-operator:main,image: ${SERVERLESS_KNATIVE_OPERATOR}," "$csv"
+      sed -i "s,image: .*serverless-ingress:main,image: ${SERVERLESS_INGRESS}," "$csv"
+      sed -i "s,image: .*serverless-openshift-knative-operator:main,image: ${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
       override_storage_version_migration_images "$csv"
     elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-      sed -i "s,image: .*openshift-serverless-.*:knative-operator,image: ${DOCKER_REPO_OVERRIDE}/knative-operator," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:knative-openshift-ingress,image: ${DOCKER_REPO_OVERRIDE}/knative-openshift-ingress," "$csv"
-      sed -i "s,image: .*openshift-serverless-.*:openshift-knative-operator,image: ${DOCKER_REPO_OVERRIDE}/openshift-knative-operator," "$csv"
+      sed -i "s,image: .*serverless-knative-operator:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-knative-operator," "$csv"
+      sed -i "s,image: .*serverless-ingress:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-ingress," "$csv"
+      sed -i "s,image: .*serverless-openshift-knative-operator:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-openshift-knative-operator," "$csv"
     fi
 
     cat "$csv"

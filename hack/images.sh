@@ -53,25 +53,25 @@ function build_image() {
 
 if [[ $on_cluster_builds = true ]]; then
   #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/openshift-knative-operator:latest
-  build_image "openshift-knative-operator" "${root_dir}/openshift-knative-operator/Dockerfile" || exit 1
+  build_image "serverless-openshift-knative-operator" "${root_dir}/openshift-knative-operator/Dockerfile" || exit 1
   #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/knative-operator:latest
-  build_image "knative-operator" "${root_dir}/knative-operator/Dockerfile" || exit 1
+  build_image "serverless-knative-operator" "${root_dir}/knative-operator/Dockerfile" || exit 1
   #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/knative-openshift-ingress:latest
-  build_image "knative-openshift-ingress" "${root_dir}/serving/ingress/Dockerfile" || exit 1
+  build_image "serverless-ingress" "${root_dir}/serving/ingress/Dockerfile" || exit 1
 
   logger.info 'Images build'
 
 else
   tmp_dockerfile=$(replace_images openshift-knative-operator/Dockerfile)
-  podman build -t "$repo/openshift-knative-operator" -f "${tmp_dockerfile}" .
-  podman push "$repo/openshift-knative-operator"
+  podman build -t "$repo/serverless-openshift-knative-operator" -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-openshift-knative-operator"
 
   tmp_dockerfile=$(replace_images knative-operator/Dockerfile)
-  podman build -t "$repo/knative-operator" -f "${tmp_dockerfile}" .
-  podman push "$repo/knative-operator"
+  podman build -t "$repo/serverless-knative-operator" -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-knative-operator"
 
   tmp_dockerfile=$(replace_images serving/ingress/Dockerfile)
-  podman build -t "$repo/knative-openshift-ingress" -f "${tmp_dockerfile}" .
-  podman push "$repo/knative-openshift-ingress"
+  podman build -t "$repo/serverless-ingress" -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-ingress"
 
 fi
