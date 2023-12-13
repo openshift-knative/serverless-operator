@@ -10,7 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
-export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"nightly"}
+export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
 
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
