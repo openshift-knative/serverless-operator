@@ -38,6 +38,7 @@ install-kafka:
 
 install-kafka-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	FULL_MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
@@ -177,6 +178,7 @@ test-upstream-e2e-no-upgrade: upstream-e2e
 
 upstream-e2e-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	SCALE_UP=5 INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
