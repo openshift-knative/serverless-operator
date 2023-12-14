@@ -806,8 +806,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
+                    image: registry.ci.openshift.org/knative/serverless-openshift-knative-operator:main
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -960,8 +959,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-operator
+                    image: registry.ci.openshift.org/knative/serverless-knative-operator:main
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1131,8 +1129,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
+                    image: registry.ci.openshift.org/knative/serverless-ingress:main
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1280,15 +1277,12 @@ spec:
       conversionCRDs:
         - knativeeventings.operator.knative.dev
   relatedImages:
-    - name: knative-operator
-      # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:openshift-knative-operator
-    - name: knative-openshift
-      # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-operator
-    - name: knative-openshift-ingress
-      # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-nightly:knative-openshift-ingress
+    - name: "knative-operator"
+      image: "registry.ci.openshift.org/knative/serverless-openshift-knative-operator:main"
+    - name: "knative-openshift"
+      image: "registry.ci.openshift.org/knative/serverless-knative-operator:main"
+    - name: "knative-openshift-ingress"
+      image: "registry.ci.openshift.org/knative/serverless-ingress:main"
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11"
     - name: "IMAGE_activator"
