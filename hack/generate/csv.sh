@@ -10,17 +10,19 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
-export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
-
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
+default_serverless_operator_images
 default_knative_eventing_images
 default_knative_eventing_istio_images
 default_knative_eventing_kafka_broker_images
 default_knative_serving_images
 default_knative_ingress_images
+
+declare -a operator_images
+declare -A operator_images_addresses
 
 declare -a images
 declare -A images_addresses
@@ -43,6 +45,18 @@ function kafka_image {
   kafka_images+=("${name}")
   kafka_images_addresses["${name}"]="${address}"
 }
+
+function operator_image {
+  local name address
+  name="${1:?Pass a image name as arg[1]}"
+  address="${2:?Pass a image address as arg[2]}"
+  operator_images+=("${name}")
+  operator_images_addresses["${name}"]="${address}"
+}
+
+operator_image "knative-operator" "${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR}"
+operator_image "knative-openshift" "${SERVERLESS_KNATIVE_OPERATOR}"
+operator_image "knative-openshift-ingress" "${SERVERLESS_INGRESS}"
 
 serving_version=$(metadata.get dependencies.serving)
 serving_version=${serving_version/knative-v/}
@@ -129,6 +143,18 @@ function add_downstream_operator_deployment_env {
 EOF
 }
 
+function set_operator_downstream_image {
+  yq write --inplace "$1" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).image" "${SERVERLESS_KNATIVE_OPERATOR}"
+}
+
+function set_operator_upstream_image {
+  yq write --inplace "$1" "spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).image" "${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR}"
+}
+
+function set_operator_ingress_image {
+  yq write --inplace "$1" "spec.install.spec.deployments(name==knative-openshift-ingress).spec.template.spec.containers(name==knative-openshift-ingress).image" "${SERVERLESS_INGRESS}"
+}
+
 # since we also parse the environment variables in the upstream (actually midstream) operator,
 # we don't add scope prefixes to image overrides here. We don't have a clash anyway without any scope prefixes!
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
@@ -145,6 +171,15 @@ EOF
 
 # Start fresh
 cp "$template" "$target"
+
+set_operator_upstream_image "$target"
+set_operator_downstream_image "$target"
+set_operator_ingress_image "$target"
+
+for name in "${operator_images[@]}"; do
+  echo "Image: ${name} -> ${operator_images_addresses[$name]}"
+  add_related_image "$target" "${name}" "${operator_images_addresses[$name]}"
+done
 
 for name in "${images[@]}"; do
   echo "Image: ${name} -> ${images_addresses[$name]}"
@@ -180,12 +215,3 @@ for name in "${!vars[@]}"; do
   echo "Value: ${name} -> ${vars[$name]}"
   sed --in-place "s/__${name}__/${vars[${name}]}/" "$target"
 done
-
-echo "CURRENT_VERSION_IMAGES ${CURRENT_VERSION_IMAGES}"
-
-# Replace operator images reference based on CURRENT_VERSION_IMAGES env variable
-temp_csv="${target}.tmp"
-# Variable is expected to not be expended, so disable shellcheck check.
-# shellcheck disable=SC2016
-envsubst '$CURRENT_VERSION_IMAGES' <"${target}" >"${temp_csv}"
-mv "${temp_csv}" "${target}"

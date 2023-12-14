@@ -28,16 +28,18 @@ function install_catalogsource {
     mkdir -p "${rootdir}/_output"
     cp "$csv" "${rootdir}/_output/bkp.yaml"
 
+    if [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+      export SERVERLESS_KNATIVE_OPERATOR="${DOCKER_REPO_OVERRIDE}/serverless-knative-operator"
+      export SERVERLESS_INGRESS="${DOCKER_REPO_OVERRIDE}/serverless-ingress"
+      export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR="${DOCKER_REPO_OVERRIDE}/serverless-openshift-knative-operator"
+    fi
+
+    # Generate CSV from template to properly substitute operator images from env variables.
+    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
+
     if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-source-image* ]]; then
-      # Image variables supplied by ci-operator only when running within serverless-operator's CI.
-      sed -i "s,image: .*serverless-knative-operator:main,image: ${SERVERLESS_KNATIVE_OPERATOR}," "$csv"
-      sed -i "s,image: .*serverless-ingress:main,image: ${SERVERLESS_INGRESS}," "$csv"
-      sed -i "s,image: .*serverless-openshift-knative-operator:main,image: ${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR}," "$csv"
+      # Replace storage version migration images with quay.io variants for test purposes.
       override_storage_version_migration_images "$csv"
-    elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
-      sed -i "s,image: .*serverless-knative-operator:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-knative-operator," "$csv"
-      sed -i "s,image: .*serverless-ingress:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-ingress," "$csv"
-      sed -i "s,image: .*serverless-openshift-knative-operator:main,image: ${DOCKER_REPO_OVERRIDE}/serverless-openshift-knative-operator," "$csv"
     fi
 
     cat "$csv"
