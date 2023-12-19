@@ -45,6 +45,7 @@ func TestApplyCABundlesTransform(t *testing.T) {
 				corev1.VolumeMount{
 					Name:      TrustedCAConfigMapVolume,
 					MountPath: filepath.Join("/ocp-serverless-custom-certs", TrustedCAKey),
+					SubPath:   TrustedCAKey,
 					ReadOnly:  true,
 				}),
 		),
