@@ -177,6 +177,10 @@ function deploy_knativeserving_cr {
     enable_tracing "$serving_cr"
   fi
 
+  if [[ $HA == "false" ]]; then
+    yq write --inplace "$serving_cr" spec.high-availability.replicas 1
+  fi
+
   if [[ "" != $(oc get ingresscontroller default -n openshift-ingress-operator -ojsonpath='{.spec.defaultCertificate}') ]]; then
     override_ingress_cert "$serving_cr"
   fi
@@ -358,6 +362,10 @@ function deploy_knativeeventing_cr {
     enable_istio_eventing "$eventing_cr"
   fi
 
+  if [[ $HA == "false" ]]; then
+    yq write --inplace "$eventing_cr" spec.high-availability.replicas 1
+  fi
+
   oc apply -n "${EVENTING_NAMESPACE}" -f "$eventing_cr"
 }
 
@@ -393,6 +401,11 @@ EOF
   if [[ $FULL_MESH == "true" ]]; then
     enable_istio_eventing_kafka "$knativekafka_cr"
   fi
+
+  if [[ $HA == "false" ]]; then
+    yq write --inplace "$knativekafka_cr" spec.high-availability.replicas 1
+  fi
+
 
   oc apply -f "$knativekafka_cr"
 }
