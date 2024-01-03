@@ -32,13 +32,13 @@ const (
 	knativeKafkaHAReplicas = 1
 )
 
-var kafkaChannelDeployments = []string{
-	"kafka-channel-dispatcher",
-	"kafka-channel-receiver",
+var kafkaChannelDeployments = []test.Deployment{
+	{Name: "kafka-channel-dispatcher"},
+	{Name: "kafka-channel-receiver"},
 }
 
-var kafkaSourceDeployments = []string{
-	"kafka-source-dispatcher",
+var kafkaSourceDeployments = []test.Deployment{
+	{Name: "kafka-source-dispatcher"},
 }
 
 var kafkaControlPlaneDeployments = []test.Deployment{
@@ -131,19 +131,17 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape for KafkaChannel", func(t *testing.T) {
-		for i := range kafkaChannelDeployments {
-			deploymentName := kafkaChannelDeployments[i]
-			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
+		for _, deployment := range kafkaChannelDeployments {
+			if err := test.WithWorkloadReady(caCtx, deployment.Name, knativeKafkaNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 	})
 
 	t.Run("verify correct deployment shape for KafkaSource", func(t *testing.T) {
-		for i := range kafkaSourceDeployments {
-			deploymentName := kafkaSourceDeployments[i]
-			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
+		for _, deployment := range kafkaSourceDeployments {
+			if err := test.WithWorkloadReady(caCtx, deployment.Name, knativeKafkaNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 	})
