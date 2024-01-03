@@ -113,6 +113,32 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 	return lastState, nil
 }
 
+func UpdateKnativeKafkaExpectedScale(ctx *test.Context, name, namespace string, deployments []test.Deployment, defaultScale *int32) error {
+	knativeKafka := &kafkav1alpha1.KnativeKafka{}
+	var u *unstructured.Unstructured
+	u, err := ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, knativeKafka)
+
+	for i := range deployments {
+		for _, w := range knativeKafka.Spec.Workloads {
+			if deployments[i].Name == w.Name {
+				deployments[i].ExpectedScale = w.Replicas
+			}
+		}
+		if deployments[i].ExpectedScale == nil {
+			if knativeKafka.Spec.HighAvailability != nil && knativeKafka.Spec.HighAvailability.Replicas != nil {
+				deployments[i].ExpectedScale = knativeKafka.Spec.HighAvailability.Replicas
+			} else {
+				deployments[i].ExpectedScale = defaultScale
+			}
+		}
+	}
+	return nil
+}
+
 func IsKnativeKafkaReady(s *kafkav1alpha1.KnativeKafka, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }

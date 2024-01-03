@@ -75,6 +75,28 @@ func WaitForKnativeEventingState(ctx *test.Context, name, namespace string, inSt
 	return lastState, nil
 }
 
+func UpdateEventingExpectedScale(ctx *test.Context, name, namespace string, deployments []test.Deployment, defaultScale *int32) error {
+	eventing, err := ctx.Clients.Operator.KnativeEventings(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	for i := range deployments {
+		for _, w := range eventing.Spec.Workloads {
+			if deployments[i].Name == w.Name {
+				deployments[i].ExpectedScale = w.Replicas
+			}
+		}
+		if deployments[i].ExpectedScale == nil {
+			if eventing.Spec.HighAvailability != nil && eventing.Spec.HighAvailability.Replicas != nil {
+				deployments[i].ExpectedScale = eventing.Spec.HighAvailability.Replicas
+			} else {
+				deployments[i].ExpectedScale = defaultScale
+			}
+		}
+	}
+	return nil
+}
+
 func IsKnativeEventingReady(e *operatorv1beta1.KnativeEventing, err error) (bool, error) {
 	return e.Status.IsReady(), err
 }

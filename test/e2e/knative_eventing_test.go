@@ -7,26 +7,18 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
 	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 	"knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
+	"knative.dev/pkg/ptr"
 )
 
 const (
 	eventingNamespace  = test.EventingNamespace
 	eventingHaReplicas = 2
 )
-
-var knativeEventingControlPlaneDeploymentNames = []string{
-	"eventing-controller",
-	"eventing-webhook",
-	"imc-controller",
-	"imc-dispatcher",
-	"mt-broker-controller",
-	"mt-broker-filter",
-	"mt-broker-ingress",
-}
 
 func TestKnativeEventing(t *testing.T) {
 	caCtx := test.SetupClusterAdmin(t)
@@ -44,16 +36,29 @@ func TestKnativeEventing(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape", func(t *testing.T) {
+		var eventingDeployments = []test.Deployment{
+			{Name: "eventing-controller"},
+			{Name: "eventing-webhook"},
+			{Name: "imc-controller"},
+			{Name: "imc-dispatcher"},
+			{Name: "mt-broker-controller"},
+			{Name: "mt-broker-filter"},
+			{Name: "mt-broker-ingress"},
+		}
+		if err := v1beta1.UpdateEventingExpectedScale(caCtx,
+			eventingNamespace, eventingNamespace, eventingDeployments, ptr.Int32(eventingHaReplicas)); err != nil {
+			t.Fatalf("Failed to update deployment scale: %v", err)
+		}
 		// Check the desired scale of deployments in the knative eventing namespace
-		for _, deployment := range []string{"eventing-controller", "eventing-webhook", "imc-controller", "imc-dispatcher", "mt-broker-controller"} {
-			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment, eventingHaReplicas); err != nil {
-				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment, err)
+		for _, deployment := range eventingDeployments {
+			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 		}
 		// Check the status of deployments in the knative eventing namespace
-		for _, deployment := range knativeEventingControlPlaneDeploymentNames {
-			if err := test.WithWorkloadReady(caCtx, deployment, eventingNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
+		for _, deployment := range eventingDeployments {
+			if err := test.WithWorkloadReady(caCtx, deployment.Name, eventingNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 	})

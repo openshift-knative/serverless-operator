@@ -51,12 +51,12 @@ func TestKnativeServing(t *testing.T) {
 		for _, deployment := range servingDeployments {
 			// Check the desired scale of deployments in the knative serving namespace
 			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
-				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment, err)
+				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 
 			// Check the status of deployments in the knative serving namespace
 			if err := test.WithWorkloadReady(caCtx, deployment.Name, servingNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 
@@ -83,13 +83,13 @@ func TestKnativeServing(t *testing.T) {
 		// Check the desired scale of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
 			if err := test.CheckDeploymentScale(caCtx, ingressNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
-				t.Fatalf("Failed to verify default HA settings: %v", err)
+				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 		}
 		// Check the status of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
 			if err := test.WithWorkloadReady(caCtx, deployment.Name, ingressNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deployment, err)
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 	})

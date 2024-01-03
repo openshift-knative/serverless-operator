@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -11,6 +12,7 @@ import (
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
+	"knative.dev/pkg/ptr"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/apis/messaging/v1beta1"
@@ -22,10 +24,12 @@ import (
 )
 
 const (
-	eventingName          = "knative-eventing"
-	eventingNamespace     = test.EventingNamespace
-	knativeKafkaNamespace = test.EventingNamespace
-	defaultNamespace      = "default"
+	eventingName           = "knative-eventing"
+	eventingNamespace      = test.EventingNamespace
+	knativeKafkaNamespace  = test.EventingNamespace
+	knativeKafkaName       = "knative-kafka"
+	defaultNamespace       = "default"
+	knativeKafkaHAReplicas = 1
 )
 
 var kafkaChannelDeployments = []string{
@@ -37,9 +41,9 @@ var kafkaSourceDeployments = []string{
 	"kafka-source-dispatcher",
 }
 
-var kafkaControlPlaneDeployments = []string{
-	"kafka-controller",
-	"kafka-webhook-eventing",
+var kafkaControlPlaneDeployments = []test.Deployment{
+	{Name: "kafka-controller"},
+	{Name: "kafka-webhook-eventing"},
 }
 
 func TestKnativeKafka(t *testing.T) {
@@ -145,10 +149,16 @@ func TestKnativeKafka(t *testing.T) {
 	})
 
 	t.Run("verify correct deployment shape for Kafka control plane", func(t *testing.T) {
-		for i := range kafkaControlPlaneDeployments {
-			deploymentName := kafkaControlPlaneDeployments[i]
-			if err := test.WithWorkloadReady(caCtx, deploymentName, knativeKafkaNamespace); err != nil {
-				t.Fatalf("Deployment %s is not ready: %v", deploymentName, err)
+		if err := v1alpha1.UpdateKnativeKafkaExpectedScale(caCtx,
+			knativeKafkaName, knativeKafkaNamespace, kafkaControlPlaneDeployments, ptr.Int32(knativeKafkaHAReplicas)); err != nil {
+			t.Fatalf("Failed to update deployment scale: %v", err)
+		}
+		for _, deployment := range kafkaControlPlaneDeployments {
+			if err := test.CheckDeploymentScale(caCtx, knativeKafkaNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
+			}
+			if err := test.WithWorkloadReady(caCtx, deployment.Name, knativeKafkaNamespace); err != nil {
+				t.Fatalf("Deployment %s is not ready: %v", deployment.Name, err)
 			}
 		}
 	})

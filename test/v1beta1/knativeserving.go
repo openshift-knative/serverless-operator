@@ -80,14 +80,14 @@ func UpdateServingExpectedScale(ctx *test.Context, name, namespace string, deplo
 	if err != nil {
 		return err
 	}
-	for i := 0; i < len(deployments); i++ {
+	for i := range deployments {
 		for _, w := range serving.Spec.Workloads {
 			if deployments[i].Name == w.Name {
 				deployments[i].ExpectedScale = w.Replicas
 			}
 		}
 		if deployments[i].ExpectedScale == nil {
-			if serving.Spec.HighAvailability.Replicas != nil {
+			if serving.Spec.HighAvailability != nil && serving.Spec.HighAvailability.Replicas != nil {
 				deployments[i].ExpectedScale = serving.Spec.HighAvailability.Replicas
 			} else {
 				deployments[i].ExpectedScale = defaultScale
