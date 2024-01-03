@@ -50,7 +50,7 @@ func TestKnativeServing(t *testing.T) {
 
 		for _, deployment := range servingDeployments {
 			// Check the desired scale of deployments in the knative serving namespace
-			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, servingNamespace, deployment.Name, deployment.ExpectedScale); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 
@@ -82,7 +82,7 @@ func TestKnativeServing(t *testing.T) {
 
 		// Check the desired scale of deployments in the ingress namespace.
 		for _, deployment := range ingressDeployments {
-			if err := test.CheckDeploymentScale(caCtx, ingressNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, ingressNamespace, deployment.Name, deployment.ExpectedScale); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 		}

@@ -51,7 +51,7 @@ func TestKnativeEventing(t *testing.T) {
 		}
 		// Check the desired scale of deployments in the knative eventing namespace
 		for _, deployment := range eventingDeployments {
-			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, eventingNamespace, deployment.Name, deployment.ExpectedScale); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 		}

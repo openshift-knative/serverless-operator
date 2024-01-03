@@ -99,12 +99,12 @@ func CreateService(ctx *Context, name, namespace, image string, cfgFuncs ...Serv
 	return service, nil
 }
 
-func CheckDeploymentScale(ctx *Context, ns, name string, scale int32) error {
+func CheckDeploymentScale(ctx *Context, ns, name string, scale *int32) error {
 	d, err := ctx.Clients.Kube.AppsV1().Deployments(ns).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	if *d.Spec.Replicas != scale {
+	if *d.Spec.Replicas != *scale {
 		return fmt.Errorf("unexpected number of replicas: %d, expected: %d", *d.Spec.Replicas, scale)
 	}
 	return nil

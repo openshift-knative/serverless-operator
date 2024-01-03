@@ -152,7 +152,7 @@ func TestKnativeKafka(t *testing.T) {
 			t.Fatalf("Failed to update deployment scale: %v", err)
 		}
 		for _, deployment := range kafkaControlPlaneDeployments {
-			if err := test.CheckDeploymentScale(caCtx, knativeKafkaNamespace, deployment.Name, *deployment.ExpectedScale); err != nil {
+			if err := test.CheckDeploymentScale(caCtx, knativeKafkaNamespace, deployment.Name, deployment.ExpectedScale); err != nil {
 				t.Fatalf("Failed to verify default HA settings for %q: %v", deployment.Name, err)
 			}
 			if err := test.WithWorkloadReady(caCtx, deployment.Name, knativeKafkaNamespace); err != nil {
