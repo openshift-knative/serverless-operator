@@ -120,8 +120,9 @@ func UpdateKnativeKafkaExpectedScale(ctx *test.Context, name, namespace string, 
 	if err != nil {
 		return err
 	}
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, knativeKafka)
-
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, knativeKafka); err != nil {
+		return err
+	}
 	for i := range deployments {
 		for _, w := range knativeKafka.Spec.Workloads {
 			if deployments[i].Name == w.Name {
