@@ -24,7 +24,7 @@ function install_strimzi_cluster {
       namespace: kafka
     spec:
       kafka:
-        version: 3.6.0
+        version: 3.6.1
         replicas: 3
         listeners:
           # PLAINTEXT
