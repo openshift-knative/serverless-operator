@@ -103,7 +103,7 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
-# Dockerfiles might include references to images that do not exit but CI operator
+# Dockerfiles might include references to images that do not exist but CI operator
 # will automatically replace them with proper images during CI builds (as long as
 # the string starts with registry.ci.openshift.org). For non-CI builds,
 # some images need to be replaced with upstream variants manually.
