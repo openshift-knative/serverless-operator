@@ -44,7 +44,7 @@ function install_catalogsource {
 
     cat "$csv"
 
-    build_image "serverless-bundle" "${rootdir}/olm-catalog/serverless-operator"
+    build_image "serverless-bundle" "${rootdir}" "olm-catalog/serverless-operator/Dockerfile"
 
     logger.debug 'Undo potential changes to the CSV to not pollute the repository.'
     mv "${rootdir}/_output/bkp.yaml" "$csv"
@@ -59,18 +59,18 @@ function install_catalogsource {
     # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
 
-    local index_build_dir=${rootdir}/olm-catalog/serverless-operator/index
+    local index_dorkerfile_path=olm-catalog/serverless-operator/index/Dockerfile
 
     logger.debug "Create a backup of the index Dockerfile."
-    cp "${index_build_dir}/Dockerfile" "${rootdir}/_output/bkp.Dockerfile"
+    cp "${rootdir}/${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace the nightly bundle reference with the previously built bundle
-    sed -i "s_\(.*\)\(registry.ci.openshift.org/knative/openshift-serverless-v${CURRENT_VERSION}:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${index_build_dir}/Dockerfile"
+    sed -i "s_\(.*\)\(registry.ci.openshift.org/knative/openshift-serverless-v${CURRENT_VERSION}:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${rootdir}/${index_dorkerfile_path}"
 
-    build_image "serverless-index" "${index_build_dir}"
+    build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 
     logger.debug 'Undo potential changes to the index Dockerfile.'
-    mv "${rootdir}/_output/bkp.Dockerfile" "${index_build_dir}/Dockerfile"
+    mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
   fi
 
   if [ -n "${INDEX_IMAGE:-}" ]; then
@@ -103,42 +103,39 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
-function build_image {
-  local name build_dir
+# Dockerfiles might include references to images that do not exit but CI operator
+# will automatically replace them with proper images during CI builds (as long as
+# the string starts with registry.ci.openshift.org). For non-CI builds,
+# some images need to be replaced with upstream variants manually.
+function replace_images() {
+  local dockerfile_path tmp_dockerfile
+  dockerfile_path=${1:?Pass dockerfile path}
+  tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
+  sed -e "s|registry.ci.openshift.org/ocp/\(.*\):base|quay.io/openshift/origin-base:\1|" \
+    "${dockerfile_path}" > "$tmp_dockerfile"
+  echo "$tmp_dockerfile"
+}
+
+function build_image() {
+  local name from_dir dockerfile_path tmp_dockerfile
   name=${1:?Pass a name of image to be built as arg[1]}
-  build_dir=${2:?Pass a directory path for the build as arg[2]}
+  from_dir=${2:?Pass context dir}
+  dockerfile_path=${3:?Pass dockerfile path}
+  tmp_dockerfile=$(replace_images "${from_dir}/${dockerfile_path}")
+
+  logger.info "Using ${tmp_dockerfile} as Dockerfile"
 
   if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
     oc -n "${OLM_NAMESPACE}" new-build \
-      --strategy=docker --name "$name" --dockerfile "$(cat "${build_dir}/Dockerfile")"
+      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
   else
     logger.info "${name} image build is already created"
   fi
 
-  # Fetch previously created ConfigMap or remove empty file
-  oc -n "${OLM_NAMESPACE}" get configmap "${name}-sha1sums" \
-    -o jsonpath='{.data.'"$name"'\.sha1sum}' \
-    > "${rootdir}/_output/${name}.sha1sum" 2>/dev/null \
-    || rm -f "${rootdir}/_output/${name}.sha1sum"
-
-  if ! [ -f "${rootdir}/_output/${name}.sha1sum" ] || \
-      ! sha1sum --check --status "${rootdir}/_output/${name}.sha1sum"; then
-    logger.info 'Build the image in the cluster-internal registry.'
-    oc -n "${OLM_NAMESPACE}" start-build "${name}" \
-      --from-dir "${rootdir}" -F
-    mkdir -p "${rootdir}/_output"
-    find "${build_dir}" -type f -exec sha1sum {} + \
-      > "${rootdir}/_output/${name}.sha1sum"
-    oc -n "${OLM_NAMESPACE}" delete configmap "${name}-sha1sums" --ignore-not-found=true
-    oc -n "${OLM_NAMESPACE}" create configmap "${name}-sha1sums" \
-      --from-file="${rootdir}/_output/${name}.sha1sum"
-    rm -f "${rootdir}/_output/${name}.sha1sum"
-  else
-    logger.info "${name} build is up-to-date."
-  fi
+  logger.info 'Build the image in the cluster-internal registry.'
+  oc -n "${OLM_NAMESPACE}" start-build "${name}" --from-dir "${from_dir}" -F
 }
-
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
