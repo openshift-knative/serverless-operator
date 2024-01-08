@@ -75,6 +75,28 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 	return lastState, nil
 }
 
+func UpdateServingExpectedScale(ctx *test.Context, name, namespace string, deployments []test.Deployment, defaultScale *int32) error {
+	serving, err := ctx.Clients.Operator.KnativeServings(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	for i := range deployments {
+		for _, w := range serving.Spec.Workloads {
+			if deployments[i].Name == w.Name {
+				deployments[i].ExpectedScale = w.Replicas
+			}
+		}
+		if deployments[i].ExpectedScale == nil {
+			if serving.Spec.HighAvailability != nil && serving.Spec.HighAvailability.Replicas != nil {
+				deployments[i].ExpectedScale = serving.Spec.HighAvailability.Replicas
+			} else {
+				deployments[i].ExpectedScale = defaultScale
+			}
+		}
+	}
+	return nil
+}
+
 func IsKnativeServingReady(s *operatorv1beta1.KnativeServing, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }

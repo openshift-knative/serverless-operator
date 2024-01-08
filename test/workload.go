@@ -10,6 +10,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+type Deployment struct {
+	Name          string
+	ExpectedScale *int32
+}
+
 func WithWorkloadReady(ctx *Context, name string, namespace string) error {
 	waitErr := withDeploymentReady(ctx, name, namespace)
 	if apierrors.IsNotFound(waitErr) {
