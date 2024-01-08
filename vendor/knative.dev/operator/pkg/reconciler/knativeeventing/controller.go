@@ -33,9 +33,6 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
-
-	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -74,22 +71,6 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-		})
-		namespaceinformer.Get(ctx).Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-			FilterFunc: func(obj interface{}) bool {
-				ns, ok := obj.(metav1.Object)
-				if !ok {
-					return false
-				}
-				v, ok := ns.GetLabels()["kubernetes.io/metadata.name"]
-				if !ok {
-					return false
-				}
-				return v == "knative-eventing"
-			},
-			Handler: controller.HandleAll(func(i interface{}) {
-				impl.GlobalResync(knativeEventingInformer.Informer())
-			}),
 		})
 
 		return impl

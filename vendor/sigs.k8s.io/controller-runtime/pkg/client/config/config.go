@@ -36,10 +36,8 @@ var (
 
 func init() {
 	// TODO: Fix this to allow double vendoring this library but still register flags on behalf of users
-	if flag.Lookup("kubeconfig") == nil {
-		flag.StringVar(&kubeconfig, "kubeconfig", "",
-			"Paths to a kubeconfig. Only required if out-of-cluster.")
-	}
+	flag.StringVar(&kubeconfig, "kubeconfig", "",
+		"Paths to a kubeconfig. Only required if out-of-cluster.")
 }
 
 // GetConfig creates a *rest.Config for talking to a Kubernetes API server.
