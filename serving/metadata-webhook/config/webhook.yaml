@@ -32,7 +32,7 @@ spec:
       serviceAccountName: controller
       containers:
       - name: webhook
-        image: registry.ci.openshift.org/knative/openshift-serverless-nightly:metadata-webhook
+        image: registry.ci.openshift.org/knative/serverless-metadata-webhook:main
         resources:
           requests:
             cpu: 20m

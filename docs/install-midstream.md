@@ -63,7 +63,7 @@ metadata:
 spec:
   displayName: Serverless Operator
   # Replace the version with whatever version you want to install
-  image: registry.ci.openshift.org/knative/openshift-serverless-nightly:serverless-index
+  image: registry.ci.openshift.org/knative/serverless-index:main
   publisher: Red Hat
   sourceType: grpc
 ```
