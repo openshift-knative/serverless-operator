@@ -145,14 +145,15 @@ function install_opentelemetry_operator {
 }
 
 function install_operator {
-  local target_namespace channel current_csv name
+  local target_namespace channel current_csv name packagemanifest
   name="${1:-Pass operator name as arg[1]}"
   logger.info "Install Operator: ${name}"
+  packagemanifest=$(mktemp /tmp/packagemanifest.XXXXXX.json)
   target_namespace=openshift-operators
   channel=stable
 
-  timeout 600 "[[ \$(oc get PackageManifest ${name} -n openshift-marketplace -o=custom-columns=DEFAULT_CHANNEL:.status.defaultChannel --no-headers=true) == '' ]]"
-  current_csv=$(oc get packagemanifest "${name}" -n openshift-marketplace -o json | jq -r ".status.channels[] | select(.name == \"${channel}\") | .currentCSV")
+  timeout 600 "! oc get PackageManifest ${name} -n openshift-marketplace -ojson > ${packagemanifest}"
+  current_csv=$(jq -r ".status.channels[] | select(.name == \"${channel}\") | .currentCSV" "${packagemanifest}")
 
   cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
