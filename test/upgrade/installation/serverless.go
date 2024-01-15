@@ -105,6 +105,10 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	if err := test.DeleteInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSV, test.Flags.CatalogSource); err != nil {
+		return err
+	}
+
 	if err := test.DeleteClusterServiceVersion(ctx, test.Flags.CSV, test.OperatorsNamespace); err != nil {
 		return err
 	}
