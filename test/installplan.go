@@ -62,9 +62,13 @@ func ApproveInstallPlan(ctx *Context, name string) error {
 func DeleteInstallPlan(ctx *Context, namespace string, csvName, olmSource string) error {
 	installPlan, err := WaitForInstallPlan(ctx, namespace, csvName, olmSource, time.Millisecond)
 	// Ignore the error when the InstallPlan is already removed.
-	if err != nil && !errors.Is(err, wait.ErrWaitTimeout) {
+	if err != nil {
+		if errors.Is(err, wait.ErrWaitTimeout) {
+			return nil
+		}
 		return err
 	}
+
 	err = ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(namespace).Delete(context.Background(), installPlan.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
