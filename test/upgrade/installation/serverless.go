@@ -39,9 +39,9 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 			}
 			installPlan, err = test.WaitForInstallPlan(ctx,
 				test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
-			if err != nil {
-				return err
-			}
+		}
+		if err != nil {
+			return err
 		}
 	}
 
