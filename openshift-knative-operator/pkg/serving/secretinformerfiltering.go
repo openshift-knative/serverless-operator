@@ -8,18 +8,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/networking/pkg/apis/networking"
+	"knative.dev/networking/pkg/config"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-const (
-	// TODO: Remove when available in knative.dev/networking/config
-	ServingInternalCertName = "knative-serving-certs"
-	// TODO: Maybe decide to fetch from net-kourier deps instead
-	EnableSecretInformerFilteringByCertUIDEnv = "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID"
-	// TODO: Annotation is deprecated, remove in future releases
-	secretInformerFilteringAnnotation = "serverless.openshift.io/enable-secret-informer-filtering"
-)
+// TODO: Maybe decide to fetch from net-kourier deps instead
+const EnableSecretInformerFilteringByCertUIDEnv = "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID"
 
 func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transformer {
 	shouldInject := false
@@ -41,7 +36,7 @@ func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transfor
 
 func injectLabelIntoInternalEncryptionSecret() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Secret" && u.GetName() == ServingInternalCertName {
+		if u.GetKind() == "Secret" && u.GetName() == config.ServingInternalCertName {
 			labels := u.GetLabels()
 			if labels == nil {
 				labels = make(map[string]string, 1)
@@ -74,15 +69,10 @@ func configIfUnsetAndCheckIfShouldInject(comp *operatorv1beta1.KnativeServing, d
 		}
 	}
 
-	// The annotation is deprecated
-	// TODO: Remove this block in future releases
-	if deployment == "net-istio-controller" {
-		if v, ok := comp.GetAnnotations()[secretInformerFilteringAnnotation]; ok {
-			b, _ := strconv.ParseBool(v)
-			// Keep the same behavior as in 1.27
-			return b, common.InjectEnvironmentIntoDeployment("net-istio-controller", "controller",
-				corev1.EnvVar{Name: EnableSecretInformerFilteringByCertUIDEnv, Value: v})
-		}
+	// TODO: remove when set to true at the net-* repos upstream/midstream
+	if deployment == "net-istio-controller" || deployment == "net-kourier-controller" {
+		return true, common.InjectEnvironmentIntoDeployment(deployment, "controller",
+			corev1.EnvVar{Name: EnableSecretInformerFilteringByCertUIDEnv, Value: "true"})
 	}
 	return false, nil
 }
