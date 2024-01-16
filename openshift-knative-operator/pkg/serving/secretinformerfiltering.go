@@ -36,6 +36,7 @@ func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transfor
 
 func injectLabelIntoInternalEncryptionSecret() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		//nolint:staticcheck // ignore the deprecation until internal encryption is implemented downstream
 		if u.GetKind() == "Secret" && u.GetName() == config.ServingInternalCertName {
 			labels := u.GetLabels()
 			if labels == nil {
