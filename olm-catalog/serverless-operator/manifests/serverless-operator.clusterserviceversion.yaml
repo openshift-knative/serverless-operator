@@ -475,6 +475,7 @@ spec:
               resources:
                 - certificates
                 - issuers
+                - clusterissuers
               verbs:
                 - create
                 - delete
@@ -737,6 +738,7 @@ spec:
               resources:
                 - certificates
                 - issuers
+                - clusterissuers
               verbs:
                 - create
                 - delete
