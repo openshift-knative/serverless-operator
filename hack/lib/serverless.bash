@@ -406,6 +406,10 @@ EOF
     yq write --inplace "$knativekafka_cr" spec.high-availability.replicas 1
   fi
 
+  if [[ $ENABLE_KEDA == "true" ]]; then
+    yq write --inplace "$knativekafka_cr" 'spec.config-kafka-features."controller.autoscaler"' "enabled"
+  fi
+
 
   oc apply -f "$knativekafka_cr"
 }
