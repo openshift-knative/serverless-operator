@@ -1,6 +1,6 @@
 FROM registry.ci.openshift.org/origin/__OCP_MAX_VERSION__:operator-registry AS opm
 
-FROM registry.ci.openshift.org/ocp/__OCP_MAX_VERSION__:base as builder
+FROM registry.ci.openshift.org/ocp/__OCP_MAX_VERSION__:base-rhel9 as builder
 
 COPY --from=opm /bin/opm /bin/opm
 
