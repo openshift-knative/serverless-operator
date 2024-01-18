@@ -111,8 +111,10 @@ function replace_images() {
   local dockerfile_path tmp_dockerfile
   dockerfile_path=${1:?Pass dockerfile path}
   tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
-  sed -e "s|registry.ci.openshift.org/ocp/\(.*\):base|quay.io/openshift/origin-base:\1|" \
-    "${dockerfile_path}" > "$tmp_dockerfile"
+  cp "${dockerfile_path}" "$tmp_dockerfile"
+  if [ -z "$OPENSHIFT_CI" ]; then
+    sed -e "s|registry.ci.openshift.org/ocp/\(.*\):base|quay.io/openshift/origin-base:\1|" -i "$tmp_dockerfile"
+  fi
   echo "$tmp_dockerfile"
 }
 
