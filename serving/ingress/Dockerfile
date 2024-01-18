@@ -8,7 +8,7 @@ COPY . .
 ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/serving/ingress/cmd/controller
 
-FROM registry.ci.openshift.org/ocp/4.14:base
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 USER 65532
 
 COPY --from=builder /tmp/operator /ko-app/operator
