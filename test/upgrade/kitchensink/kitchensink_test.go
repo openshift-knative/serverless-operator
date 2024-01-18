@@ -95,8 +95,9 @@ func TestKitchensink(t *testing.T) {
 	// Shuffle the features so that different features are installed at each stage
 	// every time we run the tests. This is to cover more combinations of Features
 	// and Serverless versions while keeping the payload small enough for the cluster.
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
+	source := rand.NewSource(time.Now().UnixNano())
+	rnd := rand.New(source)
+	rnd.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
 	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
 
