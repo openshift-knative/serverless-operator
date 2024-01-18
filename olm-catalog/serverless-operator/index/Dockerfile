@@ -1,6 +1,6 @@
 FROM registry.ci.openshift.org/origin/4.14:operator-registry AS opm
 
-FROM registry.ci.openshift.org/ocp/4.14:base as builder
+FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
 COPY --from=opm /bin/opm /bin/opm
 
