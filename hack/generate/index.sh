@@ -7,36 +7,21 @@ target="${2:?Provide a target annotations file as arg[2]}"
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
-CHANNEL_LIST="$(metadata.get olm.channels.list[*])"
-function add_entries {
-  cat << EOF | yq write --inplace --script - "$1"
-- command: update
-  path: entries
-  value:
-    - name: "$(metadata.get project.name).v$(metadata.get olm.previous.replaces)"
-    - name: "$(metadata.get project.name).v$(metadata.get olm.replaces)"
-      replaces: "$(metadata.get project.name).v$(metadata.get olm.previous.replaces)"
-      skipRange: "$(metadata.get olm.previous.skipRange)"
-    - name: "$(metadata.get project.name).v$(metadata.get project.version)"
-      replaces: "$(metadata.get project.name).v$(metadata.get olm.replaces)"
-      skipRange: "$(metadata.get olm.skipRange)"
-EOF
-}
+
+declare -A values
+
+values[VERSION]="$(metadata.get project.version)"
+values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
+values[PREVIOUS_REPLACES]="$(metadata.get olm.previous.replaces)"
+values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
+values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 2 | tail -n 1)"
+values[PREVIOUS_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 3 | tail -n 1)"
+values[PREVIOUS_REPLACES_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)"
 
 # Start fresh
 cp "$template" "$target"
-OUTPUT=""
-for NAME in $CHANNEL_LIST; do
-  tmpfile=$(mktemp)
-  sed "s/__CHANNEL__/$NAME/g" "$target" > "$tmpfile"
-  add_entries "$tmpfile"
-  if [ -n "$OUTPUT" ]; then
-    OUTPUT=$OUTPUT$'\n'"---"$'\n'
-  else
-    # First line of the file
-    OUTPUT=$"---"$'\n'
-  fi
-  OUTPUT=$OUTPUT$(cat "$tmpfile")
+
+for before in "${!values[@]}"; do
+  echo "Value: ${before} -> ${values[$before]}"
+  sed --in-place "s/__${before}__/${values[${before}]}/" "$target"
 done
-rm "$tmpfile"
-echo -e "$OUTPUT" > "$target"

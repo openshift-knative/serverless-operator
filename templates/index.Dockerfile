@@ -7,7 +7,7 @@ COPY --from=opm /bin/opm /bin/opm
 # Copy declarative config root into image at /configs
 COPY olm-catalog/serverless-operator/index/configs /configs
 
-RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
+RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_CHANNEL__ --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_REPLACES__:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-v__VERSION__:serverless-bundle >> /configs/index.yaml || \
