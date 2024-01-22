@@ -248,7 +248,8 @@ func sequenceGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 		rpls = repliesShort
 	}
 	// We're using random to choose a random subscriber for a given reply Kind
-	rand.Seed(time.Now().Unix())
+	source := rand.NewSource(time.Now().UnixNano())
+	rnd := rand.New(source)
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
 	steps := sinksAll
 	for _, flowTestConfiguration := range flowTestConfigurations {
@@ -257,7 +258,7 @@ func sequenceGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 			// so just use a single step (with a random step) in the sequence for the "with-reply" test
 			for i := 0; i < times; i++ {
 				label := fmt.Sprintf("%s-seq-%s-rep-%d", flowTestConfiguration.shortLabel, shortLabel(reply), i)
-				features = append(features, SequenceReadiness(label, flowTestConfiguration, []component{steps[rand.Intn(len(steps))]}, reply))
+				features = append(features, SequenceReadiness(label, flowTestConfiguration, []component{steps[rnd.Intn(len(steps))]}, reply))
 			}
 		}
 	}
@@ -286,7 +287,8 @@ func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 		rpls = repliesShort
 	}
 	// We're using random to choose a random subscriber for a given reply Kind
-	rand.Seed(time.Now().Unix())
+	source := rand.NewSource(time.Now().UnixNano())
+	rnd := rand.New(source)
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range rpls {
@@ -294,7 +296,7 @@ func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 				label := fmt.Sprintf("%s-par-%s-rep-%d", flowTestConfiguration.shortLabel, shortLabel(reply), i)
 				// We've already tested all possible branches kinds above,
 				// so just use a single branch (with a random subscriber) in the sequence for the "with-reply" test
-				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscribers[rand.Intn(len(subscribers))]}, []component{}, []component{}, reply))
+				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscribers[rnd.Intn(len(subscribers))]}, []component{}, []component{}, reply))
 			}
 		}
 	}
