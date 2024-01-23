@@ -19,6 +19,11 @@ jobs:
           path: ./src/github.com/${{ github.repository }}
           fetch-depth: 0
 
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
       - name: Install prerequisites
         env:
           YQ_VERSION: 3.4.0
