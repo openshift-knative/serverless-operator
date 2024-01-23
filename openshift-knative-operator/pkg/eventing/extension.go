@@ -10,6 +10,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
@@ -85,9 +86,29 @@ func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 		common.VersionedJobNameTransform(),
 		common.InjectCommonEnvironment(),
 		common.ApplyCABundlesTransform(),
+		func(u *unstructured.Unstructured) error {
+			// Reset cert-manager certificates namespace, they need to be created in the cert manager
+			// operator namespace
+			if u.GroupVersionKind().Group == "cert-manager.io" && u.GetKind() == "Certificate" {
+				if u.GetName() == "knative-eventing-selfsigned-ca" {
+					e.resetCertManagerNamespace(u)
+				}
+				return nil
+			}
+
+			return nil
+		},
 	}
 	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
+}
+
+func (e *extension) resetCertManagerNamespace(u *unstructured.Unstructured) {
+	if err := common.CheckMinimumKubeVersion(e.kubeclient.Discovery(), "1.25.0" /* OCP 4.12 */); err != nil {
+		u.SetNamespace("openshift-cert-manager")
+	} else {
+		u.SetNamespace("cert-manager")
+	}
 }
 
 func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {

@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,15 +16,15 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: kafka-broker-ingress-server-tls
+  name: mt-broker-filter-server-tls
   namespace: knative-eventing
 spec:
   # Secret names are always required.
-  secretName: kafka-broker-ingress-server-tls
+  secretName: mt-broker-filter-server-tls
 
   secretTemplate:
     labels:
-      app.kubernetes.io/component: kafka-broker-receiver
+      app.kubernetes.io/component: broker-filter
       app.kubernetes.io/name: knative-eventing
 
   # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
@@ -40,12 +40,12 @@ spec:
     rotationPolicy: Always
 
   dnsNames:
-    - kafka-broker-ingress.knative-eventing.svc.cluster.local
-    - kafka-broker-ingress.knative-eventing.svc
+    - broker-filter.knative-eventing.svc.cluster.local
+    - broker-filter.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
 ---
 # Copyright 2023 The Knative Authors
@@ -54,7 +54,7 @@ spec:
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,15 +65,15 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: kafka-channel-ingress-server-tls
+  name: mt-broker-ingress-server-tls
   namespace: knative-eventing
 spec:
   # Secret names are always required.
-  secretName: kafka-channel-ingress-server-tls
+  secretName: mt-broker-ingress-server-tls
 
   secretTemplate:
     labels:
-      app.kubernetes.io/component: kafka-channel-receiver
+      app.kubernetes.io/component: broker-ingress
       app.kubernetes.io/name: knative-eventing
 
   # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
@@ -89,14 +89,13 @@ spec:
     rotationPolicy: Always
 
   dnsNames:
-    - kafka-channel-ingress.knative-eventing.svc.cluster.local
-    - kafka-channel-ingress.knative-eventing.svc
+    - broker-ingress.knative-eventing.svc.cluster.local
+    - broker-ingress.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
-
 ---
 # Copyright 2023 The Knative Authors
 #
@@ -104,7 +103,7 @@ spec:
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -115,15 +114,15 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: kafka-sink-ingress-server-tls
+  name: imc-dispatcher-server-tls
   namespace: knative-eventing
 spec:
   # Secret names are always required.
-  secretName: kafka-sink-ingress-server-tls
+  secretName: imc-dispatcher-server-tls
 
   secretTemplate:
     labels:
-      app.kubernetes.io/component: kafka-sink-receiver
+      app.kubernetes.io/component: imc-dispatcher
       app.kubernetes.io/name: knative-eventing
 
   # Use 0m0s so that we don't run into https://github.com/cert-manager/cert-manager/issues/6408 on the operator
@@ -139,11 +138,75 @@ spec:
     rotationPolicy: Always
 
   dnsNames:
-    - kafka-sink-ingress.knative-eventing.svc.cluster.local
-    - kafka-sink-ingress.knative-eventing.svc
+    - imc-dispatcher.knative-eventing.svc.cluster.local
+    - imc-dispatcher.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
+---
+# Copyright 2023 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+# This is the issuer that every Eventing component should use to issue their server's certs.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: knative-eventing-ca-issuer
+spec:
+  ca:
+    secretName: knative-eventing-ca
+---
+# Copyright 2023 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This is the root issuer to bootstrap the eventing CA.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: knative-eventing-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+# This is the Eventing CA certificate.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: knative-eventing-selfsigned-ca
+  namespace: cert-manager
+spec:
+  secretName: knative-eventing-ca
+
+  isCA: true
+  commonName: selfsigned-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+
+  issuerRef:
+    name: knative-eventing-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

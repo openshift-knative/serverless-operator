@@ -16,7 +16,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"knative.dev/eventing/test/rekt/features/featureflags"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
@@ -25,6 +27,7 @@ import (
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/resources/knativeservice"
 
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
 )
 
@@ -34,6 +37,51 @@ type LogFilter struct {
 	PodSelector   metav1.ListOptions
 	PodLogOptions *corev1.PodLogOptions
 	JSONLogFilter func(map[string]interface{}) bool
+}
+
+func VerifyCertManagerCertificatesReady() *feature.Feature {
+	f := feature.NewFeature()
+
+	certificateGVR := schema.GroupVersionResource{
+		Group:    "cert-manager.io",
+		Version:  "v1",
+		Resource: "certificates",
+	}
+
+	f.Prerequisite("transport encryption is strict", featureflags.TransportEncryptionStrict())
+	f.Prerequisite("should not run when Istio is enabled", featureflags.IstioDisabled())
+
+	f.Stable("Cert-manager certificates").
+		Must("CA is ready", isReadyWithinCertManagerNamespace(certificateGVR, "knative-eventing-selfsigned-ca")).
+		Must("IMC server is ready", isReady(certificateGVR, "knative-eventing", "imc-dispatcher-server-tls")).
+		Must("MT Channel Broker ingress server is ready", isReady(certificateGVR, "knative-eventing", "mt-broker-ingress-server-tls")).
+		Must("MT Channel Broker filter server is ready", isReady(certificateGVR, "knative-eventing", "mt-broker-filter-server-tls"))
+
+	return f
+}
+
+func isReady(gvr schema.GroupVersionResource, namespace, name string) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		interval, timeout := k8s.PollTimings(ctx, nil)
+		if err := k8s.WaitForResourceReady(ctx, t, namespace, name, gvr, interval, timeout); err != nil {
+			t.Error(gvr, namespace, name, "did not become ready,", err)
+		}
+	}
+}
+
+func isReadyWithinCertManagerNamespace(gvr schema.GroupVersionResource, name string) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		interval, timeout := k8s.PollTimings(ctx, nil)
+
+		certManagerNamespace := "cert-manager"
+		if err := common.CheckMinimumKubeVersion(kubeclient.Get(ctx).Discovery(), "1.25.0" /* OCP 4.12 */); err != nil {
+			certManagerNamespace = "openshift-cert-manager"
+		}
+
+		if err := k8s.WaitForResourceReady(ctx, t, certManagerNamespace, name, gvr, interval, timeout); err != nil {
+			t.Error(gvr, certManagerNamespace, name, "did not become ready,", err)
+		}
+	}
 }
 
 func VerifyEncryptedTrafficToActivatorToApp(since time.Time) *feature.Feature {
