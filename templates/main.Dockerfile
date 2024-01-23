@@ -8,7 +8,7 @@ LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=__NAME__
 LABEL operators.operatorframework.io.bundle.channel.default.v1="__DEFAULT_CHANNEL__"
-LABEL operators.operatorframework.io.bundle.channels.v1="__CHANNEL_LIST__"
+LABEL operators.operatorframework.io.bundle.channels.v1="__DEFAULT_CHANNEL__,__LATEST_VERSIONED_CHANNEL__"
 
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \

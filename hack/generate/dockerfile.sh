@@ -10,7 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 
 declare -A values
 values[NAME]="$(metadata.get project.name)"
-values[CHANNEL_LIST]="$(metadata.get 'olm.channels.list.*' | paste -sd ',' -)"
+values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 2 | tail -n 1)"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"

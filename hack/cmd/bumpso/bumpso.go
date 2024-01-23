@@ -85,11 +85,14 @@ func run() error {
 		"source": "serverless-operator",
 	})
 
-	channelsList, _, err := unstructured.NestedSlice(project, "olm", "channels", "list")
-	if err != nil {
-		return err
+	defaultChannel, _, _ := unstructured.NestedString(project, "olm", "channels", "default")
+
+	channelsList := []interface{}{
+		defaultChannel,
+		fmt.Sprintf("stable-%d.%d", newVersion.Major, newVersion.Minor),
+		fmt.Sprintf("stable-%d.%d", currentVersion.Major, currentVersion.Minor),
+		fmt.Sprintf("stable-%d.%d", previousVersion.Major, previousVersion.Minor),
 	}
-	channelsList = append(channelsList, fmt.Sprintf("stable-%d.%d", newVersion.Major, newVersion.Minor))
 
 	serving, _, _ := unstructured.NestedString(project, "dependencies", "serving")
 	eventing, _, _ := unstructured.NestedString(project, "dependencies", "eventing")
@@ -102,7 +105,6 @@ func run() error {
 	_ = common.SetNestedField(&node, skipRange(previousVersion, currentVersion), "olm", "previous", "skipRange")
 	_ = common.SetNestedField(&node, upgradeSequence, "upgrade_sequence")
 	_ = common.SetNestedField(&node, channelsList, "olm", "channels", "list")
-
 	_ = common.SetNestedField(&node, serving, "dependencies", "previous", "serving")
 	_ = common.SetNestedField(&node, eventing, "dependencies", "previous", "eventing")
 	_ = common.SetNestedField(&node, ekb, "dependencies", "previous", "eventing_kafka_broker")

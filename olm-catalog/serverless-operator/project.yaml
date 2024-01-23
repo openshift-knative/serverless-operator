@@ -9,13 +9,12 @@ olm:
     replaces: 1.31.0
     skipRange: '>=1.31.0 <1.32.0'
     channels:
-        default: 'stable'
+        default: stable
         list:
             - stable
-            - stable-1.29
-            - stable-1.30
-            - stable-1.31
             - stable-1.32
+            - stable-1.31
+            - stable-1.30
     previous:
         replaces: 1.30.0
         skipRange: '>=1.30.0 <1.31.0'
