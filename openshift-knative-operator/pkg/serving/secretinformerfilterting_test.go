@@ -11,12 +11,12 @@ import (
 
 func TestSecretInformerFilteringOverride(t *testing.T) {
 	cases := []struct {
-		name                   string
-		in                     *operatorv1beta1.KnativeServing
-		expected               *operatorv1beta1.KnativeServing
-		shouldAddLabelToSecret bool
+		name                                string
+		in                                  *operatorv1beta1.KnativeServing
+		expected                            *operatorv1beta1.KnativeServing
+		shouldEnableSecretInformerFiltering bool
 	}{{
-		name: "by default no overrides, enabled secret filtering, with kourier enabled",
+		name: "by default no overrides, enabled secret informer filtering, with kourier enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
@@ -27,9 +27,9 @@ func TestSecretInformerFilteringOverride(t *testing.T) {
 				Enabled: true,
 			}}
 		}),
-		shouldAddLabelToSecret: true,
+		shouldEnableSecretInformerFiltering: true,
 	}, {
-		name: "by default no overrides, enabled secret filtering, with istio enabled",
+		name: "by default no overrides, enabled secret informer filtering, with istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
@@ -40,9 +40,9 @@ func TestSecretInformerFilteringOverride(t *testing.T) {
 				Enabled: true,
 			}}
 		}),
-		shouldAddLabelToSecret: true,
+		shouldEnableSecretInformerFiltering: true,
 	}, {
-		name: "disabled secret filtering with kourier enabled",
+		name: "disabled secret informer filtering with kourier enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Kourier: base.KourierIngressConfiguration{
 				Enabled: true,
@@ -81,9 +81,9 @@ func TestSecretInformerFilteringOverride(t *testing.T) {
 					}},
 			})
 		}),
-		shouldAddLabelToSecret: false,
+		shouldEnableSecretInformerFiltering: false,
 	}, {
-		name: "disabled secret filtering with istio enabled",
+		name: "disabled secret informer filtering with istio enabled",
 		in: ks(func(ks *operatorv1beta1.KnativeServing) {
 			ks.Spec.Ingress = &operatorv1beta1.IngressConfigs{Istio: base.IstioIngressConfiguration{
 				Enabled: true,
@@ -122,16 +122,16 @@ func TestSecretInformerFilteringOverride(t *testing.T) {
 					}},
 			})
 		}),
-		shouldAddLabelToSecret: false,
+		shouldEnableSecretInformerFiltering: false,
 	}}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			tf := enableSecretInformerFilteringTransformers(c.in)
-			if c.shouldAddLabelToSecret && tf == nil {
-				t.Errorf("Secret transformer should not be nil")
-			} else if !c.shouldAddLabelToSecret && tf != nil {
-				t.Errorf("Secret transformer should be nil")
+			if c.shouldEnableSecretInformerFiltering && tf == nil {
+				t.Errorf("Secret informer filtering transformer should not be nil")
+			} else if !c.shouldEnableSecretInformerFiltering && tf != nil {
+				t.Errorf("Secret informer filtering transformer should be nil")
 			}
 			if !cmp.Equal(c.in, c.expected) {
 				t.Errorf("Resource was not as expected:\n%s", cmp.Diff(c.in, c.expected))
