@@ -4,10 +4,10 @@ project:
     # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
     # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
     # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-    version: 1.31.0
+    version: 1.31.1
 olm:
-    replaces: 1.30.0
-    skipRange: '>=1.30.0 <1.31.0'
+    replaces: 1.31.0
+    skipRange: '>=1.31.0 <1.31.1'
     channels:
         default: 'stable'
         list:
@@ -16,8 +16,8 @@ olm:
             - stable-1.30
             - stable-1.31
     previous:
-        replaces: 1.29.0
-        skipRange: '>=1.29.0 <1.30.0'
+        replaces: 1.30.0
+        skipRange: '>=1.30.0 <1.31.0'
 requirements:
     kube:
         # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -55,10 +55,10 @@ dependencies:
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
         tekton_s2i: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
-        tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae
-        nodejs_16: registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078
-        openjdk_17: registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5
-        python-39: registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41
+        tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
+        nodejs_16: registry.access.redhat.com/ubi8/nodejs-16@sha256:f90b28179d1d5de68d42ef1a9166d70a9dfea85a1c6a4bf12dce2c59eeb2fbb1
+        openjdk_17: registry.access.redhat.com/ubi8/openjdk-17@sha256:a8165bc2cd5051a96d6937e25ed03155bbd4b731da6e58cebfe2ea83209c16d8
+        python-39: registry.access.redhat.com/ubi8/python-39@sha256:4f35cbcc6f4e108c69f7d2b70cce5afb138741b0c961506376d524e001b922f4
     operator: 1.10.0
     # Previous versions required for downgrade testing
     previous:

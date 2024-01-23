@@ -61,12 +61,12 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.30.0 <1.31.0'
+    olm.skipRange: '>=1.31.0 <1.31.1'
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.31.0
+  name: serverless-operator.v1.31.1
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -781,7 +781,7 @@ spec:
                 containers:
                   - name: knative-operator
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:openshift-knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:openshift-knative-operator
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -892,15 +892,15 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
+                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:f90b28179d1d5de68d42ef1a9166d70a9dfea85a1c6a4bf12dce2c59eeb2fbb1"
                       - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
+                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:a8165bc2cd5051a96d6937e25ed03155bbd4b731da6e58cebfe2ea83209c16d8"
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
+                        value: "registry.access.redhat.com/ubi8/python-39@sha256:4f35cbcc6f4e108c69f7d2b70cce5afb138741b0c961506376d524e001b922f4"
                       - name: "CURRENT_VERSION"
-                        value: "1.31.0"
+                        value: "1.31.1"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -939,7 +939,7 @@ spec:
                 containers:
                   - name: knative-openshift
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:knative-operator
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:knative-operator
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1057,13 +1057,13 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
+                        value: "registry.access.redhat.com/ubi8/nodejs-16@sha256:f90b28179d1d5de68d42ef1a9166d70a9dfea85a1c6a4bf12dce2c59eeb2fbb1"
                       - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
+                        value: "registry.access.redhat.com/ubi8/openjdk-17@sha256:a8165bc2cd5051a96d6937e25ed03155bbd4b731da6e58cebfe2ea83209c16d8"
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
+                        value: "registry.access.redhat.com/ubi8/python-39@sha256:4f35cbcc6f4e108c69f7d2b70cce5afb138741b0c961506376d524e001b922f4"
                       - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.10"
                       - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
@@ -1085,7 +1085,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.10"
                       - name: "CURRENT_VERSION"
-                        value: "1.31.0"
+                        value: "1.31.1"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.10"
                     securityContext:
@@ -1114,7 +1114,7 @@ spec:
                 containers:
                   - name: knative-openshift-ingress
                     # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:knative-openshift-ingress
+                    image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:knative-openshift-ingress
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1264,13 +1264,13 @@ spec:
   relatedImages:
     - name: knative-operator
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:openshift-knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:openshift-knative-operator
     - name: knative-openshift
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:knative-operator
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:knative-operator
     - name: knative-openshift-ingress
       # This reference will be replaced in local builds and CI via hack/lib/catalogsource.bash.
-      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:knative-openshift-ingress
+      image: registry.ci.openshift.org/knative/openshift-serverless-v1.31.1:knative-openshift-ingress
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.10"
     - name: "IMAGE_activator"
@@ -1332,13 +1332,13 @@ spec:
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
       image: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-      image: "registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae"
+      image: "registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591"
     - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_16"
-      image: "registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078"
+      image: "registry.access.redhat.com/ubi8/nodejs-16@sha256:f90b28179d1d5de68d42ef1a9166d70a9dfea85a1c6a4bf12dce2c59eeb2fbb1"
     - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_17"
-      image: "registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5"
+      image: "registry.access.redhat.com/ubi8/openjdk-17@sha256:a8165bc2cd5051a96d6937e25ed03155bbd4b731da6e58cebfe2ea83209c16d8"
     - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-      image: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
+      image: "registry.access.redhat.com/ubi8/python-39@sha256:4f35cbcc6f4e108c69f7d2b70cce5afb138741b0c961506376d524e001b922f4"
     - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-receiver:knative-v1.10"
     - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
@@ -1359,5 +1359,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.10"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.10"
-  replaces: serverless-operator.v1.30.0
-  version: 1.31.0
+  replaces: serverless-operator.v1.31.0
+  version: 1.31.1
