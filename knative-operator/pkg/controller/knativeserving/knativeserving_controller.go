@@ -340,33 +340,34 @@ func (r *ReconcileKnativeServing) reconcileConfigMap(instance *operatorv1beta1.K
 		return cm, nil
 	} else if err != nil {
 		return nil, err
-	} else {
-		cp := cm.DeepCopy()
-		changed := false
-		if !equality.Semantic.DeepEqual(labels, cm.Labels) {
-			cp.Labels = labels
-			changed = true
-		}
-		if !equality.Semantic.DeepEqual(annotations, cm.Annotations) {
-			cp.Annotations = annotations
-			changed = true
-		}
-
-		// We only want to interfere with data if we actually desire new data.
-		if data != nil && !equality.Semantic.DeepEqual(data, cm.Data) {
-			cp.Data = data
-			changed = true
-		}
-
-		// Only update if we've actually seen a change.
-		if changed {
-			log.Info("Updating config map", "name", name)
-			if err = r.client.Update(ctx, cp); err != nil {
-				return nil, fmt.Errorf("failed to update config map %s: %w", name, err)
-			}
-			return cp, nil
-		}
 	}
+
+	cp := cm.DeepCopy()
+	changed := false
+	if !equality.Semantic.DeepEqual(labels, cm.Labels) {
+		cp.Labels = labels
+		changed = true
+	}
+	if !equality.Semantic.DeepEqual(annotations, cm.Annotations) {
+		cp.Annotations = annotations
+		changed = true
+	}
+
+	// We only want to interfere with data if we actually desire new data.
+	if data != nil && !equality.Semantic.DeepEqual(data, cm.Data) {
+		cp.Data = data
+		changed = true
+	}
+
+	// Only update if we've actually seen a change.
+	if changed {
+		log.Info("Updating config map", "name", name)
+		if err = r.client.Update(ctx, cp); err != nil {
+			return nil, fmt.Errorf("failed to update config map %s: %w", name, err)
+		}
+		return cp, nil
+	}
+
 	return cm, nil
 }
 

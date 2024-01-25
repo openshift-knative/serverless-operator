@@ -45,6 +45,7 @@ func TestApplyCABundlesTransform(t *testing.T) {
 				corev1.VolumeMount{
 					Name:      TrustedCAConfigMapVolume,
 					MountPath: filepath.Join("/ocp-serverless-custom-certs", TrustedCAKey),
+					SubPath:   TrustedCAKey,
 					ReadOnly:  true,
 				}),
 		),
@@ -74,7 +75,7 @@ func TestApplyCABundlesTransform(t *testing.T) {
 
 type podSpecableModifier func(*corev1.PodSpec)
 
-func podSpecable(_t *testing.T, modifiers ...podSpecableModifier) *corev1.PodSpec {
+func podSpecable(_ *testing.T, modifiers ...podSpecableModifier) *corev1.PodSpec {
 	podSpecable := &corev1.PodSpec{
 		Containers: []corev1.Container{{
 			Name:  "default-container",

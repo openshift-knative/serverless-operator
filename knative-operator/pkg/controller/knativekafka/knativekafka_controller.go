@@ -347,7 +347,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 	}
 	tfs := []mf.Transformer{}
 	tfs = append(append(tfs,
-		mf.InjectOwner(instance),
+		injectOwner(instance),
 		common.SetAnnotations(map[string]string{
 			common.KafkaOwnerName:      instance.Name,
 			common.KafkaOwnerNamespace: instance.Namespace,
@@ -370,6 +370,15 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 	}
 	*manifest = m
 	return nil
+}
+
+func injectOwner(owner mf.Owner) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetNamespace() != "" {
+			u.SetOwnerReferences([]metav1.OwnerReference{*metav1.NewControllerRef(owner, owner.GroupVersionKind())})
+		}
+		return nil
+	}
 }
 
 // Install Knative Kafka components

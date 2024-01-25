@@ -153,6 +153,7 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      TrustedCAConfigMapVolume,
 						MountPath: filepath.Join("/ocp-serverless-custom-certs", TrustedCAKey),
+						SubPath:   TrustedCAKey,
 						ReadOnly:  true,
 					},
 				},
@@ -165,6 +166,7 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      TrustedCAConfigMapVolume,
 						MountPath: "bleh",
+						SubPath:   "bleh",
 						ReadOnly:  false,
 					},
 				},
@@ -180,6 +182,7 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      TrustedCAConfigMapVolume,
 						MountPath: filepath.Join("/ocp-serverless-custom-certs", TrustedCAKey),
+						SubPath:   TrustedCAKey,
 						ReadOnly:  true,
 					},
 				},
@@ -192,6 +195,7 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      "bleh",
 						MountPath: "bleh",
+						SubPath:   "bleh",
 						ReadOnly:  false,
 					},
 				},
@@ -207,11 +211,13 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      "bleh",
 						MountPath: "bleh",
+						SubPath:   "bleh",
 						ReadOnly:  false,
 					},
 					{
 						Name:      TrustedCAConfigMapVolume,
 						MountPath: filepath.Join("/ocp-serverless-custom-certs", TrustedCAKey),
+						SubPath:   TrustedCAKey,
 						ReadOnly:  true,
 					},
 				},
@@ -238,6 +244,7 @@ func TestAddCABundlesToContainerVolumes(t *testing.T) {
 					{
 						Name:      TrustedCAConfigMapVolume,
 						MountPath: filepath.Join("/existing/ssl/cert/dir", TrustedCAKey),
+						SubPath:   TrustedCAKey,
 						ReadOnly:  true,
 					},
 				},

@@ -65,8 +65,7 @@ export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
 export INSTALL_OLDEST_COMPATIBLE="${INSTALL_OLDEST_COMPATIBLE:-"false"}"
 
-# Using first channel on the list, instead of default one
-OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get 'olm.channels.list[*]' | head -n 1)}"
+OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get olm.channels.default)}"
 export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"

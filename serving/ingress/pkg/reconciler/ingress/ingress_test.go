@@ -23,8 +23,8 @@ import (
 	"knative.dev/serving/pkg/apis/serving"
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
-	. "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/testing"
-	. "knative.dev/pkg/reconciler/testing"
+	sotesting "github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/testing"
+	rectesting "knative.dev/pkg/reconciler/testing"
 )
 
 const (
@@ -42,7 +42,7 @@ const (
 func TestKourierReconcile(t *testing.T) {
 	key := ingNamespace + "/" + ingName
 
-	table := TableTest{{
+	table := rectesting.TableTest{{
 		Name: "bad workqueue key",
 		Key:  "too/many/parts",
 	}, {
@@ -151,7 +151,7 @@ func TestKourierReconcile(t *testing.T) {
 			},
 		},
 		WantEvents: []string{
-			Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
+			rectesting.Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
 		},
 	}, {
 		Name:                    "remove route and finalizer",
@@ -180,11 +180,11 @@ func TestKourierReconcile(t *testing.T) {
 			},
 		},
 		WantEvents: []string{
-			Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
+			rectesting.Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
 		},
 	}}
 
-	table.Test(t, MakeFactory(func(ctx context.Context, listers *Listers, cmw configmap.Watcher) controller.Reconciler {
+	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, cmw configmap.Watcher) controller.Reconciler {
 		r := &Reconciler{
 			routeClient: fakerouteclient.Get(ctx).RouteV1(),
 			routeLister: listers.GetRouteLister(),
@@ -205,7 +205,7 @@ func TestKourierReconcile(t *testing.T) {
 func TestIstioReconcile(t *testing.T) {
 	key := ingNamespace + "/" + ingName
 
-	table := TableTest{{
+	table := rectesting.TableTest{{
 		Name: "bad workqueue key",
 		Key:  "too/many/parts",
 	}, {
@@ -314,7 +314,7 @@ func TestIstioReconcile(t *testing.T) {
 			},
 		},
 		WantEvents: []string{
-			Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
+			rectesting.Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
 		},
 	}, {
 		Name:                    "remove route and finalizer",
@@ -343,11 +343,11 @@ func TestIstioReconcile(t *testing.T) {
 			},
 		},
 		WantEvents: []string{
-			Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
+			rectesting.Eventf(corev1.EventTypeNormal, "FinalizerUpdate", "Updated %q finalizers", ingName),
 		},
 	}}
 
-	table.Test(t, MakeFactory(func(ctx context.Context, listers *Listers, cmw configmap.Watcher) controller.Reconciler {
+	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, cmw configmap.Watcher) controller.Reconciler {
 		r := &Reconciler{
 			routeClient: fakerouteclient.Get(ctx).RouteV1(),
 			routeLister: listers.GetRouteLister(),

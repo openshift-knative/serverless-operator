@@ -114,8 +114,8 @@ func AddCABundlesToContainerVolumes(c *corev1.Container) {
 			Name: TrustedCAConfigMapVolume,
 			// We only want the first entry in SSL_CERT_DIR for the mount
 			MountPath: filepath.Join(strings.Split(sslCertDir, ":")[0], TrustedCAKey),
-			//			SubPath:   TrustedCAKey,
-			ReadOnly: true,
+			SubPath:   TrustedCAKey,
+			ReadOnly:  true,
 		},
 	)
 	c.VolumeMounts = volumeMounts
