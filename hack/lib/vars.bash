@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export BUILD_NUMBER=${BUILD_NUMBER:-$(head -c 128 < /dev/urandom | base64 | fold -w 8 | head -n 1)}
+export BUILD_NUMBER=${BUILD_NUMBER:-$(head -c 128 </dev/urandom | base64 | fold -w 8 | head -n 1)}
 
 if [[ -n "${ARTIFACT_DIR:-}" ]]; then
   ARTIFACTS="${ARTIFACT_DIR}/build-${BUILD_NUMBER}"
@@ -36,7 +36,10 @@ export KNATIVE_EVENTING_ISTIO_HOME="${GOPATH}/src/knative.dev/eventing-istio"
 export BROKER_CLASS=${BROKER_CLASS:-"Kafka"}
 
 export DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
-export INTERACTIVE="${INTERACTIVE:-$(test -z "${GDMSESSION}"; echo $?)}"
+export INTERACTIVE="${INTERACTIVE:-$(
+  test -z "${GDMSESSION}"
+  echo $?
+)}"
 export KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
 export OPENSHIFT_CI="${OPENSHIFT_CI:-}"
 export OPERATOR="${OPERATOR:-serverless-operator}"
@@ -81,6 +84,7 @@ export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
 export FULL_MESH="${FULL_MESH:-false}"
 export ENABLE_TRACING="${ENABLE_TRACING:-false}"
+export ENABLE_KEDA="${ENABLE_KEDA:-false}"
 # Define sample-rate for tracing.
 export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
