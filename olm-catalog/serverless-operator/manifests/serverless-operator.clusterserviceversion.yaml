@@ -746,6 +746,14 @@ spec:
                 - list
                 - get
                 - watch
+            - apiGroups:
+                - networking.internal.knative.dev
+              resources:
+                - certificates
+              verbs:
+                - get
+                - list
+                - watch
         - serviceAccountName: knative-openshift-ingress
           rules:
             - apiGroups:
