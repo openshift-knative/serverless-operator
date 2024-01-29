@@ -62,9 +62,9 @@ dependencies:
     operator: 1.10.0
     # Previous versions required for downgrade testing
     previous:
-        serving: knative-v1.9
-        eventing: knative-v1.9
-        eventing_kafka_broker: knative-v1.9
+        serving: knative-v1.10
+        eventing: knative-v1.10
+        eventing_kafka_broker: knative-v1.10
 upgrade_sequence:
     - csv: serverless-operator.v1.29.0
     - csv: serverless-operator.v1.30.0
