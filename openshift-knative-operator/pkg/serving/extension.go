@@ -57,7 +57,15 @@ type extension struct {
 }
 
 func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
-	return monitoring.GetServingMonitoringPlatformManifests(ks)
+	monitoringManifests, err := monitoring.GetServingMonitoringPlatformManifests(ks)
+	if err != nil {
+		return nil, err
+	}
+	istioNetPoliciesManifests, err := generateDefaultIstioNetworkPoliciesIfRequired(ks)
+	if err != nil {
+		return nil, err
+	}
+	return append(monitoringManifests, istioNetPoliciesManifests...), nil
 }
 
 func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
