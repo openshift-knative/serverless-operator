@@ -849,6 +849,9 @@ rules:
     resources:
       - "configmaps"
     verbs:
+      - "create"
+      - "update"
+      - "delete"
       - "get"
       - "list"
       - "watch"
@@ -5057,3 +5060,4 @@ metadata:
     app.kubernetes.io/version: v1.11
     app.kubernetes.io/name: knative-eventing
     config.openshift.io/inject-trusted-cabundle: "true"
+    networking.knative.dev/trust-bundle: "true"
