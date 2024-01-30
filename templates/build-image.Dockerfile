@@ -1,6 +1,5 @@
 # Dockerfile to bootstrap build and test in openshift-ci
-
-FROM registry.ci.openshift.org/openshift/release:golang-__GOLANG_VERSION__
+FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-__GOLANG_VERSION__-openshift-4.16
 
 # Add kubernetes repository
 ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
