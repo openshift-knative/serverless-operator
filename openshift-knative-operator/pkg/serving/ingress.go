@@ -6,7 +6,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/api/networking/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -66,17 +66,18 @@ func defaultIngressClass(ks *operatorv1beta1.KnativeServing) string {
 func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Manifest, error) {
 	if !ks.(*operatorv1beta1.KnativeServing).Spec.Ingress.Istio.Enabled {
 		return nil, nil
-	} else {
-		if v, ok := ks.GetAnnotations()[disableGeneratingIstioNetPoliciesAnnotation]; ok {
-			b, _ := strconv.ParseBool(v)
-			if b {
-				return nil, nil
-			}
+	}
+
+	if v, ok := ks.GetAnnotations()[disableGeneratingIstioNetPoliciesAnnotation]; ok {
+		b, _ := strconv.ParseBool(v)
+		if b {
+			return nil, nil
 		}
 	}
-	unObjs := []unstructured.Unstructured{unstructured.Unstructured{}, unstructured.Unstructured{}, unstructured.Unstructured{}}
+
+	unObjs := []unstructured.Unstructured{{}, {}, {}}
 	for i, name := range []string{"webhook", "net-istio-webhook", "allow-from-openshift-monitoring-ns"} {
-		nwp := v1.NetworkPolicy{
+		nwp := networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: ks.GetNamespace(),
@@ -90,12 +91,12 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 			nwp.Spec.PodSelector = metav1.LabelSelector{MatchLabels: map[string]string{
 				"app": name,
 			}}
-			nwp.Spec.Ingress = []v1.NetworkPolicyIngressRule{{}}
+			nwp.Spec.Ingress = []networkingv1.NetworkPolicyIngressRule{{}}
 		} else {
 			nwp.Spec.PodSelector = metav1.LabelSelector{}
-			nwp.Spec.PolicyTypes = []v1.PolicyType{v1.PolicyTypeIngress}
-			nwp.Spec.Ingress = []v1.NetworkPolicyIngressRule{v1.NetworkPolicyIngressRule{
-				From: []v1.NetworkPolicyPeer{{
+			nwp.Spec.PolicyTypes = []networkingv1.PolicyType{networkingv1.PolicyTypeIngress}
+			nwp.Spec.Ingress = []networkingv1.NetworkPolicyIngressRule{{
+				From: []networkingv1.NetworkPolicyPeer{{
 					NamespaceSelector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"kubernetes.io/metadata.name": monitoring.OpenshiftMonitoringNamespace,
@@ -112,7 +113,6 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 	m, err := mf.ManifestFrom(mf.Slice(unObjs))
 	if err != nil {
 		return nil, err
-	} else {
-		return []mf.Manifest{m}, nil
 	}
+	return []mf.Manifest{m}, nil
 }
