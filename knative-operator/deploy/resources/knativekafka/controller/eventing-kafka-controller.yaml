@@ -870,6 +870,8 @@ spec:
                         uri:
                           description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                           type: string
+                        CACerts:
+                          type: string
                     retry:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
@@ -914,6 +916,8 @@ spec:
                               uri:
                                 description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                                 type: string
+                              CACerts:
+                                type: string
                           retry:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
@@ -926,8 +930,14 @@ spec:
                       replyUri:
                         description: ReplyURI is the endpoint for the reply
                         type: string
+                      replyCACerts:
+                        description: replyCACerts is the CA certs to trust for the reply.
+                        type: string
                       subscriberUri:
                         description: SubscriberURI is the endpoint for the subscriber
+                        type: string
+                      subscriberCACerts:
+                        description: SubscriberCACerts is the CA certs to trust for the subscriber.
                         type: string
                       uid:
                         description: UID is used to understand the origin of the subscriber.
@@ -1012,6 +1022,8 @@ spec:
                       type: string
                 deadLetterSinkUri:
                   description: DeadLetterSinkURI is the resolved URI of the dead letter ref if one is specified in the Spec.Delivery.
+                  type: string
+                deadLetterSinkCACerts:
                   type: string
                 observedGeneration:
                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
@@ -1267,7 +1279,7 @@ metadata:
   name: config-kafka-features
   namespace: knative-eventing
   annotations:
-    knative.dev/example-checksum: "1192895d"
+    knative.dev/example-checksum: "cf3393de"
 data:
   _example: |-
     ################################
@@ -1287,30 +1299,30 @@ data:
     # Controls whether the dispatcher should use the rate limiter based on the number of virtual replicas.
     # 1. Enabled: The rate limiter is applied.
     # 2. Disabled: The rate limiter is not applied.
-    dispatcher.rate-limiter: "disabled"
+    dispatcher-rate-limiter: "disabled"
     # Controls whether the dispatcher should record additional metrics.
     # 1. Enabled: The metrics are recorded.
     # 2. Disabled: The metrics are not recorded.
-    dispatcher.ordered-executor-metrics: "disabled"
+    dispatcher-ordered-executor-metrics: "disabled"
     # Controls whether the controller should autoscale consumer resources with KEDA
     # 1. Enabled: KEDA autoscaling of consumers will be setup.
     # 2. Disabled: KEDA autoscaling of consumers will not be setup.
-    controller.autoscaler: "disabled"
+    controller-autoscaler-keda: "disabled"
     # The Go text/template used to generate consumergroup ID for triggers.
     # The template can reference the trigger Kubernetes metadata only.
-    triggers.consumergroup.template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
+    triggers-consumergroup-template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
     # The Go text/template used to generate topics for Brokers.
     # The template can reference the broker Kubernetes metadata only.
-    brokers.topic.template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
+    brokers-topic-template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
     # The Go text/template used to generate topics for Channels.
     # The template can reference the channel Kubernetes metadata only.
-    channels.topic.template: "knative-channel-{{ .Namespace }}-{{ .Name }}"
-  dispatcher.rate-limiter: "disabled"
-  dispatcher.ordered-executor-metrics: "disabled"
-  controller.autoscaler: "disabled"
-  triggers.consumergroup.template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
-  brokers.topic.template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
-  channels.topic.template: "knative-messaging-kafka.{{ .Namespace }}.{{ .Name }}"
+    channels-topic-template: "knative-channel-{{ .Namespace }}-{{ .Name }}"
+  dispatcher-rate-limiter: "disabled"
+  dispatcher-ordered-executor-metrics: "disabled"
+  controller-autoscaler-keda: "disabled"
+  triggers-consumergroup-template: "knative-trigger-{{ .Namespace }}-{{ .Name }}"
+  brokers-topic-template: "knative-broker-{{ .Namespace }}-{{ .Name }}"
+  channels-topic-template: "knative-messaging-kafka.{{ .Namespace }}.{{ .Name }}"
 ---
 apiVersion: v1
 kind: ConfigMap

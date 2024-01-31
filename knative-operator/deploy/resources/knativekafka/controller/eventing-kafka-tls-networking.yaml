@@ -44,8 +44,8 @@ spec:
     - kafka-broker-ingress.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
 ---
 # Copyright 2023 The Knative Authors
@@ -93,8 +93,8 @@ spec:
     - kafka-channel-ingress.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
 
 ---
@@ -143,7 +143,7 @@ spec:
     - kafka-sink-ingress.knative-eventing.svc
 
   issuerRef:
-    name: selfsigned-ca-issuer
-    kind: Issuer
+    name: knative-eventing-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
 
