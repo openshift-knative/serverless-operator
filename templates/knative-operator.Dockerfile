@@ -8,7 +8,7 @@ COPY . .
 ENV GOFLAGS="-mod=vendor"
 RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.ci.openshift.org/ocp/ubi-minimal:8
 USER 65532
 
 COPY --from=builder /tmp/operator /ko-app/operator
