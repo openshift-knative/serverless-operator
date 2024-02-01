@@ -16,7 +16,7 @@ eventing_istio_files=(eventing-istio-controller.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
-istio_files=(net-istio-netpolicies-mesh net-istio-core)
+istio_files=(net-istio-core)
 
 kourier_files=(net-kourier)
 
