@@ -69,13 +69,13 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 	}
 
 	if v, ok := ks.GetAnnotations()[disableGeneratingIstioNetPoliciesAnnotation]; ok {
-		b, _ := strconv.ParseBool(v)
-		if b {
+		if disableGeneration, _ := strconv.ParseBool(v); disableGeneration {
 			return nil, nil
 		}
 	}
 
 	unObjs := []unstructured.Unstructured{{}, {}, {}}
+
 	for i, name := range []string{"webhook", "net-istio-webhook", "allow-from-openshift-monitoring-ns"} {
 		nwp := networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -86,13 +86,15 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 				},
 			},
 		}
-		if name != "allow-from-openshift-monitoring-ns" {
+
+		switch name {
+		case "webhook", "net-istio-webhook":
 			nwp.Labels["app"] = name
 			nwp.Spec.PodSelector = metav1.LabelSelector{MatchLabels: map[string]string{
 				"app": name,
 			}}
 			nwp.Spec.Ingress = []networkingv1.NetworkPolicyIngressRule{{}}
-		} else {
+		case "allow-from-openshift-monitoring-ns":
 			nwp.Spec.PodSelector = metav1.LabelSelector{}
 			nwp.Spec.PolicyTypes = []networkingv1.PolicyType{networkingv1.PolicyTypeIngress}
 			nwp.Spec.Ingress = []networkingv1.NetworkPolicyIngressRule{{
@@ -102,14 +104,15 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 							"kubernetes.io/metadata.name": monitoring.OpenshiftMonitoringNamespace,
 						},
 					},
-				},
-				},
+				}},
 			}}
 		}
+
 		if err := scheme.Scheme.Convert(&nwp, &unObjs[i], nil); err != nil {
 			return nil, err
 		}
 	}
+
 	m, err := mf.ManifestFrom(mf.Slice(unObjs))
 	if err != nil {
 		return nil, err
