@@ -150,6 +150,29 @@ function download_ingress {
   done
 }
 
+function download_eventing_tls_testing_resources {
+
+  files=("$@")
+  echo "Files: ${files[*]}"
+
+  component_dir="$root/hack/lib/certmanager_resources"
+  target_dir="${component_dir}"
+
+  branch=$(metadata.get dependencies.eventing_artifacts_branch)
+  for ((i = 0; i < ${#files[@]}; i++)); do
+    index=$(( i+1 ))
+    file="${files[$i]}"
+    target_file="$target_dir/$file"
+
+    url="https://raw.githubusercontent.com/openshift-knative/eventing/${branch}/openshift/tls/issuers/$file"
+    echo "Downloading file from ${url}"
+    wget --no-check-certificate "$url" -O "$target_file"
+
+    # Break all image references so we know our overrides work correctly.
+    yaml.break_image_references "$target_file"
+  done
+}
+
 #
 # DOWNLOAD SERVING
 #
@@ -185,4 +208,6 @@ download_ingress net-kourier "${ingress_dir}" "kourier" "${kourier_files[@]}"
 #
 download_eventing eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
 download_eventing_istio eventing "$KNATIVE_EVENTING_VERSION" "${eventing_istio_files[@]}"
+
+download_eventing_tls_testing_resources "ca-certificate.yaml" "eventing-ca-issuer.yaml" "selfsigned-issuer.yaml"
 

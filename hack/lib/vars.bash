@@ -108,3 +108,32 @@ export DELETE_CRD_ON_TEARDOWN="${DELETE_CRD_ON_TEARDOWN:-true}"
 export USE_RELEASED_HELM_CHART="${USE_RELEASED_HELM_CHART:-false}"
 export HELM_CHART_TGZ="${HELM_CHART_TGZ:-}"
 export HA="${HA:-true}"
+
+
+# Waits until the given object exists.
+# Parameters: $1 - the kind of the object.
+#             $2 - object's name.
+#             $3 - namespace (optional).
+# shellcheck disable=SC2034,SC2086,SC2086
+function wait_until_object_exists() {
+  local KUBECTL_ARGS="get $1 $2"
+  local DESCRIPTION="$1 $2"
+
+  if [[ -n $3 ]]; then
+    KUBECTL_ARGS="get -n $3 $1 $2"
+    DESCRIPTION="$1 $3/$2"
+  fi
+  echo -n "Waiting until ${DESCRIPTION} exists"
+  for i in {1..150}; do  # timeout after 5 minutes
+    if kubectl ${KUBECTL_ARGS} > /dev/null 2>&1; then
+      echo -e "\n${DESCRIPTION} exists"
+      return 0
+    fi
+    echo -n "."
+    sleep 2
+  done
+  echo -e "\n\nERROR: timeout waiting for ${DESCRIPTION} to exist"
+  kubectl ${KUBECTL_ARGS}
+  return 1
+}
+
