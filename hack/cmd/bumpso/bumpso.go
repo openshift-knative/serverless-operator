@@ -96,6 +96,7 @@ func run() error {
 	ekb, _, _ := unstructured.NestedString(project, "dependencies", "eventing_kafka_broker")
 
 	_ = common.SetNestedField(&node, newVersion.String(), "project", "version")
+	_ = common.SetNestedField(&node, newVersion.String(), "dependencies", "redhat-knative-istio-authz-chart")
 	_ = common.SetNestedField(&node, currentVersion.String(), "olm", "replaces")
 	_ = common.SetNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
 	_ = common.SetNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
