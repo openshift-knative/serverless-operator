@@ -39,6 +39,7 @@ dependencies:
     net_kourier_artifacts_branch: release-v1.10
     net_istio: knative-v1.10
     net_istio_artifacts_branch: release-v1.10
+    redhat-knative-istio-authz-chart: 1.31.0
     maistra: 2.4-latest
     eventing: knative-v1.10
     # eventing core midstream branch name
