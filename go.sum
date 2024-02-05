@@ -617,8 +617,8 @@ github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYr
 github.com/openzipkin/zipkin-go v0.2.2/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
 github.com/openzipkin/zipkin-go v0.4.2 h1:zjqfqHjUpPmB3c1GlCvvgsM1G4LkvqQbBDueDOCg/jA=
 github.com/openzipkin/zipkin-go v0.4.2/go.mod h1:ZeVkFjuuBiSy13y8vpSDCjMi9GoI3hPpCJSBx/EYFhY=
-github.com/operator-framework/api v0.21.0 h1:89LhqGTLskxpPR4siEaorkF9PY3KLI51S5mFxP6q1G8=
-github.com/operator-framework/api v0.21.0/go.mod h1:3tsDLxXChMY1KgxO5v1CZQogHNQCIMy14YXkXqA5lT4=
+github.com/operator-framework/api v0.22.0 h1:UZSn+iaQih4rCReezOnWTTJkMyawwV5iLnIItaOzytY=
+github.com/operator-framework/api v0.22.0/go.mod h1:p/7YDbr+n4fmESfZ47yLAV1SvkfE6NU2aX8KhcfI0GA=
 github.com/operator-framework/operator-lifecycle-manager v0.25.0 h1:Y/ocKKQXxmxxNMH3xIbB0kRjicYIN9cN8ka/DUgjTGQ=
 github.com/operator-framework/operator-lifecycle-manager v0.25.0/go.mod h1:0DeNITwrneRQ7b5Qd6Dnp9+CpIBbv3F21RyncsK5ivU=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
