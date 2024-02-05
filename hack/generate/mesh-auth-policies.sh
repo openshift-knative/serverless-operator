@@ -30,7 +30,7 @@ if [[ "${USE_RELEASED_HELM_CHART}" == "true" ]]; then
   for tenant in ${tenants//,/ }; do
     echo "Generating AuthorizationPolicies for tenant $tenant"
     helm template openshift-helm-charts/redhat-knative-istio-authz \
-      --version "$(metadata.get project.version)" \
+      --version "$(metadata.get dependencies.redhat-knative-istio-authz-chart)" \
       --set "name=$tenant" --set "namespaces={$tenant}" > "$policies_path/$tenant.yaml"
   done
 elif [[ "${HELM_CHART_TGZ}" != "" ]]; then
