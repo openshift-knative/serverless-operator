@@ -32,8 +32,11 @@ function deploy_certmanager_operator {
   fi
 
   logger.info "Waiting until cert manager operator is available"
+
   timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager --no-headers | wc -l) != 1 ]]" || return 1
   timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager-webhook --no-headers | wc -l) != 1 ]]" || return 1
+  oc wait deployments -n ${deployment_namespace} cert-manager-webhook --for condition=ready --timeout=600s
+  oc wait deployments -n ${deployment_namespace} cert-manager --for condition=ready --timeout=600s
 
   oc apply -f "${certmanager_resources_dir}"/selfsigned-issuer.yaml || return $?
   oc apply -f "${certmanager_resources_dir}"/eventing-ca-issuer.yaml || return $?
