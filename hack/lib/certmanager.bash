@@ -40,7 +40,7 @@ function deploy_certmanager_operator {
 
   oc apply -f "${certmanager_resources_dir}"/selfsigned-issuer.yaml || return $?
   oc apply -f "${certmanager_resources_dir}"/eventing-ca-issuer.yaml || return $?
-  oc apply -f "${certmanager_resources_dir}"/ca-certificate.yaml || return $?
+  oc apply -n "${deployment_namespace}" -f "${certmanager_resources_dir}"/ca-certificate.yaml || return $?
 
   local ca_cert_tls_secret="knative-eventing-ca"
   echo "Waiting until secrets: ${ca_cert_tls_secret} exist in ${deployment_namespace}"
