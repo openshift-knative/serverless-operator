@@ -389,8 +389,8 @@ github.com/openzipkin/zipkin-go/model
 github.com/openzipkin/zipkin-go/propagation
 github.com/openzipkin/zipkin-go/reporter
 github.com/openzipkin/zipkin-go/reporter/http
-# github.com/operator-framework/api v0.21.0
-## explicit; go 1.20
+# github.com/operator-framework/api v0.22.0
+## explicit; go 1.21
 github.com/operator-framework/api/pkg/lib/version
 github.com/operator-framework/api/pkg/operators
 github.com/operator-framework/api/pkg/operators/v1
