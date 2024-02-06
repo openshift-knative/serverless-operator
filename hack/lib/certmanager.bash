@@ -32,7 +32,28 @@ function deploy_certmanager_operator {
   fi
 
   logger.info "Waiting until cert manager operator is available"
+
   timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager --no-headers | wc -l) != 1 ]]" || return 1
+  timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager-webhook --no-headers | wc -l) != 1 ]]" || return 1
+  oc wait deployments -n ${deployment_namespace} cert-manager-webhook --for condition=ready --timeout=600s
+  oc wait deployments -n ${deployment_namespace} cert-manager --for condition=ready --timeout=600s
+
+  oc apply -f "${certmanager_resources_dir}"/selfsigned-issuer.yaml || return $?
+  oc apply -f "${certmanager_resources_dir}"/eventing-ca-issuer.yaml || return $?
+  oc apply -n "${deployment_namespace}" -f "${certmanager_resources_dir}"/ca-certificate.yaml || return $?
+
+  local ca_cert_tls_secret="knative-eventing-ca"
+  echo "Waiting until secrets: ${ca_cert_tls_secret} exist in ${deployment_namespace}"
+  wait_until_object_exists secret "${ca_cert_tls_secret}" "${deployment_namespace}" || return $?
+
+  oc get secret -n "${deployment_namespace}" "${ca_cert_tls_secret}" -o=jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt || return $?
+  oc get secret -n "${deployment_namespace}" "${ca_cert_tls_secret}" -o=jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt || return $?
+
+  oc create namespace "${EVENTING_NAMESPACE}" --dry-run=client -o yaml | oc apply -f -
+  oc create configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle --from-file=tls.crt --from-file=ca.crt \
+    --dry-run=client -o yaml | kubectl apply -n knative-eventing -f - || return $?
+
+  oc label configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle networking.knative.dev/trust-bundle=true
 }
 
 function undeploy_certmanager_operator {

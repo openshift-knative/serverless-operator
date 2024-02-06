@@ -1,0 +1,19 @@
+# This is the Eventing CA certificate.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: knative-eventing-selfsigned-ca
+  # namespace: cert-manager # or openshift-cert-manager for <= 4.11
+spec:
+  secretName: knative-eventing-ca
+
+  isCA: true
+  commonName: selfsigned-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+
+  issuerRef:
+    name: knative-eventing-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
