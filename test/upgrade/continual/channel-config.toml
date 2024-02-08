@@ -1,5 +1,5 @@
 # Copy of https://github.com/knative-sandbox/eventing-kafka/blob/main/test/upgrade/continual/channel-config.toml
-# logLevel = 'DEBUG'
+logLevel = 'DEBUG'
 tracingConfig = '{{- .TracingConfig -}}'
 [sender]
 address = '{{- .Endpoint -}}'
