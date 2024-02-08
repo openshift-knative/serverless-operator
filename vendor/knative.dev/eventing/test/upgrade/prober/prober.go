@@ -79,11 +79,14 @@ func (p *probeRunner) Verify(ctx pkgupgrade.Context) {
 			"Listing them below.", events, len(errors))
 	}
 
+
 	p.ReportErrors(errors)
 	if !ctx.T.Failed() {
 		p.remove()
 		testlib.TearDown(p.client)
 	}
+
+	p.exportLogs()
 }
 
 type prober struct {
