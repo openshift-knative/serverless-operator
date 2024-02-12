@@ -103,10 +103,8 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
-# Dockerfiles might include references to images that do not exist but CI operator
-# will automatically replace them with proper images during CI builds (as long as
-# the string starts with registry.ci.openshift.org). For non-CI builds,
-# some images need to be replaced with public variants manually.
+# Dockerfiles might include references to private images that are only available in CI.
+# For non-CI builds, some images need to be replaced with public variants.
 function replace_images() {
   local dockerfile_path tmp_dockerfile
   dockerfile_path=${1:?Pass dockerfile path}
