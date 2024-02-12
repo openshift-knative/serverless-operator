@@ -34,7 +34,7 @@ install-eventing:
 
 install-kafka:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
-	INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
+	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-kafka-with-mesh:
 	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
@@ -46,7 +46,7 @@ install-kafka-with-mesh:
 install-kafka-with-keda:
 	UNINSTALL_KEDA="false" ./hack/keda.sh
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
-	INSTALL_SERVING="false" INSTALL_KAFKA="true" ENABLE_KEDA="true" ./hack/install.sh
+	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ENABLE_KEDA="true" ./hack/install.sh
 
 install-strimzi:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
