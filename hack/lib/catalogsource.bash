@@ -103,18 +103,34 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
+# Dockerfiles might include references to images that do not exist but CI operator
+# will automatically replace them with proper images during CI builds (as long as
+# the string starts with registry.ci.openshift.org). For non-CI builds,
+# some images need to be replaced with public variants manually.
+function replace_images() {
+  local dockerfile_path tmp_dockerfile
+  dockerfile_path=${1:?Pass dockerfile path}
+  tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
+  cp "${dockerfile_path}" "$tmp_dockerfile"
+  if [ -z "$OPENSHIFT_CI" ]; then
+    sed -e "s|registry.ci.openshift.org/ocp/ubi-minimal:8|registry.access.redhat.com/ubi8/ubi-minimal|" -i "$tmp_dockerfile"
+  fi
+  echo "$tmp_dockerfile"
+}
+
 function build_image() {
-  local name from_dir dockerfile_path
+  local name from_dir dockerfile_path tmp_dockerfile
   name=${1:?Pass a name of image to be built as arg[1]}
   from_dir=${2:?Pass context dir}
   dockerfile_path=${3:?Pass dockerfile path}
+  tmp_dockerfile=$(replace_images "${from_dir}/${dockerfile_path}")
 
-  logger.info "Using ${from_dir}/${dockerfile_path} as Dockerfile"
+  logger.info "Using ${tmp_dockerfile} as Dockerfile"
 
   if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
     oc -n "${OLM_NAMESPACE}" new-build \
-      --strategy=docker --name "$name" --dockerfile "$(cat "${from_dir}/${dockerfile_path}")"
+      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
   else
     logger.info "${name} image build is already created"
   fi
