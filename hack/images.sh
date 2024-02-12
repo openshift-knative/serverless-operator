@@ -31,12 +31,15 @@ if [[ $on_cluster_builds = true ]]; then
   logger.info 'Images build'
 
 else
-  podman build -t "$repo/serverless-openshift-knative-operator" -f openshift-knative-operator/Dockerfile .
+  tmp_dockerfile=$(replace_images openshift-knative-operator/Dockerfile)
+  podman build -t "$repo/serverless-openshift-knative-operator" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-openshift-knative-operator"
 
-  podman build -t "$repo/serverless-knative-operator" -f knative-operator/Dockerfile .
+  tmp_dockerfile=$(replace_images knative-operator/Dockerfile)
+  podman build -t "$repo/serverless-knative-operator" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-knative-operator"
 
-  podman build -t "$repo/serverless-ingress" -f serving/ingress/Dockerfile .
+  tmp_dockerfile=$(replace_images serving/ingress/Dockerfile)
+  podman build -t "$repo/serverless-ingress" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-ingress"
 fi
