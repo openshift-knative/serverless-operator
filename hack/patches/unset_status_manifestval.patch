@@ -1,0 +1,26 @@
+diff --git a/vendor/github.com/manifestival/manifestival/manifestival.go b/vendor/github.com/manifestival/manifestival/manifestival.go
+index b8d07b8bc..f1b4acc71 100644
+--- a/vendor/github.com/manifestival/manifestival/manifestival.go
++++ b/vendor/github.com/manifestival/manifestival/manifestival.go
+@@ -133,7 +133,7 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
+ 		annotate(current, v1.LastAppliedConfigAnnotation, lastApplied(current))
+ 		return m.Client.Create(current, opts...)
+ 	} else {
+-		diff, err := patch.New(current, spec)
++		diff, err := patch.New(unsetStatus(current), unsetStatus(spec))
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -156,6 +156,12 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
+ 	}
+ }
+ 
++func unsetStatus(spec *unstructured.Unstructured) *unstructured.Unstructured {
++	spec = spec.DeepCopy()
++	spec.Object["status"] = nil
++	return spec
++}
++
+ // update a single resource
+ func (m Manifest) update(live, spec *unstructured.Unstructured, opts ...ApplyOption) error {
+ 	m.logResource("Updating", live)
