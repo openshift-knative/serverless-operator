@@ -158,7 +158,9 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 
 func unsetStatus(spec *unstructured.Unstructured) *unstructured.Unstructured {
 	spec = spec.DeepCopy()
-	spec.Object["status"] = nil
+	if _, ok := spec.Object["status"]; ok {
+		spec.Object["status"] = nil
+	}
 	return spec
 }
 

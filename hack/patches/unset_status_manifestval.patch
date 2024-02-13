@@ -1,5 +1,5 @@
 diff --git a/vendor/github.com/manifestival/manifestival/manifestival.go b/vendor/github.com/manifestival/manifestival/manifestival.go
-index b8d07b8bc..f1b4acc71 100644
+index b8d07b8bc..892433fb6 100644
 --- a/vendor/github.com/manifestival/manifestival/manifestival.go
 +++ b/vendor/github.com/manifestival/manifestival/manifestival.go
 @@ -133,7 +133,7 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
@@ -11,13 +11,15 @@ index b8d07b8bc..f1b4acc71 100644
  		if err != nil {
  			return err
  		}
-@@ -156,6 +156,12 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
+@@ -156,6 +156,14 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
  	}
  }
  
 +func unsetStatus(spec *unstructured.Unstructured) *unstructured.Unstructured {
 +	spec = spec.DeepCopy()
-+	spec.Object["status"] = nil
++	if _, ok := spec.Object["status"]; ok {
++		spec.Object["status"] = nil
++	}
 +	return spec
 +}
 +
