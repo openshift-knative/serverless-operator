@@ -104,6 +104,8 @@ func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, conf
 			return nil
 		}
 
+		configMaps := configMaps.Clone()
+
 		// we need to have a stable algorithm since Go maps aren't sorted or traversed always in the same order
 		// we use a sorted array of key+value elements
 		var kvs []string
@@ -119,6 +121,8 @@ func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, conf
 					return fmt.Errorf("failed to get ConfigMap %s/%s: %w", namespace, v.ConfigMap.Name, err)
 				}
 
+				configMaps.Delete(cm.GetName())
+
 				for k, v := range cm.Data {
 					kvs = append(kvs, k+v)
 				}
@@ -127,6 +131,24 @@ func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, conf
 				}
 
 			}
+		}
+		for _, name := range configMaps.List() {
+			cm := &corev1.ConfigMap{}
+			err := c.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, cm)
+			if apierrors.IsNotFound(err) {
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("failed to get ConfigMap %s/%s: %w", namespace, name, err)
+			}
+
+			for k, v := range cm.Data {
+				kvs = append(kvs, k+v)
+			}
+			for k, v := range cm.BinaryData {
+				kvs = append(kvs, k+string(v))
+			}
+
 		}
 
 		sort.Strings(kvs)
