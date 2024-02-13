@@ -53,7 +53,7 @@ function deploy_certmanager_operator {
   oc create configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle --from-file=tls.crt --from-file=ca.crt \
     --dry-run=client -o yaml | kubectl apply -n knative-eventing -f - || return $?
 
-  oc label configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle networking.knative.dev/trust-bundle=true
+  oc label configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle networking.knative.dev/trust-bundle=true --overwrite
 }
 
 function undeploy_certmanager_operator {
