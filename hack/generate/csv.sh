@@ -117,6 +117,7 @@ declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
 yaml_keys[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
 yaml_keys['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
+yaml_keys['metadata.annotations[operators.openshift.io/must-gather-image]']="$(metadata.get dependencies.mustgather.image)"
 yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
 yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
 
