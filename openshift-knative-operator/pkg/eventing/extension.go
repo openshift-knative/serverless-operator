@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
@@ -28,7 +29,11 @@ import (
 	"github.com/openshift-knative/serverless-operator/pkg/istio/eventingistio"
 )
 
-const requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
+const (
+	requiredNsEnvName = "REQUIRED_EVENTING_NAMESPACE"
+
+	disableGeneratingIstioNetPoliciesAnnotation = "serverless.openshift.io/disable-istio-net-policies-generation"
+)
 
 // NewExtension creates a new extension for a Knative Eventing controller.
 func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
@@ -54,7 +59,10 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	if enabled := eventingistio.IsEnabled(ke.GetSpec().GetConfig()); enabled {
+
+	disableNetPolicies, ok := ke.GetAnnotations()[disableGeneratingIstioNetPoliciesAnnotation]
+	disableNetPoliciesFlag, _ := strconv.ParseBool(disableNetPolicies)
+	if enabled := eventingistio.IsEnabled(ke.GetSpec().GetConfig()); enabled && (!ok /* no disable annotation */ || !disableNetPoliciesFlag /* explicitly enabled */) {
 		m = append(m, p)
 	} else {
 		// This handles the case when it transitions from "enabled" to "disabled".

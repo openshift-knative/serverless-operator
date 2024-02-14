@@ -2,11 +2,15 @@ package eventing
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
+	goruntime "runtime"
 	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -151,6 +155,120 @@ func TestReconcile(t *testing.T) {
 
 			if !cmp.Equal(ke, c.expected, opt) {
 				t.Errorf("Got = %v, want: %v, diff:\n%s", ke, c.expected, cmp.Diff(ke, c.expected, opt))
+			}
+		})
+	}
+}
+
+func TestManifests(t *testing.T) {
+	cases := []struct {
+		name   string
+		in     *operatorv1beta1.KnativeEventing
+		verify func(manifest []mf.Manifest) error
+	}{
+		{
+			name: "istio enabled",
+			in: &operatorv1beta1.KnativeEventing{
+				Spec: operatorv1beta1.KnativeEventingSpec{
+					CommonSpec: base.CommonSpec{
+						Config: base.ConfigMapData{
+							"features": map[string]string{
+								"istio": "Enabled",
+							},
+						},
+					},
+				},
+			},
+			verify: func(manifest []mf.Manifest) error {
+				for _, m := range manifest {
+					for _, r := range m.Resources() {
+						if r.GroupVersionKind().Kind == "NetworkPolicy" {
+							return nil
+						}
+					}
+				}
+				return fmt.Errorf("failed to find NetworkPolicy in resources\n%+v", manifest)
+			},
+		},
+		{
+			name: "istio enabled, net policies enabled",
+			in: &operatorv1beta1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						disableGeneratingIstioNetPoliciesAnnotation: "false", // equivalent to unspecified
+					},
+				},
+				Spec: operatorv1beta1.KnativeEventingSpec{
+					CommonSpec: base.CommonSpec{
+						Config: base.ConfigMapData{
+							"features": map[string]string{
+								"istio": "Enabled",
+							},
+						},
+					},
+				},
+			},
+			verify: func(manifest []mf.Manifest) error {
+				for _, m := range manifest {
+					for _, r := range m.Resources() {
+						if r.GroupVersionKind().Kind == "NetworkPolicy" {
+							return nil
+						}
+					}
+				}
+				return fmt.Errorf("failed to find NetworkPolicy in resources\n%+v", manifest)
+			},
+		},
+		{
+			name: "istio enabled, net policies disabled",
+			in: &operatorv1beta1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						disableGeneratingIstioNetPoliciesAnnotation: "true", // equivalent to unspecified
+					},
+				},
+				Spec: operatorv1beta1.KnativeEventingSpec{
+					CommonSpec: base.CommonSpec{
+						Config: base.ConfigMapData{
+							"features": map[string]string{
+								"istio": "Enabled",
+							},
+						},
+					},
+				},
+			},
+			verify: func(manifest []mf.Manifest) error {
+				for _, m := range manifest {
+					for _, r := range m.Resources() {
+						if r.GroupVersionKind().Kind == "NetworkPolicy" {
+							return fmt.Errorf("unexpected network policy %s/%s found", r.GetNamespace(), r.GetName())
+						}
+					}
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			_, filename, _, _ := goruntime.Caller(0)
+			filename = filepath.Join(filepath.Dir(filename), "..", "monitoring", "testdata", "rbac-proxy.yaml")
+			t.Setenv("SERVICE_MONITOR_RBAC_MANIFEST_PATH", filename)
+			if tc.in.Namespace == "" {
+				tc.in.Namespace = requiredNs
+			}
+			ke := tc.in
+			ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
+			ctx, _ = dynamicfake.With(ctx, scheme.Scheme)
+			ext := NewExtension(ctx, nil)
+			m, err := ext.Manifests(ke)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := tc.verify(m); err != nil {
+				t.Error(err)
 			}
 		})
 	}
