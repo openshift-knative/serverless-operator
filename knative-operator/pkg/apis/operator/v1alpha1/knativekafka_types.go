@@ -38,6 +38,11 @@ type KnativeKafkaSpec struct {
 	// +optional
 	Logging *Logging `json:"logging,omitempty"`
 
+	// A means to override the corresponding deployment images in the upstream.
+	// If no registry is provided, the knative release images will be used.
+	// +optional
+	Registry base.Registry `json:"registry,omitempty"`
+
 	// Workloads overrides workloads configurations such as resources and replicas.
 	// +optional
 	Workloads []base.WorkloadOverride `json:"workloads,omitempty"`

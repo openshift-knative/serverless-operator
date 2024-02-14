@@ -42,6 +42,33 @@ spec:
                 description: A means to override the corresponding entries in the
                   upstream configmaps
                 type: object
+              registry:
+                description: A means to override the corresponding deployment images
+                  in the upstream. This affects both apps/v1.Deployment.
+                properties:
+                  default:
+                    description: The default image reference template to use for all
+                      knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                    type: string
+                  imagePullSecrets:
+                    description: A list of secrets to be used when pulling the knative
+                      images. The secret must be created in the same namespace as
+                      the knative-eventing deployments, and not the namespace of this
+                      resource.
+                    items:
+                      properties:
+                        name:
+                          description: The name of the secret.
+                          type: string
+                      type: object
+                    type: array
+                  override:
+                    additionalProperties:
+                      type: string
+                    description: A map of a container name or image name to the full
+                      image location of the individual knative image.
+                    type: object
+                type: object
               channel:
                 description: Allows configuration for KafkaChannel installation
                 properties:

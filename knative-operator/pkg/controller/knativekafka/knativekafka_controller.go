@@ -356,6 +356,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		operatorcommon.ConfigMapTransform(instance.Spec.Config, logging.FromContext(context.TODO())),
 		configureEventingKafka(instance.Spec),
 		ImageTransform(common.BuildImageOverrideMapFromEnviron(os.Environ(), "KAFKA_IMAGE_")),
+		operatorcommon.ImageTransform(&instance.Spec.Registry, logging.FromContext(context.TODO())),
 		socommon.VersionedJobNameTransform(),
 		socommon.InjectCommonEnvironment(),
 		socommon.ApplyCABundlesTransform(),
