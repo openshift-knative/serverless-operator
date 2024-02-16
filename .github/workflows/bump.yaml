@@ -107,7 +107,7 @@ jobs:
         with:
           path: ./src/github.com/${{ github.repository }}
           branch: auto/bump-so-version-${{ github.ref_name }}
-          title: "[${{ github.ref_name }}] Bump Serverless Operator version"
+          title: "[main] Bump Serverless Operator version after ${{ github.ref_name }} cut"
           commit-message: "Bump SO version"
           delete-branch: true
           body: |
