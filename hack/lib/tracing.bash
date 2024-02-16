@@ -190,7 +190,7 @@ function wait_for_csv_succeeded {
     # Make sure there are .status.conditions available before parsing via jq
     timeout 120 "[[ \$(oc get subscription.operators.coreos.com ${subscription} -n ${ns} -ojson | jq '.status.conditions | length') == 0 ]]"
     subscription_error=$(oc get subscription.operators.coreos.com "${subscription}" -n "${ns}" -ojson | jq '.status.conditions[] | select(.message|test("exists and is not referenced by a subscription"))')
-    if [[ "${subscription_error}" != "" && restarts == 0 ]]; then
+    if [[ "${subscription_error}" != "" && $restarts -eq 0 ]]; then
       logger.warn "Restarting OLM pods to work around OCPBUGS-19046"
       oc delete pods -n openshift-operator-lifecycle-manager -l app=catalog-operator
       oc delete pods -n openshift-operator-lifecycle-manager -l app=olm-operator
