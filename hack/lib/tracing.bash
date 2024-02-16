@@ -171,7 +171,41 @@ spec:
 EOF
 
   logger.info "Waiting for CSV $current_csv to Succeed"
-  timeout 600 "[[ \$(oc get ClusterServiceVersion -n $target_namespace $current_csv -o jsonpath='{.status.phase}') != Succeeded ]]"
+  wait_for_csv_succeeded "${current_csv}" "${name}" "${target_namespace}"
+}
+
+function wait_for_csv_succeeded {
+  local seconds timeout csv ns subscription subscription_error
+
+  timeout=600
+  csv="${1:?Pass csv name as arg[1]}"
+  subscription="${2:?Pass subscription name as arg[2]}"
+  ns="${3:?Pass namespace as arg[3]}"
+  interval="${interval:-1}"
+
+  seconds=0
+  restarts=0
+  ln=' ' logger.debug "${*} : Waiting until non-zero (max ${timeout} sec.)"
+  while (eval "[[ \$(oc get ClusterServiceVersion -n $ns $csv -o jsonpath='{.status.phase}') != Succeeded ]]" 2>/dev/null); do
+    # Make sure there are .status.conditions available before parsing via jq
+    timeout 120 "[[ \$(oc get subscription.operators.coreos.com ${subscription} -n ${ns} -ojson | jq '.status.conditions | length') == 0 ]]"
+    subscription_error=$(oc get subscription.operators.coreos.com "${subscription}" -n "${ns}" -ojson | jq '.status.conditions[] | select(.message|test("exists and is not referenced by a subscription"))')
+    if [[ "${subscription_error}" != "" && restarts == 0 ]]; then
+      logger.warn "Restarting OLM pods to work around OCPBUGS-19046"
+      oc delete pods -n openshift-operator-lifecycle-manager -l app=catalog-operator
+      oc delete pods -n openshift-operator-lifecycle-manager -l app=olm-operator
+      restarts=1
+    fi
+    seconds=$(( seconds + interval ))
+    echo -n '.'
+    sleep "$interval"
+    [[ $seconds -gt $timeout ]] && echo '' \
+      && logger.error "Time out of ${timeout} exceeded" \
+      && return 71
+  done
+  [[ $seconds -gt 0 ]] && echo -n ' '
+  echo 'done'
+  return 0
 }
 
 function install_opentelemetrycollector {
