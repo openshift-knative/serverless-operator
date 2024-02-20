@@ -2,6 +2,7 @@
 
 approvers:
 - serverless-approvers
+- cspi-qe-ocp-lp-approvers
 
 reviewers:
 - serverless-reviewers

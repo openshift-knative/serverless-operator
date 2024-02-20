@@ -12,7 +12,6 @@ aliases:
   - ReToCode
   - rhuss
   - skonto
-  - cspi-qe-ocp-lp
   serverless-reviewers:
   - alanfx
   - aliok
@@ -25,3 +24,5 @@ aliases:
   - ReToCode
   - rhuss
   - skonto
+  cspi-qe-ocp-lp-approvers:
+  - cspi-qe-ocp-lp 
