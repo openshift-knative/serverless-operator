@@ -26,7 +26,7 @@ func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transfor
 		shouldInject, tf = configIfUnsetAndCheckIfShouldInject(comp, "net-istio-controller", "controller")
 	}
 	if comp.Spec.Ingress.Kourier.Enabled {
-		shouldInject, _ = configIfUnsetAndCheckIfShouldInject(comp, "net-kourier-controller", "controller")
+		shouldInject, tf = configIfUnsetAndCheckIfShouldInject(comp, "net-kourier-controller", "controller")
 	}
 	if shouldInject {
 		return []mf.Transformer{injectLabelIntoInternalEncryptionSecret(), tf}
