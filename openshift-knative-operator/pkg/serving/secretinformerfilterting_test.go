@@ -127,11 +127,16 @@ func TestSecretInformerFilteringOverride(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			tf := enableSecretInformerFilteringTransformers(c.in)
-			if c.shouldEnableSecretInformerFiltering && tf == nil {
-				t.Errorf("Secret informer filtering transformer should not be nil")
-			} else if !c.shouldEnableSecretInformerFiltering && tf != nil {
-				t.Errorf("Secret informer filtering transformer should be nil")
+			tfs := enableSecretInformerFilteringTransformers(c.in)
+			if c.shouldEnableSecretInformerFiltering {
+				if len(tfs) != 2 {
+					t.Errorf("There should be two transformers, but got %d", len(tfs))
+				}
+				if tfs[1] == nil {
+					t.Errorf("Secret informer filtering transformer should not be nil")
+				}
+			} else if !c.shouldEnableSecretInformerFiltering && tfs != nil {
+				t.Errorf("Secret informer filtering transformers should be nil")
 			}
 			if !cmp.Equal(c.in, c.expected) {
 				t.Errorf("Resource was not as expected:\n%s", cmp.Diff(c.in, c.expected))
