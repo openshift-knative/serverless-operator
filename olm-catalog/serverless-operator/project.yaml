@@ -4,20 +4,20 @@ project:
     # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
     # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
     # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-    version: 1.32.0
+    version: 1.33.0
 olm:
-    replaces: 1.31.0
-    skipRange: '>=1.31.0 <1.32.0'
+    replaces: 1.32.0
+    skipRange: '>=1.32.0 <1.33.0'
     channels:
         default: stable
         list:
             - stable
+            - stable-1.33
             - stable-1.32
             - stable-1.31
-            - stable-1.30
     previous:
-        replaces: 1.30.0
-        skipRange: '>=1.30.0 <1.31.0'
+        replaces: 1.31.0
+        skipRange: '>=1.31.0 <1.32.0'
 requirements:
     kube:
         # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -39,7 +39,7 @@ dependencies:
     net_kourier_artifacts_branch: release-v1.11
     net_istio: knative-v1.11
     net_istio_artifacts_branch: release-v1.11
-    redhat-knative-istio-authz-chart: 1.32.0
+    redhat-knative-istio-authz-chart: 1.33.0
     maistra: 2.4-latest
     eventing: knative-v1.11
     # eventing core midstream branch name
@@ -63,14 +63,14 @@ dependencies:
     operator: 1.11.0
     # Previous versions required for downgrade testing
     previous:
-        serving: knative-v1.10
-        eventing: knative-v1.10
-        eventing_kafka_broker: knative-v1.10
-
+        serving: knative-v1.11
+        eventing: knative-v1.11
+        eventing_kafka_broker: knative-v1.11
     mustgather:
-      image: quay.io/openshift-knative/must-gather
+        image: quay.io/openshift-knative/must-gather
 upgrade_sequence:
-    - csv: serverless-operator.v1.30.0
     - csv: serverless-operator.v1.31.0
     - csv: serverless-operator.v1.31.1
     - csv: serverless-operator.v1.32.0
+    - csv: serverless-operator.v1.33.0
+      source: serverless-operator
