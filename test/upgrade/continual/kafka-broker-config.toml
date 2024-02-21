@@ -7,7 +7,3 @@ interval = {{ .Config.Interval.Nanoseconds }}
 
 [forwarder]
 target = '{{- .ForwarderTarget -}}'
-
-[receiver]
-[receiver.teardown]
-duration = 20000000000
