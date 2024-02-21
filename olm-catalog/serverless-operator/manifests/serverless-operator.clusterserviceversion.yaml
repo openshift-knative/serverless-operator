@@ -61,13 +61,13 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.31.0 <1.32.0'
+    olm.skipRange: '>=1.32.0 <1.33.0'
     operators.openshift.io/must-gather-image: quay.io/openshift-knative/must-gather
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
-  name: serverless-operator.v1.32.0
+  name: serverless-operator.v1.33.0
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -935,7 +935,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
                         value: "registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41"
                       - name: "CURRENT_VERSION"
-                        value: "1.32.0"
+                        value: "1.33.0"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -1115,7 +1115,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
                       - name: "CURRENT_VERSION"
-                        value: "1.32.0"
+                        value: "1.33.0"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.11"
                     securityContext:
@@ -1381,5 +1381,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.11"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.11"
-  replaces: serverless-operator.v1.31.0
-  version: 1.32.0
+  replaces: serverless-operator.v1.32.0
+  version: 1.33.0
