@@ -116,7 +116,8 @@ func (rs *RevisionSpec) applyDefault(ctx context.Context, container *corev1.Cont
 	// If there are multiple containers then default probes will be applied to the container where user specified PORT
 	// default probes will not be applied for non serving containers
 	if len(rs.PodSpec.Containers) == 1 || len(container.Ports) != 0 {
-		rs.applyProbes(container)
+		rs.applyProbesWithDefaults(container)
+		rs.applyGRPCProbeDefaults(container)
 	}
 
 	if rs.PodSpec.EnableServiceLinks == nil && apis.IsInCreate(ctx) {
@@ -137,13 +138,14 @@ func (rs *RevisionSpec) applyDefault(ctx context.Context, container *corev1.Cont
 	}
 }
 
-func (*RevisionSpec) applyProbes(container *corev1.Container) {
+func (*RevisionSpec) applyProbesWithDefaults(container *corev1.Container) {
 	if container.ReadinessProbe == nil {
 		container.ReadinessProbe = &corev1.Probe{}
 	}
 	if container.ReadinessProbe.TCPSocket == nil &&
 		container.ReadinessProbe.HTTPGet == nil &&
-		container.ReadinessProbe.Exec == nil {
+		container.ReadinessProbe.Exec == nil &&
+		container.ReadinessProbe.GRPC == nil {
 		container.ReadinessProbe.TCPSocket = &corev1.TCPSocketAction{}
 	}
 
@@ -159,6 +161,18 @@ func (*RevisionSpec) applyProbes(container *corev1.Container) {
 		if container.ReadinessProbe.TimeoutSeconds == 0 {
 			container.ReadinessProbe.TimeoutSeconds = 1
 		}
+	}
+}
+
+func (*RevisionSpec) applyGRPCProbeDefaults(container *corev1.Container) {
+	if container.ReadinessProbe != nil && container.ReadinessProbe.GRPC != nil && container.ReadinessProbe.GRPC.Service == nil {
+		container.ReadinessProbe.GRPC.Service = ptr.String("")
+	}
+	if container.LivenessProbe != nil && container.LivenessProbe.GRPC != nil && container.LivenessProbe.GRPC.Service == nil {
+		container.LivenessProbe.GRPC.Service = ptr.String("")
+	}
+	if container.StartupProbe != nil && container.StartupProbe.GRPC != nil && container.StartupProbe.GRPC.Service == nil {
+		container.StartupProbe.GRPC.Service = ptr.String("")
 	}
 }
 

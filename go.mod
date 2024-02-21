@@ -30,7 +30,7 @@ require (
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20231123073118-c0f04e812cfe
 	knative.dev/networking v0.0.0-20231012062757-a5958051caf8
-	knative.dev/operator v0.38.11
+	knative.dev/operator v0.38.12
 	knative.dev/pkg v0.0.0-20231103161548-f5b42e8dea44
 	knative.dev/serving v0.38.5
 	sigs.k8s.io/controller-runtime v0.17.2
@@ -177,25 +177,25 @@ require (
 	github.com/go-logr/logr v1.4.1
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.29.2
-	knative.dev/reconciler-test v0.0.0-20231121121446-f747d069af11
+	knative.dev/reconciler-test v0.0.0-20240206112133-c345dafdf302
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20231024090734-f798ec4dff89
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20231023140437-5e3ca70850a0
-	knative.dev/hack => knative.dev/hack v0.0.0-20230712131415-ddae80293c43
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20240220193533-e1bb5051decc
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240216150930-ed42c15c5543
+	knative.dev/hack => knative.dev/hack v0.0.0-20231123073118-c0f04e812cfe
 	knative.dev/networking => knative.dev/networking v0.0.0-20231023175057-21fb00ea6096
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20231023150739-56bfe0dd9626
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20231121134246-52a86c40f40c
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20231024095731-e86912bd9ab6
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20231103161548-f5b42e8dea44
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20240206112133-c345dafdf302
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20240220063115-90e5f2c73b80
 )
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20230426102702-398424d53f74
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20240131175612-92fe66c75e8f
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20220603133046-984ee5ebedcf
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20230828122850-e2409e886dd0
+	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20231113175050-15d0b0288a43
 )
 
 replace (

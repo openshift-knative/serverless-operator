@@ -386,6 +386,7 @@ func (r *NamespacedReconciler) configMapsFromSystemNamespace(broker *eventing.Br
 		"config-kafka-broker-data-plane",
 		"config-tracing",
 		"kafka-config-logging",
+		"config-openshift-trusted-cabundle",
 	}
 	resources := make([]unstructured.Unstructured, 0, len(configMaps))
 	for _, name := range configMaps {

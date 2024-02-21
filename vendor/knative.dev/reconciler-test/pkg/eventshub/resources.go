@@ -114,6 +114,12 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			"withEnforceTLS": isEnforceTLS,
 		}
 
+		for k, v := range envs {
+			if strings.HasPrefix(k, "TLS_ISSUER") {
+				cfg[k] = v
+			}
+		}
+
 		// Install ServiceAccount, Role, RoleBinding
 		eventshubrbac.Install(cfg)(ctx, t)
 
