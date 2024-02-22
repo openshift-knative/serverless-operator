@@ -322,6 +322,7 @@ release-files:
 
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
+# Use CURRENT_VERSION_IMAGES="<branch>" if you need to override the defaulting to main
 generated-files: release-files
 	./hack/update-deps.sh
 	./hack/update-codegen.sh
