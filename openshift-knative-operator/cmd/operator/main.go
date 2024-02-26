@@ -22,7 +22,7 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/eventing"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/serving"
 
-	// Force vendor this package since it's included in the patch in hack/patches/remove_eventing_ns_manifest.patch
+	// Force vendor this package since it's included in the patch in hack/patches/014-remove_eventing_ns_manifest.patch
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
 )
 

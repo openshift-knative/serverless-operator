@@ -1,0 +1,15 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+index baf7240c6..f0d4c777d 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
+@@ -124,10 +124,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
+ 
+ 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
+ 
+-	if err := common.IsVersionValidMigrationEligible(ke); err != nil {
+-		ke.Status.MarkVersionMigrationNotEligible(err.Error())
+-		return nil
+-	}
+ 	ke.Status.MarkVersionMigrationEligible()
+ 
+ 	if err := r.extension.Reconcile(ctx, ke); err != nil {
