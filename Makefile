@@ -331,7 +331,11 @@ generated-files: release-files
 	(cd olm-catalog/serverless-operator && ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
-generate-release-next:
+generate-release-next: release-files
+	# Re-generate CSV with release-next images
+	USE_RELEASE_NEXT_IMAGES_IN_CSV=true ./hack/generate/csv.sh \
+  		templates/csv.yaml \
+  		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
 	./hack/generate-release-next.sh
 
 # Runs the lints Github Actions do too.

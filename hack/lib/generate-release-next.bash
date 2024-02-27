@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function generate_release_next(){
-  header "Installing Serverless Operator"
+  header "Generate release next artifacts"
 
   local serving_dir eventing_dir ekb_dir
   serving_dir=$(mktemp -d)
