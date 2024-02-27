@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/origin/4.14:operator-registry AS opm
+FROM registry.ci.openshift.org/origin/4.15:operator-registry AS opm
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
@@ -17,7 +17,7 @@ RUN /bin/opm render --skip-tls-verify -o yaml registry.ci.openshift.org/knative/
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM quay.io/openshift/origin-operator-registry:4.14
+FROM quay.io/openshift/origin-operator-registry:4.15
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
