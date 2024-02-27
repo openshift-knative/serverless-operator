@@ -15,11 +15,19 @@ kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-ev
 rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_serverless_operator_images
-default_knative_eventing_images
-default_knative_eventing_istio_images
-default_knative_eventing_kafka_broker_images
-default_knative_serving_images
 default_knative_ingress_images
+
+if [[ ${USE_RELEASE_NEXT_IMAGES_IN_CSV:-} == "true" ]]; then
+  default_knative_eventing_images
+  default_knative_eventing_istio_images
+  default_knative_eventing_kafka_broker_images
+  default_knative_serving_images
+else
+  knative_eventing_images_release_next
+  knative_eventing_istio_images_release_next
+  knative_eventing_kafka_broker_images_release_next
+  knative_serving_images_release_next
+fi
 
 declare -a operator_images
 declare -A operator_images_addresses
