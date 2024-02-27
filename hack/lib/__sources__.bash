@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -a __sources=(metadata vars common ui scaleup namespaces catalogsource serverless tracing mesh certmanager strimzi keda tracing clusterlogging testselect)
+declare -a __sources=(metadata vars common ui scaleup namespaces catalogsource serverless tracing mesh certmanager strimzi keda tracing clusterlogging testselect generate-release-next)
 
 for source in "${__sources[@]}"; do
   # shellcheck disable=SC1091,SC1090
