@@ -20,7 +20,7 @@ install-all:
 
 install-release-next: generated-files-release-next
 	ON_CLUSTER_BUILDS=true ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
-	DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
+	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
 
 install-tracing:
 	./hack/tracing.sh
