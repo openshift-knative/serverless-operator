@@ -23,13 +23,13 @@ requirements:
         # The min version validation in `vendor/knative.dev/pkg/version/version.go`
         # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
         # This value is used for CSV's min version validation.
-        minVersion: 1.24.0
+        minVersion: 1.25.0
     golang: '1.21'
     nodejs: 16.x
     ocpVersion:
-        min: '4.11'
-        max: '4.14'
-        label: 'v4.11'
+        min: '4.12'
+        max: '4.15'
+        label: 'v4.12'
 dependencies:
     serving: knative-v1.11
     # serving midstream branch name
