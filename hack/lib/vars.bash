@@ -108,7 +108,7 @@ export DELETE_CRD_ON_TEARDOWN="${DELETE_CRD_ON_TEARDOWN:-true}"
 export USE_RELEASED_HELM_CHART="${USE_RELEASED_HELM_CHART:-false}"
 export HELM_CHART_TGZ="${HELM_CHART_TGZ:-}"
 export HA="${HA:-true}"
-export USE_RELEASE_NEXT_IMAGES_IN_CSV="${USE_RELEASE_NEXT_IMAGES_IN_CSV:-false}"
+export USE_RELEASE_NEXT="${USE_RELEASE_NEXT:-true}"
 
 # Waits until the given object exists.
 # Parameters: $1 - the kind of the object.

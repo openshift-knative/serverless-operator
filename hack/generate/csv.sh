@@ -17,16 +17,16 @@ rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVer
 default_serverless_operator_images
 default_knative_ingress_images
 
-if [[ ${USE_RELEASE_NEXT_IMAGES_IN_CSV:-} == "true" ]]; then
-  default_knative_eventing_images
-  default_knative_eventing_istio_images
-  default_knative_eventing_kafka_broker_images
-  default_knative_serving_images
-else
+if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_eventing_images_release_next
   knative_eventing_istio_images_release_next
   knative_eventing_kafka_broker_images_release_next
   knative_serving_images_release_next
+else
+  default_knative_eventing_images
+  default_knative_eventing_istio_images
+  default_knative_eventing_kafka_broker_images
+  default_knative_serving_images
 fi
 
 declare -a operator_images
