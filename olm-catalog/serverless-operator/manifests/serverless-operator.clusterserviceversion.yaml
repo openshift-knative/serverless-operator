@@ -189,7 +189,7 @@ spec:
   maturity: stable
   provider:
     name: Red Hat
-  minKubeVersion: 1.24.0
+  minKubeVersion: 1.25.0
   customresourcedefinitions:
     owned:
       - description: A platform for streamlined application deployment, traffic-based auto-scaling from zero to N, and traffic-split rollouts
