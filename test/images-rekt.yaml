@@ -1,3 +1,2 @@
-#knative.dev/reconciler-test/cmd/eventshub: quay.io/openshift-knative/eventing/eventshub:v1.13
-knative.dev/reconciler-test/cmd/eventshub: quay.io/creydr/knative/eventing/eventshub:write-event-to-request-again
+knative.dev/reconciler-test/cmd/eventshub: quay.io/openshift-knative/eventing/eventshub:v1.13
 knative.dev/eventing/cmd/heartbeats: quay.io/openshift-knative/eventing/heartbeats:v1.13
