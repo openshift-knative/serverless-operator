@@ -37,7 +37,7 @@ const (
 	// TrustBundleLabelSelector is the ConfigMap label selector for trust bundles.
 	TrustBundleLabelSelector = "networking.knative.dev/trust-bundle=true"
 
-	TrustBundleMountPath = "knative-custom-certs"
+	TrustBundleMountPath = "/knative-custom-certs"
 
 	TrustBundleVolumeNamePrefix = "kne-bundle-"
 )
