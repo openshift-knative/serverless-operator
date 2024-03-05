@@ -16,7 +16,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.25.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.72.0
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.72.0
-	github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/common v0.48.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
