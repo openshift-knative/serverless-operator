@@ -55,7 +55,7 @@ const (
 	// https://github.com/openshift/cluster-network-operator/pull/2111
 	// Otherwise, both operators will revert each other's changes.
 	trustedCAOwningAnnotationKey   = "openshift.io/owning-component"
-	trustedCAOwningAnnotationValue = "Networking / cluster-network-operator"
+	trustedCAOwningAnnotationValue = "Serverless Operator"
 
 	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
 	// controller's PodTemplate to make it redeploy on certificate changes.
