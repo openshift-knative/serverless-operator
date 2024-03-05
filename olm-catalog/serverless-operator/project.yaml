@@ -16,7 +16,7 @@ olm:
             - stable-1.31
             - stable-1.30
     previous:
-        replaces: 1.30.0
+        replaces: 1.30.2
         skipRange: '>=1.30.0 <1.31.1'
 requirements:
     kube:
