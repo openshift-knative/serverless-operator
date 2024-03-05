@@ -200,7 +200,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1beta1.K
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEventing) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("eventing_status")
-	finalizers := sets.NewString(instance.GetFinalizers()...)
+	finalizers := sets.New[string](instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
 		log.Info("Finalizer has already been removed, nothing to do")
@@ -220,9 +220,9 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 	}
 
 	// Update the refetched finalizer list.
-	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers = sets.New[string](refetched.GetFinalizers()...)
 	finalizers.Delete(finalizerName)
-	refetched.SetFinalizers(finalizers.List())
+	refetched.SetFinalizers(sets.List(finalizers))
 
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)
