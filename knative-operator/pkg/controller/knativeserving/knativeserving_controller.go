@@ -51,6 +51,12 @@ const (
 	// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
 	trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
 
+	// cluster-network-operator enforces the following annotation to be there
+	// https://github.com/openshift/cluster-network-operator/pull/2111
+	// Otherwise, both operators will revert each other's changes.
+	trustedCAOwningAnnotationKey   = "openshift.io/owning-component"
+	trustedCAOwningAnnotationValue = "Networking / cluster-network-operator"
+
 	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
 	// controller's PodTemplate to make it redeploy on certificate changes.
 	certVersionKey = socommon.ServingDownstreamDomain + "/mounted-cert-version"
@@ -271,7 +277,9 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}
-	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca", nil, map[string]string{trustedCAKey: "true"}, nil)
+	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca",
+		map[string]string{trustedCAOwningAnnotationKey: trustedCAOwningAnnotationValue},
+		map[string]string{trustedCAKey: "true"}, nil)
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}
