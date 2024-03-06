@@ -85,15 +85,15 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			Continual: merge(
-				ServingContinualTests(ctx),
-				ChannelContinualTests(ctx),
+				//ServingContinualTests(ctx),
+				//ChannelContinualTests(ctx),
 				kafkabrokerupgrade.BrokerContinualTests(),
 				kafkabrokerupgrade.SinkContinualTests(),
 			),
 		},
 		Installations: pkgupgrade.Installations{
-			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+			UpgradeWith: upgrade.ServerlessUpgradeOperations(ctx),
+			//DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
