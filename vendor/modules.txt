@@ -58,8 +58,8 @@ github.com/cespare/xxhash/v2
 # github.com/cloudevents/conformance v0.2.0
 ## explicit; go 1.14
 github.com/cloudevents/conformance/pkg/event
-# github.com/cloudevents/sdk-go/sql/v2 v2.13.0
-## explicit; go 1.17
+# github.com/cloudevents/sdk-go/sql/v2 v2.15.2
+## explicit; go 1.18
 github.com/cloudevents/sdk-go/sql/v2
 github.com/cloudevents/sdk-go/sql/v2/expression
 github.com/cloudevents/sdk-go/sql/v2/function
