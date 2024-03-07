@@ -185,6 +185,11 @@ function deploy_knativeserving_cr {
     override_ingress_cert "$serving_cr"
   fi
 
+  if [[ $USE_RELEASE_NEXT == "true" ]]; then
+    # Apply the same change as in https://github.com/openshift-knative/serving/pull/608
+    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
+  fi
+
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
 
   if [[ $FULL_MESH == "true" ]]; then

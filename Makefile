@@ -18,6 +18,10 @@ install-all:
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
+install-release-next: generated-files-release-next
+	ON_CLUSTER_BUILDS=true ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
+	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
+
 install-tracing:
 	./hack/tracing.sh
 
@@ -329,6 +333,18 @@ generated-files: release-files
 	(cd knative-operator && ./hack/update-manifests.sh)
 	(cd openshift-knative-operator && ./hack/update-manifests.sh)
 	(cd olm-catalog/serverless-operator && ./hack/update-manifests.sh)
+	./hack/update-deps.sh
+
+generated-files-release-next: release-files
+	# Re-generate CSV with release-next images
+	USE_RELEASE_NEXT=true ./hack/generate/csv.sh \
+  		templates/csv.yaml \
+  		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+	./hack/update-deps.sh
+	./hack/update-codegen.sh
+	(cd knative-operator && USE_RELEASE_NEXT=true ./hack/update-manifests.sh)
+	(cd openshift-knative-operator && USE_RELEASE_NEXT=true ./hack/update-manifests.sh)
+	(cd olm-catalog/serverless-operator && USE_RELEASE_NEXT=true ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
 # Runs the lints Github Actions do too.
