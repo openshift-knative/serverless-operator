@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/protobuf/encoding/protojson"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/contract"
 	"strings"
 	"time"
 
@@ -194,6 +196,46 @@ func DowngradeServerless(ctx *test.Context) error {
 		v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("knative kafka downgrade failed: %w", err)
+	}
+
+	if err := downgradeKafkaContracts(ctx); err != nil {
+		return fmt.Errorf("downgrading eventing-kafka-broker contracts failed: %w", err)
+	}
+
+	return nil
+}
+
+func downgradeKafkaContracts(ctx *test.Context) error {
+	cms := []string{
+		"kafka-broker-brokers-triggers",
+		"kafka-channel-channels-subscriptions",
+		"kafka-sink-sinks",
+	}
+
+	jsonUnmarshalOptions := protojson.UnmarshalOptions{DiscardUnknown: true}
+
+	for _, name := range cms {
+		cm, err := ctx.Clients.Kube.CoreV1().ConfigMaps(test.EventingNamespace).Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to get contract configmap %q: %w", name, err)
+		}
+
+		ct := &contract.Contract{}
+		err = jsonUnmarshalOptions.Unmarshal(cm.BinaryData["data"], ct)
+		if err != nil {
+			return fmt.Errorf("failed to deserialize contract of %q: %w", name, err)
+		}
+
+		// as we discarded the unknown, we can now simply write it back
+		cm.BinaryData["data"], err = protojson.Marshal(ct)
+		if err != nil {
+			return fmt.Errorf("failed to serialize contract of %q: %w", name, err)
+		}
+
+		_, err = ctx.Clients.Kube.CoreV1().ConfigMaps(test.EventingNamespace).Update(context.Background(), cm, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to get contract configmap %q: %w", name, err)
+		}
 	}
 
 	return nil
