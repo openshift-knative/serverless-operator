@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/protobuf/encoding/protojson"
-	"knative.dev/eventing-kafka-broker/control-plane/pkg/contract"
 	"strings"
 	"time"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/contract"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/test"
