@@ -226,6 +226,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 	serviceCAAnnotations := map[string]string{serviceCAKey: "true"}
 	trustedCALabels := map[string]string{trustedCAKey: "true"}
+	trustedCAAnnotations := map[string]string{trustedCAOwningAnnotationKey: trustedCAOwningAnnotationValue}
 
 	tests := []struct {
 		name    string
@@ -237,7 +238,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, nil, "1"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, nil, "1"),
 		},
 	}, {
 		name: "upgrade from 1.6.0",
@@ -248,7 +249,7 @@ func TestCustomCertsConfigMap(t *testing.T) {
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, nil, "2"), // TODO: maybe we shouldn't stomp, retaining current behavior though.
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, nil, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, nil, "1"),
 		},
 		outCtrl: ctrl("2"),
 	}, {
@@ -257,12 +258,12 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			ctrl("2"),
 			cm("test-cm", nil, serviceCAAnnotations, nil, "3"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"trustedCA": "baz"}, "4"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, nil, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		outCtrl: ctrl("4"),
 	}, {
@@ -271,12 +272,12 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			ctrl("0"),
 			cm("test-cm", nil, serviceCAAnnotations, nil, "1"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "2"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz"}, "1"),
 		},
 		outCtrl: ctrl("2"),
 	}, {
@@ -285,12 +286,12 @@ func TestCustomCertsConfigMap(t *testing.T) {
 			ctrl("10"),
 			cm("test-cm", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar", "trustedCA": "baz"}, "100"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz2"}, "1"),
 		},
 		out: []*corev1.ConfigMap{
 			cm("test-cm", nil, nil, map[string]string{"serviceCA": "bar", "trustedCA": "baz2"}, "101"),
 			cm("test-cm-service-ca", nil, serviceCAAnnotations, map[string]string{"serviceCA": "bar"}, "1"),
-			cm("test-cm-trusted-ca", trustedCALabels, nil, map[string]string{"trustedCA": "baz2"}, "1"),
+			cm("test-cm-trusted-ca", trustedCALabels, trustedCAAnnotations, map[string]string{"trustedCA": "baz2"}, "1"),
 		},
 		outCtrl: ctrl("101"),
 	}}
