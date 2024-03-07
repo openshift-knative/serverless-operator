@@ -193,16 +193,16 @@ func DowngradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("eventing downgrade failed: %w", err)
 	}
 
+	if err := downgradeKafkaContractsWithScript(); err != nil {
+		return fmt.Errorf("failed to downgrade contracts: %w", err)
+	}
+
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
 		v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
 	); err != nil {
 		return fmt.Errorf("knative kafka downgrade failed: %w", err)
-	}
-
-	if err := downgradeKafkaContractsWithScript(); err != nil {
-		return fmt.Errorf("failed to downgrade contracts: %w", err)
 	}
 
 	return nil
