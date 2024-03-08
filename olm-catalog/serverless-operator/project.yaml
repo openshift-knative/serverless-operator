@@ -25,7 +25,7 @@ requirements:
         # This value is used for CSV's min version validation.
         minVersion: 1.25.0
     golang: '1.21'
-    nodejs: 16.x
+    nodejs: 20.x
     ocpVersion:
         min: '4.12'
         max: '4.14'
