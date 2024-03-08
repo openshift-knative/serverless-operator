@@ -5,7 +5,10 @@ metadata:
 spec:
   config:
     network:
-      internal-encryption: "true"
+      # we currently cannot run with encryption enabled
+      # as the net-certmanager stuff has not yet been integrated into Serving
+      # TODO: https://issues.redhat.com/browse/SRVKS-1198
+      internal-encryption: "false"
     autoscaler:
       container-concurrency-target-default: "100"
       container-concurrency-target-percentage: "1.0"
