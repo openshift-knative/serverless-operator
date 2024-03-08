@@ -2,8 +2,10 @@ package installation
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -20,6 +22,9 @@ import (
 const (
 	DefaultInstallPlanTimeout = 15 * time.Minute
 )
+
+//go:embed downgrade.sh
+var downgradeContractScript string
 
 func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Duration) error {
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
@@ -188,6 +193,10 @@ func DowngradeServerless(ctx *test.Context) error {
 		return fmt.Errorf("eventing downgrade failed: %w", err)
 	}
 
+	if err := downgradeKafkaContractsWithScript(); err != nil {
+		return fmt.Errorf("failed to downgrade contracts: %w", err)
+	}
+
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
@@ -250,4 +259,17 @@ func setStorageToAlpha(ctx *test.Context, name string) error {
 		_, err = ctx.Clients.APIExtensionClient.ApiextensionsV1().CustomResourceDefinitions().UpdateStatus(context.Background(), crd, metav1.UpdateOptions{})
 		return err
 	})
+}
+
+func downgradeKafkaContractsWithScript() error {
+	c := exec.Command("bash", "-s", "-", "kafka-broker-brokers-triggers", "kafka-channel-channels-subscriptions", "kafka-sink-sinks", "kafka-source-dispatcher-0", "kafka-source-dispatcher-1")
+
+	c.Stdin = strings.NewReader(downgradeContractScript)
+
+	_, err := c.Output()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
