@@ -262,7 +262,7 @@ func setStorageToAlpha(ctx *test.Context, name string) error {
 }
 
 func downgradeKafkaContractsWithScript() error {
-	c := exec.Command("bash", "-s", "-", "kafka-broker-brokers-triggers", "kafka-channel-channels-subscriptions", "kafka-sink-sinks", "kafka-source-dispatcher-0", "kafka-source-dispatcher-1")
+	c := exec.Command("bash", "-s", "-", test.EventingNamespace, "kafka-source-dispatcher-0", "kafka-source-dispatcher-1")
 
 	c.Stdin = strings.NewReader(downgradeContractScript)
 
