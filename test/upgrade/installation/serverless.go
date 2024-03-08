@@ -227,7 +227,7 @@ func downgradeKafkaContracts(ctx *test.Context) error {
 			return fmt.Errorf("failed to deserialize contract of %q: %w", name, err)
 		}
 
-		// as we discarded the unknown, we can now simply write it back
+		// as we discarded the unknown (and the vendored contract does not contain the TrustBundles property), we can now simply write it back
 		cm.BinaryData["data"], err = protojson.Marshal(ct)
 		if err != nil {
 			return fmt.Errorf("failed to serialize contract of %q: %w", name, err)
@@ -235,7 +235,7 @@ func downgradeKafkaContracts(ctx *test.Context) error {
 
 		_, err = ctx.Clients.Kube.CoreV1().ConfigMaps(test.EventingNamespace).Update(context.Background(), cm, metav1.UpdateOptions{})
 		if err != nil {
-			return fmt.Errorf("failed to get contract configmap %q: %w", name, err)
+			return fmt.Errorf("failed to update contract configmap %q: %w", name, err)
 		}
 	}
 
