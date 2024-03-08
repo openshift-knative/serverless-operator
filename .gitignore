@@ -1,4 +1,5 @@
 _output/
+.idea/
 *.kubeconfig
 users.htpasswd
 # certs created by hack/lib/mesh.bash
