@@ -423,7 +423,8 @@ EOF
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
     "--csvprevious=${PREVIOUS_CSV}" \
-    "--servingversion=${KNATIVE_SERVING_VERSION/knative-v/}" \
+    #"--servingversion=${KNATIVE_SERVING_VERSION/knative-v/}" \
+    "--servingversion=1.12" \
     "--eventingversion=${KNATIVE_EVENTING_VERSION/knative-v/}" \
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}" \
     "--servingversionprevious=${KNATIVE_SERVING_VERSION_PREVIOUS/knative-v/}" \
