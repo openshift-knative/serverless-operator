@@ -19,7 +19,7 @@ for additional_cm in "${@:2}"; do
 done
 
 for cm_name in "${contract_configmaps[@]}"; do
-  cmdata=$(kubectl get cm "$cm_name" -n "$target_namespace" -ojson 2>/dev/null || true)
+  cmdata=$(kubectl get cm "$cm_name" -n "$target_namespace" -ojson || true)
   if [ -n "$cmdata" ]; then
     new_data=$(echo "$cmdata" | jq -r .binaryData.data | base64 --decode | jq 'del(.trustBundles)' -c | base64 -w 0)
     echo "$cmdata" | jq --arg new_data "$new_data" '.binaryData.data = $new_data' | kubectl apply -f -
