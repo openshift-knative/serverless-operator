@@ -27,7 +27,7 @@ for cm_name in "${contract_configmaps[@]}"; do
 done
 
 # Trigger a reconcile of the related pods (see https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#mounted-configmaps-are-updated-automatically)
-declare -a pods_app_labels=("kafka-broker-dispatcher" "kafka-broker-receiver" "kafka-channel-dispatcher" "kafka-channel-receiver" "kafka-source-dispatcher" "kafka-source-receiver")
+declare -a pods_app_labels=("kafka-broker-dispatcher" "kafka-broker-receiver" "kafka-channel-dispatcher" "kafka-channel-receiver" "kafka-source-dispatcher" "kafka-sink-receiver")
 for app_label in "${pods_app_labels[@]}"; do
   kubectl -n "$target_namespace" annotate pod -l=app="$app_label" why="to trigger a reconcile" --overwrite || true
 done
