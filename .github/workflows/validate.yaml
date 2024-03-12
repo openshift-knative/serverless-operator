@@ -102,8 +102,8 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         run: |
           csv="olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
-          if [[ "$(yq read "$csv" spec.replaces)" == "" || \
-                "$(yq read "$csv" 'metadata.annotations."olm.skipRange"')" == "" ]]; then
+          if [[ "$(GOFLAGS='' go run github.com/mikefarah/yq/v3@latest read "$csv" spec.replaces)" == "" || \
+                "$(GOFLAGS='' go run github.com/mikefarah/yq/v3@latest read "$csv" 'metadata.annotations."olm.skipRange"')" == "" ]]; then
             echo '::error:: Missing spec.replaces or metadata.annotations."olm.skipRange" in CSV.'
             exit 34
           fi
