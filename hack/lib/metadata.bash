@@ -7,7 +7,7 @@ function yq() {
   bindir="${rootdir}/_output/bin"
   if [[ ! -f "${bindir}/yq" ]]; then
     mkdir -p "${bindir}"
-    GOBIN="${bindir}" go install github.com/mikefarah/yq/v3@latest
+    GOBIN="${bindir}" GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
   fi
   "${bindir}/yq" "$@"
 }
