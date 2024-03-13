@@ -29,8 +29,8 @@ install-serving:
 	INSTALL_EVENTING="false" ./hack/install.sh
 
 install-serving-with-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
-	FULL_MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
+	MESH=true UNINSTALL_MESH="false" ./hack/mesh.sh
+	MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
@@ -41,11 +41,11 @@ install-kafka:
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-kafka-with-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	UNINSTALL_MESH="false" ./hack/mesh.sh
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
+	MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 
 install-kafka-with-keda:
 	UNINSTALL_KEDA="false" ./hack/keda.sh
@@ -82,14 +82,11 @@ install-mesh:
 uninstall-mesh:
 	UNINSTALL_MESH="true" ./hack/mesh.sh
 
-install-full-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+install-mesh:
+	UNINSTALL_MESH="false" ./hack/mesh.sh
 
-uninstall-full-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="true" ./hack/mesh.sh
-
-install-with-mesh-enabled:
-	FULL_MESH=true ./hack/install.sh
+uninstall-mesh:
+	UNINSTALL_MESH="true" ./hack/mesh.sh
 
 install-tracing-zipkin:
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
@@ -141,14 +138,14 @@ test-e2e-with-kafka: operator-e2e
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
-	FULL_MESH=true ./test/e2e-tests.sh
+	MESH=true ./test/e2e-tests.sh
 
 test-e2e-with-mesh:
-	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	UNINSTALL_MESH="false" ./hack/mesh.sh
 	./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
-	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
@@ -156,26 +153,24 @@ test-operator: test-unit test-e2e
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
 test-upstream-e2e-mesh-testonly:
-	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
-	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-install-for-mesh-e2e:
+mesh-e2e:
 	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh # This avoids early failures for the skipped Eventing TLS tests
-	FULL_MESH="true" UNINSTALL_MESH="false" ./hack/mesh.sh
+	UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	FULL_MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
-
-mesh-e2e: install-for-mesh-e2e
-	FULL_MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
-	FULL_MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
+	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-mesh: mesh-e2e
 
 # Run upstream E2E tests without upgrades.
 test-upstream-e2e-no-upgrade-testonly:
-	FULL_MESH=true ./test/e2e-tests.sh
-	FULL_MESH=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
+	MESH=true ./test/e2e-tests.sh
+	MESH=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-kafka-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
@@ -207,11 +202,11 @@ test-upgrade:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 mesh-upgrade:
-	FULL_MESH=true UNINSTALL_MESH=false ./hack/mesh.sh
+	UNINSTALL_MESH=false ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
-	FULL_MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
-	FULL_MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
+	MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 test-upgrade-with-mesh: mesh-upgrade
 

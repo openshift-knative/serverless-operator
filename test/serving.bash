@@ -22,7 +22,7 @@ function prepare_knative_serving_tests {
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config/cluster-resources.yaml
   # Workaround for https://issues.redhat.com/browse/OSSM-1397
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     oc label namespace serving-tests maistra.io/member-of=istio-system --overwrite
   fi
   oc apply -f test/config/test-resources.yaml
@@ -65,13 +65,14 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https --skip-cleanup-on-fail"
 
-  if [[ $FULL_MESH == "true" ]]; then
-    # TODO: SRVKS-211: Can not run grpc and http2 tests.
-    rm ./test/e2e/grpc_test.go
-    rm ./test/e2e/http2_test.go
-    # Remove h2c test
-    sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
-  fi
+# as https://issues.redhat.com/browse/SRVKS-211 is closed, check if this works now
+#  if [[ $MESH == "true" ]]; then
+#    # TODO: SRVKS-211: Can not run grpc and http2 tests.
+#    rm ./test/e2e/grpc_test.go
+#    rm ./test/e2e/http2_test.go
+#    # Remove h2c test
+#    sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
+#  fi
 
   local parallel=16
 
@@ -81,7 +82,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
     parallel=2
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     # reconfiguring istio-proxies is flaky on too much parallelism,
     # random pods will fail to start with `PostStartHook failed`
     parallel=8
