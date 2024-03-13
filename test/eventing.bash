@@ -8,7 +8,7 @@ function upstream_knative_eventing_e2e {
 
   logger.info 'Running eventing tests'
 
-  if [[ $FULL_MESH = true ]]; then
+  if [[ $MESH == "true" ]]; then
     upstream_knative_eventing_e2e_mesh
     return $?
   fi
