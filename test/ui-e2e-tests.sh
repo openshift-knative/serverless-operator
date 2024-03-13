@@ -36,8 +36,14 @@ OCP_USERNAME="${OCP_USERNAME:-uitesting}"
 OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
 OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
 CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpath='{.status.ingress[].host}')"
+
 # use dev to run test development UI
-NPM_TARGET="${NPM_TARGET:-test}"
+DEFAULT_NPM_TARGET='test'
+if [ $# -gt 0 ] && [ "$1" = "--dev" ]; then
+  DEFAULT_NPM_TARGET='dev'
+  shift
+fi
+
 if [ -n "${BUILD_ID:-}" ]; then
   export CYPRESS_NUM_TESTS_KEPT_IN_MEMORY=0
 fi
@@ -51,4 +57,4 @@ logger.success '🚀 Cluster prepared for testing.'
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
 npm run install
-npm run "${NPM_TARGET}"
+npm run "${NPM_TARGET:-$DEFAULT_NPM_TARGET}"

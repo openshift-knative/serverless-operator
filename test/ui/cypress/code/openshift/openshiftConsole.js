@@ -50,10 +50,7 @@ class OpenshiftConsole {
     cy.visit(`/add/ns/${namespace}?view=graph`)
     cy.get('#content').contains('Add')
     cy.get('body').then(($body) => {
-      let selector = '[data-test="guided-tour-modal"]'
-      if (environment.ocpVersion().satisfies('>=4.9')) {
-        selector = '#guided-tour-modal'
-      }
+      let selector = '#guided-tour-modal'
       cy.log(`Guided Tour modal selector used: ${selector}`)
       const modal = $body.find(selector)
       if (modal.length) {
@@ -66,31 +63,37 @@ class OpenshiftConsole {
     const selectors = this.sidebarSelectors()
     cy.get(selectors.drawer)
       .then(($drawer) => {
-        if ($drawer.hasClass(selectors.expandedCls)) {
+        const selector = selectors.drawer +
+          ' button[data-test-id=sidebar-close-button]'
+        if (selectors.checkIsOpen($drawer)) {
           cy.log('Closing sidebar')
-          cy.get(selectors.closeBtn).click()
+          cy.get(selector).click()
         }
       })
   }
 
   sidebarSelectors() {
-    let dataTestAction = 'Delete application'
-    if (environment.ocpVersion().satisfies('<4.11')) {
-      dataTestAction = 'Delete Application'
-    }
-    if (environment.ocpVersion().satisfies('<4.10')) {
+    if (environment.ocpVersion().satisfies('<=4.14')) {
       return {
-        drawer: '.odc-topology .pf-topology-container',
-        expandedCls: 'pf-topology-container__with-sidebar--open',
-        closeBtn: '.odc-topology .pf-topology-container .pf-topology-side-bar button.close',
-        deleteApplicationBtn: `button[data-test-action="${dataTestAction}"]`
+        /**
+         * @param drawer {JQuery<HTMLElement>}
+         * @returns {boolean}
+         */
+        checkIsOpen: function (drawer) {
+          return drawer.hasClass('pf-m-expanded')
+        },
+        drawer: '.odc-topology .pf-c-drawer',
       }
     }
     return {
-      drawer: '.odc-topology .pf-c-drawer',
-      expandedCls: 'pf-m-expanded',
-      closeBtn: '.odc-topology .pf-c-drawer button[data-test-id=sidebar-close-button]',
-      deleteApplicationBtn: `li[data-test-action="${dataTestAction}"] button`
+      /**
+       * @param drawer {JQuery<HTMLElement>}
+       * @returns {boolean}
+       */
+      checkIsOpen: function (drawer) {
+        return drawer.find('.pf-topology-resizable-side-bar').length > 0
+      },
+      drawer: '.pf-v5-c-drawer__panel.ocs-sidebar-index',
     }
   }
 }

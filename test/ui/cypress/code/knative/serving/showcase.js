@@ -23,8 +23,12 @@ class ShowcaseKservice {
    * @returns {Cypress.Chainable<URL>} - the URL of the kservice
    */
   url() {
-    if (this.clusterLocal && environment.ocpVersion().satisfies('>=4.12')) {
-      return cy.get('.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]')
+    if (this.clusterLocal) {
+      let selector = '.overview__sidebar-pane .pf-v5-c-clipboard-copy input[type=text]'
+      if (environment.ocpVersion().satisfies('<=4.14')) {
+        selector = '.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]'
+      }
+      return cy.get(selector)
         .last()
         .scrollIntoView()
         .should('have.attr', 'value')
@@ -80,7 +84,6 @@ class ShowcaseKservice {
   }
 
   deployImage({kind = 'regular'} = {}) {
-    const ver = environment.ocpVersion()
     cy.log(`Deploy kservice ${kind}${this.clusterLocal ? ', cluster-local' : ''} from image`)
     cy.visit(`/deploy-image/ns/${this.namespace}`)
     cy.get('input[name=searchTerm]')
@@ -94,11 +97,6 @@ class ShowcaseKservice {
       .scrollIntoView()
       .clear()
       .type(this.name)
-    if (ver.satisfies('<4.12')) {
-      cy.get('input#form-radiobutton-resources-knative-field')
-        .scrollIntoView()
-        .check()
-    }
     cy.get('input#form-checkbox-route-create-field')
       .scrollIntoView()
       .check()
@@ -167,17 +165,17 @@ class ShowcaseKservice {
       .should('not.be.disabled')
       .click()
     drawer
-      .get(selectors.deleteApplicationBtn)
+      .get('li[data-test-action="Delete application"] button')
       .should('be.visible')
       .should('not.be.disabled')
       .click()
     cy.get('input#form-input-resourceName-field')
       .type(this.app)
-    cy.get('button#confirm-action.pf-c-button.pf-m-danger').click()
+    cy.get('.modal-content button#confirm-action.pf-m-danger').click()
     // FIXME: https://issues.redhat.com/browse/OCPBUGS-6685
     //        Removal of the app sometimes leaves a image stream, making the UI
     //        stale.
-    this.deleteAppGroupViaKubectl().then((deleted) => {
+    this.deleteAppGroupViaKubectl().then((_deleted) => {
       cy.get('div.pf-topology-content')
         .contains('No resources found')
     })
@@ -195,12 +193,7 @@ class ShowcaseKservice {
   }
 
   topologyUrl(kind = 'list') {
-    const ver = environment.ocpVersion()
-    if (ver.satisfies('>=4.9')) {
-      return `/topology/ns/${this.namespace}?view=${kind}`
-    } else {
-      return `/topology/ns/${this.namespace}/${kind}`
-    }
+    return `/topology/ns/${this.namespace}?view=${kind}`
   }
 }
 
