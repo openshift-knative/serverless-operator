@@ -13,7 +13,8 @@ RUN rm -rf $GOPATH/.cache
 # Allow runtime users to add entries to /etc/passwd
 RUN chmod g+rw /etc/passwd
 
-RUN yum install -y https://rpm.nodesource.com/pub_16.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm
+RUN yum install -y https://rpm.nodesource.com/pub_20.x/el/8/x86_64/nodesource-release-el8-1.noarch.rpm
+RUN yum module disable -y nodejs
 RUN yum install -y \
   gcc-c++ \
   make \
