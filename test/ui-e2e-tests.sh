@@ -17,6 +17,8 @@ function check_node {
     logger.error 'npm is required to run UI tests, install it.'
     return 51
   fi
+  logger.info "NodeJS version: $(node --version)"
+  logger.info "NPM version: $(npm --version)"
 }
 
 function archive_cypress_artifacts {
