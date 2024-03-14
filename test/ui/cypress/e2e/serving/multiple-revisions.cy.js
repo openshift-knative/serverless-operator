@@ -43,14 +43,12 @@ describe('OCP UI for Serverless Serving', () => {
     cy.get('input[name="trafficSplitting.1.tag"]')
       .type('v1')
     cy.contains('Select a Revision', {matchCase: false}).click()
-    cy.get('ul.pf-c-dropdown__menu button').click()
-    cy.get('button[type=submit]').click()
-
-    // FIXME: Remove after 4.11+ is the minimal required version
-    //        See: https://issues.redhat.com/browse/OCPBUGSM-41966
-    if (environment.ocpVersion().satisfies('<4.11')) {
-      showcaseKsvc.showServiceDetails()
+    let selector = `ul.pf-v5-c-dropdown__menu button`
+    if (environment.ocpVersion().satisfies('<=4.14')) {
+      selector = `ul.pf-c-dropdown__menu button`
     }
+    cy.get(selector).click()
+    cy.get('button[type=submit]').click()
 
     cy.log('Verify traffic is routed to both v1 and v2')
     cy.contains('51%')
