@@ -41,17 +41,17 @@ dependencies:
     net_istio_artifacts_branch: release-v1.11
     redhat-knative-istio-authz-chart: 1.33.0
     maistra: 2.4-latest
-    eventing: knative-v1.11
+    eventing: knative-v1.12
     # eventing core midstream branch name
-    eventing_artifacts_branch: release-v1.11
+    eventing_artifacts_branch: release-v1.12
     # eventing-kafka-broker promotion tag
-    eventing_kafka_broker: knative-v1.11
+    eventing_kafka_broker: knative-v1.12
     # eventing-kafka-broker midstream branch or commit
-    eventing_kafka_broker_artifacts_branch: release-v1.11
+    eventing_kafka_broker_artifacts_branch: release-v1.12
     # eventing-istio promotion tag
-    eventing_istio: knative-v1.11
+    eventing_istio: knative-v1.12
     # eventing-istio midstream branch or commit
-    eventing_istio_artifacts_branch: release-v1.11
+    eventing_istio_artifacts_branch: release-v1.12
     cli: 1.11.2
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root

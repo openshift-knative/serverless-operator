@@ -18,7 +18,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-istio-controller
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.13
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -90,7 +90,7 @@ metadata:
   name: eventing-istio-controller
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.13
     app.kubernetes.io/name: knative-eventing
 
 ---
@@ -100,7 +100,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-istio-controller
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.13
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -133,7 +133,7 @@ metadata:
   labels:
     knative.dev/high-availability: "true"
     app.kubernetes.io/component: eventing-istio-controller
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.13
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -144,7 +144,7 @@ spec:
       labels:
         app: eventing-istio-controller
         app.kubernetes.io/component: eventing-istio-controller
-        app.kubernetes.io/version: v1.11
+        app.kubernetes.io/version: v1.13
         app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
