@@ -65,7 +65,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 		"kube-rbac-proxy-cpu-limit":    "100m",
 		"kube-rbac-proxy-memory-limit": "100Mi",
 	}
-	if manifest, err = manifest.Transform(InjectRbacProxyContainer(sets.NewString(in.Name), cfg)); err != nil {
+	if manifest, err = manifest.Transform(InjectRbacProxyContainer(sets.New[string](in.Name), cfg)); err != nil {
 		t.Fatalf("Unable to transform test manifest: %s", err)
 	}
 

@@ -64,7 +64,7 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 
-	dependentConfigMaps = sets.NewString("config-observability", "config-tracing", "kafka-config-logging", "config-features")
+	dependentConfigMaps = sets.New[string]("config-observability", "config-tracing", "kafka-config-logging", "config-features")
 )
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
@@ -513,7 +513,7 @@ func isStatefulSetAvailable(ss *appsv1.StatefulSet) bool {
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
 func (r *ReconcileKnativeKafka) delete(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("kafka_status")
-	finalizers := sets.NewString(instance.GetFinalizers()...)
+	finalizers := sets.New[string](instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
 		log.Info("Finalizer has already been removed, nothing to do")
@@ -533,9 +533,9 @@ func (r *ReconcileKnativeKafka) delete(instance *serverlessoperatorv1alpha1.Knat
 	}
 
 	// Update the refetched finalizer list.
-	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers = sets.New[string](refetched.GetFinalizers()...)
 	finalizers.Delete(finalizerName)
-	refetched.SetFinalizers(finalizers.List())
+	refetched.SetFinalizers(sets.List(finalizers))
 
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeKafka with removed finalizer: %w", err)

@@ -865,16 +865,16 @@ func TestMonitoringResources(t *testing.T) {
 		monitoring.KafkaBrokerDispatcher,
 		monitoring.KafkaSinkReceiver,
 	}
-	svcs := sets.NewString()
-	sMon := sets.NewString()
+	svcs := sets.New[string]()
+	sMon := sets.New[string]()
 
 	for _, c := range components {
 		svcs.Insert(c.Name + "-sm-service")
 		sMon.Insert(c.Name + "-sm")
 	}
 
-	expected := map[schema.GroupVersionKind]sets.String{
-		crGvk: sets.NewString(
+	expected := map[schema.GroupVersionKind]sets.Set[string]{
+		crGvk: sets.New[string](
 			"rbac-proxy-reviews-prom-rb-kafka-controller",
 			"rbac-proxy-reviews-prom-rb-kafka-webhook-eventing",
 			"rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane",
@@ -895,7 +895,7 @@ func TestMonitoringResources(t *testing.T) {
 
 	for k, v := range expected {
 		if v.Len() > 0 {
-			t.Errorf("failed to find %+v, missing %v", k, v.List())
+			t.Errorf("failed to find %+v, missing %v", k, v.UnsortedList())
 		}
 	}
 }

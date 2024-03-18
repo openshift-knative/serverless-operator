@@ -137,6 +137,13 @@ func StartSenderURLTLS(sink string, caCerts *string) EventsHubOption {
 		})
 }
 
+func IssuerRef(kind, name string) EventsHubOption {
+	return compose(
+		envAdditive(tlsIssuerKind, kind),
+		envAdditive(tlsIssuerName, name),
+	)
+}
+
 // --- Receiver options
 
 // EchoEvent is an option to let the eventshub reply with the received event

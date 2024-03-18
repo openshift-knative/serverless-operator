@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
+	corev1listers "k8s.io/client-go/listers/core/v1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,6 +33,8 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/tracker"
+
+	"knative.dev/eventing/pkg/eventingtls"
 )
 
 var sbCondSet = apis.NewLivingConditionSet(
@@ -121,71 +125,122 @@ func (sb *SinkBinding) Do(ctx context.Context, ps *duckv1.WithPod) {
 		}
 	}
 
-	spec := ps.Spec.Template.Spec
-	for i := range spec.InitContainers {
-		spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, corev1.EnvVar{
+	for i := range ps.Spec.Template.Spec.InitContainers {
+		ps.Spec.Template.Spec.InitContainers[i].Env = append(ps.Spec.Template.Spec.InitContainers[i].Env, corev1.EnvVar{
 			Name:  "K_SINK",
 			Value: addr.URL.String(),
 		})
 		if addr.CACerts != nil {
-			spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, corev1.EnvVar{
+			ps.Spec.Template.Spec.InitContainers[i].Env = append(ps.Spec.Template.Spec.InitContainers[i].Env, corev1.EnvVar{
 				Name:  "K_CA_CERTS",
 				Value: *addr.CACerts,
 			})
 		}
-		spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, corev1.EnvVar{
+		ps.Spec.Template.Spec.InitContainers[i].Env = append(ps.Spec.Template.Spec.InitContainers[i].Env, corev1.EnvVar{
 			Name:  "K_CE_OVERRIDES",
 			Value: ceOverrides,
 		})
 	}
-	for i := range spec.Containers {
-		spec.Containers[i].Env = append(spec.Containers[i].Env, corev1.EnvVar{
+	for i := range ps.Spec.Template.Spec.Containers {
+		ps.Spec.Template.Spec.Containers[i].Env = append(ps.Spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 			Name:  "K_SINK",
 			Value: addr.URL.String(),
 		})
 		if addr.CACerts != nil {
-			spec.Containers[i].Env = append(spec.Containers[i].Env, corev1.EnvVar{
+			ps.Spec.Template.Spec.Containers[i].Env = append(ps.Spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 				Name:  "K_CA_CERTS",
 				Value: *addr.CACerts,
 			})
 		}
-		spec.Containers[i].Env = append(spec.Containers[i].Env, corev1.EnvVar{
+		ps.Spec.Template.Spec.Containers[i].Env = append(ps.Spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 			Name:  "K_CE_OVERRIDES",
 			Value: ceOverrides,
 		})
 	}
+
+	pss, err := eventingtls.AddTrustBundleVolumes(GetTrustBundleConfigMapLister(ctx), sb, &ps.Spec.Template.Spec)
+	if err != nil {
+		logging.FromContext(ctx).Errorw("Failed to add trust bundle volumes %s/%s: %+v", zap.Error(err))
+		return
+	}
+	ps.Spec.Template.Spec = *pss
+
 }
 
 func (sb *SinkBinding) Undo(ctx context.Context, ps *duckv1.WithPod) {
-	spec := ps.Spec.Template.Spec
-	for i, c := range spec.InitContainers {
-		if len(c.Env) == 0 {
-			continue
-		}
-		env := make([]corev1.EnvVar, 0, len(spec.InitContainers[i].Env))
-		for j, ev := range c.Env {
-			switch ev.Name {
-			case "K_SINK", "K_CE_OVERRIDES", "K_CA_CERTS":
-				continue
-			default:
-				env = append(env, spec.InitContainers[i].Env[j])
+	for i, c := range ps.Spec.Template.Spec.InitContainers {
+		if len(c.Env) > 0 {
+			env := make([]corev1.EnvVar, 0, len(ps.Spec.Template.Spec.InitContainers[i].Env))
+			for j, ev := range c.Env {
+				switch ev.Name {
+				case "K_SINK", "K_CE_OVERRIDES", "K_CA_CERTS":
+					continue
+				default:
+					env = append(env, ps.Spec.Template.Spec.InitContainers[i].Env[j])
+				}
 			}
+			ps.Spec.Template.Spec.InitContainers[i].Env = env
 		}
-		spec.InitContainers[i].Env = env
-	}
-	for i, c := range spec.Containers {
-		if len(c.Env) == 0 {
-			continue
-		}
-		env := make([]corev1.EnvVar, 0, len(spec.Containers[i].Env))
-		for j, ev := range c.Env {
-			switch ev.Name {
-			case "K_SINK", "K_CE_OVERRIDES", "K_CA_CERTS":
-				continue
-			default:
-				env = append(env, spec.Containers[i].Env[j])
+
+		if len(ps.Spec.Template.Spec.InitContainers[i].VolumeMounts) > 0 {
+			volumeMounts := make([]corev1.VolumeMount, 0, len(ps.Spec.Template.Spec.InitContainers[i].VolumeMounts))
+			for j, vol := range c.VolumeMounts {
+				if strings.HasPrefix(vol.Name, eventingtls.TrustBundleVolumeNamePrefix) {
+					continue
+				}
+				volumeMounts = append(volumeMounts, ps.Spec.Template.Spec.InitContainers[i].VolumeMounts[j])
 			}
+			ps.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
 		}
-		spec.Containers[i].Env = env
 	}
+	for i, c := range ps.Spec.Template.Spec.Containers {
+		if len(c.Env) > 0 {
+			env := make([]corev1.EnvVar, 0, len(ps.Spec.Template.Spec.Containers[i].Env))
+			for j, ev := range c.Env {
+				switch ev.Name {
+				case "K_SINK", "K_CE_OVERRIDES", "K_CA_CERTS":
+					continue
+				default:
+					env = append(env, ps.Spec.Template.Spec.Containers[i].Env[j])
+				}
+			}
+			ps.Spec.Template.Spec.Containers[i].Env = env
+		}
+
+		if len(ps.Spec.Template.Spec.Containers[i].VolumeMounts) > 0 {
+			volumeMounts := make([]corev1.VolumeMount, 0, len(ps.Spec.Template.Spec.Containers[i].VolumeMounts))
+			for j, vol := range c.VolumeMounts {
+				if strings.HasPrefix(vol.Name, eventingtls.TrustBundleVolumeNamePrefix) {
+					continue
+				}
+				volumeMounts = append(volumeMounts, ps.Spec.Template.Spec.Containers[i].VolumeMounts[j])
+			}
+			ps.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+		}
+	}
+
+	if len(ps.Spec.Template.Spec.Volumes) > 0 {
+		volumes := make([]corev1.Volume, 0, len(ps.Spec.Template.Spec.Volumes))
+		for i, vol := range ps.Spec.Template.Spec.Volumes {
+			if strings.HasPrefix(vol.Name, eventingtls.TrustBundleVolumeNamePrefix) {
+				continue
+			}
+			volumes = append(volumes, ps.Spec.Template.Spec.Volumes[i])
+		}
+		ps.Spec.Template.Spec.Volumes = volumes
+	}
+}
+
+type configMapListerKey struct{}
+
+func WithTrustBundleConfigMapLister(ctx context.Context, lister corev1listers.ConfigMapLister) context.Context {
+	return context.WithValue(ctx, configMapListerKey{}, lister)
+}
+
+func GetTrustBundleConfigMapLister(ctx context.Context) corev1listers.ConfigMapLister {
+	value := ctx.Value(configMapListerKey{})
+	if value == nil {
+		panic("No ConfigMapLister found in context.")
+	}
+	return value.(corev1listers.ConfigMapLister)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	eventingDeployments = sets.NewString(
+	eventingDeployments = sets.New[string](
 		"eventing-controller",
 		"eventing-istio-controller",
 		"eventing-webhook",

@@ -107,7 +107,7 @@ func GetRBACProxyInjectTransformers(instance *serverlessoperatorv1alpha1.Knative
 		return nil, errors.New("eventing instance not found")
 	}
 	if monitoring.ShouldEnableMonitoring(eventingList.Items[0].GetSpec().GetConfig()) {
-		deps := sets.NewString(deployments...)
+		deps := sets.New[string](deployments...)
 		transformers := []mf.Transformer{monitoring.InjectRbacProxyContainer(deps, instance.Spec.Config)}
 		transformers = append(transformers, monitoring.ExtensionDeploymentOverrides(instance.Spec.Workloads, deps))
 		return transformers, nil
