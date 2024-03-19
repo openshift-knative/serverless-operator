@@ -73,26 +73,20 @@ func soakTestEnvironment(t *testing.T, namespace string) (context.Context, envir
 
 type SoakFn func(context.Context, environment.Environment, *testing.T)
 
-/*
-SoakFeatureFn represents part of the soak test to be run repeatedly, over a number of copies in parallel
-The features are generated dynamically by a function, so that it is possible to generate unique resource names
-for each test copy, or in each iteration
-*/
-type SoakFeatureFn func(SoakEnv) *feature.Feature
-
 type SoakTest struct {
 	/*
 		Prefix to be used for namespaces. Actual test namespace is <prefix><copyId>
 	*/
 	NamespacePrefix string
 	/*
-		Function invoked during setup for each soak test copy. Use RunSoakFeature* inside to handle cleanup of the resources created by the features
+		Function invoked during setup for each soak test copy.
+		Use env.Test(ctx, t, f)  inside to handle cleanup of the resources created by the features.
 	*/
 	SetupFn SoakFn
 	/*
 		Function invoked for each iteration.
-		Use RunSoakFeature* inside to handle cleanup of the resources created by the features.
-		Use RunSoakFeatureFn* inside to also handle creation of the features dynamically based on the context of the soak test
+		Use env.Test(ctx, t, featureFn(SoakEnvFromContext(ctx)))  inside to dynamically create feature based on SoakEnv copy and iteration.
+		Soak env does handle cleanup of all resources created by the features during the iteration
 	*/
 	IterationFn SoakFn
 	/*
@@ -236,19 +230,4 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 
 func RunSoakTestWithDefaultCopies(t *testing.T, test SoakTest) {
 	RunSoakTest(t, test, Flags.Copies)
-}
-
-func RunSoakFeature(ctx context.Context, env environment.Environment, t *testing.T, f *feature.Feature) {
-	env.Test(ctx, t, f)
-}
-
-func RunSoakFeatureFn(ctx context.Context, env environment.Environment, t *testing.T, sfn SoakFeatureFn) {
-	soakEnv := soakEnvImplFromContext(ctx)
-	RunSoakFeature(ctx, env, t, sfn(soakEnv))
-}
-
-func RunSoakFeatureFnWithMapping[X any](ctx context.Context, env environment.Environment, t *testing.T, sfn func(X) *feature.Feature, mf func(SoakEnv) X) {
-	soakEnv := soakEnvImplFromContext(ctx)
-	f := sfn(mf(soakEnv))
-	RunSoakFeature(ctx, env, t, f)
 }
