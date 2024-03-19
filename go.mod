@@ -211,5 +211,5 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.26.15
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f
 	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.15.3
 )
