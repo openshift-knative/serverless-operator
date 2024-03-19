@@ -356,6 +356,37 @@ function downstream_kitchensink_e2e_tests {
   "$@"
 }
 
+function downstream_soak_tests {
+  should_run "${FUNCNAME[0]}" || return 0
+
+  logger.info "Running soak tests"
+
+  local images_file
+
+  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+
+  # Create a secret for reconciler-test. The framework will copy this secret
+  # to newly created namespaces and link to default service account in the namespace.
+  if ! oc -n default get secret kn-test-image-pull-secret; then
+    oc -n openshift-config get secret pull-secret -o yaml | \
+      sed -e 's/name: .*/name: kn-test-image-pull-secret/' -e 's/namespace: .*/namespace: default/' | oc apply -f -
+  fi
+
+  # Used by the tests to get common ConfigMaps like config-logging
+  SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
+  export SYSTEM_NAMESPACE
+
+  RUN_FLAGS=(-failfast -timeout=240m -parallel=512)
+  if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
+    IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
+  fi
+#  export GO_TEST_VERBOSITY=standard-verbose
+  go_test_e2e "${RUN_FLAGS[@]}" ./test/soak \
+  --images.producer.file="${images_file}" \
+  --soak-duration 120m --soak-copies 2 \
+  "$@"
+}
+
 # == Upgrade testing
 
 function run_rolling_upgrade_tests {
