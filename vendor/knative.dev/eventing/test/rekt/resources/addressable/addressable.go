@@ -25,10 +25,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/k8s"
 )
 
-type ValidateAddress func(addressable *duckv1.Addressable) error
+type ValidateAddressFn func(addressable *duckv1.Addressable) error
 
 // Address returns a broker's address.
 func Address(ctx context.Context, gvr schema.GroupVersionResource, name string, timings ...time.Duration) (*duckv1.Addressable, error) {
@@ -55,9 +56,33 @@ func Address(ctx context.Context, gvr schema.GroupVersionResource, name string, 
 	return addr, err
 }
 
+func ValidateAddress(gvr schema.GroupVersionResource, name string, validate ValidateAddressFn, timings ...time.Duration) feature.StepFn {
+	return func(ctx context.Context, t feature.T) {
+		addr, err := Address(ctx, gvr, name, timings...)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if err := validate(addr); err != nil {
+			t.Error(err)
+			return
+		}
+	}
+}
+
 func AssertHTTPSAddress(addr *duckv1.Addressable) error {
 	if addr.URL.Scheme != "https" {
 		return fmt.Errorf("address is not HTTPS: %#v", addr)
 	}
 	return nil
+}
+
+func AssertAddressWithAudience(audience string) func(*duckv1.Addressable) error {
+	return func(addressable *duckv1.Addressable) error {
+		if (addressable.Audience == nil && audience != "") || (addressable.Audience != nil && *addressable.Audience != audience) {
+			return fmt.Errorf("audience of address (%v) does not match expected audience %s", addressable, audience)
+		}
+
+		return nil
+	}
 }

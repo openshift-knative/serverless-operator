@@ -22,8 +22,6 @@ import (
 	"fmt"
 	"strings"
 
-	"knative.dev/eventing/test/rekt/features/featureflags"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/test"
 	. "github.com/cloudevents/sdk-go/v2/test"
@@ -33,7 +31,7 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-
+	"knative.dev/eventing/pkg/eventingtls/eventingtlstesting"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -47,11 +45,11 @@ import (
 	"knative.dev/reconciler-test/pkg/manifest"
 	"knative.dev/reconciler-test/pkg/resources/service"
 
+	"knative.dev/eventing/test/rekt/features/source"
+
 	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	"knative.dev/eventing-kafka-broker/test/rekt/features/featuressteps"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
-
-	"knative.dev/eventing/test/rekt/features/source"
 
 	internalscg "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/internals/kafka/eventing/v1alpha1"
 	sources "knative.dev/eventing-kafka-broker/control-plane/pkg/apis/sources/v1beta1"
@@ -558,9 +556,6 @@ func KafkaSourceTLSSink() *feature.Feature {
 	event.SetID(uuid.NewString())
 
 	f := feature.NewFeature()
-
-	f.Prerequisite("should not run when Istio is enabled", featureflags.IstioDisabled())
-
 	f.Setup("install kafka topic", kafkatopic.Install(topic))
 	f.Setup("topic is ready", kafkatopic.IsReady(topic))
 
@@ -608,9 +603,6 @@ func KafkaSourceTLSSinkTrustBundle() *feature.Feature {
 	event.SetID(uuid.NewString())
 
 	f := feature.NewFeature()
-
-	f.Prerequisite("should not run when Istio is enabled", featureflags.IstioDisabled())
-
 	f.Setup("install kafka topic", kafkatopic.Install(topic))
 	f.Setup("topic is ready", kafkatopic.IsReady(topic))
 
@@ -620,7 +612,7 @@ func KafkaSourceTLSSinkTrustBundle() *feature.Feature {
 
 	f.Setup("install eventshub receiver", eventshub.Install(receiver,
 		eventshub.StartReceiverTLS,
-		eventshub.IssuerRef("ClusterIssuer", "knative-eventing-ca-issuer"),
+		eventshub.IssuerRef(eventingtlstesting.IssuerKind, eventingtlstesting.IssuerName),
 	))
 
 	f.Setup("install kafka source", func(ctx context.Context, t feature.T) {
@@ -770,7 +762,7 @@ func verifyConsumerGroupReplicas(source string, replicas int32, allowNotFound bo
 	return func(ctx context.Context, t feature.T) {
 		var seenReplicas int32
 		interval, timeout := environment.PollTimingsFromContext(ctx)
-		err := wait.PollImmediate(interval, timeout, func() (bool, error) {
+		err := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(ctx context.Context) (bool, error) {
 			ns := environment.FromContext(ctx).Namespace()
 
 			ks, err := sourcesclient.Get(ctx).
