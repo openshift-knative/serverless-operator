@@ -95,7 +95,7 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-containerregistry v0.13.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -205,10 +205,10 @@ replace (
 
 replace (
 	// Adjustments to align transitive deps
-	k8s.io/api => k8s.io/api v0.25.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.26.4
-	k8s.io/client-go => k8s.io/client-go v0.25.4
-	k8s.io/code-generator => k8s.io/code-generator v0.25.4
+	k8s.io/api => k8s.io/api v0.26.15
+	k8s.io/apimachinery => k8s.io/apimachinery v0.27.12
+	k8s.io/client-go => k8s.io/client-go v0.26.15
+	k8s.io/code-generator => k8s.io/code-generator v0.26.15
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
 	k8s.io/utils => k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.12.3
