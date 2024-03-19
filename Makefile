@@ -266,6 +266,15 @@ kitchensink-e2e:
 
 test-kitchensink-e2e: kitchensink-e2e
 
+# Soak tests
+test-soak-testonly:
+	./test/soak-tests.sh
+
+test-soak:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
+	./test/soak-tests.sh
+
 # Run all E2E tests.
 test-all-e2e:
 	./hack/tracing.sh
