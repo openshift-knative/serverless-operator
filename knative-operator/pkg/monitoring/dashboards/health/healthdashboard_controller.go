@@ -36,7 +36,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace), skipCreatePredicate{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace), skipCreatePredicate{})
 	if err != nil {
 		return err
 	}
