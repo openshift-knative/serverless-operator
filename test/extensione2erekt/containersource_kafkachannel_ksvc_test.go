@@ -20,7 +20,7 @@ func TestContainerSourceKafkaChannelKsvc(t *testing.T) {
 	ctx, env := defaultEnvironment(t)
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
-		return subscription.WithSubscriber(ref, uri)
+		return subscription.WithSubscriber(ref, uri, "")
 	}
 
 	since := time.Now()

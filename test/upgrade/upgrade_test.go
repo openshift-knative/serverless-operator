@@ -275,7 +275,7 @@ func inMemoryChannelTest(t *testing.T) {
 	channel_impl.EnvCfg.ChannelV = "v1"
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
-		return subscription.WithSubscriber(ref, uri)
+		return subscription.WithSubscriber(ref, uri, "")
 	}
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 }
@@ -335,7 +335,7 @@ func kafkaChannelTest(t *testing.T) {
 	channel_impl.EnvCfg.ChannelV = "v1beta1"
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
-		return subscription.WithSubscriber(ref, uri)
+		return subscription.WithSubscriber(ref, uri, "")
 	}
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 }
