@@ -21,7 +21,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     serving.knative.dev/controller: "true"
     networking.knative.dev/ingress-provider: istio
 rules:
@@ -51,7 +51,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 data:
   # TODO(nghia): Extract the .svc.cluster.local suffix into its own config.
@@ -117,7 +117,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -134,7 +134,7 @@ spec:
         app: net-istio-controller
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "release-v1.11"
+        app.kubernetes.io/version: "release-v1.12"
     spec:
       serviceAccountName: controller
       containers:
@@ -174,6 +174,8 @@ spec:
           capabilities:
             drop:
               - ALL
+          seccompProfile:
+            type: RuntimeDefault
 
         readinessProbe:
           httpGet:
@@ -223,7 +225,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -237,7 +239,7 @@ spec:
         role: net-istio-webhook
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "release-v1.11"
+        app.kubernetes.io/version: "release-v1.12"
     spec:
       serviceAccountName: controller
       containers:
@@ -280,6 +282,8 @@ spec:
           capabilities:
             drop:
               - ALL
+          seccompProfile:
+            type: RuntimeDefault
 
         readinessProbe:
           periodSeconds: 1
@@ -331,7 +335,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 ---
 # Copyright 2020 The Knative Authors
@@ -357,7 +361,7 @@ metadata:
     role: net-istio-webhook
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 spec:
   ports:
@@ -395,7 +399,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
@@ -433,7 +437,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.11"
+    app.kubernetes.io/version: "release-v1.12"
     networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
@@ -450,3 +454,33 @@ webhooks:
     matchLabels:
       app.kubernetes.io/name: knative-serving
       app.kubernetes.io/component: net-istio
+---
+# Copyright 2023 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: networking.internal.knative.dev/v1alpha1
+kind: Certificate
+metadata:
+  annotations:
+    networking.knative.dev/certificate.class: cert-manager.certificate.networking.knative.dev
+  labels:
+    networking.knative.dev/certificate-type: system-internal
+    knative.dev/install-knative-certificate: "true"
+  name: routing-serving-certs
+  namespace: istio-system
+spec:
+  dnsNames:
+    - kn-routing
+  secretName: routing-serving-certs
+# The data is populated when system-internal-tls is enabled.

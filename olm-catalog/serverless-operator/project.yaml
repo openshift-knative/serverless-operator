@@ -31,14 +31,14 @@ requirements:
         max: '4.15'
         label: 'v4.12'
 dependencies:
-    serving: knative-v1.11
+    serving: knative-v1.12
     # serving midstream branch name
-    serving_artifacts_branch: release-v1.11
+    serving_artifacts_branch: release-v1.12
     # versions for networking components
-    kourier: knative-v1.11
-    net_kourier_artifacts_branch: release-v1.11
-    net_istio: knative-v1.11
-    net_istio_artifacts_branch: release-v1.11
+    kourier: knative-v1.12
+    net_kourier_artifacts_branch: release-v1.12
+    net_istio: knative-v1.12
+    net_istio_artifacts_branch: release-v1.12
     redhat-knative-istio-authz-chart: 1.33.0
     maistra: 2.4-latest
     eventing: knative-v1.12
