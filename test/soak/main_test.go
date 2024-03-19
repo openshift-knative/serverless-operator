@@ -20,14 +20,14 @@ import (
 
 // var global environment.GlobalEnvironment
 
-type SoakFlagsStruct struct {
+type SoakFlags struct {
 	Duration     time.Duration
 	Copies       int
 	PollInterval time.Duration
 	PollDuration time.Duration
 }
 
-var Flags SoakFlagsStruct
+var Flags SoakFlags
 
 var global environment.GlobalEnvironment
 
