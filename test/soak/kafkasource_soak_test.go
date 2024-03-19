@@ -60,7 +60,7 @@ func kafkaSourceScenarioInstallKafkaSourceFeature(names KafkaSourceScenarioNames
 	f := feature.NewFeatureNamed("kafka-source-add")
 
 	kafkaSourceOpts := []manifest.CfgFn{
-		kafkasource.WithSink(service.AsKReference(names.Receiver), ""),
+		kafkasource.WithSink(service.AsDestinationRef(names.Receiver)),
 		kafkasource.WithTopics([]string{names.KafkaTopic}),
 		kafkasource.WithBootstrapServers(testpkg.BootstrapServersPlaintextArr),
 		kafkasource.WithConsumers(7),
