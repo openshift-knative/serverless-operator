@@ -280,7 +280,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
 	// Number of kafkasources to create and delete at once on each iteration
-	const max = 16
+	const numKafkaSources = 16
 
 	namesFn := func(env SoakEnv) KafkaSourceScenarioNames {
 		return KafkaSourceScenarioNames{
@@ -301,7 +301,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 		// As part of this soak test, we crate 16 kafkasources, then wait for them to be ready,
 		// and finally send an event and verify an event was received 16 times
 		IterationFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
-			for j := 0; j < max; j++ {
+			for j := 0; j < numKafkaSources; j++ {
 				soakEnv := SoakEnvFromContext(ctx)
 				names := namesFn(soakEnv)
 				names.KafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
@@ -310,7 +310,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 				env.Test(ctx, t, f)
 			}
 
-			for j := 0; j < max; j++ {
+			for j := 0; j < numKafkaSources; j++ {
 				soakEnv := SoakEnvFromContext(ctx)
 				names := namesFn(soakEnv)
 				names.KafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
@@ -321,7 +321,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 
 			RunSoakFeatureFnWithMapping(ctx, env, t, kafkaSinkSendFeature, namesFn)
 
-			f := verifyEventReceivedFeature(namesFn(SoakEnvFromContext(ctx)), max)
+			f := verifyEventReceivedFeature(namesFn(SoakEnvFromContext(ctx)), numKafkaSources)
 			env.Test(ctx, t, f)
 		},
 		TeardownFn: func(ctx context.Context, env environment.Environment, t *testing.T) {
