@@ -30,49 +30,49 @@ import (
 The scenarios define names of all resources used in the scenario, so they can reference other resources
 in a typesafe-ish kind of way
 */
-type kafkaSourceScenarioNames struct {
-	receiver    string
-	sender      string
-	kafkaTopic  string
-	kafkaSink   string
-	kafkaSource string
+type KafkaSourceScenarioNames struct {
+	Receiver    string
+	Sender      string
+	KafkaTopic  string
+	KafkaSink   string
+	KafkaSource string
 }
 
-func eventshubReceiverFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func eventshubReceiverFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	f := feature.NewFeatureNamed("receiver-create")
-	f.Setup("install eventshub receiver", eventshub.Install(names.receiver, eventshub.StartReceiver))
+	f.Setup("install eventshub receiver", eventshub.Install(names.Receiver, eventshub.StartReceiver))
 	return f
 }
 
-func kafkaSourceScenarioTopicAndSinkSetupFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func kafkaSourceScenarioTopicAndSinkSetupFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	f := feature.NewFeatureNamed("kafka-topic-and-sink-setup")
-	f.Setup("install kafka topic", kafkatopic.Install(names.kafkaTopic))
-	f.Setup("topic is ready", kafkatopic.IsReady(names.kafkaTopic))
+	f.Setup("install kafka topic", kafkatopic.Install(names.KafkaTopic))
+	f.Setup("topic is ready", kafkatopic.IsReady(names.KafkaTopic))
 
-	f.Setup("install kafkasink", kafkasink.Install(names.kafkaSink, names.kafkaTopic,
+	f.Setup("install kafkasink", kafkasink.Install(names.KafkaSink, names.KafkaSink,
 		testpkg.BootstrapServersPlaintextArr))
-	f.Setup("kafkasink is ready", kafkasink.IsReady(names.kafkaSink))
+	f.Setup("kafkasink is ready", kafkasink.IsReady(names.KafkaSink))
 
 	return f
 }
 
-func kafkaSourceScenarioInstallKafkaSourceFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func kafkaSourceScenarioInstallKafkaSourceFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	f := feature.NewFeatureNamed("kafka-source-add")
 
 	kafkaSourceOpts := []manifest.CfgFn{
-		kafkasource.WithSink(service.AsKReference(names.receiver), ""),
-		kafkasource.WithTopics([]string{names.kafkaTopic}),
+		kafkasource.WithSink(service.AsKReference(names.Receiver), ""),
+		kafkasource.WithTopics([]string{names.KafkaTopic}),
 		kafkasource.WithBootstrapServers(testpkg.BootstrapServersPlaintextArr),
 		kafkasource.WithConsumers(7),
 	}
 
-	f.Setup("install kafka source", kafkasource.Install(names.kafkaSource, kafkaSourceOpts...))
+	f.Setup("install kafka source", kafkasource.Install(names.KafkaSource, kafkaSourceOpts...))
 	return f
 }
 
-func kafkaSourceScenarioIsReadyKafkaSourceFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func kafkaSourceScenarioIsReadyKafkaSourceFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	f := feature.NewFeatureNamed("kafka-source-isready")
-	f.Setup("kafka source is ready", kafkasource.IsReady(names.kafkaSource))
+	f.Setup("kafka source is ready", kafkasource.IsReady(names.KafkaSource))
 	return f
 }
 
@@ -82,33 +82,33 @@ func matchEvent(sink string, matcher cetest.EventMatcher, atLeast int) feature.S
 	}
 }
 
-func kafkaSinkSendFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func kafkaSinkSendFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	f := feature.NewFeatureNamed("kafka-sink-send")
 
 	e := cetest.FullEvent()
-	e.SetData("text/json", names.sender)
+	e.SetData("text/json", names.Sender)
 
-	f.Requirement("install eventshub sender", eventshub.Install(names.sender,
-		eventshub.StartSenderToResource(kafkasink.GVR(), names.kafkaSink),
+	f.Requirement("install eventshub sender", eventshub.Install(names.Sender,
+		eventshub.StartSenderToResource(kafkasink.GVR(), names.KafkaSink),
 		eventshub.InputEvent(e)),
 	)
 
 	return f
 }
 
-func verifyEventReceivedFeature(names kafkaSourceScenarioNames, eventsToBeReceived int) *feature.Feature {
+func verifyEventReceivedFeature(names KafkaSourceScenarioNames, eventsToBeReceived int) *feature.Feature {
 	f := feature.NewFeatureNamed("verify-events-received")
 
 	e := cetest.FullEvent()
-	e.SetData("text/json", names.sender)
+	e.SetData("text/json", names.Sender)
 
 	matcher := cetest.HasData(e.Data())
-	f.Assert("eventshub receiver gets events", matchEvent(names.receiver, matcher, eventsToBeReceived))
+	f.Assert("eventshub receiver gets events", matchEvent(names.Receiver, matcher, eventsToBeReceived))
 
 	return f
 }
 
-func verifySingleEventReceivedFeature(names kafkaSourceScenarioNames) *feature.Feature {
+func verifySingleEventReceivedFeature(names KafkaSourceScenarioNames) *feature.Feature {
 	return verifyEventReceivedFeature(names, 1)
 }
 
@@ -189,13 +189,13 @@ func TestKafkaSourceStableSoak(t *testing.T) {
 	kafkaSourceName := feature.MakeRandomK8sName("kafkaSource")
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
-	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
-		return kafkaSourceScenarioNames{
-			receiver:    "receiver",
-			sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
-			kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
-			kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
-			kafkaSource: kafkaSourceName,
+	namesFn := func(env SoakEnv) KafkaSourceScenarioNames {
+		return KafkaSourceScenarioNames{
+			Receiver:    "receiver",
+			Sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			KafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			KafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
+			KafkaSource: kafkaSourceName,
 		}
 	}
 
@@ -234,13 +234,13 @@ func TestKafkaSourceRecreateSoak(t *testing.T) {
 	kafkaSourcePrefix := feature.MakeRandomK8sName("kafkaSource")
 	senderPrefix := feature.MakeRandomK8sName("sender")
 
-	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
-		return kafkaSourceScenarioNames{
-			receiver:    "receiver",
-			sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
-			kafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
-			kafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
-			kafkaSource: fmt.Sprintf("%s-%d", kafkaSourcePrefix, env.Iteration()),
+	namesFn := func(env SoakEnv) KafkaSourceScenarioNames {
+		return KafkaSourceScenarioNames{
+			Receiver:    "receiver",
+			Sender:      fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			KafkaTopic:  fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			KafkaSink:   fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
+			KafkaSource: fmt.Sprintf("%s-%d", kafkaSourcePrefix, env.Iteration()),
 		}
 	}
 
@@ -282,12 +282,12 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 	// Number of kafkasources to create and delete at once on each iteration
 	const max = 16
 
-	namesFn := func(env SoakEnv) kafkaSourceScenarioNames {
-		return kafkaSourceScenarioNames{
-			receiver:   "receiver",
-			sender:     fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
-			kafkaTopic: fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
-			kafkaSink:  fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
+	namesFn := func(env SoakEnv) KafkaSourceScenarioNames {
+		return KafkaSourceScenarioNames{
+			Receiver:   "receiver",
+			Sender:     fmt.Sprintf("%s-%d-%d", senderPrefix, env.CopyID(), env.Iteration()),
+			KafkaTopic: fmt.Sprintf("%s-%d", topicPrefix, env.CopyID()),
+			KafkaSink:  fmt.Sprintf("%s-%d", kafkaSinkPrefix, env.CopyID()),
 			// kafkaSource:  not used, generated below dynamically for each of the 16 kafkasources
 		}
 	}
@@ -304,7 +304,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 			for j := 0; j < max; j++ {
 				soakEnv := SoakEnvFromContext(ctx)
 				names := namesFn(soakEnv)
-				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
+				names.KafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
 
 				f := kafkaSourceScenarioInstallKafkaSourceFeature(names)
 				env.Test(ctx, t, f)
@@ -313,7 +313,7 @@ func TestKafkaSourceAddingAndRemovingSoak(t *testing.T) {
 			for j := 0; j < max; j++ {
 				soakEnv := SoakEnvFromContext(ctx)
 				names := namesFn(soakEnv)
-				names.kafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
+				names.KafkaSource = fmt.Sprintf("%s-%d-%d", kafkaSourcePrefix, soakEnv.Iteration(), j)
 
 				f := kafkaSourceScenarioIsReadyKafkaSourceFeature(names)
 				env.Test(ctx, t, f)
