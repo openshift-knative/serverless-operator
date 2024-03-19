@@ -52,7 +52,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 	// common function to enqueue reconcile requests for resources
-	enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+	enqueueRequests := handler.MapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 		dep := obj.(*appsv1.Deployment)
 		sourceLabel := dep.Spec.Selector.MatchLabels[SourceLabel]
 		sourceNameLabel := dep.Spec.Selector.MatchLabels[SourceNameLabel]
@@ -65,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{})
+	return c.Watch(source.Kind(mgr.GetCache(), &appsv1.Deployment{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{})
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler

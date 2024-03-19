@@ -66,6 +66,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Setup all Webhooks
+	disableHTTP2 := func(c *tls.Config) { c.NextProtos = []string{"http/1.1"} }
+	hookServer := webhook.NewServer(webhook.Options{
+		Port:       9876,
+		CertDir:    "/apiserver.local.config/certificates",
+		CertName:   "apiserver.crt",
+		KeyName:    "apiserver.key",
+		TLSOpts:    []func(config *tls.Config){disableHTTP2},
+		WebhookMux: nil,
+	})
+
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:              "", // The serverless operator always watches all namespaces.
@@ -73,6 +84,7 @@ func main() {
 		LeaderElectionID:       "knative-serving-openshift-lock",
 		MetricsBindAddress:     fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
+		WebhookServer:          hookServer,
 	})
 	if err != nil {
 		log.Error(err, "")
@@ -105,21 +117,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Setup all Webhooks
-	hookServer := mgr.GetWebhookServer()
-	hookServer.Port = 9876
-	hookServer.CertDir = "/apiserver.local.config/certificates"
-	hookServer.KeyName = "apiserver.key"
-	hookServer.CertName = "apiserver.crt"
-
-	disableHTTP2 := func(c *tls.Config) { c.NextProtos = []string{"http/1.1"} }
-	hookServer.TLSOpts = []func(config *tls.Config){disableHTTP2}
-
-	decoder, err := admission.NewDecoder(mgr.GetScheme())
-	if err != nil {
-		log.Error(err, "failed to create decoder")
-		os.Exit(1)
-	}
+	decoder := admission.NewDecoder(mgr.GetScheme())
 
 	// Serving Webhooks
 	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(decoder)})
