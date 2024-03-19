@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -110,7 +111,7 @@ func SetAnnotations(annotations map[string]string) mf.Transformer {
 
 // EnqueueRequestByOwnerAnnotations is a common function to enqueue reconcile requests for resources.
 func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
-	return handler.EnqueueRequestsFromMapFunc(func(obj client.Object) []reconcile.Request {
+	return handler.EnqueueRequestsFromMapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 		annotations := obj.GetAnnotations()
 		ownerNamespace := annotations[ownerNamespaceAnnotationKey]
 		ownerName := annotations[ownerNameAnnotationKey]

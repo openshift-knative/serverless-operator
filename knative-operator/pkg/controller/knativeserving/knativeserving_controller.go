@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -91,6 +92,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 	return &ReconcileKnativeServing{
 		client: client,
+		cache:  mgr.GetCache(),
 		scheme: mgr.GetScheme(),
 	}
 }
@@ -105,7 +107,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeServing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
@@ -116,10 +118,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to owned ConfigMaps
-	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
-		OwnerType:    &operatorv1beta1.KnativeServing{},
-		IsController: true,
-	})
+	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestForOwner(
+		mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1beta1.KnativeServing{}, handler.OnlyControllerOwner()))
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if !consoleutil.IsConsoleInstalled() {
-		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		enqueueRequests := handler.MapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 			if obj.GetName() == consoleutil.ConsoleClusterOperatorName {
 				log.Info("Serving, processing clusteroperator request", "name", obj.GetName())
 				co := &configv1.ClusterOperator{}
@@ -161,12 +161,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(&source.Kind{Type: &configv1.ClusterOperator{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
 			return err
 		}
 	}
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -184,6 +184,7 @@ type ReconcileKnativeServing struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	cache  cache.Cache
 	c      *controller.Controller
 }
 
@@ -208,7 +209,7 @@ func (r *ReconcileKnativeServing) Reconcile(_ context.Context, request reconcile
 
 	// If previously not set let's add a watch for ConsoleCLIDownload
 	if consoleutil.IsConsoleInstalled() && !cliDownloadWatchSet.Load() {
-		if err = (*r.c).Watch(&source.Kind{Type: &consolev1.ConsoleCLIDownload{}}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
+		if err = (*r.c).Watch(source.Kind(r.cache, &consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
 			return reconcile.Result{}, err
 		}
 		cliDownloadWatchSet.Store(true)
