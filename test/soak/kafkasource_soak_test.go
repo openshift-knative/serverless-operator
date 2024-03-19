@@ -1,4 +1,4 @@
-package soake2erekt
+package soak
 
 import (
 	"context"
