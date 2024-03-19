@@ -139,12 +139,13 @@ func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 					}
 
 					uResources, found, err := unstructured.NestedSlice(u, "resources")
+					if err != nil {
+						t.Errorf("error getting .resources from %s configmap: %v", cm.Name, err)
+						continue
+					}
 					if !found {
 						// could be still empty?
 						continue
-					}
-					if err != nil {
-						t.Errorf("error getting .resources from %s configmap: %v", cm.Name, err)
 					}
 
 					for _, uResource := range uResources {
@@ -154,15 +155,14 @@ func verifyNoKafkaSourceLeftInDispatcherConfigMap() *feature.Feature {
 							continue
 						}
 						uNamespace, found, err := unstructured.NestedString(uResourceMap, "reference", "namespace")
+						if err != nil {
+							t.Errorf("error getting .reference.namespace from %s configmap: %v", cm.Name, err)
+							continue
+						}
 						if !found {
 							// could be not set?
 							continue
 						}
-						if err != nil {
-							t.Errorf("error getting .reference.namespace from %s configmap: %v", cm.Name, err)
-						}
-
-						// t.Logf("XXX reference namespace: %s", uNamespace)
 
 						if uNamespace == ns {
 							t.Errorf("Found reference to a resource in the test namespace %q in the %s configmap", uNamespace, cm.Name)
