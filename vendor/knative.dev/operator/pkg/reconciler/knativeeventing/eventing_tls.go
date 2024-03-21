@@ -18,12 +18,14 @@ package knativeeventing
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/discovery"
 	"knative.dev/eventing/pkg/apis/feature"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -44,7 +46,11 @@ func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manif
 	// Delete TLS resources (if present)
 	toBeDeleted := manifests.Filter(tlsResourcesPred)
 	if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !meta.IsNoMatchError(err) {
-		return fmt.Errorf("failed to delete TLS resources: %v", err)
+		// if cert-manager CRDs are not installed, a groupDiscoveryError is thrown
+		// we can ignore that as well for deletion
+		if unwrapped := errors.Unwrap(err); unwrapped == nil || !discovery.IsGroupDiscoveryFailedError(unwrapped) {
+			return fmt.Errorf("failed to delete TLS resources: %v", err)
+		}
 	}
 
 	// Filter out TLS resources from the final list of manifests
