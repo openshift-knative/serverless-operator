@@ -124,10 +124,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 
-	if err := common.IsVersionValidMigrationEligible(ke); err != nil {
-		ke.Status.MarkVersionMigrationNotEligible(err.Error())
-		return nil
-	}
 	ke.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
@@ -138,6 +134,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
+		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
+			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing"))))
+			return nil
+		},
 		r.transform,
 		r.handleTLSResources,
 		manifests.Install,
