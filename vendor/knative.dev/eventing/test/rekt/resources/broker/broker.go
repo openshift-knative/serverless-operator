@@ -19,6 +19,7 @@ package broker
 import (
 	"context"
 	"embed"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -159,18 +160,8 @@ func IsAddressable(name string, timings ...time.Duration) feature.StepFn {
 }
 
 // ValidateAddress validates the address retured by Address
-func ValidateAddress(name string, validate addressable.ValidateAddress, timings ...time.Duration) feature.StepFn {
-	return func(ctx context.Context, t feature.T) {
-		addr, err := Address(ctx, name, timings...)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if err := validate(addr); err != nil {
-			t.Error(err)
-			return
-		}
-	}
+func ValidateAddress(name string, validate addressable.ValidateAddressFn, timings ...time.Duration) feature.StepFn {
+	return addressable.ValidateAddress(GVR(), name, validate, timings...)
 }
 
 // Address returns a broker's address.
@@ -263,4 +254,34 @@ func HasDeliveryBackoffPolicy() Condition {
 				len(*br.Spec.Delivery.BackoffPolicy) > 0, nil
 		},
 	}
+}
+
+func AsDestinationRef(name string) *duckv1.Destination {
+	return &duckv1.Destination{
+		Ref: AsKReference(name),
+	}
+}
+
+// AsKReference returns a KReference for a Broker without namespace.
+func AsKReference(name string) *duckv1.KReference {
+	return &duckv1.KReference{
+		Kind:       "Broker",
+		Name:       name,
+		APIVersion: "eventing.knative.dev/v1",
+	}
+}
+
+func InstallMTBroker(name string) *feature.Feature {
+	f := feature.NewFeatureNamed("Multi-tenant channel-based broker")
+	f.Setup(fmt.Sprintf("Install broker %q", name), Install(name, WithEnvConfig()...))
+	f.Requirement("Broker is ready", IsReady(name))
+	return f
+}
+
+func InstallMTBrokerIntoFeature(f *feature.Feature) string {
+	brokerName := feature.MakeRandomK8sName("broker")
+	f.Setup(fmt.Sprintf("Install broker %q", brokerName), Install(brokerName, WithEnvConfig()...))
+	f.Setup("Broker is ready", IsReady(brokerName))
+	f.Setup("Broker is addressable", k8s.IsAddressable(GVR(), brokerName))
+	return brokerName
 }

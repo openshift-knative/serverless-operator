@@ -32,6 +32,7 @@ import (
 
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/pkg/eventingtls/eventingtlstesting"
+	"knative.dev/eventing/test/rekt/resources/addressable"
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/eventtype"
 	"knative.dev/eventing/test/rekt/resources/trigger"
@@ -169,6 +170,26 @@ func SendsEventsWithCloudEventData() *feature.Feature {
 	return f
 }
 
+func SendsEventsWithSecondsInSchedule() *feature.Feature {
+	source := feature.MakeRandomK8sName("pingsource")
+	sink := feature.MakeRandomK8sName("sink")
+	f := feature.NewFeature()
+
+	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
+
+	f.Requirement("install pingsource", pingsource.Install(source,
+		pingsource.WithSchedule("10 0/1 * * * ?"),
+		pingsource.WithSink(service.AsDestinationRef(sink)),
+	))
+	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
+
+	f.Stable("pingsource as event source").
+		Must("delivers events",
+			assert.OnStore(sink).MatchEvent(test.HasType("dev.knative.sources.ping")).AtLeast(1))
+
+	return f
+}
+
 // SendsEventsWithEventTypes tests pingsource to a ready broker.
 func SendsEventsWithEventTypes() *feature.Feature {
 	source := feature.MakeRandomK8sName("source")
@@ -208,4 +229,39 @@ func SendsEventsWithEventTypes() *feature.Feature {
 			eventtype.AssertPresent(expectedCeTypes)))
 
 	return f
+}
+
+func SendsEventsWithBrokerAsSinkTLS() *feature.Feature {
+	src := feature.MakeRandomK8sName("pingsource")
+	brokerName := feature.MakeRandomK8sName("broker")
+	sinkName := feature.MakeRandomK8sName("sink")
+	triggerName := feature.MakeRandomK8sName("trigger")
+	f := feature.NewFeature()
+
+	f.Prerequisite("transport encryption is strict", featureflags.TransportEncryptionStrict())
+	f.Prerequisite("should not run when Istio is enabled", featureflags.IstioDisabled())
+
+	f.Setup("install broker", broker.Install(brokerName, broker.WithEnvConfig()...))
+	f.Setup("broker is ready", broker.IsReady(brokerName))
+	f.Setup("broker is addressable", broker.IsAddressable(brokerName))
+	f.Setup("Broker has HTTPS address", broker.ValidateAddress(brokerName, addressable.AssertHTTPSAddress))
+
+	f.Setup("install sink", eventshub.Install(sinkName, eventshub.StartReceiverTLS))
+
+	f.Setup("install trigger", func(ctx context.Context, t feature.T) {
+		d := service.AsDestinationRef(sinkName)
+		d.CACerts = eventshub.GetCaCerts(ctx)
+		trigger.Install(triggerName, brokerName, trigger.WithSubscriberFromDestination(d))(ctx, t)
+	})
+	f.Setup("Wait for Trigger to become ready", trigger.IsReady(triggerName))
+
+	f.Requirement("install PingSource", pingsource.Install(src, pingsource.WithData("text/plain", "hello, world!"), pingsource.WithSink(broker.AsDestinationRef(brokerName))))
+	f.Requirement("PingSource goes ready", pingsource.IsReady(src))
+
+	f.Assert("PingSource has HTTPS sink address", source.ExpectHTTPSSink(pingsource.Gvr(), src))
+	f.Assert("PingSource as event source",
+		assert.OnStore(sinkName).MatchEvent(test.HasType("dev.knative.sources.ping")).AtLeast(1))
+
+	return f
+
 }
