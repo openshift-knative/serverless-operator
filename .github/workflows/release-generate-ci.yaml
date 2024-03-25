@@ -60,12 +60,12 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.branch }} --config config/serverless-operator.yaml
+        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag "${{ inputs.branch }}.0" --config config/serverless-operator.yaml
 
       - name: Generate CI (on branch created)
         if: github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag ${{ github.ref_name }} --config config/serverless-operator.yaml
+        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "${{ github.ref_name }}.0" --config config/serverless-operator.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
