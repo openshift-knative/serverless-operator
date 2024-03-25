@@ -1387,5 +1387,7 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-post-install:knative-v1.12"
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.12"
+    - name: "IMAGE_MUST_GATHER"
+      image: "quay.io/openshift-knative/must-gather"
   replaces: serverless-operator.v1.32.0
   version: 1.33.0
