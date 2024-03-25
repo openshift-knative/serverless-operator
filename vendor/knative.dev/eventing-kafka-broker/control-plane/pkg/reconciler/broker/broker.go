@@ -63,8 +63,6 @@ const (
 
 	// caCertsSecretKey is the name of the CA Cert in the secret
 	caCertsSecretKey = "ca.crt"
-
-	eventingNamespace = "knative-eventing"
 )
 
 type Reconciler struct {
@@ -365,7 +363,8 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 	address := receiver.HTTPAddress(ingressHost, broker)
 	proberAddressable := prober.ProberAddressable{
 		AddressStatus: &duckv1.AddressStatus{
-			Address: &address,
+			Address:   &address,
+			Addresses: []duckv1.Addressable{address},
 		},
 		ResourceKey: types.NamespacedName{
 			Namespace: broker.GetNamespace(),
@@ -460,7 +459,7 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 func (r *Reconciler) deleteResourceFromContractConfigMap(ctx context.Context, logger *zap.Logger, broker *eventing.Broker) error {
 	// Get contract config map.
 	contractConfigMap, err := r.GetOrCreateDataPlaneConfigMap(ctx)
-	// Handles https://github.com/knative-sandbox/eventing-kafka-broker/issues/2893
+	// Handles https://github.com/knative-extensions/eventing-kafka-broker/issues/2893
 	// When the system namespace is deleted while we're running there is no point in
 	// trying to delete the resource from the ConfigMap since the entire ConfigMap
 	// is gone.
@@ -623,9 +622,11 @@ func (r *Reconciler) reconcilerBrokerResource(ctx context.Context, topic string,
 		},
 		BootstrapServers: config.GetBootstrapServers(),
 		Reference: &contract.Reference{
-			Uuid:      string(broker.GetUID()),
-			Namespace: broker.GetNamespace(),
-			Name:      broker.GetName(),
+			Uuid:         string(broker.GetUID()),
+			Namespace:    broker.GetNamespace(),
+			Name:         broker.GetName(),
+			Kind:         "Broker",
+			GroupVersion: eventing.SchemeGroupVersion.String(),
 		},
 	}
 

@@ -42,7 +42,7 @@ import (
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
 	kubeClientSet kubernetes.Interface
-	// kubeClientSet allows us to talk to the k8s for operator APIs
+	// operatorClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
 	// manifest is empty, but with a valid client and logger. all
 	// manifests are immutable, and any created during reconcile are
@@ -124,6 +124,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 
+	if err := common.IsVersionValidMigrationEligible(ke); err != nil {
+		ke.Status.MarkVersionMigrationNotEligible(err.Error())
+		return nil
+	}
 	ke.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
@@ -134,10 +138,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
-		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
-			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("knative-eventing"))))
-			return nil
-		},
 		r.transform,
 		r.handleTLSResources,
 		manifests.Install,
@@ -169,6 +169,9 @@ func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest,
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	paths := instance.GetStatus().GetManifests()
+	if len(paths) == 0 {
+		return nil, nil
+	}
 	installed, err := common.FetchManifestFromArray(paths)
 
 	if err != nil {
