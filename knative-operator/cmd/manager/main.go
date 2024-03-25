@@ -10,11 +10,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/spf13/pflag"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"k8s.io/client-go/rest"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller"
@@ -23,6 +18,10 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeeventing"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativekafka"
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/webhook/knativeserving"
+	"github.com/spf13/pflag"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"k8s.io/client-go/rest"
 
 	configv1 "github.com/openshift/api/config/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -33,6 +32,7 @@ import (
 	zapr "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
@@ -79,10 +79,11 @@ func main() {
 
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
-		Namespace:              "", // The serverless operator always watches all namespaces.
-		LeaderElection:         true,
-		LeaderElectionID:       "knative-serving-openshift-lock",
-		MetricsBindAddress:     fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		LeaderElection:   true,
+		LeaderElectionID: "knative-serving-openshift-lock",
+		Metrics: metricsserver.Options{
+			BindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		},
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
 		WebhookServer:          hookServer,
 	})
