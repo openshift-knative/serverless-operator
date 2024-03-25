@@ -68,7 +68,7 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.31.0 <1.31.1'
+    olm.skipRange: '>=1.31.0 <1.32.0'
     operators.openshift.io/must-gather-image: quay.io/openshift-knative/must-gather
   labels:
     operatorframework.io/arch.amd64: supported
@@ -827,7 +827,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.ci.openshift.org/knative/serverless-openshift-knative-operator:release-1.32
+                    image: registry.ci.openshift.org/knative/serverless-openshift-knative-operator:release-1.32.1
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -982,7 +982,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: registry.ci.openshift.org/knative/serverless-knative-operator:release-1.32
+                    image: registry.ci.openshift.org/knative/serverless-knative-operator:release-1.32.1
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1154,7 +1154,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.ci.openshift.org/knative/serverless-ingress:release-1.32
+                    image: registry.ci.openshift.org/knative/serverless-ingress:release-1.32.1
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1303,11 +1303,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.ci.openshift.org/knative/serverless-openshift-knative-operator:release-1.32"
+      image: "registry.ci.openshift.org/knative/serverless-openshift-knative-operator:release-1.32.1"
     - name: "knative-openshift"
-      image: "registry.ci.openshift.org/knative/serverless-knative-operator:release-1.32"
+      image: "registry.ci.openshift.org/knative/serverless-knative-operator:release-1.32.1"
     - name: "knative-openshift-ingress"
-      image: "registry.ci.openshift.org/knative/serverless-ingress:release-1.32"
+      image: "registry.ci.openshift.org/knative/serverless-ingress:release-1.32.1"
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.11"
     - name: "IMAGE_activator"
