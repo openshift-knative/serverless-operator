@@ -81,7 +81,7 @@ export TEST_KNATIVE_KAFKA_BROKER="${TEST_KNATIVE_KAFKA_BROKER:-false}"
 export INSTALL_SERVING="${INSTALL_SERVING:-true}"
 export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
-export FULL_MESH="${FULL_MESH:-false}"
+export MESH="${MESH:-false}"
 export ENABLE_TRACING="${ENABLE_TRACING:-false}"
 export ENABLE_KEDA="${ENABLE_KEDA:-false}"
 # Define sample-rate for tracing.

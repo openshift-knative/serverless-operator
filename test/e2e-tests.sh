@@ -12,7 +12,7 @@ fi
 debugging.setup # both install and test
 dump_state.setup # test
 
-if [[ $FULL_MESH == "true" ]]; then
+if [[ $MESH == "true" ]]; then
   # net-istio does not use knative-serving-ingress namespace.
   export INGRESS_NAMESPACE="knative-serving"
 else
