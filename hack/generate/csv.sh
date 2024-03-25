@@ -205,6 +205,8 @@ for name in "${kafka_images[@]}"; do
   add_downstream_operator_deployment_env "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
+add_related_image "$target" "IMAGE_MUST_GATHER" "$(metadata.get dependencies.mustgather.image)"
+
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
 ekb_version=$(metadata.get dependencies.eventing_kafka_broker)
