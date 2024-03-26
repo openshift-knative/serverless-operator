@@ -227,6 +227,43 @@ spec:
         host: "*"
 EOF
 
+  logger.info "Applying Strimzi SASL Restricted User"
+  cat <<-EOF | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-restricted-sasl-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for Broker with names following knative default brokers.topic.template
+      - resource:
+          type: topic
+          name: knative-broker-
+          patternType: prefix
+        operations:
+          - Create
+          - Describe
+          - Read
+          - Write
+          - Delete
+        host: "*"
+      # Example ACL rules for Consumer Group ID following knative default triggers.consumergroup.template
+      - resource:
+          type: group
+          name: knative-trigger-
+          patternType: prefix
+        operations:
+          - Read
+        host: "*"
+EOF
+
   logger.info "Waiting for Strimzi admin users to become ready"
   oc wait kafkauser --all --timeout=-1s --for=condition=Ready -n kafka
 
