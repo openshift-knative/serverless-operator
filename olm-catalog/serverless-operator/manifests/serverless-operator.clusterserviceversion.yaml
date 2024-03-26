@@ -820,7 +820,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.ci.openshift.org/knative/serverless-openshift-knative-operator:main
+                    image: registry.ci.openshift.org/knative/main:serverless-knative-operator
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -975,7 +975,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: registry.ci.openshift.org/knative/serverless-knative-operator:main
+                    image: registry.ci.openshift.org/knative/main:serverless-knative-operator
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1147,7 +1147,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.ci.openshift.org/knative/serverless-ingress:main
+                    image: registry.ci.openshift.org/knative/main:serverless-ingress
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1296,11 +1296,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.ci.openshift.org/knative/serverless-openshift-knative-operator:main"
+      image: "registry.ci.openshift.org/knative/main:serverless-knative-operator"
     - name: "knative-openshift"
-      image: "registry.ci.openshift.org/knative/serverless-knative-operator:main"
+      image: "registry.ci.openshift.org/knative/main:serverless-knative-operator"
     - name: "knative-openshift-ingress"
-      image: "registry.ci.openshift.org/knative/serverless-ingress:main"
+      image: "registry.ci.openshift.org/knative/main:serverless-ingress"
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.12"
     - name: "IMAGE_activator"
