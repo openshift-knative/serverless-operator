@@ -5,7 +5,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/metadata.bash"
 
 registry_host='registry.ci.openshift.org'
 registry="${registry_host}/openshift"
-export CURRENT_VERSION_IMAGES="release-$(metadata.get project.version)"
+CURRENT_VERSION_IMAGES="release-$(metadata.get project.version)"
+export CURRENT_VERSION_IMAGES
 
 function default_serverless_operator_images() {
   local serverless
