@@ -5,14 +5,15 @@ source "$(dirname "${BASH_SOURCE[0]}")/metadata.bash"
 
 registry_host='registry.ci.openshift.org'
 registry="${registry_host}/openshift"
-export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"release-$(metadata.get project.version)"}
+CURRENT_VERSION_IMAGES="release-$(metadata.get project.version)"
+export CURRENT_VERSION_IMAGES
 
 function default_serverless_operator_images() {
   local serverless
-  serverless="${registry_host}/knative/serverless"
-  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-"${serverless}-knative-operator:${CURRENT_VERSION_IMAGES}"}
-  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-"${serverless}-openshift-knative-operator:${CURRENT_VERSION_IMAGES}"}
-  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress:${CURRENT_VERSION_IMAGES}"}
+  serverless="${registry_host}/knative/${CURRENT_VERSION_IMAGES}:serverless"
+  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-"${serverless}-knative-operator"}
+  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-"${serverless}-knative-operator"}
+  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress"}
 }
 
 function default_knative_serving_images() {
