@@ -64,8 +64,13 @@ function install_catalogsource {
     logger.debug "Create a backup of the index Dockerfile."
     cp "${rootdir}/${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
-    # Replace the nightly bundle reference with the previously built bundle
-    sed -i "s_\(.*\)\(registry.ci.openshift.org/knative/${CURRENT_VERSION_IMAGES}:serverless-bundle\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${rootdir}/${index_dorkerfile_path}"
+    # Replace bundle reference with previously built bundle
+    bundle="registry.ci.openshift.org/knative/release-${CURRENT_VERSION}:serverless-bundle"
+    if ! grep "${bundle}" "${rootdir}/${index_dorkerfile_path}"; then
+      logger.error "Bundle ${bundle} not found in Dockerfile."
+      return 1
+    fi
+    sed -i "s_\(.*\)\(${bundle}\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${rootdir}/${index_dorkerfile_path}"
 
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 
