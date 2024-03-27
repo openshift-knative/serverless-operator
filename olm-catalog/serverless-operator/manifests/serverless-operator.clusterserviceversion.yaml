@@ -1303,7 +1303,7 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.ci.openshift.org/knative/release-1.32.0:serverless-openshift-knative-operator"
+      image: "registry.ci.openshift.org/knative/release-1.32.1:serverless-openshift-knative-operator"
     - name: "knative-openshift"
       image: "registry.ci.openshift.org/knative/release-1.32.1:serverless-knative-operator"
     - name: "knative-openshift-ingress"
