@@ -79,6 +79,8 @@ func (p *probeRunner) Verify(ctx pkgupgrade.Context) {
 			"Listing them below.", events, len(errors))
 	}
 
+	p.exportLogs()
+
 	p.ReportErrors(errors)
 	if !ctx.T.Failed() {
 		p.remove()
