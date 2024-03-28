@@ -14,7 +14,7 @@ function install_catalogsource {
 
   local rootdir csv index_image
 
-  index_image=registry.ci.openshift.org/knative/serverless-index:main
+  index_image=registry.ci.openshift.org/knative/${CURRENT_VERSION_IMAGES}:serverless-index
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
