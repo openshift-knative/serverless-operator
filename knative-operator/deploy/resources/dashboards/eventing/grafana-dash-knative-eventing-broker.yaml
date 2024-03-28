@@ -5,6 +5,7 @@ metadata:
   namespace: openshift-config-managed
   labels:
     console.openshift.io/dashboard: "true"
+    console.openshift.io/odc-dashboard: "true"
 data:
   eventing-broker-dashboard.json: |+
     {
@@ -118,7 +119,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -206,7 +207,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -271,7 +272,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (event_type)",
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m])) by (event_type)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -365,7 +366,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -483,7 +484,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class!=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_ingress_event_count{response_code_class!=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_ingress_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -550,26 +551,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_ingress_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -697,7 +698,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -785,7 +786,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -850,7 +851,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (event_type)",
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m])) by (event_type)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -944,7 +945,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -1062,7 +1063,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class!=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(mt_broker_filter_event_count{response_code_class!=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(mt_broker_filter_event_count{namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -1129,26 +1130,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_dispatch_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -1242,26 +1243,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "instant": false,
               "legendFormat": "p50",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.95, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": "C"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$eventNamespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.99, sum(rate(mt_broker_filter_event_processing_latencies_bucket{namespace_name=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": "D"
@@ -1330,7 +1331,7 @@ data:
             "includeAll": true,
             "label": "namespace",
             "multi": true,
-            "name": "eventNamespace",
+            "name": "namespace",
             "options": [],
             "query": "label_values(mt_broker_ingress_event_count{namespace_name!=\"unknown\"}, namespace_name)",
             "refresh": 1,

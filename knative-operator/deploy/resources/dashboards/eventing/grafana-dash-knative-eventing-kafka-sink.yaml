@@ -5,6 +5,7 @@ metadata:
   namespace: openshift-config-managed
   labels:
     console.openshift.io/dashboard: "true"
+    console.openshift.io/odc-dashboard: "true"
 data:
   eventing-kafka-sink-dashboard.json: |+
     {
@@ -118,7 +119,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -206,7 +207,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", response_code_class=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", response_code_class=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -271,7 +272,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$eventNamespace\"}[1m])) by (event_type)",
+              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$namespace\"}[1m])) by (event_type)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -365,7 +366,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$eventNamespace\"}[1m])) by (response_code_class)",
+              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$namespace\"}[1m])) by (response_code_class)",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -483,7 +484,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", response_code_class!=\"2xx\", namespace_name=~\"$eventNamespace\"}[1m])) / sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$eventNamespace\"}[1m]))",
+              "expr": "sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", response_code_class!=\"2xx\", namespace_name=~\"$namespace\"}[1m])) / sum(rate(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"
@@ -525,7 +526,7 @@ data:
             "includeAll": true,
             "label": "namespace",
             "multi": true,
-            "name": "eventNamespace",
+            "name": "namespace",
             "options": [],
             "query": "label_values(event_count_1_total{job=\"kafka-sink-receiver-sm-service\", namespace_name!=\"unknown\"}, namespace_name)",
             "refresh": 1,
