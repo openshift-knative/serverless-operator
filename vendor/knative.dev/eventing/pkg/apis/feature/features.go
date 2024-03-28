@@ -57,8 +57,9 @@ func newDefaults() Flags {
 		DeliveryRetryAfter:  Disabled,
 		DeliveryTimeout:     Enabled,
 		KReferenceMapping:   Disabled,
-		NewTriggerFilters:   Disabled,
+		NewTriggerFilters:   Enabled,
 		TransportEncryption: Disabled,
+		OIDCAuthentication:  Disabled,
 		EvenTypeAutoCreate:  Disabled,
 	}
 }
@@ -91,6 +92,10 @@ func (e Flags) IsStrictTransportEncryption() bool {
 // IsDisabledTransportEncryption returns true if the TransportEncryption feature is in Disabled mode.
 func (e Flags) IsDisabledTransportEncryption() bool {
 	return e != nil && e[TransportEncryption] == Disabled
+}
+
+func (e Flags) IsOIDCAuthentication() bool {
+	return e != nil && e[OIDCAuthentication] == Enabled
 }
 
 func (e Flags) String() string {

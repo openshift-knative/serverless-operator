@@ -2,6 +2,8 @@ package features
 
 import (
 	"context"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/reconciler-test/pkg/resources/service"
 
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/brokerconfig"
 	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/inmemorychannel"
@@ -228,9 +230,11 @@ var inMemoryChannelParallel = genericComponent{
 
 			parallelresources.Install(name,
 				withInMemoryChannelTemplate(),
-				parallelresources.WithSubscriberAt(0, svcresources.AsKReference(branch1), ""),
-				parallelresources.WithSubscriberAt(1, svcresources.AsKReference(branch2), ""),
-				parallelresources.WithReply(inMemoryChannel.KReference(reply), ""),
+				parallelresources.WithSubscriberAt(0, service.AsDestinationRef(branch1)),
+				parallelresources.WithSubscriberAt(1, service.AsDestinationRef(branch2)),
+				parallelresources.WithReply(&duckv1.Destination{
+					Ref: inMemoryChannel.KReference(reply),
+				}),
 			)(ctx, t)
 		}
 	},
@@ -253,9 +257,11 @@ var kafkaChannelParallel = genericComponent{
 
 			parallelresources.Install(name,
 				withKafkaChannelTemplate(),
-				parallelresources.WithSubscriberAt(0, svcresources.AsKReference(branch1), ""),
-				parallelresources.WithSubscriberAt(1, svcresources.AsKReference(branch2), ""),
-				parallelresources.WithReply(kafkaChannel.KReference(reply), ""),
+				parallelresources.WithSubscriberAt(0, service.AsDestinationRef(branch1)),
+				parallelresources.WithSubscriberAt(1, service.AsDestinationRef(branch2)),
+				parallelresources.WithReply(&duckv1.Destination{
+					Ref: kafkaChannel.KReference(reply),
+				}),
 			)(ctx, t)
 		}
 	},

@@ -117,6 +117,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			cl := fake.NewClientBuilder().
 				WithObjects(test.instance, &operatorv1beta1.KnativeEventing{}).
 				WithObjects(test.eventingConfigFeatures).
+				WithStatusSubresource(&v1alpha1.KnativeKafka{}).
 				Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/channel/eventing-kafka-channel.yaml"))
@@ -710,6 +711,7 @@ func withChannelEnabled(kk *v1alpha1.KnativeKafka) {
 func withDeleted(kk *v1alpha1.KnativeKafka) {
 	t := metav1.NewTime(time.Now())
 	kk.ObjectMeta.DeletionTimestamp = &t
+	kk.Finalizers = []string{"finalizer"}
 }
 
 func withKubeRbacProxyDeploymentOverride(kk *v1alpha1.KnativeKafka) {

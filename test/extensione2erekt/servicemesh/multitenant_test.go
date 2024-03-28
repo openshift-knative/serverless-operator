@@ -59,7 +59,7 @@ func DeployKafkaChannelKsvc(channel, sink string) *feature.Feature {
 	sub := feature.MakeRandomK8sName("subscription")
 	f.Setup("install sink subscription", subscription.Install(sub,
 		subscription.WithChannel(channel_impl.AsRef(channel)),
-		subscription.WithSubscriber(service.AsKReference(sink), ""),
+		subscription.WithSubscriber(service.AsKReference(sink), "", ""),
 	))
 
 	f.Setup("subscription is ready", subscription.IsReady(sub))
@@ -160,7 +160,7 @@ func VerifyContainerSourceToChannelWithReplyAndDLS(replySinkCtx context.Context,
 	sub := feature.MakeRandomK8sName("subscription")
 	f.Setup("install sink subscription", subscription.Install(sub,
 		subscription.WithChannel(channel_impl.AsRef(channel)),
-		subscription.WithSubscriber(service.AsKReference(sink), ""),
+		subscription.WithSubscriber(service.AsKReference(sink), "", ""),
 		subscription.WithReply(replySinkRef, ""),
 		subscription.WithDeadLetterSink(service.AsKReference(dls), ""),
 	))

@@ -74,7 +74,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if !consoleutil.IsConsoleInstalled() {
-		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		enqueueRequests := handler.MapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 			if obj.GetName() == consoleutil.ConsoleClusterOperatorName {
 				log.Info("Eventing, processing crd request", "name", obj.GetName())
 				co := &configv1.ClusterOperator{}
@@ -101,14 +101,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(&source.Kind{Type: &configv1.ClusterOperator{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
 			return err
 		}
 	}
 
 	// Watch for changes to primary resource KnativeEventing
 	requiredNs := os.Getenv(requiredNsEnvName)
-	return c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	return c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}

@@ -50,7 +50,7 @@ type fakeClient struct {
 	err error
 }
 
-func (f *fakeClient) Get(_ context.Context, _ client.ObjectKey, _ client.Object) error {
+func (f *fakeClient) Get(_ context.Context, _ client.ObjectKey, _ client.Object, _ ...client.GetOption) error {
 	return f.err
 }
 

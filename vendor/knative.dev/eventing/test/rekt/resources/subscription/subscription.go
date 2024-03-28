@@ -56,7 +56,7 @@ func WithChannel(ref *duckv1.KReference) manifest.CfgFn {
 }
 
 // WithSubscriber adds the subscriber related config to a Subscription spec.
-func WithSubscriber(ref *duckv1.KReference, uri string) manifest.CfgFn {
+func WithSubscriber(ref *duckv1.KReference, uri, audience string) manifest.CfgFn {
 	return func(cfg map[string]interface{}) {
 		if _, set := cfg["subscriber"]; !set {
 			cfg["subscriber"] = map[string]interface{}{}
@@ -65,6 +65,9 @@ func WithSubscriber(ref *duckv1.KReference, uri string) manifest.CfgFn {
 
 		if uri != "" {
 			subscriber["uri"] = uri
+		}
+		if audience != "" {
+			subscriber["audience"] = audience
 		}
 		if ref != nil {
 			if _, set := subscriber["ref"]; !set {
@@ -148,6 +151,10 @@ func WithSubscriberFromDestination(dest *duckv1.Destination) manifest.CfgFn {
 			// This is a multi-line string and should be indented accordingly.
 			// Replace "new line" with "new line + spaces".
 			subscriber["CACerts"] = strings.ReplaceAll(*dest.CACerts, "\n", "\n      ")
+		}
+
+		if dest.Audience != nil {
+			subscriber["audience"] = *dest.Audience
 		}
 
 		if uri != nil {

@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	routev1 "github.com/openshift/api/route/v1"
@@ -126,12 +127,15 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 	return lastState, nil
 }
 
-func WaitForReadyServices(ctx *Context, namespace string) error {
+func WaitForReadyServices(ctx *Context, namespace string, ignoredServices ...string) error {
 	services, err := ctx.Clients.Serving.ServingV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 	for _, svc := range services.Items {
+		if slices.Contains(ignoredServices, svc.Name) {
+			continue
+		}
 		_, err = WaitForServiceState(ctx, svc.Name, namespace, IsServiceReady)
 		if err != nil {
 			return err

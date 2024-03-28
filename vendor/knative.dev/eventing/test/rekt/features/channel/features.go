@@ -26,6 +26,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/network"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/feature"
@@ -217,12 +218,12 @@ func EventTransformation() *feature.Feature {
 	f.Setup("install channel 2", channel_impl.Install(channel2))
 	f.Setup("install subscription 1", subscription.Install(subscription1,
 		subscription.WithChannel(channel_impl.AsRef(channel1)),
-		subscription.WithSubscriber(prober.AsKReference("transform"), ""),
+		subscription.WithSubscriber(prober.AsKReference("transform"), "", ""),
 		subscription.WithReply(channel_impl.AsRef(channel2), ""),
 	))
 	f.Setup("install subscription 2", subscription.Install(subscription2,
 		subscription.WithChannel(channel_impl.AsRef(channel2)),
-		subscription.WithSubscriber(prober.AsKReference("sink"), ""),
+		subscription.WithSubscriber(prober.AsKReference("sink"), "", ""),
 	))
 	f.Setup("subscription 1 is ready", subscription.IsReady(subscription1))
 	f.Setup("subscription 2 is ready", subscription.IsReady(subscription2))
@@ -263,7 +264,7 @@ func SingleEventWithEncoding(encoding binding.Encoding) *feature.Feature {
 	f.Setup("install channel", channel_impl.Install(channel))
 	f.Setup("install subscription", subscription.Install(sub,
 		subscription.WithChannel(channel_impl.AsRef(channel)),
-		subscription.WithSubscriber(prober.AsKReference("sink"), ""),
+		subscription.WithSubscriber(prober.AsKReference("sink"), "", ""),
 	))
 
 	f.Setup("subscription is ready", subscription.IsReady(sub))
@@ -342,6 +343,8 @@ func channelSubscriberUnreachable(createSubscriberFn func(ref *duckv1.KReference
 	channelName := feature.MakeRandomK8sName("channel")
 	sub := feature.MakeRandomK8sName("subscription")
 
+	subscriberUri := fmt.Sprintf("http://fake.svc.%s", network.GetClusterDomainName())
+
 	ev := test.FullEvent()
 
 	f.Setup("install sink", eventshub.Install(sink, eventshub.StartReceiver))
@@ -350,7 +353,7 @@ func channelSubscriberUnreachable(createSubscriberFn func(ref *duckv1.KReference
 
 	f.Setup("install subscription", subscription.Install(sub,
 		subscription.WithChannel(channel_impl.AsRef(channelName)),
-		createSubscriberFn(nil, "http://fake.svc.cluster.local"),
+		createSubscriberFn(nil, subscriberUri),
 	))
 	f.Setup("channel is ready", channel_impl.IsReady(channelName))
 	f.Setup("channel is addressable", channel_impl.IsAddressable(channelName))
@@ -365,7 +368,7 @@ func channelSubscriberUnreachable(createSubscriberFn func(ref *duckv1.KReference
 
 	f.Assert("Receives dls extensions when subscriber is unreachable", eventasssert.OnStore(sink).
 		MatchEvent(
-			test.HasExtension("knativeerrordest", "http://fake.svc.cluster.local")).
+			test.HasExtension("knativeerrordest", subscriberUri)).
 		AtLeast(1),
 	)
 
@@ -481,6 +484,7 @@ func assertEnhancedWithKnativeErrorExtensions(sinkName string, matcherfns ...fun
 			matchers[i] = fn(ctx)
 		}
 		_ = eventshub.StoreFromContext(ctx, sinkName).AssertExact(
+			ctx,
 			t,
 			1,
 			assert.MatchKind(eventshub.EventReceived),

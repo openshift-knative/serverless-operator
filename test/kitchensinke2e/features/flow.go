@@ -3,6 +3,7 @@ package features
 import (
 	"context"
 	"fmt"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"math/rand"
 	"time"
 
@@ -96,7 +97,9 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 	if reply != nil {
 		replyName := parallelName + "-reply-" + shortLabel(reply)
 		f.Setup(fmt.Sprintf("Install %s", label(reply)), reply.Install(replyName))
-		branchConfigs = append(branchConfigs, parallelresources.WithReply(reply.KReference(replyName), ""))
+		branchConfigs = append(branchConfigs, parallelresources.WithReply(&duckv1.Destination{
+			Ref: reply.KReference(replyName),
+		}))
 	}
 
 	// Branches with just Subscribers
@@ -104,7 +107,9 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 		index := i
 		subscriberName := branchName(subscriber)
 		f.Setup(fmt.Sprintf("Install %s", label(subscriber)), subscriber.Install(subscriberName))
-		branchConfigs = append(branchConfigs, parallelresources.WithSubscriberAt(index, subscriber.KReference(subscriberName), ""))
+		branchConfigs = append(branchConfigs, parallelresources.WithSubscriberAt(index, &duckv1.Destination{
+			Ref: subscriber.KReference(subscriberName),
+		}))
 	}
 
 	// Branches with replies, using a random subscriber from above
@@ -117,8 +122,12 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 
 		f.Setup(fmt.Sprintf("Install %s Reply", label(reply)), reply.Install(replyName))
 		branchConfigs = append(branchConfigs,
-			parallelresources.WithSubscriberAt(index, subscriber.KReference(subscriberName), ""),
-			parallelresources.WithReplyAt(index, reply.KReference(replyName), ""))
+			parallelresources.WithSubscriberAt(index, &duckv1.Destination{
+				Ref: subscriber.KReference(subscriberName),
+			}),
+			parallelresources.WithReplyAt(index, &duckv1.Destination{
+				Ref: reply.KReference(replyName),
+			}))
 	}
 
 	// Branches with filters, using a random subscriber from above
@@ -131,8 +140,12 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 
 		f.Setup(fmt.Sprintf("Install %s Filter", label(filter)), filter.Install(filterName))
 		branchConfigs = append(branchConfigs,
-			parallelresources.WithSubscriberAt(index, subscriber.KReference(subscriberName), ""),
-			parallelresources.WithFilterAt(index, filter.KReference(filterName), ""))
+			parallelresources.WithSubscriberAt(index, &duckv1.Destination{
+				Ref: subscriber.KReference(subscriberName),
+			}),
+			parallelresources.WithFilterAt(index, &duckv1.Destination{
+				Ref: filter.KReference(filterName),
+			}))
 	}
 
 	f.Setup("Install A Parallel", func(ctx context.Context, t feature.T) {

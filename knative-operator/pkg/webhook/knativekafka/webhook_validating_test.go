@@ -121,7 +121,7 @@ var (
 
 func init() {
 	apis.AddToScheme(scheme.Scheme)
-	decoder, _ = admission.NewDecoder(scheme.Scheme)
+	decoder = admission.NewDecoder(scheme.Scheme)
 }
 
 func TestHappy(t *testing.T) {
