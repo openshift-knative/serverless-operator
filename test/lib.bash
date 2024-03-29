@@ -86,7 +86,7 @@ function serverless_operator_e2e_tests {
   fi
 
   go_test_e2e -tags=e2e "${RUN_FLAGS[@]}" ./test/e2e \
-    --channel "$OLM_CHANNEL" \
+    --channel "$OLM_UPGRADE_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -111,7 +111,7 @@ function serverless_operator_kafka_e2e_tests {
   fi
 
   go_test_e2e -tags=e2e "${RUN_FLAGS[@]}" ./test/e2ekafka \
-    --channel "$OLM_CHANNEL" \
+    --channel "$OLM_UPGRADE_CHANNEL" \
     --kubeconfigs "${kubeconfigs_str}" \
     --imagetemplate "${IMAGE_TEMPLATE}" \
     "$@"
@@ -419,7 +419,7 @@ EOF
     "--imagetemplate=${image_template}" \
     "--images.producer.file=${images_file}" \
     "--catalogsource=${OLM_SOURCE}" \
-    "--channel=${OLM_CHANNEL}" \
+    "--channel=${OLM_PREVIOUS_CHANNEL}" \
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
     "--csvprevious=${PREVIOUS_CSV}" \
@@ -458,11 +458,9 @@ EOF
       oc delete namespace serving-tests
     fi
     oc create namespace serving-tests
-    # Make sure the cluster upgrade is run with latest version of Serverless as
-    # the Serverless upgrade tests leave the product at the previous version (after downgrade).
-    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
     go_test_e2e -run=TestClusterUpgrade -timeout=220m "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
+      --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
       --upgradeopenshift
   fi
 

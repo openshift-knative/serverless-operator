@@ -28,15 +28,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
-	"github.com/openshift-knative/serverless-operator/test/upgrade"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "knative.dev/pkg/system/testing"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/feature"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/kitchensinke2e/features"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 
 	// Make sure to initialize flags from knative.dev/pkg/test before parsing them.
 	pkgTest "knative.dev/pkg/test"
@@ -137,7 +138,7 @@ func TestKitchensink(t *testing.T) {
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-							if err := installation.UpgradeServerlessTo(ctx, csv, "redhat-operators", 3*time.Minute); err != nil {
+							if err := installation.UpgradeServerlessTo(ctx, "redhat-operators"); err != nil {
 								c.T.Error("Serverless upgrade failed:", err)
 							}
 						}),
