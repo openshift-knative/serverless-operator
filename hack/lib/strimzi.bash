@@ -233,6 +233,7 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaUser
 metadata:
   name: my-restricted-sasl-user
+  namespace: kafka
   labels:
     strimzi.io/cluster: my-cluster
 spec:
