@@ -135,3 +135,18 @@ function default_knative_ingress_images() {
   export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${registry}/net-istio-controller:${knative_istio}"}
   export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-"${registry}/net-istio-webhook:${knative_istio}"}
 }
+
+function knative_backstage_plugins_images() {
+  local backstage_plugins tag
+  backstage_plugins="${registry}/knative-backstage-plugins"
+  tag=${1:?"Provide tag for Backstage plugins images"}
+  export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-"${backstage_plugins}-eventmesh:${tag}"}
+}
+
+function knative_backstage_plugins_images_release_next() {
+  knative_backstage_plugins_images "knative-nightly"
+}
+
+function default_knative_backstage_plugins_images() {
+  knative_backstage_plugins_images "$(metadata.get dependencies.backstage_plugins)"
+}

@@ -140,6 +140,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		},
 		r.transform,
 		r.handleTLSResources,
+		r.handleBackstageResources,
 		manifests.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
