@@ -187,9 +187,7 @@ function wait_for_csv_succeeded {
   restarts=0
   ln=' ' logger.debug "${*} : Waiting until non-zero (max ${timeout} sec.)"
   while (eval "[[ \$(oc get ClusterServiceVersion -n $ns $csv -o jsonpath='{.status.phase}') != Succeeded ]]" 2>/dev/null); do
-    # Make sure there are .status.conditions available before parsing via jq
-    oc wait --for=condition=CatalogSourcesUnhealthy=False subscription.operators.coreos.com "${subscription}" -n "${ns}" --timeout=120s
-    subscription_error=$(oc get subscription.operators.coreos.com "${subscription}" -n "${ns}" -ojson | jq '.status.conditions[] | select(.message != null) | select(.message|test("exists and is not referenced by a subscription"))')
+    subscription_error=$(oc get subscription.operators.coreos.com "${subscription}" -n "${ns}" -ojson | jq '.status.conditions[]? | select(.message != null) | select(.message|test("exists and is not referenced by a subscription"))')
     if [[ "${subscription_error}" != "" && $restarts -lt 3 ]]; then
       logger.warn "Restarting OLM pods to work around OCPBUGS-19046"
       oc delete pods -n openshift-operator-lifecycle-manager -l app=catalog-operator
