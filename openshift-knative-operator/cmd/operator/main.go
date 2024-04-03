@@ -29,9 +29,11 @@ import (
 func main() {
 	// Set up a signal context with our webhook options
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
-		ServiceName: webhook.NameFromEnv(),
-		Port:        webhook.PortFromEnv(8443),
-		SecretName:  "knative-operator-webhook-service-cert",
+		ServiceName:           webhook.NameFromEnv(),
+		Port:                  webhook.PortFromEnv(8443),
+		SecretName:            "knative-operator-webhook-service-cert",
+		ServerPrivateKeyName:  "tls.key",
+		ServerCertificateName: "tls.crt",
 	})
 
 	if err := apis.AddToScheme(scheme.Scheme); err != nil {
