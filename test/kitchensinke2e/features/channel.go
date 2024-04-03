@@ -48,7 +48,7 @@ func ChannelReadiness(index int, channel component, subscriber, reply, dls compo
 
 	f.Setup("Install A Subscription", subscriptionresources.Install(channelName,
 		subscriptionresources.WithChannel(channel.KReference(channelName)),
-		subscriptionresources.WithSubscriber(subscriber.KReference(receiverName), ""),
+		subscriptionresources.WithSubscriber(subscriber.KReference(receiverName), "", ""),
 		func(m map[string]interface{}) {
 			if reply != nil {
 				subscriptionresources.WithReply(reply.KReference(replyName), "")(m)

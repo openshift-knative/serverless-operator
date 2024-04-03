@@ -364,10 +364,6 @@ func ctrl(certVersion string) *appsv1.Deployment {
 
 func cm(name string, labels, annotations, data map[string]string, resourceVersion string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:       "knative-serving",
 			Name:            name,

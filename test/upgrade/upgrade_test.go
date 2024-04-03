@@ -53,6 +53,10 @@ import (
 	"knative.dev/reconciler-test/pkg/manifest"
 )
 
+// This service is supposed to be in a failure state during upgrades,
+// so we have to ignore it in our check for ready services.
+const failingUpgradeServiceName = "deployment-upgrade-failure"
+
 var global environment.GlobalEnvironment
 
 // FIXME: https://github.com/knative/eventing/issues/5176 `*-config.toml` in
@@ -189,7 +193,7 @@ func postDowngradeTests() []pkgupgrade.Operation {
 
 func waitForServicesReady(ctx *test.Context) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("WaitForServicesReady", func(c pkgupgrade.Context) {
-		if err := test.WaitForReadyServices(ctx, "serving-tests"); err != nil {
+		if err := test.WaitForReadyServices(ctx, "serving-tests", failingUpgradeServiceName); err != nil {
 			c.T.Error("Knative services not ready: ", err)
 		}
 		// TODO: Check if we need to sleep 30 more seconds like in the previous bash scripts.
@@ -275,7 +279,7 @@ func inMemoryChannelTest(t *testing.T) {
 	channel_impl.EnvCfg.ChannelV = "v1"
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
-		return subscription.WithSubscriber(ref, uri)
+		return subscription.WithSubscriber(ref, uri, "")
 	}
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 }
@@ -335,7 +339,7 @@ func kafkaChannelTest(t *testing.T) {
 	channel_impl.EnvCfg.ChannelV = "v1beta1"
 
 	createSubscriberFn := func(ref *duckv1.KReference, uri string) manifest.CfgFn {
-		return subscription.WithSubscriber(ref, uri)
+		return subscription.WithSubscriber(ref, uri, "")
 	}
 	env.Test(ctx, t, channel.ChannelChain(1, createSubscriberFn))
 }
