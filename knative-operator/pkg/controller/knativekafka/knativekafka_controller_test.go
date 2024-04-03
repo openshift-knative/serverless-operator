@@ -117,6 +117,7 @@ func TestKnativeKafkaReconcile(t *testing.T) {
 			cl := fake.NewClientBuilder().
 				WithObjects(test.instance, &operatorv1beta1.KnativeEventing{}).
 				WithObjects(test.eventingConfigFeatures).
+				WithStatusSubresource(&v1alpha1.KnativeKafka{}).
 				Build()
 
 			kafkaChannelManifest, err := mf.ManifestFrom(mf.Path("testdata/channel/eventing-kafka-channel.yaml"))
@@ -710,6 +711,7 @@ func withChannelEnabled(kk *v1alpha1.KnativeKafka) {
 func withDeleted(kk *v1alpha1.KnativeKafka) {
 	t := metav1.NewTime(time.Now())
 	kk.ObjectMeta.DeletionTimestamp = &t
+	kk.Finalizers = []string{"finalizer"}
 }
 
 func withKubeRbacProxyDeploymentOverride(kk *v1alpha1.KnativeKafka) {
@@ -865,16 +867,16 @@ func TestMonitoringResources(t *testing.T) {
 		monitoring.KafkaBrokerDispatcher,
 		monitoring.KafkaSinkReceiver,
 	}
-	svcs := sets.NewString()
-	sMon := sets.NewString()
+	svcs := sets.New[string]()
+	sMon := sets.New[string]()
 
 	for _, c := range components {
 		svcs.Insert(c.Name + "-sm-service")
 		sMon.Insert(c.Name + "-sm")
 	}
 
-	expected := map[schema.GroupVersionKind]sets.String{
-		crGvk: sets.NewString(
+	expected := map[schema.GroupVersionKind]sets.Set[string]{
+		crGvk: sets.New[string](
 			"rbac-proxy-reviews-prom-rb-kafka-controller",
 			"rbac-proxy-reviews-prom-rb-kafka-webhook-eventing",
 			"rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane",
@@ -895,7 +897,7 @@ func TestMonitoringResources(t *testing.T) {
 
 	for k, v := range expected {
 		if v.Len() > 0 {
-			t.Errorf("failed to find %+v, missing %v", k, v.List())
+			t.Errorf("failed to find %+v, missing %v", k, v.UnsortedList())
 		}
 	}
 }

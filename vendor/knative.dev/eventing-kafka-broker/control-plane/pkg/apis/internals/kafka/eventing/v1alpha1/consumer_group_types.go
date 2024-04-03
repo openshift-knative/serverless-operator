@@ -115,6 +115,11 @@ type ConsumerGroupStatus struct {
 	// +optional
 	SubscriberURI *apis.URL `json:"subscriberUri,omitempty"`
 
+	// SubscriberCACerts are Certification Authority (CA) certificates in PEM format
+	// according to https://www.rfc-editor.org/rfc/rfc7468.
+	// +optional
+	SubscriberCACerts *string `json:"subscriberCACerts,omitempty"`
+
 	// DeliveryStatus contains a resolved URL to the dead letter sink address, and any other
 	// resolved delivery options.
 	eventingduckv1.DeliveryStatus `json:",inline"`
@@ -124,6 +129,10 @@ type ConsumerGroupStatus struct {
 	// same Template, but individual replicas also have a consistent identity.
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
+
+	// Selector is the string serialized label selector needed for the scale subresource.
+	// Defaults to ""
+	Selector string `json:"selector,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

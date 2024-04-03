@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -114,7 +114,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
 rules:
   - apiGroups:
       - ""
@@ -147,7 +147,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
 ---
 ---
 
@@ -170,7 +170,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -203,7 +203,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -215,7 +215,7 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        app.kubernetes.io/version: v1.11
+        app.kubernetes.io/version: v1.12
         app.kubernetes.io/component: kafka-sink-receiver
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -257,6 +257,9 @@ spec:
               readOnly: true
             - mountPath: /etc/tracing
               name: config-tracing
+              readOnly: true
+            - mountPath: /etc/features
+              name: config-features
               readOnly: true
             - mountPath: /etc/receiver-tls-secret
               name: sink-receiver-tls-secret
@@ -302,6 +305,8 @@ spec:
               value: "false"
             - name: CONFIG_TRACING_PATH
               value: "/etc/tracing"
+            - name: CONFIG_FEATURES_PATH
+              value: "/etc/features"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
             - name: HTTP2_DISABLE
               value: "true"
@@ -357,6 +362,9 @@ spec:
         - name: config-tracing
           configMap:
             name: config-tracing
+        - name: config-features
+          configMap:
+            name: config-features
         - name: sink-receiver-tls-secret
           secret:
             secretName: kafka-sink-ingress-server-tls
@@ -371,7 +379,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: v1.11
+    app.kubernetes.io/version: v1.12
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:

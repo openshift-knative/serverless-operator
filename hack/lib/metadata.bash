@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 
-# Make sure yq is on PATH.
-yq > /dev/null || exit 127
+function yq() {
+  local thisfile rootdir bindir
+  thisfile=$(realpath "${BASH_SOURCE[0]}")
+  rootdir=$(dirname "$(dirname "$(dirname "${thisfile}")")")
+  bindir="${rootdir}/_output/bin"
+  if [[ ! -f "${bindir}/yq" ]]; then
+    mkdir -p "${bindir}"
+    GOBIN="${bindir}" GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
+  fi
+  "${bindir}/yq" "$@"
+}
 
 #######################################
 # Gets a value from a metadata file

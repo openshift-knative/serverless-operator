@@ -39,7 +39,6 @@ function download_serving {
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
-  branch=$(metadata.get dependencies.serving_artifacts_branch)
   for (( i=0; i<${#files[@]}; i++ ));
   do
     index=$(( i+1 ))
@@ -47,6 +46,11 @@ function download_serving {
     target_file="$target_dir/$index-$file"
 
     if [[ ${KNATIVE_SERVING_MANIFESTS_DIR} = "" ]]; then
+      if [[ "${USE_RELEASE_NEXT}" == "true" ]]; then
+        branch="release-next"
+      else
+        branch=$(metadata.get dependencies.serving_artifacts_branch)
+      fi
       url="https://raw.githubusercontent.com/openshift-knative/serving/${branch}/openshift/release/artifacts/$file"
       wget --no-check-certificate "$url" -O "$target_file"
     else
@@ -71,13 +75,16 @@ function download_eventing {
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
-  branch=$(metadata.get dependencies.eventing_artifacts_branch)
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
     file="${files[$i]}"
     target_file="$target_dir/$index-$file"
     if [[ ${KNATIVE_EVENTING_MANIFESTS_DIR} = "" ]]; then
-
+      if [[ "${USE_RELEASE_NEXT}" == "true" ]]; then
+        branch="release-next"
+      else
+        branch=$(metadata.get dependencies.eventing_artifacts_branch)
+      fi
       url="https://raw.githubusercontent.com/openshift-knative/eventing/${branch}/openshift/release/artifacts/$file"
       echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"
@@ -102,13 +109,16 @@ function download_eventing_istio {
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
   target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
 
-  branch=$(metadata.get dependencies.eventing_istio_artifacts_branch)
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
     file="${files[$i]}"
     target_file="$target_dir/$index-$file"
     if [[ ${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR} = "" ]]; then
-
+      if [[ "${USE_RELEASE_NEXT}" == "true" ]]; then
+        branch="release-next"
+      else
+        branch=$(metadata.get dependencies.eventing_istio_artifacts_branch)
+      fi
       url="https://raw.githubusercontent.com/openshift-knative/eventing-istio/${branch}/openshift/release/artifacts/$file"
       echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"

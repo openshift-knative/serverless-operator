@@ -17,7 +17,7 @@ limitations under the License.
 package base
 
 import (
-	istiov1alpha3 "istio.io/api/networking/v1alpha3"
+	istiov1beta1 "istio.io/api/networking/v1beta1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -41,6 +41,15 @@ type KourierIngressConfiguration struct {
 	// ServiceType specifies the service type for kourier gateway.
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
 
+	// ServiceLoadBalancerIP specifies the service load balancer IP.
+	ServiceLoadBalancerIP string `json:"service-load-balancer-ip,omitempty"`
+
+	// HTTPPort specifies the port used in case of ServiceType = "NodePort" for http traffic
+	HTTPPort int32 `json:"http-port,omitempty"`
+
+	// HTTPSPort specifies the port used in case of ServiceType = "NodePort" for https (encrypted) traffic
+	HTTPSPort int32 `json:"https-port,omitempty"`
+
 	// BootstrapConfigmapName specifies the ConfigMap name which contains envoy bootstrap.
 	BootstrapConfigmapName string `json:"bootstrap-configmap,omitempty"`
 }
@@ -56,5 +65,5 @@ type IstioGatewayOverride struct {
 	Selector map[string]string `json:"selector,omitempty"`
 
 	// A list of server specifications.
-	Servers []*istiov1alpha3.Server `json:"servers,omitempty"`
+	Servers []*istiov1beta1.Server `json:"servers,omitempty"`
 }

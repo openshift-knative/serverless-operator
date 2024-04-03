@@ -24,7 +24,7 @@ function install_strimzi_cluster {
       namespace: kafka
     spec:
       kafka:
-        version: 3.6.1
+        version: 3.7.0
         replicas: 3
         listeners:
           # PLAINTEXT
@@ -68,7 +68,7 @@ function install_strimzi_cluster {
           offsets.topic.replication.factor: 3
           transaction.state.log.replication.factor: 3
           transaction.state.log.min.isr: 2
-          inter.broker.protocol.version: "3.6"
+          inter.broker.protocol.version: "3.7"
           auto.create.topics.enable: "false"
         storage:
           type: jbod
@@ -224,6 +224,43 @@ spec:
           type: topic
           name: "*"
         operation: Delete
+        host: "*"
+EOF
+
+  logger.info "Applying Strimzi SASL Restricted User"
+  cat <<-EOF | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-restricted-sasl-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for Broker with names following knative default brokers.topic.template
+      - resource:
+          type: topic
+          name: knative-broker-
+          patternType: prefix
+        operations:
+          - Create
+          - Describe
+          - Read
+          - Write
+          - Delete
+        host: "*"
+      # Example ACL rules for Consumer Group ID following knative default triggers.consumergroup.template
+      - resource:
+          type: group
+          name: knative-trigger-
+          patternType: prefix
+        operations:
+          - Read
         host: "*"
 EOF
 

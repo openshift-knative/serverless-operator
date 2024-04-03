@@ -26,7 +26,7 @@ var defaultKubeRBACProxyRequests = corev1.ResourceList{
 	"cpu":    resource.MustParse("10m"),
 }
 
-func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) mf.Transformer {
+func InjectRbacProxyContainer(deployments sets.Set[string], cfg base.ConfigMapData) mf.Transformer {
 	resources := corev1.ResourceRequirements{
 		Requests: defaultKubeRBACProxyRequests,
 		Limits:   corev1.ResourceList{},
@@ -122,7 +122,7 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 // Normally the knative operator applies deployment overrides before extension transforms are applied.
 // For example, we inject the kube-rbac-proxy container at the extension side and this allows to configure the container
 // for each deployment it appears in using regular deployment overrides.
-func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments sets.String) mf.Transformer {
+func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments sets.Set[string]) mf.Transformer {
 	var ovs []base.WorkloadOverride
 	for _, override := range overrides {
 		if deployments.Has(override.Name) {

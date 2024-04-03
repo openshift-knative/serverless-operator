@@ -29,15 +29,14 @@ func enableSecretInformerFilteringTransformers(ks base.KComponent) []mf.Transfor
 		shouldInject, tf = configIfUnsetAndCheckIfShouldInject(comp, "net-kourier-controller", "controller")
 	}
 	if shouldInject {
-		return []mf.Transformer{injectLabelIntoInternalEncryptionSecret(), tf}
+		return []mf.Transformer{injectLabelIntoSystemInternalTLSSecret(), tf}
 	}
 	return nil
 }
 
-func injectLabelIntoInternalEncryptionSecret() mf.Transformer {
+func injectLabelIntoSystemInternalTLSSecret() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		//nolint:staticcheck // ignore the deprecation until internal encryption is implemented downstream
-		if u.GetKind() == "Secret" && u.GetName() == config.ServingInternalCertName {
+		if u.GetKind() == "Secret" && u.GetName() == config.ServingRoutingCertName {
 			labels := u.GetLabels()
 			if labels == nil {
 				labels = make(map[string]string, 1)

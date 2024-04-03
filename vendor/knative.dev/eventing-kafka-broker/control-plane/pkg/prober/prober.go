@@ -19,6 +19,7 @@ package prober
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"sync"
@@ -29,8 +30,8 @@ import (
 	"knative.dev/pkg/network"
 )
 
-// Addressable contains addressable resource data for the prober.
-type Addressable struct {
+// proberAddressable contains addressable resource data for the prober.
+type proberAddressable struct {
 	// Addressable address.
 	Address *url.URL
 	// Resource key.
@@ -41,15 +42,13 @@ type Addressable struct {
 type EnqueueFunc func(key types.NamespacedName)
 
 // Prober probes an addressable resource.
-type Prober interface {
+type prober interface {
 	// Probe probes the provided Addressable resource and returns its Status.
-	Probe(ctx context.Context, addressable Addressable, expected Status) Status
-	// RotateRootCaCerts rotates the CA certs used to make http requests
-	RotateRootCaCerts(caCerts *string) error
+	probe(ctx context.Context, addressable proberAddressable, expected Status) Status
 }
 
-// NewAddressable contains addressable resource data for the new prober
-type NewAddressable struct {
+// ProberAddressable contains addressable resource data for the new prober
+type ProberAddressable struct {
 	// Addressable status
 	AddressStatus *duckv1.AddressStatus
 	// Resource key
@@ -59,35 +58,24 @@ type NewAddressable struct {
 // NewProber probes an addressable resource
 type NewProber interface {
 	// Probe probes the provided NewAddressable resource and returns its Status
-	Probe(ctx context.Context, addressable NewAddressable, expected Status) Status
-	// RotateRootCaCerts rotates the CA certs used to make http requests
-	RotateRootCaCerts(caCerts *string) error
+	Probe(ctx context.Context, addressable ProberAddressable, expected Status) Status
 }
 
 // Func type is an adapter to allow the use of
 // ordinary functions as Prober. If f is a function
 // with the appropriate signature, Func(f) is a
 // Prober that calls f.
-type Func func(ctx context.Context, addressable Addressable, expected Status) Status
+type Func func(ctx context.Context, addressable proberAddressable, expected Status) Status
 
 // Probe implements the Prober interface for Func.
-func (p Func) Probe(ctx context.Context, addressable Addressable, expected Status) Status {
+func (p Func) probe(ctx context.Context, addressable proberAddressable, expected Status) Status {
 	return p(ctx, addressable, expected)
 }
 
-// RotateRootCaCerts is an empty implementation to complete the Prober interface for Func.
-func (p Func) RotateRootCaCerts(caCerts *string) error {
-	return nil
-}
+type NewFunc func(ctx context.Context, addressable ProberAddressable, expected Status) Status
 
-type NewFunc func(ctx context.Context, addressable NewAddressable, expected Status) Status
-
-func (p NewFunc) Probe(ctx context.Context, addressable NewAddressable, expected Status) Status {
+func (p NewFunc) Probe(ctx context.Context, addressable ProberAddressable, expected Status) Status {
 	return p(ctx, addressable, expected)
-}
-
-func (p NewFunc) RotateRootCaCerts(caCerts *string) error {
-	return nil
 }
 
 // httpClient interface is an interface for an HTTP client.
@@ -117,17 +105,20 @@ func probe(ctx context.Context, client httpClient, logger *zap.Logger, address s
 		logger.Error("Failed probe", zap.Error(err))
 		return StatusUnknownErr
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		logger.Info("Resource not ready", zap.Int("statusCode", response.StatusCode))
 		return StatusNotReady
 	}
 
+	_, _ = io.Copy(io.Discard, response.Body)
+
 	return StatusReady
 }
 
 func IPsListerFromService(svc types.NamespacedName) IPsLister {
-	return func(addressable Addressable) ([]string, error) {
+	return func(addressable proberAddressable) ([]string, error) {
 		return []string{GetIPForService(svc)}, nil
 	}
 }
@@ -139,7 +130,7 @@ func GetIPForService(svc types.NamespacedName) string {
 type IPListerWithMapping interface {
 	Register(svc types.NamespacedName, ip string)
 	Unregister(svc types.NamespacedName)
-	List(addressable Addressable) ([]string, error)
+	List(addressable proberAddressable) ([]string, error)
 }
 
 type ipListerWithMapping struct {
@@ -171,7 +162,7 @@ func (m *ipListerWithMapping) Unregister(svc types.NamespacedName) {
 	delete(m.mapping, a)
 }
 
-func (m *ipListerWithMapping) List(addressable Addressable) ([]string, error) {
+func (m *ipListerWithMapping) List(addressable proberAddressable) ([]string, error) {
 	a := addressable.ResourceKey.String()
 
 	m.mx.RLock()
@@ -185,7 +176,7 @@ func (m *ipListerWithMapping) List(addressable Addressable) ([]string, error) {
 }
 
 func IdentityIPsLister() IPsLister {
-	return func(addressable Addressable) ([]string, error) {
+	return func(addressable proberAddressable) ([]string, error) {
 		return []string{addressable.Address.Host}, nil
 	}
 }

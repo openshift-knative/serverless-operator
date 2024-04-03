@@ -21,15 +21,19 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/test"
+
 	"github.com/google/uuid"
 	testpkg "knative.dev/eventing-kafka-broker/test/pkg"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkaauthsecret"
+
 	"knative.dev/eventing/test/rekt/resources/broker"
 	"knative.dev/eventing/test/rekt/resources/trigger"
+
 	"knative.dev/reconciler-test/pkg/eventshub"
 	"knative.dev/reconciler-test/pkg/eventshub/assert"
 	"knative.dev/reconciler-test/pkg/feature"
 	"knative.dev/reconciler-test/pkg/manifest"
+
 	"knative.dev/reconciler-test/resources/svc"
 
 	brokerconfigmap "knative.dev/eventing-kafka-broker/test/rekt/resources/configmap/broker"
@@ -45,6 +49,11 @@ func SetupBrokerAuthSsl(ctx context.Context) *feature.Feature {
 		kafkaauthsecret.WithSslData(ctx))
 }
 
+func SetupBrokerNoAuthSsl(ctx context.Context) *feature.Feature {
+	return SetupBrokerAuth(testpkg.BootstrapServersTlsNoAuth,
+		kafkaauthsecret.WithTlsNoAuthData(ctx))
+}
+
 func SetupBrokerAuthSaslPlaintextScram512(ctx context.Context) *feature.Feature {
 	return SetupBrokerAuth(testpkg.BootstrapServersSaslPlaintext,
 		kafkaauthsecret.WithSaslPlaintextScram512Data(ctx))
@@ -53,6 +62,11 @@ func SetupBrokerAuthSaslPlaintextScram512(ctx context.Context) *feature.Feature 
 func SetupBrokerAuthSslSaslScram512(ctx context.Context) *feature.Feature {
 	return SetupBrokerAuth(testpkg.BootstrapServersSslSaslScram,
 		kafkaauthsecret.WithSslSaslScram512Data(ctx))
+}
+
+func SetupBrokerAuthRestrictedSslSaslScram512(ctx context.Context) *feature.Feature {
+	return SetupBrokerAuth(testpkg.BootstrapServersSslSaslScram,
+		kafkaauthsecret.WithRestrictedSslSaslScram512Data(ctx))
 }
 
 func SetupBrokerAuth(bootstrapServer string, authSecretOptions ...manifest.CfgFn) *feature.Feature {

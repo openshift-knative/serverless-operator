@@ -46,11 +46,15 @@ const (
 
 	// DryRunFeatureKey gates the podspec dryrun feature and runs with the value 'enabled'
 	DryRunFeatureKey = "features.knative.dev/podspec-dryrun"
+
+	// AllowHTTPFullDuplexFeatureKey gates the use of http1 full duplex per workload
+	AllowHTTPFullDuplexFeatureKey = "features.knative.dev/http-full-duplex"
 )
 
 func defaultFeaturesConfig() *Features {
 	return &Features{
 		MultiContainer:                   Enabled,
+		MultiContainerProbing:            Disabled,
 		PodSpecAffinity:                  Disabled,
 		PodSpecTopologySpreadConstraints: Disabled,
 		PodSpecDryRun:                    Allowed,
@@ -59,6 +63,7 @@ func defaultFeaturesConfig() *Features {
 		PodSpecNodeSelector:              Disabled,
 		PodSpecRuntimeClassName:          Disabled,
 		PodSpecSecurityContext:           Disabled,
+		PodSpecShareProcessNamespace:     Disabled,
 		PodSpecPriorityClassName:         Disabled,
 		PodSpecSchedulerName:             Disabled,
 		ContainerSpecAddCapabilities:     Disabled,
@@ -83,6 +88,7 @@ func NewFeaturesConfigFromMap(data map[string]string) (*Features, error) {
 
 	if err := cm.Parse(data,
 		asFlag("multi-container", &nc.MultiContainer),
+		asFlag("multi-container-probing", &nc.MultiContainerProbing),
 		asFlag("kubernetes.podspec-affinity", &nc.PodSpecAffinity),
 		asFlag("kubernetes.podspec-topologyspreadconstraints", &nc.PodSpecTopologySpreadConstraints),
 		asFlag("kubernetes.podspec-dryrun", &nc.PodSpecDryRun),
@@ -91,6 +97,7 @@ func NewFeaturesConfigFromMap(data map[string]string) (*Features, error) {
 		asFlag("kubernetes.podspec-nodeselector", &nc.PodSpecNodeSelector),
 		asFlag("kubernetes.podspec-runtimeclassname", &nc.PodSpecRuntimeClassName),
 		asFlag("kubernetes.podspec-securitycontext", &nc.PodSpecSecurityContext),
+		asFlag("kubernetes.podspec-shareprocessnamespace", &nc.PodSpecShareProcessNamespace),
 		asFlag("kubernetes.podspec-priorityclassname", &nc.PodSpecPriorityClassName),
 		asFlag("kubernetes.podspec-schedulername", &nc.PodSpecSchedulerName),
 		asFlag("kubernetes.containerspec-addcapabilities", &nc.ContainerSpecAddCapabilities),
@@ -119,6 +126,7 @@ func NewFeaturesConfigFromConfigMap(config *corev1.ConfigMap) (*Features, error)
 // Features specifies which features are allowed by the webhook.
 type Features struct {
 	MultiContainer                   Flag
+	MultiContainerProbing            Flag
 	PodSpecAffinity                  Flag
 	PodSpecTopologySpreadConstraints Flag
 	PodSpecDryRun                    Flag
@@ -127,6 +135,7 @@ type Features struct {
 	PodSpecNodeSelector              Flag
 	PodSpecRuntimeClassName          Flag
 	PodSpecSecurityContext           Flag
+	PodSpecShareProcessNamespace     Flag
 	PodSpecPriorityClassName         Flag
 	PodSpecSchedulerName             Flag
 	ContainerSpecAddCapabilities     Flag

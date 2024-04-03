@@ -9,17 +9,24 @@ export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
 
 function default_serverless_operator_images() {
   local serverless
-  serverless="${registry_host}/knative/serverless"
-  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-"${serverless}-knative-operator:${CURRENT_VERSION_IMAGES}"}
-  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-"${serverless}-openshift-knative-operator:${CURRENT_VERSION_IMAGES}"}
-  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress:${CURRENT_VERSION_IMAGES}"}
+  serverless="${registry_host}/knative/${CURRENT_VERSION_IMAGES}:serverless"
+  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-"${serverless}-knative-operator"}
+  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-"${serverless}-openshift-knative-operator"}
+  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress"}
+}
+
+function knative_serving_images_release_next() {
+  knative_serving_images "knative-nightly"
 }
 
 function default_knative_serving_images() {
-  local serving
+  knative_serving_images "$(metadata.get dependencies.serving)"
+}
+
+function knative_serving_images() {
+  local serving tag
   serving="${registry}/knative-serving"
-  local tag
-  tag=$(metadata.get dependencies.serving)
+  tag=${1:?"Provide tag for Serving images"}
   export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-"${serving}-queue:${tag}"}
   export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"${serving}-activator:${tag}"}
   export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler:${tag}"}
@@ -29,11 +36,18 @@ function default_knative_serving_images() {
   export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-"${serving}-storage-version-migration:${tag}"}
 }
 
+function knative_eventing_images_release_next() {
+  knative_eventing_images "knative-nightly"
+}
+
 function default_knative_eventing_images() {
-  local eventing
+  knative_eventing_images "$(metadata.get dependencies.eventing)"
+}
+
+function knative_eventing_images() {
+  local eventing tag
   eventing="${registry}/knative-eventing"
-  local tag
-  tag=$(metadata.get dependencies.eventing)
+  tag=${1:?"Provide tag for Eventing images"}
   export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
   export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
   export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-migrate:${tag}"}
@@ -77,19 +91,33 @@ function default_knative_eventing_test_images() {
   export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"${eventing}/wathola-sender:${tag}"}
 }
 
+function knative_eventing_istio_images_release_next() {
+  knative_eventing_istio_images "knative-nightly"
+}
+
 function default_knative_eventing_istio_images() {
-  local eventing_istio
+  knative_eventing_istio_images "$(metadata.get dependencies.eventing_istio)"
+}
+
+function knative_eventing_istio_images() {
+  local eventing_istio tag
   eventing_istio="${registry}/knative-eventing-istio"
-  local tag
-  tag=$(metadata.get dependencies.eventing_istio)
+  tag=${1:?"Provide tag for Eventing Istio images"}
   export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
 }
 
+function knative_eventing_kafka_broker_images_release_next() {
+  knative_eventing_kafka_broker_images "knative-nightly"
+}
+
 function default_knative_eventing_kafka_broker_images() {
-  local eventing_kafka_broker
-  local tag
-  tag=$(metadata.get dependencies.eventing_kafka_broker)
+  knative_eventing_kafka_broker_images "$(metadata.get dependencies.eventing_kafka_broker)"
+}
+
+function knative_eventing_kafka_broker_images() {
+  local eventing_kafka_broker tag
   eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
+  tag=${1:?"Provide tag for Eventing Kafka Broker images"}
   export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher:${tag}"}
   export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver:${tag}"}
   export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-"${eventing_kafka_broker}-kafka-controller:${tag}"}

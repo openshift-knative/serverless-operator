@@ -24,15 +24,6 @@ jobs:
         with:
           go-version: 1.21.x
 
-      - name: Install prerequisites
-        env:
-          YQ_VERSION: 3.4.0
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          sudo mv /usr/bin/yq /usr/local/bin/yq
-
-
       - name: Checkout openshift-knative/serverless-operator
         uses: actions/checkout@v4
         with:
@@ -60,12 +51,12 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.branch }}
+        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.branch }} --config config/serverless-operator.yaml
 
       - name: Generate CI (on branch created)
         if: github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag ${{ github.ref_name }}
+        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag ${{ github.ref_name }} --config config/serverless-operator.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

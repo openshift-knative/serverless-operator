@@ -27,13 +27,13 @@ schema: olm.channel
 name: __PREVIOUS_CHANNEL__
 package: serverless-operator
 entries:
-  - name: "serverless-operator.v__PREVIOUS_REPLACES__"
-  - name: "serverless-operator.v__PREVIOUS_VERSION__"
-    replaces: "serverless-operator.v__PREVIOUS_REPLACES__"
-    skipRange: ">=__PREVIOUS_REPLACES__ <__PREVIOUS_VERSION__"
+  - name: "serverless-operator.v__PREVIOUS_REPLACES_CHANNEL_HEAD__"
+  - name: "serverless-operator.v__PREVIOUS_CHANNEL_HEAD__"
+    replaces: "serverless-operator.v__PREVIOUS_REPLACES_CHANNEL_HEAD__"
+    skipRange: ">=__PREVIOUS_REPLACES_CHANNEL_HEAD__ <__PREVIOUS_CHANNEL_HEAD__"
 ---
 schema: olm.channel
 name: __PREVIOUS_REPLACES_CHANNEL__
 package: serverless-operator
 entries:
-  - name: "serverless-operator.v__PREVIOUS_REPLACES__"
+  - name: "serverless-operator.v__PREVIOUS_REPLACES_CHANNEL_HEAD__"

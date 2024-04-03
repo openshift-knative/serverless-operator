@@ -64,7 +64,7 @@ var (
 	roleOrRoleBinding = mf.Any(role, rolebinding)
 	KafkaHAComponents = []string{"kafka-controller", "kafka-webhook-eventing"}
 
-	dependentConfigMaps = sets.NewString("config-observability", "config-tracing", "kafka-config-logging", "config-features")
+	dependentConfigMaps = sets.New[string]("config-observability", "config-tracing", "kafka-config-logging", "config-features")
 )
 
 type stage func(*mf.Manifest, *serverlessoperatorv1alpha1.KnativeKafka) error
@@ -127,7 +127,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// Watch for changes to primary resource KnativeKafka
-	err = c.Watch(&source.Kind{Type: &serverlessoperatorv1alpha1.KnativeKafka{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &serverlessoperatorv1alpha1.KnativeKafka{}), &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 			// We cannot watch cert-manager resources since it's an optional addon.
 			continue
 		}
-		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -157,7 +157,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(&source.Kind{Type: t}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+		err = c.Watch(source.Kind(mgr.GetCache(), t), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
 			return object.GetNamespace() == "knative-eventing" && dependentConfigMaps.Has(object.GetName())
 		}))
 		if err != nil {
@@ -166,7 +166,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
 		return true
 	}))
 	if err != nil {
@@ -177,7 +177,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 }
 
 func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, filter func(client.Object) bool) handler.EventHandler {
-	return handler.EnqueueRequestsFromMapFunc(func(object client.Object) []reconcile.Request {
+	return handler.EnqueueRequestsFromMapFunc(func(_ context.Context, object client.Object) []reconcile.Request {
 		if !filter(object) {
 			return nil
 		}
@@ -513,7 +513,7 @@ func isStatefulSetAvailable(ss *appsv1.StatefulSet) bool {
 // general clean-up. required for the resources that cannot be garbage collected with the owner reference mechanism
 func (r *ReconcileKnativeKafka) delete(instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("kafka_status")
-	finalizers := sets.NewString(instance.GetFinalizers()...)
+	finalizers := sets.New[string](instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
 		log.Info("Finalizer has already been removed, nothing to do")
@@ -533,9 +533,9 @@ func (r *ReconcileKnativeKafka) delete(instance *serverlessoperatorv1alpha1.Knat
 	}
 
 	// Update the refetched finalizer list.
-	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers = sets.New[string](refetched.GetFinalizers()...)
 	finalizers.Delete(finalizerName)
-	refetched.SetFinalizers(finalizers.List())
+	refetched.SetFinalizers(sets.List(finalizers))
 
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeKafka with removed finalizer: %w", err)

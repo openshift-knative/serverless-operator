@@ -15,11 +15,19 @@ kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-ev
 rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_serverless_operator_images
-default_knative_eventing_images
-default_knative_eventing_istio_images
-default_knative_eventing_kafka_broker_images
-default_knative_serving_images
 default_knative_ingress_images
+
+if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
+  knative_eventing_images_release_next
+  knative_eventing_istio_images_release_next
+  knative_eventing_kafka_broker_images_release_next
+  knative_serving_images_release_next
+else
+  default_knative_eventing_images
+  default_knative_eventing_istio_images
+  default_knative_eventing_kafka_broker_images
+  default_knative_serving_images
+fi
 
 declare -a operator_images
 declare -A operator_images_addresses
@@ -111,6 +119,7 @@ image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s
 image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get dependencies.func.tekton_buildah)"
 image 'KN_PLUGIN_FUNC_NODEJS_16'      "$(metadata.get dependencies.func.nodejs_16)"
 image 'KN_PLUGIN_FUNC_OPENJDK_17'     "$(metadata.get dependencies.func.openjdk_17)"
+image 'KN_PLUGIN_FUNC_OPENJDK_21'     "$(metadata.get dependencies.func.openjdk_21)"
 image 'KN_PLUGIN_FUNC_PYTHON_39'      "$(metadata.get dependencies.func.python-39)"
 
 declare -A yaml_keys
@@ -195,6 +204,8 @@ for name in "${kafka_images[@]}"; do
   add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
   add_downstream_operator_deployment_env "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
+
+add_related_image "$target" "IMAGE_MUST_GATHER" "$(metadata.get dependencies.mustgather.image)"
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"

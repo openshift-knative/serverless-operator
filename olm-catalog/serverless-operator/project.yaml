@@ -23,35 +23,35 @@ requirements:
         # The min version validation in `vendor/knative.dev/pkg/version/version.go`
         # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
         # This value is used for CSV's min version validation.
-        minVersion: 1.24.0
+        minVersion: 1.25.0
     golang: '1.21'
-    nodejs: 16.x
+    nodejs: 20.x
     ocpVersion:
-        min: '4.11'
-        max: '4.14'
-        label: 'v4.11'
+        min: '4.12'
+        max: '4.15'
+        label: 'v4.12'
 dependencies:
-    serving: knative-v1.11
+    serving: knative-v1.12
     # serving midstream branch name
-    serving_artifacts_branch: release-v1.11
+    serving_artifacts_branch: release-v1.12
     # versions for networking components
-    kourier: knative-v1.11
-    net_kourier_artifacts_branch: release-v1.11
-    net_istio: knative-v1.11
-    net_istio_artifacts_branch: release-v1.11
+    kourier: knative-v1.12
+    net_kourier_artifacts_branch: release-v1.12
+    net_istio: knative-v1.12
+    net_istio_artifacts_branch: release-v1.12
     redhat-knative-istio-authz-chart: 1.33.0
     maistra: 2.4-latest
-    eventing: knative-v1.11
+    eventing: knative-v1.12
     # eventing core midstream branch name
-    eventing_artifacts_branch: release-v1.11
+    eventing_artifacts_branch: release-v1.12
     # eventing-kafka-broker promotion tag
-    eventing_kafka_broker: knative-v1.11
+    eventing_kafka_broker: knative-v1.12
     # eventing-kafka-broker midstream branch or commit
-    eventing_kafka_broker_artifacts_branch: release-v1.11
+    eventing_kafka_broker_artifacts_branch: release-v1.12
     # eventing-istio promotion tag
-    eventing_istio: knative-v1.11
+    eventing_istio: knative-v1.12
     # eventing-istio midstream branch or commit
-    eventing_istio_artifacts_branch: release-v1.11
+    eventing_istio_artifacts_branch: release-v1.12
     cli: 1.11.2
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
@@ -59,8 +59,9 @@ dependencies:
         tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:55f5c7d88c77e1ab5a2ab8e877172b2b66cb196e21f10dc45148470d0ee8bbae
         nodejs_16: registry.access.redhat.com/ubi8/nodejs-16@sha256:720a3a2594a1804b5ecd7046a5ce4be82885bfa7c83df4c9bcade0e1e00db078
         openjdk_17: registry.access.redhat.com/ubi8/openjdk-17@sha256:b00f687d913b8d1e027f7eabd6765de6c8d469629bef9550f10dbf207af24fe5
+        openjdk_21: registry.access.redhat.com/ubi8/openjdk-21@sha256:4f35566977c35306a8f2102841ceb7fa10a6d9ac47c079131caed5655140f9b2
         python-39: registry.access.redhat.com/ubi8/python-39@sha256:cf0af1732c483d4e6ba708f9f4d5541cb43c98c3c67c604c23b0e55897eebe41
-    operator: 1.11.0
+    operator: 1.13.3
     # Previous versions required for downgrade testing
     previous:
         serving: knative-v1.11
@@ -70,7 +71,6 @@ dependencies:
         image: quay.io/openshift-knative/must-gather
 upgrade_sequence:
     - csv: serverless-operator.v1.31.0
-    - csv: serverless-operator.v1.31.1
     - csv: serverless-operator.v1.32.0
     - csv: serverless-operator.v1.33.0
       source: serverless-operator

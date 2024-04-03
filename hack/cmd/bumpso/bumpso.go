@@ -81,8 +81,7 @@ func run() error {
 	}
 	upgradeSequence = upgradeSequence[1:] // Remove first version
 	upgradeSequence = append(upgradeSequence, map[string]interface{}{
-		"csv":    fmt.Sprintf("serverless-operator.v%s", newVersion),
-		"source": "serverless-operator",
+		"csv": fmt.Sprintf("serverless-operator.v%s", newVersion),
 	})
 
 	defaultChannel, _, _ := unstructured.NestedString(project, "olm", "channels", "default")

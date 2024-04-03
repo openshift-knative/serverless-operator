@@ -106,10 +106,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
-	if err := common.IsVersionValidMigrationEligible(ks); err != nil {
-		ks.Status.MarkVersionMigrationNotEligible(err.Error())
-		return nil
-	}
 	ks.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
@@ -155,6 +151,9 @@ func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest,
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	paths := instance.GetStatus().GetManifests()
+	if len(paths) == 0 {
+		return nil, nil
+	}
 	installed, err := common.FetchManifestFromArray(paths)
 	if err != nil {
 		return &installed, err

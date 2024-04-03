@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -50,6 +51,12 @@ const (
 	// ConfigMap carrying the label. This includes CA certs specified in cluster-wide proxy settings.
 	// Docs: https://docs.openshift.com/container-platform/4.3/networking/configuring-a-custom-pki.html#certificate-injection-using-operators_configuring-a-custom-pki
 	trustedCAKey = "config.openshift.io/inject-trusted-cabundle"
+
+	// cluster-network-operator enforces the following annotation to be there
+	// https://github.com/openshift/cluster-network-operator/pull/2111
+	// Otherwise, both operators will revert each other's changes.
+	trustedCAOwningAnnotationKey   = "openshift.io/owning-component"
+	trustedCAOwningAnnotationValue = "Serverless Operator"
 
 	// certVersionKey is an annotation key used by the Serverless operator to annotate the Knative Serving
 	// controller's PodTemplate to make it redeploy on certificate changes.
@@ -85,6 +92,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 	return &ReconcileKnativeServing{
 		client: client,
+		cache:  mgr.GetCache(),
 		scheme: mgr.GetScheme(),
 	}
 }
@@ -99,7 +107,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
-	err = c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeServing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeServing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
@@ -110,10 +118,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to owned ConfigMaps
-	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
-		OwnerType:    &operatorv1beta1.KnativeServing{},
-		IsController: true,
-	})
+	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestForOwner(
+		mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1beta1.KnativeServing{}, handler.OnlyControllerOwner()))
 	if err != nil {
 		return err
 	}
@@ -128,7 +134,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if !consoleutil.IsConsoleInstalled() {
-		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		enqueueRequests := handler.MapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 			if obj.GetName() == consoleutil.ConsoleClusterOperatorName {
 				log.Info("Serving, processing clusteroperator request", "name", obj.GetName())
 				co := &configv1.ClusterOperator{}
@@ -155,12 +161,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(&source.Kind{Type: &configv1.ClusterOperator{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
 			return err
 		}
 	}
 	for _, t := range gvkToResource {
-		err = c.Watch(&source.Kind{Type: t}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -178,6 +184,7 @@ type ReconcileKnativeServing struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	cache  cache.Cache
 	c      *controller.Controller
 }
 
@@ -202,7 +209,7 @@ func (r *ReconcileKnativeServing) Reconcile(_ context.Context, request reconcile
 
 	// If previously not set let's add a watch for ConsoleCLIDownload
 	if consoleutil.IsConsoleInstalled() && !cliDownloadWatchSet.Load() {
-		if err = (*r.c).Watch(&source.Kind{Type: &consolev1.ConsoleCLIDownload{}}, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
+		if err = (*r.c).Watch(source.Kind(r.cache, &consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
 			return reconcile.Result{}, err
 		}
 		cliDownloadWatchSet.Store(true)
@@ -271,7 +278,9 @@ func (r *ReconcileKnativeServing) ensureCustomCertsConfigMap(instance *operatorv
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}
-	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca", nil, map[string]string{trustedCAKey: "true"}, nil)
+	trustedCACM, err := r.reconcileConfigMap(instance, certs.Name+"-trusted-ca",
+		map[string]string{trustedCAOwningAnnotationKey: trustedCAOwningAnnotationValue},
+		map[string]string{trustedCAKey: "true"}, nil)
 	if err != nil {
 		return fmt.Errorf("error reconciling serviceCACM: %w", err)
 	}

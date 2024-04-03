@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/utils/pointer"
 	eventing "knative.dev/eventing/pkg/apis/eventing/v1"
 	"knative.dev/eventing/pkg/apis/feature"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -62,8 +63,6 @@ const (
 
 	// caCertsSecretKey is the name of the CA Cert in the secret
 	caCertsSecretKey = "ca.crt"
-
-	eventingNamespace = "knative-eventing"
 )
 
 type Reconciler struct {
@@ -170,6 +169,10 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 
 	logger.Debug("Got contract data from config map", zap.Any(base.ContractLogKey, ct))
 
+	if err := r.setTrustBundles(ct); err != nil {
+		return statusConditionManager.FailedToResolveConfig(err)
+	}
+
 	// Get resource configuration.
 	brokerResource, err := r.reconcilerBrokerResource(ctx, topic, broker, secret, topicConfig)
 	if err != nil {
@@ -263,7 +266,7 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 		addressableStatus.Addresses = []duckv1.Addressable{httpAddress}
 	}
 
-	proberAddressable := prober.NewAddressable{
+	proberAddressable := prober.ProberAddressable{
 		AddressStatus: &addressableStatus,
 		ResourceKey: types.NamespacedName{
 			Namespace: broker.GetNamespace(),
@@ -358,9 +361,10 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 	// 	- https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=181306446
 	// 	- https://cwiki.apache.org/confluence/display/KAFKA/KIP-286%3A+producer.send%28%29+should+not+block+on+metadata+update
 	address := receiver.HTTPAddress(ingressHost, broker)
-	proberAddressable := prober.NewAddressable{
+	proberAddressable := prober.ProberAddressable{
 		AddressStatus: &duckv1.AddressStatus{
-			Address: &address,
+			Address:   &address,
+			Addresses: []duckv1.Addressable{address},
 		},
 		ResourceKey: types.NamespacedName{
 			Namespace: broker.GetNamespace(),
@@ -455,7 +459,7 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 func (r *Reconciler) deleteResourceFromContractConfigMap(ctx context.Context, logger *zap.Logger, broker *eventing.Broker) error {
 	// Get contract config map.
 	contractConfigMap, err := r.GetOrCreateDataPlaneConfigMap(ctx)
-	// Handles https://github.com/knative-sandbox/eventing-kafka-broker/issues/2893
+	// Handles https://github.com/knative-extensions/eventing-kafka-broker/issues/2893
 	// When the system namespace is deleted while we're running there is no point in
 	// trying to delete the resource from the ConfigMap since the entire ConfigMap
 	// is gone.
@@ -618,9 +622,11 @@ func (r *Reconciler) reconcilerBrokerResource(ctx context.Context, topic string,
 		},
 		BootstrapServers: config.GetBootstrapServers(),
 		Reference: &contract.Reference{
-			Uuid:      string(broker.GetUID()),
-			Namespace: broker.GetNamespace(),
-			Name:      broker.GetName(),
+			Uuid:         string(broker.GetUID()),
+			Namespace:    broker.GetNamespace(),
+			Name:         broker.GetName(),
+			Kind:         "Broker",
+			GroupVersion: eventing.SchemeGroupVersion.String(),
 		},
 	}
 
@@ -697,14 +703,23 @@ func finalizerSecret(object metav1.Object) string {
 	return fmt.Sprintf("%s/%s", "kafka.eventing", object.GetUID())
 }
 
-func (r *Reconciler) getCaCerts() (string, error) {
-	secret, err := r.SecretLister.Secrets(eventingNamespace).Get(brokerIngressTLSSecretName)
+func (r *Reconciler) getCaCerts() (*string, error) {
+	secret, err := r.SecretLister.Secrets(r.SystemNamespace).Get(brokerIngressTLSSecretName)
 	if err != nil {
-		return "", fmt.Errorf("failed to get CA certs from %s/%s: %w", r.SystemNamespace, brokerIngressTLSSecretName, err)
+		return nil, fmt.Errorf("failed to get CA certs from %s/%s: %w", r.SystemNamespace, brokerIngressTLSSecretName, err)
 	}
 	caCerts, ok := secret.Data[caCertsSecretKey]
 	if !ok {
-		return "", fmt.Errorf("failed to get CA certs from %s/%s: missing %s key", r.SystemNamespace, brokerIngressTLSSecretName, caCertsSecretKey)
+		return nil, nil
 	}
-	return string(caCerts), nil
+	return pointer.String(string(caCerts)), nil
+}
+
+func (r *Reconciler) setTrustBundles(ct *contract.Contract) error {
+	tb, err := coreconfig.TrustBundles(r.ConfigMapLister.ConfigMaps(r.SystemNamespace))
+	if err != nil {
+		return fmt.Errorf("failed to get trust bundles: %w", err)
+	}
+	ct.TrustBundles = tb
+	return nil
 }

@@ -74,7 +74,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if !consoleutil.IsConsoleInstalled() {
-		enqueueRequests := handler.MapFunc(func(obj client.Object) []reconcile.Request {
+		enqueueRequests := handler.MapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 			if obj.GetName() == consoleutil.ConsoleClusterOperatorName {
 				log.Info("Eventing, processing crd request", "name", obj.GetName())
 				co := &configv1.ClusterOperator{}
@@ -101,14 +101,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(&source.Kind{Type: &configv1.ClusterOperator{}}, handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
 			return err
 		}
 	}
 
 	// Watch for changes to primary resource KnativeEventing
 	requiredNs := os.Getenv(requiredNsEnvName)
-	return c.Watch(&source.Kind{Type: &operatorv1beta1.KnativeEventing{}}, &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	return c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
@@ -200,7 +200,7 @@ func (r *ReconcileKnativeEventing) installDashboards(instance *operatorv1beta1.K
 // general clean-up, mostly resources in different namespaces from eventingv1alpha1.KnativeEventing.
 func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEventing) error {
 	defer monitoring.KnativeUp.DeleteLabelValues("eventing_status")
-	finalizers := sets.NewString(instance.GetFinalizers()...)
+	finalizers := sets.New[string](instance.GetFinalizers()...)
 
 	if !finalizers.Has(finalizerName) {
 		log.Info("Finalizer has already been removed, nothing to do")
@@ -220,9 +220,9 @@ func (r *ReconcileKnativeEventing) delete(instance *operatorv1beta1.KnativeEvent
 	}
 
 	// Update the refetched finalizer list.
-	finalizers = sets.NewString(refetched.GetFinalizers()...)
+	finalizers = sets.New[string](refetched.GetFinalizers()...)
 	finalizers.Delete(finalizerName)
-	refetched.SetFinalizers(finalizers.List())
+	refetched.SetFinalizers(sets.List(finalizers))
 
 	if err := r.client.Update(context.TODO(), refetched); err != nil {
 		return fmt.Errorf("failed to update KnativeEventing with removed finalizer: %w", err)

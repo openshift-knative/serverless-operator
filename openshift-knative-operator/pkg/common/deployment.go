@@ -78,7 +78,7 @@ func transformDeployment(name string, f func(*appsv1.Deployment) error) mf.Trans
 	}
 }
 
-func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, configMaps sets.String) mf.Transformer {
+func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, configMaps sets.Set[string]) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		namespace := u.GetNamespace()
 		var podSpec *corev1.PodTemplateSpec
@@ -132,7 +132,7 @@ func ConfigMapVolumeChecksumTransform(ctx context.Context, c client.Client, conf
 
 			}
 		}
-		for _, name := range configMaps.List() {
+		for _, name := range sets.List(configMaps) {
 			cm := &corev1.ConfigMap{}
 			err := c.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, cm)
 			if apierrors.IsNotFound(err) {
