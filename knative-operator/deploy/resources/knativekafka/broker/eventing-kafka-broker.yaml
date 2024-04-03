@@ -211,6 +211,12 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts/token
+    verbs:
+      - create
 ---
 ---
 
@@ -516,6 +522,9 @@ spec:
             - mountPath: /etc/tracing
               name: config-tracing
               readOnly: true
+            - mountPath: /etc/features
+              name: config-features
+              readOnly: true
             - mountPath: /etc/receiver-tls-secret
               name: broker-receiver-tls-secret
               readOnly: true
@@ -560,6 +569,8 @@ spec:
               value: "false"
             - name: CONFIG_TRACING_PATH
               value: "/etc/tracing"
+            - name: CONFIG_FEATURES_PATH
+              value: "/etc/features"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
             - name: HTTP2_DISABLE
               value: "true"
@@ -615,6 +626,9 @@ spec:
         - name: config-tracing
           configMap:
             name: config-tracing
+        - name: config-features
+          configMap:
+            name: config-features
         - name: broker-receiver-tls-secret
           secret:
             secretName: kafka-broker-ingress-server-tls
