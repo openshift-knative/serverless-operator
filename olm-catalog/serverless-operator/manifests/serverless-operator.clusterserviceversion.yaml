@@ -866,8 +866,6 @@ spec:
                         value: "/var/run/ko/monitoring/rbac-proxy.yaml"
                       - name: WEBHOOK_NAME
                         value: "knative-operator-service"
-                      - name: USE_OLM_TLS
-                        value: "true"
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
