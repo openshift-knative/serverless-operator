@@ -62,7 +62,7 @@ func WaitForUnstructuredState(ctx *Context, schema schema.GroupVersionResource, 
 		lastState *unstructured.Unstructured
 		err       error
 	)
-	waitErr := wait.PollImmediate(Interval, 10*time.Minute, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, 10*time.Minute, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.Dynamic.Resource(schema).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})

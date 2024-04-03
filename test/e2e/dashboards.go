@@ -32,7 +32,7 @@ func VerifyDashboards(t *testing.T, caCtx *test.Context, dashboards []string) {
 
 		for _, d := range dashboards {
 			t.Run(d, func(t *testing.T) {
-				err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
+				err := wait.PollUntilContextTimeout(context.Background(), time.Second, time.Minute, true, func(_ context.Context) (bool, error) {
 					_, err := caCtx.Clients.Kube.CoreV1().ConfigMaps(ns).Get(ctx, d, metav1.GetOptions{})
 					if err != nil && !apierrors.IsNotFound(err) {
 						return false, err

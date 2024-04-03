@@ -50,7 +50,7 @@ func DeleteKnativeServing(ctx *test.Context, name, namespace string) error {
 
 	// Wait until the KnativeServing got removed.
 	_, err := WaitForKnativeServingState(ctx, name, namespace,
-		func(s *operatorv1beta1.KnativeServing, err error) (bool, error) {
+		func(_ *operatorv1beta1.KnativeServing, err error) (bool, error) {
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -64,7 +64,7 @@ func WaitForKnativeServingState(ctx *test.Context, name, namespace string, inSta
 		lastState *operatorv1beta1.KnativeServing
 		err       error
 	)
-	waitErr := wait.PollImmediate(test.Interval, test.Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), test.Interval, test.Timeout, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.Operator.KnativeServings(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})

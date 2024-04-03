@@ -3,9 +3,10 @@ package features
 import (
 	"context"
 	"fmt"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"math/rand"
 	"time"
+
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	parallelresources "knative.dev/eventing/test/rekt/resources/parallel"
 

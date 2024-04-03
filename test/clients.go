@@ -214,7 +214,7 @@ func (c *Context) DeleteOperatorPods(ctx context.Context) error {
 }
 
 func (c *Context) WaitForOperatorPodsReady(ctx context.Context) error {
-	return wait.PollImmediate(Interval, Timeout, func() (done bool, err error) {
+	return wait.PollUntilContextTimeout(ctx, Interval, Timeout, true, func(_ context.Context) (done bool, err error) {
 		pods, err := c.Clients.Kube.
 			CoreV1().
 			Pods(OperatorsNamespace).

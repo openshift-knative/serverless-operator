@@ -4,7 +4,7 @@ import (
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/configmap"
 	brokerconfigmap "knative.dev/eventing-kafka-broker/test/rekt/resources/configmap/broker"
@@ -60,7 +60,7 @@ func BrokerSmokeTest(brokerClass string) *feature.Feature {
 	f.Setup("install trigger", trigger.Install(
 		triggerName,
 		brokerName,
-		trigger.WithRetry(3, &backoffPolicy, pointer.String("PT1S")),
+		trigger.WithRetry(3, &backoffPolicy, ptr.To("PT1S")),
 		trigger.WithSubscriber(service.AsKReference(sink), ""),
 	))
 	f.Setup("trigger ready", trigger.IsReady(triggerName))

@@ -50,14 +50,14 @@ func VerifyPingSourceToKsvcBlocked(sinkCtx context.Context, sink string, since t
 	f.Requirement("pingsource goes ready", pingsource.IsReady(source))
 
 	f.Assert("ping source does not deliver event to ksvc across tenants",
-		func(ctx context.Context, t feature.T) {
+		func(_ context.Context, t feature.T) {
 			assert.OnStore(sink).
 				MatchEvent(test.HasType("dev.knative.sources.ping")).
 				Not()(sinkCtx, t)
 		},
 	)
 
-	f.Assert("request to activator is forbidden", func(ctx context.Context, t feature.T) {
+	f.Assert("request to activator is forbidden", func(_ context.Context, t feature.T) {
 		eventingfeatures.VerifyEncryptedTrafficToActivator(since, true /*trafficBlocked*/)(sinkCtx, t)
 	})
 

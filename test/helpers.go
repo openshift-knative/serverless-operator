@@ -45,7 +45,7 @@ func IsInternalEncryption(ctx *Context) bool {
 
 func LinkGlobalPullSecretToNamespace(ctx *Context, ns string) error {
 	// Wait for the default ServiceAccount to exist.
-	if err := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {
+	if err := wait.PollUntilContextTimeout(context.Background(), 1*time.Second, 2*time.Minute, true, func(_ context.Context) (bool, error) {
 		sas := ctx.Clients.Kube.CoreV1().ServiceAccounts(ns)
 		if _, err := sas.Get(context.Background(), "default", metav1.GetOptions{}); err == nil {
 			return true, nil
@@ -67,7 +67,7 @@ func DeleteNamespace(ctx *Context, name string) error {
 	if err := ctx.Clients.Kube.CoreV1().Namespaces().Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
-	if err := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {
+	if err := wait.PollUntilContextTimeout(context.Background(), 1*time.Second, 2*time.Minute, true, func(_ context.Context) (bool, error) {
 		if _, err := ctx.Clients.Kube.CoreV1().Namespaces().Get(context.Background(),
 			name, metav1.GetOptions{}); err != nil {
 			if errors.IsNotFound(err) {

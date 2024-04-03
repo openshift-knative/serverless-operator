@@ -184,7 +184,7 @@ func TestKourierReconcile(t *testing.T) {
 		},
 	}}
 
-	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, cmw configmap.Watcher) controller.Reconciler {
+	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, _ configmap.Watcher) controller.Reconciler {
 		r := &Reconciler{
 			routeClient: fakerouteclient.Get(ctx).RouteV1(),
 			routeLister: listers.GetRouteLister(),
@@ -347,7 +347,7 @@ func TestIstioReconcile(t *testing.T) {
 		},
 	}}
 
-	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, cmw configmap.Watcher) controller.Reconciler {
+	table.Test(t, sotesting.MakeFactory(func(ctx context.Context, listers *sotesting.Listers, _ configmap.Watcher) controller.Reconciler {
 		r := &Reconciler{
 			routeClient: fakerouteclient.Get(ctx).RouteV1(),
 			routeLister: listers.GetRouteLister(),

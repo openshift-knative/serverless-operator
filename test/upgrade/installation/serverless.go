@@ -2,7 +2,6 @@ package installation
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -28,7 +27,7 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 
 	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source, timeout)
 	if err != nil {
-		if !errors.Is(err, wait.ErrWaitTimeout) {
+		if !wait.Interrupted(err) {
 			return err
 		}
 		if source != test.ServerlessOperatorPackage {

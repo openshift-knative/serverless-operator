@@ -8,7 +8,7 @@ import (
 	cetest "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/configmap"
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1" // nolint
@@ -79,14 +79,14 @@ func VerifyContainerSourceToChannelBlocked(channelCtx context.Context, channel, 
 	f.Setup("containersource goes ready", containersource.IsReady(cs))
 
 	f.Assert("container source does not deliver event to channel across tenants",
-		func(ctx context.Context, t feature.T) {
+		func(_ context.Context, t feature.T) {
 			assert.OnStore(sink).
 				MatchEvent(cetest.HasType("dev.knative.eventing.samples.heartbeat")).
 				Not()(channelCtx, t)
 		},
 	)
 
-	f.Assert("request to kafka channel is forbidden", func(ctx context.Context, t feature.T) {
+	f.Assert("request to kafka channel is forbidden", func(_ context.Context, t feature.T) {
 		kafkafeatures.VerifyEncryptedTrafficToKafkaChannel(since, true /*trafficBlocked*/)(channelCtx, t)
 	})
 
@@ -236,7 +236,7 @@ func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	f.Requirement("install trigger", trigger.Install(
 		triggerName,
 		brokerName,
-		trigger.WithRetry(3, &backoffPolicy, pointer.String("PT1S")),
+		trigger.WithRetry(3, &backoffPolicy, ptr.To("PT1S")),
 		trigger.WithSubscriber(service.AsKReference(sink), ""),
 	))
 	f.Requirement("trigger ready", trigger.IsReady(triggerName))
@@ -272,14 +272,14 @@ func VerifySourceToKafkaBrokerBlocked(sinkCtx context.Context, brokerName, sink 
 	)
 
 	f.Assert("source does not deliver event to kafka broker across tenants",
-		func(ctx context.Context, t feature.T) {
+		func(_ context.Context, t feature.T) {
 			assert.OnStore(sink).
 				MatchEvent(eventMatchers...).
 				Not()(sinkCtx, t)
 		},
 	)
 
-	f.Assert("request to kafka broker is forbidden", func(ctx context.Context, t feature.T) {
+	f.Assert("request to kafka broker is forbidden", func(_ context.Context, t feature.T) {
 		kafkafeatures.VerifyEncryptedTrafficToKafkaBroker(false /*namespaced*/, since, true /*trafficBlocked*/)(sinkCtx, t)
 	})
 

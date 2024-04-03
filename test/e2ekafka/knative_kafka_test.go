@@ -189,7 +189,7 @@ func TestKnativeKafka(t *testing.T) {
 		}
 	})
 
-	t.Run("Verify job succeeded", func(t *testing.T) {
+	t.Run("Verify job succeeded", func(_ *testing.T) {
 		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    knativeKafkaNamespace,
 			FailOnNoJobs: true,

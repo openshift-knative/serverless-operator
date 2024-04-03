@@ -30,7 +30,7 @@ func WithWorkloadReady(ctx *Context, name string, namespace string) error {
 
 func withDeploymentReady(ctx *Context, name string, namespace string) error {
 	var deployment *appsv1.Deployment
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		var err error
 		deployment, err = ctx.Clients.Kube.AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
@@ -46,7 +46,7 @@ func withDeploymentReady(ctx *Context, name string, namespace string) error {
 
 func withStatefulSetReady(ctx *Context, name string, namespace string) error {
 	var ss *appsv1.StatefulSet
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		var err error
 		ss, err = ctx.Clients.Kube.AppsV1().StatefulSets(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {

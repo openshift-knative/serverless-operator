@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/apis"
@@ -26,8 +26,6 @@ import (
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
 	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
-
-	"knative.dev/pkg/ptr"
 )
 
 const requiredNs = "knative-eventing"
@@ -62,13 +60,13 @@ func TestReconcile(t *testing.T) {
 			Spec: operatorv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					HighAvailability: &base.HighAvailability{
-						Replicas: ptr.Int32(3),
+						Replicas: ptr.To(int32(3)),
 					},
 				},
 			},
 		},
 		expected: ke(func(ke *operatorv1beta1.KnativeEventing) {
-			ke.Spec.HighAvailability.Replicas = ptr.Int32(3)
+			ke.Spec.HighAvailability.Replicas = ptr.To(int32(3))
 		}, istioDisabled),
 	}, {
 		name: "With inclusion sinkbinding setting",
@@ -428,7 +426,7 @@ func ke(mods ...func(*operatorv1beta1.KnativeEventing)) *operatorv1beta1.Knative
 			SinkBindingSelectionMode: "inclusion",
 			CommonSpec: base.CommonSpec{
 				HighAvailability: &base.HighAvailability{
-					Replicas: ptr.Int32(2),
+					Replicas: ptr.To(int32(2)),
 				},
 				Registry: base.Registry{
 					Default: "bar2",
@@ -459,13 +457,13 @@ func ke(mods ...func(*operatorv1beta1.KnativeEventing)) *operatorv1beta1.Knative
 func istioDisabled(ke *operatorv1beta1.KnativeEventing) {
 	ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
 		Name:     "eventing-istio-controller",
-		Replicas: pointer.Int32(0),
+		Replicas: ptr.To(int32(0)),
 	})
 }
 
 func istioEnabled(ke *operatorv1beta1.KnativeEventing) {
 	ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
 		Name:     "eventing-istio-controller",
-		Replicas: pointer.Int32(1),
+		Replicas: ptr.To(int32(1)),
 	})
 }

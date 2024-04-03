@@ -33,7 +33,7 @@ func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string)
 func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.ClusterServiceVersion, err error) (bool, error)) (*operatorsv1alpha1.ClusterServiceVersion, error) {
 	var lastState *operatorsv1alpha1.ClusterServiceVersion
 	var err error
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})

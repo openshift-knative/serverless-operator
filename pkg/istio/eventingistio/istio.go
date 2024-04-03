@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
@@ -146,14 +146,14 @@ func ScaleIstioController(requiredNs string, ke *operatorv1beta1.KnativeEventing
 		if w.Name == istioControllerName.Name {
 			found = true
 			if w.Replicas == nil {
-				w.Replicas = pointer.Int32(replicas)
+				w.Replicas = ptr.To(replicas)
 			}
 		}
 	}
 	if !found {
 		ke.Spec.Workloads = append(ke.Spec.Workloads, base.WorkloadOverride{
 			Name:     istioControllerName.Name,
-			Replicas: pointer.Int32(replicas),
+			Replicas: ptr.To(replicas),
 		})
 	}
 }

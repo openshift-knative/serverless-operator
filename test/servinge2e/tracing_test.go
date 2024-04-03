@@ -72,7 +72,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	var err error
 	// Verify all the traces of our service also contain spans from the activator.
 	// Tracing is asynchronous, retry on failures until timeout is reached.
-	if waitErr := wait.PollImmediate(time.Second, 30*time.Second, func() (bool, error) {
+	if waitErr := wait.PollUntilContextTimeout(context.Background(), time.Second, 30*time.Second, true, func(_ context.Context) (bool, error) {
 		err = verifyServicesArePresentInAllJaegerTraces(ctx, "/", name, serviceNamePrefixes...)
 		return err == nil, nil
 	}); waitErr != nil {
