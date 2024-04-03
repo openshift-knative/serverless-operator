@@ -319,9 +319,6 @@ spec:
                       description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
                       type: object
                       properties:
-                        CACerts:
-                          description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
-                          type: string
                         ref:
                           description: Ref points to an Addressable.
                           type: object
@@ -349,6 +346,12 @@ spec:
                               type: string
                         uri:
                           description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                        CACerts:
+                          description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                          type: string
+                        audience:
+                          description: Audience is the OIDC audience for the deadLetterSink.
                           type: string
                     retry:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
@@ -503,9 +506,6 @@ spec:
                   description: Sink is a reference to an object that will resolve to a uri to use as the sink.
                   type: object
                   properties:
-                    CACerts:
-                      description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
-                      type: string
                     ref:
                       description: Ref points to an Addressable.
                       type: object
@@ -533,6 +533,12 @@ spec:
                           type: string
                     uri:
                       description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                    CACerts:
+                      description: CACerts are Certification Authority (CA) certificates in PEM format according to https://www.rfc-editor.org/rfc/rfc7468. If set, these CAs are appended to the set of CAs provided by the Addressable target, if any.
+                      type: string
+                    audience:
+                      description: Audience is the OIDC audience for the sink.
                       type: string
                 topics:
                   description: Topic topics to consume messages from
@@ -624,6 +630,16 @@ spec:
                 sinkUri:
                   description: SinkURI is the current active sink URI that has been configured for the Source.
                   type: string
+                sinkAudience:
+                  description: SinkAudience is the OIDC audience of the sink.
+                  type: string
+                auth:
+                  description: Auth provides the relevant information for OIDC authentication.
+                  type: object
+                  properties:
+                    serviceAccountName:
+                      description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                      type: string
       subresources:
         status: {}
         scale:
@@ -872,6 +888,9 @@ spec:
                           type: string
                         CACerts:
                           type: string
+                        audience:
+                          description: Audience is the OIDC audience for the deadLetterSink.
+                          type: string
                     retry:
                       description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
@@ -918,6 +937,9 @@ spec:
                                 type: string
                               CACerts:
                                 type: string
+                              audience:
+                                description: Audience is the OIDC audience for the deadLetterSink.
+                                type: string
                           retry:
                             description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                             type: integer
@@ -933,15 +955,28 @@ spec:
                       replyCACerts:
                         description: replyCACerts is the CA certs to trust for the reply.
                         type: string
+                      replyAudience:
+                        description: ReplyAudience is the OIDC audience for the replyUri.
+                        type: string
                       subscriberUri:
                         description: SubscriberURI is the endpoint for the subscriber
                         type: string
                       subscriberCACerts:
                         description: SubscriberCACerts is the CA certs to trust for the subscriber.
                         type: string
+                      subscriberAudience:
+                        description: SubscriberAudience is the OIDC audience for the subscriberUri.
+                        type: string
                       uid:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
+                      auth:
+                        description: Auth provides the relevant information for OIDC authentication.
+                        type: object
+                        properties:
+                          serviceAccountName:
+                            description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                            type: string
             status:
               description: Status represents the current state of the KafkaChannel. This data may be out of date.
               type: object
@@ -1025,6 +1060,9 @@ spec:
                   type: string
                 deadLetterSinkCACerts:
                   type: string
+                deadLetterSinkAudience:
+                  description: OIDC audience of the dead letter sink.
+                  type: string
                 observedGeneration:
                   description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                   type: integer
@@ -1048,6 +1086,13 @@ spec:
                       uid:
                         description: UID is used to understand the origin of the subscriber.
                         type: string
+                      auth:
+                        description: Auth provides the relevant information for OIDC authentication.
+                        type: object
+                        properties:
+                          serviceAccountName:
+                            description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
+                            type: string
       additionalPrinterColumns:
         - name: Ready
           type: string
@@ -1696,6 +1741,13 @@ rules:
       - update
       - create
       - delete
+  # To grant NamespacedBroker permissions to create OIDC tokens
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts/token
+    verbs:
+      - create
 
   # Scheduler permissions
   - apiGroups:
