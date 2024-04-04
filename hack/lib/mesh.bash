@@ -3,6 +3,7 @@
 resources_dir="$(dirname "${BASH_SOURCE[0]}")/mesh_resources"
   
 function install_mesh {
+  ensure_catalog_pods_running
   deploy_servicemesh_operators
   if [[ ${FULL_MESH:-} == "true" ]]; then
     deploy_servicemeshcontrolplane

@@ -10,26 +10,9 @@ function ensure_catalogsource_installed {
 }
 
 function install_catalogsource {
-  # Ensure the catalog source pods are running correctly
-  # to avoid https://issues.redhat.com/browse/OCPBUGS-31391.
-  if oc -n "$OLM_NAMESPACE" get pods -l olm.catalogSource=certified-operators | grep CrashLoopBackOff &>/dev/null; then
-    oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=certified-operators
-    timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=certified-operators | grep Running | wc -l) != 1 ]]"
-  fi
-  if oc -n "$OLM_NAMESPACE" get pods -l olm.catalogSource=community-operators | grep CrashLoopBackOff &>/dev/null; then
-    oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=community-operators
-    timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=community-operators | grep Running | wc -l) != 1 ]]"
-  fi
-  if oc -n "$OLM_NAMESPACE" get pods -l olm.catalogSource=redhat-operators | grep CrashLoopBackOff &>/dev/null; then
-    oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=redhat-operators
-    timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=redhat-operators | grep Running | wc -l) != 1 ]]"
-  fi
-  if oc -n "$OLM_NAMESPACE" get pods -l olm.catalogSource=redhat-marketplace | grep CrashLoopBackOff &>/dev/null; then
-    oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=redhat-marketplace
-    timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=redhat-marketplace | grep Running | wc -l) != 1 ]]"
-  fi
-
   logger.info "Installing CatalogSource"
+
+  ensure_catalog_pods_running
 
   local rootdir csv index_image
 

@@ -3,6 +3,7 @@
 certmanager_resources_dir="$(dirname "${BASH_SOURCE[0]}")/certmanager_resources"
   
 function install_certmanager {
+  ensure_catalog_pods_running
   deploy_certmanager_operator
 }
 
