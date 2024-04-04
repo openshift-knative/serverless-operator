@@ -2,6 +2,9 @@
 
 function install_strimzi_operator {
   logger.info "Installing Strimzi Kafka operator"
+
+  ensure_catalog_pods_running
+
   if ! oc get ns kafka &>/dev/null; then
     oc create namespace kafka
   fi

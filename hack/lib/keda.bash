@@ -47,6 +47,7 @@ function delete_keda_controller {
 
 function install_keda {
   logger.info "KEDA install"
+  ensure_catalog_pods_running
   install_custom_metrics_autoscaler_operator
   install_keda_controller
 }

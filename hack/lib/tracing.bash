@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 function install_tracing {
+  ensure_catalog_pods_running
+
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
     if [[ "$ZIPKIN_DEDICATED_NODE" == "true" ]]; then
       dedicate_node_to_zipkin

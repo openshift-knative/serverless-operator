@@ -3,6 +3,7 @@
 
 function install_cluster_logging {
   logger.info "Install Cluster Logging"
+  ensure_catalog_pods_running
   install_namespace_rbac
   install_elasticsearch_operator
   install_clusterlogging_operator
