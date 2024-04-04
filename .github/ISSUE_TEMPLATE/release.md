@@ -51,8 +51,3 @@ Video from pierdipi showing the release process
 - [ ] Run `make generated-files`
 - [ ] Send a PR with the changes
 - [ ] Pray that it works 😸  Otherwise try bump in steps and/or find a dependency version mix (with `go mod replace`) that works
-
-## Post-release
-- [ ] Set CI to the new S-O branch in Eventing, [like here](https://github.com/openshift-knative/eventing/pull/3)
-- [ ] Set CI to the new S-O branch in Eventing Kafka Broker, [like here](https://github.com/openshift-knative/eventing-kafka-broker/pull/521/files)
-
