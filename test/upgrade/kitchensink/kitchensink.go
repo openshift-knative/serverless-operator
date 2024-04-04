@@ -60,7 +60,7 @@ func (fe *FeatureWithEnvironment) DeleteNamespace() error {
 	if err := kube.CoreV1().Namespaces().Delete(context.Background(), fe.Environment.Namespace(), metav1.DeleteOptions{}); err != nil {
 		return err
 	}
-	waitErr := wait.PollImmediate(test.Interval, 2*test.Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), test.Interval, 2*test.Timeout, true, func(_ context.Context) (bool, error) {
 		if _, err := kube.CoreV1().Namespaces().Get(context.Background(),
 			fe.Environment.Namespace(), metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {

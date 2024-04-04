@@ -161,7 +161,7 @@ func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilte
 		err                    error
 	)
 	interval, timeout := k8s.PollTimings(ctx, nil)
-	if pollErr := wait.PollImmediate(interval, timeout, func() (bool, error) {
+	if pollErr := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(_ context.Context) (bool, error) {
 		encrypted, unencrypted, err = getMatchingRequestsToHost(ctx, logFilter)
 		if err != nil {
 			return false, err

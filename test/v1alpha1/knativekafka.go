@@ -82,7 +82,7 @@ func DeleteKnativeKafka(ctx *test.Context, name, namespace string) error {
 
 	// Wait until the KnativeKafka got removed.
 	_, err := WaitForKnativeKafkaState(ctx, name, namespace,
-		func(s *kafkav1alpha1.KnativeKafka, err error) (bool, error) {
+		func(_ *kafkav1alpha1.KnativeKafka, err error) (bool, error) {
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -96,7 +96,7 @@ func WaitForKnativeKafkaState(ctx *test.Context, name, namespace string, inState
 		lastState *kafkav1alpha1.KnativeKafka
 		err       error
 	)
-	waitErr := wait.PollImmediate(test.Interval, 3*test.Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), test.Interval, 3*test.Timeout, true, func(_ context.Context) (bool, error) {
 		lastState = &kafkav1alpha1.KnativeKafka{}
 		var u *unstructured.Unstructured
 		u, err = ctx.Clients.Dynamic.Resource(kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")).Namespace(namespace).Get(context.Background(), name, metav1.GetOptions{})

@@ -30,7 +30,7 @@ func InjectCommonEnvironment(_ ...corev1.EnvVar) mf.Transformer {
 				return fmt.Errorf("failed to transform Unstructred into StatefulSet: %w", err)
 			}
 			podSpec = &ss.Spec.Template.Spec
-			convert = func(spec *corev1.PodSpec) error {
+			convert = func(_ *corev1.PodSpec) error {
 				ss.Spec.Template.Spec = *podSpec
 				return scheme.Scheme.Convert(ss, u, nil)
 			}
@@ -42,7 +42,7 @@ func InjectCommonEnvironment(_ ...corev1.EnvVar) mf.Transformer {
 				return fmt.Errorf("failed to transform Unstructred into Deployment: %w", err)
 			}
 			podSpec = &dep.Spec.Template.Spec
-			convert = func(spec *corev1.PodSpec) error {
+			convert = func(_ *corev1.PodSpec) error {
 				dep.Spec.Template.Spec = *podSpec
 				return scheme.Scheme.Convert(dep, u, nil)
 			}

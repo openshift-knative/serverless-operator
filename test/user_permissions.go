@@ -60,7 +60,7 @@ func RunUserPermissionTests(t *testing.T, objects map[schema.GroupVersionResourc
 				if allowed.Delete {
 					// If we've been able to delete the object we can assume we're able to get it as well.
 					// Some objects take a while to be deleted, so we retry a few times.
-					if err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+					if err := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 						_, err = client.Get(context.Background(), obj.GetName(), metav1.GetOptions{})
 						if apierrs.IsNotFound(err) {
 							return true, nil

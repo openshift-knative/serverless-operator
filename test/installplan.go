@@ -15,7 +15,7 @@ import (
 
 func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource string, timeout time.Duration) (*operatorsv1alpha1.InstallPlan, error) {
 	var plan *operatorsv1alpha1.InstallPlan
-	if waitErr := wait.PollImmediate(Interval, timeout, func() (bool, error) {
+	if waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, timeout, true, func(_ context.Context) (bool, error) {
 		installPlans, err := ctx.Clients.OLM.OperatorsV1alpha1().InstallPlans(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			return false, err

@@ -643,11 +643,11 @@ func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
 // newSpoofClientWithTLS returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
 func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
 	transport := &http.Transport{
-		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
 			// We ignore the request address, force the given <IP>:80
 			return net.Dial("tcp", ip+":80")
 		},
-		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		DialTLSContext: func(_ context.Context, _, _ string) (net.Conn, error) {
 			// We ignore the request address, force the given <IP>:443
 			conn, err := net.Dial("tcp", ip+":443")
 			if err != nil {

@@ -116,7 +116,7 @@ func WaitForServiceState(ctx *Context, name, namespace string, inState func(s *s
 		lastState *servingv1.Service
 		err       error
 	)
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.Serving.ServingV1().Services(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
@@ -149,7 +149,7 @@ func WaitForDomainMappingState(ctx *Context, name, namespace string, inState fun
 		lastState *servingv1beta1.DomainMapping
 		err       error
 	)
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.Serving.ServingV1beta1().DomainMappings(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
@@ -222,7 +222,7 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 		lastState *routev1.Route
 		err       error
 	)
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.Route.Routes(namespace).Get(context.Background(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
@@ -236,7 +236,7 @@ func WaitForRouteState(ctx *Context, name, namespace string, inState func(s *rou
 func int32Ptr(i int32) *int32 { return &i }
 
 func WaitForServerlessOperatorsDeleted(ctx *Context) error {
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(_ context.Context) (bool, error) {
 		existingDeployments, err := ctx.Clients.Kube.AppsV1().Deployments(OperatorsNamespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			return true, err

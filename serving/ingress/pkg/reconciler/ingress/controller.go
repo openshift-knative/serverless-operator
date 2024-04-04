@@ -37,7 +37,7 @@ func NewIstioController(
 		routeClient: routeclient.Get(ctx).RouteV1(),
 	}
 
-	impl := ingressreconciler.NewImpl(ctx, c, istioIngressClassName, func(impl *controller.Impl) controller.Options {
+	impl := ingressreconciler.NewImpl(ctx, c, istioIngressClassName, func(_ *controller.Impl) controller.Options {
 		return controller.Options{
 			SkipStatusUpdates: true,
 			FinalizerName:     "ocp-ingress",
@@ -77,7 +77,7 @@ func NewKourierController(
 		routeClient: routeclient.Get(ctx).RouteV1(),
 	}
 
-	impl := ingressreconciler.NewImpl(ctx, c, kourierIngressClassName, func(impl *controller.Impl) controller.Options {
+	impl := ingressreconciler.NewImpl(ctx, c, kourierIngressClassName, func(_ *controller.Impl) controller.Options {
 		return controller.Options{
 			SkipStatusUpdates: true,
 			FinalizerName:     "ocp-ingress",

@@ -2,6 +2,7 @@ package features
 
 import (
 	"context"
+
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/reconciler-test/pkg/resources/service"
 
@@ -175,7 +176,7 @@ var inMemoryChannelSequence = genericComponent{
 	label:      "Sequence(InMemoryChannel)",
 	kind:       "Sequence",
 	gvr:        sequenceresources.GVR(),
-	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			// We'll populate the sequence with two bogus services, just so it's not empty
 			step1 := name + "-s1"
@@ -197,7 +198,7 @@ var kafkaChannelSequence = genericComponent{
 	label:      "Sequence(KafkaChannel)",
 	kind:       "Sequence",
 	gvr:        sequenceresources.GVR(),
-	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			step1 := name + "-s1"
 			step2 := name + "-s2"
@@ -218,7 +219,7 @@ var inMemoryChannelParallel = genericComponent{
 	label:      "Parallel(InMemoryChannel)",
 	kind:       "Parallel",
 	gvr:        parallelresources.GVR(),
-	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			branch1 := name + "-b1"
 			branch2 := name + "-b2"
@@ -245,7 +246,7 @@ var kafkaChannelParallel = genericComponent{
 	label:      "Parallel(KafkaChannel)",
 	kind:       "Parallel",
 	gvr:        parallelresources.GVR(),
-	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			branch1 := name + "-b1"
 			branch2 := name + "-b2"
@@ -272,7 +273,7 @@ var kafkaSink = genericComponent{
 	label:      "KafkaSink",
 	kind:       "KafkaSink",
 	gvr:        kafkasink.GVR(),
-	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			topic := name + "-t"
 			kafkatopic.Install(topic)(ctx, t)

@@ -85,7 +85,7 @@ func UpgradeOpenShift(ctx *test.Context) error {
 func WaitForClusterVersionState(ctx *test.Context, name string, inState func(s *configv1.ClusterVersion) bool) (*configv1.ClusterVersion, error) {
 	var lastState *configv1.ClusterVersion
 	var err error
-	waitErr := wait.PollImmediate(30*time.Second, 3*time.Hour, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), 30*time.Second, 3*time.Hour, true, func(_ context.Context) (bool, error) {
 		lastState, err = ctx.Clients.ConfigClient.ClusterVersions().Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			ctx.T.Log("Ignoring error while waiting for ClusterVersion state:", err)
@@ -140,7 +140,7 @@ func UpgradeEUS(ctx *test.Context) error {
 
 	pauseMachineConfigPool(ctx, false)
 
-	if err := wait.PollImmediate(30*time.Second, 3*time.Hour, func() (bool, error) {
+	if err := wait.PollUntilContextTimeout(context.Background(), 30*time.Second, 3*time.Hour, true, func(_ context.Context) (bool, error) {
 		return allMachineConfigPoolsUpdated(ctx)
 	}); err != nil {
 		return fmt.Errorf("machineconfig pools not updated: %w", err)

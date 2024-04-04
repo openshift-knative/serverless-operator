@@ -51,7 +51,7 @@ func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade
 		}
 
 		eg.Go(func() error {
-			err := wait.PollUntil(5*time.Second, func() (bool, error) {
+			err := wait.PollUntilContextCancel(ctx, 5*time.Second, true, func(_ context.Context) (bool, error) {
 				j, err := kubeClient.
 					BatchV1().
 					Jobs(cfg.Namespace).
@@ -72,7 +72,7 @@ func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade
 				}
 
 				return j.Status.Succeeded > 0, nil
-			}, ctx.Done())
+			})
 			if err != nil {
 				return fmt.Errorf("%w, job:\n%+v", err, j)
 			}

@@ -28,7 +28,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	httpURL.Scheme = "http"
 
 	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			// Do not follow redirect.
 			return http.ErrUseLastResponse
 		},

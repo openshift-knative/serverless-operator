@@ -82,7 +82,7 @@ func VerifyHealthStatusMetric(ctx context.Context, label string, expectedValue s
 		return err
 	}
 
-	if err := wait.PollImmediate(Interval, prometheusTargetTimeout, func() (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, Interval, prometheusTargetTimeout, true, func(_ context.Context) (bool, error) {
 		value, _, err := pc.Query(context.Background(), fmt.Sprintf(`knative_up{type="%s"}`, label), time.Time{})
 		if err != nil {
 			logging.FromContext(ctx).Info("Error querying prometheus metrics:", err)
@@ -113,7 +113,7 @@ func VerifyMetrics(ctx context.Context, metricQueries []string) error {
 	}
 
 	for _, metric := range metricQueries {
-		if err := wait.PollImmediate(Interval, prometheusTargetTimeout, func() (bool, error) {
+		if err := wait.PollUntilContextTimeout(ctx, Interval, prometheusTargetTimeout, true, func(_ context.Context) (bool, error) {
 			value, _, err := pc.Query(context.Background(), metric, time.Time{})
 			if err != nil {
 				logging.FromContext(ctx).Info("Error querying prometheus metrics:", err)

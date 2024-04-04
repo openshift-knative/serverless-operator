@@ -50,7 +50,7 @@ func TestKnConsoleCLIDownload(t *testing.T) {
 
 func retryingHead(t *testing.T, client *http.Client, url string) (*http.Response, error) {
 	var h *http.Response
-	if err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
+	if err := wait.PollUntilContextTimeout(context.Background(), time.Second, time.Minute, true, func(_ context.Context) (bool, error) {
 		var err error
 		h, err = client.Head(url)
 		if err != nil {
