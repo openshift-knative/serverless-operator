@@ -1,0 +1,189 @@
+---
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eventmesh-backend
+  labels:
+    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/component: eventmesh-backend
+
+rules:
+
+  - apiGroups:
+      - ""
+    resources:
+      # for config-logging and config-leader-election
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+
+  # permissions for eventtypes, brokers and triggers
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - brokers
+      - eventtypes
+      - triggers
+    verbs:
+      - get
+      - list
+      - watch
+
+  # permissions for leader election
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - "leases"
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+
+
+  # permissions to get subscribers for triggers
+  # as subscribers can be any resource, we need to give access to all resources
+  # we fetch subscribers one by one, we only need `get` verb
+  - apiGroups:
+      - "*"
+    resources:
+      - "*"
+    verbs:
+      - get
+---
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eventmesh-backend
+  namespace: knative-eventing
+  labels:
+    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/component: eventmesh-backend
+---
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eventmesh-backend
+  labels:
+    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/component: eventmesh-backend
+subjects:
+  - kind: ServiceAccount
+    name: eventmesh-backend
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: eventmesh-backend
+  apiGroup: rbac.authorization.k8s.io
+---
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventmesh-backend
+  namespace: knative-eventing
+  labels:
+    app: eventmesh-backend
+    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/component: eventmesh-backend
+    app.kubernetes.io/name: knative-eventing
+spec:
+  selector:
+    matchLabels:
+      app: eventmesh-backend
+  template:
+    metadata:
+      name: eventmesh-backend
+      labels:
+        app: eventmesh-backend
+        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/component: eventmesh-backend
+        app.kubernetes.io/name: knative-eventing
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: eventmesh-backend
+
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: eventmesh-backend
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: eventmesh-backend
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+
+      containers:
+        - name: controller
+          image: TO_BE_REPLACED
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - containerPort: 9090
+              name: metrics
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePolicy: FallbackToLogsOnError
+          terminationMessagePath: /dev/termination-log
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eventmesh-backend
+  namespace: knative-eventing
+  labels:
+    app: eventmesh-backend
+    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/component: eventmesh-backend
+    app.kubernetes.io/name: knative-eventing
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: http-metrics
+      port: 9090
+      targetPort: 9090
+  selector:
+    app: eventmesh-backend

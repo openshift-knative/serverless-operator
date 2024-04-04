@@ -21,11 +21,13 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_eventing_images_release_next
   knative_eventing_istio_images_release_next
   knative_eventing_kafka_broker_images_release_next
+  knative_backstage_plugins_images_release_next
   knative_serving_images_release_next
 else
   default_knative_eventing_images
   default_knative_eventing_istio_images
   default_knative_eventing_kafka_broker_images
+  default_knative_backstage_plugins_images
   default_knative_serving_images
 fi
 
@@ -98,6 +100,8 @@ image "imc-dispatcher__dispatcher"                                              
 image "pingsource-mt-adapter__dispatcher"                                        "${KNATIVE_EVENTING_MTPING}"
 image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}"
 image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
+
+image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}"
 
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"       "${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER}"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"   "${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER}"
