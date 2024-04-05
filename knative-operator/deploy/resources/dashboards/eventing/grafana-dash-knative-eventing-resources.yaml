@@ -5,6 +5,7 @@ metadata:
   namespace: openshift-config-managed
   labels:
     console.openshift.io/dashboard: "true"
+    console.openshift.io/odc-dashboard: "true"
 data:
   resource-dashboard.json: |+
     {
