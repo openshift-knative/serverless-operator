@@ -4647,6 +4647,9 @@ webhooks:
   name: config.webhook.eventing.knative.dev
   namespaceSelector:
     matchExpressions:
+      - key: kubernetes.io/metadata.name
+        operator: In
+        values: ["knative-eventing"]
   timeoutSeconds: 10
 ---
 # Copyright 2018 The Knative Authors
