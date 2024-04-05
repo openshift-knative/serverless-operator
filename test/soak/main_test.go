@@ -164,7 +164,10 @@ func RunSoakTest(t *testing.T, test SoakTest, copies int) {
 				// During each iteration, generate the "iteration" features and run them as Tests
 				// Cleanup all resources for these features at the end of the iteration
 
-				// TODO: can we do this? (use an empty env for the iteration, but keep using the original context?)
+				// For each iteration, we create a new empty Environment, while keeping the same Context
+				// This way we can delete all resources created during an iteration, but we can still use per-soak test
+				// context, allowing us, for example, an iteration-scoped eventshub sender sending events to
+				// a test-scoped eventshub receiver
 				_, iterationEnv := global.Environment(
 					environment.WithNamespace(namespace),
 				)
