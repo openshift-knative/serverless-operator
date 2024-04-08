@@ -14,8 +14,8 @@ require (
 	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lifecycle-manager v0.25.0
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.72.0
-	github.com/prometheus-operator/prometheus-operator/pkg/client v0.72.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.0
+	github.com/prometheus-operator/prometheus-operator/pkg/client v0.73.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/common v0.52.2
 	github.com/spf13/pflag v1.0.5
@@ -23,9 +23,9 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.6.0
 	google.golang.org/grpc v1.62.1
-	k8s.io/api v0.29.2
-	k8s.io/apimachinery v0.29.2
-	k8s.io/client-go v0.29.2
+	k8s.io/api v0.29.3
+	k8s.io/apimachinery v0.29.3
+	k8s.io/client-go v0.29.3
 	knative.dev/eventing v0.40.2
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20240123162936-f3f03ac0ab1a
@@ -42,7 +42,7 @@ require (
 	github.com/IBM/sarama v1.42.2 // indirect
 	github.com/cloudevents/conformance v0.2.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
-	github.com/emicklei/go-restful/v3 v3.11.2 // indirect
+	github.com/emicklei/go-restful/v3 v3.12.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -62,6 +62,7 @@ require (
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240213162025-012b6fc9bca9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
 )
 
 require (
@@ -89,14 +90,14 @@ require (
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
-	github.com/go-openapi/jsonpointer v0.20.2 // indirect
-	github.com/go-openapi/jsonreference v0.20.4 // indirect
-	github.com/go-openapi/swag v0.22.9 // indirect
+	github.com/go-openapi/jsonpointer v0.21.0 // indirect
+	github.com/go-openapi/jsonreference v0.21.0 // indirect
+	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-containerregistry v0.13.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -167,13 +168,13 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57 // indirect
 	istio.io/client-go v1.18.7 // indirect
-	k8s.io/apiserver v0.29.2 // indirect
-	k8s.io/code-generator v0.29.2 // indirect
-	k8s.io/component-base v0.29.2 // indirect
+	k8s.io/apiserver v0.29.3 // indirect
+	k8s.io/code-generator v0.29.3 // indirect
+	k8s.io/component-base v0.29.3 // indirect
 	k8s.io/gengo v0.0.0-20230829151522-9cce18d56c01 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240221221325-2ac9dc51f3f1 // indirect
-	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
+	k8s.io/kube-openapi v0.0.0-20240322212309-b815d8309940 // indirect
+	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	knative.dev/caching v0.0.0-20240116080314-0a234c8b78ac // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
@@ -182,7 +183,7 @@ require (
 require (
 	github.com/go-logr/logr v1.4.1
 	go.uber.org/atomic v1.11.0 // indirect
-	k8s.io/apiextensions-apiserver v0.29.2
+	k8s.io/apiextensions-apiserver v0.29.3
 	knative.dev/reconciler-test v0.0.0-20240319084821-8c063dd50b3c
 )
 
