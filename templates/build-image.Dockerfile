@@ -1,10 +1,11 @@
+# Use the tools image to to install kubectl/oc
+FROM registry.ci.openshift.org/ocp/4.16:tools as tools
+
 # Dockerfile to bootstrap build and test in openshift-ci
 FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-__GOLANG_VERSION__-openshift-4.16
 
-# Add kubernetes repository
-ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
-
-RUN yum install -y kubectl httpd-tools
+COPY --from=tools /usr/bin/oc /usr/bin/
+RUN ln -s /usr/bin/oc /usr/bin/kubectl
 
 RUN GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
 RUN GOFLAGS='' go install knative.dev/test-infra/tools/kntest/cmd/kntest@latest
@@ -16,6 +17,7 @@ RUN chmod g+rw /etc/passwd
 RUN yum install -y https://rpm.nodesource.com/pub___NODEJS_VERSION__/el/8/x86_64/nodesource-release-el8-1.noarch.rpm
 RUN yum module disable -y nodejs
 RUN yum install -y \
+  httpd-tools \
   gcc-c++ \
   make \
   nodejs \
