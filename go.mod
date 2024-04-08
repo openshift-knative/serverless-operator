@@ -33,7 +33,7 @@ require (
 	knative.dev/operator v0.40.3
 	knative.dev/pkg v0.0.0-20240116073220-b488e7be5902
 	knative.dev/serving v0.39.1-0.20240123152112-7509f7d9b806
-	sigs.k8s.io/controller-runtime v0.17.2
+	sigs.k8s.io/controller-runtime v0.17.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
