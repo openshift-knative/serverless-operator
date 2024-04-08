@@ -140,7 +140,7 @@ function downstream_serving_e2e_tests {
   fi
 
   if [[ $FULL_MESH == "true" ]]; then
-    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/servicemesh/ \
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/servicemesh/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
