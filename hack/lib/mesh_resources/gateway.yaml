@@ -48,5 +48,6 @@ spec:
     istio: ingressgateway
   ports:
     - name: http2
+      appProtocol: "kubernetes.io/h2c"
       port: 80
       targetPort: 8081
