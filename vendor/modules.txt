@@ -1815,7 +1815,7 @@ knative.dev/serving/test/defaultsystem
 knative.dev/serving/test/e2e
 knative.dev/serving/test/upgrade
 knative.dev/serving/test/v1
-# sigs.k8s.io/controller-runtime v0.17.2
+# sigs.k8s.io/controller-runtime v0.17.3
 ## explicit; go 1.21
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/cache/internal
