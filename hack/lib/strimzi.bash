@@ -20,89 +20,92 @@ function install_strimzi_operator {
 function install_strimzi_cluster {
   logger.info "Applying Strimzi Cluster file"
   cat <<-EOF | oc apply -f -
-    apiVersion: kafka.strimzi.io/v1beta2
-    kind: Kafka
-    metadata:
-      name: my-cluster
-      namespace: kafka
-    spec:
-      kafka:
-        version: 3.7.0
-        replicas: 3
-        listeners:
-          # PLAINTEXT
-          - name: plain
-            port: 9092
-            type: internal
-            tls: false
-          # SSL
-          - name: tls
-            port: 9093
-            type: internal
-            tls: true
-            authentication:
-              type: tls
-          # protocol=SASL_SSL
-          # sasl.mechanism=SCRAM-SHA-512
-          - name: saslssl
-            port: 9094
-            type: internal
-            tls: true
-            authentication:
-              type: scram-sha-512
-          # protocol=SASL_PLAINTEXT
-          # sasl.mechanism=SCRAM-SHA-512
-          - name: saslplain
-            port: 9095
-            type: internal
-            tls: false
-            authentication:
-              type: scram-sha-512
-          # TLS no auth
-          - name: tlsnoauth
-            port: 9096
-            type: internal
-            tls: true
-        authorization:
-          superUsers:
-            - ANONYMOUS
-          type: simple
-        config:
-          offsets.topic.replication.factor: 3
-          transaction.state.log.replication.factor: 3
-          transaction.state.log.min.isr: 2
-          inter.broker.protocol.version: "3.7"
-          auto.create.topics.enable: "false"
-        storage:
-          type: jbod
-          volumes:
-          - id: 0
-            type: persistent-claim
-            size: 100Gi
-            deleteClaim: false
-        resources:
-          requests:
-            memory: 2Gi
-            cpu: "300m"
-          limits:
-            memory: 4Gi
-            cpu: "4"
-      zookeeper:
-        replicas: 3
-        storage:
-          type: persistent-claim
-          size: 100Gi
-          deleteClaim: false
-        resources:
-          requests:
-            memory: 500Mi
-            cpu: "300m"
-          limits:
-            memory: 2Gi
-            cpu: "2"
-      entityOperator:
-        topicOperator: {}
-        userOperator: {}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: my-cluster
+  namespace: kafka
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
+spec:
+  kafka:
+    version: 3.7.0
+    replicas: 3
+    listeners:
+      # PLAINTEXT
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      # SSL
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+      # protocol=SASL_SSL
+      # sasl.mechanism=SCRAM-SHA-512
+      - name: saslssl
+        port: 9094
+        type: internal
+        tls: true
+        authentication:
+          type: scram-sha-512
+      # protocol=SASL_PLAINTEXT
+      # sasl.mechanism=SCRAM-SHA-512
+      - name: saslplain
+        port: 9095
+        type: internal
+        tls: false
+        authentication:
+          type: scram-sha-512
+      # TLS no auth
+      - name: tlsnoauth
+        port: 9096
+        type: internal
+        tls: true
+    authorization:
+      superUsers:
+        - ANONYMOUS
+      type: simple
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      inter.broker.protocol.version: "3.7"
+      auto.create.topics.enable: "false"
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: kafka
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+    - id: 0
+      type: persistent-claim
+      size: 100Gi
+      deleteClaim: false
+  resources:
+    requests:
+      memory: 2Gi
+      cpu: "300m"
+    limits:
+      memory: 4Gi
+      cpu: "4"
 EOF
 
   logger.info "Waiting for Strimzi cluster to become ready"
