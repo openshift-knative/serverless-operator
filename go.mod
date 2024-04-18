@@ -14,7 +14,7 @@ require (
 	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lifecycle-manager v0.25.0
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.72.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.1
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.72.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/common v0.52.2
@@ -23,9 +23,9 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.6.0
 	google.golang.org/grpc v1.63.2
-	k8s.io/api v0.29.2
-	k8s.io/apimachinery v0.29.2
-	k8s.io/client-go v0.29.2
+	k8s.io/api v0.29.3
+	k8s.io/apimachinery v0.29.3
+	k8s.io/client-go v0.29.3
 	knative.dev/eventing v0.40.2
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20240123162936-f3f03ac0ab1a
@@ -167,13 +167,13 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57 // indirect
 	istio.io/client-go v1.18.7 // indirect
-	k8s.io/apiserver v0.29.2 // indirect
-	k8s.io/code-generator v0.29.2 // indirect
-	k8s.io/component-base v0.29.2 // indirect
+	k8s.io/apiserver v0.29.3 // indirect
+	k8s.io/code-generator v0.29.3 // indirect
+	k8s.io/component-base v0.29.3 // indirect
 	k8s.io/gengo v0.0.0-20230829151522-9cce18d56c01 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240221221325-2ac9dc51f3f1 // indirect
-	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
+	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	knative.dev/caching v0.0.0-20240116080314-0a234c8b78ac // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
@@ -182,7 +182,7 @@ require (
 require (
 	github.com/go-logr/logr v1.4.1
 	go.uber.org/atomic v1.11.0 // indirect
-	k8s.io/apiextensions-apiserver v0.29.2
+	k8s.io/apiextensions-apiserver v0.29.3
 	knative.dev/reconciler-test v0.0.0-20240319084821-8c063dd50b3c
 )
 
