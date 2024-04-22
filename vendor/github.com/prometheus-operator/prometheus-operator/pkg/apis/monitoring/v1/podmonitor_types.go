@@ -136,14 +136,6 @@ type PodMonitorSpec struct {
 	// +optional
 	// +kubebuilder:validation:MinLength=1
 	ScrapeClassName *string `json:"scrapeClass,omitempty"`
-
-	// When defined, bodySizeLimit specifies a job level limit on the size
-	// of uncompressed response body that will be accepted by Prometheus.
-	//
-	// It requires Prometheus >= v2.28.0.
-	//
-	// +optional
-	BodySizeLimit *ByteSize `json:"bodySizeLimit,omitempty"`
 }
 
 // PodMonitorList is a list of PodMonitors.
@@ -210,7 +202,7 @@ type PodMetricsEndpoint struct {
 	// TLS configuration to use when scraping the target.
 	//
 	// +optional
-	TLSConfig *SafeTLSConfig `json:"tlsConfig,omitempty"`
+	TLSConfig *PodMetricsEndpointTLSConfig `json:"tlsConfig,omitempty"`
 
 	// `bearerTokenSecret` specifies a key of a Secret containing the bearer
 	// token for scraping targets. The secret needs to be in the same namespace
@@ -309,4 +301,10 @@ type PodMetricsEndpoint struct {
 	//
 	// +optional
 	FilterRunning *bool `json:"filterRunning,omitempty"`
+}
+
+// PodMetricsEndpointTLSConfig specifies TLS configuration parameters.
+// +k8s:openapi-gen=true
+type PodMetricsEndpointTLSConfig struct {
+	SafeTLSConfig `json:",inline"`
 }

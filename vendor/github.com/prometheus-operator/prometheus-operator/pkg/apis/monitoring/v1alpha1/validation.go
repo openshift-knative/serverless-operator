@@ -183,12 +183,12 @@ func (yr YearRange) Parse() (*ParsedRange, error) {
 
 	start, err := strconv.Atoi(startStr)
 	if err != nil {
-		return nil, fmt.Errorf("start year cannot be %s parsed: %w", startStr, err)
+		fmt.Errorf("start year cannot be %s parsed: %w", startStr, err)
 	}
 
 	end, err := strconv.Atoi(endStr)
 	if err != nil {
-		return nil, fmt.Errorf("end year cannot be %s parsed: %w", endStr, err)
+		fmt.Errorf("end year cannot be %s parsed: %w", endStr, err)
 	}
 
 	if start > end {
@@ -221,16 +221,16 @@ func (w Weekday) Int() (int, error) {
 func (m Month) Int() (int, error) {
 	normaliseMonth := Month(strings.ToLower(string(m)))
 
-	month, found := months[normaliseMonth]
+	day, found := months[normaliseMonth]
 	if !found {
 		i, err := strconv.Atoi(string(normaliseMonth))
-		if err != nil || i < 1 || i > 12 {
-			return month, fmt.Errorf("%s is an invalid month", m)
+		if err != nil {
+			return day, fmt.Errorf("%s is an invalid month", m)
 		}
-		month = i
+		day = i
 	}
 
-	return month, nil
+	return day, nil
 }
 
 // Validate the DayOfMonthRange

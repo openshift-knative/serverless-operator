@@ -21,16 +21,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"path"
+	"path/filepath"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
 
-	"k8s.io/gengo/v2"
-	"k8s.io/gengo/v2/generator"
-	"k8s.io/gengo/v2/namer"
-	"k8s.io/gengo/v2/types"
+	defaultergen "k8s.io/gengo/examples/defaulter-gen/generators"
+	"k8s.io/gengo/generator"
+	"k8s.io/gengo/namer"
+	"k8s.io/gengo/types"
 	openapi "k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 
@@ -58,11 +57,11 @@ var tempPatchTags = [...]string{
 }
 
 func getOpenAPITagValue(comments []string) []string {
-	return gengo.ExtractCommentTags("+", comments)[tagName]
+	return types.ExtractCommentTags("+", comments)[tagName]
 }
 
 func getSingleTagsValue(comments []string, tag string) (string, error) {
-	tags, ok := gengo.ExtractCommentTags("+", comments)[tag]
+	tags, ok := types.ExtractCommentTags("+", comments)[tag]
 	if !ok || len(tags) == 0 {
 		return "", nil
 	}
@@ -82,25 +81,19 @@ func hasOpenAPITagValue(comments []string, value string) bool {
 	return false
 }
 
-// isOptional returns error if the member has +optional and +required in
-// its comments. If +optional is present it returns true. If +required is present
-// it returns false. Otherwise, it returns true if `omitempty` JSON tag is present
-func isOptional(m *types.Member) (bool, error) {
-	hasOptionalCommentTag := gengo.ExtractCommentTags(
-		"+", m.CommentLines)[tagOptional] != nil
-	hasRequiredCommentTag := gengo.ExtractCommentTags(
+func hasRequiredTag(m *types.Member) bool {
+	return types.ExtractCommentTags(
 		"+", m.CommentLines)[tagRequired] != nil
-	if hasOptionalCommentTag && hasRequiredCommentTag {
-		return false, fmt.Errorf("member %s cannot be both optional and required", m.Name)
-	} else if hasRequiredCommentTag {
-		return false, nil
-	} else if hasOptionalCommentTag {
-		return true, nil
-	}
+}
 
-	// If neither +optional nor +required is present in the comments,
-	// infer optional from the json tags.
-	return strings.Contains(reflect.StructTag(m.Tags).Get("json"), "omitempty"), nil
+// hasOptionalTag returns true if the member has +optional in its comments or
+// omitempty in its json tags.
+func hasOptionalTag(m *types.Member) bool {
+	hasOptionalCommentTag := types.ExtractCommentTags(
+		"+", m.CommentLines)[tagOptional] != nil
+	hasOptionalJsonTag := strings.Contains(
+		reflect.StructTag(m.Tags).Get("json"), "omitempty")
+	return hasOptionalCommentTag || hasOptionalJsonTag
 }
 
 func apiTypeFilterFunc(c *generator.Context, t *types.Type) bool {
@@ -125,16 +118,16 @@ const (
 
 // openApiGen produces a file with auto-generated OpenAPI functions.
 type openAPIGen struct {
-	generator.GoGenerator
+	generator.DefaultGen
 	// TargetPackage is the package that will get GetOpenAPIDefinitions function returns all open API definitions.
 	targetPackage string
 	imports       namer.ImportTracker
 }
 
-func newOpenAPIGen(outputFilename string, targetPackage string) generator.Generator {
+func newOpenAPIGen(sanitizedName string, targetPackage string) generator.Generator {
 	return &openAPIGen{
-		GoGenerator: generator.GoGenerator{
-			OutputFilename: outputFilename,
+		DefaultGen: generator.DefaultGen{
+			OptionalName: sanitizedName,
 		},
 		imports:       generator.NewImportTrackerForPackage(targetPackage),
 		targetPackage: targetPackage,
@@ -154,6 +147,16 @@ func (g *openAPIGen) Namers(c *generator.Context) namer.NameSystems {
 			PrependPackageNames: 4, // enough to fully qualify from k8s.io/api/...
 		},
 	}
+}
+
+func (g *openAPIGen) isOtherPackage(pkg string) bool {
+	if pkg == g.targetPackage {
+		return false
+	}
+	if strings.HasSuffix(pkg, "\""+g.targetPackage+"\"") {
+		return false
+	}
+	return true
 }
 
 func (g *openAPIGen) Imports(c *generator.Context) []string {
@@ -297,8 +300,7 @@ func hasOpenAPIV3OneOfMethod(t *types.Type) bool {
 
 // typeShortName returns short package name (e.g. the name x appears in package x definition) dot type name.
 func typeShortName(t *types.Type) string {
-	// `path` vs. `filepath` because packages use '/'
-	return path.Base(t.Name.Package) + "." + t.Name.Name
+	return filepath.Base(t.Name.Package) + "." + t.Name.Name
 }
 
 func (g openAPITypeWriter) generateMembers(t *types.Type, required []string) ([]string, error) {
@@ -321,10 +323,10 @@ func (g openAPITypeWriter) generateMembers(t *types.Type, required []string) ([]
 		if name == "" {
 			continue
 		}
-		if isOptional, err := isOptional(&m); err != nil {
+		if isOptional, isRequired := hasOptionalTag(&m), hasRequiredTag(&m); isOptional && isRequired {
 			klog.Errorf("Error when generating: %v, %v\n", name, m)
-			return required, err
-		} else if !isOptional {
+			return required, fmt.Errorf("member %s of type %s cannot be both optional and required", m.Name, t.Name)
+		} else if !isOptional || isRequired {
 			required = append(required, name)
 		}
 		if err = g.generateProperty(&m, t); err != nil {
@@ -703,38 +705,13 @@ func defaultFromComments(comments []string, commentPath string, t *types.Type) (
 	}
 
 	var i interface{}
-	if id, ok := parseSymbolReference(tag, commentPath); ok {
+	if id, ok := defaultergen.ParseSymbolReference(tag, commentPath); ok {
 		klog.Errorf("%v, %v", id, commentPath)
 		return nil, &id, nil
 	} else if err := json.Unmarshal([]byte(tag), &i); err != nil {
 		return nil, nil, fmt.Errorf("failed to unmarshal default: %v", err)
 	}
 	return i, nil, nil
-}
-
-var refRE = regexp.MustCompile(`^ref\((?P<reference>[^"]+)\)$`)
-var refREIdentIndex = refRE.SubexpIndex("reference")
-
-// parseSymbolReference looks for strings that match one of the following:
-//   - ref(Ident)
-//   - ref(pkgpath.Ident)
-//     If the input string matches either of these, it will return the (optional)
-//     pkgpath, the Ident, and true.  Otherwise it will return empty strings and
-//     false.
-//
-// This is borrowed from k8s.io/code-generator.
-func parseSymbolReference(s, sourcePackage string) (types.Name, bool) {
-	matches := refRE.FindStringSubmatch(s)
-	if len(matches) < refREIdentIndex || matches[refREIdentIndex] == "" {
-		return types.Name{}, false
-	}
-
-	contents := matches[refREIdentIndex]
-	name := types.ParseFullyQualifiedName(contents)
-	if len(name.Package) == 0 {
-		name.Package = sourcePackage
-	}
-	return name, true
 }
 
 func implementsCustomUnmarshalling(t *types.Type) bool {
@@ -965,10 +942,6 @@ func (g openAPITypeWriter) generateMapProperty(t *types.Type) error {
 	typeString, format := openapi.OpenAPITypeFormat(elemType.String())
 	if typeString != "" {
 		g.generateSimpleProperty(typeString, format)
-		if enumType, isEnum := g.enumContext.EnumType(t.Elem); isEnum {
-			// original type is an enum, add "Enum: " and the values
-			g.Do("Enum: []interface{}{$.$},\n", strings.Join(enumType.ValueStrings(), ", "))
-		}
 		g.Do("},\n},\n},\n", nil)
 		return nil
 	}
@@ -1002,10 +975,6 @@ func (g openAPITypeWriter) generateSliceProperty(t *types.Type) error {
 	typeString, format := openapi.OpenAPITypeFormat(elemType.String())
 	if typeString != "" {
 		g.generateSimpleProperty(typeString, format)
-		if enumType, isEnum := g.enumContext.EnumType(t.Elem); isEnum {
-			// original type is an enum, add "Enum: " and the values
-			g.Do("Enum: []interface{}{$.$},\n", strings.Join(enumType.ValueStrings(), ", "))
-		}
 		g.Do("},\n},\n},\n", nil)
 		return nil
 	}
