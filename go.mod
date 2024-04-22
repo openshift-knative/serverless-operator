@@ -62,7 +62,6 @@ require (
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240227224415-6ceb2ff114de // indirect
-	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
 )
 
 require (
@@ -204,3 +203,8 @@ replace (
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20221019143426-16aed247da5c
 	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20240321132456-9c607163d755
 )
+
+// This replacement can be removed once we bump to k8s.io@v1.30.x, as from release 1.30+
+// https://github.com/kubernetes/code-generator/blob/release-1.30/go.mod, code-generator will use
+// the new v2 version of kube-openapi.
+replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
