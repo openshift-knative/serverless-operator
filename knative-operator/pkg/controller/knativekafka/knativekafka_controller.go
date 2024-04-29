@@ -680,7 +680,7 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 			return scheme.Scheme.Convert(deployment, u, nil)
 		}
 
-		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-config-logging" {
+		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-config-logging" && !hasLoggingConfig(spec.Config) {
 			log.Info("Found ConfigMap kafka-config-logging, updating it with values from spec")
 
 			if err := unstructured.SetNestedField(u.Object, renderLoggingConfigXML(spec.Logging), "data", "config.xml"); err != nil {
@@ -735,6 +735,11 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		}
 		return nil
 	}
+}
+
+func hasLoggingConfig(config base.ConfigMapData) bool {
+	_, ok := config["kafka-config-logging"]
+	return ok
 }
 
 func contains(array []string, name string) bool {
