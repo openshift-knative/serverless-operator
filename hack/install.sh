@@ -19,5 +19,6 @@ dump_state.setup
 scale_up_workers
 create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
+install_certmanager
 ensure_catalogsource_installed
 ensure_serverless_installed

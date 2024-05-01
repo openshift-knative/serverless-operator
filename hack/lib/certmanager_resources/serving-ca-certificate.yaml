@@ -1,0 +1,15 @@
+# Aligned with upstream Serving configuration, used by --https e2e tests
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: knative-selfsigned-ca
+  namespace: cert-manager
+spec:
+  secretName: knative-selfsigned-ca # Knative Serving e2e tests will look for this secret to be used in --https e2e tests
+  commonName: knative.dev
+  usages:
+    - server auth
+  isCA: true
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-cluster-issuer

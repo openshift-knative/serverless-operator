@@ -85,7 +85,7 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 		return caCtx.Clients.Route.Routes(route.Namespace).Delete(context.Background(), route.Name, metav1.DeleteOptions{})
 	})
 
-	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), servinge2e.HelloworldText)
 
 	// Create DomainMapping with disable Annotation.
 	dm := &servingv1beta1.DomainMapping{

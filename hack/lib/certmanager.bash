@@ -39,22 +39,21 @@ function deploy_certmanager_operator {
   oc wait deployments -n ${deployment_namespace} cert-manager-webhook --for condition=available --timeout=600s
   oc wait deployments -n ${deployment_namespace} cert-manager --for condition=available --timeout=600s
 
+  # serving resources
+  oc apply -f "${certmanager_resources_dir}"/serving-selfsigned-issuer.yaml || return $?
+  oc apply -f "${certmanager_resources_dir}"/serving-ca-issuer.yaml || return $?
+  oc apply -n "${deployment_namespace}" -f "${certmanager_resources_dir}"/serving-ca-certificate.yaml || return $?
+
+  sync_trust_bundle "knative-selfsigned-ca" "knative-serving" "knative-serving-ingress" || return $?
+  if [[ $MESH == "true" ]]; then
+    sync_trust_bundle "knative-selfsigned-ca" "istio-system" || return $?
+  fi
+
+  # eventing resources
   oc apply -f "${certmanager_resources_dir}"/selfsigned-issuer.yaml || return $?
   oc apply -f "${certmanager_resources_dir}"/eventing-ca-issuer.yaml || return $?
   oc apply -n "${deployment_namespace}" -f "${certmanager_resources_dir}"/ca-certificate.yaml || return $?
-
-  local ca_cert_tls_secret="knative-eventing-ca"
-  echo "Waiting until secrets: ${ca_cert_tls_secret} exist in ${deployment_namespace}"
-  wait_until_object_exists secret "${ca_cert_tls_secret}" "${deployment_namespace}" || return $?
-
-  oc get secret -n "${deployment_namespace}" "${ca_cert_tls_secret}" -o=jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt || return $?
-  oc get secret -n "${deployment_namespace}" "${ca_cert_tls_secret}" -o=jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt || return $?
-
-  oc create namespace "${EVENTING_NAMESPACE}" --dry-run=client -o yaml | oc apply -f -
-  oc create configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle --from-file=tls.crt --from-file=ca.crt \
-    --dry-run=client -o yaml | kubectl apply -n knative-eventing -f - || return $?
-
-  oc label configmap -n "${EVENTING_NAMESPACE}" knative-eventing-bundle networking.knative.dev/trust-bundle=true --overwrite
+  sync_trust_bundle "knative-eventing-ca" "knative-eventing" || return $?
 }
 
 function undeploy_certmanager_operator {
@@ -66,4 +65,27 @@ function undeploy_certmanager_operator {
     oc get crd -oname | grep 'cert-manager.io' | xargs oc delete --timeout=60s
   fi
   logger.success "cert manager has been uninstalled"
+}
+
+function sync_trust_bundle {
+   logger.info "Syncing cert-manager CA to trust-bundle for Knative components"
+   local ca_secret
+   ca_secret="${1:?Pass CA secret name as arg[1]}"
+   shift
+   local namespaces=("${@}")
+
+   wait_until_object_exists secret "${ca_secret}" "${deployment_namespace}" || return $?
+
+   oc get secret -n "${deployment_namespace}" "${ca_secret}" -o=jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt || return $?
+   oc get secret -n "${deployment_namespace}" "${ca_secret}" -o=jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt || return $?
+
+   for ns in "${namespaces[@]}"; do
+     echo "Syncing trust-bundle for namespace: ${ns}"
+     oc create namespace "${ns}" --dry-run=client -o yaml | oc apply -f -
+     oc create configmap -n "${ns}" knative-ca-bundle --from-file=tls.crt --from-file=ca.crt \
+        --dry-run=client -o yaml | kubectl apply -n "${ns}" -f - || return $?
+     oc label configmap -n "${ns}" knative-ca-bundle networking.knative.dev/trust-bundle=true --overwrite
+   done
+
+   rm -f tls.crt ca.crt
 }

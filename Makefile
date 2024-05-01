@@ -14,7 +14,6 @@ install-operator:
 
 install-all:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
@@ -33,23 +32,19 @@ install-serving-with-mesh:
 	MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
 install-eventing:
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	INSTALL_SERVING="false" ./hack/install.sh
 
 install-kafka:
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-kafka-with-mesh:
 	UNINSTALL_MESH="false" ./hack/mesh.sh
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 
 install-kafka-with-keda:
 	UNINSTALL_KEDA="false" ./hack/keda.sh
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ENABLE_KEDA="true" ./hack/install.sh
 
 install-strimzi:
@@ -75,12 +70,6 @@ install-previous:
 
 install-previous-with-kafka:
 	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
-
-install-mesh:
-	UNINSTALL_MESH="false" ./hack/mesh.sh
-
-uninstall-mesh:
-	UNINSTALL_MESH="true" ./hack/mesh.sh
 
 install-mesh:
 	UNINSTALL_MESH="false" ./hack/mesh.sh
@@ -157,7 +146,6 @@ test-upstream-e2e-mesh-testonly:
 	MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 install-for-mesh-e2e:
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh # This avoids early failures for the skipped Eventing TLS tests
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
@@ -186,7 +174,6 @@ test-upstream-e2e-no-upgrade: upstream-e2e
 
 upstream-e2e-kafka:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	UNINSTALL_CERTMANAGER="false" ./hack/certmanager.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	SCALE_UP=5 INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh

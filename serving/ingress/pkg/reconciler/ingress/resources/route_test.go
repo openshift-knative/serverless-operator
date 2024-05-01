@@ -23,9 +23,10 @@ const (
 	lbService   = "lb-service"
 	lbNamespace = "lb-namespace"
 
-	uid        = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
-	routeName0 = "route-" + uid + "-323531366235"
-	routeName1 = "route-" + uid + "-663738313063"
+	uid             = "8a7e9a9d-fbc6-11e9-a88e-0261aff8d6d8"
+	routeName0      = "route-" + uid + "-323531366235"
+	routeName1      = "route-" + uid + "-663738313063"
+	customRouteName = "route-" + uid + "-323563643265"
 )
 
 func TestMakeRoute(t *testing.T) {
@@ -258,7 +259,7 @@ func TestMakeRoute(t *testing.T) {
 			name: "valid, passthrough by BYO cert",
 			ingress: ingress(
 				withTLS(networkingv1alpha1.IngressTLS{Hosts: []string{"custom.example.com"}, SecretName: "someSecretName"}),
-				withRules(rule(withHosts([]string{localDomain, externalDomain}))),
+				withRules(rule(withHosts([]string{"custom.example.com"}))),
 			),
 			want: []*routev1.Route{{
 				ObjectMeta: metav1.ObjectMeta{
@@ -273,10 +274,10 @@ func TestMakeRoute(t *testing.T) {
 						TimeoutAnnotation: DefaultTimeout,
 					},
 					Namespace: lbNamespace,
-					Name:      routeName0,
+					Name:      customRouteName,
 				},
 				Spec: routev1.RouteSpec{
-					Host: externalDomain,
+					Host: "custom.example.com",
 					To: routev1.RouteTargetReference{
 						Kind:   "Service",
 						Name:   lbService,
@@ -333,7 +334,7 @@ func TestMakeRoute(t *testing.T) {
 			}},
 		},
 		{
-			name: "internal encryption is enabled",
+			name: "system-internal-tls is enabled",
 			ingress: ingress(
 				withRules(rule(withHosts([]string{localDomain, externalDomain}), withHTTPSBackendService())),
 			),
@@ -414,6 +415,7 @@ func ingress(options ...ingressOption) *networkingv1alpha1.Ingress {
 
 func rule(options ...ruleOption) networkingv1alpha1.IngressRule {
 	rule := networkingv1alpha1.IngressRule{
+		Visibility: networkingv1alpha1.IngressVisibilityExternalIP,
 		HTTP: &networkingv1alpha1.HTTPIngressRuleValue{
 			Paths: []networkingv1alpha1.HTTPIngressPath{{}},
 		},
