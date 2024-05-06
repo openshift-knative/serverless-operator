@@ -32,8 +32,13 @@ function prepare_knative_serving_tests {
   add_networkpolicy "serving-tests"
   add_networkpolicy "serving-tests-alt"
 
-  export GATEWAY_OVERRIDE="kourier"
-  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
+  if [[ $MESH == "true" ]]; then
+    export GATEWAY_OVERRIDE="istio-ingressgateway"
+    export GATEWAY_NAMESPACE_OVERRIDE="istio-system"
+  else
+    export GATEWAY_OVERRIDE="kourier"
+    export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
+  fi
 }
 
 function upstream_knative_serving_e2e_and_conformance_tests {
