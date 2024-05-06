@@ -49,4 +49,6 @@ fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
 
+exit 1
+
 success
