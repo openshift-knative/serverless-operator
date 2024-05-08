@@ -13,7 +13,7 @@ assignees: ''
 - [Video](https://drive.google.com/drive/u/0/folders/1j1KF_1dUl6x0oiN2aVKlapAYXo1dGUDG) from pierdipi showing the release process
 
 ## Pre-checks
-- [ ] Check if the OCP versions in the release-matrix match [our current CI config](https://github.com/openshift-knative/hack/tree/main/config). If not, fix the versions first
+- [ ] Check if the OCP versions in the [release-matrix](https://docs.google.com/spreadsheets/d/1HTxR37_MM03_JQImW-KmAFk1oEQ83fXzfGxdfWQSX6o/edit#gid=0) match [our current CI config](https://github.com/openshift-knative/hack/tree/main/config). If not, fix the versions first
 - [ ] Check if there are open PRs for Serverless-Operator that need to be merged
 - [ ] Check with the teams if they have all the necessary patches in the dependent repositories
 - [ ] [Run the `validate` action in `serverless-operator` and wait for it to complete](https://github.com/openshift-knative/serverless-operator/actions/workflows/validate.yaml)
