@@ -18,7 +18,7 @@ assignees: ''
 - [ ] Check with the teams if they have all the necessary patches in the dependent repositories
 - [ ] [Run the `validate` action in `serverless-operator` and wait for it to complete](https://github.com/openshift-knative/serverless-operator/actions/workflows/validate.yaml)
 - [ ] [Merge PRs created by GitHub actions](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
-- [ ] Make sure that all builds are passing
+- [ ] Make sure that Serverless-Operator CI and periodics are passing. Check for example the periodic jobs in [#serverless-ci](https://redhat.enterprise.slack.com/archives/CHTTRCUBC) 
 
 ## Cutting the new release branch
 - [ ] Create a new branch from `main` with the pattern `release-x.xx`
