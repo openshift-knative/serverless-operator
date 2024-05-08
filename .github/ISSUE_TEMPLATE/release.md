@@ -29,7 +29,6 @@ assignees: ''
 
 ### Pre-checks
 - [ ] Make sure that all dependent repos have a release branch for the new version and [CI set up](https://github.com/openshift-knative/hack)
-- [ ] Ask the respective team to make sure that all relevant OpenShift specific patches are included in the new version
 - [ ] Make sure that the [automated PR to point the CSV to the old branch is merged](https://github.com/openshift-knative/serverless-operator/pulls?q=is%3Apr+author%3Aapp%2Fgithub-actions+release-+is%3Aopen) like in https://github.com/openshift-knative/serverless-operator/pull/1881
 
 ### Serving Manifests
