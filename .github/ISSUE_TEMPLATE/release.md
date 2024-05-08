@@ -9,8 +9,8 @@ assignees: ''
 # Release Checklist
 
 ## Resources
-https://github.com/openshift-knative/serverless-operator/blob/main/README.md#create-a-new-version
-Video from pierdipi showing the release process
+- https://github.com/openshift-knative/serverless-operator/blob/main/README.md#create-a-new-version
+- [Video](https://drive.google.com/drive/u/0/folders/1j1KF_1dUl6x0oiN2aVKlapAYXo1dGUDG) from pierdipi showing the release process
 
 ## Pre-checks
 - [ ] Check if the OCP versions in the release-matrix match [our current CI config](https://github.com/openshift-knative/hack/tree/main/config). If not, fix the versions first
