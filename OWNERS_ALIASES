@@ -2,6 +2,7 @@ aliases:
   serverless-approvers:
   - alanfx
   - aliok
+  - creydr
   - dsimansk
   - lberk
   - matzew
@@ -13,6 +14,7 @@ aliases:
   - skonto
   serverless-reviewers:
   - aliok
+  - creydr
   - dsimansk
   - matzew
   - mgencur
