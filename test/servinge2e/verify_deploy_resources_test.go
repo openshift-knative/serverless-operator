@@ -23,8 +23,8 @@ func TestKnConsoleCLIDownload(t *testing.T) {
 		t.Fatalf("Failed to GET kn ConsoleCLIDownload: %v", err)
 	}
 	// Verify the links in kn CCD CO
-	if len(ccd.Spec.Links) != 5 {
-		t.Fatalf("expecting 5 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
+	if len(ccd.Spec.Links) != 7 {
+		t.Fatalf("expecting 7 links for artifacts for kn ConsoleCLIDownload, found %d", len(ccd.Spec.Links))
 	}
 	// Verify if individual link starts with correct route
 	for _, link := range ccd.Spec.Links {
