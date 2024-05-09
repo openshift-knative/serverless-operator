@@ -10,6 +10,9 @@ on:
       branch:
         required: true
         description: "SO branch"
+      tag:
+        required: true
+        description: "Promotion tag"
 
 jobs:
   generate-ci:
@@ -51,12 +54,17 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.branch }} --config config/serverless-operator.yaml
+        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.tag }} --config config/serverless-operator.yaml
 
       - name: Generate CI (on branch created)
         if: github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag ${{ github.ref_name }} --config config/serverless-operator.yaml
+        run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version') --config config/serverless-operator.yaml
+
+      - name: Generate CI (on push)
+        if: github.event.created == false
+        working-directory: ./src/github.com/openshift-knative/hack
+        run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version') --config config/serverless-operator.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
