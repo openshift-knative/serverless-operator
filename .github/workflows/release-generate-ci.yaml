@@ -32,6 +32,10 @@ jobs:
         with:
           path: ./src/github.com/openshift-knative/serverless-operator
 
+      - name: Install yq
+        run: |
+          go install github.com/mikefarah/yq/v3@latest
+
       - name: Checkout openshift-knative/hack
         uses: actions/checkout@v4
         with:
