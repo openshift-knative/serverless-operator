@@ -16,7 +16,6 @@ on:
 
 jobs:
   generate-ci:
-    if: github.event.created || github.event_name == 'workflow_dispatch'
     name: generate-ci
     runs-on: ubuntu-latest
     env:
@@ -58,15 +57,15 @@ jobs:
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --branch ${{ inputs.branch }} --tag ${{ inputs.tag }} --config config/serverless-operator.yaml
+        run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ inputs.branch }} --tag ${{ inputs.tag }} --config config/serverless-operator.yaml
 
       - name: Generate CI (on branch created)
-        if: github.event.created
+        if:  github.event_name == 'push' && github.event.created
         working-directory: ./src/github.com/openshift-knative/hack
         run: go run ./cmd/prowcopy --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version') --config config/serverless-operator.yaml
 
       - name: Generate CI (on push)
-        if: github.event.created == false
+        if: github.event_name == 'push' && github.event.created == false
         working-directory: ./src/github.com/openshift-knative/hack
         run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version') --config config/serverless-operator.yaml
 
