@@ -187,7 +187,7 @@ func populateKnConsoleCLIDownload(baseURL string, instance *operatorv1beta1.Knat
 				Href: baseURL + "/kn-macos-amd64.tar.gz",
 			}, {
 				Text: "Download kn for macOS for ARM 64",
-				Href: baseURL + "/kn-darwin-arm64.tar.gz",
+				Href: baseURL + "/kn-macos-arm64.tar.gz",
 			}, {
 				Text: "Download kn for Windows",
 				Href: baseURL + "/kn-windows-amd64.zip",
