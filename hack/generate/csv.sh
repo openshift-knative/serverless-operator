@@ -121,8 +121,7 @@ image 'KN_CLIENT'              "${registry}/knative-v$(metadata.get dependencies
 image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
 image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
 image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get dependencies.func.tekton_buildah)"
-image 'KN_PLUGIN_FUNC_NODEJS_16'      "$(metadata.get dependencies.func.nodejs_16)"
-image 'KN_PLUGIN_FUNC_OPENJDK_17'     "$(metadata.get dependencies.func.openjdk_17)"
+image 'KN_PLUGIN_FUNC_NODEJS_20_MINIMAL' "$(metadata.get dependencies.func.nodejs_20_minimal)"
 image 'KN_PLUGIN_FUNC_OPENJDK_21'     "$(metadata.get dependencies.func.openjdk_21)"
 image 'KN_PLUGIN_FUNC_PYTHON_39'      "$(metadata.get dependencies.func.python-39)"
 
