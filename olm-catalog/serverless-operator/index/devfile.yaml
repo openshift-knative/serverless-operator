@@ -10,7 +10,7 @@ components:
     image:
       imageName: ""
       dockerfile:
-        uri: Dockerfile
+        uri: "olm-catalog/serverless-operator/index/Dockerfile"
         buildContext: ""
   - name: outerloop-deploy
     kubernetes:
