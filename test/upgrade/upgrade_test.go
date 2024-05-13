@@ -21,6 +21,7 @@ package upgrade_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -177,6 +178,21 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	tests = append(tests, EventingPostUpgradeTests()...)
 	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+
+	fmt.Println("SERVING FLAGS")
+	fmt.Println(test.Flags.ServingVersion)
+	fmt.Println(test.Flags.ServingVersionPrevious)
+
+	if test.Flags.ServingVersion == test.Flags.ServingVersionPrevious {
+		fmt.Println("Skipping DeploymentFailurePostUpgrade() as servingVersion==servingVersionPrevious")
+		for i, operation := range tests {
+			if operation.Name() == "DeploymentFailurePostUpgrade" {
+				tests = append(tests[:i], tests[i+1:]...)
+				break
+			}
+		}
+	}
+
 	return tests
 }
 
