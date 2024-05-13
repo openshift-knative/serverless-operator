@@ -177,6 +177,19 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	tests = append(tests, EventingPostUpgradeTests()...)
 	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
 	tests = append(tests, servingupgrade.ServingPostUpgradeTests()...)
+
+	// Skipping DeploymentFailurePostUpgrade if no upgrade is performed,
+	// as the test expects an update to happen
+	if test.Flags.ServingVersion == test.Flags.ServingVersionPrevious {
+		for i, operation := range tests {
+			if operation.Name() == "DeploymentFailurePostUpgrade" {
+				// make sure we keep the order of the slice:
+				tests = append(tests[:i], tests[i+1:]...)
+				break
+			}
+		}
+	}
+
 	return tests
 }
 
