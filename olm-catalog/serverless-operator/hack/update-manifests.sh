@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-root="$(dirname "${BASH_SOURCE[0]}")/../../.."
+root="$(dirname "$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")")"
 
 # Source the main vars file to get the operator version to be used.
 # shellcheck disable=SC1091,SC1090
