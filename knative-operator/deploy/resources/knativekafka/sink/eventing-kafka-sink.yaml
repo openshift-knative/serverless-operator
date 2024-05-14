@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
   annotations:
     knative.dev/example-checksum: "a8ce4acb"
 data:
@@ -114,7 +114,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 rules:
   - apiGroups:
       - ""
@@ -124,6 +124,17 @@ rules:
       - get
       - list
       - watch
+  # needed for eventtype autocreate
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - eventtypes
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+
 ---
 ---
 
@@ -147,7 +158,7 @@ metadata:
   name: knative-kafka-sink-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 ---
 ---
 
@@ -170,7 +181,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-sink-data-plane
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-sink-data-plane
@@ -203,7 +214,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -215,7 +226,7 @@ spec:
       name: kafka-sink-receiver
       labels:
         app: kafka-sink-receiver
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
         app.kubernetes.io/component: kafka-sink-receiver
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -379,7 +390,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-sink-receiver
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: kafka-sink-receiver
     app.kubernetes.io/name: knative-eventing
 spec:

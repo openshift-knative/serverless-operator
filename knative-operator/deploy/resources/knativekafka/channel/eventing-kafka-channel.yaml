@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
   annotations:
     knative.dev/example-checksum: "6ce544b6"
 data:
@@ -200,7 +200,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 rules:
   - apiGroups:
       - ""
@@ -215,6 +215,16 @@ rules:
     resources:
       - serviceaccounts/token
     verbs:
+      - create
+  # needed for eventtype autocreate
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - eventtypes
+    verbs:
+      - get
+      - list
+      - watch
       - create
 ---
 ---
@@ -239,7 +249,7 @@ metadata:
   name: knative-kafka-channel-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 ---
 ---
 
@@ -262,7 +272,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-channel-data-plane
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-channel-data-plane
@@ -295,7 +305,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-dispatcher
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: kafka-channel-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -307,7 +317,7 @@ spec:
       name: kafka-channel-dispatcher
       labels:
         app: kafka-channel-dispatcher
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -466,7 +476,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -478,7 +488,7 @@ spec:
       name: kafka-channel-receiver
       labels:
         app: kafka-channel-receiver
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
         app.kubernetes.io/component: kafka-channel-receiver
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -642,7 +652,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-channel-receiver
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: kafka-channel-receiver
     app.kubernetes.io/name: knative-eventing
 spec:

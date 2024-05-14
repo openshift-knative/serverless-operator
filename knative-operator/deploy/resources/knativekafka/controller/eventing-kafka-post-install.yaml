@@ -20,8 +20,24 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: v1.12
-rules: []
+    app.kubernetes.io/version: v1.14
+rules:
+  # we need to be able to delete old deployments
+  - apiGroups:
+      - "apps"
+    resources:
+      - "deployments"
+    verbs:
+      - "delete"
+  # we need to get statefulsets
+  - apiGroups:
+      - "apps"
+    resources:
+      - "statefulsets"
+    verbs:
+      - "get"
+      - "list"
+
 ---
 ---
 
@@ -45,7 +61,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -66,7 +82,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -148,7 +164,7 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 
 ---
 
@@ -157,7 +173,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -188,7 +204,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -219,7 +235,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -227,7 +243,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -272,7 +288,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -280,7 +296,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
