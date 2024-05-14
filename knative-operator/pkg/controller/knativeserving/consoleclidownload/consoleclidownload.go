@@ -174,14 +174,20 @@ func populateKnConsoleCLIDownload(baseURL string, instance *operatorv1beta1.Knat
 				Text: "Download kn for Linux for x86_64",
 				Href: baseURL + "/kn-linux-amd64.tar.gz",
 			}, {
+				Text: "Download kn for Linux for ARM 64",
+				Href: baseURL + "/kn-linux-arm64.tar.gz",
+			}, {
 				Text: "Download kn for Linux for IBM Power little endian",
 				Href: baseURL + "/kn-linux-ppc64le.tar.gz",
 			}, {
 				Text: "Download kn for Linux for IBM Z",
 				Href: baseURL + "/kn-linux-s390x.tar.gz",
 			}, {
-				Text: "Download kn for macOS",
+				Text: "Download kn for macOS for x86_64",
 				Href: baseURL + "/kn-macos-amd64.tar.gz",
+			}, {
+				Text: "Download kn for macOS for ARM 64",
+				Href: baseURL + "/kn-macos-arm64.tar.gz",
 			}, {
 				Text: "Download kn for Windows",
 				Href: baseURL + "/kn-windows-amd64.zip",
