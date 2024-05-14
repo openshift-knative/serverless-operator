@@ -49,9 +49,9 @@ dependencies:
     # eventing-kafka-broker midstream branch or commit
     eventing_kafka_broker_artifacts_branch: release-v1.14
     # eventing-istio promotion tag
-    eventing_istio: knative-v1.12
+    eventing_istio: knative-v1.14
     # eventing-istio midstream branch or commit
-    eventing_istio_artifacts_branch: release-v1.12
+    eventing_istio_artifacts_branch: release-v1.14
     # backstage-plugins promotion tag
     backstage_plugins: knative-v1.12
     # backstage-plugins midstream branch or commit
