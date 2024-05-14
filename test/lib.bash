@@ -139,7 +139,7 @@ function downstream_serving_e2e_tests {
       mv ./test/servinge2e/user_permissions_test.go ./test/servinge2e/user_permissions_notest.go || true
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/servicemesh/ \
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
@@ -209,13 +209,13 @@ function downstream_eventing_e2e_rekt_tests {
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt ./test/eventinge2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --poll.timeout="8m" \
       --environment.namespace=serverless-tests \
-      --istio.enabled="$FULL_MESH" \
+      --istio.enabled="$MESH" \
       "$@"
   else
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
@@ -281,13 +281,13 @@ function downstream_knative_kafka_e2e_rekt_tests {
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt ./test/extensione2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
       --poll.timeout="8m" \
-      --istio.enabled="$FULL_MESH" \
+      --istio.enabled="$MESH" \
       "$@"
 
     # Workaround for https://github.com/knative-sandbox/eventing-kafka-broker/issues/3133
@@ -463,7 +463,7 @@ EOF
     --resolvabledomain \
     --https)
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
       common_opts+=("--environment.namespace=serverless-tests")
       common_opts+=("--istio.enabled")
       common_opts+=("--poll.timeout=8m")

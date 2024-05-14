@@ -66,8 +66,8 @@ func TestKnativeServing(t *testing.T) {
 		}
 		ingressNamespace := servingNamespace + "-ingress"
 
-		// If FULL_MESH is true, net-istio is used instead of net-kourier.
-		if os.Getenv("FULL_MESH") == "true" {
+		// If MESH is true, net-istio is used instead of net-kourier.
+		if os.Getenv("MESH") == "true" {
 			ingressDeployments = []test.Deployment{
 				{Name: "net-istio-controller"},
 				{Name: "net-istio-webhook"},

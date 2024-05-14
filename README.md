@@ -83,10 +83,8 @@ in `knative-eventing` namespace by default. Requires to install a Strimzi cluste
   version.
 - `make install-strimzi`: Install the latest Strimzi operator and a kafka cluster instance in `kafka` namespace by default.
 - `make unistall-strimzi`: Uninstall the Strimzi operator and any existing kafka cluster instance. 
-- `make install-mesh`: Install service mesh operator.
-- `make uninstall-mesh `: Uninstall service mesh operator.
-- `make install-full-mesh`: Install service mesh operator, Istio Gateway and PeerAuthentication to use Knative Serving for secure traffic.
-- `make uninstall-full-mesh `: Uninstall service mesh operator, Istio Gateway and PeerAuthentication.
+- `make install-mesh`: Install service mesh operator, Istio Gateway and PeerAuthentication to use Knative Serving + Eventing for secure traffic.
+- `make uninstall-mesh `: Uninstall service mesh operator, Istio Gateway and PeerAuthentication.
 
 **Note:** Don't forget you can chain `make` targets. `make images dev` is handy
 for example.

@@ -1,9 +1,9 @@
 # Test serverless-operator with secure traffic
 
-To test service mesh operator and setup secure traffic, run `make install-full-mesh`
+To test service mesh operator and setup secure traffic, run `make install-mesh`
 
 ```
-make install-full-mesh
+make install-mesh
 ```
 
 This command deploys resources in [mesh_resources directory](../hack/lib/mesh_resources/).
@@ -87,7 +87,7 @@ spec:
 EOF
 ```
 
-Then, create KnativeuService with `sidecar.istio.io/inject: "true"`, `sidecar.istio.io/rewriteAppHTTPProbers: "true"` and `serving.knative.openshift.io/enablePassthrough: "true"` annotations in your namespace,
+Then, create KnativeService with `sidecar.istio.io/inject: "true"`, `sidecar.istio.io/rewriteAppHTTPProbers: "true"` and `serving.knative.openshift.io/enablePassthrough: "true"` annotations in your namespace,
 which is one of the namespaces in the `ServiceMeshMemberRoll`.
 
 ```sh
@@ -123,5 +123,5 @@ Hello World!
 To uninstall service mesh operator, run `make uninstall-mesh`.
 
 ```
-make uninstall-full-mesh
+make uninstall-mesh
 ```

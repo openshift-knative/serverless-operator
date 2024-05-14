@@ -167,7 +167,7 @@ function deploy_knativeserving_cr {
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     enable_istio "$serving_cr"
     # Disable internal encryption.
     yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
@@ -192,7 +192,7 @@ function deploy_knativeserving_cr {
 
   oc apply -n "${SERVING_NAMESPACE}" -f "$serving_cr"
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     # metadata-webhook adds istio annotations for e2e test by webhook.
     oc apply -f "${rootdir}/serving/metadata-webhook/config"
   fi
@@ -229,7 +229,7 @@ EOF
 }
 
 # If ServiceMesh is enabled:
-# - Set ingress.istio.enbled to "true"
+# - Set ingress.istio.enabled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
 #   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_istio_eventing {
@@ -292,7 +292,7 @@ EOF
 }
 
 # If ServiceMesh is enabled:
-# - Set ingress.istio.enbled to "true"
+# - Set ingress.istio.enabled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
 #   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_istio_eventing_kafka {
@@ -363,7 +363,7 @@ function deploy_knativeeventing_cr {
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$eventing_cr"
   fi
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     enable_istio_eventing "$eventing_cr"
   fi
 
@@ -403,7 +403,7 @@ spec:
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
 EOF
 
-  if [[ $FULL_MESH == "true" ]]; then
+  if [[ $MESH == "true" ]]; then
     enable_istio_eventing_kafka "$knativekafka_cr"
   fi
 
@@ -579,7 +579,7 @@ function gather_knative_state {
   local gatherImageMesh="${MUST_GATHER_IMAGE_MESH:-registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel7}"
   mkdir -p "$gather_dir"
   IMAGE_OPTION=("--image=${gatherImageKnative}")
-  if [[ $FULL_MESH == true ]]; then
+  if [[ $MESH == true ]]; then
     IMAGE_OPTION=("${IMAGE_OPTION[@]}" "--image=${gatherImageMesh}")
   fi
 
