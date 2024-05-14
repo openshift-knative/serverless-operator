@@ -1,3 +1,5 @@
+# use non-scratch parent image as dummy for https://issues.redhat.com/browse/KFLUXBUGS-10
+FROM registry.redhat.io/ubi9/ubi-micro:latest
 FROM scratch
 
 COPY olm-catalog/serverless-operator/manifests /manifests
