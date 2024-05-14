@@ -8,12 +8,12 @@ LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=serverless-operator
 LABEL operators.operatorframework.io.bundle.channel.default.v1="stable"
-LABEL operators.operatorframework.io.bundle.channels.v1="stable,stable-1.33"
+LABEL operators.operatorframework.io.bundle.channels.v1="stable,stable-1.34"
 
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
       name="openshift-serverless-1/serverless-operator-bundle" \
-      version="1.33.0" \
+      version="1.34.0" \
       summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless Bundle" \
