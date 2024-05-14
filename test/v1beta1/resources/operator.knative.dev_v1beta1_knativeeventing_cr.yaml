@@ -4,6 +4,8 @@ metadata:
   name: knative-eventing
 spec:
   config:
+    config-features:
+      new-apiserversource-filters: "enabled"
     logging:
       loglevel.controller: "debug"
       loglevel.webhook: "debug"
