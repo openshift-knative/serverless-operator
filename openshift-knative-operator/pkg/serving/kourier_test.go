@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	networking "knative.dev/networking/pkg/config"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
@@ -155,7 +156,7 @@ func TestKourierEnvValue(t *testing.T) {
 			CommonSpec: base.CommonSpec{
 				Config: base.ConfigMapData{
 					"network": map[string]string{
-						InternalEncryptionKey: "true",
+						networking.SystemInternalTLSKey: "true",
 					},
 				},
 			},
@@ -229,8 +230,8 @@ func TestKourierInternalEncryptionOverrideCertName(t *testing.T) {
 			CommonSpec: base.CommonSpec{
 				Config: base.ConfigMapData{
 					"network": map[string]string{
-						InternalEncryptionKey:        "true",
-						IngressDefaultCertificateKey: "custom-cert",
+						networking.SystemInternalTLSKey: "true",
+						IngressDefaultCertificateKey:    "custom-cert",
 					},
 				},
 			},

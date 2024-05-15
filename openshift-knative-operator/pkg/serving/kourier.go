@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	networking "knative.dev/networking/pkg/config"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/network"
 )
@@ -17,10 +18,6 @@ const (
 	providerLabel           = "networking.knative.dev/ingress-provider"
 	kourierIngressClassName = "kourier.ingress.networking.knative.dev"
 	networkCMName           = "network"
-
-	// TODO: Use "knative.dev/networking/pkg/config" once the repo pulled Knative 1.6.
-	// Backport messes up the dependencies.
-	InternalEncryptionKey = "internal-encryption"
 
 	// IngressDefaultCertificateKey is the OpenShift Ingress default certificate name.
 	// The default cert name is different when users changed the default ingress certificate name via IngressController CR (SRVKS-955).
@@ -101,7 +98,8 @@ func addKourierEnvValues(ks base.KComponent) mf.Transformer {
 	}
 
 	networkCM := ks.GetSpec().GetConfig()[networkCMName]
-	if encrypt := networkCM[InternalEncryptionKey]; strings.ToLower(encrypt) == "true" {
+	if strings.ToLower(networkCM[networking.SystemInternalTLSKey]) == "true" ||
+		strings.ToLower(networkCM[networking.InternalEncryptionKey]) == "true" {
 		if certName := networkCM[IngressDefaultCertificateKey]; certName != "" {
 			envVars = append(envVars,
 				corev1.EnvVar{Name: "CERTS_SECRET_NAMESPACE", Value: ingressDefaultCertificateNameSpace},
