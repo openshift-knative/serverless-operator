@@ -413,9 +413,6 @@ spec:
               cpu: 1000m
               # 600Mi for virtual replicas + 100Mi overhead
               memory: 700Mi
-            limits:
-              cpu: 2000m
-              memory: 1000Mi
 
           livenessProbe:
             failureThreshold: 3
