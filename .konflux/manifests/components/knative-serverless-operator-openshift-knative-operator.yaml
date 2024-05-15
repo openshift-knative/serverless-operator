@@ -8,6 +8,8 @@ metadata:
 spec:
   componentName: serverless-openshift-knative-operator
   application: serverless-operator-konflux
+  build-nudges-ref:
+    - serverless-bundle
   source:
     git:
       url: https://github.com/openshift-knative/serverless-operator.git
