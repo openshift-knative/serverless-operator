@@ -240,7 +240,7 @@ function enable_istio_eventing {
   cat - << EOF > "${istio_patch}"
 spec:
   config:
-    features:
+    config-features:
       istio: "enabled"
       delivery-timeout: "enabled"
   workloads:
