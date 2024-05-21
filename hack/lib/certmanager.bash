@@ -82,6 +82,7 @@ function sync_trust_bundle {
    for ns in "${namespaces[@]}"; do
      echo "Syncing trust-bundle for namespace: ${ns}"
      oc create namespace "${ns}" --dry-run=client -o yaml | oc apply -f -
+     oc label namespace "${ns}" knative.openshift.io/part-of="openshift-serverless" --overwrite
      oc create configmap -n "${ns}" knative-ca-bundle --from-file=tls.crt --from-file=ca.crt \
         --dry-run=client -o yaml | kubectl apply -n "${ns}" -f - || return $?
      oc label configmap -n "${ns}" knative-ca-bundle networking.knative.dev/trust-bundle=true --overwrite
