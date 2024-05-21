@@ -64,7 +64,7 @@ dependencies:
         nodejs_20_minimal: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
         openjdk_21: registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c
         python-39: registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d
-    operator: 1.13.3
+    operator: 1.14.1
     # Previous versions required for downgrade testing
     previous:
         serving: knative-v1.12

@@ -21,7 +21,7 @@ index e5704143c..298276ddd 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -953,43 +944,6 @@ spec:
+@@ -2247,43 +2238,6 @@ spec:
                          type: boolean
                      type: object
                  type: object
@@ -65,7 +65,7 @@ index e5704143c..298276ddd 100644
                sinkBindingSelectionMode:
                  description: Specifies the selection mode for the sinkbinding webhook.
                    If the value is `inclusion`, only namespaces/objects labelled as
-@@ -997,9 +951,6 @@ spec:
+@@ -2291,9 +2245,6 @@ spec:
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
                    and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
                  type: string
