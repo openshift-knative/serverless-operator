@@ -144,9 +144,12 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 
 	// Target the HTTPS port and configure passthrough when:
 	// * the passthrough annotation is set.
-	// * the ingress.spec.tls is set. (DomainMapping with BYP cert.)
-	// * the internal-encryption is enabled.
-	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok || len(ci.Spec.TLS) > 0 || isInternalEncryptionEnabled(rule) {
+	// * the ingress.spec.tls is set for an external domain (e.g. DomainMapping with BYP cert.)
+	// * the destination service uses a https port.
+	if _, ok := annotations[EnablePassthroughRouteAnnotation]; ok ||
+		len(ci.GetIngressTLSForVisibility(networkingv1alpha1.IngressVisibilityExternalIP)) > 0 ||
+		isTLSDestination(rule) {
+
 		route.Spec.Port.TargetPort = intstr.FromString(HTTPSPort)
 		route.Spec.TLS.Termination = routev1.TLSTerminationPassthrough
 		route.Spec.TLS.InsecureEdgeTerminationPolicy = routev1.InsecureEdgeTerminationPolicyRedirect
@@ -155,16 +158,16 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	return route, nil
 }
 
-// isInternalEncryptionEnabled determines whether internal-encryption is enabled or not.
-// In general, we can determine it by the value internal-encryption in config-network, however the serverless ingress does not
-// watch the ConfigMap. Therefore we determine it by ServiceHTTPSPort(443) port for the backend in Kingress.
-func isInternalEncryptionEnabled(rule networkingv1alpha1.IngressRule) bool {
+// isTLSDestination determines whether the target service is using https or not.
+// In general, we can determine it by the value system-internal-tls/cluster-local-domain-tls in config-network, however the serverless ingress does not
+// watch the ConfigMap. Therefore, we determine it by ServiceHTTPSPort(443) port for the backend in Kingress.
+func isTLSDestination(rule networkingv1alpha1.IngressRule) bool {
 	if rule.HTTP == nil {
 		return false
 	}
 	for _, path := range rule.HTTP.Paths {
 		for _, split := range path.Splits {
-			if split.IngressBackend.ServicePort == intstr.FromInt(networking.ServiceHTTPSPort) {
+			if split.IngressBackend.ServicePort == intstr.FromInt32(networking.ServiceHTTPSPort) {
 				return true
 			}
 		}

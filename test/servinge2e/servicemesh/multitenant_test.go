@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	"knative.dev/networking/pkg/apis/networking"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
@@ -146,7 +147,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 				targetHost = service.Status.URL.Host
 			}
 
-			httpProxy := test.WithServiceReadyOrFail(ctx, HTTPProxyService(tc.name+"-proxy", tc.sourceNamespace, gateway, targetHost, map[string]string{
+			httpProxy := test.WithServiceReadyOrFail(ctx, servinge2e.HTTPProxyService(tc.name+"-proxy", tc.sourceNamespace, gateway, targetHost, "", map[string]string{
 				ServingEnablePassthroughKey: "true",
 			}, tc.annotations))
 

@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test/servinge2e"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e/servicemesh"
 	"knative.dev/serving/pkg/apis/autoscaling"
 
@@ -609,7 +610,7 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 				if scenario.valid {
 					// Verify the response is a proper "hello world" when the token is valid
-					if resp.StatusCode != 200 || !strings.Contains(string(resp.Body), helloworldText) {
+					if resp.StatusCode != 200 || !strings.Contains(string(resp.Body), servinge2e.HelloworldText) {
 						t.Fatalf("Unexpected response with a valid token: HTTP %d: %s", resp.StatusCode, string(resp.Body))
 					}
 				} else {

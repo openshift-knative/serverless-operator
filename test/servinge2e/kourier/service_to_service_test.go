@@ -6,7 +6,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e"
-	"github.com/openshift-knative/serverless-operator/test/servinge2e/servicemesh"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/networking/pkg/apis/networking"
 	pkgTest "knative.dev/pkg/test"
@@ -75,12 +74,12 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	// For cluster-local ksvc, we deploy an "HTTP proxy" service, and request that one instead
 	if service.GetLabels()[networking.VisibilityLabelKey] == serving.VisibilityClusterLocal {
 		// Deploy an "HTTP proxy" towards the ksvc (using an httpproxy image from knative-serving testsuite)
-		httpProxy := test.WithServiceReadyOrFail(ctx, servicemesh.HTTPProxyService(tc.name+"-proxy", namespace, "" /*gateway*/, service.Status.URL.Host, nil, nil))
+		httpProxy := test.WithServiceReadyOrFail(ctx, servinge2e.HTTPProxyService(tc.name+"-proxy", namespace, "", service.Status.URL.Host, "", nil, nil))
 		serviceURL = httpProxy.Status.URL.URL()
 	}
 
 	// Verify the service is actually accessible from the outside
-	servinge2e.WaitForRouteServingText(t, ctx, serviceURL, helloworldText)
+	servinge2e.WaitForRouteServingText(t, ctx, serviceURL, servinge2e.HelloworldText)
 
 	// Verify the expected istio-proxy is really there
 	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})

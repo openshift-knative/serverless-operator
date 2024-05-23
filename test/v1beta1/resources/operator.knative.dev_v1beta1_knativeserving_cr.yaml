@@ -4,11 +4,13 @@ metadata:
   name: knative-serving
 spec:
   config:
-    network:
-      # we currently cannot run with encryption enabled
-      # as the net-certmanager stuff has not yet been integrated into Serving
-      # TODO: https://issues.redhat.com/browse/SRVKS-1198
-      internal-encryption: "false"
+    certmanager:
+      clusterLocalIssuerRef: |
+        kind: ClusterIssuer
+        name: knative-selfsigned-issuer
+      systemInternalIssuerRef: |
+        kind: ClusterIssuer
+        name: knative-selfsigned-issuer
     autoscaler:
       container-concurrency-target-default: "100"
       container-concurrency-target-percentage: "1.0"
@@ -37,8 +39,6 @@ spec:
       loglevel.queueproxy: "debug"
       loglevel.webhook: "debug"
       loglevel.hpaautoscaler: "debug"
-      loglevel.domainmapping: "debug"
-      loglevel.domainmapping-webhook: "debug"
     observability:
       logging.enable-var-log-collection: "false"
       metrics.backend-destination: "prometheus"

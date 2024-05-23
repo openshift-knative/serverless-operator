@@ -21,7 +21,7 @@ func TestKnativeServiceHTTPRedirect(t *testing.T) {
 	ksvc = test.WithServiceReadyOrFail(caCtx, ksvc)
 
 	// Implicitly checks that HTTPS works.
-	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), helloworldText)
+	servinge2e.WaitForRouteServingText(t, caCtx, ksvc.Status.URL.URL(), servinge2e.HelloworldText)
 
 	// Now check HTTP request.
 	httpURL := ksvc.Status.URL.DeepCopy()

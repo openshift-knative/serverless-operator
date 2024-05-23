@@ -8,10 +8,6 @@ import (
 	servingv1beta1 "knative.dev/serving/pkg/apis/serving/v1beta1"
 )
 
-const (
-	helloworldText = "Hello World!"
-)
-
 func withDomainMappingReadyOrFail(ctx *test.Context, dm *servingv1beta1.DomainMapping) *servingv1beta1.DomainMapping {
 	dm, err := ctx.Clients.Serving.ServingV1beta1().DomainMappings(dm.Namespace).Create(context.Background(), dm, metav1.CreateOptions{})
 	if err != nil {

@@ -1,0 +1,8 @@
+# Aligned with upstream Serving configuration, used by --https e2e tests
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-cluster-issuer
+spec:
+  selfSigned: {}
+
