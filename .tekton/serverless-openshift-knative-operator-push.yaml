@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: https://github.com/creydr/serverless-operator?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
@@ -14,7 +14,7 @@ metadata:
     appstudio.openshift.io/component: serverless-openshift-knative-operator
     pipelines.appstudio.openshift.io/type: build
   name: serverless-openshift-knative-operator-on-push
-  namespace: cstabler-tenant
+  namespace: ocp-serverless-tenant
 spec:
   params:
   - name: dockerfile
@@ -22,7 +22,7 @@ spec:
   - name: git-url
     value: '{{source_url}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-openshift-knative-operator:{{revision}}
+    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-openshift-knative-operator:{{revision}}
   - name: path-context
     value: .
   - name: revision

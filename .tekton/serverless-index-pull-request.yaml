@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: https://github.com/creydr/serverless-operator?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
@@ -15,7 +15,7 @@ metadata:
     appstudio.openshift.io/component: serverless-index
     pipelines.appstudio.openshift.io/type: build
   name: serverless-index-on-pull-request
-  namespace: cstabler-tenant
+  namespace: ocp-serverless-tenant
 spec:
   params:
   - name: dockerfile
@@ -25,7 +25,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-index:on-pr-{{revision}}
+    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-index:on-pr-{{revision}}
   - name: revision
     value: '{{revision}}'
   pipelineSpec:

@@ -820,7 +820,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:405307c40a938f118196c15aa21004d134ad479b9d347a6668fec33ddb7afbac
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:405307c40a938f118196c15aa21004d134ad479b9d347a6668fec33ddb7afbac
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -893,7 +893,7 @@ spec:
                       - name: "IMAGE_net-istio-webhook__webhook"
                         value: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.12"
                       - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
                       - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.12"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
@@ -1057,7 +1057,7 @@ spec:
                       - name: "IMAGE_net-istio-webhook__webhook"
                         value: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.12"
                       - name: "IMAGE_eventing-controller__eventing-controller"
-                        value: "quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
                       - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.12"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
@@ -1300,7 +1300,7 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:405307c40a938f118196c15aa21004d134ad479b9d347a6668fec33ddb7afbac"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:405307c40a938f118196c15aa21004d134ad479b9d347a6668fec33ddb7afbac"
     - name: "knative-openshift"
       image: "registry.ci.openshift.org/knative/main:serverless-knative-operator"
     - name: "knative-openshift-ingress"
@@ -1328,7 +1328,7 @@ spec:
     - name: "IMAGE_net-istio-webhook__webhook"
       image: "registry.ci.openshift.org/openshift/net-istio-webhook:knative-v1.12"
     - name: "IMAGE_eventing-controller__eventing-controller"
-      image: "quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/knative-eventing-controller@sha256:286bbbb82ec47c65a0473fa7feb338acee796918e1f133fe6a66735378ac109c"
     - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
       image: "registry.ci.openshift.org/openshift/knative-eventing-istio-controller:knative-v1.12"
     - name: "IMAGE_eventing-webhook__eventing-webhook"
