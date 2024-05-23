@@ -820,7 +820,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.ci.openshift.org/knative/main:serverless-openshift-knative-operator
+                    image: quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:eb9c83f5714e104ddd7b55acc963e2d846802cc2cab3f962e6683fe8136da3b2
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -1300,7 +1300,7 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.ci.openshift.org/knative/main:serverless-openshift-knative-operator"
+      image: "quay.io/redhat-user-workloads/cstabler-tenant/serverless-operator-konflux/serverless-openshift-knative-operator@sha256:eb9c83f5714e104ddd7b55acc963e2d846802cc2cab3f962e6683fe8136da3b2"
     - name: "knative-openshift"
       image: "registry.ci.openshift.org/knative/main:serverless-knative-operator"
     - name: "knative-openshift-ingress"
