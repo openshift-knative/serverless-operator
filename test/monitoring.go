@@ -8,7 +8,7 @@ import (
 
 	prom "github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	authv1 "k8s.io/api/authentication/v1"
+	authenticationv1 "k8s.io/api/authentication/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -65,7 +65,7 @@ func getPrometheusHost(ctx context.Context) (string, error) {
 
 func getBearerTokenForPrometheusAccount(ctx context.Context) (string, error) {
 	token, err := kubeclient.Get(ctx).CoreV1().ServiceAccounts("openshift-monitoring").
-		CreateToken(context.Background(), "prometheus-k8s", &authv1.TokenRequest{}, metav1.CreateOptions{})
+		CreateToken(context.Background(), "prometheus-k8s", &authenticationv1.TokenRequest{}, metav1.CreateOptions{})
 	if err != nil {
 		return "", fmt.Errorf("failed to create prometheus token: %w", err)
 	}
