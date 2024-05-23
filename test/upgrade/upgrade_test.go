@@ -110,8 +110,8 @@ func TestClusterUpgrade(t *testing.T) {
 	}
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade:  preUpgradeTests(),
-			PostUpgrade: postUpgradeTests(ctx, false),
+			PreUpgrade:  preClusterUpgradeTests(),
+			PostUpgrade: postClusterUpgradeTests(ctx, false),
 			// Do not include continual tests as they're failing across cluster upgrades.
 		},
 		Installations: pkgupgrade.Installations{
@@ -164,6 +164,21 @@ func preUpgradeTests() []pkgupgrade.Operation {
 	return append(tests, servingupgrade.ServingPreUpgradeTests()...)
 }
 
+func preClusterUpgradeTests() []pkgupgrade.Operation {
+	return exclude(preUpgradeTests(), "DeploymentFailurePreUpgrade")
+}
+
+func exclude(tests []pkgupgrade.Operation, name string) []pkgupgrade.Operation {
+	for i, operation := range tests {
+		if operation.Name() == name {
+			// make sure we keep the order of the slice:
+			tests = append(tests[:i], tests[i+1:]...)
+			break
+		}
+	}
+	return tests
+}
+
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
@@ -181,16 +196,16 @@ func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operati
 	// Skipping DeploymentFailurePostUpgrade if no upgrade is performed,
 	// as the test expects an update to happen
 	if test.Flags.ServingVersion == test.Flags.ServingVersionPrevious {
-		for i, operation := range tests {
-			if operation.Name() == "DeploymentFailurePostUpgrade" {
-				// make sure we keep the order of the slice:
-				tests = append(tests[:i], tests[i+1:]...)
-				break
-			}
-		}
+		tests = exclude(tests, "DeploymentFailurePostUpgrade")
 	}
 
 	return tests
+}
+
+func postClusterUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
+	// Skipping DeploymentFailurePostUpgrade. The test expects pre-upgrade application Pods
+	// to be up and running, but they're evicted during cluster upgrade.
+	return exclude(postUpgradeTests(ctx, failOnNoJobs), "DeploymentFailurePostUpgrade")
 }
 
 func postDowngradeTests() []pkgupgrade.Operation {
