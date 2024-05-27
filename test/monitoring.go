@@ -3,14 +3,12 @@ package test
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	prom "github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	corev1 "k8s.io/api/core/v1"
+	authenticationv1 "k8s.io/api/authentication/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -66,30 +64,10 @@ func getPrometheusHost(ctx context.Context) (string, error) {
 }
 
 func getBearerTokenForPrometheusAccount(ctx context.Context) (string, error) {
-	secrets, err := kubeclient.Get(ctx).CoreV1().Secrets("openshift-monitoring").List(context.Background(), metav1.ListOptions{})
+	token, err := kubeclient.Get(ctx).CoreV1().ServiceAccounts("openshift-monitoring").
+		CreateToken(context.Background(), "prometheus-k8s", &authenticationv1.TokenRequest{}, metav1.CreateOptions{})
 	if err != nil {
-		return "", fmt.Errorf("error listing secrets in namespace openshift-monitoring: %w", err)
+		return "", fmt.Errorf("failed to create prometheus token: %w", err)
 	}
-	tokenSecret := getSecretNameForToken(secrets.Items)
-	if tokenSecret == "" {
-		return "", errors.New("token name for prometheus-k8s service account not found")
-	}
-	sec, err := kubeclient.Get(ctx).CoreV1().Secrets("openshift-monitoring").Get(context.Background(), tokenSecret, metav1.GetOptions{})
-	if err != nil {
-		return "", fmt.Errorf("error getting secret %s: %w", tokenSecret, err)
-	}
-	tokenContents := sec.Data["token"]
-	if len(tokenContents) == 0 {
-		return "", fmt.Errorf("token data is missing for token %s", tokenSecret)
-	}
-	return string(tokenContents), nil
-}
-
-func getSecretNameForToken(secrets []corev1.Secret) string {
-	for _, sec := range secrets {
-		if strings.HasPrefix(sec.Name, "prometheus-k8s-token") {
-			return sec.Name
-		}
-	}
-	return ""
+	return token.Status.Token, nil
 }
