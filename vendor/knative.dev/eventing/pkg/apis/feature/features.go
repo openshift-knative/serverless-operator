@@ -98,8 +98,31 @@ func (e Flags) IsOIDCAuthentication() bool {
 	return e != nil && e[OIDCAuthentication] == Enabled
 }
 
+func (e Flags) IsCrossNamespaceEventLinks() bool {
+	return e != nil && e[CrossNamespaceEventLinks] == Enabled
+}
+
 func (e Flags) String() string {
 	return fmt.Sprintf("%+v", map[string]Flag(e))
+}
+
+func (e Flags) NodeSelector() map[string]string {
+	// Check if NodeSelector is not nil
+	if e == nil {
+		return map[string]string{}
+	}
+
+	nodeSelectorMap := make(map[string]string)
+
+	for k, v := range e {
+		if strings.Contains(k, NodeSelectorLabel) {
+			key := strings.TrimPrefix(k, NodeSelectorLabel)
+			value := strings.TrimSpace(string(v))
+			nodeSelectorMap[key] = value
+		}
+	}
+
+	return nodeSelectorMap
 }
 
 // NewFlagsConfigFromMap creates a Flags from the supplied Map
@@ -122,6 +145,8 @@ func NewFlagsConfigFromMap(data map[string]string) (Flags, error) {
 			flags[sanitizedKey] = Permissive
 		} else if k == TransportEncryption && strings.EqualFold(v, string(Strict)) {
 			flags[sanitizedKey] = Strict
+		} else if strings.Contains(k, NodeSelectorLabel) {
+			flags[sanitizedKey] = Flag(v)
 		} else {
 			return flags, fmt.Errorf("cannot parse the feature flag '%s' = '%s'", k, v)
 		}

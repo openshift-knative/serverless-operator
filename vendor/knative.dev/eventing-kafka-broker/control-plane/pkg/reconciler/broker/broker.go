@@ -22,6 +22,10 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+	"knative.dev/eventing/pkg/auth"
+	"knative.dev/pkg/logging"
+
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -44,6 +48,7 @@ import (
 	coreconfig "knative.dev/eventing-kafka-broker/control-plane/pkg/core/config"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/counter"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/clientpool"
 	kafkalogging "knative.dev/eventing-kafka-broker/control-plane/pkg/logging"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/prober"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/receiver"
@@ -73,9 +78,9 @@ type Reconciler struct {
 
 	ConfigMapLister corelisters.ConfigMapLister
 
-	// NewKafkaClusterAdminClient creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
+	// GetKafkaClusterAdmin creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
 	// mock the function used during the reconciliation loop.
-	NewKafkaClusterAdminClient kafka.NewClusterAdminClientFunc
+	GetKafkaClusterAdmin clientpool.GetKafkaClusterAdminFunc
 
 	BootstrapServers string
 
@@ -149,14 +154,11 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 		}
 	}
 
-	// get security option for Sarama with secret info in it
-	securityOption := security.NewSaramaSecurityOptionFromSecret(secret)
-
 	if err := r.TrackSecret(secret, broker); err != nil {
 		return fmt.Errorf("failed to track secret: %w", err)
 	}
 
-	topic, err := r.reconcileBrokerTopic(broker, securityOption, statusConditionManager, topicConfig, logger)
+	topic, err := r.reconcileBrokerTopic(ctx, broker, secret, statusConditionManager, topicConfig, logger)
 	if err != nil {
 		return err
 	}
@@ -169,7 +171,8 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 
 	logger.Debug("Got contract data from config map", zap.Any(base.ContractLogKey, ct))
 
-	if err := r.setTrustBundles(ct); err != nil {
+	trustBundlesChanged, err := r.setTrustBundles(ct)
+	if err != nil {
 		return statusConditionManager.FailedToResolveConfig(err)
 	}
 
@@ -187,7 +190,7 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 
 	logger.Debug("Change detector", zap.Int("changed", changed))
 
-	if changed == coreconfig.ResourceChanged {
+	if changed == coreconfig.ResourceChanged || trustBundlesChanged {
 		// Resource changed, increment contract generation.
 		coreconfig.IncrementContractGeneration(ct)
 
@@ -247,8 +250,8 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 			return err
 		}
 
-		httpAddress := receiver.HTTPAddress(ingressHost, broker)
-		httpsAddress := receiver.HTTPSAddress(ingressHost, broker, caCerts)
+		httpAddress := receiver.HTTPAddress(ingressHost, nil, broker)
+		httpsAddress := receiver.HTTPSAddress(ingressHost, nil, broker, caCerts)
 		addressableStatus.Address = &httpAddress
 		addressableStatus.Addresses = []duckv1.Addressable{httpAddress, httpsAddress}
 	} else if transportEncryptionFlags.IsStrictTransportEncryption() {
@@ -257,15 +260,14 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 			return err
 		}
 
-		httpsAddress := receiver.HTTPSAddress(ingressHost, broker, caCerts)
+		httpsAddress := receiver.HTTPSAddress(ingressHost, nil, broker, caCerts)
 		addressableStatus.Address = &httpsAddress
 		addressableStatus.Addresses = []duckv1.Addressable{httpsAddress}
 	} else {
-		httpAddress := receiver.HTTPAddress(ingressHost, broker)
+		httpAddress := receiver.HTTPAddress(ingressHost, nil, broker)
 		addressableStatus.Address = &httpAddress
 		addressableStatus.Addresses = []duckv1.Addressable{httpAddress}
 	}
-
 	proberAddressable := prober.ProberAddressable{
 		AddressStatus: &addressableStatus,
 		ResourceKey: types.NamespacedName{
@@ -282,19 +284,34 @@ func (r *Reconciler) reconcileKind(ctx context.Context, broker *eventing.Broker)
 
 	broker.Status.Address = addressableStatus.Address
 	broker.Status.Addresses = addressableStatus.Addresses
+
+	if feature.FromContext(ctx).IsOIDCAuthentication() {
+		audience := auth.GetAudience(eventing.SchemeGroupVersion.WithKind("Broker"), broker.ObjectMeta)
+		logging.FromContext(ctx).Debugw("Setting the brokers audience", zap.String("audience", audience))
+		broker.Status.Address.Audience = &audience
+
+		for i := range broker.Status.Addresses {
+			broker.Status.Addresses[i].Audience = &audience
+		}
+	} else {
+		logging.FromContext(ctx).Debug("Clearing the brokers audience as OIDC is not enabled")
+		if broker.Status.Address != nil {
+			broker.Status.Address.Audience = nil
+		}
+
+		for i := range broker.Status.Addresses {
+			broker.Status.Addresses[i].Audience = nil
+		}
+	}
+
 	broker.GetConditionSet().Manage(broker.GetStatus()).MarkTrue(base.ConditionAddressable)
 
 	return nil
 }
 
-func (r *Reconciler) reconcileBrokerTopic(broker *eventing.Broker, securityOption kafka.ConfigOption, statusConditionManager base.StatusConditionManager, topicConfig *kafka.TopicConfig, logger *zap.Logger) (string, reconciler.Event) {
+func (r *Reconciler) reconcileBrokerTopic(ctx context.Context, broker *eventing.Broker, secret *corev1.Secret, statusConditionManager base.StatusConditionManager, topicConfig *kafka.TopicConfig, logger *zap.Logger) (string, reconciler.Event) {
 
-	saramaConfig, err := kafka.GetSaramaConfig(securityOption)
-	if err != nil {
-		return "", statusConditionManager.FailedToResolveConfig(fmt.Errorf("error getting cluster admin config: %w", err))
-	}
-
-	kafkaClusterAdminClient, err := r.NewKafkaClusterAdminClient(topicConfig.BootstrapServers, saramaConfig)
+	kafkaClusterAdminClient, err := r.GetKafkaClusterAdmin(ctx, topicConfig.BootstrapServers, secret)
 	if err != nil {
 		return "", statusConditionManager.FailedToResolveConfig(fmt.Errorf("cannot obtain Kafka cluster admin, %w", err))
 	}
@@ -360,7 +377,7 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 	// 	See (under discussions KIPs, unlikely to be accepted as they are):
 	// 	- https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=181306446
 	// 	- https://cwiki.apache.org/confluence/display/KAFKA/KIP-286%3A+producer.send%28%29+should+not+block+on+metadata+update
-	address := receiver.HTTPAddress(ingressHost, broker)
+	address := receiver.HTTPAddress(ingressHost, nil, broker)
 	proberAddressable := prober.ProberAddressable{
 		AddressStatus: &duckv1.AddressStatus{
 			Address:   &address,
@@ -424,9 +441,7 @@ func (r *Reconciler) finalizeKind(ctx context.Context, broker *eventing.Broker) 
 			}
 		}
 
-		// get security option for Sarama with secret info in it
-		securityOption := security.NewSaramaSecurityOptionFromSecret(secret)
-		err = r.finalizeNonExternalBrokerTopic(broker, securityOption, topicConfig, logger)
+		err = r.finalizeNonExternalBrokerTopic(ctx, broker, secret, topicConfig, logger)
 
 		// if finalizeNonExternalBrokerTopic returns error that kafka is not reachable!
 		if err != nil {
@@ -501,15 +516,9 @@ func (r *Reconciler) deleteResourceFromContractConfigMap(ctx context.Context, lo
 	return nil
 }
 
-func (r *Reconciler) finalizeNonExternalBrokerTopic(broker *eventing.Broker, securityOption kafka.ConfigOption, topicConfig *kafka.TopicConfig, logger *zap.Logger) reconciler.Event {
-	saramaConfig, err := kafka.GetSaramaConfig(securityOption)
-	if err != nil {
-		// even in error case, we return `normal`, since we are fine with leaving the
-		// topic undeleted e.g. when we lose connection
-		return fmt.Errorf("error getting cluster admin sarama config: %w", err)
-	}
+func (r *Reconciler) finalizeNonExternalBrokerTopic(ctx context.Context, broker *eventing.Broker, secret *corev1.Secret, topicConfig *kafka.TopicConfig, logger *zap.Logger) reconciler.Event {
 
-	kafkaClusterAdminClient, err := r.NewKafkaClusterAdminClient(topicConfig.BootstrapServers, saramaConfig)
+	kafkaClusterAdminClient, err := r.GetKafkaClusterAdmin(ctx, topicConfig.BootstrapServers, secret)
 	if err != nil {
 		// even in error case, we return `normal`, since we are fine with leaving the
 		// topic undeleted e.g. when we lose connection
@@ -590,8 +599,17 @@ func storeConfigMapAsStatusAnnotation(broker *eventing.Broker, cm *corev1.Config
 		broker.Status.Annotations = make(map[string]string, len(cm.Data))
 	}
 
+	keysToStore := map[string]bool{
+		kafka.DefaultTopicNumPartitionConfigMapKey:      true,
+		kafka.DefaultTopicReplicationFactorConfigMapKey: true,
+		kafka.BootstrapServersConfigMapKey:              true,
+		security.AuthSecretNameKey:                      true,
+	}
+
 	for k, v := range cm.Data {
-		broker.Status.Annotations[k] = v
+		if keysToStore[k] {
+			broker.Status.Annotations[k] = v
+		}
 	}
 }
 
@@ -639,6 +657,10 @@ func (r *Reconciler) reconcilerBrokerResource(ctx context.Context, topic string,
 				Version:   secret.ResourceVersion,
 			},
 		}
+	}
+
+	if broker.Status.Address != nil && broker.Status.Address.Audience != nil {
+		resource.Ingress.Audience = *broker.Status.Address.Audience
 	}
 
 	egressConfig, err := coreconfig.EgressConfigFromDelivery(ctx, r.Resolver, broker, broker.Spec.Delivery, r.DefaultBackoffDelayMs)
@@ -715,11 +737,15 @@ func (r *Reconciler) getCaCerts() (*string, error) {
 	return pointer.String(string(caCerts)), nil
 }
 
-func (r *Reconciler) setTrustBundles(ct *contract.Contract) error {
+func (r *Reconciler) setTrustBundles(ct *contract.Contract) (bool, error) {
 	tb, err := coreconfig.TrustBundles(r.ConfigMapLister.ConfigMaps(r.SystemNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to get trust bundles: %w", err)
+		return false, fmt.Errorf("failed to get trust bundles: %w", err)
+	}
+	changed := false
+	if !equality.Semantic.DeepEqual(tb, ct.TrustBundles) {
+		changed = true
 	}
 	ct.TrustBundles = tb
-	return nil
+	return changed, nil
 }

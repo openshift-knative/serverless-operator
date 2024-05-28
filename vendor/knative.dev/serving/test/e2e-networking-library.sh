@@ -18,15 +18,29 @@ function is_ingress_class() {
   [[ "${INGRESS_CLASS}" == *"${1}"* ]]
 }
 
-function stage_gateway_api_resources() {
-  # This installs an istio version that works with the v1alpha1 gateway api
-  header "Staging Gateway API Resources"
+function stage_contour_gateway_api_resources() {
+  # This installs a contour version that works with the v1 gateway api
+  header "Staging Gateway API Resources - Contour"
 
-  local gateway_dir="${E2E_YAML_DIR}/gateway-api/install"
+  local gateway_dir="${E2E_YAML_DIR}/gateway-api/install-contour"
+  mkdir -p "${gateway_dir}"
+
+  echo "Downloading Contour Gateway Provisioner ${CONTOUR_VERSION}..."
+  CONTOUR_VERSION=v1.28.3
+  curl -s "https://raw.githubusercontent.com/projectcontour/contour/${CONTOUR_VERSION}/examples/render/contour-gateway-provisioner.yaml" \
+    > "${gateway_dir}/contour-gateway-provisioner.yaml"
+  echo "Download complete!"
+}
+
+function stage_istio_gateway_api_resources() {
+  # This installs an istio version that works with the v1 gateway api
+  header "Staging Gateway API Resources - Istio"
+
+  local gateway_dir="${E2E_YAML_DIR}/gateway-api/install-istio"
   mkdir -p "${gateway_dir}"
 
   # TODO: if we switch to istio 1.12 we can reuse stage_istio_head
-  curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.20.2 sh -
+  curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.21.1 sh -
 
   local params="--set values.global.proxy.clusterDomain=${CLUSTER_DOMAIN}"
 
@@ -129,8 +143,13 @@ function setup_ingress_env_vars() {
     export GATEWAY_NAMESPACE_OVERRIDE=contour-external
   fi
   if is_ingress_class gateway-api; then
-    export GATEWAY_OVERRIDE=istio-ingressgateway
-    export GATEWAY_NAMESPACE_OVERRIDE=istio-system
+    if [[ "${GATEWAY_API_IMPLEMENTATION}" == "contour" ]]; then
+      export GATEWAY_OVERRIDE=envoy-knative-external
+      export GATEWAY_NAMESPACE_OVERRIDE=contour-external
+    else
+      export GATEWAY_OVERRIDE=istio-ingressgateway
+      export GATEWAY_NAMESPACE_OVERRIDE=istio-system
+    fi
   fi
 }
 

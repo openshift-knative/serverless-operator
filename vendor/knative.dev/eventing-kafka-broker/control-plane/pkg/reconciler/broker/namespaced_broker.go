@@ -50,6 +50,7 @@ import (
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/config"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/counter"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
+	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/clientpool"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/prober"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/propagator"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/base"
@@ -72,11 +73,12 @@ type NamespacedReconciler struct {
 	ServiceLister            corelisters.ServiceLister
 	ClusterRoleBindingLister rbaclisters.ClusterRoleBindingLister
 	DeploymentLister         appslisters.DeploymentLister
+	StatefulSetLister        appslisters.StatefulSetLister
 	BrokerLister             eventinglisters.BrokerLister
 
-	// NewKafkaClusterAdminClient creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
+	// GetKafkaClusterAdmin creates new sarama ClusterAdmin. It's convenient to add this as Reconciler field so that we can
 	// mock the function used during the reconciliation loop.
-	NewKafkaClusterAdminClient kafka.NewClusterAdminClientFunc
+	GetKafkaClusterAdmin clientpool.GetKafkaClusterAdminFunc
 
 	BootstrapServers string
 
@@ -234,14 +236,14 @@ func (r *NamespacedReconciler) createReconcilerForBrokerInstance(broker *eventin
 				appendBrokerAsOwnerRef(broker)(cm)
 			},
 		},
-		Env:                        r.Env,
-		Resolver:                   r.Resolver,
-		ConfigMapLister:            r.ConfigMapLister,
-		NewKafkaClusterAdminClient: r.NewKafkaClusterAdminClient,
-		BootstrapServers:           r.BootstrapServers,
-		Prober:                     r.Prober,
-		Counter:                    r.Counter,
-		KafkaFeatureFlags:          r.KafkaFeatureFlags,
+		Env:                  r.Env,
+		Resolver:             r.Resolver,
+		ConfigMapLister:      r.ConfigMapLister,
+		GetKafkaClusterAdmin: r.GetKafkaClusterAdmin,
+		BootstrapServers:     r.BootstrapServers,
+		Prober:               r.Prober,
+		Counter:              r.Counter,
+		KafkaFeatureFlags:    r.KafkaFeatureFlags,
 	}
 }
 
@@ -321,6 +323,12 @@ func (r *NamespacedReconciler) getManifestFromSystemNamespace(broker *eventing.B
 	}
 	resources = append(resources, additionalDeployments...)
 
+	additionalStatefulsets, err := r.statefulSetsFromSystemNamespace(broker)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+	resources = append(resources, additionalStatefulsets...)
+
 	additionalServiceAccounts, err := r.serviceAccountsFromSystemNamespace(broker)
 	if err != nil {
 		return mf.Manifest{}, err
@@ -365,10 +373,24 @@ func (r *NamespacedReconciler) getManifestFromAdditionalResources(broker *eventi
 	return mf.ManifestFrom(mf.Slice(additionalResources), mf.UseClient(r.ManifestivalClient))
 }
 
+func (r *NamespacedReconciler) statefulSetsFromSystemNamespace(broker *eventing.Broker) ([]unstructured.Unstructured, error) {
+	deployments := []string{
+		"kafka-broker-dispatcher",
+	}
+	resources := make([]unstructured.Unstructured, 0, len(deployments))
+	for _, name := range deployments {
+		resource, err := r.createManifestFromSystemStatefulSet(broker, name)
+		if err != nil {
+			return nil, err
+		}
+		resources = append(resources, resource)
+	}
+	return resources, nil
+}
+
 func (r *NamespacedReconciler) deploymentsFromSystemNamespace(broker *eventing.Broker) ([]unstructured.Unstructured, error) {
 	deployments := []string{
 		"kafka-broker-receiver",
-		"kafka-broker-dispatcher",
 	}
 	resources := make([]unstructured.Unstructured, 0, len(deployments))
 	for _, name := range deployments {
@@ -385,6 +407,7 @@ func (r *NamespacedReconciler) configMapsFromSystemNamespace(broker *eventing.Br
 	configMaps := []string{
 		"config-kafka-broker-data-plane",
 		"config-tracing",
+		"config-features",
 		"kafka-config-logging",
 		"config-openshift-trusted-cabundle",
 	}
@@ -416,6 +439,57 @@ func (r *NamespacedReconciler) createResourceFromSystemConfigMap(broker *eventin
 		Immutable:  sysCM.Immutable,
 		Data:       sysCM.Data,
 		BinaryData: sysCM.BinaryData,
+	}
+	return unstructuredFromObject(cm)
+}
+
+func (r *NamespacedReconciler) createManifestFromSystemStatefulSet(broker *eventing.Broker, name string) (unstructured.Unstructured, error) {
+	sysStatefulSet, err := r.StatefulSetLister.StatefulSets(r.SystemNamespace).Get(name)
+	if err != nil {
+		return unstructured.Unstructured{}, fmt.Errorf("failed to get StatefulSet %s/%s: %w", r.SystemNamespace, name, err)
+	}
+
+	spec := sysStatefulSet.Spec
+	if spec.Replicas != nil && *spec.Replicas != 1 {
+		spec.Replicas = pointer.Int32(1)
+	}
+
+	expectedVolume := corev1.Volume{
+		Name: "contract-resources",
+		VolumeSource: corev1.VolumeSource{
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "kafka-broker-brokers-triggers",
+				},
+			},
+		},
+	}
+
+	foundContractResource := false
+	for i, volume := range spec.Template.Spec.Volumes {
+		if volume.Name == "contract-resources" {
+			foundContractResource = true
+			if volume.ConfigMap == nil || volume.ConfigMap.Name != "kafka-broker-brokers-triggers" {
+				spec.Template.Spec.Volumes[i] = expectedVolume
+			}
+		}
+	}
+
+	if !foundContractResource {
+		// need to add the contract resource volume to the spec
+		spec.Template.Spec.Volumes = append(spec.Template.Spec.Volumes, expectedVolume)
+
+	}
+
+	cm := &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{Kind: "StatefulSet", APIVersion: appsv1.SchemeGroupVersion.String()},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace:   broker.GetNamespace(),
+			Name:        sysStatefulSet.Name,
+			Labels:      sysStatefulSet.Labels,
+			Annotations: sysStatefulSet.Annotations,
+		},
+		Spec: spec,
 	}
 	return unstructuredFromObject(cm)
 }
