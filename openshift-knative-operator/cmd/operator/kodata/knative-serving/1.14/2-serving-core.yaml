@@ -3192,9 +3192,6 @@ spec:
         - name: Config Name
           type: string
           jsonPath: ".metadata.labels['serving\\.knative\\.dev/configuration']"
-        - name: K8s Service Name
-          type: string
-          jsonPath: ".status.serviceName"
         - name: Generation
           type: string # int in string form :(
           jsonPath: ".metadata.labels['serving\\.knative\\.dev/configurationGeneration']"
@@ -8094,6 +8091,17 @@ spec:
         app.kubernetes.io/name: knative-serving
         app.kubernetes.io/version: "release-v1.14"
     spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: activator
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+
       serviceAccountName: activator
       containers:
       - name: activator
@@ -8647,7 +8655,7 @@ spec:
             scheme: HTTPS
             port: 8443
         livenessProbe:
-          periodSeconds: 1
+          periodSeconds: 10
           httpGet:
             scheme: HTTPS
             port: 8443
