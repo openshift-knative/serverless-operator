@@ -34,26 +34,26 @@ import (
 )
 
 const (
+	// TrustBundleLabelKey is the label key for trust bundles configmaps.
+	TrustBundleLabelKey = "networking.knative.dev/trust-bundle"
+	// TrustBundleLabelValue is the label value for trust bundles configmaps.
+	TrustBundleLabelValue = "true"
 	// TrustBundleLabelSelector is the ConfigMap label selector for trust bundles.
-	TrustBundleLabelSelector = "networking.knative.dev/trust-bundle=true"
+	TrustBundleLabelSelector = TrustBundleLabelKey + "=" + TrustBundleLabelValue
 
 	TrustBundleMountPath = "/knative-custom-certs"
 
 	TrustBundleVolumeNamePrefix = "kne-bundle-"
+
+	TrustBundleConfigMapNameSuffix = "kne-bundle"
 )
 
 var (
 	// TrustBundleSelector is a selector for trust bundle ConfigMaps.
-	TrustBundleSelector labels.Selector
+	TrustBundleSelector = labels.SelectorFromSet(map[string]string{
+		TrustBundleLabelKey: TrustBundleLabelValue,
+	})
 )
-
-func init() {
-	var err error
-	TrustBundleSelector, err = labels.Parse(TrustBundleLabelSelector)
-	if err != nil {
-		panic(err)
-	}
-}
 
 // PropagateTrustBundles propagates Trust bundles ConfigMaps from the system.Namespace() to the
 // obj namespace.
@@ -77,10 +77,11 @@ func PropagateTrustBundles(ctx context.Context, k8s kubernetes.Interface, trustB
 	state := make(map[string]Pair, len(systemNamespaceBundles)+len(userNamespaceBundles))
 
 	for _, cm := range systemNamespaceBundles {
-		if p, ok := state[cm.Name]; !ok {
-			state[cm.Name] = Pair{sysCM: cm}
+		name := userCMName(cm.Name)
+		if p, ok := state[name]; !ok {
+			state[name] = Pair{sysCM: cm}
 		} else {
-			state[cm.Name] = Pair{
+			state[name] = Pair{
 				sysCM:  cm,
 				userCm: p.userCm,
 			}
@@ -101,18 +102,31 @@ func PropagateTrustBundles(ctx context.Context, k8s kubernetes.Interface, trustB
 	for _, p := range state {
 
 		if p.sysCM == nil {
-			if err := deleteConfigMap(ctx, k8s, obj, p.userCm); err != nil {
-				return err
+
+			expectedOr := metav1.OwnerReference{
+				APIVersion: gvk.GroupVersion().String(),
+				Kind:       gvk.Kind,
+				Name:       obj.GetName(),
 			}
+
+			for _, or := range p.userCm.OwnerReferences {
+				if equality.Semantic.DeepDerivative(expectedOr, or) {
+					if err := deleteConfigMap(ctx, k8s, obj, p.userCm); err != nil {
+						return err
+					}
+				}
+			}
+
 			continue
 		}
 
 		expected := &corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        p.sysCM.Name,
-				Namespace:   obj.GetNamespace(),
-				Labels:      p.sysCM.Labels,
-				Annotations: p.sysCM.Annotations,
+				Name:      userCMName(p.sysCM.Name),
+				Namespace: obj.GetNamespace(),
+				Labels: map[string]string{
+					TrustBundleLabelKey: TrustBundleLabelValue,
+				},
 			},
 			Data:       p.sysCM.Data,
 			BinaryData: p.sysCM.BinaryData,
@@ -122,7 +136,7 @@ func PropagateTrustBundles(ctx context.Context, k8s kubernetes.Interface, trustB
 			// Update owner references
 			expected.OwnerReferences = withOwnerReferences(obj, gvk, []metav1.OwnerReference{})
 
-			if err := createConfigMap(ctx, k8s, obj, expected); err != nil {
+			if err := createConfigMap(ctx, k8s, expected); err != nil {
 				return err
 			}
 			continue
@@ -132,7 +146,7 @@ func PropagateTrustBundles(ctx context.Context, k8s kubernetes.Interface, trustB
 		expected.OwnerReferences = withOwnerReferences(obj, gvk, p.userCm.OwnerReferences)
 
 		if !equality.Semantic.DeepDerivative(expected, p.userCm) {
-			if err := updateConfigMap(ctx, k8s, obj, expected); err != nil {
+			if err := updateConfigMap(ctx, k8s, expected); err != nil {
 				return err
 			}
 		}
@@ -269,18 +283,22 @@ func deleteConfigMap(ctx context.Context, k8s kubernetes.Interface, sb kmeta.Acc
 	return nil
 }
 
-func updateConfigMap(ctx context.Context, k8s kubernetes.Interface, sb kmeta.Accessor, expected *corev1.ConfigMap) error {
-	_, err := k8s.CoreV1().ConfigMaps(sb.GetNamespace()).Update(ctx, expected, metav1.UpdateOptions{})
+func updateConfigMap(ctx context.Context, k8s kubernetes.Interface, expected *corev1.ConfigMap) error {
+	_, err := k8s.CoreV1().ConfigMaps(expected.Namespace).Update(ctx, expected, metav1.UpdateOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to update ConfigMap %s/%s: %w", sb.GetNamespace(), expected.Name, err)
+		return fmt.Errorf("failed to update ConfigMap %s/%s: %w", expected.Namespace, expected.Name, err)
 	}
 	return nil
 }
 
-func createConfigMap(ctx context.Context, k8s kubernetes.Interface, sb kmeta.Accessor, expected *corev1.ConfigMap) error {
-	_, err := k8s.CoreV1().ConfigMaps(sb.GetNamespace()).Create(ctx, expected, metav1.CreateOptions{})
+func createConfigMap(ctx context.Context, k8s kubernetes.Interface, expected *corev1.ConfigMap) error {
+	_, err := k8s.CoreV1().ConfigMaps(expected.Namespace).Create(ctx, expected, metav1.CreateOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to create ConfigMap %s/%s: %w", sb.GetNamespace(), expected.Name, err)
+		return fmt.Errorf("failed to create ConfigMap %s/%s: %w", expected.Namespace, expected.Name, err)
 	}
 	return nil
+}
+
+func userCMName(name string) string {
+	return kmeta.ChildName(name, TrustBundleConfigMapNameSuffix)
 }

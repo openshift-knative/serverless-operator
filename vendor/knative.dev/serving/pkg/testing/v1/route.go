@@ -180,14 +180,6 @@ func WithRouteConditionsExternalDomainTLSDisabled(rt *v1.Route) {
 	rt.Status.MarkTLSNotEnabled(v1.ExternalDomainTLSNotEnabledMessage)
 }
 
-// WithRouteConditionsTLSNotEnabledForClusterLocalMessage calls
-// MarkTLSNotEnabled with TLSNotEnabledForClusterLocalMessage after initialized
-// the Service's conditions.
-func WithRouteConditionsTLSNotEnabledForClusterLocalMessage(rt *v1.Route) {
-	rt.Status.InitializeConditions()
-	rt.Status.MarkTLSNotEnabled(v1.TLSNotEnabledForClusterLocalMessage)
-}
-
 // WithRouteConditionsHTTPDowngrade calls MarkHTTPDowngrade after initialized the Service's conditions.
 func WithRouteConditionsHTTPDowngrade(rt *v1.Route) {
 	rt.Status.InitializeConditions()
@@ -199,16 +191,21 @@ func MarkTrafficAssigned(r *v1.Route) {
 	r.Status.MarkTrafficAssigned()
 }
 
-// MarkUnknownTrafficError calls the method of the same name on .Status
-func MarkUnknownTrafficError(msg string) RouteOption {
+// MarkRevisionTargetTrafficError calls the method of the same name on .Status
+func MarkRevisionTargetTrafficError(reason, msg string) RouteOption {
 	return func(r *v1.Route) {
-		r.Status.MarkUnknownTrafficError(msg)
+		r.Status.MarkRevisionTargetTrafficError(reason, msg)
 	}
 }
 
 // MarkCertificateNotReady calls the method of the same name on .Status
 func MarkCertificateNotReady(r *v1.Route) {
 	r.Status.MarkCertificateNotReady(&netv1alpha1.Certificate{})
+}
+
+// MarkCertificateProvisionFailed calls the method of the same name on .Status
+func MarkCertificateProvisionFailed(r *v1.Route) {
+	r.Status.MarkCertificateProvisionFailed(&netv1alpha1.Certificate{})
 }
 
 // MarkCertificateNotOwned calls the method of the same name on .Status

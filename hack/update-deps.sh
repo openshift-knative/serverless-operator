@@ -15,10 +15,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.13"
-EVENTING_VERSION="release-v1.12"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.12"
-SERVING_VERSION="release-v1.12"
+KN_VERSION="release-1.14"
+EVENTING_VERSION="release-v1.14"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.14"
+SERVING_VERSION="release-v1.14"
 GO_VERSION="$(metadata.get requirements.golang)"
 OCP_VERSION="$(metadata.get requirements.ocpVersion.min)"
 

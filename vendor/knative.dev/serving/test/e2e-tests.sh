@@ -17,7 +17,7 @@
 # This script runs the end-to-end tests against Knative Serving built from source.
 # It is started by prow for each PR. For convenience, it can also be executed manually.
 
-# If you already have a Knative cluster setup and kubectl pointing
+# If you already have a Kubernetes cluster setup and kubectl pointing
 # to it, call this script with the --run-tests arguments and it will use
 # the cluster and run the tests.
 
@@ -28,7 +28,7 @@
 source $(dirname $0)/e2e-common.sh
 
 # Script entry point.
-initialize --num-nodes=4 --enable-ha --cluster-version=1.27 "$@"
+initialize --num-nodes=4 --enable-ha --cluster-version=1.28 "$@"
 
 # Run the tests
 header "Running tests"
@@ -53,6 +53,8 @@ if (( HTTPS )); then
   toggle_feature external-domain-tls Enabled config-network
   kubectl apply -f "${E2E_YAML_DIR}"/test/config/externaldomaintls/certmanager/caissuer/
   add_trap "kubectl delete -f ${E2E_YAML_DIR}/test/config/externaldomaintls/certmanager/caissuer/ --ignore-not-found" SIGKILL SIGTERM SIGQUIT
+  # we need to restart the pod in order to start the net-certmanager-controller
+  restart_pod ${SYSTEM_NAMESPACE} "app=controller"
 fi
 
 if (( MESH )); then
@@ -81,17 +83,31 @@ toggle_feature allow-zero-initial-scale false config-autoscaler || fail_test
 
 go_test_e2e -timeout=2m ./test/e2e/domainmapping ${E2E_TEST_FLAGS} || failed=1
 
+toggle_feature cluster-local-domain-tls enabled config-network || fail_test
+go_test_e2e -timeout=2m ./test/e2e/clusterlocaldomaintls ${E2E_TEST_FLAGS} || failed=1
+toggle_feature cluster-local-domain-tls disabled config-network || fail_test
+
 toggle_feature system-internal-tls enabled config-network || fail_test
 toggle_feature "logging.enable-request-log" true config-observability || fail_test
 toggle_feature "logging.request-log-template" "TLS: {{.Request.TLS}}" config-observability || fail_test
 # with current implementation, Activator must be restarted when configuring system-internal-tls. See https://github.com/knative/serving/issues/13754
 restart_pod ${SYSTEM_NAMESPACE} "app=activator"
+
+# we need to restart the pod in order to start the net-certmanager-controller
+if (( ! HTTPS )); then
+  restart_pod ${SYSTEM_NAMESPACE} "app=controller"
+fi
 go_test_e2e -timeout=2m ./test/e2e/systeminternaltls ${E2E_TEST_FLAGS} || failed=1
 toggle_feature system-internal-tls disabled config-network || fail_test
-toggle_feature enable-request-log false config-observability || fail_test
-toggle_feature request-log-template '' config-observability || fail_test
+toggle_feature "logging.enable-request-log" false config-observability || fail_test
+toggle_feature "logging.request-log-template" '' config-observability || fail_test
 # with the current implementation, Activator is always in the request path, and needs to be restarted after configuring system-internal-tls
 restart_pod ${SYSTEM_NAMESPACE} "app=activator"
+
+# we need to restart the pod to stop the net-certmanager-controller
+if (( ! HTTPS )); then
+  restart_pod ${SYSTEM_NAMESPACE} "app=controller"
+fi
 
 kubectl get cm "config-gc" -n "${SYSTEM_NAMESPACE}" -o yaml > "${TMP_DIR}"/config-gc.yaml
 add_trap "kubectl replace cm 'config-gc' -n ${SYSTEM_NAMESPACE} -f ${TMP_DIR}/config-gc.yaml" SIGKILL SIGTERM SIGQUIT
@@ -145,6 +161,8 @@ go_test_e2e -timeout=25m -failfast -parallel=1 ./test/ha \
 if (( HTTPS )); then
   kubectl delete -f ${E2E_YAML_DIR}/test/config/externaldomaintls/certmanager/caissuer/ --ignore-not-found
   toggle_feature external-domain-tls Disabled config-network
+  # we need to restart the pod to stop the net-certmanager-controller
+  restart_pod ${SYSTEM_NAMESPACE} "app=controller"
 fi
 
 (( failed )) && fail_test
