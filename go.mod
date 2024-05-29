@@ -180,7 +180,7 @@ require (
 )
 
 require (
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.29.3
 	knative.dev/reconciler-test v0.0.0-20240503125949-8fd5ae6217a3
