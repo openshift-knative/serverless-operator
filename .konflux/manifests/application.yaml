@@ -3,5 +3,5 @@ kind: Application
 metadata:
   name: serverless-operator-konflux
 spec:
-  description: serverless-operator (konflux banch)
+  description: serverless-operator (konflux branch)
   displayName: serverless-operator (konflux branch)
