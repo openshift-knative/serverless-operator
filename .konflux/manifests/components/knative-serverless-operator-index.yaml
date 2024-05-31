@@ -11,6 +11,5 @@ spec:
   source:
     git:
       url: https://github.com/openshift-knative/serverless-operator.git
-      context:
       dockerfileUrl: olm-catalog/serverless-operator/index/Dockerfile
       revision: konflux
