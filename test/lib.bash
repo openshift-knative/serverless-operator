@@ -149,38 +149,38 @@ function downstream_serving_e2e_tests {
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
+
+    # Enable Serving encryption (only supported on Kourier - at least for now)
+    configure_cm network system-internal-tls:enabled
+    configure_cm network cluster-local-domain-tls:enabled
+
+    logger.info "Restart controller to enable cert-manager integration"
+    oc delete pod -n "${SERVING_NAMESPACE}" -l app=controller
+    oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" controller
+
+    logger.info "Restart activator to mount the certificates"
+    oc delete pod -n "${SERVING_NAMESPACE}" -l app=activator
+    oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" activator
+    logger.info "cluster-local-domain-tls and system-internal-tls are ENABLED"
+
+    go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/encryption/ \
+      --kubeconfigs "${kubeconfigs_str}" \
+      --imagetemplate "${IMAGE_TEMPLATE}" \
+      "$@"
+
+    # Disable Serving encryption for following tests
+    configure_cm network system-internal-tls:disabled
+    configure_cm network cluster-local-domain-tls:disabled
+
+    logger.info "Restart activator to unmount the certificates"
+    oc delete pod -n "${SERVING_NAMESPACE}" -l app=activator
+    oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" activator
+
+    logger.info "Restart controller to disable cert-manager integration"
+    oc delete pod -n "${SERVING_NAMESPACE}" -l app=controller
+    oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" controller
+    logger.info "cluster-local-domain-tls and system-internal-tls are DISABLED"
   fi
-
-  # Enable Serving encryption
-  configure_cm network system-internal-tls:enabled
-  configure_cm network cluster-local-domain-tls:enabled
-
-  logger.info "Restart controller to enable cert-manager integration"
-  oc delete pod -n "${SERVING_NAMESPACE}" -l app=controller
-  oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" controller
-
-  logger.info "Restart activator to mount the certificates"
-  oc delete pod -n "${SERVING_NAMESPACE}" -l app=activator
-  oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" activator
-  logger.info "cluster-local-domain-tls and system-internal-tls are ENABLED"
-
-  go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/encryption/ \
-    --kubeconfigs "${kubeconfigs_str}" \
-    --imagetemplate "${IMAGE_TEMPLATE}" \
-    "$@"
-
-  # Disable Serving encryption for following tests
-  configure_cm network system-internal-tls:disabled
-  configure_cm network cluster-local-domain-tls:disabled
-
-  logger.info "Restart activator to unmount the certificates"
-  oc delete pod -n "${SERVING_NAMESPACE}" -l app=activator
-  oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" activator
-
-  logger.info "Restart controller to disable cert-manager integration"
-  oc delete pod -n "${SERVING_NAMESPACE}" -l app=controller
-  oc wait --timeout=60s --for=condition=Available deployment  -n "${SERVING_NAMESPACE}" controller
-  logger.info "cluster-local-domain-tls and system-internal-tls are DISABLED"
 }
 
 function downstream_eventing_e2e_tests {
