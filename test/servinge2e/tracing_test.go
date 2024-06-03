@@ -130,7 +130,7 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 	}
 	defer portForward.Close()
 
-	conn, err := grpc.Dial(fmt.Sprintf("127.0.0.1:%d", portForward.LocalPort),
+	conn, err := grpc.NewClient(fmt.Sprintf("127.0.0.1:%d", portForward.LocalPort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("error dialing grpc to 127.0.0.1:%d: %w", portForward.LocalPort, err)
