@@ -11,7 +11,8 @@ metadata:
           "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeServing",
           "metadata": {
-            "name": "knative-serving"
+            "name": "knative-serving",
+            "namespace": "knative-serving"
           },
           "spec": {
           }
@@ -20,7 +21,8 @@ metadata:
           "apiVersion": "operator.knative.dev/v1beta1",
           "kind": "KnativeEventing",
           "metadata": {
-            "name": "knative-eventing"
+            "name": "knative-eventing",
+            "namespace": "knative-eventing"
           },
           "spec": {
           }
@@ -29,11 +31,12 @@ metadata:
           "apiVersion": "operator.serverless.openshift.io/v1alpha1",
           "kind": "KnativeKafka",
           "metadata": {
-            "name": "knative-kafka"
+            "name": "knative-kafka",
+            "namespace": "knative-eventing"
           },
           "spec": {
             "broker": {
-              "enabled": false,
+              "enabled": true,
               "defaultConfig": {
                 "numPartitions": 10,
                 "replicationFactor": 3,
@@ -41,13 +44,13 @@ metadata:
               }
             },
             "source": {
-              "enabled": false
+              "enabled": true
             },
             "sink": {
-              "enabled": false
+              "enabled": true
             },
             "channel": {
-              "enabled": false,
+              "enabled": true,
               "bootstrapServers": "REPLACE_WITH_COMMA_SEPARATED_KAFKA_BOOTSTRAP_SERVERS"
             }
           }
