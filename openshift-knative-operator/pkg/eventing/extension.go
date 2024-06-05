@@ -143,6 +143,8 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		eventingistio.ScaleIstioController(requiredNs, ke, 1)
 	}
 
+	e.logger.Debugw("resource spec", zap.Any("resource", ke.Spec))
+
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
 

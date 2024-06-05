@@ -22,8 +22,8 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	knativeeventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeeventing"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 )
@@ -39,6 +39,8 @@ type coreScaler struct {
 	hasCRDsInstalled atomic.Bool
 	cancel           context.CancelFunc
 	factory          externalversions.SharedInformerFactory
+
+	logger *zap.Logger
 }
 
 type CoreScalerWrapper struct {
@@ -98,18 +100,22 @@ func newInternalScaler(ctx context.Context, resync cache.ResourceEventHandler) *
 
 	logger := logging.FromContext(ctx).With(zap.String("component", "scaler"))
 
+	apiExtensionClient, _ := apiextension.NewForConfig(injection.GetConfig(ctx))
+
 	s := &coreScaler{
 		BrokerLister: f.Eventing().V1().Brokers().Lister(),
 
 		InMemoryChannelLister: f.Messaging().V1().InMemoryChannels().Lister(),
 
-		apiExtensionClient: apiextension.New(kubeclient.Get(ctx).AppsV1().RESTClient()),
+		apiExtensionClient: apiExtensionClient,
 
 		cacheSynced:      sync.WaitGroup{},
 		hasCRDsInstalled: atomic.Bool{},
 
 		cancel:  cancel,
 		factory: f,
+
+		logger: logger.Desugar(),
 	}
 	_, _ = f.Eventing().V1().Brokers().Informer().AddEventHandler(resync)
 
@@ -121,6 +127,7 @@ func newInternalScaler(ctx context.Context, resync cache.ResourceEventHandler) *
 			hasCRDsInstalled, err := s.verifyCRDsInstalled(ctx)
 			logger.Debugw("Waiting for CRDs to be installed", zap.Bool("hasCRDsInstalled", hasCRDsInstalled))
 			if err != nil {
+				logger.Debugw("Failed to wait for CRDs to be installed", zap.Error(err))
 				return false, nil
 			}
 			return hasCRDsInstalled, nil
@@ -152,6 +159,7 @@ func (s *coreScaler) scale(ke *operatorv1beta1.KnativeEventing) error {
 
 	hasMTChannelBrokers, err := s.hasMTChannelBrokers()
 	if err != nil {
+		s.logger.Warn("failed to verify if there are MT Channel Based Brokers", zap.Error(err))
 		return err
 	}
 	if hasMTChannelBrokers {
@@ -166,6 +174,7 @@ func (s *coreScaler) scale(ke *operatorv1beta1.KnativeEventing) error {
 
 	hasInMemoryChannels, err := s.hasInMemoryChannels()
 	if err != nil {
+		s.logger.Warn("failed to verify if there are in memory channels", zap.Error(err))
 		return err
 	}
 	if hasInMemoryChannels {
@@ -198,11 +207,11 @@ func (s *coreScaler) hasMTChannelBrokers() (bool, error) {
 }
 
 func (s *coreScaler) hasInMemoryChannels() (bool, error) {
-	eventTypes, err := s.InMemoryChannelLister.List(labels.Everything())
+	imcs, err := s.InMemoryChannelLister.List(labels.Everything())
 	if err != nil {
-		return false, fmt.Errorf("failed to list eventtypes: %w", err)
+		return false, fmt.Errorf("failed to list inmemorychannels: %w", err)
 	}
-	return len(eventTypes) > 0, nil
+	return len(imcs) > 0, nil
 }
 
 func (s *coreScaler) ensureAtLeastOneReplica(ke *operatorv1beta1.KnativeEventing, name string) {
@@ -210,6 +219,8 @@ func (s *coreScaler) ensureAtLeastOneReplica(ke *operatorv1beta1.KnativeEventing
 	if ke.Spec.HighAvailability != nil && ke.Spec.HighAvailability.Replicas != nil {
 		replicas = ke.Spec.HighAvailability.Replicas
 	}
+
+	s.logger.Info("Scaling up component", zap.String("name", name), zap.Int32("replicas", *replicas))
 
 	for i, w := range ke.Spec.Workloads {
 		if w.Name == name {
@@ -227,6 +238,8 @@ func (s *coreScaler) ensureAtLeastOneReplica(ke *operatorv1beta1.KnativeEventing
 }
 
 func (s *coreScaler) scaleToZero(ke *operatorv1beta1.KnativeEventing, name string) {
+	s.logger.Info("Scaling down component", zap.String("name", name))
+
 	replicas := pointer.Int32(0)
 	for i, w := range ke.Spec.Workloads {
 		if w.Name == name {
