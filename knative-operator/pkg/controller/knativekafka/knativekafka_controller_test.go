@@ -334,6 +334,16 @@ func TestBrokerCfg(t *testing.T) {
 				"metadata": map[string]interface{}{
 					"name": "kafka-config-logging",
 				},
+				"data": map[string]interface{}{
+					"config.xml": `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+				},
 			},
 		},
 		knativeKafka: v1alpha1.KnativeKafkaSpec{
@@ -428,7 +438,7 @@ func TestBrokerCfg(t *testing.T) {
 			}
 
 			if !cmp.Equal(test.expect, test.obj) {
-				t.Fatalf("Resource wasn't what we expected, diff: %s", cmp.Diff(test.obj, test.expect))
+				t.Fatalf("Resource wasn't what we expected, diff: (-want, +got)\n%s", cmp.Diff(test.expect, test.obj))
 			}
 		})
 	}
@@ -763,12 +773,21 @@ func TestXmlConfig(t *testing.T) {
 	cases := []struct {
 		name        string
 		logLevel    *v1alpha1.Logging
+		givenXML    string
 		returnedXML string
 	}{{
 		name: "Set level to INFO",
 		logLevel: &v1alpha1.Logging{
 			Level: "INFO",
 		},
+		givenXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
 		returnedXML: `    <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
@@ -779,6 +798,14 @@ func TestXmlConfig(t *testing.T) {
     </configuration>`,
 	}, {
 		name: "Set level to INFO by default",
+		givenXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
 		returnedXML: `    <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
@@ -792,6 +819,14 @@ func TestXmlConfig(t *testing.T) {
 		logLevel: &v1alpha1.Logging{
 			Level: "ERROR",
 		},
+		givenXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
 		returnedXML: `    <configuration>
       <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
@@ -800,10 +835,31 @@ func TestXmlConfig(t *testing.T) {
         <appender-ref ref="jsonConsoleAppender"/>
       </root>
     </configuration>`,
+	}, {
+		name: "Set level to ERROR (with spaces)",
+		logLevel: &v1alpha1.Logging{
+			Level: "ERROR",
+		},
+		givenXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level = "INFO" >
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
+		returnedXML: `    <configuration>
+      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      </appender>
+      <root level="ERROR" >
+        <appender-ref ref="jsonConsoleAppender"/>
+      </root>
+    </configuration>`,
 	}}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := renderLoggingConfigXML(tc.logLevel)
+			result := renderLoggingConfigXML(tc.givenXML, tc.logLevel)
 			if result != tc.returnedXML {
 				t.Errorf("Got: %v, want: %v\n", result, tc.returnedXML)
 			}
