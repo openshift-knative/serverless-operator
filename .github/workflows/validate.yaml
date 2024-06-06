@@ -26,6 +26,10 @@ jobs:
         with:
           go-version: 1.21.x
 
+      - name: Install yq
+        run: |
+          go install github.com/mikefarah/yq/v3@latest
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -46,22 +50,12 @@ jobs:
           git pull --no-rebase upstream ${{ github.base_ref }}
         shell: bash
 
-      - name: Set CURRENT_VERSION_IMAGES on push
+      - name: Set CURRENT_VERSION_IMAGES
         working-directory: ./src/github.com/${{ github.repository }}
-        env:
-          branch: ${{ github.ref_name }}
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main' && !contains(github.ref_name, 'dependabot/')
+        if: (github.event_name == 'pull_request' && github.base_ref != 'main') || ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main')
         run: |
-          echo "CURRENT_VERSION_IMAGES=${branch}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set CURRENT_VERSION_IMAGES on PRs
-        working-directory: ./src/github.com/${{ github.repository }}
-        env:
-          branch: ${{ github.base_ref }}
-        if: github.event_name == 'pull_request' && github.base_ref != 'main'
-        run: |
-          echo "CURRENT_VERSION_IMAGES=${branch}" >> $GITHUB_ENV
+          tag="release-$(yq read ./olm-catalog/serverless-operator/project.yaml 'project.version')"
+          echo "CURRENT_VERSION_IMAGES=${tag}" >> $GITHUB_ENV
         shell: bash
 
       - name: Regenerate all generated files
