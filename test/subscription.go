@@ -25,6 +25,8 @@ const (
 )
 
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*operatorsv1alpha1.Subscription, error) {
+	ctx.T.Logf("Updating subscription %s to channel %s and source %s", name, channel, source)
+
 	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
 	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
 		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
@@ -55,11 +57,15 @@ func DeleteClusterServiceVersion(ctx *Context, name, namespace string) error {
 	return ctx.Clients.OLM.OperatorsV1alpha1().ClusterServiceVersions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 }
 
+func GetSubscription(ctx *Context, name, namespace string) (*operatorsv1alpha1.Subscription, error) {
+	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Get(context.Background(), name, metav1.GetOptions{})
+}
+
 func DeleteSubscription(ctx *Context, name, namespace string) error {
 	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 }
 
-func Subscription(subscriptionName, startingCSV string) *operatorsv1alpha1.Subscription {
+func Subscription(subscriptionName, channel string) *operatorsv1alpha1.Subscription {
 	return &operatorsv1alpha1.Subscription{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       operatorsv1alpha1.SubscriptionKind,
@@ -73,15 +79,15 @@ func Subscription(subscriptionName, startingCSV string) *operatorsv1alpha1.Subsc
 			CatalogSource:          Flags.CatalogSource,
 			CatalogSourceNamespace: OLMNamespace,
 			Package:                ServerlessOperatorPackage,
-			Channel:                Flags.Channel,
-			InstallPlanApproval:    operatorsv1alpha1.ApprovalManual,
-			StartingCSV:            startingCSV,
+			Channel:                channel,
 		},
 	}
 }
 
-func CreateSubscription(ctx *Context, name, startingCSV string) (*operatorsv1alpha1.Subscription, error) {
-	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name, startingCSV), metav1.CreateOptions{})
+func CreateSubscription(ctx *Context, name, channel string) (*operatorsv1alpha1.Subscription, error) {
+	ctx.T.Logf("Creating subscription %s with channel %s", name, channel)
+
+	subs, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Create(context.Background(), Subscription(name, channel), metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
