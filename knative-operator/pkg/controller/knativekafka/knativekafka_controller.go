@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -683,7 +684,8 @@ func configureEventingKafka(spec serverlessoperatorv1alpha1.KnativeKafkaSpec) mf
 		if u.GetKind() == "ConfigMap" && u.GetName() == "kafka-config-logging" {
 			log.Info("Found ConfigMap kafka-config-logging, updating it with values from spec")
 
-			if err := unstructured.SetNestedField(u.Object, renderLoggingConfigXML(spec.Logging), "data", "config.xml"); err != nil {
+			existing, _, _ := unstructured.NestedString(u.Object, "data", "config.xml")
+			if err := unstructured.SetNestedField(u.Object, renderLoggingConfigXML(existing, spec.Logging), "data", "config.xml"); err != nil {
 				return err
 			}
 		}
@@ -746,21 +748,15 @@ func contains(array []string, name string) bool {
 	return false
 }
 
-func renderLoggingConfigXML(logging *serverlessoperatorv1alpha1.Logging) string {
+var loggingLevelRegex = regexp.MustCompile(`level.*=.*".*"`)
+
+func renderLoggingConfigXML(existing string, logging *serverlessoperatorv1alpha1.Logging) string {
 	loglevel := "INFO"
 	if logging != nil {
 		loglevel = logging.Level
 	}
 
-	xmlTemplate := `    <configuration>
-      <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-      </appender>
-      <root level="` + loglevel + `">
-        <appender-ref ref="jsonConsoleAppender"/>
-      </root>
-    </configuration>`
-	return xmlTemplate
+	return loggingLevelRegex.ReplaceAllString(existing, `level="`+loglevel+`"`)
 }
 
 func setKafkaDeployments(replicas int32) mf.Transformer {
