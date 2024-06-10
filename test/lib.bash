@@ -244,13 +244,14 @@ function downstream_eventing_e2e_rekt_tests {
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt ./test/eventinge2erekt/servicemesh \
       --images.producer.file="${images_file}" \
-      --poll.timeout="8m" \
+      --poll.timeout=8m \
       --environment.namespace=serverless-tests \
       --istio.enabled="$MESH" \
       "$@"
   else
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt \
       --images.producer.file="${images_file}" \
+      --poll.timeout=8m \
       "$@"
   fi
 }
@@ -316,8 +317,8 @@ function downstream_knative_kafka_e2e_rekt_tests {
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt ./test/extensione2erekt/servicemesh \
       --images.producer.file="${images_file}" \
+      --poll.timeout=8m \
       --environment.namespace=serverless-tests \
-      --poll.timeout="8m" \
       --istio.enabled="$MESH" \
       "$@"
 
@@ -327,6 +328,7 @@ function downstream_knative_kafka_e2e_rekt_tests {
   else
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt \
       --images.producer.file="${images_file}" \
+      --poll.timeout=8m \
       "$@"
   fi
 }
