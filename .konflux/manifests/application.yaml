@@ -1,0 +1,7 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Application
+metadata:
+  name: serverless-operator-konflux
+spec:
+  description: serverless-operator (konflux branch)
+  displayName: serverless-operator (konflux branch)

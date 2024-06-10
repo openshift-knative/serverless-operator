@@ -1,0 +1,15 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    image.redhat.com/generate: "true"
+    appstudio.openshift.io/pac-provision: request
+  name: serverless-index
+spec:
+  componentName: serverless-index
+  application: serverless-operator-konflux
+  source:
+    git:
+      url: https://github.com/openshift-knative/serverless-operator.git
+      dockerfileUrl: olm-catalog/serverless-operator/index/Dockerfile
+      revision: konflux

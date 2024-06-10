@@ -1,0 +1,17 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    image.redhat.com/generate: "true"
+    appstudio.openshift.io/pac-provision: request
+  name: knative-eventing-controller
+spec:
+  componentName: knative-eventing-controller
+  application: serverless-operator-konflux
+  build-nudges-ref:
+    - serverless-bundle
+  source:
+    git:
+      url: https://github.com/openshift-knative/eventing.git
+      dockerfileUrl: openshift/ci-operator/knative-images/controller/Dockerfile
+      revision: konflux

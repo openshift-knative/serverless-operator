@@ -1,0 +1,17 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    image.redhat.com/generate: "true"
+    appstudio.openshift.io/pac-provision: request
+  name: serverless-bundle
+spec:
+  componentName: serverless-bundle
+  application: serverless-operator-konflux
+  build-nudges-ref:
+    - serverless-index
+  source:
+    git:
+      url: https://github.com/openshift-knative/serverless-operator.git
+      dockerfileUrl: olm-catalog/serverless-operator/Dockerfile
+      revision: konflux
