@@ -4,6 +4,7 @@ metadata:
   annotations:
     image.redhat.com/generate: "true"
     appstudio.openshift.io/pac-provision: request
+    build.appstudio.openshift.io/request: configure-pac
   name: serverless-openshift-knative-operator
 spec:
   componentName: serverless-openshift-knative-operator
