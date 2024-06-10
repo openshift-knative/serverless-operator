@@ -235,7 +235,7 @@ function downstream_eventing_e2e_rekt_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  RUN_FLAGS=(-failfast -timeout=30m -parallel=10)
+  RUN_FLAGS=(-failfast -timeout=30m -parallel=10 --poll.timeout=8m)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
@@ -244,7 +244,6 @@ function downstream_eventing_e2e_rekt_tests {
     # Need to specify a namespace that is in Mesh.
     go_test_e2e "${RUN_FLAGS[@]}" ./test/eventinge2erekt ./test/eventinge2erekt/servicemesh \
       --images.producer.file="${images_file}" \
-      --poll.timeout="8m" \
       --environment.namespace=serverless-tests \
       --istio.enabled="$MESH" \
       "$@"
@@ -307,7 +306,7 @@ function downstream_knative_kafka_e2e_rekt_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
-  RUN_FLAGS=(-failfast -timeout=30m -parallel=10)
+  RUN_FLAGS=(-failfast -timeout=30m -parallel=10 --poll.timeout=8m)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
@@ -317,7 +316,6 @@ function downstream_knative_kafka_e2e_rekt_tests {
     go_test_e2e "${RUN_FLAGS[@]}" ./test/extensione2erekt ./test/extensione2erekt/servicemesh \
       --images.producer.file="${images_file}" \
       --environment.namespace=serverless-tests \
-      --poll.timeout="8m" \
       --istio.enabled="$MESH" \
       "$@"
 
