@@ -4,6 +4,8 @@ metadata:
   annotations:
     image.redhat.com/generate: "true"
     appstudio.openshift.io/pac-provision: request
+    build.appstudio.openshift.io/pipeline: '{"name":"docker-build","bundle":"latest"}'
+    build.appstudio.openshift.io/request: configure-pac
   name: serverless-bundle
 spec:
   componentName: serverless-bundle
