@@ -69,6 +69,12 @@ function deploy_servicemeshcontrolplane {
 
   # creating smcp often fails due to webhook error
   timeout 120 "[[ \$(oc apply -f ${resources_dir}/smcp.yaml | oc get smcp -n istio-system basic --no-headers | wc -l) != 1 ]]" || return 1
+
+  if [[ ${ROSA:-} == "true" ]]; then
+    logger.info "ThirdParty tokens required when using ROSA cluster"
+    enable_smcp_third_party_token
+  fi
+
   oc wait --timeout=180s --for=condition=Ready smcp -n istio-system basic || oc get smcp -n istio-system basic -o yaml
 }
 
@@ -139,4 +145,17 @@ function undeploy_gateways {
   oc delete -f "${resources_dir}"/smmr.yaml --ignore-not-found || return $?
   oc delete -n cert-manager secret ca-key-pair  --ignore-not-found || return $?
   oc delete -n istio-system secret wildcard-certs --ignore-not-found || return $?
+}
+
+function enable_smcp_third_party_token {
+  smcp_patch="$(mktemp -t smcp-XXXXX.yaml)"
+
+  cat <<EOF > "${smcp_patch}"
+spec:
+  security:
+    identity:
+      type: ThirdParty
+EOF
+
+  oc patch smcp -n istio-system basic --type='merge' --patch-file "${smcp_patch}"
 }
