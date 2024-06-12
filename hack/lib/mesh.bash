@@ -16,8 +16,10 @@ function uninstall_mesh {
 }
 
 function deploy_servicemesh_operators {
-  logger.info "Installing service mesh operators in namespace openshift-operators"
-  oc apply -f "${resources_dir}"/subscription.yaml || return $?
+  if [[ ${SKIP_OPERATOR_SUBSCRIPTION:-} != "true" ]]; then
+    logger.info "Installing service mesh operators in namespace openshift-operators"
+    oc apply -f "${resources_dir}"/subscription.yaml || return $?
+  fi
 
   logger.info "Waiting until service mesh operators are available"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators istio-operator --no-headers | wc -l) != 1 ]]" || return 1
