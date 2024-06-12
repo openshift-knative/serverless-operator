@@ -29,7 +29,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   pipelineRef:
-    name: serverless-index
+    name: serverless-index-err
   taskRunTemplate: {}
   workspaces:
   - name: workspace
