@@ -1,0 +1,19 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    image.redhat.com/generate: "true"
+    appstudio.openshift.io/pac-provision: request
+    build.appstudio.openshift.io/pipeline: '{"name":"docker-build","bundle":"latest"}'
+    build.appstudio.openshift.io/request: configure-pac
+  name: serverless-metadata-webhook
+spec:
+  componentName: serverless-metadata-webhook
+  application: serverless-operator-konflux
+  build-nudges-ref:
+    - serverless-bundle
+  source:
+    git:
+      url: https://github.com/openshift-knative/serverless-operator.git
+      dockerfileUrl: serving/metadata-webhook/Dockerfile
+      revision: konflux
