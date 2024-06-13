@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: serverless-bundle
+  name: serverless-image
 spec:
   finally:
   - name: show-sbom

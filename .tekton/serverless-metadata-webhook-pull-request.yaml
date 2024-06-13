@@ -4,25 +4,28 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "konflux"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "konflux" && files.all.exists(x, !x.matches('^olm-catalog/|^knative-operator/'))
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-konflux
-    appstudio.openshift.io/component: serverless-bundle
+    appstudio.openshift.io/component: serverless-metadata-webhook
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-bundle-on-push
+  name: serverless-metadata-webhook-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
   params:
   - name: dockerfile
-    value: olm-catalog/serverless-operator/Dockerfile
+    value: serving/metadata-webhook/Dockerfile
   - name: git-url
     value: '{{source_url}}'
+  - name: image-expires-after
+    value: 5d
   - name: output-image
-    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-bundle:{{revision}}
+    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-konflux/serverless-metadata-webhook:on-pr-{{revision}}
   - name: revision
     value: '{{revision}}'
   pipelineRef:

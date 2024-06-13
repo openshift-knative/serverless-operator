@@ -26,7 +26,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   pipelineRef:
-    name: serverless-openshift-knative-operator
+    name: serverless-image
   taskRunTemplate: {}
   workspaces:
   - name: workspace
