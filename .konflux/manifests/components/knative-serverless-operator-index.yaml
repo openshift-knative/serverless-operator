@@ -1,3 +1,4 @@
+---
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Component
 metadata:
@@ -15,3 +16,17 @@ spec:
       url: https://github.com/openshift-knative/serverless-operator.git
       dockerfileUrl: olm-catalog/serverless-operator/index/Dockerfile
       revision: konflux
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ImageRepository
+metadata:
+  annotations:
+    image-controller.appstudio.redhat.com/update-component-image: 'true'
+  labels:
+    appstudio.redhat.com/application: serverless-operator-konflux
+    appstudio.redhat.com/component: serverless-index
+  name: imagerepository-for-serverless-operator-konflux-serverless-index
+spec:
+  image:
+    name: serverless-operator-konflux/serverless-index
+    visibility: public
