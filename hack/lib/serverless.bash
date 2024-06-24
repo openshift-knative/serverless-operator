@@ -412,7 +412,7 @@ EOF
   fi
 
   if [[ $ENABLE_KEDA == "true" ]]; then
-    yq write --inplace "$knativekafka_cr" 'spec.config-kafka-features."controller.autoscaler"' "enabled"
+    yq write --inplace "$knativekafka_cr" 'spec.config.kafka-features."controller-autoscaler-keda"' "enabled"
   fi
 
 
