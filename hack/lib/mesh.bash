@@ -70,7 +70,7 @@ function deploy_servicemeshcontrolplane {
   # creating smcp often fails due to webhook error
   timeout 120 "[[ \$(oc apply -f ${resources_dir}/smcp.yaml | oc get smcp -n istio-system basic --no-headers | wc -l) != 1 ]]" || return 1
 
-  if [[ ${ROSA:-} == "true" ]]; then
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platformStatus.aws.resourceTags[?(@.key=="red-hat-clustertype")].value}') = rosa ]]; then
     logger.info "ThirdParty tokens required when using ROSA cluster"
     enable_smcp_third_party_token
   fi
