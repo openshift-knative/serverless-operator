@@ -300,7 +300,7 @@ spec:
       - name: name
         value: fbc-related-image-check
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-fbc-related-image-check:0.1@sha256:28566ed883cced07689bfa5bc12173b3e11a459964b9f25e913c8e2ac765f0d9
+        value: quay.io/konflux-ci/tekton-catalog/task-fbc-related-image-check:0.1@sha256:4360edfa706df5499f973f7291c522ff4e1aa0bfd2e5d16c03691cc9b2995e1f
       - name: kind
         value: task
       resolver: bundles
