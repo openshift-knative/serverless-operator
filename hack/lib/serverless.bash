@@ -30,9 +30,10 @@ function ensure_serverless_installed {
     remove_installplan "$CURRENT_CSV"
   fi
 
-  logger.info "Installing Serverless version $csv"
-
-  deploy_serverless_operator "$csv"
+   if [[ ${SKIP_OPERATOR_SUBSCRIPTION:-} != "true" ]]; then
+    logger.info "Installing Serverless version $csv"
+    deploy_serverless_operator "$csv"
+  fi
 
   install_knative_resources "${csv#serverless-operator.v}"
 

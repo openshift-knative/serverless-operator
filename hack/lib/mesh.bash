@@ -16,8 +16,10 @@ function uninstall_mesh {
 }
 
 function deploy_servicemesh_operators {
-  logger.info "Installing service mesh operators in namespace openshift-operators"
-  oc apply -f "${resources_dir}"/subscription.yaml || return $?
+  if [[ ${SKIP_OPERATOR_SUBSCRIPTION:-} != "true" ]]; then
+    logger.info "Installing service mesh operators in namespace openshift-operators"
+    oc apply -f "${resources_dir}"/subscription.yaml || return $?
+  fi
 
   logger.info "Waiting until service mesh operators are available"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators istio-operator --no-headers | wc -l) != 1 ]]" || return 1
@@ -67,6 +69,12 @@ function deploy_servicemeshcontrolplane {
 
   # creating smcp often fails due to webhook error
   timeout 120 "[[ \$(oc apply -f ${resources_dir}/smcp.yaml | oc get smcp -n istio-system basic --no-headers | wc -l) != 1 ]]" || return 1
+
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platformStatus.aws.resourceTags[?(@.key=="red-hat-clustertype")].value}') = rosa ]]; then
+    logger.info "ThirdParty tokens required when using ROSA cluster"
+    enable_smcp_third_party_token
+  fi
+
   oc wait --timeout=180s --for=condition=Ready smcp -n istio-system basic || oc get smcp -n istio-system basic -o yaml
 }
 
@@ -137,4 +145,17 @@ function undeploy_gateways {
   oc delete -f "${resources_dir}"/smmr.yaml --ignore-not-found || return $?
   oc delete -n cert-manager secret ca-key-pair  --ignore-not-found || return $?
   oc delete -n istio-system secret wildcard-certs --ignore-not-found || return $?
+}
+
+function enable_smcp_third_party_token {
+  smcp_patch="$(mktemp -t smcp-XXXXX.yaml)"
+
+  cat <<EOF > "${smcp_patch}"
+spec:
+  security:
+    identity:
+      type: ThirdParty
+EOF
+
+  oc patch smcp -n istio-system basic --type='merge' --patch-file "${smcp_patch}"
 }
