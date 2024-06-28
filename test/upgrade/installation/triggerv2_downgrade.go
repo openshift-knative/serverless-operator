@@ -21,13 +21,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/openshift-knative/serverless-operator/test"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/system"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 
 	internalsclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client"
@@ -51,7 +51,7 @@ func CleanupTriggerv2Deployments(c pkgupgrade.Context, glob environment.GlobalEn
 	ctx, _ := glob.Environment()
 	client := kubeclient.Get(ctx)
 
-	err := deleteStatefulSet(ctx, client, "kafka-broker-dispatcher", system.Namespace())
+	err := deleteStatefulSet(ctx, client, "kafka-broker-dispatcher", test.EventingNamespace)
 	if err != nil {
 		c.T.Fatal("failed to downgrade from triggerv2", err.Error())
 	}
