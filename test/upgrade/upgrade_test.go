@@ -75,7 +75,7 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx, global),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
@@ -97,7 +97,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx, global),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
