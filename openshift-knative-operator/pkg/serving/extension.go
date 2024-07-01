@@ -164,6 +164,11 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
+	// DomainMapping cleanup
+	if err := e.cleanupDomainMapping(ctx, ks); err != nil {
+		return fmt.Errorf("failed to cleanup domain mapping: %w", err)
+	}
+
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
@@ -200,4 +205,31 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
+}
+
+func (e *extension) cleanupDomainMapping(ctx context.Context, ks *operatorv1beta1.KnativeServing) error {
+	client := e.kubeclient
+
+	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
+		if err := client.AppsV1().Deployments(ks.GetNamespace()).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete deployment %s: %w", dep, err)
+		}
+	}
+	// Delete the rest of the domain mapping resources
+	for _, svc := range []string{"domainmapping-webhook", "domain-mapping-sm-service", "domainmapping-webhook-sm-service"} {
+		if err := client.CoreV1().Services(ks.GetNamespace()).Delete(ctx, svc, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete service %s: %w", svc, err)
+		}
+	}
+	if err := client.CoreV1().Secrets(ks.GetNamespace()).Delete(ctx, "domainmapping-webhook-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete secret domainmapping-webhook-certs: %w", err)
+	}
+	if err := client.AdmissionregistrationV1().MutatingWebhookConfigurations().Delete(ctx, "webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete mutating webhook configuration webhook.domainmapping.serving.knative.dev: %w", err)
+	}
+	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
+	}
+
+	return nil
 }
