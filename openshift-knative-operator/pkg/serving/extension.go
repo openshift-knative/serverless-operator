@@ -166,9 +166,9 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 
 	// DomainMapping cleanup
 	if err := e.cleanupDomainMapping(ctx, ks); err != nil {
-		//TODO: we don't need to propagate the error further?
-		println("Failed to cleanup domain mapping:", err)
+		return fmt.Errorf("failed to cleanup domain mapping: %w", err)
 	}
+
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
