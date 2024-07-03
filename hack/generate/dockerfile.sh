@@ -24,6 +24,9 @@ values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 values[PREVIOUS_REPLACES]="$(metadata.get olm.previous.replaces)"
 
+prev_prev_channel="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)"
+values[PREVIOUS_PREVIOUS_VERSION]="${prev_prev_channel#stable-}.0"
+
 # Start fresh
 cp "$template" "$target"
 
