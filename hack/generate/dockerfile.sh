@@ -24,6 +24,14 @@ values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 values[PREVIOUS_REPLACES]="$(metadata.get olm.previous.replaces)"
 
+
+prev_prev_channel="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)"
+if [[ "${values[PREVIOUS_REPLACES]}" == "$prev_prev_channel" ]]; then
+  values[PREVIOUS_PREVIOUS_VERSION]="registry.ci.openshift.org/knative/openshift-serverless-v${prev_prev_channel#stable-}.0:serverless-bundle"
+else
+  values[PREVIOUS_PREVIOUS_VERSION]=""
+fi
+
 # Start fresh
 cp "$template" "$target"
 
