@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -33,6 +34,8 @@ const (
 
 	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )
+
+var cleanDomainMappingOnce *sync.Once
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -164,10 +167,11 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
-	// DomainMapping cleanup
-	if err := e.cleanupDomainMapping(ctx, ks); err != nil {
-		return fmt.Errorf("failed to cleanup domain mapping: %w", err)
-	}
+	cleanDomainMappingOnce.Do(func() {
+		if err := e.cleanupDomainMapping(ctx, ks); err != nil {
+			return
+		}
+	})
 
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
@@ -209,7 +213,6 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 
 func (e *extension) cleanupDomainMapping(ctx context.Context, ks *operatorv1beta1.KnativeServing) error {
 	client := e.kubeclient
-
 	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
 		if err := client.AppsV1().Deployments(ks.GetNamespace()).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete deployment %s: %w", dep, err)
@@ -230,6 +233,5 @@ func (e *extension) cleanupDomainMapping(ctx context.Context, ks *operatorv1beta
 	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
 	}
-
 	return nil
 }
