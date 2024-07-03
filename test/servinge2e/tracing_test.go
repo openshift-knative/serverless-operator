@@ -25,11 +25,12 @@ import (
 )
 
 const (
-	testNamespace    = "serverless-tests"
-	requestCount     = 100
-	tracingNamespace = "istio-system"
-	jaegerName       = "jaeger"
-	jaegerQueryPort  = 16685
+	testNamespace              = "serverless-tests"
+	requestCount               = 100
+	tracingNamespace           = "istio-system"
+	jaegerQueryFrontedSelector = "app=jaeger"
+	tempoQueryFrontedSelector  = "app.kubernetes.io/component=query-frontend"
+	jaegerQueryPort            = 16685
 )
 
 func TestTraceStartedAtActivator(t *testing.T) {
@@ -47,9 +48,16 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 		// Traces look different when ServiceMesh is installed.
 		t.Skip("ServiceMesh installed, skipping tracing test.")
 	}
-	if !IsJaegerInstalled(ctx) {
-		t.Skip("Jaeger not installed, skipping tracing test.")
+
+	var queryFrontendSelector string
+	if IsJaegerInstalled(ctx) {
+		queryFrontendSelector = jaegerQueryFrontedSelector
+	} else if IsTempoInstalled(ctx) {
+		queryFrontendSelector = tempoQueryFrontedSelector
+	} else {
+		t.Skip("Neither Jaeger nor Tempo installed, skipping tracing test.")
 	}
+
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 	defer test.CleanupAll(t, ctx)
 	name := strings.ToLower(t.Name())
@@ -73,7 +81,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	// Verify all the traces of our service also contain spans from the activator.
 	// Tracing is asynchronous, retry on failures until timeout is reached.
 	if waitErr := wait.PollUntilContextTimeout(context.Background(), time.Second, 30*time.Second, true, func(_ context.Context) (bool, error) {
-		err = verifyServicesArePresentInAllJaegerTraces(ctx, "/", name, serviceNamePrefixes...)
+		err = verifyServicesArePresentInAllJaegerTraces(ctx, queryFrontendSelector, "/", name, serviceNamePrefixes...)
 		return err == nil, nil
 	}); waitErr != nil {
 		t.Fatalf("Error verifying traces: %v: %v", waitErr, err)
@@ -120,11 +128,12 @@ func HTTPGetAsStringWithClient(client *spoof.SpoofingClient, url string) (string
 // Verifies there is no span in the traces that doesn't match any of the serviceNamePrefixes.
 // Returns the number of traces found.
 func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
+	queryFrontEndLabelSelector string,
 	traceOperationName string,
 	traceServiceNamePrefix string,
 	serviceNamePrefixes ...string) error {
 
-	portForward, err := setupPortForward(ctx)
+	portForward, err := setupPortForward(ctx, queryFrontEndLabelSelector)
 	if err != nil {
 		return err
 	}
@@ -227,16 +236,16 @@ func receiveTraces(traceClient jaegerapi.QueryService_FindTracesClient) (map[str
 	return traces, nil
 }
 
-func setupPortForward(ctx *test.Context) (*test.PortForwardType, error) {
+func setupPortForward(ctx *test.Context, queryFrontEndLabelSelector string) (*test.PortForwardType, error) {
 	podList, err := ctx.Clients.Kube.CoreV1().Pods(tracingNamespace).List(
 		context.Background(),
-		metav1.ListOptions{LabelSelector: "app=" + jaegerName})
+		metav1.ListOptions{LabelSelector: queryFrontEndLabelSelector})
 	if err != nil {
-		return nil, fmt.Errorf("error listing app=%s pods: %w", jaegerName, err)
+		return nil, fmt.Errorf("error listing pods %q: %w", queryFrontEndLabelSelector, err)
 	}
 
 	if len(podList.Items) != 1 {
-		return nil, fmt.Errorf("expecting exactly 1 jaeger pod, got %d", len(podList.Items))
+		return nil, fmt.Errorf("expecting exactly 1 query fronted pod, got %d", len(podList.Items))
 	}
 
 	portForward, err := test.PortForward(podList.Items[0], jaegerQueryPort)
@@ -275,6 +284,23 @@ func IsJaegerInstalled(ctx *test.Context) bool {
 		Group:    "jaegertracing.io",
 		Version:  "v1",
 		Resource: "jaegers",
+	}).Namespace(tracingNamespace).List(context.Background(), metav1.ListOptions{})
+
+	if err != nil {
+		if apierrs.IsNotFound(err) {
+			return false
+		}
+		ctx.T.Fatal(err)
+	}
+
+	return len(list.Items) == 1
+}
+
+func IsTempoInstalled(ctx *test.Context) bool {
+	list, err := ctx.Clients.Dynamic.Resource(schema.GroupVersionResource{
+		Group:    "tempo.grafana.com",
+		Version:  "v1alpha1",
+		Resource: "tempostacks",
 	}).Namespace(tracingNamespace).List(context.Background(), metav1.ListOptions{})
 
 	if err != nil {
