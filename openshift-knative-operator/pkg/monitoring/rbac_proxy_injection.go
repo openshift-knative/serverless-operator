@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,8 +18,9 @@ import (
 )
 
 const (
-	RBACContainerName    = "kube-rbac-proxy"
-	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
+	RBACContainerName     = "kube-rbac-proxy"
+	rbacProxyImageEnvVar  = "IMAGE_KUBE_RBAC_PROXY"
+	KubeRbacProxyLogLevel = 0
 )
 
 var defaultKubeRBACProxyRequests = corev1.ResourceList{
@@ -31,18 +33,26 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 		Requests: defaultKubeRBACProxyRequests,
 		Limits:   corev1.ResourceList{},
 	}
-	if cfg != nil && cfg["deployment"] != nil {
-		if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
-			resources.Requests["cpu"] = resource.MustParse(cpuRequest)
-		}
-		if memRequest, ok := cfg["deployment"]["kube-rbac-proxy-memory-request"]; ok {
-			resources.Requests["memory"] = resource.MustParse(memRequest)
-		}
-		if cpuLimit, ok := cfg["deployment"]["kube-rbac-proxy-cpu-limit"]; ok {
-			resources.Limits["cpu"] = resource.MustParse(cpuLimit)
-		}
-		if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
-			resources.Limits["memory"] = resource.MustParse(memLimit)
+	logLevel := KubeRbacProxyLogLevel
+	if cfg != nil {
+		if cfg["deployment"] != nil {
+			if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
+				resources.Requests["cpu"] = resource.MustParse(cpuRequest)
+			}
+			if memRequest, ok := cfg["deployment"]["kube-rbac-proxy-memory-request"]; ok {
+				resources.Requests["memory"] = resource.MustParse(memRequest)
+			}
+			if cpuLimit, ok := cfg["deployment"]["kube-rbac-proxy-cpu-limit"]; ok {
+				resources.Limits["cpu"] = resource.MustParse(cpuLimit)
+			}
+			if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
+				resources.Limits["memory"] = resource.MustParse(memLimit)
+			}
+			if cfg["logging"] != nil {
+				if logLevelStr, ok := cfg["logging"]["loglevel.kube-rbac-proxy"]; ok {
+					logLevel, _ = strconv.Atoi(logLevelStr)
+				}
+			}
 		}
 	}
 	return func(u *unstructured.Unstructured) error {
@@ -100,7 +110,7 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 					"--tls-private-key-file=" + filepath.Join(mountPath, "tls.key"),
 					"--logtostderr=true",
 					"--http2-disable",
-					"--v=10",
+					fmt.Sprintf("--v=%d", logLevel),
 				},
 			}
 			podSpec.Containers = append(podSpec.Containers, rbacProxyContainer)
