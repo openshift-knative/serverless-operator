@@ -161,6 +161,7 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 			ServiceName:   serviceName,
 			StartTimeMin:  time.Now().Add(-10 * time.Minute),
 			StartTimeMax:  time.Now(),
+			DurationMin:   0,
 			DurationMax:   time.Minute,
 		},
 	})
