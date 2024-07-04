@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	RBACContainerName     = "kube-rbac-proxy"
-	rbacProxyImageEnvVar  = "IMAGE_KUBE_RBAC_PROXY"
-	KubeRbacProxyLogLevel = 0
+	RBACContainerName            = "kube-rbac-proxy"
+	rbacProxyImageEnvVar         = "IMAGE_KUBE_RBAC_PROXY"
+	DefaultKubeRbacProxyLogLevel = 0
 )
 
 var defaultKubeRBACProxyRequests = corev1.ResourceList{
@@ -33,7 +33,7 @@ func InjectRbacProxyContainer(deployments sets.Set[string], cfg base.ConfigMapDa
 		Requests: defaultKubeRBACProxyRequests,
 		Limits:   corev1.ResourceList{},
 	}
-	logLevel := KubeRbacProxyLogLevel
+	logLevel := DefaultKubeRbacProxyLogLevel
 	if cfg != nil {
 		if cfg["deployment"] != nil {
 			if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
@@ -48,10 +48,10 @@ func InjectRbacProxyContainer(deployments sets.Set[string], cfg base.ConfigMapDa
 			if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
 				resources.Limits["memory"] = resource.MustParse(memLimit)
 			}
-			if cfg["logging"] != nil {
-				if logLevelStr, ok := cfg["logging"]["loglevel.kube-rbac-proxy"]; ok {
-					logLevel, _ = strconv.Atoi(logLevelStr)
-				}
+		}
+		if cfg["logging"] != nil {
+			if logLevelStr, ok := cfg["logging"]["loglevel.kube-rbac-proxy"]; ok {
+				logLevel, _ = strconv.Atoi(logLevelStr)
 			}
 		}
 	}
