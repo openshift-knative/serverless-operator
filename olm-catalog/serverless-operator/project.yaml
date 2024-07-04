@@ -4,10 +4,10 @@ project:
     # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
     # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
     # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-    version: 1.33.2
+    version: 1.33.1
 olm:
-    replaces: 1.33.1
-    skipRange: '>=1.33.0 <1.33.2'
+    replaces: 1.33.0
+    skipRange: '>=1.33.0 <1.33.1'
     channels:
         default: stable
         list:
