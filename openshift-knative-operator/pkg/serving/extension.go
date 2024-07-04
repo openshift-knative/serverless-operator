@@ -24,6 +24,7 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 )
@@ -35,7 +36,7 @@ const (
 	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )
 
-var cleanDomainMappingOnce *sync.Once
+var cleanDomainMappingOnce sync.Once
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -168,8 +169,10 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	}
 
 	cleanDomainMappingOnce.Do(func() {
-		if err := e.cleanupDomainMapping(ctx, ks); err != nil {
+		if err := e.cleanupDomainMapping(ctx, ks.GetNamespace()); err != nil {
 			return
+		} else {
+			logging.FromContext(ctx).Error(err)
 		}
 	})
 
@@ -211,20 +214,20 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 	return route.Status.Ingress[0].Host
 }
 
-func (e *extension) cleanupDomainMapping(ctx context.Context, ks *operatorv1beta1.KnativeServing) error {
+func (e *extension) cleanupDomainMapping(ctx context.Context, ns string) error {
 	client := e.kubeclient
 	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
-		if err := client.AppsV1().Deployments(ks.GetNamespace()).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		if err := client.AppsV1().Deployments(ns).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete deployment %s: %w", dep, err)
 		}
 	}
 	// Delete the rest of the domain mapping resources
 	for _, svc := range []string{"domainmapping-webhook", "domain-mapping-sm-service", "domainmapping-webhook-sm-service"} {
-		if err := client.CoreV1().Services(ks.GetNamespace()).Delete(ctx, svc, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		if err := client.CoreV1().Services(ns).Delete(ctx, svc, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete service %s: %w", svc, err)
 		}
 	}
-	if err := client.CoreV1().Secrets(ks.GetNamespace()).Delete(ctx, "domainmapping-webhook-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+	if err := client.CoreV1().Secrets(ns).Delete(ctx, "domainmapping-webhook-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete secret domainmapping-webhook-certs: %w", err)
 	}
 	if err := client.AdmissionregistrationV1().MutatingWebhookConfigurations().Delete(ctx, "webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
