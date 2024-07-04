@@ -159,6 +159,9 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 		Query: &jaegerapi.TraceQueryParameters{
 			OperationName: traceOperationName,
 			ServiceName:   serviceName,
+			StartTimeMin:  time.Now().Add(-10 * time.Minute),
+			StartTimeMax:  time.Now(),
+			DurationMax:   time.Minute,
 		},
 	})
 	if err != nil {
