@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	mf "github.com/manifestival/manifestival"
@@ -227,10 +228,15 @@ func (e *extension) cleanupDomainMapping(ctx context.Context, ns string) error {
 			return fmt.Errorf("failed to delete service %s: %w", svc, err)
 		}
 	}
-	for _, lease := range []string{"domainmapping-webhook.defaultingwebhook.00-of-01", "domainmapping-webhook.validationwebhook.00-of-01",
-		"domainmapping-webhook.webhookcertificates.00-of-01", "domainmapping.knative.dev.serving.pkg.reconciler.domainmapping.reconciler.00-of-01"} {
-		if err := client.CoordinationV1().Leases(ns).Delete(ctx, lease, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			return fmt.Errorf("failed to delete lease %s: %w", lease, err)
+	leases, err := client.CoordinationV1().Leases(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, lease := range leases.Items {
+		if strings.Contains(lease.Name, "domainmapping") || strings.Contains(lease.Name, "domain-mapping") {
+			if err := client.CoordinationV1().Leases(ns).Delete(ctx, lease.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				return fmt.Errorf("failed to delete lease %s: %w", lease.Name, err)
+			}
 		}
 	}
 	if err := client.CoreV1().Secrets(ns).Delete(ctx, "domainmapping-webhook-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
