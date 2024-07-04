@@ -170,12 +170,13 @@ jobs:
           fi
           done <   <(find ci-operator/config/openshift-knative/serverless-operator -type f -name "*${release}*" -print0)
           
-          if [ "$count" -ne 0 ]; then
-            echo "$count files with an unexpected promotion name or tag"
-            echo "Use the release-generate-ci GH actions workflow in serverless-operator on the $release branch with inputs:"
-            echo "'branch': '$release'"
-            echo "'tag': '$tag'"
-            echo "then merge the created PR in openshift/release"
+          if [ $count -ne 0 ]; then
+            echo "## $count files with an unexpected promotion name or tag" >> $GITHUB_STEP_SUMMARY
+            echo "1. Use the [release-generate-ci](https://github.com/openshift-knative/serverless-operator/actions/workflows/release-generate-ci.yaml?query=branch%3Arelease-1.33) GH actions workflow in serverless-operator on the $release branch with inputs:" >> $GITHUB_STEP_SUMMARY
+            echo "  - **use workflow from**: **$release**" >> $GITHUB_STEP_SUMMARY
+            echo "  - **branch**: **$release**" >> $GITHUB_STEP_SUMMARY
+            echo "  - **tag**: **$tag**" >> $GITHUB_STEP_SUMMARY
+            echo "2. merge the created PR in openshift/release" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
