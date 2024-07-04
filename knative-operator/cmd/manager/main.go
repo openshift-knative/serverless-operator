@@ -44,6 +44,8 @@ var (
 	metricsHost       = "0.0.0.0"
 	metricsPort int32 = 8383
 	healthPort  int32 = 8687
+	pprofHost         = "127.0.0.1"
+	pprofPort   int32 = 8008
 	log               = logf.Log.WithName("cmd")
 )
 
@@ -86,6 +88,7 @@ func main() {
 		},
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
 		WebhookServer:          hookServer,
+		PprofBindAddress:       fmt.Sprintf("%s:%d", pprofHost, pprofPort),
 	})
 	if err != nil {
 		log.Error(err, "")
