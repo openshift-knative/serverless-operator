@@ -25,9 +25,13 @@ values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 values[PREVIOUS_REPLACES]="$(metadata.get olm.previous.replaces)"
 
 
-prev_prev_channel="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)"
-if [[ "${values[PREVIOUS_REPLACES]}" == "$prev_prev_channel" ]]; then
-  values[PREVIOUS_PREVIOUS_VERSION]="registry.ci.openshift.org/knative/openshift-serverless-v${prev_prev_channel#stable-}.0:serverless-bundle"
+prev_prev_channel="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)" # stable-1.32
+prev_prev_version="${prev_prev_channel#stable-}.0"
+
+echo "Comparing '${values[PREVIOUS_REPLACES]}' -- '$prev_prev_version'"
+
+if [[ "${values[PREVIOUS_REPLACES]}" != "$prev_prev_version" ]]; then
+  values[PREVIOUS_PREVIOUS_VERSION]="registry.ci.openshift.org/knative/openshift-serverless-v${prev_prev_version}:serverless-bundle"
 else
   values[PREVIOUS_PREVIOUS_VERSION]=""
 fi
@@ -37,5 +41,5 @@ cp "$template" "$target"
 
 for before in "${!values[@]}"; do
   echo "Value: ${before} -> ${values[$before]}"
-  sed --in-place "s/__${before}__/${values[${before}]}/" "$target"
+  sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
 done
