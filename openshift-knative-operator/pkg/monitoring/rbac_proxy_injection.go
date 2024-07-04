@@ -35,22 +35,22 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 	}
 	logLevel := DefaultKubeRbacProxyLogLevel
 	if cfg != nil {
-		if cfg["deployment"] != nil {
-			if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
+		if deploymentData := getCmDataforName(cfg, "config-deployment"); deploymentData != nil {
+			if cpuRequest, ok := deploymentData["kube-rbac-proxy-cpu-request"]; ok {
 				resources.Requests["cpu"] = resource.MustParse(cpuRequest)
 			}
-			if memRequest, ok := cfg["deployment"]["kube-rbac-proxy-memory-request"]; ok {
+			if memRequest, ok := deploymentData["kube-rbac-proxy-memory-request"]; ok {
 				resources.Requests["memory"] = resource.MustParse(memRequest)
 			}
-			if cpuLimit, ok := cfg["deployment"]["kube-rbac-proxy-cpu-limit"]; ok {
+			if cpuLimit, ok := deploymentData["kube-rbac-proxy-cpu-limit"]; ok {
 				resources.Limits["cpu"] = resource.MustParse(cpuLimit)
 			}
-			if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
+			if memLimit, ok := deploymentData["kube-rbac-proxy-memory-limit"]; ok {
 				resources.Limits["memory"] = resource.MustParse(memLimit)
 			}
 		}
-		if cfg["logging"] != nil {
-			if logLevelStr, ok := cfg["logging"]["loglevel.kube-rbac-proxy"]; ok {
+		if loggingData := getCmDataforName(cfg, "config-logging"); loggingData != nil {
+			if logLevelStr, ok := loggingData["loglevel.kube-rbac-proxy"]; ok {
 				logLevel, _ = strconv.Atoi(logLevelStr)
 			}
 		}
@@ -140,4 +140,15 @@ func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments
 		}
 	}
 	return operator.OverridesTransform(ovs, nil)
+}
+
+func getCmDataforName(cfg base.ConfigMapData, name string) map[string]string {
+	if cfg[name] != nil {
+		return cfg[name]
+	}
+	// The "config-" prefix is optional, so we try to find the config without it.
+	if cfg[name[len(`config-`):]] != nil {
+		return cfg[name[len(`config-`):]]
+	}
+	return nil
 }
