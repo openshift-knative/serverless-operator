@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -133,7 +134,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 							"--tls-private-key-file=/etc/tls/private/tls.key",
 							"--logtostderr=true",
 							"--http2-disable",
-							"--v=10",
+							fmt.Sprintf("--v=%d", DefaultKubeRbacProxyLogLevel),
 						},
 					}},
 				},

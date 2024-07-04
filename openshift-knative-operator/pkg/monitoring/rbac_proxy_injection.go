@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,8 +18,9 @@ import (
 )
 
 const (
-	RBACContainerName    = "kube-rbac-proxy"
-	rbacProxyImageEnvVar = "IMAGE_KUBE_RBAC_PROXY"
+	RBACContainerName            = "kube-rbac-proxy"
+	rbacProxyImageEnvVar         = "IMAGE_KUBE_RBAC_PROXY"
+	DefaultKubeRbacProxyLogLevel = 0
 )
 
 var defaultKubeRBACProxyRequests = corev1.ResourceList{
@@ -31,18 +33,26 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 		Requests: defaultKubeRBACProxyRequests,
 		Limits:   corev1.ResourceList{},
 	}
-	if cfg != nil && cfg["deployment"] != nil {
-		if cpuRequest, ok := cfg["deployment"]["kube-rbac-proxy-cpu-request"]; ok {
-			resources.Requests["cpu"] = resource.MustParse(cpuRequest)
+	logLevel := DefaultKubeRbacProxyLogLevel
+	if cfg != nil {
+		if deploymentData := getCmDataforName(cfg, "config-deployment"); deploymentData != nil {
+			if cpuRequest, ok := deploymentData["kube-rbac-proxy-cpu-request"]; ok {
+				resources.Requests["cpu"] = resource.MustParse(cpuRequest)
+			}
+			if memRequest, ok := deploymentData["kube-rbac-proxy-memory-request"]; ok {
+				resources.Requests["memory"] = resource.MustParse(memRequest)
+			}
+			if cpuLimit, ok := deploymentData["kube-rbac-proxy-cpu-limit"]; ok {
+				resources.Limits["cpu"] = resource.MustParse(cpuLimit)
+			}
+			if memLimit, ok := deploymentData["kube-rbac-proxy-memory-limit"]; ok {
+				resources.Limits["memory"] = resource.MustParse(memLimit)
+			}
 		}
-		if memRequest, ok := cfg["deployment"]["kube-rbac-proxy-memory-request"]; ok {
-			resources.Requests["memory"] = resource.MustParse(memRequest)
-		}
-		if cpuLimit, ok := cfg["deployment"]["kube-rbac-proxy-cpu-limit"]; ok {
-			resources.Limits["cpu"] = resource.MustParse(cpuLimit)
-		}
-		if memLimit, ok := cfg["deployment"]["kube-rbac-proxy-memory-limit"]; ok {
-			resources.Limits["memory"] = resource.MustParse(memLimit)
+		if loggingData := getCmDataforName(cfg, "config-logging"); loggingData != nil {
+			if logLevelStr, ok := loggingData["loglevel.kube-rbac-proxy"]; ok {
+				logLevel, _ = strconv.Atoi(logLevelStr)
+			}
 		}
 	}
 	return func(u *unstructured.Unstructured) error {
@@ -100,7 +110,7 @@ func InjectRbacProxyContainer(deployments sets.String, cfg base.ConfigMapData) m
 					"--tls-private-key-file=" + filepath.Join(mountPath, "tls.key"),
 					"--logtostderr=true",
 					"--http2-disable",
-					"--v=10",
+					fmt.Sprintf("--v=%d", logLevel),
 				},
 			}
 			podSpec.Containers = append(podSpec.Containers, rbacProxyContainer)
@@ -130,4 +140,15 @@ func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments
 		}
 	}
 	return operator.OverridesTransform(ovs, nil)
+}
+
+func getCmDataforName(cfg base.ConfigMapData, name string) map[string]string {
+	if cfg[name] != nil {
+		return cfg[name]
+	}
+	// The "config-" prefix is optional, so we try to find the config without it.
+	if cfg[name[len(`config-`):]] != nil {
+		return cfg[name[len(`config-`):]]
+	}
+	return nil
 }
