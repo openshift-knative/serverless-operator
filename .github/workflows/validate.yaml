@@ -102,6 +102,83 @@ jobs:
             exit 34
           fi
 
+  promotion:
+    if: ${{ github.event_name == 'pull_request' && contains(github.base_ref, 'release-') }}
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}
+    steps:
+
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.21.x
+
+      - name: Install yq
+        run: |
+          go install github.com/mikefarah/yq/v3@latest
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ./src/github.com/openshift-knative/serverless-operator
+          fetch-depth: 0
+
+      - name: Merge upstream
+        if: github.event_name == 'pull_request'
+        working-directory: ./src/github.com/openshift-knative/serverless-operator
+        run: |
+          if ! git config user.name > /dev/null; then
+            git config user.name "John Doe"
+          fi
+          if ! git config user.email > /dev/null; then
+            git config user.email "johndoe@localhost"
+          fi
+          git remote add upstream https://github.com/openshift-knative/serverless-operator.git
+          git pull --no-rebase upstream ${{ github.base_ref }}
+        shell: bash
+
+      - name: Checkout openshift/release
+        uses: actions/checkout@v4
+        with:
+          branch: 'master'
+          repository: 'openshift/release'
+          path: ./src/github.com/openshift/release
+
+      - name: Verify promotion tag or name in openshift/release
+        working-directory: ./src/github.com/openshift/release
+        shell: bash
+        run: |
+          tag="release-$(yq read ../../openshift-knative/serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version')"
+          release=${{ github.base_ref }}
+          
+          while IFS= read -r -d '' file
+          do
+          promotion_name=$(yq r "$file" 'promotion.to[0].name')
+          if [ "$promotion_name" != "" ] && [ "$promotion_name" != "${tag}" ]; then
+            ((count++))
+            echo "File: $file"
+            echo "promotion.to[0].name: $promotion_name"
+            echo
+          fi
+          promotion_tag=$(yq r "$file" 'promotion.to[0].tag')
+          if [ "$promotion_tag" != "" ] && [ "$promotion_tag" != "${tag}" ]; then
+            ((count++))
+            echo "File: $file"
+            echo "promotion.to[0].name: $promotion_tag"
+            echo
+          fi
+          done <   <(find ci-operator/config/openshift-knative/serverless-operator -type f -name "*${release}*" -print0)
+          
+          if [ "$count" -ne 0 ]; then
+            echo "$count files with an unexpected promotion name or tag"
+            echo "Use the release-generate-ci GH actions workflow in serverless-operator on the $release branch with inputs:"
+            echo "'branch': '$release'"
+            echo "'tag': '$tag'"
+            echo "then merge the created PR in openshift/release"
+            exit 1
+          fi
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -164,7 +241,7 @@ jobs:
         uses: golangci/golangci-lint-action@v5
         with:
           version: v1.55.2
-          args: --timeout=10m0s --verbose 
+          args: --timeout=10m0s --verbose
           working-directory: ./src/github.com/${{ github.repository }}
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
