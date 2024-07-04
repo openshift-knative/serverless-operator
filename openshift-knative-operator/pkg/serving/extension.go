@@ -169,11 +169,11 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	}
 
 	cleanDomainMappingOnce.Do(func() {
-		if err := e.cleanupDomainMapping(ctx, ks.GetNamespace()); err != nil {
+		err := e.cleanupDomainMapping(ctx, ks.GetNamespace())
+		if err != nil {
 			return
-		} else {
-			logging.FromContext(ctx).Error(err)
 		}
+		logging.FromContext(ctx).Error(err)
 	})
 
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
