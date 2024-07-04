@@ -134,7 +134,7 @@ func TestInjectRbacProxyContainerToDeployments(t *testing.T) {
 							"--tls-private-key-file=/etc/tls/private/tls.key",
 							"--logtostderr=true",
 							"--http2-disable",
-							fmt.Sprintf("--v=%d", KubeRbacProxyLogLevel),
+							fmt.Sprintf("--v=%d", DefaultKubeRbacProxyLogLevel),
 						},
 					}},
 				},
