@@ -74,6 +74,8 @@ function install_catalogsource {
     fi
     sed -i "s_\(.*\)\(${bundle}\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${rootdir}/${index_dorkerfile_path}"
 
+    cat "${rootdir}/${index_dorkerfile_path}"
+
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 
     logger.debug 'Undo potential changes to the index Dockerfile.'
