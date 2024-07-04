@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
+	"sync/atomic"
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -25,7 +25,6 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 )
@@ -37,7 +36,7 @@ const (
 	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )
 
-var cleanDomainMappingOnce sync.Once
+var isDomainMappingRemoved atomic.Bool
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -169,13 +168,12 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
-	cleanDomainMappingOnce.Do(func() {
-		err := e.cleanupDomainMapping(ctx, ks.GetNamespace())
-		if err != nil {
-			return
+	if !isDomainMappingRemoved.Load() {
+		if err := e.cleanupDomainMapping(ctx, ks.GetNamespace()); err != nil {
+			return err
 		}
-		logging.FromContext(ctx).Error(err)
-	})
+		isDomainMappingRemoved.Store(true)
+	}
 
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
