@@ -164,7 +164,7 @@ jobs:
         uses: golangci/golangci-lint-action@v5
         with:
           version: v1.55.2
-          args: --timeout=10m0s --verbose 
+          args: --timeout=10m0s --verbose
           working-directory: ./src/github.com/${{ github.repository }}
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
