@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"sync/atomic"
 
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
@@ -33,6 +35,8 @@ const (
 
 	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 )
+
+var isDomainMappingRemoved atomic.Bool
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -164,6 +168,13 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
+	if !isDomainMappingRemoved.Load() {
+		if err := e.cleanupDomainMapping(ctx, ks.GetNamespace()); err != nil {
+			return err
+		}
+		isDomainMappingRemoved.Store(true)
+	}
+
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
@@ -200,4 +211,40 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 		return ""
 	}
 	return route.Status.Ingress[0].Host
+}
+
+func (e *extension) cleanupDomainMapping(ctx context.Context, ns string) error {
+	client := e.kubeclient
+	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
+		if err := client.AppsV1().Deployments(ns).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete deployment %s: %w", dep, err)
+		}
+	}
+	// Delete the rest of the domain mapping resources
+	for _, svc := range []string{"domainmapping-webhook", "domain-mapping-sm-service", "domainmapping-webhook-sm-service"} {
+		if err := client.CoreV1().Services(ns).Delete(ctx, svc, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete service %s: %w", svc, err)
+		}
+	}
+	leases, err := client.CoordinationV1().Leases(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, lease := range leases.Items {
+		if strings.Contains(lease.Name, "domainmapping") || strings.Contains(lease.Name, "domain-mapping") {
+			if err := client.CoordinationV1().Leases(ns).Delete(ctx, lease.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				return fmt.Errorf("failed to delete lease %s: %w", lease.Name, err)
+			}
+		}
+	}
+	if err := client.CoreV1().Secrets(ns).Delete(ctx, "domainmapping-webhook-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete secret domainmapping-webhook-certs: %w", err)
+	}
+	if err := client.AdmissionregistrationV1().MutatingWebhookConfigurations().Delete(ctx, "webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete mutating webhook configuration webhook.domainmapping.serving.knative.dev: %w", err)
+	}
+	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
+	}
+	return nil
 }
