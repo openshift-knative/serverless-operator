@@ -163,6 +163,7 @@ func verifyServicesArePresentInAllJaegerTraces(ctx *test.Context,
 			StartTimeMax:  time.Now(),
 			DurationMin:   0,
 			DurationMax:   time.Minute,
+			SearchDepth:   1000,
 		},
 	})
 	if err != nil {
