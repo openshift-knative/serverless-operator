@@ -983,6 +983,8 @@ spec:
                         value: "true"
                       - name: SOURCES_GENERATE_SERVICE_MONITORS
                         value: "true"
+                      - name: ENABLE_PPROF
+                        value: "false"
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                     securityContext:
