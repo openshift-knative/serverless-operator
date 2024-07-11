@@ -30,7 +30,7 @@ metadata:
     strimzi.io/kraft: enabled
 spec:
   kafka:
-    version: 3.7.0
+    version: 3.7.1
     replicas: 3
     listeners:
       # PLAINTEXT
