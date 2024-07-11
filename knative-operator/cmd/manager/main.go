@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis"
@@ -44,6 +45,8 @@ var (
 	metricsHost       = "0.0.0.0"
 	metricsPort int32 = 8383
 	healthPort  int32 = 8687
+	pprofHost         = "127.0.0.1"
+	pprofPort   int32 = 8008
 	log               = logf.Log.WithName("cmd")
 )
 
@@ -77,6 +80,17 @@ func main() {
 		WebhookMux: nil,
 	})
 
+	// If empty the pprof serving is disabled
+	pprofAddress := ""
+	enable := false
+
+	if enable, err = strconv.ParseBool(os.Getenv("ENABLE_PPROF")); err != nil {
+		log.Error(err, "unable to parse ENABLE_PPROF")
+		os.Exit(1)
+	} else if enable {
+		pprofAddress = fmt.Sprintf("%s:%d", pprofHost, pprofPort)
+	}
+
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		LeaderElection:   true,
@@ -86,6 +100,7 @@ func main() {
 		},
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
 		WebhookServer:          hookServer,
+		PprofBindAddress:       pprofAddress,
 	})
 	if err != nil {
 		log.Error(err, "")
