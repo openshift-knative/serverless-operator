@@ -54,6 +54,12 @@ jobs:
           git config --global user.email "serverless-support@redhat.com"
           git config --global user.name "OpenShift Serverless"
 
+      - name: Authenticate Podman to QCI
+        working-directory: ./src/github.com/openshift-knative/hack
+        env:
+          QCI_TOKEN: ${{ secrets.QCI_TOKEN }}
+        run: podman login -u=image-puller -p="${QCI_TOKEN}" quay-proxy.ci.openshift.org
+
       - name: Generate CI (on workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         working-directory: ./src/github.com/openshift-knative/hack
