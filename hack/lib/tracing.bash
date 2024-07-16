@@ -452,6 +452,17 @@ function teardown_tracing {
     oc adm taint node "$zipkin_node" zipkin:NoSchedule-
   fi
 
+  # Teardown Tempo
+  if oc get -n "${TRACING_NAMESPACE}" tempostack.tempo.grafana.com serverless &>/dev/null; then
+    oc delete -n "${TRACING_NAMESPACE}" tempostack.tempo.grafana.com serverless
+    timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment -l app.kubernetes.io/name=tempo --no-headers | wc -l) != 0 ]]"
+  fi
+
+  # Teardown Minio
+  for resource in deployment persistentvolumeclaim service secret; do
+    oc delete -n "${TRACING_NAMESPACE}" $resource minio --ignore-not-found
+  done
+
   # Teardown OpenTelemetry
   if oc get -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector &>/dev/null; then
     oc delete -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector
