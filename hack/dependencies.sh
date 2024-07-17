@@ -16,6 +16,5 @@ set -Eeuo pipefail
 
 debugging.setup
 
-use_spot_instances
 scale_up_workers
 create_namespaces "${SYSTEM_NAMESPACES[@]}"

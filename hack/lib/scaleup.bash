@@ -49,7 +49,7 @@ function scale_up_workers {
 function wait_until_machineset_scales_up {
   logger.info "Waiting until worker nodes scale up to $1 replicas"
   local available
-  for _ in {1..150}; do  # timeout after 15 minutes
+  for _ in {1..200}; do  # timeout after 20 minutes
     available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
     if [[ ${available} -eq $1 ]]; then
       echo ''
@@ -119,6 +119,9 @@ function use_spot_instances {
 
   rm -f "$mset_file"
 
-  # Wait for at least the default number of workers to be up and running.
-  wait_until_machineset_scales_up 3
+  if [[ "${SCALE_UP}" -lt "0" ]]; then
+    wait_until_machineset_scales_up 3
+  else
+    wait_until_machineset_scales_up "${SCALE_UP}"
+  fi
 }
