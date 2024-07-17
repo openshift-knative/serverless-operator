@@ -108,20 +108,20 @@ function use_spot_instances {
 
   logger.info "Convert MachineSets to spot instances"
 
-  for mset in $(oc get machineset -oname); do
-  	mset_name=$(oc get "${mset}" -ojsonpath='{.metadata.name}')
+  for mset in $(oc get machineset -n openshift-machine-api -oname); do
+  	mset_name=$(oc get "${mset}" -n openshift-machine-api -ojsonpath='{.metadata.name}')
 
   	# New machine set has a specific suffix
   	mset_name="${mset_name}-s"
 
   	# Create the new machineset with spotMarketOptions
-  	oc get "${mset}" -ojson | \
-  		jq '.metadata.name |= "'${mset_name}'"' | \
-  		jq '.spec.selector.matchLabels."machine.openshift.io/cluster-api-machineset" |= "'${mset_name}'"' | \
-  		jq '.spec.template.metadata.labels."machine.openshift.io/cluster-api-machineset" |= "'${mset_name}'"' | \
-  		jq '.spec.template.spec.providerSpec.value.spotMarketOptions |= {}' | oc create -f -
+  	oc get "${mset}" -n openshift-machine-api -ojson | \
+  		jq ".metadata.name |= \"${mset_name}\"" | \
+  		jq ".spec.selector.matchLabels.\"machine.openshift.io/cluster-api-machineset\" |= \"${mset_name}\"" | \
+  		jq ".spec.template.metadata.labels.\"machine.openshift.io/cluster-api-machineset\" |= \"${mset_name}\"" | \
+  		jq ".spec.template.spec.providerSpec.value.spotMarketOptions |= {}" | oc create -f -
 
   	# Delete the old machineset
-  	oc delete "${mset}"
+  	oc delete "${mset}" -n openshift-machine-api
   done
 }
