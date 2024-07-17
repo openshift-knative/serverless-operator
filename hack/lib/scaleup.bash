@@ -102,26 +102,23 @@ function use_spot_instances {
   fi
 
 #  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
-#    logger.info "Skipping spot instances. Not periodic runs."
+#    logger.info "Skipping spot instances. Not a periodic run."
 #    return
 #  fi
 
   logger.info "Convert MachineSets to spot instances"
 
+  local mset_file
+  mset_file=$(mktemp /tmp/machineset.XXXXXX.json)
+
   for mset in $(oc get machineset -n openshift-machine-api -oname); do
-  	mset_name=$(oc get "${mset}" -n openshift-machine-api -ojsonpath='{.metadata.name}')
-
-  	# New machine set has a specific suffix
-  	mset_name="${mset_name}-s"
-
-  	# Create the new machineset with spotMarketOptions
-  	oc get "${mset}" -n openshift-machine-api -ojson | \
-  		jq ".metadata.name |= \"${mset_name}\"" | \
-  		jq ".spec.selector.matchLabels.\"machine.openshift.io/cluster-api-machineset\" |= \"${mset_name}\"" | \
-  		jq ".spec.template.metadata.labels.\"machine.openshift.io/cluster-api-machineset\" |= \"${mset_name}\"" | \
-  		jq ".spec.template.spec.providerSpec.value.spotMarketOptions |= {}" | oc create -f -
-
-  	# Delete the old machineset
-  	oc delete "${mset}" -n openshift-machine-api
+    oc get "${mset}" -n openshift-machine-api -ojson > "$mset_file"
+    oc delete "${mset}" -n openshift-machine-api
+    jq ".spec.template.spec.providerSpec.value.spotMarketOptions |= {}" "$mset_file" | oc create -f -
   done
+
+  rm -f "$mset_file"
+
+  # Wait for at least the default number of workers to be up and running.
+  wait_until_machineset_scales_up 3
 }
