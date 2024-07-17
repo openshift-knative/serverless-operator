@@ -83,3 +83,33 @@ function cluster_scalable {
     return 1
   fi
 }
+
+# Convert existing machinesets to using spot instances
+function use_spot_instances {
+  if ! cluster_scalable; then
+    logger.warn 'Skipping spot instances, the cluster is not scalable.'
+    return 0
+  fi
+
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') != AWS ]]; then
+    logger.warn "Spot instances only supported on AWS"
+    return 0
+  fi
+
+  for mset in $(oc get machineset -oname); do
+  	mset_name=$(oc get "${mset}" -ojsonpath='{.metadata.name}')
+
+  	# New machine set has a specific suffix
+  	mset_name="${mset_name}-s"
+
+  	# Create the new machineset with spotMarketOptions
+  	oc get "${mset}" -ojson | \
+  		jq '.metadata.name |= "'${mset_name}'"' | \
+  		jq '.spec.selector.matchLabels."machine.openshift.io/cluster-api-machineset" |= "'${mset_name}'"' | \
+  		jq '.spec.template.metadata.labels."machine.openshift.io/cluster-api-machineset" |= "'${mset_name}'"' | \
+  		jq '.spec.template.spec.providerSpec.value.spotMarketOptions |= {}' | oc create -f -
+
+  	# Delete the old machineset
+  	oc delete "${mset}"
+  done
+}
