@@ -118,10 +118,4 @@ function use_spot_instances {
   done
 
   rm -f "$mset_file"
-
-  if [[ "${SCALE_UP}" -lt "0" ]]; then
-    wait_until_machineset_scales_up 3
-  else
-    wait_until_machineset_scales_up "${SCALE_UP}"
-  fi
 }
