@@ -87,14 +87,26 @@ function cluster_scalable {
 # Convert existing machinesets to using spot instances
 function use_spot_instances {
   if ! cluster_scalable; then
-    logger.warn 'Skipping spot instances, the cluster is not scalable.'
-    return 0
+    logger.info 'Skipping spot instances, the cluster is not scalable.'
+    return
   fi
 
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') != AWS ]]; then
-    logger.warn "Spot instances only supported on AWS"
-    return 0
+    logger.info "Skipping spot instances. Spot instances only supported on AWS"
+    return
   fi
+
+  if [ -z "$OPENSHIFT_CI" ] ; then
+    logger.info "Skipping spot instances for non-CI runs"
+    return
+  fi
+
+  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
+    logger.info "Skipping spot instances. Not periodic runs."
+    return
+  fi
+
+  logger.info "Convert MachineSets to spot instances"
 
   for mset in $(oc get machineset -oname); do
   	mset_name=$(oc get "${mset}" -ojsonpath='{.metadata.name}')
