@@ -101,10 +101,10 @@ function use_spot_instances {
     return
   fi
 
-  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
-    logger.info "Skipping spot instances. Not periodic runs."
-    return
-  fi
+#  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
+#    logger.info "Skipping spot instances. Not periodic runs."
+#    return
+#  fi
 
   logger.info "Convert MachineSets to spot instances"
 
