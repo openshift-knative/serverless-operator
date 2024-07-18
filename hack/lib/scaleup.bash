@@ -83,10 +83,10 @@ function use_spot_instances {
     return
   fi
 
-#  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
-#    logger.info "Skipping spot instances. Not a periodic run."
-#    return
-#  fi
+  if ! echo $JOB_SPEC | grep -q "type:periodic"; then
+    logger.info "Skipping spot instances. Not a periodic run."
+    return
+  fi
 
   if [[ $(oc get machineset -n openshift-machine-api -ojsonpath='{.items[*].spec.template.spec.providerSpec.value.spotMarketOptions}') != "" ]]; then
     logger.info "Spot instances already configured."
