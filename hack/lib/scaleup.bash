@@ -49,7 +49,7 @@ function scale_up_workers {
 function wait_until_machineset_scales_up {
   logger.info "Waiting until worker nodes scale up to $1 replicas"
   local available
-  for _ in {1..200}; do  # timeout after 20 minutes
+  for _ in {1..450}; do  # timeout after 45 minutes
     available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
     if [[ ${available} -eq $1 ]]; then
       echo ''
@@ -111,6 +111,9 @@ function use_spot_instances {
   local mset_file
   mset_file=$(mktemp /tmp/machineset.XXXXXX.json)
 
+  local available
+  available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
+
   for mset in $(oc get machineset -n openshift-machine-api -oname); do
     oc get "${mset}" -n openshift-machine-api -ojson > "$mset_file"
     oc delete "${mset}" -n openshift-machine-api
@@ -118,4 +121,7 @@ function use_spot_instances {
   done
 
   rm -f "$mset_file"
+
+  # Wait for the original number of workers to be available again.
+  wait_until_machineset_scales_up "${available}"
 }
