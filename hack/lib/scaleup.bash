@@ -41,27 +41,9 @@ function scale_up_workers {
     logger.debug "Bump ${mset} to ${replicas}"
     oc scale "${mset}" -n openshift-machine-api --replicas="${replicas}"
   done
-  wait_until_machineset_scales_up "${SCALE_UP}"
-}
 
-# Waits until worker nodes scale up to the desired number of replicas
-# Parameters: $1 - desired number of replicas
-function wait_until_machineset_scales_up {
-  logger.info "Waiting until worker nodes scale up to $1 replicas"
-  local available
-  for _ in {1..450}; do  # timeout after 45 minutes
-    available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
-    if [[ ${available} -eq $1 ]]; then
-      echo ''
-      logger.success "successfully scaled up to $1 replicas"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo -e "\n\n"
-  logger.error "Timeout waiting for scale up to $1 replicas"
-  return 1
+  logger.info "Waiting until worker nodes scale up to ${SCALE_UP} replicas"
+  timeout 900 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') != ${SCALE_UP} ]]"
 }
 
 function cluster_scalable {
@@ -106,6 +88,11 @@ function use_spot_instances {
 #    return
 #  fi
 
+  if [[ $(oc get machineset -n openshift-machine-api -ojsonpath='{.items[*].spec.template.spec.providerSpec.value.spotMarketOptions}') != "" ]]; then
+    logger.info "Spot instances already configured."
+    return
+  fi
+
   logger.info "Convert MachineSets to spot instances"
 
   local mset_file
@@ -122,6 +109,8 @@ function use_spot_instances {
 
   rm -f "$mset_file"
 
+  # Wait for machinesets to scale down.
+  timeout 120 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') == ${available} ]]"
   # Wait for the original number of workers to be available again.
-  wait_until_machineset_scales_up "${available}"
+  timeout 1200 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') != ${available} ]]"
 }
