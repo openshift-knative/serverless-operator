@@ -41,27 +41,9 @@ function scale_up_workers {
     logger.debug "Bump ${mset} to ${replicas}"
     oc scale "${mset}" -n openshift-machine-api --replicas="${replicas}"
   done
-  wait_until_machineset_scales_up "${SCALE_UP}"
-}
 
-# Waits until worker nodes scale up to the desired number of replicas
-# Parameters: $1 - desired number of replicas
-function wait_until_machineset_scales_up {
-  logger.info "Waiting until worker nodes scale up to $1 replicas"
-  local available
-  for _ in {1..150}; do  # timeout after 15 minutes
-    available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
-    if [[ ${available} -eq $1 ]]; then
-      echo ''
-      logger.success "successfully scaled up to $1 replicas"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo -e "\n\n"
-  logger.error "Timeout waiting for scale up to $1 replicas"
-  return 1
+  logger.info "Waiting until worker nodes scale up to ${SCALE_UP} replicas"
+  timeout 900 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') != ${SCALE_UP} ]]"
 }
 
 function cluster_scalable {
@@ -82,4 +64,53 @@ function cluster_scalable {
   if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platformStatus.aws.resourceTags[?(@.key=="red-hat-clustertype")].value}') = osd ]]; then
     return 1
   fi
+}
+
+# Convert existing machinesets to spot instances
+function use_spot_instances {
+  if ! cluster_scalable; then
+    logger.info 'Skipping spot instances, the cluster is not scalable.'
+    return
+  fi
+
+  if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platform}') != AWS ]]; then
+    logger.info "Skipping spot instances. Spot instances only supported on AWS."
+    return
+  fi
+
+  if [ -z "$OPENSHIFT_CI" ] ; then
+    logger.info "Skipping spot instances for non-CI runs."
+    return
+  fi
+
+  if ! echo "$JOB_SPEC" | grep -q "type:periodic"; then
+    logger.info "Skipping spot instances. Not a periodic run."
+    return
+  fi
+
+  if [[ $(oc get machineset -n openshift-machine-api -ojsonpath='{.items[*].spec.template.spec.providerSpec.value.spotMarketOptions}') != "" ]]; then
+    logger.info "Spot instances already configured."
+    return
+  fi
+
+  logger.info "Convert MachineSets to spot instances"
+
+  local mset_file
+  mset_file=$(mktemp /tmp/machineset.XXXXXX.json)
+
+  local available
+  available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
+
+  for mset in $(oc get machineset -n openshift-machine-api -oname); do
+    oc get "${mset}" -n openshift-machine-api -ojson > "$mset_file"
+    oc delete "${mset}" -n openshift-machine-api
+    jq ".spec.template.spec.providerSpec.value.spotMarketOptions |= {}" "$mset_file" | oc create -f -
+  done
+
+  rm -f "$mset_file"
+
+  # Wait for machinesets to scale down.
+  timeout 120 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') == ${available} ]]"
+  # Wait for the original number of workers to be available again.
+  timeout 1200 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') != ${available} ]]"
 }
