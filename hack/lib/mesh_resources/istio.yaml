@@ -1,0 +1,17 @@
+apiVersion: operator.istio.io/v1alpha1
+kind: Istio
+metadata:
+  name: default # this is propagated to the revision and "istio-injection: enabled" only works with this name
+spec:
+  values:
+    global:
+      proxy:
+        excludeInboundPorts: "8444,8022" # metrics, serving: wait-for-drain k8s pre-stop hook
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s # needed to make QP stop hook work
+  updateStrategy:
+    inactiveRevisionDeletionGracePeriodSeconds: 30
+    type: InPlace
+  namespace: istio-system
+  version: v1.21.0

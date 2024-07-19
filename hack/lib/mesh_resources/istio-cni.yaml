@@ -1,0 +1,7 @@
+kind: IstioCNI
+apiVersion: operator.istio.io/v1alpha1
+metadata:
+  name: default
+spec:
+  namespace: istio-cni
+  version: v1.21.0

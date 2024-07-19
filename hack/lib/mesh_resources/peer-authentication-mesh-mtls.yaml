@@ -1,0 +1,9 @@
+# this forces the whole mesh to mTLS only
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: mesh-mtls
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT

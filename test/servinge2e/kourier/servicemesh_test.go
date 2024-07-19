@@ -102,6 +102,9 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Requests go via gateway -> activator -> pod , by default
 			// Verifies the activator can connect to the pod
 			name: "sidecar-via-activator",
+			labels: map[string]string{
+				servicemesh.IstioInjectKey: "true",
+			},
 			annotations: map[string]string{
 				autoscaling.TargetBurstCapacityKey: "-1",
 			},
@@ -113,6 +116,9 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Requests go via gateway -> pod ( activator should be skipped if burst capacity is disabled and there is at least 1 replica)
 			// Verifies the gateway can connect to the pod directly
 			name: "sidecar-without-activator",
+			labels: map[string]string{
+				servicemesh.IstioInjectKey: "true",
+			},
 			annotations: map[string]string{
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
