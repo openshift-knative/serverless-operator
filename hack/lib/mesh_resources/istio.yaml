@@ -1,0 +1,14 @@
+apiVersion: operator.istio.io/v1alpha1
+kind: Istio
+metadata:
+  name: knative-istio
+spec:
+  values:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s # needed to make QP stop hook work
+  updateStrategy:
+    inactiveRevisionDeletionGracePeriodSeconds: 30
+    type: InPlace
+  namespace: istio-system
+  version: v1.21.0

@@ -27,7 +27,7 @@ func (r *TargetConfiguration) SetDefaults(_ context.Context) {
 		r.Spec.Template.Annotations = make(map[string]string)
 	}
 
-	r.Spec.Template.Annotations[sidecarInject] = "true"
+	r.Spec.Template.Annotations[istioRevision] = "true"
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
 }
 

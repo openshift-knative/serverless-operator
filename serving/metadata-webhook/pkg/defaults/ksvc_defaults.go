@@ -10,7 +10,8 @@ import (
 const (
 	openshiftPassthrough = "serving.knative.openshift.io/enablePassthrough"
 
-	sidecarInject                   = "sidecar.istio.io/inject"
+	istioRevision                   = "istio.io/rev"
+	knativeIstio                    = "knative-istio"
 	sidecarrewriteAppHTTPProbers    = "sidecar.istio.io/rewriteAppHTTPProbers"
 	proxyIstioConfig                = "proxy.istio.io/config"
 	holdApplicationUntilProxyStarts = `{ "holdApplicationUntilProxyStarts": true }`
@@ -40,8 +41,11 @@ func (r *TargetKService) SetDefaults(_ context.Context) {
 	if r.Spec.Template.Annotations == nil {
 		r.Spec.Template.Annotations = make(map[string]string)
 	}
+	if r.Spec.Template.Labels == nil {
+		r.Spec.Template.Labels = make(map[string]string)
+	}
 
-	r.Spec.Template.Annotations[sidecarInject] = "true"
+	r.Spec.Template.Labels[istioRevision] = knativeIstio
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
 	r.Spec.Template.Annotations[proxyIstioConfig] = holdApplicationUntilProxyStarts
 }

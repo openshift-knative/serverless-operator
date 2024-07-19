@@ -24,7 +24,7 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Annotations: map[string]string{
-								sidecarInject:                "true",
+								istioRevision:                "true",
 								sidecarrewriteAppHTTPProbers: "true",
 							},
 						},
@@ -40,7 +40,7 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Annotations: map[string]string{
-								sidecarInject:                "false",
+								istioRevision:                "false",
 								sidecarrewriteAppHTTPProbers: "false",
 							},
 						},
@@ -54,7 +54,7 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Annotations: map[string]string{
-								sidecarInject:                "true",
+								istioRevision:                "true",
 								sidecarrewriteAppHTTPProbers: "true",
 							},
 						},
