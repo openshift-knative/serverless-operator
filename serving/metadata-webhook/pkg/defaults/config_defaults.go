@@ -23,11 +23,14 @@ var (
 
 // SetDefaults implements apis.Defaultable
 func (r *TargetConfiguration) SetDefaults(_ context.Context) {
+	if r.Spec.Template.Labels == nil {
+		r.Spec.Template.Labels = make(map[string]string)
+	}
 	if r.Spec.Template.Annotations == nil {
 		r.Spec.Template.Annotations = make(map[string]string)
 	}
 
-	r.Spec.Template.Annotations[istioRevision] = "true"
+	r.Spec.Template.Labels[istioRevision] = knativeIstio
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
 }
 
