@@ -69,6 +69,9 @@ function deploy_servicemeshcontrolplane {
 
   oc wait --timeout=180s --for=condition=Ready istios -n istio-system knative-istio || oc get istios -n istio-system knative-istio -o yaml
   oc wait --timeout=180s --for=condition=Ready istiocnis -n default default || oc get istiocnis -n default default -o yaml
+
+  # make sure istio cni pods are up before continuing
+  oc wait deployment --all --timeout=600s --for=condition=Available -n istio-cni || oc get deployment  --all -n istio-cni -o yaml
 }
 
 function undeploy_servicemeshcontrolplane {
