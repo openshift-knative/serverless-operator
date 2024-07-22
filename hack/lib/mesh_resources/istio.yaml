@@ -4,6 +4,9 @@ metadata:
   name: knative-istio
 spec:
   values:
+    global:
+      proxy:
+        excludeInboundPorts: "8444,8022" # metrics, serving: wait-for-drain k8s pre-stop hook
     meshConfig:
       defaultConfig:
         terminationDrainDuration: 35s # needed to make QP stop hook work
