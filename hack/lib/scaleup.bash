@@ -83,7 +83,7 @@ function use_spot_instances {
     return
   fi
 
-  if ! echo "$JOB_SPEC" | grep -q "type:periodic"; then
+  if ! echo "$JOB_SPEC" | grep -q '"type":"periodic"'; then
     logger.info "Skipping spot instances. Not a periodic run."
     return
   fi
