@@ -1,0 +1,20 @@
+name: Multiarch builds
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release-[0-9]+'
+
+jobs:
+  build-image:
+    name: Build image
+    uses: openshift-knative/hack/.github/workflows/multiarch-containerfile-build.yaml@main
+    secrets: inherit
+    strategy:
+      matrix:
+        image:
+        - metadata-webhook
+    with:
+      image: ${{ matrix.image }}
+      containerfile: serving/${{ matrix.image }}/Dockerfile
