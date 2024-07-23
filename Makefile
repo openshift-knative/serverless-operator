@@ -293,9 +293,6 @@ release-files:
 		templates/serving-ingress.Dockerfile \
 		serving/ingress/Dockerfile
 	./hack/generate/dockerfile.sh \
-		templates/serving-metadata-webhook.Dockerfile \
-		serving/metadata-webhook/Dockerfile
-	./hack/generate/dockerfile.sh \
 		templates/main.Dockerfile \
 		olm-catalog/serverless-operator/Dockerfile
 	./hack/generate/dockerfile.sh \
