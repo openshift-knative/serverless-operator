@@ -68,14 +68,14 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.33.0 <1.33.1'
+    olm.skipRange: '>=1.33.0 <1.33.2'
     operators.openshift.io/must-gather-image: quay.io/openshift-knative/must-gather
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
     operatorframework.io/arch.arm64: supported
-  name: serverless-operator.v1.33.1
+  name: serverless-operator.v1.33.2
   namespace: placeholder
 spec:
   # User-facing metadata
@@ -828,7 +828,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.ci.openshift.org/knative/release-1.33.1:serverless-openshift-knative-operator
+                    image: registry.ci.openshift.org/knative/release-1.33.2:serverless-openshift-knative-operator
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -945,7 +945,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
                         value: "registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d"
                       - name: "CURRENT_VERSION"
-                        value: "1.33.1"
+                        value: "1.33.2"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
@@ -983,7 +983,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: registry.ci.openshift.org/knative/release-1.33.1:serverless-knative-operator
+                    image: registry.ci.openshift.org/knative/release-1.33.2:serverless-knative-operator
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1129,7 +1129,7 @@ spec:
                       - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
                         value: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.12"
                       - name: "CURRENT_VERSION"
-                        value: "1.33.1"
+                        value: "1.33.2"
                       - name: "KNATIVE_EVENTING_KAFKA_BROKER_VERSION"
                         value: "1.12"
                     securityContext:
@@ -1157,7 +1157,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.ci.openshift.org/knative/release-1.33.1:serverless-ingress
+                    image: registry.ci.openshift.org/knative/release-1.33.2:serverless-ingress
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1306,11 +1306,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.ci.openshift.org/knative/release-1.33.1:serverless-openshift-knative-operator"
+      image: "registry.ci.openshift.org/knative/release-1.33.2:serverless-openshift-knative-operator"
     - name: "knative-openshift"
-      image: "registry.ci.openshift.org/knative/release-1.33.1:serverless-knative-operator"
+      image: "registry.ci.openshift.org/knative/release-1.33.2:serverless-knative-operator"
     - name: "knative-openshift-ingress"
-      image: "registry.ci.openshift.org/knative/release-1.33.1:serverless-ingress"
+      image: "registry.ci.openshift.org/knative/release-1.33.2:serverless-ingress"
     - name: "IMAGE_queue-proxy"
       image: "registry.ci.openshift.org/openshift/knative-serving-queue:knative-v1.12"
     - name: "IMAGE_activator"
@@ -1399,5 +1399,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.12"
     - name: "IMAGE_MUST_GATHER"
       image: "quay.io/openshift-knative/must-gather"
-  replaces: serverless-operator.v1.33.0
-  version: 1.33.1
+  replaces: serverless-operator.v1.33.1
+  version: 1.33.2
