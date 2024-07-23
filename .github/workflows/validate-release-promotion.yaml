@@ -79,7 +79,7 @@ jobs:
           
           if [ $count -ne 0 ]; then
             echo "## $count files with an unexpected promotion name or tag"
-            echo "1. Use the [release-generate-ci](https://github.com/openshift-knative/serverless-operator/actions/workflows/release-generate-ci.yaml?query=branch%3Arelease-1.33) GH actions workflow in serverless-operator on the $release branch with inputs:"
+            echo "1. Use the [release-generate-ci](https://github.com/openshift-knative/serverless-operator/actions/workflows/release-generate-ci.yaml?query=branch%3A${release}) GH actions workflow in serverless-operator on the $release branch with inputs:"
             echo "  - **use workflow from**: **$release**"
             echo "  - **branch**: **$release**"
             echo "  - **tag**: **$tag**"
