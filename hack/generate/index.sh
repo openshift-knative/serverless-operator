@@ -18,6 +18,9 @@ values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -
 values[PREVIOUS_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 3 | tail -n 1)"
 values[PREVIOUS_REPLACES_CHANNEL]="$(metadata.get 'olm.channels.list[*]' | head -n 4 | tail -n 1)"
 
+values[PREVIOUS_CHANNEL_HEAD]="${values[PREVIOUS_CHANNEL]#stable-}.0"
+values[PREVIOUS_REPLACES_CHANNEL_HEAD]="${values[PREVIOUS_REPLACES_CHANNEL]#stable-}.0"
+
 # Start fresh
 cp "$template" "$target"
 
