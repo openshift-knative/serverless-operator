@@ -63,7 +63,7 @@ func TestJobsRemoveTTLSecondsAfterFinished(t *testing.T) {
 
 	expectedU := util.MakeUnstructured(t, &expected)
 	if diff := cmp.Diff(u, expectedU); diff != "" {
-		t.Errorf("Unexpected label: Got = %#v, want = %#v\n%s", u, expectedU, diff)
+		t.Errorf("Got = %#v, want = %#v\n%s", u, expectedU, diff)
 	}
 }
 
