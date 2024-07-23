@@ -2,17 +2,20 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
-	"github.com/openshift-knative/serverless-operator/test/upgrade"
-	"github.com/openshift-knative/serverless-operator/test/v1beta1"
+	batchv1 "k8s.io/api/batch/v1"
 	"knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
 	"knative.dev/pkg/ptr"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/monitoringe2e"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/v1beta1"
 )
 
 const (
@@ -71,6 +74,12 @@ func TestKnativeEventing(t *testing.T) {
 		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    eventingNamespace,
 			FailOnNoJobs: true,
+			ValidateJob: func(j batchv1.Job) error {
+				if j.Spec.TTLSecondsAfterFinished != nil {
+					return fmt.Errorf("job %s/%s has TTLSecondsAfterFinished", eventingNamespace, j.Name)
+				}
+				return nil
+			},
 		})
 	})
 
