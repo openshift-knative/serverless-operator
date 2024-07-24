@@ -12,7 +12,7 @@ RUN /bin/opm render --skip-tls-verify -o yaml \
       registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-v1.32.0:serverless-bundle \
       registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
-      registry.ci.openshift.org/knative/release-1.33.1:serverless-bundle >> /configs/index.yaml || \
+      registry.ci.openshift.org/knative/release-1.33.2:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
       registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:serverless-bundle \
       registry.ci.openshift.org/knative/openshift-serverless-v1.32.0:serverless-bundle \
