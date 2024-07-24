@@ -31,3 +31,19 @@ func VersionedJobNameTransform() mf.Transformer {
 		return nil
 	}
 }
+
+func JobsRemoveTTLSecondsAfterFinished() mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Job" {
+			job := &batchv1.Job{}
+			if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+				return err
+			}
+			if job.Spec.TTLSecondsAfterFinished != nil {
+				job.Spec.TTLSecondsAfterFinished = nil
+			}
+			return scheme.Scheme.Convert(job, u, nil)
+		}
+		return nil
+	}
+}

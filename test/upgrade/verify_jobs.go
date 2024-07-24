@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"golang.org/x/sync/errgroup"
+	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"knative.dev/pkg/test/upgrade"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 type VerifyPostJobsConfig struct {
 	Namespace    string
 	FailOnNoJobs bool
+	ValidateJob  func(j batchv1.Job) error
 }
 
 func VerifyPostInstallJobs(ctx *test.Context, cfg VerifyPostJobsConfig) upgrade.Operation {
@@ -43,6 +46,12 @@ func verifyPostInstallJobs(ctx context.Context, testCtx *test.Context, c upgrade
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, j := range jobs.Items {
 		j := j
+
+		if cfg.ValidateJob != nil {
+			if err := cfg.ValidateJob(j); err != nil {
+				return fmt.Errorf("failed to validate job %s: %w", j.Name, err)
+			}
+		}
 
 		if j.Status.Succeeded > 0 {
 			// We don't need to wait for a job that is already succeeded.
