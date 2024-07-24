@@ -362,6 +362,7 @@ func (r *ReconcileKnativeKafka) transform(manifest *mf.Manifest, instance *serve
 		socommon.ApplyCABundlesTransform(),
 		operatorcommon.OverridesTransform(instance.Spec.Workloads, logging.FromContext(context.TODO())),
 		socommon.ConfigMapVolumeChecksumTransform(context.Background(), r.client, dependentConfigMaps),
+		socommon.JobsRemoveTTLSecondsAfterFinished(),
 		injectNamespacedBrokerMonitoring(r.client)), socommon.DeprecatedAPIsTranformersFromConfig()...)
 	tfs = append(tfs, rbacProxyTranforms...)
 

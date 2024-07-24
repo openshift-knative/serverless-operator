@@ -2,9 +2,10 @@ package e2ekafka
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -13,6 +14,8 @@ import (
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
 	"knative.dev/pkg/ptr"
+
+	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/apis/messaging/v1beta1"
@@ -193,6 +196,12 @@ func TestKnativeKafka(t *testing.T) {
 		upgrade.VerifyPostInstallJobs(caCtx, upgrade.VerifyPostJobsConfig{
 			Namespace:    knativeKafkaNamespace,
 			FailOnNoJobs: true,
+			ValidateJob: func(j batchv1.Job) error {
+				if j.Spec.TTLSecondsAfterFinished != nil {
+					return fmt.Errorf("job %s/%s has TTLSecondsAfterFinished", knativeKafkaNamespace, j.Name)
+				}
+				return nil
+			},
 		})
 	})
 }
