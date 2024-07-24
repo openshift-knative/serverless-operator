@@ -1399,5 +1399,5 @@ spec:
       image: "registry.ci.openshift.org/openshift/knative-eventing-migrate:knative-v1.12"
     - name: "IMAGE_MUST_GATHER"
       image: "quay.io/openshift-knative/must-gather"
-  replaces: serverless-operator.v1.33.1
+  replaces: serverless-operator.v1.33.0
   version: 1.33.2
