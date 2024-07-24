@@ -8,8 +8,13 @@ function install_tracing {
       dedicate_node_to_zipkin
     fi
     install_zipkin_tracing
-  else
+  elif [[ "${TRACING_BACKEND}" == "tempo" ]]; then
+    install_tempo_tracing
+  elif [[ "${TRACING_BACKEND}" == "otel" ]]; then
     install_opentelemetry_tracing
+  else
+    echo "Unknown TRACING_BACKEND \"$TRACING_BACKEND\""
+    return 1
   fi
 }
 
@@ -134,6 +139,130 @@ function install_opentelemetry_tracing {
   install_opentelemetrycollector
 }
 
+function install_tempo_tracing {
+  logger.info "Install Tempo Tracing"
+  install_tempo_operator
+  install_minio
+  install_tempo_stack
+}
+
+function install_minio {
+  # Stolen from https://github.com/grafana/tempo-operator/blob/main/tests/e2e-openshift-serverless/tempo-serverless/install-minio.yaml
+  cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: minio
+  name: minio
+  namespace: ${TRACING_NAMESPACE}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: ${TRACING_NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minio
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /storage/tempo && \
+              minio server /storage
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: tempo
+            - name: MINIO_SECRET_KEY
+              value: supersecret
+          image: quay.io/minio/minio
+          name: minio
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /storage
+              name: storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: ${TRACING_NAMESPACE}
+spec:
+  ports:
+    - port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app.kubernetes.io/name: minio
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio
+  namespace: ${TRACING_NAMESPACE}
+stringData:
+  endpoint: http://minio.${TRACING_NAMESPACE}.svc.cluster.local:9000
+  bucket: tempo
+  access_key_id: tempo
+  access_key_secret: supersecret
+type: Opaque
+EOF
+}
+
+function install_tempo_stack {
+  logger.info "Install TempoStack"
+  # Stolen from https://github.com/grafana/tempo-operator/blob/main/tests/e2e-openshift-serverless/tempo-serverless/install-tempo.yaml
+  cat <<EOF | oc apply -f -
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: serverless
+  namespace: ${TRACING_NAMESPACE}
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+  storageSize: 200M
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          route:
+            termination: edge
+          type: route
+EOF
+  oc wait --for=condition=Ready TempoStack.tempo.grafana.com serverless --timeout=300s -n "${TRACING_NAMESPACE}"
+}
+
 function install_jaeger_operator {
   install_operator "jaeger-product"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators jaeger-operator --no-headers | wc -l) != 1 ]]"
@@ -144,6 +273,11 @@ function install_opentelemetry_operator {
   install_operator "opentelemetry-product"
   timeout 600 "[[ \$(oc get deploy -n openshift-operators opentelemetry-operator-controller-manager --no-headers | wc -l) != 1 ]]"
   oc wait --for=condition=Available deployment opentelemetry-operator-controller-manager --timeout=300s -n openshift-operators
+}
+
+function install_tempo_operator {
+  install_operator "tempo-product"
+  timeout 600 "[[ \$(oc get deploy -n openshift-operators tempo-operator-controller --no-headers | wc -l) != 1 ]]"
 }
 
 function install_operator {
@@ -297,6 +431,8 @@ EOF
 function get_tracing_endpoint {
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
     echo "http://zipkin.${TRACING_NAMESPACE}.svc.cluster.local:9411/api/v2/spans"
+  elif [[ "${TRACING_BACKEND}" == "tempo" ]]; then
+    echo "http://tempo-serverless-distributor.${TRACING_NAMESPACE}.svc:9411/api/v2/spans"
   else
     echo "http://cluster-collector-collector-headless.${TRACING_NAMESPACE}.svc:9411/api/v2/spans"
   fi
@@ -315,6 +451,17 @@ function teardown_tracing {
     oc label node "$zipkin_node" zipkin-
     oc adm taint node "$zipkin_node" zipkin:NoSchedule-
   fi
+
+  # Teardown Tempo
+  if oc get -n "${TRACING_NAMESPACE}" tempostack.tempo.grafana.com serverless &>/dev/null; then
+    oc delete -n "${TRACING_NAMESPACE}" tempostack.tempo.grafana.com serverless
+    timeout 600 "[[ \$(oc get -n ${TRACING_NAMESPACE} deployment -l app.kubernetes.io/name=tempo --no-headers | wc -l) != 0 ]]"
+  fi
+
+  # Teardown Minio
+  for resource in deployment persistentvolumeclaim service secret; do
+    oc delete -n "${TRACING_NAMESPACE}" $resource minio --ignore-not-found
+  done
 
   # Teardown OpenTelemetry
   if oc get -n "${TRACING_NAMESPACE}" opentelemetrycollector.opentelemetry.io cluster-collector &>/dev/null; then
