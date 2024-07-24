@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
+	"k8s.io/utils/pointer"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -51,7 +51,7 @@ func TestJobGeneratedNameTransform(t *testing.T) {
 
 func TestJobsRemoveTTLSecondsAfterFinished(t *testing.T) {
 	got := createJob("", "gen")
-	got.Spec.TTLSecondsAfterFinished = ptr.To[int32](32)
+	got.Spec.TTLSecondsAfterFinished = pointer.Int32(32)
 
 	expected := createJob("", "gen")
 	expected.Spec.TTLSecondsAfterFinished = nil
