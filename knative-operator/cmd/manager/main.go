@@ -135,6 +135,7 @@ func main() {
 
 	decoder := admission.NewDecoder(mgr.GetScheme())
 
+	// This call adds the server to the manager as a Runnable
 	_ = mgr.GetWebhookServer()
 	// Serving Webhooks
 	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(decoder)})
