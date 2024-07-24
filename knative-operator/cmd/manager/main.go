@@ -135,6 +135,7 @@ func main() {
 
 	decoder := admission.NewDecoder(mgr.GetScheme())
 
+	_ = mgr.GetWebhookServer()
 	// Serving Webhooks
 	hookServer.Register("/mutate-knativeservings", &webhook.Admission{Handler: knativeserving.NewConfigurator(decoder)})
 	hookServer.Register("/validate-knativeservings", &webhook.Admission{Handler: knativeserving.NewValidator(mgr.GetClient(), decoder)})
