@@ -93,6 +93,7 @@ func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 		common.VersionedJobNameTransform(),
 		common.InjectCommonEnvironment(),
 		common.ApplyCABundlesTransform(),
+		common.JobsRemoveTTLSecondsAfterFinished(),
 	}
 	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
