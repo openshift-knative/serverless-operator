@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	IstioInjectKey              = "sidecar.istio.io/inject"
+	IstioRevKey                 = "istio.io/rev"
+	IstioRevKnative             = "knative-istio"
 	IstioRewriteProbersKey      = "sidecar.istio.io/rewriteAppHTTPProbers"
 	ServingEnablePassthroughKey = "serving.knative.openshift.io/enablePassthrough"
 	helloWorldText              = "Hello World!"

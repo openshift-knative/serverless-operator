@@ -102,8 +102,10 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Requests go via gateway -> activator -> pod , by default
 			// Verifies the activator can connect to the pod
 			name: "sidecar-via-activator",
+			labels: map[string]string{
+				servicemesh.IstioRevKey: servicemesh.IstioRevKnative,
+			},
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "-1",
 			},
 			expectIstioSidecar: true,
@@ -111,17 +113,19 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Requests go via gateway -> pod ( activator should be skipped if burst capacity is disabled and there is at least 1 replica)
 			// Verifies the gateway can connect to the pod directly
 			name: "sidecar-without-activator",
+			labels: map[string]string{
+				servicemesh.IstioRevKey: servicemesh.IstioRevKnative,
+			},
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
 			},
 			expectIstioSidecar: true,
 		}, {
-			// Verifies the "sidecar.istio.io/inject" annotation is really what decides the istio-proxy presence
+			// Verifies the istio revision label is really what decides the istio-proxy presence
 			name: "no-sidecar",
-			annotations: map[string]string{
-				servicemesh.IstioInjectKey: "false",
+			labels: map[string]string{
+				servicemesh.IstioRevKey: "invalid-revision",
 			},
 			expectIstioSidecar: false,
 		}, {
@@ -129,9 +133,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			name: "local-sidecar-via-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
-			},
-			annotations: map[string]string{
-				servicemesh.IstioInjectKey: "true",
+				servicemesh.IstioRevKey:       servicemesh.IstioRevKnative,
 			},
 			expectIstioSidecar: true,
 		}, {
@@ -139,9 +141,9 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			name: "local-sidecar-without-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
+				servicemesh.IstioRevKey:       servicemesh.IstioRevKnative,
 			},
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
 			},
