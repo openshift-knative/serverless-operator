@@ -117,13 +117,14 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 
-		tc.labels[IstioRevKey] = IstioRevKnative
 		tc.annotations[IstioRewriteProbersKey] = "true"
-
-		// Always use cluster-local service.
 		tc.labels = map[string]string{
+			// Always use cluster-local service.
 			networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
+			// Inject istio proxy
+			IstioRevKey: IstioRevKnative,
 		}
+
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
