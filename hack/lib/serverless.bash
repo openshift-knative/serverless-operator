@@ -14,29 +14,26 @@ function ensure_serverless_installed {
   # Otherwise, we cannot change log level by configmap.
   enable_debug_log
 
-  local csv
+  local channel csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
+    channel="$(metadata.get "olm.channels.list[3]")"
     csv="$(metadata.get "upgrade_sequence[0].csv")"
     OLM_SOURCE=redhat-operators
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
+    channel="$(metadata.get "olm.channels.list[2]")"
     csv="$PREVIOUS_CSV"
   else
+    channel="$(metadata.get "olm.channels.list[1]")"
     csv="$CURRENT_CSV"
   fi
 
-  # Remove installplan from previous installations, leaving this would make the operator
-  # upgrade to the latest version immediately
-  if [[ "$csv" != "$CURRENT_CSV" ]]; then
-    remove_installplan "$CURRENT_CSV"
-  fi
+  logger.info "Installing Serverless version $channel"
 
-  logger.info "Installing Serverless version $csv"
-
-  deploy_serverless_operator "$csv"
+  deploy_serverless_operator "$channel"
 
   install_knative_resources "${csv#serverless-operator.v}"
 
-  logger.success "Serverless is installed: $csv"
+  logger.success "Serverless is installed: $channel"
 }
 
 function install_knative_resources {
@@ -68,26 +65,14 @@ function install_knative_resources {
   fi
 }
 
-function remove_installplan {
-  local install_plan csv
-  csv="${1:?Pass a CSV as arg[1]}"
-  logger.info "Removing installplan for $csv"
-  install_plan=$(find_install_plan "$csv")
-  if [[ -n $install_plan ]]; then
-    oc delete "$install_plan" -n "${OPERATORS_NAMESPACE}"
-  else
-    logger.debug "No install plan for $csv"
-  fi
-}
-
 function deploy_serverless_operator_latest {
-  deploy_serverless_operator "$CURRENT_CSV"
+  deploy_serverless_operator "${OLM_UPGRADE_CHANNEL}"
 }
 
 function deploy_serverless_operator {
-  local csv tmpfile
-  csv="${1:?Pass as CSV as arg[1]}"
-  logger.info "Install the Serverless Operator: ${csv}"
+  local channel tmpfile
+  channel="${1:?Pass a channel as arg[1]}"
+  logger.info "Install the Serverless Operator: ${channel}"
   tmpfile=$(mktemp /tmp/subscription.XXXXXX.yaml)
   cat > "$tmpfile" <<EOF
 apiVersion: operators.coreos.com/v1alpha1
@@ -96,54 +81,13 @@ metadata:
   name: "${OPERATOR}"
   namespace: "${OPERATORS_NAMESPACE}"
 spec:
-  channel: "${OLM_CHANNEL}"
+  channel: "${channel}"
   name: "${OPERATOR}"
   source: "${OLM_SOURCE}"
   sourceNamespace: "${OLM_NAMESPACE}"
-  installPlanApproval: Manual
-  startingCSV: "${csv}"
 EOF
   [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
   oc apply -f "$tmpfile"
-
-  # Approve the initial installplan automatically
-  approve_csv "$csv" "$OLM_CHANNEL"
-}
-
-function approve_csv {
-  local csv_version install_plan channel
-  csv_version=${1:?Pass a CSV as arg[1]}
-  channel=${2:?Pass channel as arg[2]}
-
-  logger.info 'Ensure channel and source is set properly'
-  oc patch subscriptions.operators.coreos.com "$OPERATOR" -n "${OPERATORS_NAMESPACE}" \
-    --type 'merge' \
-    --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}'
-
-  logger.info 'Wait for the installplan to be available'
-  timeout 900 "[[ -z \$(find_install_plan ${csv_version}) ]]"
-
-  install_plan=$(find_install_plan "${csv_version}")
-  oc patch "$install_plan" -n "${OPERATORS_NAMESPACE}" \
-    --type merge --patch '{"spec":{"approved":true}}'
-
-  if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
-    oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
-    return 105
-  fi
-}
-
-function find_install_plan {
-  local csv="${1:-Pass a CSV as arg[1]}"
-  for plan in $(oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers -o name); do
-    if [[ $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c "$csv") -eq 1 && \
-      $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]
-    then
-      echo "$plan"
-      return 0
-    fi
-  done
-  echo ""
 }
 
 function deploy_knativeserving_cr {

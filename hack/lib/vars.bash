@@ -65,10 +65,11 @@ export UPGRADE_OCP_IMAGE="${UPGRADE_OCP_IMAGE:-}"
 export INSTALL_PREVIOUS_VERSION="${INSTALL_PREVIOUS_VERSION:-"false"}"
 export INSTALL_OLDEST_COMPATIBLE="${INSTALL_OLDEST_COMPATIBLE:-"false"}"
 
-OLM_CHANNEL="${OLM_CHANNEL:-$(metadata.get olm.channels.default)}"
-export OLM_CHANNEL
+OLM_PREVIOUS_CHANNEL="${OLM_PREVIOUS_CHANNEL:-$(metadata.get olm.channels.list[2])}"
+export OLM_PREVIOUS_CHANNEL
 # Change this when upgrades need switching to a different channel
-export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
+OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-$(metadata.get olm.channels.list[1])}"
+export OLM_UPGRADE_CHANNEL
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
 export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
 export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"

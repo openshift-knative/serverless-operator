@@ -42,15 +42,16 @@ import (
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
-	"github.com/openshift-knative/serverless-operator/test/upgrade"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
 var global environment.GlobalEnvironment
@@ -104,6 +105,11 @@ func TestClusterUpgrade(t *testing.T) {
 	if !test.Flags.UpgradeOpenShift {
 		t.Skip("Cluster upgrade tests disabled unless enabled by a flag.")
 	}
+
+	if err := installation.UpgradeServerlessTo(ctx, test.Flags.UpgradeChannel); err != nil {
+		t.Fatalf("Failed to upgrade Serverless to %s: %v", test.Flags.UpgradeChannel, err)
+	}
+
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade:  preUpgradeTests(),
