@@ -5,9 +5,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 # This is due to anonymous token request issue created by the Helm image pulling bellow.
 # Ideally we want to login properly if this comes up elsewhere.
-if [[ "${SKIP_MESH_AUTH_POLICY_GENERATION}" == "true" ]]; then
+# TODO: REVERT later
+#if [[ "${SKIP_MESH_AUTH_POLICY_GENERATION}" == "true" ]]; then
   exit 0
-fi
+#fi
 
 set -Eeuo pipefail
 

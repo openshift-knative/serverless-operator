@@ -1,6 +1,6 @@
 ---
 # Source: knative-istio-authz/templates/common-allow-knative-to-ns.yaml
-# Allow namespace tenant-1 to receive requests from Knative system components, from istio-system and from all namespaces of the tenant.
+# Allow namespace tenant-1 to receive requests from Knative system components, from knative-serving-ingress and from all namespaces of the tenant.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -14,7 +14,7 @@ spec:
             namespaces:
               - "tenant-1"
               - "knative-serving"
-              - "istio-system"
+              - "knative-serving-ingress"
 
     - from:
         - source:
