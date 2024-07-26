@@ -1,12 +1,12 @@
-FROM registry.access.redhat.com/ubi8-minimal:latest AS builder
+FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.21-openshift-4.16 AS builder
 
-RUN microdnf install -y golang
+ENV BASE=github.com/openshift-knative/serverless-operator
+WORKDIR ${GOPATH}/src/${BASE}
 
-COPY . /code
-WORKDIR /code
+COPY . .
 
 ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/metadata-webhook github.com/openshift-knative/serverless-operator/serving/metadata-webhook/cmd/webhook
+RUN go build -o /tmp/metadata-webhook ${BASE}/serving/metadata-webhook/cmd/webhook
 
 FROM registry.access.redhat.com/ubi8-minimal:latest
 USER 65532
