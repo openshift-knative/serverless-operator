@@ -84,10 +84,12 @@ func WithLabels(labels map[string]string) CfgFn {
 
 func WithIstioPodAnnotations(cfg map[string]interface{}) {
 	podAnnotations := map[string]interface{}{
-		"sidecar.istio.io/inject":                "true",
 		"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		"proxy.istio.io/config":                  "{ 'holdApplicationUntilProxyStarts': true }",
 	}
+
+	// TODO: do this propperly
+	WithLabels(map[string]string{"istio.io/rev": "knative-istio"})(cfg)
 
 	WithAnnotations(podAnnotations)(cfg)
 	WithPodAnnotations(podAnnotations)(cfg)

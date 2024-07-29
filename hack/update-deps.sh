@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# skip update for now because of patched files
+exit 0
+
 ROOT_DIR=$(dirname "$0")/..
 readonly ROOT_DIR
 
