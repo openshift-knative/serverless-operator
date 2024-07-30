@@ -18,11 +18,11 @@ default_serverless_operator_images
 default_knative_ingress_images
 
 if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
-  knative_eventing_images_release_next
-  knative_eventing_istio_images_release_next
-  knative_eventing_kafka_broker_images_release_next
-  knative_backstage_plugins_images_release_next
-  knative_serving_images_release_next
+  knative_eventing_images_release
+  knative_eventing_istio_images_release
+  knative_eventing_kafka_broker_images_release
+  knative_backstage_plugins_images_release
+  knative_serving_images_release
 else
   default_knative_eventing_images
   default_knative_eventing_istio_images

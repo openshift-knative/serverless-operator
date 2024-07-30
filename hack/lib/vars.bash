@@ -109,6 +109,38 @@ export USE_RELEASED_HELM_CHART="${USE_RELEASED_HELM_CHART:-false}"
 export HELM_CHART_TGZ="${HELM_CHART_TGZ:-}"
 export HA="${HA:-true}"
 export USE_RELEASE_NEXT="${USE_RELEASE_NEXT:-false}"
+export USE_IMAGE_RELEASE_TAG="${USE_IMAGE_RELEASE_TAG:-}"
+export USE_ARTIFACTS_RELEASE_BRANCH="${USE_ARTIFACTS_RELEASE_BRANCH:-}"
+
+if [ "${USE_IMAGE_RELEASE_TAG}" != "" ] && [ "${USE_ARTIFACTS_RELEASE_BRANCH}" = "" ]; then
+   if [ "${USE_IMAGE_RELEASE_TAG}" = "knative-nightly" ]; then
+     export USE_ARTIFACTS_RELEASE_BRANCH="release-next"
+   else
+     export USE_ARTIFACTS_RELEASE_BRANCH=${USE_IMAGE_RELEASE_TAG/knative-/release-}
+   fi
+fi
+
+if [ "${USE_RELEASE_NEXT}" = "true" ]; then
+  export USE_IMAGE_RELEASE_TAG="knative-nightly"
+  export USE_ARTIFACTS_RELEASE_BRANCH="release-next"
+fi
+
+echo "Branch and Tag: ${USE_ARTIFACTS_RELEASE_BRANCH} - ${USE_IMAGE_RELEASE_TAG}"
+
+if [ "${USE_IMAGE_RELEASE_TAG}" != "" ] && [ "${USE_ARTIFACTS_RELEASE_BRANCH}" != "" ]; then
+  root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing' "${USE_IMAGE_RELEASE_TAG}"
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing_artifacts_branch' "${USE_ARTIFACTS_RELEASE_BRANCH}"
+
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing_kafka_broker' "${USE_IMAGE_RELEASE_TAG}"
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing_kafka_broker_artifacts_branch' "${USE_ARTIFACTS_RELEASE_BRANCH}"
+
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing_istio' "${USE_IMAGE_RELEASE_TAG}"
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing_istio_artifacts_branch' "${USE_ARTIFACTS_RELEASE_BRANCH}"
+
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.serving' "${USE_IMAGE_RELEASE_TAG}"
+  yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.serving_artifacts_branch' "${USE_ARTIFACTS_RELEASE_BRANCH}"
+fi
 
 # Waits until the given object exists.
 # Parameters: $1 - the kind of the object.
