@@ -15,8 +15,8 @@ function default_serverless_operator_images() {
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress"}
 }
 
-function knative_serving_images_release_next() {
-  knative_serving_images "knative-nightly"
+function knative_serving_images_release() {
+  knative_serving_images "${USE_IMAGE_RELEASE_TAG}"
 }
 
 function default_knative_serving_images() {
@@ -36,8 +36,8 @@ function knative_serving_images() {
   export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-"${serving}-storage-version-migration:${tag}"}
 }
 
-function knative_eventing_images_release_next() {
-  knative_eventing_images "knative-nightly"
+function knative_eventing_images_release() {
+  knative_eventing_images "${USE_IMAGE_RELEASE_TAG}"
 }
 
 function default_knative_eventing_images() {
@@ -91,8 +91,8 @@ function default_knative_eventing_test_images() {
   export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"${eventing}/wathola-sender:${tag}"}
 }
 
-function knative_eventing_istio_images_release_next() {
-  knative_eventing_istio_images "knative-nightly"
+function knative_eventing_istio_images_release() {
+  knative_eventing_istio_images "${USE_IMAGE_RELEASE_TAG}"
 }
 
 function default_knative_eventing_istio_images() {
@@ -106,8 +106,8 @@ function knative_eventing_istio_images() {
   export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
 }
 
-function knative_eventing_kafka_broker_images_release_next() {
-  knative_eventing_kafka_broker_images "knative-nightly"
+function knative_eventing_kafka_broker_images_release() {
+  knative_eventing_kafka_broker_images "${USE_IMAGE_RELEASE_TAG}"
 }
 
 function default_knative_eventing_kafka_broker_images() {
@@ -143,8 +143,8 @@ function knative_backstage_plugins_images() {
   export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-"${backstage_plugins}-eventmesh:${tag}"}
 }
 
-function knative_backstage_plugins_images_release_next() {
-  knative_backstage_plugins_images "knative-nightly"
+function knative_backstage_plugins_images_release() {
+  knative_backstage_plugins_images "${USE_IMAGE_RELEASE_TAG}"
 }
 
 function default_knative_backstage_plugins_images() {
