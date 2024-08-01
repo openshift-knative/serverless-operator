@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
 	"knative.dev/eventing-kafka-broker/control-plane/pkg/kafka"
 	kafkabrokerupgrade "knative.dev/eventing-kafka-broker/test/upgrade"
 	"knative.dev/eventing-kafka-broker/test/upgrade/continual"
@@ -165,14 +166,22 @@ func preUpgradeTests() []pkgupgrade.Operation {
 }
 
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
+	validateJobFunc := func(j batchv1.Job) error {
+		if j.Spec.TTLSecondsAfterFinished != nil {
+			return fmt.Errorf("job %s/%s has TTLSecondsAfterFinished", eventingNamespace, j.Name)
+		}
+		return nil
+	}
 	tests := []pkgupgrade.Operation{waitForServicesReady(ctx)}
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 		Namespace:    test.ServingNamespace,
 		FailOnNoJobs: failOnNoJobs,
+		ValidateJob:  validateJobFunc,
 	}))
 	tests = append(tests, upgrade.VerifyPostInstallJobs(ctx, upgrade.VerifyPostJobsConfig{
 		Namespace:    test.EventingNamespace,
 		FailOnNoJobs: failOnNoJobs,
+		ValidateJob:  validateJobFunc,
 	}))
 	tests = append(tests, EventingPostUpgradeTests()...)
 	tests = append(tests, EventingKafkaBrokerPostUpgradeTests()...)
