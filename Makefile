@@ -243,7 +243,7 @@ test-kitchensink-e2e-setup:
 # Runs all subsets of kitchensink tests. Runs tests separately so `go test` doesn't take too much memory in CI
 kitchensink-e2e:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
+	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/kitchensink-e2e-tests.sh -run TestBrokerReadinessBrokerDLS
 	./test/kitchensink-e2e-tests.sh -run TestBrokerReadinessTriggerDLS
 	./test/kitchensink-e2e-tests.sh -run TestChannelReadiness
