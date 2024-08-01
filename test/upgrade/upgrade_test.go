@@ -21,6 +21,7 @@ package upgrade_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -168,7 +169,7 @@ func preUpgradeTests() []pkgupgrade.Operation {
 func postUpgradeTests(ctx *test.Context, failOnNoJobs bool) []pkgupgrade.Operation {
 	validateJobFunc := func(j batchv1.Job) error {
 		if j.Spec.TTLSecondsAfterFinished != nil {
-			return fmt.Errorf("job %s/%s has TTLSecondsAfterFinished", eventingNamespace, j.Name)
+			return fmt.Errorf("job %s/%s has TTLSecondsAfterFinished", j.Namespace, j.Name)
 		}
 		return nil
 	}
