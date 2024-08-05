@@ -549,7 +549,7 @@ function kitchensink_upgrade_tests {
      --kubeconfigs="${KUBECONFIG}" \
      --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
-     --csv="$(metadata.get "upgrade_sequence[*].csv" | tail -n +2 | tr '\n' ',')" \
+     --csv="serverless-operator.v$(metadata.get "olm.replaces"),serverless-operator.v$(metadata.get "project.version")" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 
   logger.success 'Kitchensink upgrade tests passed'

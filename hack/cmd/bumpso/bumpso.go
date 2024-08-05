@@ -75,15 +75,6 @@ func run() error {
 	}
 	newVersion.BumpMinor()
 
-	upgradeSequence, _, err := unstructured.NestedSlice(project, "upgrade_sequence")
-	if err != nil {
-		return err
-	}
-	upgradeSequence = upgradeSequence[1:] // Remove first version
-	upgradeSequence = append(upgradeSequence, map[string]interface{}{
-		"csv": fmt.Sprintf("serverless-operator.v%s", newVersion),
-	})
-
 	defaultChannel, _, _ := unstructured.NestedString(project, "olm", "channels", "default")
 
 	channelsList := []interface{}{
@@ -103,7 +94,6 @@ func run() error {
 	_ = common.SetNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
 	_ = common.SetNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
 	_ = common.SetNestedField(&node, skipRange(previousVersion, currentVersion), "olm", "previous", "skipRange")
-	_ = common.SetNestedField(&node, upgradeSequence, "upgrade_sequence")
 	_ = common.SetNestedField(&node, channelsList, "olm", "channels", "list")
 	_ = common.SetNestedField(&node, serving, "dependencies", "previous", "serving")
 	_ = common.SetNestedField(&node, eventing, "dependencies", "previous", "eventing")

@@ -72,8 +72,3 @@ dependencies:
         eventing_kafka_broker: knative-v1.12
     mustgather:
         image: quay.io/openshift-knative/must-gather
-upgrade_sequence:
-    - csv: serverless-operator.v1.32.0
-    - csv: serverless-operator.v1.33.0
-    - csv: serverless-operator.v1.33.1
-    - csv: serverless-operator.v1.34.0
